@@ -216,6 +216,26 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
       	virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
       	virtual void endJob() override;
 
+        void setBranchesEvent();
+        void setBranchesVtx();
+        void setBranchesMet();
+        void setBranchesJets();
+        void setBranchesClusterJets();
+        void setBranchesPhotons();
+        void setBranchesElectrons();
+        void setBranchesGenParts();
+        void setBranchesRecHits();
+
+		void processEvent( const edm::Event& iEvent );
+		void processVtx( edm::Handle<std::vector<reco::Vertex>> vertices );
+		void processMet( std::vector<reco::PFMET> fpfmet, std::vector<reco::Photon> fphotons );
+		void processClJet( std::vector<reco::CaloJet> fcalojets );
+		void processPhotons( std::vector<reco::Photon> fphotons, std::vector<reco::GenParticle> fgenparts );
+		void processElectrons( std::vector<reco::GsfElectron> felectrons, std::vector<reco::GenParticle> fgenparts );
+		void processGenPart( std::vector<reco::GenParticle>  fgenparts );
+		void processRecHits( std::vector<EcalRecHit> frechits );
+		void processJets( std::vector<reco::PFJet> fjets, std::vector<int> fjetsID, std::vector<reco::GenJet> fgenjets );
+	
 		////////////////////////////////////////////////////
       	// ----------member data ---------------------------
 		////////////////////////////////////////////////////
@@ -603,7 +623,7 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
 		int llpGenChaseP( const reco::GenParticle kid, int depth );
 		void kidChase( std::vector<reco::CandidatePtr> kids, float vx, float vy, float vz );
         vector<float> kidTOFChain( std::vector<reco::CandidatePtr> kids, float cx, float cy, float cz  );		
-
+        vector<float>  getGenPartMatch( reco::SuperClusterCollection scptr, std::vector<reco::GenParticle>  fgenparts );
     
 };//<<>>class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
     

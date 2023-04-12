@@ -20,9 +20,9 @@
 //------------------------------------------------------------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "./KUCMSNtupilizer.hh"
-#include "./KUCMSHelperFunctions.hh"
-#include "./KUCMSRootHelperFunctions.hh"
+#include "KUCMSNtupleizer.hh"
+#include "KUCMSHelperFunctions.hh"
+#include "KUCMSRootHelperFunctions.hh"
 
 using namespace std;
 
@@ -315,10 +315,15 @@ void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 	// ** for example only -- convert to nano?, use ewkino varibles for output, find rechit information ** 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	// process event varibles
+
+    processEvent( iEvent );
+    processVtx( vertices_ );
+
     if( DEBUG ) std::cout << "***********************************************************************************************" << std::endl;
     if( DEBUG ) std::cout << "Processing event: " << event << " in run: " << run << " and lumiblock: " << lumi << std::endl;
 
-	// declare local vector for filtered set of collections to process
+	// declare local vector for preprocess of collections
 
 	std::vector<reco::PFJet> 		fjets;
   	std::vector<int> 				fjetsID;
@@ -368,7 +373,7 @@ void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 
     float   minGenE         = 0.0;
 
-	bool 	onlyEB 			= true;
+	bool 	onlyEB 			= false;
 
 	// -----------------------------------------------------------------------------------------------
 	// ---  Collecting objests ( preprocessing object pruning ) ---------------------------------------
@@ -497,8 +502,6 @@ void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 	// call functions to process collections and fill tree varibles to be saved
 	// varibles to be saved to ttree are declared in the header
 
-	processEvent( iEvent );
-	processVtx( vertices_ );
 	processGenPart( fgenparts );
     processRecHits( frechits );
 	processMet( fpfmet, fphotons );
