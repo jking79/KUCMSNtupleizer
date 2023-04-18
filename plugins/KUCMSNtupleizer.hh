@@ -229,7 +229,7 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
 		void processEvent( const edm::Event& iEvent );
 		void processVtx( edm::Handle<std::vector<reco::Vertex>> vertices );
 		void processMet( std::vector<reco::PFMET> fpfmet, std::vector<reco::Photon> fphotons );
-		void processClJet( std::vector<reco::CaloJet> fcalojets );
+		void processClJet( std::vector<reco::CaloJet> fcalojets, std::vector<reco::CaloCluster> fbclusts );
 		void processPhotons( std::vector<reco::Photon> fphotons, std::vector<reco::GenParticle> fgenparts );
 		void processElectrons( std::vector<reco::GsfElectron> felectrons, std::vector<reco::GenParticle> fgenparts );
 		void processGenPart( std::vector<reco::GenParticle>  fgenparts );
@@ -347,10 +347,8 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
       	edm::EDGetTokenT<std::vector<reco::PFJet>> jetsToken_;
       	edm::Handle<std::vector<reco::PFJet>> jets_;
 
-      	uInt 				nJets, nGoodDrJets, nGoodScJets, nGoodBcJets, nUnJets;
 		float 				jetHt;
-        uInt 				nGoodJetEvents;
-      	std::vector<float>  jetE, jetPt, jetPhi, jetEta; 
+      	std::vector<float>  jetE, jetPt, jetPhi, jetEta, jetC, jetCharge; 
         std::vector<float>  jetEtaetaMmt, jetPhiphiMnt, jetEtaphiMnt, jetMaxD, jetConPtDis, jetConEtaPhiSprd, jetArea;
         std::vector<uInt>   jetNCarry, jetNConst;
       	std::vector<float>  jetMuTime, jetTimeError, jetTimeRMS, jetMedTime, jetCMuTime, jetCMedTime;
@@ -379,18 +377,11 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
         std::vector<float>  jetBcSumRHEnr, jetBcEMFr; 
         std::vector<rhIdGroup> jetBcRhIds;
 
-        std::vector<float>  jetImpactAngle;
-        std::vector<float>  jetSc3dEx, jetSc3dEy, jetSc3dEz, jetSc3dEv, jetSc3dEslope, jetSc3dEchisp;
-
-        std::vector<float>  jetSc2dEx, jetSc2dEy, jetSc2dEv, jetSc2dEslope, jetSc2dEchisp;
-        std::vector<float>  jetSc2dEslope2, jetSc2dEchisp2, jetSc2dErangle, jetSc2dEnxsum;
-
          // calojets
         const edm::InputTag caloJetsTag;
         edm::EDGetTokenT<std::vector<reco::CaloJet>> caloJetsToken_;
         edm::Handle<std::vector<reco::CaloJet>> caloJets_;
 
-        uInt                nCaloJets;
 		std::vector<uInt>   cljBcCnt;
         std::vector<float>  cljPt, cljEnergy, cljPhi, cljEta, cljPx, cljPy, cljPz, cljEMFrac;
         std::vector<float>  cljSeedTOFTime, cljCMeanTime, cljCDrMeanTime;
@@ -419,7 +410,6 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
       	edm::Handle<std::vector<reco::GsfElectron> > electrons_;
       	std::vector<reco::GsfElectron> electrons;
      
-        uInt                nElectrons;
         std::vector<int> 	eleCharge;
         std::vector<float>  elePt, eleEnergy, elePhi, eleEta, elePx, elePy, elePz;
         std::vector<float>  eleSeedTOFTime, eleCMeanTime;
@@ -450,7 +440,6 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
         edm::EDGetTokenT<bool> ecalBadCalibFlagToken;
         edm::Handle<bool> ecalBadCalibFlagH;
 
-      	int nRecHits;
       	std::vector<float> 	rhPosX, rhPosY, rhPosZ, rhPosEta, rhPosPhi;
       	std::vector<uInt> 	rhID;
 		std::vector<int>    rhXtalI1, rhXtalI2, rhSubdet;
@@ -471,7 +460,6 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
 
         std::vector<std::vector<uInt>> phoRhIds;
 
-        uInt                nPhotons;
 		std::vector<float>  phoPt, phoEnergy, phoPhi, phoEta, phoPx, phoPy, phoPz;
         std::vector<bool>   phoIsOotPho, phoExcluded;
 
@@ -480,8 +468,8 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
         std::vector<bool>	phoIsPFPhoton, phoIsStdPhoton, phoHasConTracks, phoIsPixelSeed, phoIsPhoton, phoIsEB, phoIsEE;
         std::vector<bool>   phoIsEBGap, phoIsEBEtaGap, phoIsEBPhiGap, phoIsEEGap, phoIsEERingGap, phoIsEEDeeGap, phoIsEBEEGap;
 
-        std::vector<float>	phoHadOverEM, phoHadD1OverEM, phoHadD2OverEM, phoHadOverEMVaid, phohadTowOverEM, phohadTowD10OverEM;
-        std::vector<float>  phohadTowD20OverEM, phohadTowOverEMValid, phoE1x5, phoE2x5, phoE3x3, phoE5x5, phoMaxEnergyXtal; 
+        std::vector<float>	phoHadOverEM, phoHadOverEMVaid, phohadTowOverEM;
+        std::vector<float>  phohadTowOverEMValid, phoE1x5, phoE2x5, phoE3x3, phoE5x5, phoMaxEnergyXtal; 
         std::vector<float>  phoSigmaEtaEta, phoSigmaIEtaIEta;
         std::vector<float>  phoR1x5, phoR2x5, phoR9, phoFull5x5_e1x5, phoFull5x5_e2x5, phoFull5x5_e3x3, phoFull5x5_e5x5; 
         std::vector<float>  phoFull5x5_maxEnergyXtal;
@@ -490,8 +478,8 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
         std::vector<bool>   phoIsSeedSat, phoMipIsHalo;
         std::vector<float>  phoMipChi2, phoMipTotEnergy, phoMipSlope, phoMipInter;
 
-        std::vector<float>  phoEcalRHSumEtConeDR04, phoHcalTwrSumEtConeDR04, phoHcalDepth1TowerSumEtConeDR04, phoCalDepth2TowerSumEtConeDR04;
-        std::vector<float>  phoHcalTowerSumEtBcConeDR04, phoHcalDepth1TowerSumEtBcConeDR04, phoHcalDepth2TowerSumEtBcConeDR04;
+        std::vector<float>  phoEcalRHSumEtConeDR04, phoHcalTwrSumEtConeDR04;
+        std::vector<float>  phoHcalTowerSumEtBcConeDR04;
         std::vector<float>  phoTrkSumPtSolidConeDR04, phoTrkSumPtHollowConeDR04;
         std::vector<int>    phoNTrkSolidConeDR04, phoNTrkHollowConeDR04;
 
@@ -534,32 +522,38 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
         std::vector<int> genPdgId, genLLP;
 
       	// geometry CaloSubdetectorGeometry
+        edm::ESGetToken<CaloGeometry, CaloGeometryRecord> caloGeometryToken_;
       	edm::ESHandle<CaloGeometry> caloGeo_;
       	const CaloSubdetectorGeometry * barrelGeometry;
       	const CaloSubdetectorGeometry * endcapGeometry;  
 		const CaloGeometry *ecalGeometry;
 
         // CaloTopology
+        const edm::ESGetToken<CaloTopology, CaloTopologyRecord> caloTopologyToken_;
         edm::ESHandle<CaloTopology> caloTopo_;
         const CaloSubdetectorTopology * barrelTopology;
         const CaloSubdetectorTopology * endcapTopology;
 		const CaloTopology * ecalTopology; 
 
         // lasers
-        edm::ESHandle<EcalLaserDbService> laserH;
+        edm::ESGetToken<EcalLaserDbService, EcalLaserDbRecord> ecalLaserDbServiceToken_;
+        edm::ESHandle<EcalLaserDbService> laser_;
         edm::Timestamp evTime;
 
         // inter calibration
-        edm::ESHandle<EcalIntercalibConstants> interCalibH;
+        edm::ESGetToken<EcalIntercalibConstants, EcalIntercalibConstantsRcd> ecalIntercalibConstantsToken_;
+        edm::ESHandle<EcalIntercalibConstants> interCalib_;
         const EcalIntercalibConstantMap * interCalibMap;
 
         // ADCToGeV
-        edm::ESHandle<EcalADCToGeVConstant> adcToGeVH;
+        edm::ESGetToken<EcalADCToGeVConstant, EcalADCToGeVConstantRcd> ecalADCToGeVConstantToken_;
+        edm::ESHandle<EcalADCToGeVConstant> adcToGeV_;
         float adcToGeVEB;
         float adcToGeVEE;
 
         // pedestals
-        edm::ESHandle<EcalPedestals> pedestalsH;
+        edm::ESGetToken<EcalPedestals, EcalPedestalsRcd> EcalPedestalsToken_;
+        edm::ESHandle<EcalPedestals> pedestals_;
 
 	    // pf cand refs
 		const edm::InputTag reco2pfTag;	
@@ -572,6 +566,11 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
 
 		// jet functions
         int getPFJetID(const reco::PFJet & jet);
+
+		// sc functions
+		float getSuperClusterSeedTime( reco::SuperClusterRef supercluster );
+		float getPhotonSeedTime( pat::Photon photon );
+		float getPhotonSeedTime( reco::Photon photon );
 
 		// rechit group functions
         rhGroup getRHGroup( float eta, float phi, float drmin, float minenr );
@@ -623,7 +622,7 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
 		int llpGenChaseP( const reco::GenParticle kid, int depth );
 		void kidChase( std::vector<reco::CandidatePtr> kids, float vx, float vy, float vz );
         vector<float> kidTOFChain( std::vector<reco::CandidatePtr> kids, float cx, float cy, float cz  );		
-        vector<float>  getGenPartMatch( reco::SuperClusterCollection scptr, std::vector<reco::GenParticle>  fgenparts );
+        vector<float>  getGenPartMatch( const reco::SuperCluster* scptr, std::vector<reco::GenParticle>  fgenparts );
     
 };//<<>>class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
     

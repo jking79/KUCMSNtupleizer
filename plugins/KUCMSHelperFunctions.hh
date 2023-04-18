@@ -133,15 +133,6 @@ const float getAngle ( const float x, const float y){
 
 }//<<>> const float getAngle (CFlt x, CFlt y) with atan2
 
-const float getAngle ( const float x, const float y){
-
-    if( x == 0 && y == 0) return 6.39;
-    auto a = std::atan2(y,x);
-    if( a < 0 ) a = 2*PI+a;
-    return a;
-
-}//<<>> const float getAngle (CFlt x, CFlt y) with atan2
-
 const float getATan2 ( const float x, const float y){
 
     if( x == 0 && y == 0) return 6.39;
