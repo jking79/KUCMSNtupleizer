@@ -22,7 +22,7 @@
 
 #include "KUCMSNtupleizer.hh"
 #include "KUCMSHelperFunctions.hh"
-#include "KUCMSRootHelperFunctions.hh"
+//#include "KUCMSRootHelperFunctions.hh"
 
 using namespace std;
 
@@ -757,14 +757,10 @@ void KUCMSNtupilizer::setBranchesJets(){
     //    std::vector<float>  jetMuTime, jetTimeError, jetTimeRMS, jetMedTime, jetCMuTime, jetCMedTime;
     //    std::vector<float>  jetSCMuTime, jetSCMedTime, jetCSCMuTime, jetCSCMedTime, jetCBCMuTime, jetCBCMedTime;
 
-    outTree->Branch("jetDrLeadEta", &jetDrLeadEta);
-    outTree->Branch("jetDrLeadPhi", &jetDrLeadPhi);
-    outTree->Branch("jetDrLeadEnr", &jetDrLeadEnr);
-
     outTree->Branch("sJetDrRHEnergy", &sJetDrRHEnergy);
     outTree->Branch("jetDrEMF", &jetDrEMF);
     outTree->Branch("jetDrRhCnt", &jetDrRhCnt);
-    //outTree->Branch("jetDrRhIds", &jetDrRhIds);
+    outTree->Branch("jetDrRhIds", &jetDrRhIds);
 
     //    std::vector<float>  jetGenImpactAngle, jetGenTime, jetGenPt, jetGenEta, jetGenEnergy, jetGenEMFrac, jetGenDrMatch;
     //    std::vector<float>  jetGenTimeVar, jetGenTimeLLP, jetGenLLPPurity, jetGenNextBX, jetGenNKids, jetGenTOF;
@@ -815,14 +811,14 @@ void KUCMSNtupilizer::processJets( std::vector<reco::PFJet> fjets, std::vector<i
     jetNHM.clear();
     jetCHM.clear();
 
-    jetMuTime.clear();
-    jetTimeError.clear();
-    jetTimeRMS.clear();
-    jetMedTime.clear();
-    jetCMuTime.clear();
-    jetCMedTime.clear();
+    //jetMuTime.clear();
+    //jetTimeError.clear();
+    //jetTimeRMS.clear();
+    //jetMedTime.clear();
+    //jetCMuTime.clear();
+    //jetCMedTime.clear();
 
-    //jetDrRhIds.clear();
+    jetDrRhIds.clear();
 
     jetPHM.clear();
     jetELM.clear();
@@ -834,19 +830,15 @@ void KUCMSNtupilizer::processJets( std::vector<reco::PFJet> fjets, std::vector<i
     jetMUE.clear();
     //jetCharge.clear();
 
-    njetRecHits.clear();
-    jetRecHitOfJet.clear();
-    jetRecHitId.clear();
+    //njetRecHits.clear();
+    //jetRecHitOfJet.clear();
+    //jetRecHitId.clear();
 
     jetSumEPFrac.clear();
     jetEPEnergy.clear();
     jetEMEnergy.clear();
     jetEMEnrFrac.clear();
     jetEPEnrFrac.clear();
-
-    jetDrLeadEta.clear();
-    jetDrLeadPhi.clear();
-    jetDrLeadEnr.clear();
 
     sJetDrRHEnergy.clear();
     jetDrEMF.clear();
@@ -929,8 +921,8 @@ void KUCMSNtupilizer::processJets( std::vector<reco::PFJet> fjets, std::vector<i
         // --------------------------------------------------------------------
 
         if( DEBUG ) std::cout << "Getting jet dR rechit group" << std::endl;
-		auto deltaRmin = 0.4;
-		auto minRhE = 0.5;
+		auto deltaRmin = 0.8;
+		auto minRhE = 0.2;
         auto jetDrRhGroup = getRHGroup( jet.eta(), jet.phi(), deltaRmin, minRhE );
         auto jetDrRhIdsGroup = getRhGrpIDs( jetDrRhGroup );
         jetDrRhIds.push_back( jetDrRhIdsGroup );
@@ -942,44 +934,9 @@ void KUCMSNtupilizer::processJets( std::vector<reco::PFJet> fjets, std::vector<i
         jetDrEMF.push_back(dremf);
         jetDrRhCnt.push_back(rhCount);
 
-        if( DEBUG ) std::cout << " - get jetDRtofTimes " << std::endl;
-        auto tofTimes = getLeadTofRhTime( jetDrRhGroup, vtxX, vtxY, vtxZ );
-        auto leadJetRh = getLeadRh( jetDrRhGroup );
-
-        if( DEBUG ) std::cout << "Starting RecHit Loop" << std::endl;
-        for ( uInt irhg = 0; irhg < rhCount; irhg++){
-
-            jetRecHitOfJet.push_back(ijet);
-            auto detid = (jetDrRhGroup[irhg]).detid();
-            jetRecHitId.push_back(detid.rawId());
-
-        }//<<>>for ( uInt irhg = 0; irhg < rhCount; irhg++)
-
-        const auto leadJetRhId = leadJetRh.detid();
-        const auto leadJetRhIdPos = barrelGeometry->getGeometry(leadJetRhId)->getPosition();
-        auto sc_eta = leadJetRhIdPos.eta();
-        auto sc_phi = leadJetRhIdPos.phi();
-        auto sc_enr = leadJetRh.energy();
-        //  make jettime varible
-        auto jetTimeStats = getTimeDistStats( tofTimes, jetDrRhGroup );
-        auto jmutime = jetTimeStats[0];
-        auto jterr = jetTimeStats[1];
-        auto jtrms = jetTimeStats[4];
-        auto jmedtime = jetTimeStats[2];
-        //auto mederr = jetTimeStats[3];
-        auto jcmutime = jetTimeStats[6];
-        auto jcmedtime = jetTimeStats[10];
-
-        jetMuTime.push_back(jmutime);
-        jetTimeError.push_back(jterr);
-        jetTimeRMS.push_back(jtrms);
-        jetMedTime.push_back(jmedtime);
-        jetCMuTime.push_back(jcmutime);
-        jetCMedTime.push_back(jcmedtime);
-
-        jetDrLeadEta.push_back(sc_eta);
-        jetDrLeadPhi.push_back(sc_phi);
-        jetDrLeadEnr.push_back(sc_enr);
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// !!!!!!!!  create list of associated photons and electrons with jet via daughter particles of jet !!!!!!!!!!
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         // GenJet Info for MC  -------------------------------------------------------------------
         // ---------------------------------------------------------------------------------------
@@ -1006,7 +963,7 @@ void KUCMSNtupilizer::processJets( std::vector<reco::PFJet> fjets, std::vector<i
             float goodDr(0.1);
             int matchedIdx(-1);
             int index(0);
-            for(const auto& genJet : fgenjets ){
+            for(const auto &genJet : fgenjets ){
 
                 auto gjeta = genJet.eta();
                 auto gjphi = genJet.phi();
@@ -1028,12 +985,10 @@ void KUCMSNtupilizer::processJets( std::vector<reco::PFJet> fjets, std::vector<i
                 if( DEBUG ) std::cout << " ---------------------------------------------------- " << std::endl;
                 if( DEBUG ) std::cout << " - genJet srcs : " << nSources << " PV(" << vtxX << "," << vtxY << "," << vtxZ << ")" << std::endl;
                 auto kids = genJet.daughterPtrVector();
-                auto leadJetRh = getLeadRh( jetDrRhGroup );
-                auto leadJetRhId = leadJetRh.detid();
-                auto leadJetRhIdPos = barrelGeometry->getGeometry(leadJetRhId)->getPosition();
-                auto cx = leadJetRhIdPos.x();
-                auto cy = leadJetRhIdPos.y();
-                auto cz = leadJetRhIdPos.z();
+				auto theta = 2*std::atan(std::exp(-1*genJet.eta()));
+                auto cx = 120*std::sin(genJet.phi());
+                auto cy = 120*std::cos(genJet.phi());
+                auto cz = 120/std::tan(theta);
                 auto tofcor = hypo( cx, cy, cz )/SOL;
                 //if( DEBUG ) kidChase( kids, vtxX, vtxY, vtxZ );
                 auto genKidInfo = kidTOFChain( kids, cx, cy, cz );
@@ -1091,9 +1046,9 @@ void KUCMSNtupilizer::setBranchesClusterJets(){
     //    std::vector<float>  cljSeedTOFTimes, cljCMeanTimes;
     //    std::vector<double> cljPt, cljEnergy, cljPhi, cljEta, cljPx, cljPy, cljPz;
     //outTree->Branch("cljRhIds", &cljRhIds);
-    outTree->Branch("cljSeedTOFTime", &cljSeedTOFTime);
-    outTree->Branch("cljCMeanTime", &cljCMeanTime);
-    outTree->Branch("cljCDrMeanTime", &cljCDrMeanTime);
+    //outTree->Branch("cljSeedTOFTime", &cljSeedTOFTime);
+    //outTree->Branch("cljCMeanTime", &cljCMeanTime);
+    //outTree->Branch("cljCDrMeanTime", &cljCDrMeanTime);
     outTree->Branch("cljPt", &cljPt);
     outTree->Branch("cljEnergy", &cljEnergy);
     outTree->Branch("cljPhi", &cljPhi);
@@ -1107,9 +1062,9 @@ void KUCMSNtupilizer::setBranchesClusterJets(){
 void KUCMSNtupilizer::processClJet( std::vector<reco::CaloJet> fcalojets, std::vector<reco::CaloCluster> fbclusts ){
     
 	if( DEBUG ) std::cout << "Processing CaloJets" << std::endl;
-    //cljSeedTOFTime.clear();
+    cljSeedTOFTime.clear();
     cljBcCnt.clear();
-    cljCMeanTime.clear();
+    //cljCMeanTime.clear();
     cljBc3dEx.clear();
     cljBc3dEy.clear();
     cljBc3dEz.clear();
@@ -1121,7 +1076,7 @@ void KUCMSNtupilizer::processClJet( std::vector<reco::CaloJet> fcalojets, std::v
     cljBc2dEv.clear();
     cljBc2dEslope.clear();
     cljBc2dEchisp.clear();
-    cljCDrMeanTime.clear();
+    //cljCDrMeanTime.clear();
     cljPt.clear();
     cljEnergy.clear();
     cljPhi.clear();
@@ -1161,25 +1116,25 @@ void KUCMSNtupilizer::processClJet( std::vector<reco::CaloJet> fcalojets, std::v
         auto cljRhIdsGroup = getRhGrpIDs( cljRhGroup );
         cljRhIds.push_back(cljRhIdsGroup);
         if( cljRhGroup.size() < 3 ){ 
-            cljCMeanTime.push_back( -29.75 ); 
+            //cljCMeanTime.push_back( -29.75 ); 
             cljSeedTOFTime.push_back( -29.75 );
         } else { //<<>>if( cljRhGroup.size() < minRHcnt ) ***** IF cljRhGroup.size() > minRHcnt BELOW THIS POINT IN LOOP *****
             auto tofTimes = getLeadTofRhTime( cljRhGroup, vtxX, vtxY, vtxZ );
-            auto timeStats = getTimeDistStats( tofTimes, cljRhGroup );
+            //auto timeStats = getTimeDistStats( tofTimes, cljRhGroup );
             auto leadJetRh = getLeadRh( cljRhGroup );
             auto seedTOFTime = leadJetRh.time();
             cljSeedTOFTime.push_back(seedTOFTime);
-            cljCMeanTime.push_back(timeStats[6]);
+            //cljCMeanTime.push_back(timeStats[6]);
             cljBcCnt.push_back(nCljBcs);
         }//<<>>if( cljRhGroup.size() < minRHcnt )
 
         const auto cljDrGroup = getRHGroup( cjeta, cjphi, 0.4, 2.0 );
-        if( cljDrGroup.size() < 13 ){ cljCDrMeanTime.push_back( -29.75 ); }
-        else { // <<>> if( cljRhGroup.size() < 3 )
-            auto tofTimes = getLeadTofRhTime( cljRhGroup, vtxX, vtxY, vtxZ );
-            auto timeStats = getTimeDistStats( tofTimes, cljRhGroup );
-            cljCDrMeanTime.push_back(timeStats[6]);
-        }//<<>>if( cljRhGroup.size() < 3 )
+        //if( cljDrGroup.size() < 13 ){ cljCDrMeanTime.push_back( -29.75 ); }
+        //else { // <<>> if( cljRhGroup.size() < 3 )
+        //    auto tofTimes = getLeadTofRhTime( cljRhGroup, vtxX, vtxY, vtxZ );
+        //    auto timeStats = getTimeDistStats( tofTimes, cljRhGroup );
+        //    cljCDrMeanTime.push_back(timeStats[6]);
+        //}//<<>>if( cljRhGroup.size() < 3 )
 
     }//<<>>for (const auto caloJet : fcalojets )
 
@@ -1196,7 +1151,7 @@ void KUCMSNtupilizer::setBranchesPhotons(){
     outTree->Branch("phoIsOotPho", &phoIsOotPho);
     outTree->Branch("phoExcluded", &phoExcluded);
     outTree->Branch("phoSeedTOFTime", &phoSeedTOFTime);
-    outTree->Branch("phoCMeanTime", &phoCMeanTime);
+    //outTree->Branch("phoCMeanTime", &phoCMeanTime);
     outTree->Branch("phoPt", &phoPt);
     outTree->Branch("phoEnergy", &phoEnergy);
     outTree->Branch("phoPhi", &phoPhi);
@@ -1291,7 +1246,7 @@ void KUCMSNtupilizer::processPhotons( std::vector<reco::Photon> fphotons, std::v
     if( DEBUG ) std::cout << "Processing Photons" << std::endl;
 
     phoSeedTOFTime.clear();
-    phoCMeanTime.clear();
+    //phoCMeanTime.clear();
     phoPt.clear();
     phoEnergy.clear();
     phoPhi.clear();
@@ -1444,26 +1399,30 @@ void KUCMSNtupilizer::processPhotons( std::vector<reco::Photon> fphotons, std::v
         const auto &seedDetId = scptr->seed()->seed(); // seed detid
         const auto isEB = (seedDetId.subdetId() == EcalBarrel); // which subdet
         const auto recHits = ( isEB ? recHitsEB_ : recHitsEE_ );
+/*
+        if( DEBUG ) std::cout << " --- Finding Moments & Covariences : " << scptr << std::endl;
         const auto & ph2ndMoments = noZS::EcalClusterTools::cluster2ndMoments( *scptr, *recHits);
         const auto  lCov = EcalClusterTools::covariances( *(phosc->seed()), &(*recHits), ecalTopology, ecalGeometry);
+        if( DEBUG ) std::cout << " --- Storing Moments & Covariences : " << scptr << std::endl;
         phoSMaj.push_back(ph2ndMoments.sMaj);
         phoSMin.push_back(ph2ndMoments.sMin);
         phoSAlp.push_back(ph2ndMoments.alpha);
         phoCovEtaEta.push_back(lCov[0]);
         phoCovEtaPhi.push_back(lCov[1]);
         phoCovPhiPhi.push_back(lCov[2]);
-
+*/
+		if( DEBUG ) std::cout << " --- Gathering SC info : " << scptr << std::endl;
         scGroup phoSCGroup{*scptr};
         auto phoRhGroup = getRHGroup( phoSCGroup, 0.5 );
         auto phoRhIdsGroup = getRhGrpIDs( phoRhGroup );
         phoRhIds.push_back(phoRhIdsGroup);
         if( DEBUG ) std::cout << " -- gedPhotons : " << scptr << " #: " << phoRhGroup.size() << std::endl;
         auto tofTimes = getLeadTofRhTime( phoRhGroup, vtxX, vtxY, vtxZ );
-        auto timeStats = getTimeDistStats( tofTimes, phoRhGroup );
+        //auto timeStats = getTimeDistStats( tofTimes, phoRhGroup );
         auto seedTOFTime = getSeedTofTime( *scptr, vtxX, vtxY, vtxZ );
         //auto phoLeadTOFTime =  getLeadTofTime( phoRhGroup, vtxX, vtxY, vtxZ );
         phoSeedTOFTime.push_back(seedTOFTime);
-        phoCMeanTime.push_back(timeStats[6]);
+        //phoCMeanTime.push_back(timeStats[6]);
 
         // GenParticle Info for photon  -------------------------------------------------------------------
         if( hasGenInfo ){
@@ -1492,7 +1451,7 @@ void KUCMSNtupilizer::setBranchesElectrons(){
     //    std::vector<double> elePt, eleEnergy, elePhi, eleEta, elePx, elePy, elePz;
     //outTree->Branch("eleRhIds", &eleRhIds); 
     outTree->Branch("eleSeedTOFTime", &eleSeedTOFTime);
-    outTree->Branch("eleCMeanTime", &eleCMeanTime);
+    //outTree->Branch("eleCMeanTime", &eleCMeanTime);
     outTree->Branch("elePt", &elePt);
     outTree->Branch("eleEnergy", &eleEnergy);
     outTree->Branch("elePhi", &elePhi);
@@ -1508,7 +1467,7 @@ void KUCMSNtupilizer::setBranchesElectrons(){
 void KUCMSNtupilizer::processElectrons( std::vector<reco::GsfElectron> felectrons, std::vector<reco::GenParticle> fgenparts ){
 
     eleSeedTOFTime.clear();
-    eleCMeanTime.clear();
+    //eleCMeanTime.clear();
     elePt.clear();
     eleEnergy.clear();
     elePhi.clear();
@@ -1537,15 +1496,15 @@ void KUCMSNtupilizer::processElectrons( std::vector<reco::GsfElectron> felectron
         const auto scptr = elesc.get();
         scGroup eleSCGroup{*scptr};
         auto eleRhGroup = getRHGroup( eleSCGroup, 0.5 );
-        //auto eleRhIdsGroup = getRhGrpIDs( eleRhGroup );
-        //eleRhIds.push_back(eleRhIdsGroup);
+        auto eleRhIdsGroup = getRhGrpIDs( eleRhGroup );
+        eleRhIds.push_back(eleRhIdsGroup);
         if( DEBUG ) std::cout << " -- Electrons : " << scptr << " #: " << eleRhGroup.size() << std::endl;
         auto tofTimes = getLeadTofRhTime( eleRhGroup, vtxX, vtxY, vtxZ );
-        auto timeStats = getTimeDistStats( tofTimes, eleRhGroup );
+        //auto timeStats = getTimeDistStats( tofTimes, eleRhGroup );
         auto seedTOFTime = getSeedTofTime( *scptr, vtxX, vtxY, vtxZ );
 
         eleSeedTOFTime.push_back(seedTOFTime);
-        eleCMeanTime.push_back(timeStats[6]);
+        //eleCMeanTime.push_back(timeStats[6]);
 
         // GenParticle Info for electron  -------------------------------------------------------------------
         if( hasGenInfo ){
@@ -1663,7 +1622,7 @@ void KUCMSNtupilizer::processRecHits( std::vector<EcalRecHit> frechits ){
     rhSubdet.clear();
     rhEnergy.clear();
     rhTime.clear();
-    rhTimeErr.clear();
+    //rhTimeErr.clear();
     rhTOF.clear();
     rhisOOT.clear();
     rhisGS6.clear();
@@ -1710,7 +1669,7 @@ void KUCMSNtupilizer::processRecHits( std::vector<EcalRecHit> frechits ){
         rhPosEta.push_back(recHitPos.eta());
         rhPosPhi.push_back(recHitPos.phi());
         rhTime.push_back(recHit.time()-d_rh); // Note : Margret adds d_rh to the time in her code & subtracts d_pv ( or TOF )
-        rhTimeErr.push_back(recHit.timeError());
+        //rhTimeErr.push_back(recHit.timeError());
         rhisOOT.push_back(recHit.checkFlag(EcalRecHit::kOutOfTime));
         rhEnergy.push_back(recHit.energy());
         rhSwCross.push_back(swisscross);
@@ -2078,8 +2037,9 @@ float KUCMSNtupilizer::getLeadTofTime( rhGroup recHits, double vtxX, double vtxY
     const auto tof = (d_rh-d_pv)/SOL;
     return lrh.time()-tof;
 
-}//>>>>float  KUCMSNtupilizer::getSeedTofTime( rhGroup recHits, double vtxX, double vtxY, double vtxZ )
+}//>>>>float  KUCMSNtupilizer::getLeadTofTime( rhGroup recHits, double vtxX, double vtxY, double vtxZ )
 
+/*  Not need at this level
 vector<float> KUCMSNtupilizer::getTimeDistStats( vector<float> times, rhGroup rechits ){
 
 	//if( rechits.size() == 0 ){ vector<float> result{-99.0}; return result; }
@@ -2098,6 +2058,7 @@ vector<float> KUCMSNtupilizer::getTimeDistStats( vector<float> times, rhGroup re
     return getDistStats( times, wts );
 
 }//>>>>vector<float> KUCMSNtupilizer::getTimeDistStats( vector<float> times, rhGroup rechits ){
+*/
 
 void KUCMSNtupilizer::mrgRhGrp( rhGroup & x, rhGroup & y ){
 
