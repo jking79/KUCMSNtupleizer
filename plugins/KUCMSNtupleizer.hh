@@ -217,28 +217,48 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
       	virtual void endJob() override;
 
         void setBranchesEvent();
-        void setBranchesVtx();
-        void setBranchesMet();
-        void setBranchesJets();
-        void setBranchesClusterJets();
-        void setBranchesPhotons();
-        void setBranchesElectrons();
-        void setBranchesGenParts();
-        void setBranchesRecHits();
-
 		void processEvent( const edm::Event& iEvent );
-		void processVtx( edm::Handle<std::vector<reco::Vertex>> vertices );
-		void processMet( std::vector<reco::PFMET> fpfmet, std::vector<reco::Photon> fphotons );
-		void processClJet( std::vector<reco::CaloJet> fcalojets, std::vector<reco::CaloCluster> fbclusts );
-		void processPhotons( std::vector<reco::Photon> fphotons, std::vector<reco::GenParticle> fgenparts );
-		void processElectrons( std::vector<reco::GsfElectron> felectrons, std::vector<reco::GenParticle> fgenparts );
-		void processGenPart( std::vector<reco::GenParticle>  fgenparts );
-		void processRecHits( std::vector<EcalRecHit> frechits );
-		void processJets( std::vector<reco::PFJet> fjets, std::vector<int> fjetsID, std::vector<reco::GenJet> fgenjets );
-	
+        void setBranchesVtx();
+		void processVtx();
+
+        void setBranchesGenParts();
+        void processGenPart();
+
+        void setBranchesMet();
+		void processMet();
+        void setBranchesPhotons();
+		void processPhotons();
+        void setBranchesElectrons();
+		void processElectrons();
+        void setBranchesJets();
+		void processJets();
+        void setBranchesClusterJets();
+        void processClJet();	
+
+        void setBranchesRecHits();
+        void processRecHits( float minRHEf );
+
 		////////////////////////////////////////////////////
       	// ----------member data ---------------------------
 		////////////////////////////////////////////////////
+
+		// filtered collection vectors
+    	std::vector<reco::PFJet>        fjets;
+    	std::vector<int>                fjetsID;
+    	std::vector<reco::CaloCluster>  fbclusts;
+    	std::vector<EcalRecHit>         frechits;
+    	std::vector<bool>               frhused;
+    	std::vector<reco::Photon>       fphotons;
+    	//std::vector<reco::Photon>     footphotons;
+        std::vector<int>                fphotonID;
+    	std::vector<reco::GsfElectron>  felectrons;
+        std::vector<int>                felectronID;
+    	std::vector<reco::CaloJet>      fcalojets;
+    	std::vector<reco::Muon>         fmuons;
+    	std::vector<reco::PFMET>        fpfmet;
+    	std::vector<reco::GenParticle>  fgenparts;
+    	std::vector<int>                fgenpartllp;
+    	std::vector<reco::GenJet>       fgenjets;
 
 		// oputput tree
       	TTree *outTree;
@@ -583,21 +603,13 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
         EcalRecHit getLeadRh( rhGroup recHits );
         vector<float> getRhTofTime( rhGroup recHits, double vtxX, double vtxY, double vtxZ );
         vector<float> getLeadTofRhTime( rhGroup recHits, double vtxX, double vtxY, double vtxZ );
-        vector<float> getTimeDistStats( vector<float> input, rhGroup rechits );
-
-        vector<float> getRhGrpEigen_xyz( vector<float> times, rhGroup rechits );
-        vector<float> getRhGrpEigen_ep( vector<float> times, rhGroup rechits );
-        vector<float> getRhGrpEigen_ieipt( vector<float> times, rhGroup rechits );
-        vector<float> getRhGrpEigen_sph( vector<float> times, rhGroup rechits );
-        vector<float> getRhGrpEigen( vector<float> xs, vector<float> ys, vector<float> zs, vector<float> wts );
-        vector<float> getRhGrpEigen( vector<float> xs, vector<float> ys, vector<float> wts );
-        vector<float> getRhGrpEigen( vector<float> xs, vector<float> wts );
 
         float getRhTOF( EcalRecHit rechit, double vtxX, double vtxY, double vtxZ );
         float getLeadTofTime( rhGroup recHits, double vtxX, double vtxY, double vtxZ );
         float getSeedTofTime( reco::SuperCluster sprclstr, double vtxX, double vtxY, double vtxZ );
-        void  mrgRhGrp( rhGroup & x, rhGroup & y);
-        bool  reduceRhGrps( vector<rhGroup> & x);
+        void  mrgRhGrp( rhGroup & x, rhGroup & y );
+        bool  reduceRhGrps( vector<rhGroup> & x );
+		float setRecHitUsed( rhIdGroup idgroup );
 
 		const auto getRawID(const EcalRecHit recHit){ auto recHitId = recHit.detid(); return recHitId.rawId();}
 		const auto getIsEB(const EcalRecHit recHit){ auto recHitId = recHit.detid(); return (recHitId.subdetId() == EcalBarrel)?1:0;}
@@ -612,6 +624,7 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
                         for( int a=0;a<s;a++){for( int b=a+1;b<s;b++){if(dupRhFnd(x[a],x[b]))c++;}} return c;}
         const auto getRhGrpIDs(const rhGroup rhs ){ rhIdGroup rt; if(rhs.empty()){ rt.push_back(0);} else{ 
 						for(const auto rh : rhs ){ rt.push_back(getRawID(rh));}} return rt;}
+
 
 		// gen particle functions
 		string bigKidChase( std::vector<reco::CandidatePtr> kids, float vx );
