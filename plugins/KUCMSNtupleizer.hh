@@ -375,7 +375,7 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
       	std::vector<float>  jetSCMuTime, jetSCMedTime, jetCSCMuTime, jetCSCMedTime, jetCBCMuTime, jetCBCMedTime;
       	std::vector<float>  jetPhMuTime, jetOOTPhMuTime, jetEleMuTime;
       	std::vector<int>    jetID, njetKids, jetKidOfJet, njetSubs, njetRecHits, jetRecHitOfJet;
-      	std::vector<int>    jetKidPdgID, jetKidCharge, jetKid3Charge, jetPHM, jetELM;
+      	std::vector<int>    jetKidPdgID, jetKidCharge, jetKid3Charge, jetPHM, jetELM, jetParts;
       	std::vector<uInt>   jetRecHitId;
       	std::vector<bool>   jetKidLLP;
       	std::vector<float>  jetKidMass, jetKidVx, jetKidVy, jetKidVz;
@@ -426,10 +426,17 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
 
       	// electrons
       	const edm::InputTag electronsTag;
-      	edm::EDGetTokenT<std::vector<reco::GsfElectron> > electronsToken_;
-      	edm::Handle<std::vector<reco::GsfElectron> > electrons_;
-      	std::vector<reco::GsfElectron> electrons;
-     
+      	//edm::EDGetTokenT<std::vector<reco::GsfElectron> > electronsToken_;
+		edm::EDGetTokenT<edm::View<reco::GsfElectron>> electronsToken_;
+        //edm::Handle<std::vector<reco::GsfElectron> > electrons_;
+        edm::Handle<edm::View<reco::GsfElectron> > electrons_;
+        std::vector<reco::GsfElectron> electrons;
+
+		const edm::InputTag eleMVAIDLooseMapTag;
+		edm::EDGetTokenT<edm::ValueMap<bool>> eleMVAIDLooseMapToken_;
+   		edm::Handle<edm::ValueMap<bool>> eleMVAIDLooseMap_;
+
+		std::vector<bool> 	eleIdBools;
         std::vector<int> 	eleCharge;
         std::vector<float>  elePt, eleEnergy, elePhi, eleEta, elePx, elePy, elePz;
         std::vector<float>  eleSeedTOFTime, eleCMeanTime;
@@ -471,18 +478,20 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
 
       	// gedPhotons
       	const edm::InputTag gedPhotonsTag;
-      	edm::EDGetTokenT<std::vector<reco::Photon> > gedPhotonsToken_;
-      	edm::Handle<std::vector<reco::Photon> > gedPhotons_;
+      	//edm::EDGetTokenT<std::vector<reco::Photon> > gedPhotonsToken_;
+        edm::EDGetTokenT<edm::View<reco::Photon> > gedPhotonsToken_;
+      	//edm::Handle<std::vector<reco::Photon> > gedPhotons_;
+        edm::Handle<edm::View<reco::Photon> > gedPhotons_;
 
         const edm::InputTag phoCBIDLooseMapTag;
         edm::EDGetTokenT<edm::ValueMap<bool>> phoCBIDLooseMapToken_;
         edm::Handle<edm::ValueMap<bool>> phoCBIDLooseMap_;
 
-        std::vector<std::vector<uInt>> phoRhIds;
-
+        std::vector<bool>   phoIdBools;
 		std::vector<float>  phoPt, phoEnergy, phoPhi, phoEta, phoPx, phoPy, phoPz;
         std::vector<bool>   phoIsOotPho, phoExcluded;
 
+        std::vector<rhIdGroup> phoRhIds;
         std::vector<float>  phoSeedTOFTime, phoCMeanTime;
 
         std::vector<bool>	phoIsPFPhoton, phoIsStdPhoton, phoHasConTracks, phoIsPixelSeed, phoIsPhoton, phoIsEB, phoIsEE;
@@ -509,9 +518,11 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
 
       	// ootPhotons
       	const edm::InputTag ootPhotonsTag;
-      	edm::EDGetTokenT<std::vector<reco::Photon> > ootPhotonsToken_;
-      	edm::Handle<std::vector<reco::Photon> > ootPhotons_;
-     
+      	//edm::EDGetTokenT<std::vector<reco::Photon> > ootPhotonsToken_;
+        edm::EDGetTokenT<edm::View<reco::Photon> > ootPhotonsToken_;
+      	//edm::Handle<std::vector<reco::Photon> > ootPhotons_;
+        edm::Handle<edm::View<reco::Photon> > ootPhotons_;
+    
         // genEvtInfo
         const edm::InputTag genEvtInfoTag;
         edm::EDGetTokenT<GenEventInfoProduct> genEvtInfoToken_;
@@ -609,7 +620,7 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
         float getSeedTofTime( reco::SuperCluster sprclstr, double vtxX, double vtxY, double vtxZ );
         void  mrgRhGrp( rhGroup & x, rhGroup & y );
         bool  reduceRhGrps( vector<rhGroup> & x );
-		float setRecHitUsed( rhIdGroup idgroup );
+		void  setRecHitUsed( rhIdGroup idgroup );
 
 		const auto getRawID(const EcalRecHit recHit){ auto recHitId = recHit.detid(); return recHitId.rawId();}
 		const auto getIsEB(const EcalRecHit recHit){ auto recHitId = recHit.detid(); return (recHitId.subdetId() == EcalBarrel)?1:0;}
@@ -637,6 +648,7 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
         vector<float> kidTOFChain( std::vector<reco::CandidatePtr> kids, float cx, float cy, float cz  );		
         vector<float>  getGenPartMatch( const reco::SuperCluster* scptr, std::vector<reco::GenParticle>  fgenparts );
     
+
 };//<<>>class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
     
 #endif

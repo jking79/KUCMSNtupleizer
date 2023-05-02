@@ -9,14 +9,28 @@
 //--------------------   hh file -------------------------------------------------------------
 //---------------------------------------------------------------------------------------------
 
-#include "./KUCMSHelperFunctions.hh"
+#include "KUCMSHelperFunctions.hh"
 
-// ROOT
+// ROOT includes
+#include "TFile.h"
+#include "TTree.h"
+#include "TH1F.h"
+#include "TH1D.h"
+#include "TH2F.h"
+#include "TGraphAsymmErrors.h"
+#include "TMath.h"
+#include "TCanvas.h"
+#include "TROOT.h"
+#include "TStyle.h"
+#include "TString.h"
+#include "TColor.h"
+#include "TPaveText.h"
+#include "TText.h"
+#include "TChain.h"
 #include "TH1.h"
 #include "TH2.h"
+#include "TH3.h"
 #include "TFormula.h"
-#include "TF1.h"
-#include "TTree.h"
 #include "Math/PositionVector3D.h"
 #include "TMatrixD.h"
 #include "TVectorD.h"

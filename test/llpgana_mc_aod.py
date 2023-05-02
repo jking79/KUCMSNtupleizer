@@ -31,7 +31,7 @@ options.register('globalTag','94X_mc2017_realistic_v14',VarParsing.multiplicity.
 ## processName
 options.register('processName','TREE',VarParsing.multiplicity.singleton,VarParsing.varType.string,'process name to be considered');
 
-outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_v0.root' # ntuplizer test
+outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_v1.root' # ntuplizer test
 
 options.register('outputFileName',outfilename,VarParsing.multiplicity.singleton,VarParsing.varType.string,'output file name created by cmsRun');
 
@@ -232,6 +232,7 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
    ## electrons
    #electrons = cms.InputTag("slimmedElectrons"),
    electrons = cms.InputTag("gedGsfElectrons"),
+   eleMVAIDLooseMap = cms.InputTag("PhotonIDProdGED", "PhotonCutBasedIDLooseEM"),
    ## muons
    #muons = cms.InputTag("slimmedMuons"),
    muons = cms.InputTag("muons"),
