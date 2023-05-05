@@ -39,10 +39,11 @@
 
 #define CFlt  const float
 #define CDbl  const double
-#define CVFlt const vector<float>
-#define CVDbl const vector<double>
+#define CVFlt const std::vector<float>
+#define CVDbl const std::vector<double>
 
 typedef unsigned int uInt;
+typedef unsigned int UInt_t;
 typedef int Int_t;
 
 enum ECAL {EB, EM, EP, NONE};
@@ -63,7 +64,7 @@ void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap ){
 
     UInt_t cmsswId, dbID;
     Int_t hashedId, iphi, ieta, absieta, FED, SM, TT25, iTT, strip5, Xtal, phiSM, etaSM;
-    TString pos;
+    std::string pos;
 
     while (infile >> cmsswId >> dbID >> hashedId >> iphi >> ieta >> absieta >> pos >> FED >> SM >> TT25 >> iTT >> strip5 >> Xtal >> phiSM >> etaSM){
         //std::cout << "DetID Input Line: " << cmsswId << " " << iphi << " "  << ieta << " " << 0 << std::endl;
@@ -81,7 +82,7 @@ void SetupDetIDsEE( std::map<UInt_t,DetIDStruct> &DetIDMap ){
 
     UInt_t cmsswId, dbID;
     Int_t hashedId, side, ix, iy, SC, iSC, Fed, TTCCU, strip, Xtal, quadrant;
-    TString EE;
+    std::string EE;
 
     while (infile >> cmsswId >> dbID >> hashedId >> side >> ix >> iy >> SC >> iSC >> Fed >> EE >> TTCCU >> strip >> Xtal >> quadrant){
         int ec = 1;
@@ -238,7 +239,7 @@ const auto stdev    (CVFlt x, CFlt m, CVFlt wv, CFlt w){
 const auto var		(CVFlt x, CFlt m, CVFlt wv, CFlt w){
     					float sum(0.0); int it(0); for(auto ix : x ){ sum += wv[it]*sq2(ix-m); it++; } return sum/wnum(it,w);}
 const auto var		(CVFlt x, CFlt m, CVFlt wv){
-    					float sum(0.0); int it(0); for(auto ix : x ){ sum += wv[it]*sq2(ix-m); it++; } return sum/wnum(it,vfsum(wv));}
+    					float sum(0.0); int it(0); for(auto ix : x ){ sum += wv[it]*sq2(ix-m); it++; } return sum/wnum(it,accum(wv));}
 
 const auto cvar     (CVFlt x, CFlt mx, CVFlt y, CFlt my, CVFlt wv, CFlt w){
                         float sum(0.0); int it(0);

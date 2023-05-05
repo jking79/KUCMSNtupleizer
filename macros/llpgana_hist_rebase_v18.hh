@@ -283,7 +283,7 @@ Long64_t llpgana_hist_rebase::LoadTree(Long64_t entry)
 }
 */
 
-void llpgana_hist_rebase::Init(TTree *tree){
+void root_rebase::Init(TTree *tree){
 
    // The Init() function is called when the selector needs to initialize
    // a new tree or chain. Typically here the branch addresses and branch

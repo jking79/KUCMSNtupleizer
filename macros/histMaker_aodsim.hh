@@ -8,7 +8,7 @@
 //////////////////////////////////////////////////////////////////////
 
 
-#include "KUCMSSkimmer_aodsim.hh"
+#include "histMaker_class.hh"
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------------------------------------------
@@ -1706,6 +1706,135 @@ void KUCMSSkimmer::initHists(){
 	}//<<>>for(int it=0; it<nEBEEMaps; it++)
 
 }//<<>>void KUCMSSkimmer::initHists()
+
+// ------------------------------------------- main function ------------------------------------------------------------
+int main ( int argc, char *argv[] ){
+
+    //if( argc != 4 ) { std::cout << "Insufficent arguments." << std::endl; }
+    //else {
+                //auto indir = "LLPGamma/llpga_GMSB_AOD_v60/"; //argv[1];
+                auto indir = "LLPGamma/llpga_GJets_AOD_v60/";
+
+                //auto infilename = "llpgana_mc_AODSIM_GMSB_AOD_v60_Full.txt"; //argv[2];
+                auto infilename = "llpgana_mc_AODSIM_GJets_AOD_v60_Full.txt";
+
+				//auto outfilename = "lpgana_mc_test12_tight_max3d4v_sig.root";
+
+                ///auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_v53_V12_3th_notLLP_Tight_Excluded_Hists.root"; //argv[3];
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_v53_V22_10th_Loose_tEB_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_v53_V22_10th_Loose_tEB_noPeak_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_v53_V22_10th_Loose_tEB_isLLP_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_v53_V22_3th_Loose_tEB_notLLP_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_v53_V22_10th_Loose_tEB_ClR9r68_Hists.root";
+            	///auto outfilename = "llpgana_mc_AODSIM_GJets_AOD_v53_V12_3th_notLLP_Tight_Excluded_Hists.root"; //argv[3];
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_v55_V23_5th_Loose_tEB_notCmb_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GJets_AOD_v53_V22_3th_Jets2_Hists.root";
+
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_v57_V24_20th_Loose_tEB_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_v57_V24_20th_Loose_tEB_noPeak_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_v57_V24_20th_Loose_tEB_isOOT_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_v57_V24_20th_Loose_tEB_ClR9r26_Hists.root";
+
+                //auto outfilename = "llpgana_mc_AODSIM_GJets_AOD_v57_V24_50th_Loose_tEB_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GJets_AOD_v57_V24_50th_Loose_tEB_ClR9r26_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GJets_AOD_v57_V24_50th_Loose_tEB_noPeak_Hists.root";
+
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_v58_V24_10th_Loose_tEB_Hists.root";
+				//auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_v58_V24_10th_Loose_tEB_noPeak_Hists.root";
+				//auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_v58_V24_10th_Loose_tEB_isOOT_Hists.root";				
+				//auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_v58_V24_10th_Loose_tEB_ClR9r26_Hists.root";
+
+                //auto outfilename = "llpgana_mc_AODSIM_GJets_AOD_v58_V24_20th_Loose_tEB_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GJets_AOD_v58_V24_20th_Loose_tEB_noPeak_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GJets_AOD_v58_V24_20th_Loose_tEB_ClR9r26_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GJets_AOD_v58_V24_5th_Loose_tEB_isOOT_Hists.root";
+
+				//auto outfilename = "llpgana_mc_AODSIM_GJets_AOD_v58_V24_3DEigan3_20th_Loose_tEB_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_v58_V24_3DEiganSlope_10th_Loose_tEB_Hists.root";
+                
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV29_8th_Loose_tEB_CMB_isNotSig_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV29_8th_Loose_tEB_CMB_isSig_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV29_8th_Loose_tEB_CMB_isSusyNotSig_Hists.root";
+				//auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV29_8th_Loose_tEB_CMB_isNotSusy_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GJets_AOD_aV58_mhV29_24th_Loose_tEB_CMB_Hists.root";
+
+
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV29_Base_10th_Loose_tEB_nRH15_isSig_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV29_Base_10th_Loose_tEB_nRH15_isSusyNotSig_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV29_Base_10th_Loose_tEB_nRH15_isNotSusy_Hists.root";
+				//auto outfilename = "llpgana_mc_AODSIM_Gjets_AOD_aV59_mhV29_Base_30th_Loose_tEB_nRH15_Hists.root";
+
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV29_GV85E30_10th_Loose_tEB_nRH15_isSig_Hists.root";
+				//auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV29_GV85E30_10th_Loose_tEB_nRH15_isSusyNotSig_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV29_GV85E30_10th_Loose_tEB_nRH15_isNotSusy_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_Gjets_AOD_aV59_mhV29_GV85E30_30th_Loose_tEB_nRH15_Hists.root";
+
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV29_GV85E30DA101_10th_Loose_tEB_nRH15_isSig_Hists.root";
+				//auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV29_GV85E30DA101_10th_Loose_tEB_nRH15_isSusyNotSig_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV29_GV85E30DA101_10th_Loose_tEB_nRH15_isNotSusy_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_Gjets_AOD_aV59_mhV29_GV85E30DA101_30th_Loose_tEB_nRH15_Hists.root";
+
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV29_GV85E30DA102_10th_Loose_tEB_nRH15_isSig_Hists.root";
+				//auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV29_GV85E30DA102_10th_Loose_tEB_nRH15_isSusyNotSig_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV29_GV85E30DA102_10th_Loose_tEB_nRH15_isNotSusy_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_Gjets_AOD_aV59_mhV29_GV85E30DA102_30th_Loose_tEB_nRH15_Hists.root";
+
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV29_GV85E30DA301_10th_Loose_tEB_nRH15_isSig_Hists.root";
+				//auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV29_GV85E30DA301_10th_Loose_tEB_nRH15_isSusyNotSig_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV29_GV85E30DA301_10th_Loose_tEB_nRH15_isNotSusy_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_Gjets_AOD_aV59_mhV29_GV85E30DA301_30th_Loose_tEB_nRH15_Hists.root";
+
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV29_GV85E30DA302_10th_Loose_tEB_nRH15_isSig_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV29_GV85E30DA302_10th_Loose_tEB_nRH15_isSusyNotSig_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV29_GV85E30DA302_10th_Loose_tEB_nRH15_isNotSusy_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_Gjets_AOD_aV59_mhV29_GV85E30DA302_30th_Loose_tEB_nRH15_Hists.root";
+
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV29_GV85E30DA502_10th_Loose_tEB_nRH15_isSig_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV29_GV85E30DA502_10th_Loose_tEB_nRH15_isSusyNotSig_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV29_GV85E30DA502_10th_Loose_tEB_nRH15_isNotSusy_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_Gjets_AOD_aV59_mhV29_GV85E30DA502_30th_Loose_tEB_nRH15_Hists.root";
+
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV29_GV85E30nRH35_10th_Loose_tEB_nRH15_isSig_Hists.root";
+				//auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV29_GV85E30nRH35_10th_Loose_tEB_nRH15_isSusyNotSig_Hists.root";
+				//auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV29_GV85E30nRH35_10th_Loose_tEB_nRH15_isNotSusy_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_Gjets_AOD_aV59_mhV29_GV85E30nRH35_30th_Loose_tEB_nRH15_Hists.root";
+
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV29_GV85E30mEVRH_10th_Loose_tEB_nRH15_isSig_Hists.root";
+				//auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV29_GV85E30mEVRH_10th_Loose_tEB_nRH15_isSusyNotSig_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV29_GV85E30mEVRH_10th_Loose_tEB_nRH15_isNotSusy_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_Gjets_AOD_aV59_mhV29_GV85E30mEVRH_30th_Loose_tEB_nRH15_Hists.root";
+
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV29_GV85E30DA502nRH35_10th_Loose_tEB_nRH15_isSig_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GJets_AOD_aV59_mhV29_GV85E30DA502nRH35_30th_Loose_tEB_nRH15_isSig_Hists.root";
+
+				//auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV30_GV85Pt30logE_4th_Loose_tEB_nRH15_isSig_Hists.root";
+
+				//auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV30_Pt30logE_10th_Tight_tEB_nRH15_isSig_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV30_Pt30logE_10th_Tight_tEB_nRH15_isNotSig_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GJets_AOD_aV59_mhV30_Pt30logE_20th_Tight_tEB_nRH15_isCmb_Hists.root";
+
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV30_GV85Pt30logE_10th_Tight_tEB_nRH15_isSig_v3_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV59_mhV30_GV85Pt30logE_10th_Tight_tEB_nRH15_isNotSig_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GJets_AOD_aV59_mhV30_GV85Pt30logE_20th_Tight_tEB_nRH15_isCmb_v3_Hists.root";
+				//v3 has TAngle 33->27
+
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV60_mhV31_Pt30logE_10th_loose_tEB_nRH15_isSig_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV60_mhV31_Pt30logE_SMM_10th_loose_tEB_nRH15_isSig_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV60_mhV31_Pt30logE_GEO_10th_loose_tEB_nRH15_isSig_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GMSB_AOD_aV60_mhV31_Pt30logE_SMMGEO_10th_loose_tEB_nRH15_isSig_Hists.root";
+
+                auto outfilename = "llpgana_mc_AODSIM_GJets_AOD_aV60_mhV31_Pt30logE_50th_loose_tEB_nRH15_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GJets_AOD_aV60_mhV31_Pt30logE_SMM_50th_loose_tEB_nRH15_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GJets_AOD_aV60_mhV31_Pt30logE_GEO_50th_loose_tEB_nRH15_Hists.root";
+                //auto outfilename = "llpgana_mc_AODSIM_GJets_AOD_aV60_mhV31_Pt30logE_SMMGEO_20th_loose_tEB_nRH15_Hists.root";
+
+				int pct = 50;
+				KUCMSSkimmer llpgana;
+                llpgana.kucmsSkimmer( indir, infilename, outfilename, pct );
+    //}
+    return 1;
+
+}//<<>>int main ( int argc, char *argv[] )
 
 int KUCMSSkimmer::getRhIdx( uInt rhDetID ){
 

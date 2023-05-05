@@ -7,7 +7,7 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#include"KUCMSSkimmer_aodsim.cpp"
+#include"KUCMSAodSkimmer_code.hh"
 
 // ------------------------------------------- main function ------------------------------------------------------------
 int main ( int argc, char *argv[] ){
@@ -39,8 +39,8 @@ int main ( int argc, char *argv[] ){
                 //auto outfilename = "llpgana_mc_AODSIM_GJets_AOD_aV60_mhV31_Pt30logE_SMMGEO_20th_loose_tEB_nRH15_Hists.root";
 
                 int pct = 50;
-                KUCMSSkimmer llpgana;
-                llpgana.kucmsSkimmer( indir, infilename, outfilename, pct );
+                KUCMSAodSkimmer llpgana;
+                llpgana.kucmsAodSkimmer( indir, infilename, outfilename, pct );
     //}
     return 1;
 
