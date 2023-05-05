@@ -12,6 +12,7 @@ test/myWorkSpace/
 test/compWorkingArea/
 *.root
 *.pyc
+*.obj
 *.log
 *.png
 *.pdf
