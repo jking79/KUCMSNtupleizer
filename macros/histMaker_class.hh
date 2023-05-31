@@ -13,10 +13,6 @@
 #include "KUCMSHelperFunctions.hh"
 #include "KUCMSRootHelperFunctions.hh"
 
-//#include "llpgana_hist_base_v2.hh" 
-//#include "llpgana_ntuple_base.hh"
-//#include "llpgana_hist_base_v10.hh"
-//#include "llpgana_hist_rebase_v11.hh"
 #include "llpgana_hist_rebase_v18.hh"
 
 #define n1dHists 512
@@ -31,23 +27,18 @@
 // KUCMSSkimmer class -----------------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-class KUCMSSkimmer : root_rebase {
+class HistMaker : root_rebase {
 
 	public:
 
-	void kucmsSkimmer( std::string indir, std::string infilelist, std::string outfilename, int pct );	
+	//HistMaker();
+	//~HistMaker();
+
+	void histMaker( std::string indir, std::string infilelist, std::string outfilename, int pct );	
 	void initHists();
 	void getBranches( Long64_t entry );
 	void eventLoop( Long64_t entry );
  	void endJobs();	
-
-    std::map<UInt_t,DetIDStruct> DetIDMap;
-
-	int getRhIdx( uInt rhDetID );
-	uInt getLeadRhID( vector<uInt> recHitIds );
-	float clstrR9( vector<uInt> recHitIds );
-	vector<float> getLeadTofRhTime( vector<uInt> recHitIds, double vtxX, double vtxY, double vtxZ );
-	vector<float> getRhGrpEigen_sph( vector<float> times, vector<uInt> rechitids );
 
     TH1D *hist1d[n1dHists];
     TH2D *hist2d[n2dHists];

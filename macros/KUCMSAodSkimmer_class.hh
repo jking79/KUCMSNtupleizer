@@ -82,8 +82,16 @@ class KUCMSAodSkimmer : public root_rebase {
 
     // Output Branch variables
 
-    uInt nEvents;
-    uInt nSelectedEvents;
     uInt RunNumber;
+    uInt nEvents, nSelectedEvents;
+	float Met;
+	uInt nSelPhotons; 
+	vector<uInt> selPhoID;
+	vector<float> selPhoTime, selPhoGEgnVal, selPhoEta, selPhoPt, selPhoSMaj, selPhoSMin;
+	uint nSelJets;
+	vector<uInt> selJetID;
+	float JetHt;
+	vector<float> selJetPt, selJetEta, selJetTime;
+
 
 };

@@ -9,6 +9,7 @@ test/GMSBWorkSpace/
 test/oldworkingArea/
 test/myWorkingArea/
 test/myWorkSpace/
+test/*WorkSpace/
 test/compWorkingArea/
 *.root
 *.pyc

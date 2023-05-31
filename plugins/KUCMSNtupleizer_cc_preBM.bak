@@ -94,9 +94,10 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig) :
 
 	// gedphotons
 	gedPhotonsTag(iConfig.getParameter<edm::InputTag>("gedPhotons")),
-    // ootPhotons
-    ootPhotonsTag(iConfig.getParameter<edm::InputTag>("ootPhotons")),
     phoCBIDLooseMapTag(iConfig.getParameter<edm::InputTag>("phoCBIDLooseMap")),
+
+	// ootPhotons
+	ootPhotonsTag(iConfig.getParameter<edm::InputTag>("ootPhotons")),
 
 	// pfcand ref
 	//reco2pfTag(iConfig.getParameter<edm::InputTag>("recoToPFMap")),
@@ -329,12 +330,7 @@ void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     if( DEBUG ) std::cout << "***********************************************************************************************" << std::endl;
-
-    // intilize global event varibles
-    vtxX = 0;
-    vtxY = 0;
-    vtxZ = 0;
-    evtMET = 0;
+    if( DEBUG ) std::cout << "Processing event: " << event << " in run: " << run << " and lumiblock: " << lumi << std::endl;
 
     // process event varibles
 
@@ -571,7 +567,7 @@ void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
     //---- Object processing Completed ----------------------------------------------------------
     //------------------------------------------------------------------------------------
 
-	auto fillTree = evtMET > 150.f;
+	auto fillTree = std::sqrt( sq2(metPx) + sq2(metPy)) > 150.f;
 
 	// -- Fill output trees ------------------------------------------
 	if( fillTree ) outTree->Fill();
@@ -596,7 +592,7 @@ void KUCMSNtupilizer::beginJob(){
 
 	// Book output files and trees
 	edm::Service<TFileService> fs;
-	outTree = fs->make<TTree>("llpgtree","KUCMSNtuple");
+	outTree = fs->make<TTree>("llpgtree","llpgtree");
 
 	// Book //histograms ( if any )
 	
@@ -652,69 +648,58 @@ void KUCMSNtupilizer::fillDescriptions(edm::ConfigurationDescriptions& descripti
 //---------------------------------------------
 void KUCMSNtupilizer::setBranchesEvent(){
 
-	EventInfoBM.makeBranch("run","RunNumber",KUCMSBranch::UINT,"Run number of event");
-    EventInfoBM.makeBranch("lumi","LumiSection",KUCMSBranch::UINT,"Lumi section of event");
-    EventInfoBM.makeBranch("event","EventNumber",KUCMSBranch::UINT);
-    //outTree->Branch("event", &event, "event/l");
+    // Run, Lumi, Event info
+    //    ulInt               event; // technically unsigned long long in Event.h...
+    //    uInt                run, lumi;
+    outTree->Branch("run", &run);
+    outTree->Branch("lumi", &lumi);
+    outTree->Branch("event", &event, "event/l");
 
 }//<<>>setBranchesEvent()
 
 void KUCMSNtupilizer::processEvent( const edm::Event& iEvent ){
 
-	EventInfoBM.clearBranches();
-
-    uInt run   = iEvent.id().run();
-    uInt lumi  = iEvent.luminosityBlock();
-    uInt event = iEvent.id().event();
-
-    if( DEBUG ) std::cout << "Processing event: " << event << " in run: " << run << " and lumiblock: " << lumi << std::endl;
-
-	EventInfoBM.fillBranch("run",run);
-	EventInfoBM.fillBranch("lumi",lumi);
-    EventInfoBM.fillBranch("event",event);
+    run   = iEvent.id().run();
+    lumi  = iEvent.luminosityBlock();
+    event = iEvent.id().event();
 
 }//<<>>processEvent()
 
 //----------------------------------------------
 void KUCMSNtupilizer::setBranchesVtx(){
 
-    VertexBM.makeBranch("nVtx","nVtx",KUCMSBranch::UINT);
-	VertexBM.makeBranch("vtxX","vtxX",KUCMSBranch::FLOAT);
-    VertexBM.makeBranch("vtxY","vtxY",KUCMSBranch::FLOAT);
-    VertexBM.makeBranch("vtxZ","vtxZ",KUCMSBranch::FLOAT);
-    VertexBM.initBranches(outTree);
+    //    int                 nVtx;
+    //    float               vtxX, vtxY, vtxZ;
+    //outTree->Branch("nVtx", &nVtx);
+    outTree->Branch("vtxX", &vtxX);
+    outTree->Branch("vtxY", &vtxY);
+    outTree->Branch("vtxZ", &vtxZ);
 
 }//<<>>setBranchesVtx()
 
 void KUCMSNtupilizer::processVtx(){
 
-	VertexBM.clearBranches();
-	
 	// do not need to pass in collectioon handel -> class varible   --  Fix This
 	//edm::Handle<std::vector<reco::Vertex>> vertices_
-	uInt nvtx = vertices_->size();
     const auto & primevtx = vertices_->front();
     vtxX = primevtx.position().x();
     vtxY = primevtx.position().y();
     vtxZ = primevtx.position().z();
-
-	VertexBM.fillBranch("nVtx",nvtx);
-    VertexBM.fillBranch("vtxX",vtxX);
-    VertexBM.fillBranch("vtxY",vtxY);
-    VertexBM.fillBranch("vtxZ",vtxZ);
 
 }//<<>>processVtx()
 
 //-------------------------------------------------
 void KUCMSNtupilizer::setBranchesMet(){
 
-	MetBM.makeBranch("metSumEt","metSumEt",KUCMSBranch::FLOAT);
-    MetBM.makeBranch("metPx","metPx",KUCMSBranch::FLOAT);
-    MetBM.makeBranch("metPy","metPy",KUCMSBranch::FLOAT);
-    MetBM.makeBranch("metCSumEt","metCSumEt",KUCMSBranch::FLOAT);
-    MetBM.makeBranch("metCPx","metCPx",KUCMSBranch::FLOAT);
-    MetBM.makeBranch("metCPy","metCPy",KUCMSBranch::FLOAT);
-	MetBM.initBranches(outTree);
+    //    float  metSumEt, metPt, metPx, metPy, metPhi;
+    outTree->Branch("metSumEt", &metSumEt);
+    //outTree->Branch("metPt", &metPt);
+    outTree->Branch("metPx", &metPx);
+    outTree->Branch("metPy", &metPy);
+    //outTree->Branch("metPhi", &metPhi);
+    outTree->Branch("metCSumEt", &metCSumEt);
+    outTree->Branch("metCPx", &metCPx);
+    outTree->Branch("metCPy", &metCPy);
 
 }//<<>>void setBranchesMet()
 
@@ -722,20 +707,16 @@ void KUCMSNtupilizer::processMet(){
 
     if( DEBUG ) std::cout << "Processing MET" << std::endl;
 
-	MetBM.clearBranches();
-
     auto t1pfMET = fpfmet[0];
-    float metSumEt = t1pfMET.sumEt();
-    float metPt = t1pfMET.pt();
-    float metPx = t1pfMET.px();
-    float metPy = t1pfMET.py();
-    float metPhi = t1pfMET.phi();
+    metSumEt = t1pfMET.sumEt();
+    metPt = t1pfMET.pt();
+    metPx = t1pfMET.px();
+    metPy = t1pfMET.py();
+    metPhi = t1pfMET.phi();
 
-    float metCSumEt = metSumEt;
-    float metCPx = metPx;
-    float metCPy = metPy;
-
-	evtMET = std::sqrt( sq2(metPx) + sq2(metPy));
+    metCSumEt = metSumEt;
+    metCPx = metPx;
+    metCPy = metPy;
 
     // ???  need corrected values for photon Et and Pt
     int nphidx = fphotons.size();
@@ -755,49 +736,101 @@ void KUCMSNtupilizer::processMet(){
 
     }//<<>>for( auto phidx = 0; phidx < fphotons.size(); phidx++ )
 
-	MetBM.fillBranch("metSumEt",metSumEt);
-    MetBM.fillBranch("metPx",metPx);
-    MetBM.fillBranch("metPy",metPy);
-    MetBM.fillBranch("metCSumEt",metCSumEt);
-    MetBM.fillBranch("metCPx",metCPx);
-    MetBM.fillBranch("metCPy",metCPy);
-
 }//<<>>processMet( std::vector<reco::PFMET> fpfmet, std::vector<reco::Photon> fphotons )
 
 //---------------------------------------------------------------------------
 void KUCMSNtupilizer::setBranchesJets(){
 
-    JetBM.makeBranch("jetHt","jetHt",KUCMSBranch::FLOAT);
+    //    uInt                nJets, nGoodDrJets, nGoodScJets, nGoodBcJets, nUnJets;
+    //    float               jetHt;
+    // xxx   uInt                nGoodJetEvents;
+    outTree->Branch("jetHt", &jetHt);
 
-    JetBM.makeBranch("jetE","jetE",KUCMSBranch::VFLOAT);
-    JetBM.makeBranch("jetM","jetM",KUCMSBranch::VFLOAT);
-    JetBM.makeBranch("jetPt","jetPt",KUCMSBranch::VFLOAT);
-    JetBM.makeBranch("jetEta","jetEta",KUCMSBranch::VFLOAT);
-    JetBM.makeBranch("jetPhi","jetPhi",KUCMSBranch::VFLOAT);
+    // Jet info
+    //    std::vector<float>  jetE, jetPt, jetPhi, jetEta;
+    // xxx   std::vector<float>  jetEtaetaMmt, jetPhiphiMnt, jetEtaphiMnt, jetMaxD, jetConPtDis, jetConEtaPhiSprd, jetArea;
+    // xxx   std::vector<uInt>   jetNCarry, jetNConst;
+    //    std::vector<float>  jetNHF, jetNEMF, jetCHF, jetCEMF, jetMUF, jetNHM, jetCHM, jetC, jetPHE, jetPHEF;
+    //    std::vector<float>  jetELE, jetELEF, jetMUE, jetCharge;
+  	outTree->Branch("jetE", &jetE);
+    outTree->Branch("jetM", &jetM);
+  	outTree->Branch("jetPt", &jetPt);
+  	outTree->Branch("jetEta", &jetEta);
+  	outTree->Branch("jetPhi", &jetPhi);
 
-    JetBM.makeBranch("jetNHF","jetNHF",KUCMSBranch::VFLOAT);
-    JetBM.makeBranch("jetNEMF","jetNEMF",KUCMSBranch::VFLOAT);
-    JetBM.makeBranch("jetCHF","jetCHF",KUCMSBranch::VFLOAT);
-    JetBM.makeBranch("jetCEMF","jetCEMF",KUCMSBranch::VFLOAT);
-    JetBM.makeBranch("jetMUF","jetMUF",KUCMSBranch::VFLOAT);
-    JetBM.makeBranch("jetNHM","jetNHM",KUCMSBranch::VFLOAT);
-    JetBM.makeBranch("jetCHM","jetCHM",KUCMSBranch::VFLOAT);
-    JetBM.makeBranch("jetPHM","jetPHM",KUCMSBranch::VFLOAT);
+  	outTree->Branch("jetNHF", &jetNHF);
+  	outTree->Branch("jetNEMF", &jetNEMF);  
+  	outTree->Branch("jetCHF", &jetCHF);
+  	outTree->Branch("jetCEMF", &jetCEMF);
+  	outTree->Branch("jetMUF", &jetMUF);
+  	outTree->Branch("jetNHM", &jetNHM);
+  	outTree->Branch("jetCHM", &jetCHM);
+ 	outTree->Branch("jetPHM", &jetPHM);
 
-    JetBM.makeBranch("jetParts","jetPartons",KUCMSBranch::VUINT);
-    JetBM.makeBranch("jetDrRhIds","jetDrRhIds",KUCMSBranch::VVUINT);
+  	//outTree->Branch("jetELM", &jetELM);
+    //outTree->Branch("jetC", &jetC);
+  	//outTree->Branch("jetPHE", &jetPHE);
+  	//outTree->Branch("jetPHEF", &jetPHEF);
+  	//outTree->Branch("jetELE", &jetELE);
+  	//outTree->Branch("jetELEF", &jetELEF);
+  	//outTree->Branch("jetMUE", &jetMUE);
+    //outTree->Branch("jetCharge", &jetCharge);
 
-    JetBM.makeBranch("jetGenImpactAngle","jetGenImpactAngle",KUCMSBranch::VFLOAT);
-    JetBM.makeBranch("jetGenTime","jetGenTime",KUCMSBranch::VFLOAT);
-    JetBM.makeBranch("jetGenPt","jetGenPt",KUCMSBranch::VFLOAT);
-    JetBM.makeBranch("jetGenEta","jetGenEta",KUCMSBranch::VFLOAT);
-    JetBM.makeBranch("jetGenPhi","jetGenPhi",KUCMSBranch::VFLOAT);
-    JetBM.makeBranch("jetGenEnergy","jetGenEnergy",KUCMSBranch::VFLOAT);
-    JetBM.makeBranch("jetGenDrMatch","jetGenDrMatch",KUCMSBranch::VFLOAT);
-    JetBM.makeBranch("jetGenTimeLLP","jetGenTimeLLP",KUCMSBranch::VFLOAT);
-    JetBM.makeBranch("jetGenTOF","jetGenTOF",KUCMSBranch::VFLOAT);
+    //outTree->Branch("jetID", &jetID);
 
-    JetBM.initBranches(outTree);
+    //    std::vector<int>    jetID, njetKids, jetKidOfJet, njetSubs, njetRecHits, jetRecHitOfJet;
+    //    std::vector<int>    jetKidPdgID, jetKidCharge, jetKid3Charge, jetPHM, jetELM;
+    //    std::vector<uInt>   jetRecHitId;
+    //    std::vector<bool>   jetKidLLP;
+    //    std::vector<double> jetKidMass, jetKidVx, jetKidVy, jetKidVz;
+    //    std::vector<float>  jetKidE, jetKidPt, jetKidPhi, jetKidEta, jetKidTime, jetKidMedTime;
+
+    // xxx    std::vector<float>  jetPhMuTime, jetOOTPhMuTime, jetEleMuTime;
+
+    //    std::vector<float>  jetSumEPFrac, jetEPEnergy, jetEMEnergy, jetEMEnrFrac, jetEPEnrFrac;
+
+    //outTree->Branch("jetSumEPFrac", &jetSumEPFrac);
+    //outTree->Branch("jetEPEnergy", &jetEPEnergy);
+    //outTree->Branch("jetEMEnergy", &jetEMEnergy);
+    //outTree->Branch("jetEMEnrFrac", &jetEMEnrFrac);
+    //outTree->Branch("jetEPEnrFrac", &jetEPEnrFrac);
+
+    //    std::vector<float>  jetDrLeadEta, jetDrLeadPhi, jetDrLeadEnr;
+    //    std::vector<uInt>   jetDrRhCnt;
+    //    std::vector<float>  sJetDrRHEnergy, jetDrEMF;
+
+    //    std::vector<uInt>   nJetScMatch, jetScRhCnt;
+    //    std::vector<float>  sJetScEnergy, sJetScPhEnergy, sJetScRhEnergy, jetScEMF;
+
+    //    std::vector<uInt>   jetBcTimesCnt, jetBcRhCnt, jetBcGrpCnt;
+    //    std::vector<float>  jetBcSumRHEnr, jetBcEMFr;
+
+    //    std::vector<float>  jetMuTime, jetTimeError, jetTimeRMS, jetMedTime, jetCMuTime, jetCMedTime;
+    //    std::vector<float>  jetSCMuTime, jetSCMedTime, jetCSCMuTime, jetCSCMedTime, jetCBCMuTime, jetCBCMedTime;
+
+    outTree->Branch("jetParts", &jetParts);
+
+    //outTree->Branch("sJetDrRHEnergy", &sJetDrRHEnergy);
+    //outTree->Branch("jetDrEMF", &jetDrEMF);
+    //outTree->Branch("jetDrRhCnt", &jetDrRhCnt);
+    outTree->Branch("jetDrRhIds", &jetDrRhIds);
+
+    //    std::vector<float>  jetGenImpactAngle, jetGenTime, jetGenPt, jetGenEta, jetGenEnergy, jetGenEMFrac, jetGenDrMatch;
+    //    std::vector<float>  jetGenTimeVar, jetGenTimeLLP, jetGenLLPPurity, jetGenNextBX, jetGenNKids, jetGenTOF;
+
+    outTree->Branch("jetGenImpactAngle", &jetGenImpactAngle);
+    outTree->Branch("jetGenTime", &jetGenTime);
+    outTree->Branch("jetGenPt", &jetGenPt);
+    outTree->Branch("jetGenEta", &jetGenEnergy);
+    outTree->Branch("jetGenEnergy", &jetGenEnergy);
+    //outTree->Branch("jetGenEMFrac", &jetGenEMFrac);
+    outTree->Branch("jetGenDrMatch", &jetGenDrMatch);
+    //outTree->Branch("jetGenTimeVar", &jetGenTimeVar);
+    outTree->Branch("jetGenTimeLLP", &jetGenTimeLLP);
+    //outTree->Branch("jetGenLLPPurity", &jetGenLLPPurity);
+    //outTree->Branch("jetGenNextBX", &jetGenNextBX);
+    //outTree->Branch("jetGenNKids", &jetGenNKids);
+    outTree->Branch("jetGenTOF", &jetGenTOF);
 
 }//<<>> setBranchesJets(){
 
@@ -806,14 +839,86 @@ void KUCMSNtupilizer::processJets(){
     if( DEBUG ) std::cout << "Init for Jet Loop " << std::endl;
 
     vector<uInt> noIdGrp(1,0);
-	JetBM.clearBranches();
+
+    jetHt = 0.0;
+    jetE.clear();
+    jetM.clear();
+    jetPt.clear();
+    jetPhi.clear();
+    jetEta.clear();
+    jetEtaetaMmt.clear();
+    jetPhiphiMnt.clear();
+    jetEtaphiMnt.clear();
+    jetMaxD.clear();
+    jetConPtDis.clear();
+    jetConEtaPhiSprd.clear();
+    jetArea.clear();
+    jetNCarry.clear();
+    jetNConst.clear();
+
+    jetID.clear();
+    jetNHF.clear();
+    jetNEMF.clear();
+    jetCHF.clear();
+    jetCEMF.clear();
+    jetMUF.clear();
+    jetNHM.clear();
+    jetCHM.clear();
+
+    //jetMuTime.clear();
+    //jetTimeError.clear();
+    //jetTimeRMS.clear();
+    //jetMedTime.clear();
+    //jetCMuTime.clear();
+    //jetCMedTime.clear();
+
+    jetDrRhIds.clear();
+
+    jetPHM.clear();
+    jetELM.clear();
+    //jetC.clear();
+    jetPHE.clear();
+    jetPHEF.clear();
+    jetELE.clear();
+    jetELEF.clear();
+    jetMUE.clear();
+    //jetCharge.clear();
+
+    //njetRecHits.clear();
+    //jetRecHitOfJet.clear();
+    //jetRecHitId.clear();
+
+    jetSumEPFrac.clear();
+    jetEPEnergy.clear();
+    jetEMEnergy.clear();
+    jetEMEnrFrac.clear();
+    jetEPEnrFrac.clear();
+
+	jetParts.clear();
+
+    //sJetDrRHEnergy.clear();
+    //jetDrEMF.clear();
+    //jetDrRhCnt.clear();
+
+    jetGenImpactAngle.clear();
+    jetGenTime.clear();
+    jetGenPt.clear();
+    jetGenEta.clear();
+    jetGenEnergy.clear();
+    jetGenEMFrac.clear();
+    jetGenDrMatch.clear();
+    jetGenTimeVar.clear();
+    jetGenTimeLLP.clear();
+    jetGenLLPPurity.clear();
+    jetGenNextBX.clear();
+    jetGenNKids.clear();
+    jetGenTOF.clear();
 
 	// **** const reco::TrackRefVector& associatedTracks() const;
 	// **** const reco::PixelClusterTagInfo* tagInfoPixelCluster(const std::string& label = "") const; // from b tagging info methods
 	// **** reco::PFCandidateFwdPtrVector const& pfCandidatesFwdPtr() const { return pfCandidatesFwdPtr_; }
     if( DEBUG ) std::cout << "-----------------------------------------------------------" << std::endl;
 	auto nJets = fjets.size();
-	float jetHt = 0;
     if( DEBUG ) std::cout << "Starting Jet Loop for " << nJets << " jets " << std::endl;
     for ( uInt ijet(0); ijet < nJets; ijet++ ){
 
@@ -823,37 +928,53 @@ void KUCMSNtupilizer::processJets(){
 
         jetHt += jet.pt();
 
-    	float jetE = jet.energy();
-    	float jetM = jet.mass();
-    	float jetPt = jet.pt();
-    	float jetEta = jet.eta();
-    	float jetPhi = jet.phi();
+        jetE.push_back(jet.energy());
+        jetM.push_back(jet.mass());
+        jetPt.push_back(jet.pt());
+        jetPhi.push_back(jet.phi());
+        jetEta.push_back(jet.eta());
 
-    	float jetNHF = jet.neutralHadronEnergyFraction();
-    	float jetNEMF = jet.neutralEmEnergyFraction();
-    	float jetCHF = jet.chargedHadronEnergyFraction();
-    	float jetCEMF = jet.chargedEmEnergyFraction();
-   	 	float jetMUF = jet.muonEnergyFraction();
-   	 	float jetNHM = jet.neutralMultiplicity();
-	    float jetCHM = jet.neutralMultiplicity();
-	    float jetPHM = jet.chargedMultiplicity();
+        jetEtaetaMmt.push_back(jet.etaetaMoment());
+        jetPhiphiMnt.push_back(jet.phiphiMoment());
+        jetEtaphiMnt.push_back(jet.etaphiMoment());
+        jetMaxD.push_back(jet.maxDistance());
+        jetConPtDis.push_back(jet.constituentPtDistribution());
+        jetConEtaPhiSprd.push_back(jet.constituentEtaPhiSpread());
+        jetArea.push_back(jet.jetArea());
+        jetNCarry.push_back(jet.nCarrying(0.1));
+        jetNConst.push_back(jet.nConstituents());
 
-        JetBM.fillBranch("jetE",jetE);
-        JetBM.fillBranch("jetM",jetM);
-        JetBM.fillBranch("jetPt",jetPt);
-        JetBM.fillBranch("jetEta",jetEta);
-        JetBM.fillBranch("jetPhi",jetPhi);
+        jetID.push_back(jetid);
+        jetNHF.push_back(jet.neutralHadronEnergyFraction());
+        jetNEMF.push_back(jet.neutralEmEnergyFraction());
+        jetCHF.push_back(jet.chargedHadronEnergyFraction());
+        jetCEMF.push_back(jet.chargedEmEnergyFraction());
+        jetMUF.push_back(jet.muonEnergyFraction());
+        jetNHM.push_back(jet.neutralMultiplicity());
+        jetCHM.push_back(jet.chargedMultiplicity());
+        //jetCharge.push_back(jet.jetCharge());
 
-        JetBM.fillBranch("jetNHF",jetNHF);
-        JetBM.fillBranch("jetNEMF",jetNEMF);
-        JetBM.fillBranch("jetCHF",jetCHF);
-        JetBM.fillBranch("jetCEMF",jetCEMF);
-        JetBM.fillBranch("jetMUF",jetMUF);
-        JetBM.fillBranch("jetNHM",jetNHM);
-        JetBM.fillBranch("jetCHM",jetCHM);
-        JetBM.fillBranch("jetPHM",jetPHM);
+        jetPHE.push_back(jet.photonEnergy());
+        jetPHEF.push_back(jet.photonEnergyFraction());
+        jetELE.push_back(jet.electronEnergy());
+        jetELEF.push_back(jet.electronEnergyFraction());
+        jetMUE.push_back(jet.muonEnergy());
+        jetPHM.push_back(jet.photonMultiplicity());
+        jetELM.push_back(jet.electronMultiplicity());
 
-        // dR matched RH group  ----------------------------------------------- 
+        const auto jetepafrac   = jet.photonEnergyFraction() + jet.electronEnergyFraction();
+        const auto jetepe       = jet.photonEnergy() + jet.electronEnergy();
+        const auto jeteme       = jet.chargedEmEnergy() + jet.neutralEmEnergy();
+        const auto jetemfrac    = jeteme/jet.energy();
+        const auto jetepfrac    = jetepe/jet.energy();
+
+        jetSumEPFrac.push_back(jetepafrac);
+        jetEPEnergy.push_back(jetepe);
+        jetEMEnergy.push_back(jeteme);
+        jetEMEnrFrac.push_back(jetemfrac);
+        jetEPEnrFrac.push_back(jetepfrac);
+
+        // dR matched RH group  -----------------------------------------------
         // --------------------------------------------------------------------
 
         if( DEBUG ) std::cout << "Getting jet dR rechit group" << std::endl;
@@ -861,14 +982,20 @@ void KUCMSNtupilizer::processJets(){
 		auto minRhE = 0.5;
         auto jetDrRhGroup = getRHGroup( jet.eta(), jet.phi(), deltaRmin, minRhE );
         auto jetDrRhIdsGroup = getRhGrpIDs( jetDrRhGroup );
-    	JetBM.fillBranch("jetDrRhIds",jetDrRhIdsGroup);
+        jetDrRhIds.push_back( jetDrRhIdsGroup );
 		setRecHitUsed( jetDrRhIdsGroup );
+
+        //auto rhCount = jetDrRhGroup.size();
+        //auto sumdrrhe = getRhGrpEnr( jetDrRhGroup );
+        //auto dremf = sumdrrhe/jet.energy();
+        //sJetDrRHEnergy.push_back(sumdrrhe);
+        //jetDrEMF.push_back(dremf);
+        //jetDrRhCnt.push_back(rhCount);
 
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// !!!!!!!!  create list of associated photons and electrons with jet via daughter particles of jet !!!!!!!!!!
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		std::vector<uInt> jetParts;
 		for( const auto &kid : jet.daughterPtrVector() ){
 
 			auto kidcand = (pfcands_->ptrAt(kid.key())).get();
@@ -899,8 +1026,6 @@ void KUCMSNtupilizer::processJets(){
 
 		}//<<>.for( const auto kid : jet.daughterPtrVector() )
 
-		JetBM.fillBranch("jetParts",jetParts);
-
         // GenJet Info for MC  -------------------------------------------------------------------
         // ---------------------------------------------------------------------------------------
 
@@ -911,15 +1036,14 @@ void KUCMSNtupilizer::processJets(){
         float genTime(-99.9);
         float genPt(-1.0);
         float genEta(10.0);
-        float genPhi(10.0);
         float genEnergy(-1.0);
         float genEMFrac(-1.0);
         float genDrMatch(-1.0);
-        //float genTimeVar(-1.0);
+        float genTimeVar(-1.0);
         float genTimeLLP(0.0);
-        //float genLLPPurity(-1.0);
-        //float genNextBX(-1.0);
-        //float genNKids(-1.0);
+        float genLLPPurity(-1.0);
+        float genNextBX(-1.0);
+        float genNKids(-1.0);
         float genTOF(-99.9);
 
         if( hasGenInfo ){
@@ -959,7 +1083,6 @@ void KUCMSNtupilizer::processJets(){
                 if( DEBUG ) std::cout << " - genJet GenTime noTOF : " << genKidInfo[0] << " rhPos: " << cx;
 				if( DEBUG ) std::cout << "," << cy << "," << cz << std::endl;
                 genEta = genJet.eta();
-                genPhi = genJet.phi();
                 if( genKidInfo[0] > 25.0 ) genTime = -28.0;
                 else if( genKidInfo[0] > -25.0 ) genTime = genKidInfo[0]-tofcor;
                 else genTime = -27.0;
@@ -969,27 +1092,30 @@ void KUCMSNtupilizer::processJets(){
                 genEnergy = genJet.energy();
                 genEMFrac = (genJet.chargedEmEnergy() + genJet.neutralEmEnergy())/genEnergy;
                 genDrMatch = goodDr; //std::sqrt(reco::deltaR2(jet.eta(), jet.phi(), genJet.eta(), genJet.phi()));
-                //genTimeVar = genKidInfo[2];
-                //genNextBX = genKidInfo[3];
-                //genTimeLLP = genKidInfo[4];
-                //genLLPPurity = genKidInfo[5];
-                //genNKids = genKidInfo[6];
+                genTimeVar = genKidInfo[2];
+                genNextBX = genKidInfo[3];
+                genTimeLLP = genKidInfo[4];
+                genLLPPurity = genKidInfo[5];
+                genNKids = genKidInfo[6];
                 genTOF = tofcor;
                 if( DEBUG ) std::cout << " -- Energy : " << genEnergy << " Pt : " << genPt << " EMfrac : " << genEMFrac << std::endl;
 
             }//<<>>if( matchedIdx >= 0 ) 
 
             // load event level vectors for this jet with gen info
-
-    		JetBM.fillBranch("jetGenImpactAngle",genImpactAngle);
-    		JetBM.fillBranch("jetGenTime",genTime);
-    		JetBM.fillBranch("jetGenPt",genPt);
-    		JetBM.fillBranch("jetGenEta",genEta);
-    		JetBM.fillBranch("jetGenPhi",genPhi);
-    		JetBM.fillBranch("jetGenEnergy",genEnergy);
-    		JetBM.fillBranch("jetGenDrMatch",genDrMatch);
-    		JetBM.fillBranch("jetGenTimeLLP",genTimeLLP);
-    		JetBM.fillBranch("jetGenTOF",genTOF);
+            jetGenImpactAngle.push_back(genImpactAngle);
+            jetGenTime.push_back(genTime);
+            jetGenPt.push_back(genPt);
+            jetGenEta.push_back(genEta);
+            jetGenEnergy.push_back(genEnergy);
+            jetGenEMFrac.push_back(genEMFrac);
+            jetGenDrMatch.push_back(genDrMatch);
+            jetGenTimeVar.push_back(genTimeVar);
+            jetGenTimeLLP.push_back(genTimeLLP);
+            jetGenLLPPurity.push_back(genLLPPurity);
+            jetGenNextBX.push_back(genNextBX);
+            jetGenNKids.push_back(genNKids);
+            jetGenTOF.push_back(genTOF);
 
             if( DEBUG ) std::cout << " ---------------------------------------------------- " << std::endl;
 
@@ -1004,47 +1130,56 @@ void KUCMSNtupilizer::processJets(){
 //-----------------------------------------------------------------------------------------
 void KUCMSNtupilizer::setBranchesClusterJets(){
 
-	CaloJetBM.makeBranch("cljRhIds","cljRhIds",KUCMSBranch::VVUINT);
-    CaloJetBM.makeBranch("cljPt","cljPt",KUCMSBranch::VFLOAT);
-    CaloJetBM.makeBranch("cljEnergy","cljEnergy",KUCMSBranch::VFLOAT);
-    CaloJetBM.makeBranch("cljPhi","cljPhi",KUCMSBranch::VFLOAT);
-    CaloJetBM.makeBranch("cljEta","cljEta",KUCMSBranch::VFLOAT);
-    CaloJetBM.makeBranch("cljPx","cljPx",KUCMSBranch::VFLOAT);
-    CaloJetBM.makeBranch("cljPy","cljPy",KUCMSBranch::VFLOAT);
-    CaloJetBM.makeBranch("cljPz","cljPz",KUCMSBranch::VFLOAT);
-
-	CaloJetBM.initBranches(outTree);
+    //    uInt                nCaloJets;
+    //    std::vector<float>  cljSeedTOFTimes, cljCMeanTimes;
+    //    std::vector<double> cljPt, cljEnergy, cljPhi, cljEta, cljPx, cljPy, cljPz;
+    outTree->Branch("cljRhIds", &cljRhIds);
+    //outTree->Branch("cljSeedTOFTime", &cljSeedTOFTime);
+    //outTree->Branch("cljCMeanTime", &cljCMeanTime);
+    //outTree->Branch("cljCDrMeanTime", &cljCDrMeanTime);
+    outTree->Branch("cljPt", &cljPt);
+    outTree->Branch("cljEnergy", &cljEnergy);
+    outTree->Branch("cljPhi", &cljPhi);
+    outTree->Branch("cljEta", &cljEta);
+    outTree->Branch("cljPx", &cljPx);
+    outTree->Branch("cljPy", &cljPy);
+    outTree->Branch("cljPz", &cljPz);
 
 }//<<>>setBranchesClusterJets()
 
 void KUCMSNtupilizer::processClJet(){ 
     
 	if( DEBUG ) std::cout << "Processing CaloJets" << std::endl;
-    CaloJetBM.clearBranches();
+    cljSeedTOFTime.clear();
+    cljBcCnt.clear();
+    //cljCMeanTime.clear();
+    //cljCDrMeanTime.clear();
+    cljPt.clear();
+    cljEnergy.clear();
+    cljPhi.clear();
+    cljEta.clear();
+    cljPx.clear();
+    cljPy.clear();
+    cljPz.clear();
+    cljRhIds.clear();
+    cljEMFrac.clear();
 
     for (const auto &caloJet : fcalojets ){
 
-        float cljPt = caloJet.pt();
-        float cljEnergy = caloJet.energy();
-        float cljPhi = caloJet.phi();
-        float cljEta = caloJet.eta();
-        float cljPx = caloJet.px();
-        float cljPy = caloJet.py();
-        float cljPz = caloJet.pz();
-
-        CaloJetBM.fillBranch("cljPt",cljPt);
-        CaloJetBM.fillBranch("cljEnergy",cljEnergy);
-        CaloJetBM.fillBranch("cljPhi",cljPhi);
-        CaloJetBM.fillBranch("cljEta",cljEta);
-        CaloJetBM.fillBranch("cljPx",cljPx);
-        CaloJetBM.fillBranch("cljPy",cljPy);
-        CaloJetBM.fillBranch("cljPz",cljPz);
+        cljPt.push_back(caloJet.pt());
+        cljEnergy.push_back(caloJet.energy());
+        cljPhi.push_back(caloJet.phi());
+        cljEta.push_back(caloJet.eta());
+        cljPx.push_back(caloJet.px());
+        cljPy.push_back(caloJet.py());
+        cljPz.push_back(caloJet.pz());
+        cljEMFrac.push_back(caloJet.emEnergyFraction());
 
         rhGroup cljRhGroup;
         int nCljBcs(0);
         bool first = true;
-        float cjeta = caloJet.eta();
-        float cjphi = caloJet.phi();
+        auto cjeta = caloJet.eta();
+        auto cjphi = caloJet.phi();
         for( const auto &cluster : fbclusts ){
             auto cleta = cluster.eta();
             auto clphi = cluster.phi();
@@ -1056,9 +1191,8 @@ void KUCMSNtupilizer::processClJet(){
             }//<<>>if( cjcldr < 0.1 )
         }//<<>>for( const auto cluster : fbclusts )
         auto cljRhIdsGroup = getRhGrpIDs( cljRhGroup );
-        CaloJetBM.fillBranch("cljRhIds",cljRhIdsGroup );
+        cljRhIds.push_back( cljRhIdsGroup );
 		setRecHitUsed( cljRhIdsGroup );
-/*
         if( cljRhGroup.size() < 3 ){ 
             //cljCMeanTime.push_back( -29.75 ); 
             cljSeedTOFTime.push_back( -29.75 );
@@ -1071,7 +1205,7 @@ void KUCMSNtupilizer::processClJet(){
             //cljCMeanTime.push_back(timeStats[6]);
             cljBcCnt.push_back(nCljBcs);
         }//<<>>if( cljRhGroup.size() < minRHcnt )
-*/
+
         //const auto cljDrGroup = getRHGroup( cjeta, cjphi, 0.4, 2.0 );
         //if( cljDrGroup.size() < 13 ){ cljCDrMeanTime.push_back( -29.75 ); }
         //else { // <<>> if( cljRhGroup.size() < 3 )
@@ -1087,41 +1221,103 @@ void KUCMSNtupilizer::processClJet(){
 //----------------------------------------------------------------------------------------
 void KUCMSNtupilizer::setBranchesPhotons(){
 
-    PhotonBM.makeBranch("phoIsOotPho","phoIsOotPho",KUCMSBranch::VBOOL);
-    PhotonBM.makeBranch("phoExcluded", "phoExcluded",KUCMSBranch::VBOOL);
-    PhotonBM.makeBranch("phoSeedTOFTime","phoSeedTOFTime",KUCMSBranch::VFLOAT);
+    //    uInt                nPhotons;
+    //    std::vector<float>  phoSeedTOFTimes, phoCMeanTimes;
+    //    std::vector<float>  phoSc3dEx, phoSc3dEy, phoSc3dEz, phoSc3dEv, phoSc3dEslope, phoSc3dEchisp;
+    //    std::vector<float>  phoSc2dEx, phoSc2dEy, phoSc2dEv, phoSc2dEslope, phoSc2dEchisp;
+    //    std::vector<double> phoPt, phoEnergy, phoPhi, phoEta, phoPx, phoPy, phoPz;
+    outTree->Branch("phoIsOotPho", &phoIsOotPho);
+    outTree->Branch("phoExcluded", &phoExcluded);
+    outTree->Branch("phoSeedTOFTime", &phoSeedTOFTime);
+    //outTree->Branch("phoCMeanTime", &phoCMeanTime);
+    outTree->Branch("phoPt", &phoPt);
+    outTree->Branch("phoEnergy", &phoEnergy);
+    outTree->Branch("phoPhi", &phoPhi);
+    outTree->Branch("phoEta", &phoEta);
+    outTree->Branch("phoPx", &phoPx);
+    outTree->Branch("phoPy", &phoPy);
+    outTree->Branch("phoPz", &phoPz);
+    outTree->Branch("phoRhIds", &phoRhIds);
+	//    outTree->Branch("phoIsPFPhoton", &phoIsPFPhoton);
+	//    outTree->Branch("phoIsStdPhoton", &phoIsStdPhoton);
+    //outTree->Branch("phoHasConTracks", &phoHasConTracks);
+    outTree->Branch("phoIsPixelSeed", &phoIsPixelSeed);
+	//    outTree->Branch("phoIsPhoton", &phoIsPhoton);
+    outTree->Branch("phoIsEB", &phoIsEB);
+    //outTree->Branch("phoIsEE", &phoIsEE);
+    //outTree->Branch("phoIsEBGap", &phoIsEBGap);
+    //outTree->Branch("phoIsEBEtaGap", &phoIsEBEtaGap);
+    //outTree->Branch("phoIsEBPhiGap", &phoIsEBPhiGap);
+    //outTree->Branch("phoIsEEGap", &phoIsEEGap);
+    //outTree->Branch("phoIsEERingGap", &phoIsEERingGap);
+    //outTree->Branch("phoIsEEDeeGap", &phoIsEEDeeGap);
+    //outTree->Branch("phoIsEBEEGap", &phoIsEBEEGap);
 
-    PhotonBM.makeBranch("phoPt","phoPt",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("phoEnergy","phoEnergy",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("phoPhi","phoPhi",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("phoEta","phoEta",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("phoPx","phoPx",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("phoPy","phoPy",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("phoPz","phoPz",KUCMSBranch::VFLOAT);
+    //outTree->Branch("phoHadOverEM", &phoHadOverEM);
+    //outTree->Branch("phoHadOverEMVaid", &phoHadOverEMVaid);
+    outTree->Branch("phohadTowOverEM", &phohadTowOverEM);
+    //outTree->Branch("phohadTowOverEMValid", &phohadTowOverEMValid);
+    //outTree->Branch("phoE1x5", &phoE1x5);
+    //outTree->Branch("phoE2x5", &phoE2x5);
+    //outTree->Branch("phoE3x3", &phoE3x3);
+    //outTree->Branch("phoE5x5", &phoE5x5);
+    //outTree->Branch("phoMaxEnergyXtal", &phoMaxEnergyXtal);
+    //outTree->Branch("phoSigmaEtaEta", &phoSigmaEtaEta);
+    outTree->Branch("phoSigmaIEtaIEta", &phoSigmaIEtaIEta);
 
-    PhotonBM.makeBranch("phoRhIds","phoRhIds",KUCMSBranch::VVUINT);
-    PhotonBM.makeBranch("phoIsPixelSeed","phoIsPixelSeed",KUCMSBranch::VBOOL);
-    PhotonBM.makeBranch("phoIsEB","phoIsEB",KUCMSBranch::VBOOL);
+    //outTree->Branch("phoR1x5", &phoR1x5);
+    //outTree->Branch("phoR2x5", &phoR2x5);
+    outTree->Branch("phoR9", &phoR9);
+    //outTree->Branch("phoFull5x5_e1x5", &phoFull5x5_e1x5);
+    //outTree->Branch("phoFull5x5_e2x5", &phoFull5x5_e2x5);
+    //outTree->Branch("phoFull5x5_e3x3", &phoFull5x5_e3x3);
+    //outTree->Branch("phoFull5x5_e5x5", &phoFull5x5_e5x5);
+    //outTree->Branch("phoFull5x5_maxEnergyXtal", &phoFull5x5_maxEnergyXtal);
+    //outTree->Branch("phoFull5x5_sigmaEtaEta", &phoFull5x5_sigmaEtaEta);
+    //outTree->Branch("phoFull5x5_sigmaIEtaIEta", &phoFull5x5_sigmaIEtaIEta);
+    //outTree->Branch("phoFull5x5_r1x5 ", &phoFull5x5_r1x5);
+    //outTree->Branch("phoFull5x5_r2x5 ", &phoFull5x5_r2x5);
+    //outTree->Branch("phoFull5x5_r9", &phoFull5x5_r9);
 
-    PhotonBM.makeBranch("phoHadTowOverEM","phoHadTowOverEM",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("phoSigmaIEtaIEta","phoSigmaIEtaIEta",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("phoR9","phoR9",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("phoEcalRHSumEtConeDR04","phoEcalRHSumEtConeDR04",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("phoHcalTowerSumEtBcConeDR04","phoHcalTowerSumEtBcConeDR04",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("phoTrkSumPtSolidConeDR04","phoTrkSumPtSolidConeDR04",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("phoTrkSumPtHollowConeDR04","phoTrkSumPtHollowConeDR04",KUCMSBranch::VFLOAT);
+    //outTree->Branch("phoNSatXtals", &phoNSatXtals);
+    //outTree->Branch("phoIsSeedSat", &phoIsSeedSat);
 
-    PhotonBM.makeBranch("phoGenIdx","phoGenIdx",KUCMSBranch::VUINT);
-    PhotonBM.makeBranch("phoGenDr","phoGenDr",KUCMSBranch::VFLOAT);
+    //outTree->Branch("phoMipChi2", &phoMipChi2);
+    //outTree->Branch("phoMipTotEnergy", &phoMipTotEnergy);
+    //outTree->Branch("phoMipSlope", &phoMipSlope);
+    //outTree->Branch("phoMipInter", &phoMipInter);
 
-    PhotonBM.makeBranch("phoSMaj","phoSMaj",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("phoSMin","phoSMin",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("phoSAlp","phoSAlp",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("phoCovEtaEta","phoCovEtaEta",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("phoCovEtaPhi","phoCovEtaPhi",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("phoCovPhiPhi","phoCovPhiPhi",KUCMSBranch::VFLOAT);
+    //outTree->Branch("phoMipNHitCone", &phoMipNHitCone);
+    //outTree->Branch("phoMipIsHalo", &phoMipIsHalo);
 
-    PhotonBM.initBranches(outTree);
+    outTree->Branch("phoEcalRHSumEtConeDR04", &phoEcalRHSumEtConeDR04);
+    //outTree->Branch("phoHcalTwrSumEtConeDR04", &phoHcalTwrSumEtConeDR04);
+    outTree->Branch("phoHcalTowerSumEtBcConeDR04", &phoHcalTowerSumEtBcConeDR04);
+    outTree->Branch("phoTrkSumPtSolidConeDR04", &phoTrkSumPtSolidConeDR04);
+    outTree->Branch("phoTrkSumPtHollowConeDR04", &phoTrkSumPtHollowConeDR04);
+    //outTree->Branch("phoNTrkSolidConeDR04", &phoNTrkSolidConeDR04);
+    //outTree->Branch("phoNTrkHollowConeDR04", &phoNTrkHollowConeDR04);
+
+    //outTree->Branch("genPhoPt", &genPhoPt);
+    //outTree->Branch("genPhoEnergy", &genPhoEnergy);
+    //outTree->Branch("genPhoPhi", &genPhoPhi);
+    //outTree->Branch("genPhoEta", &genPhoEta);
+    //outTree->Branch("genPhoPx", &genPhoPx);
+    //outTree->Branch("genPhoPy", &genPhoPy);
+    //outTree->Branch("genPhoPz", &genPhoPz);
+    //outTree->Branch("genPhoPdgId", &genPhoPdgId);
+    //outTree->Branch("genPhoLLP", &genPhoLlp);
+    outTree->Branch("phoGenIdx", &phoGenIdx);
+    outTree->Branch("phoGenDr", &phoGenDr);
+
+    outTree->Branch("phoSMaj", &phoSMaj);
+    outTree->Branch("phoSMin", &phoSMin);
+    outTree->Branch("phoSAlp", &phoSAlp);
+    outTree->Branch("phoCovEtaEta", &phoCovEtaEta);
+    outTree->Branch("phoCovEtaPhi", &phoCovEtaPhi);
+    outTree->Branch("phoCovPhiPhi", &phoCovPhiPhi);
+
+    //outTree->Branch("phoIdBools", &phoIdBools);
 
 }//<<>>setBranchesPhotons()
 
@@ -1129,106 +1325,186 @@ void KUCMSNtupilizer::processPhotons(){
 
     if( DEBUG ) std::cout << "Processing Photons" << std::endl;
 
-	PhotonBM.clearBranches();
+    phoSeedTOFTime.clear();
+    //phoCMeanTime.clear();
+    phoPt.clear();
+    phoEnergy.clear();
+    phoPhi.clear();
+    phoEta.clear();
+    phoPx.clear();
+    phoPy.clear();
+    phoPz.clear();
+    phoRhIds.clear();
+
+    phoIsPFPhoton.clear();
+    phoIsStdPhoton.clear();
+    phoHasConTracks.clear();
+    phoIsPixelSeed.clear();
+    phoIsPhoton.clear();
+    phoIsEB.clear();
+    phoIsEE.clear();
+    phoIsEBGap.clear();
+    phoIsEBEtaGap.clear();
+    phoIsEBPhiGap.clear();
+    phoIsEEGap.clear();
+    phoIsEERingGap.clear();
+    phoIsEEDeeGap.clear();
+    phoIsEBEEGap.clear();
+
+    phoHadOverEM.clear();
+    phoHadOverEMVaid.clear();
+    phohadTowOverEM.clear();
+    phohadTowOverEMValid.clear();
+    phoE1x5.clear();
+    phoE2x5.clear();
+    phoE3x3.clear();
+    phoE5x5.clear();
+    phoMaxEnergyXtal.clear();
+    phoSigmaEtaEta.clear();
+    phoSigmaIEtaIEta.clear();
+
+    phoR1x5.clear();
+    phoR2x5.clear();
+    phoR9.clear();
+    phoFull5x5_e1x5.clear();
+    phoFull5x5_e2x5.clear();
+    phoFull5x5_e3x3.clear();
+    phoFull5x5_e5x5.clear();
+    phoFull5x5_maxEnergyXtal.clear();
+    phoFull5x5_sigmaEtaEta.clear();
+    phoFull5x5_sigmaIEtaIEta.clear();
+    phoFull5x5_r1x5.clear();
+    phoFull5x5_r2x5.clear();
+    phoFull5x5_r9.clear();
+    phoNSatXtals.clear();
+    phoIsSeedSat.clear();
+
+    phoMipChi2.clear();
+    phoMipTotEnergy.clear();
+    phoMipSlope.clear();
+    phoMipInter.clear();
+    phoMipNHitCone.clear();
+    phoMipIsHalo.clear();
+
+    phoEcalRHSumEtConeDR04.clear();
+    phoHcalTwrSumEtConeDR04.clear();
+    phoHcalTowerSumEtBcConeDR04.clear();
+    phoTrkSumPtSolidConeDR04.clear();
+    phoTrkSumPtHollowConeDR04.clear();
+    phoNTrkSolidConeDR04.clear();
+    phoNTrkHollowConeDR04.clear();
+
+    phoGenIdx.clear();
+    phoGenDr.clear();
+
+    phoSMaj.clear();
+    phoSMin.clear();
+    phoSAlp.clear();
+
+    phoCovEtaEta.clear();
+    phoCovEtaPhi.clear();
+    phoCovPhiPhi.clear();
 
     for( const auto &photon : fphotons ){
 
-        float phoPt = photon.pt();
-        float phoEnergy = photon.energy();
-        float phoPhi = photon.phi();
-        float phoEta = photon.eta();
-        float phoPx = photon.px();
-        float phoPy = photon.py();
-        float phoPz = photon.pz();
+        phoPt.push_back(photon.pt());
+        phoEnergy.push_back(photon.energy());
+        phoPhi.push_back(photon.phi());
+        phoEta.push_back(photon.eta());
+        phoPx.push_back(photon.px());
+        phoPy.push_back(photon.py());
+        phoPz.push_back(photon.pz());
 
-        //float phoHadOverEM = photon.hadronicOverEm();
-        //float phoHadOverEMVaid = photon.hadronicOverEmValid();
-        float phoHadTowOverEM = photon.hadTowOverEm();
-        //float phoHadTowOverEMValid = photon.hadTowOverEmValid();
-        //float phoMaxEnergyXtal = photon.maxEnergyXtal();
-        //float phoSigmaEtaEta = photon.sigmaEtaEta();
-        float phoSigmaIEtaIEta = photon.sigmaIetaIeta();
+        phoIsPFPhoton.push_back(photon.isPFlowPhoton()) ;
+        phoIsStdPhoton.push_back(photon.isStandardPhoton());
+        phoHasConTracks.push_back(photon.hasConversionTracks());
+        phoIsPixelSeed.push_back(photon.hasPixelSeed());
+        phoIsPhoton.push_back(photon.isPhoton());
+        phoIsEB.push_back(photon.isEB());
+        phoIsEE.push_back(photon.isEE());
+        phoIsEBGap.push_back(photon.isEBGap());
+        phoIsEBEtaGap.push_back(photon.isEBEtaGap());
+        phoIsEBPhiGap.push_back(photon.isEBPhiGap());
+        phoIsEEGap.push_back(photon.isEEGap());
+        phoIsEERingGap.push_back(photon.isEERingGap());
+        phoIsEEDeeGap.push_back(photon.isEEDeeGap());
+        phoIsEBEEGap.push_back(photon.isEBEEGap());
 
-        //float phoR1x5 = photon.r1x5();
-        //float phoR2x5 = photon.r2x5();
-        float phoR9 = photon.r9();
+        phoHadOverEM.push_back(photon.hadronicOverEm());
+        phoHadOverEMVaid.push_back(photon.hadronicOverEmValid());
+        phohadTowOverEM.push_back(photon.hadTowOverEm());
+        phohadTowOverEMValid.push_back(photon.hadTowOverEmValid());
+        phoE1x5.push_back(photon.e1x5());
+        phoE2x5.push_back(photon.e2x5());
+        phoE3x3.push_back(photon.e3x3());
+        phoE5x5.push_back(photon.e5x5());
+        phoMaxEnergyXtal.push_back(photon.maxEnergyXtal());
+        phoSigmaEtaEta.push_back(photon.sigmaEtaEta() );
+        phoSigmaIEtaIEta.push_back(photon.sigmaIetaIeta() );
 
-        float phoEcalRHSumEtConeDR04 = photon.ecalRecHitSumEtConeDR04();
-        //float phoHcalTwrSumEtConeDR04 = photon.hcalTowerSumEtConeDR04();
-        float phoHcalTowerSumEtBcConeDR04 = photon.hcalTowerSumEtBcConeDR04();
-        float phoTrkSumPtSolidConeDR04 = photon.trkSumPtSolidConeDR04();
-        float phoTrkSumPtHollowConeDR04 = photon.trkSumPtHollowConeDR04();
-        //float phoNTrkSolidConeDR04 = photon.nTrkSolidConeDR04();
-        //float phoNTrkHollowConeDR04 = photon.nTrkHollowConeDR04();
+        phoR1x5.push_back(photon.r1x5());
+        phoR2x5.push_back(photon.r2x5());
+        phoR9.push_back(photon.r9());
+        phoFull5x5_e1x5.push_back(photon.full5x5_e1x5());
+        phoFull5x5_e2x5.push_back(photon.full5x5_e2x5());
+        phoFull5x5_e3x3.push_back(photon.full5x5_e3x3());
+        phoFull5x5_e5x5.push_back(photon.full5x5_e5x5());
+        phoFull5x5_maxEnergyXtal.push_back(photon.full5x5_maxEnergyXtal());
+        phoFull5x5_sigmaEtaEta.push_back(photon.full5x5_sigmaEtaEta());
+        phoFull5x5_sigmaIEtaIEta.push_back(photon.full5x5_sigmaIetaIeta());
+        //phoFull5x5_r1x5.push_back(photon.full5x5_r1x5());
+        //phoFull5x5_r2x5.push_back(photon.full5x5_r2x5());
+        phoFull5x5_r9.push_back(photon.full5x5_r9());
 
-        PhotonBM.fillBranch("phoPt",phoPt);
-        PhotonBM.fillBranch("phoEnergy",phoEnergy);
-        PhotonBM.fillBranch("phoPhi",phoPhi);
-        PhotonBM.fillBranch("phoEta",phoEta);
-        PhotonBM.fillBranch("phoPx",phoPx);
-        PhotonBM.fillBranch("phoPy",phoPy);
-        PhotonBM.fillBranch("phoPz",phoPz);
+        phoNSatXtals.push_back(photon.nSaturatedXtals());
+        phoIsSeedSat.push_back(photon.isSeedSaturated());
+        phoMipChi2.push_back(photon.mipChi2());
+        phoMipTotEnergy.push_back(photon.mipTotEnergy());
+        phoMipSlope.push_back(photon.mipSlope());
+        phoMipInter.push_back(photon.mipIntercept());
+        phoMipNHitCone.push_back(photon.mipNhitCone());
+        phoMipIsHalo.push_back(photon.mipIsHalo());
 
-        //PhotonBM.fillBranch("phoHadOverEM",phoHadOverEm);
-        //PhotonBM.fillBranch("phoHadOverEMVaid",phoHadOverEmValid);
-        PhotonBM.fillBranch("phoHadTowOverEM",phoHadTowOverEM);
-        //PhotonBM.fillBranch("phohadTowOverEMValid",phoHadTowOverEmValid);
-        //PhotonBM.fillBranch("phoMaxEnergyXtal",phoMaxEnergyXtal);
-        //PhotonBM.fillBranch("phoSigmaEtaEta",phoSigmaEtaEta);
-        PhotonBM.fillBranch("phoSigmaIEtaIEta",phoSigmaIEtaIEta);
-
-        //PhotonBM.fillBranch("phoR1x5",phoR1x5);
-        //PhotonBM.fillBranch("phoR2x5",phoR2x5);
-        PhotonBM.fillBranch("phoR9",phoR9);
-
-        PhotonBM.fillBranch("phoEcalRHSumEtConeDR04",phoEcalRHSumEtConeDR04);
-        //PhotonBM.fillBranch("phoHcalTwrSumEtConeDR04",phoHcalTwrSumEtConeDR04);
-        PhotonBM.fillBranch("phoHcalTowerSumEtBcConeDR04",phoHcalTowerSumEtBcConeDR04);
-        PhotonBM.fillBranch("phoTrkSumPtSolidConeDR04",phoTrkSumPtSolidConeDR04);
-        PhotonBM.fillBranch("phoTrkSumPtHollowConeDR04",phoTrkSumPtHollowConeDR04);
-        //PhotonBM.fillBranch("phoNTrkSolidConeDR04",phoNTrkSolidConeDR04);
-        //PhotonBM.fillBranch("phoNTrkHollowConeDR04",phoNTrkHollowConeDR04);
+        phoEcalRHSumEtConeDR04.push_back(photon.ecalRecHitSumEtConeDR04());
+        phoHcalTwrSumEtConeDR04.push_back(photon.hcalTowerSumEtConeDR04());
+        phoHcalTowerSumEtBcConeDR04.push_back(photon.hcalTowerSumEtBcConeDR04() );
+        phoTrkSumPtSolidConeDR04.push_back(photon.trkSumPtSolidConeDR04());
+        phoTrkSumPtHollowConeDR04.push_back(photon.trkSumPtHollowConeDR04());
+        phoNTrkSolidConeDR04.push_back(photon.nTrkSolidConeDR04());
+        phoNTrkHollowConeDR04.push_back(photon.nTrkHollowConeDR04());
 
         if( DEBUG ) std::cout << " --- Proccesssing : " << photon << std::endl;
         const auto &phosc = photon.superCluster().isNonnull() ? photon.superCluster() : photon.parentSuperCluster();
         const auto scptr = phosc.get();
-        const auto &seedDetId = scptr->seed()->seed();// seed detid
-        const auto isEB = (seedDetId.subdetId() == EcalBarrel);// which subdet
-       //const auto recHits = ( isEB ? &(*recHitsEB_) : &(*recHitsEE_) );
+        const auto &seedDetId = scptr->seed()->seed(); // seed detid
+        const auto isEB = (seedDetId.subdetId() == EcalBarrel); // which subdet
+        //const auto recHits = ( isEB ? &(*recHitsEB_) : &(*recHitsEE_) );
         const auto recHits = ( isEB ? recHitsEB_.product() : recHitsEE_.product() );
 
         if( DEBUG ) std::cout << " --- Finding Moments & Covariences : " << scptr << std::endl;
         const auto ph2ndMoments = noZS::EcalClusterTools::cluster2ndMoments( *(scptr->seed()), *recHits );
         const auto lCov = EcalClusterTools::covariances( *(scptr->seed()), recHits, ecalTopology, ecalGeometry );
         if( DEBUG ) std::cout << " --- Storing Moments & Covariences : " << scptr << std::endl;
-
-        float phoSMaj = ph2ndMoments.sMaj;
-        float phoSMin = ph2ndMoments.sMin;
-        float phoSAlp = ph2ndMoments.alpha;
-        float phoCovEtaEta = lCov[0];
-        float phoCovEtaPhi = lCov[1];
-        float phoCovPhiPhi = lCov[2];
-
-        PhotonBM.fillBranch("phoSMaj",phoSMaj);
-        PhotonBM.fillBranch("phoSMin",phoSMin);
-        PhotonBM.fillBranch("phoSAlp",phoSAlp);
-        PhotonBM.fillBranch("phoCovEtaEta",phoCovEtaEta);
-        PhotonBM.fillBranch("phoCovEtaPhi",phoCovEtaPhi);
-        PhotonBM.fillBranch("phoCovPhiPhi",phoCovPhiPhi);
+        phoSMaj.push_back(ph2ndMoments.sMaj);
+        phoSMin.push_back(ph2ndMoments.sMin);
+        phoSAlp.push_back(ph2ndMoments.alpha);
+        phoCovEtaEta.push_back(lCov[0]);
+        phoCovEtaPhi.push_back(lCov[1]);
+        phoCovPhiPhi.push_back(lCov[2]);
 
 		if( DEBUG ) std::cout << " --- Gathering SC info : " << scptr << std::endl;
         scGroup phoSCGroup{*scptr};
         auto phoRhGroup = getRHGroup( phoSCGroup, 0.5 );
         auto phoRhIdsGroup = getRhGrpIDs( phoRhGroup );
-        PhotonBM.fillBranch("phoRhIds",phoRhIdsGroup);
+        phoRhIds.push_back(phoRhIdsGroup);
 		setRecHitUsed(phoRhIdsGroup);
         if( DEBUG ) std::cout << " -- gedPhotons : " << scptr << " #: " << phoRhGroup.size() << std::endl;
         //auto tofTimes = getLeadTofRhTime( phoRhGroup, vtxX, vtxY, vtxZ );
         //auto timeStats = getTimeDistStats( tofTimes, phoRhGroup );
         auto seedTOFTime = getSeedTofTime( *scptr, vtxX, vtxY, vtxZ );
         //auto phoLeadTOFTime =  getLeadTofTime( phoRhGroup, vtxX, vtxY, vtxZ );
-        PhotonBM.fillBranch("phoSeedTOFTime",seedTOFTime);
-        //PhotonBM.fillBranch("phoCMeanTime",timeStats[6]);
+        phoSeedTOFTime.push_back(seedTOFTime);
+        //phoCMeanTime.push_back(timeStats[6]);
 
         // GenParticle Info for photon  -------------------------------------------------------------------
         if( hasGenInfo ){
@@ -1238,8 +1514,8 @@ void KUCMSNtupilizer::processPhotons(){
             if( DEBUG) std::cout << " Matched Eta: " <<  photon.eta() << " gen: " << genInfo[4] << " match: " << genInfo[2] << std::endl;
             if( DEBUG) std::cout << " Matched Phi: " <<  photon.phi() << " gen: " << genInfo[5] << " match: " << genInfo[3] << std::endl;
             if( DEBUG ) std::cout << " ---------------------------------------------------- " << std::endl;
-            PhotonBM.fillBranch("phoGenIdx",genInfo[1]);
-            PhotonBM.fillBranch("phoGenDr",genInfo[0]);
+            phoGenIdx.push_back(genInfo[1]);
+            phoGenDr.push_back(genInfo[0]);
 
         }//<<>>if( hasGenInfo )
 
@@ -1250,46 +1526,54 @@ void KUCMSNtupilizer::processPhotons(){
 //-------------------------------------------------------------------------------------------
 void KUCMSNtupilizer::setBranchesElectrons(){
 
-    ElectronBM.makeBranch("eleRhIds","eleRhIds",KUCMSBranch::VVUINT); 
-    ElectronBM.makeBranch("eleSeedTOFTime","eleSeedTOFTime",KUCMSBranch::VFLOAT);
-    ElectronBM.makeBranch("elePt","elePt",KUCMSBranch::VFLOAT);
-    ElectronBM.makeBranch("eleEnergy","eleEnergy",KUCMSBranch::VFLOAT);
-    ElectronBM.makeBranch("elePhi","elePhi",KUCMSBranch::VFLOAT);
-    ElectronBM.makeBranch("eleEta","eleEta",KUCMSBranch::VFLOAT);
-    ElectronBM.makeBranch("elePx","elePx",KUCMSBranch::VFLOAT);
-    ElectronBM.makeBranch("elePy","elePy",KUCMSBranch::VFLOAT);
-    ElectronBM.makeBranch("elePz","elePz",KUCMSBranch::VFLOAT);
-    ElectronBM.makeBranch("eleGenIdx","eleGenIdx",KUCMSBranch::VUINT);
-    ElectronBM.makeBranch("eleGenDr","eleGenDr",KUCMSBranch::VFLOAT);
-    ElectronBM.makeBranch("eleIdBools","eleIdBools",KUCMSBranch::VBOOL);
+    //    uInt                nElectrons;
+    //    std::vector<float>  eleSeedTOFTimes, eleCMeanTimes;
+    //    std::vector<float>  eleSc3dEx, eleSc3dEy, eleSc3dEz, eleSc3dEv, eleSc3dEslope, eleSc3dEchisp;
+    //    std::vector<float>  eleSc2dEx, eleSc2dEy, eleSc2dEv, eleSc2dEslope, eleSc2dEchisp;
+    //    std::vector<double> elePt, eleEnergy, elePhi, eleEta, elePx, elePy, elePz;
+    outTree->Branch("eleRhIds", &eleRhIds); 
+    outTree->Branch("eleSeedTOFTime", &eleSeedTOFTime);
+    //outTree->Branch("eleCMeanTime", &eleCMeanTime);
+    outTree->Branch("elePt", &elePt);
+    outTree->Branch("eleEnergy", &eleEnergy);
+    outTree->Branch("elePhi", &elePhi);
+    outTree->Branch("eleEta", &eleEta);
+    outTree->Branch("elePx", &elePx);
+    outTree->Branch("elePy", &elePy);
+    outTree->Branch("elePz", &elePz);
+    outTree->Branch("eleGenIdx", &phoGenIdx);
+    outTree->Branch("eleGenDr", &phoGenDr);
 
-    ElectronBM.initBranches(outTree);
+    outTree->Branch("eleIdBools", &eleIdBools);
 
 }//<<>>setBranchesElectrons()
 
 void KUCMSNtupilizer::processElectrons(){ 
 
-	ElectronBM.clearBranches();
+    eleSeedTOFTime.clear();
+    //eleCMeanTime.clear();
+    elePt.clear();
+    eleEnergy.clear();
+    elePhi.clear();
+    eleEta.clear();
+    elePx.clear();
+    elePy.clear();
+    elePz.clear();
+    //eleRhIdsGroup.clear();
+    eleGenIdx.clear();
+    eleGenDr.clear();
 
     scGroup jetEleSCGroup;
     if( DEBUG ) std::cout << "Processing Electrons" << std::endl;
     for( const auto &electron : felectrons ){
 
-        float elePt = electron.pt();
-        float eleEnergy = electron.energy();
-        float elePhi = electron.phi();
-        float eleEta = electron.eta();
-        float elePx = electron.px();
-        float elePy = electron.py();
-        float elePz = electron.pz();
-
-        ElectronBM.fillBranch("elePt",elePt);
-        ElectronBM.fillBranch("eleEnergy",eleEnergy);
-        ElectronBM.fillBranch("elePhi",elePhi);
-        ElectronBM.fillBranch("eleEta",eleEta);
-        ElectronBM.fillBranch("elePx",elePx);
-        ElectronBM.fillBranch("elePy",elePy);
-        ElectronBM.fillBranch("elePz",elePz);
+        elePt.push_back(electron.pt());
+        eleEnergy.push_back(electron.energy());
+        elePhi.push_back(electron.phi());
+        eleEta.push_back(electron.eta());
+        elePx.push_back(electron.px());
+        elePy.push_back(electron.py());
+        elePz.push_back(electron.pz());
 
         if( DEBUG ) std::cout << " --- Proccesssing : " << electron << std::endl;
         const auto &elesc = electron.superCluster().isNonnull() ? electron.superCluster() : electron.parentSuperCluster();
@@ -1297,14 +1581,15 @@ void KUCMSNtupilizer::processElectrons(){
         scGroup eleSCGroup{*scptr};
         auto eleRhGroup = getRHGroup( eleSCGroup, 0.5 );
         auto eleRhIdsGroup = getRhGrpIDs( eleRhGroup );
-        ElectronBM.fillBranch("eleRhIds",eleRhIdsGroup );
+        eleRhIds.push_back( eleRhIdsGroup );
 		setRecHitUsed( eleRhIdsGroup );
         if( DEBUG ) std::cout << " -- Electrons : " << scptr << " #: " << eleRhGroup.size() << std::endl;
         auto tofTimes = getLeadTofRhTime( eleRhGroup, vtxX, vtxY, vtxZ );
         //auto timeStats = getTimeDistStats( tofTimes, eleRhGroup );
-        float seedTOFTime = getSeedTofTime( *scptr, vtxX, vtxY, vtxZ );
+        auto seedTOFTime = getSeedTofTime( *scptr, vtxX, vtxY, vtxZ );
 
-        ElectronBM.fillBranch("eleSeedTOFTime",seedTOFTime);
+        eleSeedTOFTime.push_back(seedTOFTime);
+        //eleCMeanTime.push_back(timeStats[6]);
 
         // GenParticle Info for electron  -------------------------------------------------------------------
         if( hasGenInfo ){
@@ -1314,8 +1599,8 @@ void KUCMSNtupilizer::processElectrons(){
             if( DEBUG) std::cout << " Matched Eta: " <<  electron.eta() << " gen: " << genInfo[4] << " match: " << genInfo[2] << std::endl;
             if( DEBUG) std::cout << " Matched Phi: " <<  electron.phi() << " gen: " << genInfo[5] << " match: " << genInfo[3] << std::endl;
             if( DEBUG ) std::cout << " ---------------------------------------------------- " << std::endl;
-            ElectronBM.fillBranch("eleGenIdx",genInfo[1]);
-            ElectronBM.fillBranch("eleGenDr",genInfo[0]);
+            eleGenIdx.push_back(genInfo[1]);
+            eleGenDr.push_back(genInfo[0]);
 
         }//<<>>if( hasGenInfo )
 
@@ -1326,44 +1611,44 @@ void KUCMSNtupilizer::processElectrons(){
 //----------------------------------------------------------------------
 void KUCMSNtupilizer::setBranchesGenParts(){
 
-    GenParticlesBM.makeBranch("genPt","genPt",KUCMSBranch::VFLOAT);
-    GenParticlesBM.makeBranch("genEnergy","genEnergy",KUCMSBranch::VFLOAT);
-    GenParticlesBM.makeBranch("genPhi","genPhi",KUCMSBranch::VFLOAT);
-    GenParticlesBM.makeBranch("genEta","genEta",KUCMSBranch::VFLOAT);
-    GenParticlesBM.makeBranch("genPx","genPx",KUCMSBranch::VFLOAT);
-    GenParticlesBM.makeBranch("genPy","genPy",KUCMSBranch::VFLOAT);
-    GenParticlesBM.makeBranch("genPz","genPz",KUCMSBranch::VFLOAT);
-    GenParticlesBM.makeBranch("genPdgId","genPdgId",KUCMSBranch::VUINT);
-
-	GenParticlesBM.initBranches(outTree);
+    //    uInt nGenParts;
+    //    std::vector<double> genPt, genEnergy, genPhi, genEta, genPx, genPy, genPz;
+    //    std::vector<int>    genPdgId, genLLP;
+    outTree->Branch("genPt", &genPt);
+    outTree->Branch("genEnergy", &genEnergy);
+    outTree->Branch("genPhi", &genPhi);
+    outTree->Branch("genEta", &genEta);
+    outTree->Branch("genPx", &genPx);
+    outTree->Branch("genPy", &genPy);
+    outTree->Branch("genPz", &genPz);
+    outTree->Branch("genPdgId", &genPdgId);
 
 }//<<>>setBranchesGenParts()
 
 void KUCMSNtupilizer::processGenPart(){
 
     if( DEBUG ) std::cout << "Processing GenParticles" << std::endl;
-	GenParticlesBM.clearBranches();
+
+    genPt.clear();
+    genEnergy.clear();
+    genPhi.clear();
+    genEta.clear();
+    genPx.clear();
+    genPy.clear();
+    genPz.clear();
+    genPdgId.clear();
 
     if( DEBUG ) std::cout << " - enetering Genpart loop" << std::endl;
     for (const auto &genpart : fgenparts ){
 
-        float genPt = genpart.pt();
-        float genEnergy = genpart.energy();
-        float genPhi = genpart.phi();
-        float genEta = genpart.eta();
-        uInt genPdgId = genpart.pdgId();
-        float genPx = genpart.px();
-        float genPy = genpart.py();
-        float genPz = genpart.pz();
-
-        GenParticlesBM.fillBranch("genPt",genPt);
-        GenParticlesBM.fillBranch("genEnergy",genEnergy);
-        GenParticlesBM.fillBranch("genPhi",genPhi);
-        GenParticlesBM.fillBranch("genEta",genEta);
-        GenParticlesBM.fillBranch("genPdgId",genPdgId);
-        GenParticlesBM.fillBranch("genPx",genPx);
-        GenParticlesBM.fillBranch("genPy",genPy);
-        GenParticlesBM.fillBranch("genPz",genPz);
+        genPt.push_back(genpart.pt());
+        genEnergy.push_back(genpart.energy());
+        genPhi.push_back(genpart.phi());
+        genEta.push_back(genpart.eta());
+        genPdgId.push_back(genpart.pdgId());
+        genPx.push_back(genpart.px());
+        genPy.push_back(genpart.py());
+        genPz.push_back(genpart.pz());
 
     }//<<>> for (const auto genpart : fgenparts )
 
@@ -1372,24 +1657,73 @@ void KUCMSNtupilizer::processGenPart(){
 //-----------------------------------------------------------------------
 void KUCMSNtupilizer::setBranchesRecHits(){
 
-    EcalRecHitBM.makeBranch("rhEnergy","rhEnergy",KUCMSBranch::VFLOAT);
-    EcalRecHitBM.makeBranch("rhTime","rhTime",KUCMSBranch::VFLOAT);
-    EcalRecHitBM.makeBranch("rhTOF","rhTOF",KUCMSBranch::VFLOAT);
-    EcalRecHitBM.makeBranch("rhID","rhID",KUCMSBranch::VUINT);
-    EcalRecHitBM.makeBranch("rhisOOT","rhisOOT",KUCMSBranch::VBOOL);
-    EcalRecHitBM.makeBranch("rhSwCross","rhSwCross",KUCMSBranch::VFLOAT);	
-
-	EcalRecHitBM.initBranches(outTree);
+    //    int nRecHits;
+    //    std::vector<float>  rhPosX, rhPosY, rhPosZ, rhPosEta, rhPosPhi;
+    //    std::vector<uInt>   rhID, rhXtalI1, rhXtalI2, rhSubdet;
+    //    std::vector<float>  rhEnergy, rhTime, rhTimeErr, rhTOF;
+    //    std::vector<bool>   rhisOOT, rhisGS6, rhisGS1;
+    //    std::vector<float>  rhadcToGeV;
+    //    std::vector<float>  rhped12, rhped6, rhped1;
+    //    std::vector<float>  rhpedrms12, rhpedrms6, rhpedrms1;
+    //outTree->Branch("rhPosX", &rhPosX);
+    //outTree->Branch("rhPosY", &rhPosY);
+    //outTree->Branch("rhPosZ", &rhPosZ);
+    //outTree->Branch("rhPosEta", &rhPosEta);
+    //outTree->Branch("rhPosPhi", &rhPosPhi);
+    outTree->Branch("rhEnergy", &rhEnergy);
+    outTree->Branch("rhTime", &rhTime);
+    //outTree->Branch("rhTimeErr", &rhTimeErr);
+    outTree->Branch("rhTOF", &rhTOF);
+    outTree->Branch("rhID", &rhID);
+    //outTree->Branch("rhXtalI1", &rhXtalI1);
+    //outTree->Branch("rhXtalI2", &rhXtalI2);
+    //outTree->Branch("rhSubdet", &rhSubdet);
+    outTree->Branch("rhisOOT", &rhisOOT);
+    //outTree->Branch("rhAmplitude", &rhAmplitude); // <<<< ---------   calc and save this todo !!!!1
+    //outTree->Branch("rhisGS6", &rhisGS6);
+    //outTree->Branch("rhisGS1", &rhisGS1);
+    //outTree->Branch("rhadcToGeV", &rhadcToGeV);
+    //outTree->Branch("rhped12", &rhped12);
+    //outTree->Branch("rhped6", &rhped6);
+    //outTree->Branch("rhped1", &rhped1);
+    //outTree->Branch("rhpedrms12", &rhpedrms12);
+    //outTree->Branch("rhpedrms6", &rhpedrms6);
+    //outTree->Branch("rhpedrms1", &rhpedrms1);
 
 }//<<>>setBranchesRecHits()
 
 void KUCMSNtupilizer::processRecHits( float minRHEf ){
 
     if( DEBUG ) std::cout << "Processing RecHits" << std::endl;
-    
-	EcalRecHitBM.clearBranches();
-	
-	if( DEBUG ) std::cout << " - enetering RecHit loop" << std::endl;
+
+    rhPosX.clear();
+    rhPosY.clear();
+    rhPosZ.clear();
+    rhPosEta.clear();
+    rhPosPhi.clear();
+    rhID.clear();
+    rhXtalI1.clear();
+    rhXtalI2.clear();
+    rhSubdet.clear();
+    rhEnergy.clear();
+    rhTime.clear();
+    //rhTimeErr.clear();
+    rhTOF.clear();
+    rhisOOT.clear();
+    rhisGS6.clear();
+    rhisGS1.clear();
+    rhisWeird.clear();
+    rhisDiWeird.clear();
+    rhadcToGeV.clear();
+    rhSwCross.clear();
+    rhped12.clear();
+    rhped6.clear();
+    rhped1.clear();
+    rhpedrms12.clear();
+    rhpedrms6.clear();
+    rhpedrms1.clear();
+
+    if( DEBUG ) std::cout << " - enetering RecHit loop" << std::endl;
 
 	int nRecHits = frechits.size();
     for ( int it = 0; it < nRecHits; it++ ){
@@ -1400,39 +1734,59 @@ void KUCMSNtupilizer::processRecHits( float minRHEf ){
 		if( not used && recHit.energy() < minRHEf ) continue;
 
         const auto recHitID = getRawID(recHit);
-        const bool isEB = getIsEB(recHit); // which subdet
+        auto isEB = getIsEB(recHit); // which subdet
         const auto geometry( isEB ? barrelGeometry : endcapGeometry );
-        const auto recHitPos = geometry->getGeometry(recHit.detid())->getPosition();
+        auto recHitPos = geometry->getGeometry(recHit.detid())->getPosition();
         const auto rhX = recHitPos.x();
         const auto rhY = recHitPos.y();
         const auto rhZ = recHitPos.z();
-        const float d_rh = hypo(rhX,rhY,rhZ)/SOL;
-        const float d_pv = hypo(rhX-vtxX,rhY-vtxY,rhZ-vtxZ)/SOL;
-        //float swisscross(0.0);
-        //if( isEB ) swisscross = EcalTools::swissCross(recHitID, *recHitsEB_, 0.0, true);
-        //else swisscross = EcalTools::swissCross(recHitID, *recHitsEE_, 0.0, true);
-		const float swisscross = (isEB) ? 
-				EcalTools::swissCross(recHitID, *recHitsEB_, 0.0, true) : EcalTools::swissCross(recHitID, *recHitsEE_, 0.0, true);
+        const auto d_rh = hypo(rhX,rhY,rhZ)/SOL;
+        const auto d_pv = hypo(rhX-vtxX,rhY-vtxY,rhZ-vtxZ)/SOL;
+        float swisscross(0.0);
 
-        //const auto laser = laser_->getLaserCorrection(recHitID,evTime);
-        //const auto interCalibIter = interCalibMap->find(recHitID);
-        //const auto interCalib = ((interCalibIter != interCalibMap->end()) ? (*interCalibIter) : - 1.f);
-        //const float adcToGeV( isEB ? adcToGeVEB : adcToGeVEE );
-        //const auto & pediter = pedestals_->find(recHitID);
+        if( isEB ) swisscross = EcalTools::swissCross(recHitID, *recHitsEB_, 0.0, true);
+        else swisscross = EcalTools::swissCross(recHitID, *recHitsEE_, 0.0, true);
 
-		const float rhTime = recHit.time();
-		const bool rhIsOOT = recHit.checkFlag(EcalRecHit::kOutOfTime);
-		const float rhEnergy = recHit.energy();
-		const float rhAdjTime = rhTime-d_rh;  // Note : Margret adds d_rh to the time in her code & subtracts d_pv ( or TOF )
+        const auto laser = laser_->getLaserCorrection(recHitID,evTime);
+        const auto interCalibIter = interCalibMap->find(recHitID);
+        const auto interCalib = ((interCalibIter != interCalibMap->end()) ? (*interCalibIter) : - 1.f);
+        const float adcToGeV( isEB ? adcToGeVEB : adcToGeVEE );
+        const auto & pediter = pedestals_->find(recHitID);
 
-        EcalRecHitBM.fillBranch("rhID",recHitID);
-        EcalRecHitBM.fillBranch("rhTOF",d_pv);
-        EcalRecHitBM.fillBranch("rhTime",rhAdjTime);
-        EcalRecHitBM.fillBranch("rhisOOT",rhIsOOT);
-        EcalRecHitBM.fillBranch("rhEnergy",rhEnergy);
-        EcalRecHitBM.fillBranch("rhSwCross",swisscross);
-        //EcalRecHitBM.fillBranch("rhisWeird",recHit.checkFlag(EcalRecHit::kWeird));
-        //EcalRecHitBM.fillBranch("rhisDiWeird",recHit.checkFlag(EcalRecHit::kDiWeird));
+        rhID.push_back(recHitID);
+        rhPosX.push_back(rhX);
+        rhPosY.push_back(rhY);
+        rhPosZ.push_back(rhZ);
+        rhTOF.push_back(d_pv);
+        rhPosEta.push_back(recHitPos.eta());
+        rhPosPhi.push_back(recHitPos.phi());
+        rhTime.push_back(recHit.time()-d_rh); // Note : Margret adds d_rh to the time in her code & subtracts d_pv ( or TOF )
+        //rhTimeErr.push_back(recHit.timeError());
+        rhisOOT.push_back(recHit.checkFlag(EcalRecHit::kOutOfTime));
+        rhEnergy.push_back(recHit.energy());
+        rhSwCross.push_back(swisscross);
+        rhisWeird.push_back(recHit.checkFlag(EcalRecHit::kWeird));
+        rhisDiWeird.push_back(recHit.checkFlag(EcalRecHit::kDiWeird));
+        rhisGS6.push_back(recHit.checkFlag(EcalRecHit::kHasSwitchToGain6));
+        rhisGS1.push_back(recHit.checkFlag(EcalRecHit::kHasSwitchToGain1));
+        rhadcToGeV.push_back(laser*interCalib*adcToGeV);
+
+        if (pediter != pedestals_->end()){
+            const auto & ped = (*pediter);
+            rhped12.push_back(ped.mean(1));
+            rhped6.push_back(ped.mean(2));
+            rhped1.push_back(ped.mean(3));
+            rhpedrms12.push_back(ped.rms(1));
+            rhpedrms6.push_back(ped.rms(2));
+            rhpedrms1.push_back(ped.rms(3));
+        } else {
+            rhped12.push_back(0.0);
+            rhped6.push_back(0.0);
+            rhped1.push_back(0.0);
+            rhpedrms12.push_back(0.0);
+            rhpedrms6.push_back(0.0);
+            rhpedrms1.push_back(0.0);
+        }//<<>>if (pediter != pedestalsH->end())
 
     }//<<>>for (const auto recHit : *recHitsEB_ )   
 
