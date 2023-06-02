@@ -4,6 +4,7 @@
 <use name="FWCore/ServiceRegistry"/>
 <use name="PhysicsTools/UtilAlgos"/>
 <use name="CommonTools/Utils"/>
+<use name="CommonTools/Egamma"/>
 <use name="DataFormats/TrackReco"/>
 <use name="DataFormats/HLTReco"/>
 <use name="DataFormats/VertexReco"/>

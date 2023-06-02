@@ -87,6 +87,8 @@
 #include "RecoEcal/EgammaCoreTools/interface/EcalTools.h"
 #include "RecoEcal/EgammaCoreTools/interface/EcalClusterTools.h"
 #include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
+#include "CommonTools/Egamma/interface/ConversionTools.h"
+#include "RecoEgamma/EgammaTools/interface/EcalRegressionData.h"
 
 // Geometry
 #include "Geometry/Records/interface/CaloGeometryRecord.h"
@@ -295,6 +297,18 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
       	edm::EDGetTokenT<TrackCollection> tracksToken_;  //used to select what tracks to read from configuration file
       	edm::Handle<std::vector<reco::Track>> tracks_;
 
+		// Conversions ( for electron veto ) ---------------------------------
+
+		const edm::InputTag conversionsTag;
+		edm::EDGetTokenT<reco::ConversionCollection> conversionsToken_;
+		edm::Handle<reco::ConversionCollection> conversions_;
+
+		// BeamSpot ----------------------------------------------------------
+
+		const edm::InputTag beamSpotTag;
+		edm::EDGetTokenT<reco::BeamSpot> beamLineToken_;
+		edm::Handle<reco::BeamSpot> beamSpot_;
+
 		// Trigger  ----------------------------------------------------------
 
 		// Trigger Info -> From miniAOD code not converted
@@ -306,14 +320,14 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
         std::vector<std::string> filterNames;
 		// trigger results
         const edm::InputTag triggerResultsTag;
-        edm::EDGetTokenT<edm::TriggerResults> triggerResultsToken;
-        edm::Handle<edm::TriggerResults> triggerResultsH;
+        edm::EDGetTokenT<edm::TriggerResults> triggerResultsToken_;
+        edm::Handle<edm::TriggerResults> triggerResults_;
         // trigger objects
         const edm::InputTag triggerObjectsTag;
-        edm::EDGetTokenT<std::vector<pat::TriggerObjectStandAlone> > triggerObjectsToken;
-        edm::Handle<std::vector<pat::TriggerObjectStandAlone> > triggerObjectsH;
+        edm::EDGetTokenT<std::vector<pat::TriggerObjectStandAlone>> triggerObjectsToken_;
+        edm::Handle<std::vector<pat::TriggerObjectStandAlone>> triggerObjects_;
         // output triggers
-        std::map<std::string,std::vector<pat::TriggerObjectStandAlone> > triggerObjectsByFilterMap; 
+        std::map<std::string,std::vector<pat::TriggerObjectStandAlone>> triggerObjectsByFilterMap; 
 			// first index is filter label, second is trigger objects
 
 		KUCMSBranchManager TriggerBM;
@@ -608,7 +622,7 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
 		int llpGenChaseP( const reco::GenParticle kid, int depth );
 		void kidChase( std::vector<reco::CandidatePtr> kids, float vx, float vy, float vz );
         vector<float> kidTOFChain( std::vector<reco::CandidatePtr> kids, float cx, float cy, float cz  );		
-        vector<float>  getGenPartMatch( const reco::SuperCluster* scptr, std::vector<reco::GenParticle>  fgenparts );
+        vector<float>  getGenPartMatch( const reco::SuperCluster* scptr, std::vector<reco::GenParticle> fgenparts, float pt );
     
 
 };//<<>>class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {

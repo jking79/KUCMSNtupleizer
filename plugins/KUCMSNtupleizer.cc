@@ -42,13 +42,19 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig) :
 	
 	hasGenInfo(iConfig.existsAs<bool>("hasGenInfo")  ? iConfig.getParameter<bool>("hasGenInfo")  : true),
 
-	// triggers
-	//triggerResultsTag(iConfig.getParameter<edm::InputTag>("triggerResults")),
-	//triggerObjectsTag(iConfig.getParameter<edm::InputTag>("triggerObjects")),
+    // tracks
+    tracksTag(iConfig.getParameter<edm::InputTag>("tracks")),
 
-	// tracks
-	tracksTag(iConfig.getParameter<edm::InputTag>("tracks")),
-	
+	// conversions	
+	conversionsTag(iConfig.getParameter<edm::InputTag>("conversions")),
+
+	// beamSpot
+	beamSpotTag(iConfig.getParameter<edm::InputTag>("beamSpot")),
+
+	// triggers
+	triggerResultsTag(iConfig.getParameter<edm::InputTag>("triggerResults")),
+	triggerObjectsTag(iConfig.getParameter<edm::InputTag>("triggerObjects")),
+
 	// pfcands
 	pfcandTag(iConfig.getParameter<edm::InputTag>("pfcandidates")),
     pfCanTag(iConfig.getParameter<edm::InputTag>("particleflow")),
@@ -131,15 +137,21 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig) :
 	
 	if( DEBUG ) std::cout << "In constructor for KUCMSNtupilizer - tag and tokens" << std::endl;
 
+	// conversions
+	conversionsToken_			= consumes<reco::ConversionCollection>(conversionsTag);
+
+	// beamSpot
+	beamLineToken_				= consumes<reco::BeamSpot>(beamSpotTag);
+
 	// Triggers
-	//triggerResultsToken_ 	= consumes<edm::TriggerResults>(triggerResultsTag);
-	//triggerObjectsToken_ 	= consumes<std::vector<pat::TriggerObjectStandAlone>>(triggerObjectsTag);
+	triggerResultsToken_ 		= consumes<edm::TriggerResults>(triggerResultsTag);
+	triggerObjectsToken_ 		= consumes<std::vector<pat::TriggerObjectStandAlone>>(triggerObjectsTag);
 
 	// tracks 
 	tracksToken_				= consumes<std::vector<reco::Track>>(tracksTag);
 
 	// genparticles
-	// genpart_token_              = consumes<std::vector<pat::PackedGenParticle>>(genpartTag);
+	// genpart_token_           = consumes<std::vector<pat::PackedGenParticle>>(genpartTag);
 
 	// pfcandidates
 	pfCan_token_        		= consumes<std::vector<reco::PFCandidate>>(pfCanTag);
@@ -228,8 +240,14 @@ void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 	if( DEBUG ) std::cout << "Consume Tokens -------------------------------------------- " << std::endl;
 
 	// TRIGGER
-	//iEvent.getByToken(triggerResultsToken_,triggerResults_);
-	//iEvent.getByToken(triggerObjectsToken_,triggerObjects_);
+	iEvent.getByToken(triggerResultsToken_,triggerResults_);
+	iEvent.getByToken(triggerObjectsToken_,triggerObjects_);
+
+	// Conversions
+	iEvent.getByToken(conversionsToken_,conversions_);
+
+	// BeamSpot
+	iEvent.getByToken(beamLineToken_,beamSpot_);
 
 	// TRACKS
 	iEvent.getByToken(tracksToken_, tracks_);
@@ -439,8 +457,8 @@ void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
     phoIsOotPho.clear();
 	phoIds.clear();// indexed by pho index ( 0,1,2 ) * number of ids ( 1 current, 6? possible ) + index of ID wanted
     for (edm::View<reco::Photon>::const_iterator itPhoton = ootPhotons_->begin(); itPhoton != ootPhotons_->end(); itPhoton++) {
-        auto idx = itPhoton - ootPhotons_->begin();//unsigned int
-        auto ootPhoRef = ootPhotons_->refAt(idx);//edm::RefToBase<reco::GsfElectron> 
+        //auto idx = itPhoton - ootPhotons_->begin();//unsigned int
+        //auto ootPhoRef = ootPhotons_->refAt(idx);//edm::RefToBase<reco::GsfElectron> 
         auto &ootPho = (*itPhoton);
 		if( onlyEB && ootPho.isEE() ) continue;
         auto minPhoPt = ootPho.pt() < phoMinPt;
@@ -469,8 +487,8 @@ void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 		else phoExcluded.push_back(false);
     }//<<>>for( int io = 0; io < nOotPhotons; io++ )
     for (edm::View<reco::Photon>::const_iterator itPhoton = gedPhotons_->begin(); itPhoton != gedPhotons_->end(); itPhoton++) {
-        auto idx = itPhoton - gedPhotons_->begin();//unsigned int
-        auto gedPhoRef = gedPhotons_->refAt(idx);//edm::RefToBase<reco::GsfElectron> 
+        //auto idx = itPhoton - gedPhotons_->begin();//unsigned int
+        //auto gedPhoRef = gedPhotons_->refAt(idx);//edm::RefToBase<reco::GsfElectron> 
         auto &gedPho = (*itPhoton);
 		if( onlyEB && gedPho.isEE() ) continue;
         auto minPt = gedPho.pt() < phoMinPt;
@@ -503,8 +521,8 @@ void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
     felectrons.clear();
 	eleIds.clear();// indexed by ele index ( 0,1,2 ) * number of ids ( 1 current, 6? possible ) + index of ID wanted
 	for (edm::View<reco::GsfElectron>::const_iterator itElectron = electrons_->begin(); itElectron != electrons_->end(); itElectron++) {
-		auto idx = itElectron - electrons_->begin();//unsigned int
-		auto electronRef = electrons_->refAt(idx);//edm::RefToBase<reco::GsfElectron> 
+		//auto idx = itElectron - electrons_->begin();//unsigned int
+		//auto electronRef = electrons_->refAt(idx);//edm::RefToBase<reco::GsfElectron> 
 		auto &electron = (*itElectron);
 		if ( onlyEB && std::abs(electron.eta()) > ebMaxEta) continue;
 		//auto passIdCut = true; //electron.electronID(eleCutLoose);// pat electron ( miniAOD ) method
@@ -1131,13 +1149,13 @@ void KUCMSNtupilizer::setBranchesPhotons(){
     PhotonBM.makeBranch("EnergyErr","phoEnergyErr",KUCMSBranch::VFLOAT,"energy error of the cluster from regression");//
     PhotonBM.makeBranch("EnergyRaw","phoEnergyRaw",KUCMSBranch::VFLOAT,"raw energy of photon supercluster");//
 
-    //PhotonBM.makeBranch("JetIdx",KUCMSBranch::VUINT);//
-    //PhotonBM.makeBranch("eleIdx",KUCMSBranch::VUINT);//
+    //PhotonBM.makeBranch("JetIdx",KUCMSBranch::VUINT);// index of matching jet/ele -> can do at skimmer
+    //PhotonBM.makeBranch("eleIdx",KUCMSBranch::VUINT);// index of matching jet/ele -> can do at skimmer
 
     PhotonBM.makeBranch("SeedTOFTime","phoSeedTOFTime",KUCMSBranch::VFLOAT,"time of flight from PV to photon seed crystal");
     PhotonBM.makeBranch("RhIds","phoRhIds",KUCMSBranch::VVUINT,"list of rechit raw ids in hits and fractions list from supercluster");
     PhotonBM.makeBranch("hasPixelSeed","phoHasPixelSeed",KUCMSBranch::VBOOL,"has pixel seed");
-    //PhotonBM.makeBranch("EleVeto",KUCMSBranch::VBOOL);//
+    PhotonBM.makeBranch("eleVeto","phoPassEleVeto",KUCMSBranch::VBOOL,"pass electron veto");//
     PhotonBM.makeBranch("isEB","phoSeedIsEB",KUCMSBranch::VBOOL,"photon supercluster seed crystal is in ecal barrel");
 
     PhotonBM.makeBranch("R9","phoR9",KUCMSBranch::VFLOAT,"R9 of the supercluster, calculated with full 5x5 region");
@@ -1164,7 +1182,7 @@ void KUCMSNtupilizer::setBranchesPhotons(){
     PhotonBM.makeBranch("isScEtaEB","phoIsScEtaEB",KUCMSBranch::VBOOL,"is supercluster eta within barrel acceptance");//
     PhotonBM.makeBranch("isScEtaEE","phoIsScEtaEE",KUCMSBranch::VBOOL,"is supercluster eta within endcap acceptance");//
 
-    //PhotonBM.makeBranch("seedGain",KUCMSBranch::VINT);//
+    //PhotonBM.makeBranch("seedGain",KUCMSBranch::VINT);// ? can find through rh collection if needed
     PhotonBM.makeBranch("seediEtaOriX","phoSeedIex",KUCMSBranch::VINT,"iEta or iX of seed crystal. iEta is barrel-only, iX is endcap-only. iEta runs from -85 to +85, with no crystal at iEta=0. iX runs from 1 to 100.");//
     PhotonBM.makeBranch("seediPhiOriY","phoSeedIpy",KUCMSBranch::VINT,"iPhi or iY of seed crystal. iPhi is barrel-only, iY is endcap-only. iPhi runs from 1 to 360. iY runs from 1 to 100.");//
     PhotonBM.makeBranch("x_calo","phoXcalo",KUCMSBranch::VFLOAT,"photon supercluster position on calorimeter, x coordinate (cm)");//
@@ -1177,6 +1195,10 @@ void KUCMSNtupilizer::setBranchesPhotons(){
 
     PhotonBM.makeBranch("GenIdx","phoGenIdx",KUCMSBranch::VINT);
     PhotonBM.makeBranch("GenDr","phoGenDr",KUCMSBranch::VFLOAT);
+    PhotonBM.makeBranch("GenDp","phoGenDp",KUCMSBranch::VFLOAT);
+    PhotonBM.makeBranch("GenSIdx","phoGenSIdx",KUCMSBranch::VINT);
+    PhotonBM.makeBranch("GenSDr","phoGenSDr",KUCMSBranch::VFLOAT);
+    PhotonBM.makeBranch("GenSDp","phoGenSDp",KUCMSBranch::VFLOAT);
 
     PhotonBM.makeBranch("etaWidth","phoEtaWidth",KUCMSBranch::VFLOAT,"Width of the photon supercluster in eta");//
     PhotonBM.makeBranch("phiWidth","phoPhiWidth",KUCMSBranch::VFLOAT,"Width of the photon supercluster in phi");//
@@ -1202,7 +1224,6 @@ void KUCMSNtupilizer::processPhotons(){
 
 		PhotonBM.fillBranch("IsOotPho",phoIsOotPho[phoIdx]);
         PhotonBM.fillBranch("Excluded",phoExcluded[phoIdx]);
-		phoIdx++;
 
         const float phoPt = photon.pt();
         const float phoEnergy = photon.energy();
@@ -1213,7 +1234,6 @@ void KUCMSNtupilizer::processPhotons(){
         const float phoPz = photon.pz();
 
 		const float phoEnergyErr = photon.getCorrectedEnergyError(reco::Photon::regression2);
-		//const float electronVeto = photon.passElectronVeto(); // calc in notes or use hasPixelSeed()
         const float haloTaggerMVAVal = photon.haloTaggerMVAVal();
 		const bool phoHasPixelSeed = photon.hasPixelSeed();
 
@@ -1342,6 +1362,10 @@ void KUCMSNtupilizer::processPhotons(){
         PhotonBM.fillBranch("CovEtaPhi",phoCovEtaPhi);
         PhotonBM.fillBranch("CovPhiPhi",phoCovPhiPhi);
 
+		bool passelectronveto = conversions_.isValid() ? 
+			not ConversionTools::hasMatchedPromptElectron( phosc, felectrons, *conversions_, beamSpot_->position() ) : false;
+		PhotonBM.fillBranch("eleVeto",passelectronveto);
+
 		if( DEBUG ) std::cout << " --- Gathering SC info : " << scptr << std::endl;
         scGroup phoSCGroup{*scptr};
         auto phoRhGroup = getRHGroup( phoSCGroup, 0.5 );
@@ -1359,20 +1383,18 @@ void KUCMSNtupilizer::processPhotons(){
         // GenParticle Info for photon  -------------------------------------------------------------------
         if( hasGenInfo ){
 
-            auto genInfo = getGenPartMatch( scptr, fgenparts );
-            int genindex = genInfo[1];
-            float gendr = genInfo[0];
-            PhotonBM.fillBranch("GenIdx",genindex);
-            PhotonBM.fillBranch("GenDr",gendr);
-			if( DEBUG){
-            	std::cout << " Photon Match ------------------------- " << std::endl;
-            	std::cout << " Matched Eta: " <<  photon.eta() << " gen: " << genInfo[4] << " match: " << genInfo[2] << std::endl;
-            	std::cout << " Matched Phi: " <<  photon.phi() << " gen: " << genInfo[5] << " match: " << genInfo[3] << std::endl;
-            	std::cout << " ---------------------------------------------------- " << std::endl;
-			}//<<>>if( DEBUG)
+            auto genInfo = getGenPartMatch( scptr, fgenparts, phoPt );
+            PhotonBM.fillBranch("GenIdx",genInfo[0]);
+            PhotonBM.fillBranch("GenDr",genInfo[1]);
+            PhotonBM.fillBranch("GenDp",genInfo[2]);
+            PhotonBM.fillBranch("GenSIdx",genInfo[3]);
+            PhotonBM.fillBranch("GensDr",genInfo[4]);
+            PhotonBM.fillBranch("GensDp",genInfo[5]);
+			if( DEBUG) std::cout << " Photon Match ------------------------- " << std::endl;
 
         }//<<>>if( hasGenInfo )
 
+        phoIdx++;
     }//<<>>for( const auto &photon : fPhotons )
 
 }//<<>>processPhotons( fphotons, fgenparts )
@@ -1380,18 +1402,21 @@ void KUCMSNtupilizer::processPhotons(){
 //-------------------------------------------------------------------------------------------
 void KUCMSNtupilizer::setBranchesElectrons(){
 
-    ElectronBM.makeBranch("eleRhIds","eleRhIds",KUCMSBranch::VVUINT); 
-    ElectronBM.makeBranch("eleSeedTOFTime","eleSeedTOFTime",KUCMSBranch::VFLOAT);
-    ElectronBM.makeBranch("elePt","elePt",KUCMSBranch::VFLOAT);
-    ElectronBM.makeBranch("eleEnergy","eleEnergy",KUCMSBranch::VFLOAT);
-    ElectronBM.makeBranch("elePhi","elePhi",KUCMSBranch::VFLOAT);
-    ElectronBM.makeBranch("eleEta","eleEta",KUCMSBranch::VFLOAT);
-    ElectronBM.makeBranch("elePx","elePx",KUCMSBranch::VFLOAT);
-    ElectronBM.makeBranch("elePy","elePy",KUCMSBranch::VFLOAT);
-    ElectronBM.makeBranch("elePz","elePz",KUCMSBranch::VFLOAT);
-    ElectronBM.makeBranch("eleGenIdx","eleGenIdx",KUCMSBranch::VINT);
-    ElectronBM.makeBranch("eleGenDr","eleGenDr",KUCMSBranch::VFLOAT);
-    ElectronBM.makeBranch("eleIdBools","eleIdBools",KUCMSBranch::VBOOL);
+    ElectronBM.makeBranch("RhIds","eleRhIds",KUCMSBranch::VVUINT); 
+    ElectronBM.makeBranch("SeedTOFTime","eleSeedTOFTime",KUCMSBranch::VFLOAT);
+    ElectronBM.makeBranch("Pt","elePt",KUCMSBranch::VFLOAT);
+    ElectronBM.makeBranch("Energy","eleEnergy",KUCMSBranch::VFLOAT);
+    ElectronBM.makeBranch("Phi","elePhi",KUCMSBranch::VFLOAT);
+    ElectronBM.makeBranch("Eta","eleEta",KUCMSBranch::VFLOAT);
+    ElectronBM.makeBranch("Px","elePx",KUCMSBranch::VFLOAT);
+    ElectronBM.makeBranch("Py","elePy",KUCMSBranch::VFLOAT);
+    ElectronBM.makeBranch("Pz","elePz",KUCMSBranch::VFLOAT);
+    ElectronBM.makeBranch("GenIdx","eleGenIdx",KUCMSBranch::VINT);
+    ElectronBM.makeBranch("GenDr","eleGenDr",KUCMSBranch::VFLOAT);
+    ElectronBM.makeBranch("GenDr","eleGenDp",KUCMSBranch::VFLOAT);
+    ElectronBM.makeBranch("GenSIdx","eleGenSIdx",KUCMSBranch::VINT);
+    ElectronBM.makeBranch("GenSDr","eleGenSDr",KUCMSBranch::VFLOAT);
+    ElectronBM.makeBranch("GenSDr","eleGenSDp",KUCMSBranch::VFLOAT);
 
     ElectronBM.attachBranches(outTree);
 
@@ -1413,13 +1438,13 @@ void KUCMSNtupilizer::processElectrons(){
         float elePy = electron.py();
         float elePz = electron.pz();
 
-        ElectronBM.fillBranch("elePt",elePt);
-        ElectronBM.fillBranch("eleEnergy",eleEnergy);
-        ElectronBM.fillBranch("elePhi",elePhi);
-        ElectronBM.fillBranch("eleEta",eleEta);
-        ElectronBM.fillBranch("elePx",elePx);
-        ElectronBM.fillBranch("elePy",elePy);
-        ElectronBM.fillBranch("elePz",elePz);
+        ElectronBM.fillBranch("Pt",elePt);
+        ElectronBM.fillBranch("Energy",eleEnergy);
+        ElectronBM.fillBranch("Phi",elePhi);
+        ElectronBM.fillBranch("Eta",eleEta);
+        ElectronBM.fillBranch("Px",elePx);
+        ElectronBM.fillBranch("Py",elePy);
+        ElectronBM.fillBranch("Pz",elePz);
 
         if( DEBUG ) std::cout << " --- Proccesssing : " << electron << std::endl;
         const auto &elesc = electron.superCluster().isNonnull() ? electron.superCluster() : electron.parentSuperCluster();
@@ -1427,25 +1452,26 @@ void KUCMSNtupilizer::processElectrons(){
         scGroup eleSCGroup{*scptr};
         auto eleRhGroup = getRHGroup( eleSCGroup, 0.5 );
         auto eleRhIdsGroup = getRhGrpIDs( eleRhGroup );
-        ElectronBM.fillBranch("eleRhIds",eleRhIdsGroup );
+        ElectronBM.fillBranch("RhIds",eleRhIdsGroup );
 		setRecHitUsed( eleRhIdsGroup );
         if( DEBUG ) std::cout << " -- Electrons : " << scptr << " #: " << eleRhGroup.size() << std::endl;
         auto tofTimes = getLeadTofRhTime( eleRhGroup, evtVtxX, evtVtxY, evtVtxZ );
         //auto timeStats = getTimeDistStats( tofTimes, eleRhGroup );
         float seedTOFTime = getSeedTofTime( *scptr, evtVtxX, evtVtxY, evtVtxZ );
 
-        ElectronBM.fillBranch("eleSeedTOFTime",seedTOFTime);
+        ElectronBM.fillBranch("SeedTOFTime",seedTOFTime);
 
         // GenParticle Info for electron  -------------------------------------------------------------------
         if( hasGenInfo ){
 
-			auto genInfo = getGenPartMatch( scptr, fgenparts );
+			auto genInfo = getGenPartMatch( scptr, fgenparts, elePt );
             if( DEBUG) std::cout << " Electron Match ------------------------- " << std::endl;
-            if( DEBUG) std::cout << " Matched Eta: " <<  electron.eta() << " gen: " << genInfo[4] << " match: " << genInfo[2] << std::endl;
-            if( DEBUG) std::cout << " Matched Phi: " <<  electron.phi() << " gen: " << genInfo[5] << " match: " << genInfo[3] << std::endl;
-            if( DEBUG ) std::cout << " ---------------------------------------------------- " << std::endl;
-            ElectronBM.fillBranch("eleGenIdx",genInfo[1]);
-            ElectronBM.fillBranch("eleGenDr",genInfo[0]);
+            ElectronBM.fillBranch("GenIdx",genInfo[0]);
+            ElectronBM.fillBranch("GenDr",genInfo[1]);
+            ElectronBM.fillBranch("GenDp",genInfo[2]);
+            ElectronBM.fillBranch("GenSIdx",genInfo[3]);
+            ElectronBM.fillBranch("GenSDr",genInfo[4]);
+            ElectronBM.fillBranch("GenSDr",genInfo[5]);
 
         }//<<>>if( hasGenInfo )
 
@@ -2221,20 +2247,19 @@ vector<float> KUCMSNtupilizer::kidTOFChain( std::vector<reco::CandidatePtr> kids
 }//>>>>vector<float> KUCMSNtupilizer::kidTOFChain( std::vector<reco::CandidatePtr> kids, float cx, float cy, float cz  )
 
 
-vector<float>  KUCMSNtupilizer::getGenPartMatch( const reco::SuperCluster* scptr, std::vector<reco::GenParticle> fgenparts ){
+vector<float>  KUCMSNtupilizer::getGenPartMatch( const reco::SuperCluster* scptr, std::vector<reco::GenParticle> fgenparts , float pt ){
 
     // GenParticle Info   -------------------------------------------------------------------
     if( DEBUG ) std::cout << "Getting phoGenParton Information" << std::endl;
     // set defaults for no match here
     vector<float> results;
-    auto mgenDr = -1.0;// 0
-    float goodDr(0.4);
+    float minDr(0.3);
+    float minSDr(0.4);
+	float minDp(0.5);
+    float minSDp(0.75);
     int matchedIdx(-1);// 1
+    int matchedSIdx(-1);// 1
     int index(0);
-    float meta(9);// 2
-    float mphi(9);// 3
-    float geta(9);// 4
-    float gphi(9);// 5
     for(const auto& genPart : fgenparts ){
 
         const auto rhX = scptr->x();
@@ -2243,28 +2268,29 @@ vector<float>  KUCMSNtupilizer::getGenPartMatch( const reco::SuperCluster* scptr
         const auto gnX = genPart.vx();
         const auto gnY = genPart.vy();
         const auto gnZ = genPart.vz();
+		const auto gpt = genPart.pt();
         auto cphoEta = std::asinh((rhZ-gnZ)/hypo(rhX-gnX,rhY-gnY));
         auto cphoPhi = std::atan2(rhY-gnY,rhX-gnX);
         auto dr = std::sqrt(reco::deltaR2(genPart.eta(), genPart.phi(), cphoEta, cphoPhi ));
-        if( dr < goodDr ){
-            goodDr = dr;
+		auto dp = std::abs(gpt-pt)/gpt;
+        if( dr < minDr && dp < minDp ){
+            minDr = dr;
+            minDp = dp;
             matchedIdx = index;
-            meta = cphoEta;
-            mphi = cphoPhi;
-            geta = genPart.eta();
-            gphi = genPart.phi();
-        }//<<>>if( jtgjdr <= goodDr )
+        } else if( dr < minSDr && dp < minSDp ){
+            minSDr = dr;
+            minSDp = dp;
+            matchedSIdx = index;
+		}//<<>>if( dr < minDr && dp < minDp )
         index++;
 
     }//<<>>for(const auto& genPart : fgenparts  ) 
-    if( matchedIdx >= 0 ){ mgenDr = goodDr; }//<<>>if( matchedIdx >= 0 ) 
-
-	results.push_back( mgenDr );
     results.push_back( matchedIdx );
-    results.push_back( meta );
-    results.push_back( mphi );
-    results.push_back( geta );
-    results.push_back( gphi );
+    results.push_back( minDr );
+    results.push_back( minDp );
+    results.push_back( matchedSIdx );
+    results.push_back( minSDr );
+    results.push_back( minSDp );
 	return results;
 
 }//<<>>getGenPartMatch( reco::SuperClusterCollection *scptr, std::vector<reco::GenParticle> fgenparts )

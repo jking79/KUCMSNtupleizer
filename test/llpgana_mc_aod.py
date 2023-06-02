@@ -223,9 +223,12 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
    #mets = cms.InputTag("slimmedMETs"),
    mets = cms.InputTag("pfMet"),
    ## jets
+   #Charge Hadron Subtracted : charged particles from non-primary vertices (pileup) are removed before clustering.
    #jets = cms.InputTag("updatedPatJetsUpdatedJEC"),
    #jets = cms.InputTag("slimmedJets"),
-   jets = cms.InputTag("ak4PFJets"),
+   #jets = cms.InputTag("ak4PFJets"),
+   jets = cms.InputTag("ak4PFJetsCHS"),
+   #jets = cms.InputTag("ak8PFJetsCHS"),
    calojets = cms.InputTag("ak4CaloJets",""),
    ## electrons
    #electrons = cms.InputTag("slimmedElectrons"),
