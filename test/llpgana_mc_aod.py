@@ -179,9 +179,9 @@ process.source = cms.Source("PoolSource",
 
 ## How many events to process
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(5))
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#ST
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#ST
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))#TTi
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#LT
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#LT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500))#US
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(12500))#VS
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(25000))#SM
@@ -196,8 +196,7 @@ process.GlobalTag.globaltag = options.globalTag
 
 ## Create output file
 ## Setup the service to make a ROOT TTree
-process.TFileService = cms.Service("TFileService", 
-		                   fileName = cms.string(options.outputFileName))
+process.TFileService = cms.Service("TFileService", fileName = cms.string(options.outputFileName))
 				   
 # Make the tree 
 process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
@@ -227,7 +226,6 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
    #jets = cms.InputTag("updatedPatJetsUpdatedJEC"),
    #jets = cms.InputTag("slimmedJets"),
    jets = cms.InputTag("ak4PFJets"),
-   genjets = cms.InputTag("ak4GenJets",""),
    calojets = cms.InputTag("ak4CaloJets",""),
    ## electrons
    #electrons = cms.InputTag("slimmedElectrons"),
@@ -263,6 +261,7 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
    pileups = cms.InputTag("addPileupInfo", ""),
    #pileups = cms.InputTag("mixData", ""),
    genParticles = cms.InputTag("genParticles", ""),		
+   genjets = cms.InputTag("ak4GenJets","")
 
 )##<<>>process.tree = cms.EDAnalyzer("LLPgammaAnalyzer_aod"
 

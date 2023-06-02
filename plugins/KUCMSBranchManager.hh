@@ -141,11 +141,11 @@ void KUCMSBranch::clearBranch(){
         case VFLOAT	: VFLOATBranch.clear(); break;
         case VSTR	: VSTRBranch.clear(); break;
         case VBOOL  : VBOOLBranch.clear(); break;
-        case UINT   : UINTBranch = 0; break;
-        case INT    : INTBranch = -99999; break;
-        case FLOAT  : FLOATBranch = -99999.f; break;
+        case UINT   : UINTBranch = std::numeric_limits<unsigned int>::max(); break;
+        case INT    : INTBranch = std::numeric_limits<int>::max(); break;
+        case FLOAT  : FLOATBranch = std::numeric_limits<float>::max(); break;
         case STR    : STRBranch = ""; break;
-        case BOOL   : UINTBranch = false; break;
+        case BOOL   : BOOLBranch = false; break;
 		default : std::cout << " -- KUCMSBranch " << BranchName << " Error : BranchType error in clearBranch!!!! " << std::endl;    
 
     }//<<>>switch( BranchType )
@@ -168,7 +168,7 @@ void KUCMSBranch::fillBranch( uInt val ){
     switch( BranchType ){
 
         case VUINT  : VUINTBranch.push_back(val); break;
-        case UINT   ; UINTBranch = val; break;
+        case UINT   : UINTBranch = val; break;
    		default : std::cout << " -- KUCMSBranch " << BranchName << " Error : BranchType mismatch with fillBranch type!!!! " << std::endl;
 	 
     }//<<>>switch( BranchType )
@@ -374,7 +374,7 @@ class KUCMSBranchManager {
 
 	void makeBranch( std::string key, std::string name, KUCMSBranch::BType type, std::string doc );
     void makeBranch( std::string name, KUCMSBranch::BType type, std::string doc );
-    void initBranches( TTree* fOutTree );
+    void attachBranches( TTree* fOutTree );
 	void clearBranches();
 
     void fillBranch( std::string key, std::vector<uInt> val );
@@ -427,7 +427,7 @@ bool KUCMSBranchManager::valid( std::string key ){ if( theBranches.find(key) == 
 		std::cout << " -- Error: No Such Key : " << key << " !!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl; return false; } else return true;}
 
 void KUCMSBranchManager::clearBranches(){ for( auto & branch : theBranches ){ (branch.second).clearBranch();}}
-void KUCMSBranchManager::initBranches( TTree* fOutTree ){ for( auto & branch : theBranches ){ branch.second.initBranch( fOutTree );}}
+void KUCMSBranchManager::attachBranches( TTree* fOutTree ){ for( auto & branch : theBranches ){ branch.second.initBranch( fOutTree );}}
 
 void KUCMSBranchManager::fillBranch( std::string key, std::vector<uInt> val ){ if(valid(key)) theBranches[key].fillBranch( val );}
 void KUCMSBranchManager::fillBranch( std::string key, uInt val ){ if(valid(key)) theBranches[key].fillBranch( val );}

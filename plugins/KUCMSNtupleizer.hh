@@ -218,6 +218,8 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
       	virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
       	virtual void endJob() override;
 
+		bool selectedEvent();
+
         void setBranchesEvent();
 		void processEvent( const edm::Event& iEvent );
         void setBranchesVtx();
@@ -246,21 +248,28 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
 
 		// filtered collection vectors
     	std::vector<reco::PFJet>        fjets;
-    	std::vector<int>                fjetsID;
+    	std::vector<int>                jetIds;
     	std::vector<reco::CaloCluster>  fbclusts;
     	std::vector<EcalRecHit>         frechits;
     	std::vector<bool>               frhused;
     	std::vector<reco::Photon>       fphotons;
-    	//std::vector<reco::Photon>     footphotons;
-        std::vector<int>                fphotonID;
+        std::vector<bool> 				phoExcluded;
+        std::vector<bool>               phoIsOotPho;
+        std::vector<int>                phoIds;
     	std::vector<reco::GsfElectron>  felectrons;
-        std::vector<int>                felectronID;
+        std::vector<int>                eleIds;
     	std::vector<reco::CaloJet>      fcalojets;
     	std::vector<reco::Muon>         fmuons;
     	std::vector<reco::PFMET>        fpfmet;
     	std::vector<reco::GenParticle>  fgenparts;
     	std::vector<int>                fgenpartllp;
     	std::vector<reco::GenJet>       fgenjets;
+
+		// global event varibles
+		float evtMET;
+        float evtVtxX; 
+        float evtVtxY; 
+        float evtVtxZ;
 
 		// oputput tree
       	TTree *outTree;
@@ -336,7 +345,6 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
       	edm::EDGetTokenT<std::vector<reco::Vertex>> verticesToken_;
       	edm::Handle<std::vector<reco::Vertex>> vertices_;
 
-		float vtxX, vtxY, vtxZ;
 		KUCMSBranchManager VertexBM;
 
       	// Mets ----------------------------------------------------------
@@ -346,7 +354,6 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
       	edm::Handle<std::vector<reco::PFMET>> pfmets_;
 		//reco::PFMET t1pfMET;	
 
-		float evtMET;
 		KUCMSBranchManager MetBM;
 
 		// Met Filters  ----------------------------------------------------------
@@ -383,7 +390,7 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
       	edm::EDGetTokenT<std::vector<reco::PFJet>> jetsToken_;
       	edm::Handle<std::vector<reco::PFJet>> jets_;
 
-		KUCMSBranchManager JetBM;
+		KUCMSBranchManager JetAK4ChsBM;
 
          // Calojets ----------------------------------------------------------
 
@@ -392,14 +399,6 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
         edm::Handle<std::vector<reco::CaloJet>> caloJets_;
 
         KUCMSBranchManager CaloJetBM;
-
-         // GenJets ----------------------------------------------------------
-
-        const edm::InputTag genJetsTag;
-        edm::EDGetTokenT<std::vector<reco::GenJet>> genJetsToken_;
-        edm::Handle<std::vector<reco::GenJet>> genJets_;
-
-		KUCMSBranchManager GenJetBM;
 
 		// Jet corrections  ----------------------------------------------------------
 
@@ -416,13 +415,12 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
 		edm::EDGetTokenT<edm::View<reco::GsfElectron>> electronsToken_;
         //edm::Handle<std::vector<reco::GsfElectron> > electrons_;
         edm::Handle<edm::View<reco::GsfElectron> > electrons_;
-        std::vector<reco::GsfElectron> electrons;
+        //std::vector<reco::GsfElectron> electrons;
 
 		const edm::InputTag eleMVAIDLooseMapTag;
 		edm::EDGetTokenT<edm::ValueMap<bool>> eleMVAIDLooseMapToken_;
    		edm::Handle<edm::ValueMap<bool>> eleMVAIDLooseMap_;
 
-		std::vector<uInt> eleIdBools;
 		KUCMSBranchManager ElectronBM;
 
       	// Muons ----------------------------------------------------------
@@ -430,7 +428,7 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
       	const edm::InputTag muonsTag;
       	edm::EDGetTokenT<std::vector<reco::Muon> > muonsToken_;
       	edm::Handle<std::vector<reco::Muon> > muons_;
-      	std::vector<reco::Muon> muons;
+      	//std::vector<reco::Muon> muons;
 
         KUCMSBranchManager MuonBM;
       
@@ -439,12 +437,12 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
       	const edm::InputTag recHitsEBTag;
       	edm::EDGetTokenT<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > > recHitsEBToken_;
       	edm::Handle<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > > recHitsEB_;
-      	const edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > * recHitsEB;
+      	//const edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > * recHitsEB;
 
       	const edm::InputTag recHitsEETag;
       	edm::EDGetTokenT<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > > recHitsEEToken_;
       	edm::Handle<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > > recHitsEE_;
-      	const edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > * recHitsEE;
+      	//const edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > * recHitsEE;
 
         const edm::InputTag ecalBadCalibFlagTag;
         edm::EDGetTokenT<bool> ecalBadCalibFlagToken;
@@ -472,7 +470,6 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
         edm::EDGetTokenT<edm::ValueMap<bool>> phoCBIDLooseMapToken_;
         edm::Handle<edm::ValueMap<bool>> phoCBIDLooseMap_;
 
-		std::vector<uInt> phoExcluded, phoIsOotPho, phoIdBools;
 		KUCMSBranchManager PhotonBM;
 
 		// Gen Info -----------------------------------------------------------
@@ -506,6 +503,14 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
         edm::Handle<std::vector<reco::GenParticle> > genParticles_;
 
         KUCMSBranchManager GenParticlesBM;
+
+        // GenJets ----------------------------------------------------------
+
+        const edm::InputTag genJetsTag;
+        edm::EDGetTokenT<std::vector<reco::GenJet>> genJetsToken_;
+        edm::Handle<std::vector<reco::GenJet>> genJets_;
+
+        KUCMSBranchManager GenJetBM;
 
 		// Setup info  ----------------------------------------------------------
 
