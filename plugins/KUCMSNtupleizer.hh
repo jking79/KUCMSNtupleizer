@@ -243,15 +243,17 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
         void processClJet();	
 
         void setBranchesRecHits();
-        void processRecHits( float minRHEf );
+        void processRecHits();
 
 		////////////////////////////////////////////////////
       	// ----------member data ---------------------------
 		////////////////////////////////////////////////////
 
 		// input parameters
-		ItemManager<float> cfValues;
-        ItemManager<bool> cfFlags;
+		ItemManager<double> cfPrm;
+        ItemManager<int> cfCnt;
+        ItemManager<std::string> cfStr;
+        ItemManager<bool> cfFlag;
 
 		// filtered collection vectors
     	std::vector<reco::PFJet>        fjets;
@@ -273,11 +275,7 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
     	std::vector<reco::GenJet>       fgenjets;
 
 		// global event varibles
-		ItemManager<float> gloEvtVars;
-		float evtMET;
-        float evtVtxX; 
-        float evtVtxY; 
-        float evtVtxZ;
+		ItemManager<float> geVar;
 
 		// oputput tree
       	TTree *outTree;
@@ -285,9 +283,6 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
 		// histograms
 		TH1D *hist1d[nHists];
       	TH2D *hist2d[nHists];
-
-		// Flags
-		const bool hasGenInfo;
 
 		////////////////////////////////////////////////////////////
 		// ----------- collection and branch declaration ----------

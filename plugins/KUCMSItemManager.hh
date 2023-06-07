@@ -24,6 +24,9 @@
 
 
 //.............................................................................................
+
+typedef unsigned int uInt;
+
 template <class T> 
 class Item {
 
@@ -85,7 +88,7 @@ T Item<T>::getvalue(){
 template <class T>
 void Item<T>::clear(){
 
-	iValue = std::numeric_limits<T>::max();
+	iValue = -std::numeric_limits<T>::max();
 
 }//<<>>void Item::clear()
 
@@ -100,6 +103,13 @@ template <>
 void Item<bool>::clear(){
 
     iValue = false;
+
+}//<<>>void Item::clear()
+
+template <>
+void Item<uInt>::clear(){
+
+    iValue = 0;
 
 }//<<>>void Item::clear()
 
@@ -205,13 +215,17 @@ class ItemManager {
 
     public:
 	
-    void set( std::string key, std::string name, std::string doc = ""  );
-    void set( std::string key, std::string name, T val, std::string doc = "" );
-    void set( std::string name, std::string doc = "" );
-    void set( std::string name, T val, std::string doc = "" );
+    void set( std::string key, std::string name, std::string doc );
+    void set( std::string name );
+    void set( std::string name, T val );
+
     void fill( std::string key, T val );
     T get( std::string key );
+
+	void clear();
 	void clear( std::string key );
+	void reset();
+
 	T operator()( std::string key );
 
     private:
@@ -230,46 +244,43 @@ void ItemManager<T,C>::set( std::string key, std::string name, std::string doc )
 }//>><<void ItemManager::set( std::string key, std::string name, std::string doc )
 
 template < class T , template< class > class C >
-void ItemManager<T,C>::set( std::string key, std::string name, T val, std::string doc ){
+void ItemManager<T,C>::set( std::string name ){ set( name, name, "" ); }
 
-    C<T> newitem( name, doc, val );
-    items[key] = newitem;
+template < class T , template< class > class C >
+void ItemManager<T,C>::set( std::string name, T val ){
+
+    C<T> newitem( name, val, "" );
+    items[name] = newitem;
 
 }//>><<void ItemManager::set( std::string key, std::string name, std::string doc, T val )
 
 template < class T , template< class > class C >
-void ItemManager<T,C>::set( std::string name, std::string doc ){
-
-    C<T> newitem( name, doc );
-    items[name] = newitem;
-
-}//>><<void ItemManager::set( std::string name, std::string doc )
-
-template < class T , template< class > class C >
-void ItemManager<T,C>::set( std::string name, T val, std::string doc ){
-
-	if( items.find(name) == items.end() ){
-
-    	C<T> newitem( name, doc, val );
-    	items[name] = newitem;
-
-	} else items[name] = val;
-
-}//>><<void ItemManager::set( std::string name, std::string doc, T val )
-
-template < class T , template< class > class C >
 void ItemManager<T,C>::fill( std::string key, T val ){
 
-	if( valid( key ) ) items[key] = val;
+	if( valid( key ) ) items[key].fill( val );
 	
 }//<<>>void ItemManager<T>::fill( std::string key, T val )
 
 template < class T , template< class > class C >
 T ItemManager<T,C>::get( std::string key ){
 
-	return valid( key ) ? items[key].getValue() : T();
+	return valid( key ) ? items[key].getvalue() : T();
 
 }//<<>>T ItemManager::get( std::string key )
+
+template < class T , template< class > class C >
+void ItemManager<T,C>::clear(){
+
+    for( auto & item : items ){ item.second.clear(); }
+
+}//<<>>T ItemManager::clear()
+
+template < class T , template< class > class C >
+void ItemManager<T,C>::reset(){
+
+    for( auto & item : items ){ item.erase(); }
+
+}//<<>>T ItemManager::reset()
 
 template < class T , template< class > class C >
 void ItemManager<T,C>::clear( std::string key ){
@@ -281,7 +292,7 @@ void ItemManager<T,C>::clear( std::string key ){
 template < class T , template< class > class C >
 T ItemManager<T,C>::operator()( std::string key ){
 
-	return valid( key ) ? items[key].getValue() : T();
+	return valid( key ) ? items[key].getvalue() : T();
 
 }//<<>>T ItemManager<T,C>::operator()( std::string key )
 
