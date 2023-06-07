@@ -31,7 +31,7 @@ options.register('globalTag','94X_mc2017_realistic_v14',VarParsing.multiplicity.
 ## processName
 options.register('processName','TREE',VarParsing.multiplicity.singleton,VarParsing.varType.string,'process name to be considered');
 
-outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_v1.root' # ntuplizer test
+outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_v2.root' # ntuplizer test
 
 options.register('outputFileName',outfilename,VarParsing.multiplicity.singleton,VarParsing.varType.string,'output file name created by cmsRun');
 
@@ -61,8 +61,8 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load("FWCore.MessageService.MessageLogger_cfi")
 #process.MessageLogger.destinations = ['cout', 'cerr']
 #process.MessageLogger.cerr.FwkReport.reportEvery = 1
-process.MessageLogger.cerr.FwkReport.reportEvery = 10
-#process.MessageLogger.cerr.FwkReport.reportEvery = 100
+#process.MessageLogger.cerr.FwkReport.reportEvery = 10
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
 #process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 #process.MessageLogger.cerr.FwkReport.reportEvery = 10000
 
@@ -219,6 +219,13 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
    ## rho
    #rho = cms.InputTag("fixedGridRhoFastjetAll"), #fixedGridRhoAll
    rho = cms.InputTag("fixedGridRhoAll"),
+   ## conversions
+   conversions = cms.InputTag("allConversions"), 
+   ## beamSpot
+   beamSpot = cms.InputTag("offlineBeamSpot"),
+   ## trigger
+   triggerResults = cms.InputTag("TriggerResults"),
+   triggerObjects = cms.InputTag("TriggerResults"),
    ## METs
    #mets = cms.InputTag("slimmedMETs"),
    mets = cms.InputTag("pfMet"),

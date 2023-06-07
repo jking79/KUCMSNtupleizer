@@ -53,7 +53,7 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig) :
 
 	// triggers
 	triggerResultsTag(iConfig.getParameter<edm::InputTag>("triggerResults")),
-	triggerObjectsTag(iConfig.getParameter<edm::InputTag>("triggerObjects")),
+	//triggerObjectsTag(iConfig.getParameter<edm::InputTag>("triggerObjects")),
 
 	// pfcands
 	pfcandTag(iConfig.getParameter<edm::InputTag>("pfcandidates")),
@@ -145,7 +145,7 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig) :
 
 	// Triggers
 	triggerResultsToken_ 		= consumes<edm::TriggerResults>(triggerResultsTag);
-	triggerObjectsToken_ 		= consumes<std::vector<pat::TriggerObjectStandAlone>>(triggerObjectsTag);
+	//triggerObjectsToken_ 		= consumes<std::vector<pat::TriggerObjectStandAlone>>(triggerObjectsTag);
 
 	// tracks 
 	tracksToken_				= consumes<std::vector<reco::Track>>(tracksTag);
@@ -241,7 +241,7 @@ void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 
 	// TRIGGER
 	iEvent.getByToken(triggerResultsToken_,triggerResults_);
-	iEvent.getByToken(triggerObjectsToken_,triggerObjects_);
+	//iEvent.getByToken(triggerObjectsToken_,triggerObjects_);
 
 	// Conversions
 	iEvent.getByToken(conversionsToken_,conversions_);
@@ -669,10 +669,10 @@ bool KUCMSNtupilizer::selectedEvent(){
 //---------------------------------------------
 void KUCMSNtupilizer::setBranchesEvent(){
 
-	EventInfoBM.makeBranch("run","RunNumber",KUCMSBranch::UINT,"Run number of event");
-    EventInfoBM.makeBranch("lumi","LumiSection",KUCMSBranch::UINT,"Lumi section of event");
-    EventInfoBM.makeBranch("event","EventNumber",KUCMSBranch::UINT);
-    EventInfoBM.makeBranch("wgt","EventWeight",KUCMSBranch::FLOAT);
+	EventInfoBM.makeBranch("run","RunNumber",UINT,"Run number of event");
+    EventInfoBM.makeBranch("lumi","LumiSection",UINT,"Lumi section of event");
+    EventInfoBM.makeBranch("event","EventNumber",UINT);
+    EventInfoBM.makeBranch("wgt","EventWeight",FLOAT);
 
     EventInfoBM.attachBranches(outTree);
 
@@ -699,10 +699,10 @@ void KUCMSNtupilizer::processEvent( const edm::Event& iEvent ){
 //----------------------------------------------
 void KUCMSNtupilizer::setBranchesVtx(){
 
-    VertexBM.makeBranch("nVtx","nVtx",KUCMSBranch::UINT);
-	VertexBM.makeBranch("vtxX","vtxX",KUCMSBranch::FLOAT);
-    VertexBM.makeBranch("vtxY","vtxY",KUCMSBranch::FLOAT);
-    VertexBM.makeBranch("vtxZ","vtxZ",KUCMSBranch::FLOAT);
+    VertexBM.makeBranch("nVtx","nVtx",UINT);
+	VertexBM.makeBranch("vtxX","vtxX",FLOAT);
+    VertexBM.makeBranch("vtxY","vtxY",FLOAT);
+    VertexBM.makeBranch("vtxZ","vtxZ",FLOAT);
 
     VertexBM.attachBranches(outTree);
 
@@ -735,18 +735,18 @@ void KUCMSNtupilizer::processVtx(){
 //-------------------------------------------------
 void KUCMSNtupilizer::setBranchesMet(){
 
-	MetBM.makeBranch("SumEt","metSumEt",KUCMSBranch::FLOAT,"scalar sum of Et");
-    MetBM.makeBranch("Px","metPx",KUCMSBranch::FLOAT);
-    MetBM.makeBranch("Py","metPy",KUCMSBranch::FLOAT);
+	MetBM.makeBranch("SumEt","metSumEt",FLOAT,"scalar sum of Et");
+    MetBM.makeBranch("Px","metPx",FLOAT);
+    MetBM.makeBranch("Py","metPy",FLOAT);
 
-    MetBM.makeBranch("signif","metSignificance",KUCMSBranch::FLOAT,"MET significance");
-    MetBM.makeBranch("covXX","metCovXX",KUCMSBranch::FLOAT,"xx element of met covariance matrix");
-    MetBM.makeBranch("covXY","metCovXY",KUCMSBranch::FLOAT,"xy element of met covariance matrix");
-    MetBM.makeBranch("covYY","metCovYY",KUCMSBranch::FLOAT,"yy element of met covariance matrix");
+    MetBM.makeBranch("signif","metSignificance",FLOAT,"MET significance");
+    MetBM.makeBranch("covXX","metCovXX",FLOAT,"xx element of met covariance matrix");
+    MetBM.makeBranch("covXY","metCovXY",FLOAT,"xy element of met covariance matrix");
+    MetBM.makeBranch("covYY","metCovYY",FLOAT,"yy element of met covariance matrix");
 
-    MetBM.makeBranch("CSumEt","metCSumEt",KUCMSBranch::FLOAT);
-    MetBM.makeBranch("CPx","metCPx",KUCMSBranch::FLOAT);
-    MetBM.makeBranch("CPy","metCPy",KUCMSBranch::FLOAT);
+    MetBM.makeBranch("CSumEt","metCSumEt",FLOAT);
+    MetBM.makeBranch("CPx","metCPx",FLOAT);
+    MetBM.makeBranch("CPy","metCPy",FLOAT);
 
 	MetBM.attachBranches(outTree);
 
@@ -813,36 +813,36 @@ void KUCMSNtupilizer::processMet(){
 //---------------------------------------------------------------------------
 void KUCMSNtupilizer::setBranchesJets(){
 
-    //JetAK4ChsBM.makeBranch("Ht","jetHt",KUCMSBranch::FLOAT);
+    //JetAK4ChsBM.makeBranch("Ht","jetHt",FLOAT);
 
-    JetAK4ChsBM.makeBranch("E","jetE",KUCMSBranch::VFLOAT);
-    JetAK4ChsBM.makeBranch("M","jetM",KUCMSBranch::VFLOAT);
-    JetAK4ChsBM.makeBranch("Pt","jetPt",KUCMSBranch::VFLOAT);
-    JetAK4ChsBM.makeBranch("Eta","jetEta",KUCMSBranch::VFLOAT);
-    JetAK4ChsBM.makeBranch("Phi","jetPhi",KUCMSBranch::VFLOAT);
-    JetAK4ChsBM.makeBranch("Area","jetArea",KUCMSBranch::VFLOAT,"jet catchment area, for JECs");
+    JetAK4ChsBM.makeBranch("E","jetE",VFLOAT);
+    JetAK4ChsBM.makeBranch("M","jetM",VFLOAT);
+    JetAK4ChsBM.makeBranch("Pt","jetPt",VFLOAT);
+    JetAK4ChsBM.makeBranch("Eta","jetEta",VFLOAT);
+    JetAK4ChsBM.makeBranch("Phi","jetPhi",VFLOAT);
+    JetAK4ChsBM.makeBranch("Area","jetArea",VFLOAT,"jet catchment area, for JECs");
 
-    JetAK4ChsBM.makeBranch("nKids","jetzNumberOfDaughters",KUCMSBranch::VUINT,"Number of particles in the jet");
-    JetAK4ChsBM.makeBranch("NHF","jetNHF",KUCMSBranch::VFLOAT,"neutral Hadron Energy Fraction");
-    JetAK4ChsBM.makeBranch("NEMF","jetNEMF",KUCMSBranch::VFLOAT,"neutral Electromagnetic Energy Fraction");
-    JetAK4ChsBM.makeBranch("CHF","jetCHF",KUCMSBranch::VFLOAT,"charged Hadron Energy Fraction");
-    JetAK4ChsBM.makeBranch("CEMF","jetCEMF",KUCMSBranch::VFLOAT,"charged Electromagnetic Energy Fraction");
-    JetAK4ChsBM.makeBranch("MUF","jetMUF",KUCMSBranch::VFLOAT,"muon Energy Fraction");
-    JetAK4ChsBM.makeBranch("NHM","jetNHM",KUCMSBranch::VFLOAT);
-    JetAK4ChsBM.makeBranch("CHM","jetCHM",KUCMSBranch::VFLOAT);
+    JetAK4ChsBM.makeBranch("nKids","jetzNumberOfDaughters",VUINT,"Number of particles in the jet");
+    JetAK4ChsBM.makeBranch("NHF","jetNHF",VFLOAT,"neutral Hadron Energy Fraction");
+    JetAK4ChsBM.makeBranch("NEMF","jetNEMF",VFLOAT,"neutral Electromagnetic Energy Fraction");
+    JetAK4ChsBM.makeBranch("CHF","jetCHF",VFLOAT,"charged Hadron Energy Fraction");
+    JetAK4ChsBM.makeBranch("CEMF","jetCEMF",VFLOAT,"charged Electromagnetic Energy Fraction");
+    JetAK4ChsBM.makeBranch("MUF","jetMUF",VFLOAT,"muon Energy Fraction");
+    JetAK4ChsBM.makeBranch("NHM","jetNHM",VFLOAT);
+    JetAK4ChsBM.makeBranch("CHM","jetCHM",VFLOAT);
 
-    JetAK4ChsBM.makeBranch("Parts","jetPartons",KUCMSBranch::VVUINT);
-    JetAK4ChsBM.makeBranch("DrRhIds","jetDrRhIds",KUCMSBranch::VVUINT);
+    JetAK4ChsBM.makeBranch("Parts","jetPartons",VVUINT);
+    JetAK4ChsBM.makeBranch("DrRhIds","jetDrRhIds",VVUINT);
 
-    JetAK4ChsBM.makeBranch("GenImpactAngle","jetGenImpactAngle",KUCMSBranch::VFLOAT);
-    JetAK4ChsBM.makeBranch("GenTime","jetGenTime",KUCMSBranch::VFLOAT);
-    JetAK4ChsBM.makeBranch("GenPt","jetGenPt",KUCMSBranch::VFLOAT);
-    JetAK4ChsBM.makeBranch("GenEta","jetGenEta",KUCMSBranch::VFLOAT);
-    JetAK4ChsBM.makeBranch("GenPhi","jetGenPhi",KUCMSBranch::VFLOAT);
-    JetAK4ChsBM.makeBranch("GenEnergy","jetGenEnergy",KUCMSBranch::VFLOAT);
-    JetAK4ChsBM.makeBranch("GenDrMatch","jetGenDrMatch",KUCMSBranch::VFLOAT);
-    JetAK4ChsBM.makeBranch("GenTimeLLP","jetGenTimeLLP",KUCMSBranch::VFLOAT);
-    JetAK4ChsBM.makeBranch("GenTOF","jetGenTOF",KUCMSBranch::VFLOAT);
+    JetAK4ChsBM.makeBranch("GenImpactAngle","jetGenImpactAngle",VFLOAT);
+    JetAK4ChsBM.makeBranch("GenTime","jetGenTime",VFLOAT);
+    JetAK4ChsBM.makeBranch("GenPt","jetGenPt",VFLOAT);
+    JetAK4ChsBM.makeBranch("GenEta","jetGenEta",VFLOAT);
+    JetAK4ChsBM.makeBranch("GenPhi","jetGenPhi",VFLOAT);
+    JetAK4ChsBM.makeBranch("GenEnergy","jetGenEnergy",VFLOAT);
+    JetAK4ChsBM.makeBranch("GenDrMatch","jetGenDrMatch",VFLOAT);
+    JetAK4ChsBM.makeBranch("GenTimeLLP","jetGenTimeLLP",VFLOAT);
+    JetAK4ChsBM.makeBranch("GenTOF","jetGenTOF",VFLOAT);
 
     JetAK4ChsBM.attachBranches(outTree);
 
@@ -1052,14 +1052,14 @@ void KUCMSNtupilizer::processJets(){
 //-----------------------------------------------------------------------------------------
 void KUCMSNtupilizer::setBranchesClusterJets(){
 
-	CaloJetBM.makeBranch("cljRhIds","cljRhIds",KUCMSBranch::VVUINT);
-    CaloJetBM.makeBranch("cljPt","cljPt",KUCMSBranch::VFLOAT);
-    CaloJetBM.makeBranch("cljEnergy","cljEnergy",KUCMSBranch::VFLOAT);
-    CaloJetBM.makeBranch("cljPhi","cljPhi",KUCMSBranch::VFLOAT);
-    CaloJetBM.makeBranch("cljEta","cljEta",KUCMSBranch::VFLOAT);
-    CaloJetBM.makeBranch("cljPx","cljPx",KUCMSBranch::VFLOAT);
-    CaloJetBM.makeBranch("cljPy","cljPy",KUCMSBranch::VFLOAT);
-    CaloJetBM.makeBranch("cljPz","cljPz",KUCMSBranch::VFLOAT);
+	CaloJetBM.makeBranch("cljRhIds","cljRhIds",VVUINT);
+    CaloJetBM.makeBranch("cljPt","cljPt",VFLOAT);
+    CaloJetBM.makeBranch("cljEnergy","cljEnergy",VFLOAT);
+    CaloJetBM.makeBranch("cljPhi","cljPhi",VFLOAT);
+    CaloJetBM.makeBranch("cljEta","cljEta",VFLOAT);
+    CaloJetBM.makeBranch("cljPx","cljPx",VFLOAT);
+    CaloJetBM.makeBranch("cljPy","cljPy",VFLOAT);
+    CaloJetBM.makeBranch("cljPz","cljPz",VFLOAT);
 
 	CaloJetBM.attachBranches(outTree);
 
@@ -1135,79 +1135,79 @@ void KUCMSNtupilizer::processClJet(){
 //----------------------------------------------------------------------------------------
 void KUCMSNtupilizer::setBranchesPhotons(){
 
-    PhotonBM.makeBranch("IsOotPho","phoIsOot",KUCMSBranch::VBOOL);
-    PhotonBM.makeBranch("Excluded", "phoExcluded",KUCMSBranch::VBOOL);
+    PhotonBM.makeBranch("IsOotPho","phoIsOot",VBOOL);
+    PhotonBM.makeBranch("Excluded", "phoExcluded",VBOOL);
 
-    PhotonBM.makeBranch("Pt","phoPt",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("Energy","phoEnergy",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("Phi","phoPhi",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("Eta","phoEta",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("Px","phoPx",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("Py","phoPy",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("Pz","phoPz",KUCMSBranch::VFLOAT);
+    PhotonBM.makeBranch("Pt","phoPt",VFLOAT);
+    PhotonBM.makeBranch("Energy","phoEnergy",VFLOAT);
+    PhotonBM.makeBranch("Phi","phoPhi",VFLOAT);
+    PhotonBM.makeBranch("Eta","phoEta",VFLOAT);
+    PhotonBM.makeBranch("Px","phoPx",VFLOAT);
+    PhotonBM.makeBranch("Py","phoPy",VFLOAT);
+    PhotonBM.makeBranch("Pz","phoPz",VFLOAT);
 
-    PhotonBM.makeBranch("EnergyErr","phoEnergyErr",KUCMSBranch::VFLOAT,"energy error of the cluster from regression");//
-    PhotonBM.makeBranch("EnergyRaw","phoEnergyRaw",KUCMSBranch::VFLOAT,"raw energy of photon supercluster");//
+    PhotonBM.makeBranch("EnergyErr","phoEnergyErr",VFLOAT,"energy error of the cluster from regression");//
+    PhotonBM.makeBranch("EnergyRaw","phoEnergyRaw",VFLOAT,"raw energy of photon supercluster");//
 
-    //PhotonBM.makeBranch("JetIdx",KUCMSBranch::VUINT);// index of matching jet/ele -> can do at skimmer
-    //PhotonBM.makeBranch("eleIdx",KUCMSBranch::VUINT);// index of matching jet/ele -> can do at skimmer
+    //PhotonBM.makeBranch("JetIdx",VUINT);// index of matching jet/ele -> can do at skimmer
+    //PhotonBM.makeBranch("eleIdx",VUINT);// index of matching jet/ele -> can do at skimmer
 
-    PhotonBM.makeBranch("SeedTOFTime","phoSeedTOFTime",KUCMSBranch::VFLOAT,"time of flight from PV to photon seed crystal");
-    PhotonBM.makeBranch("RhIds","phoRhIds",KUCMSBranch::VVUINT,"list of rechit raw ids in hits and fractions list from supercluster");
-    PhotonBM.makeBranch("hasPixelSeed","phoHasPixelSeed",KUCMSBranch::VBOOL,"has pixel seed");
-    PhotonBM.makeBranch("eleVeto","phoPassEleVeto",KUCMSBranch::VBOOL,"pass electron veto");//
-    PhotonBM.makeBranch("isEB","phoSeedIsEB",KUCMSBranch::VBOOL,"photon supercluster seed crystal is in ecal barrel");
+    PhotonBM.makeBranch("SeedTOFTime","phoSeedTOFTime",VFLOAT,"time of flight from PV to photon seed crystal");
+    PhotonBM.makeBranch("RhIds","phoRhIds",VVUINT,"list of rechit raw ids in hits and fractions list from supercluster");
+    PhotonBM.makeBranch("hasPixelSeed","phoHasPixelSeed",VBOOL,"has pixel seed");
+    PhotonBM.makeBranch("eleVeto","phoPassEleVeto",VBOOL,"pass electron veto");//
+    PhotonBM.makeBranch("isEB","phoSeedIsEB",VBOOL,"photon supercluster seed crystal is in ecal barrel");
 
-    PhotonBM.makeBranch("R9","phoR9",KUCMSBranch::VFLOAT,"R9 of the supercluster, calculated with full 5x5 region");
-    PhotonBM.makeBranch("SigmaIEtaIEta","phoSigmaIEtaIEta",KUCMSBranch::VFLOAT,"sigma_IetaIeta of supercluster, calc w/ full 5x5 region");
-    PhotonBM.makeBranch("SigmaIEtaIPhi","pohoSigmaIEtaIPhi",KUCMSBranch::VFLOAT,"sigmaIphiIphi of supercluster");//
-    PhotonBM.makeBranch("SigmaIPhiIPhi","phoSigmaIPhiIPhi",KUCMSBranch::VFLOAT,"sigma_IetaIphi of supercluster, calc w/ full 5x5 region");//
-    PhotonBM.makeBranch("S4",KUCMSBranch::VFLOAT,"e2x2/e5x5 of supercluster, calc w/ full 5x5 region");//
+    PhotonBM.makeBranch("R9","phoR9",VFLOAT,"R9 of the supercluster, calculated with full 5x5 region");
+    PhotonBM.makeBranch("SigmaIEtaIEta","phoSigmaIEtaIEta",VFLOAT,"sigma_IetaIeta of supercluster, calc w/ full 5x5 region");
+    PhotonBM.makeBranch("SigmaIEtaIPhi","pohoSigmaIEtaIPhi",VFLOAT,"sigmaIphiIphi of supercluster");//
+    PhotonBM.makeBranch("SigmaIPhiIPhi","phoSigmaIPhiIPhi",VFLOAT,"sigma_IetaIphi of supercluster, calc w/ full 5x5 region");//
+    PhotonBM.makeBranch("S4",VFLOAT,"e2x2/e5x5 of supercluster, calc w/ full 5x5 region");//
 
-    PhotonBM.makeBranch("HadTowOverEM","phoHadTowOverEM",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("HadOverEM","phoHadOverEM",KUCMSBranch::VFLOAT);//
-    PhotonBM.makeBranch("EcalRHSumEtConeDR04","phoEcalRHSumEtConeDR04",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("HcalTowerSumEtBcConeDR04","phoHcalTowerSumEtBcConeDR04",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("TrkSumPtSolidConeDR04","phoTrkSumPtSolidConeDR04",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("TrkSumPtHollowConeDR04","phoTrkSumPtHollowConeDR04",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("TrkSumPtHollowConeDR03","phoTrkSumPtHollowConeDR03",KUCMSBranch::VFLOAT,"Sum of track pT in a hollow cone of outer radius, inner radius");// nano -> DR03?
+    PhotonBM.makeBranch("HadTowOverEM","phoHadTowOverEM",VFLOAT);
+    PhotonBM.makeBranch("HadOverEM","phoHadOverEM",VFLOAT);//
+    PhotonBM.makeBranch("EcalRHSumEtConeDR04","phoEcalRHSumEtConeDR04",VFLOAT);
+    PhotonBM.makeBranch("HcalTowerSumEtBcConeDR04","phoHcalTowerSumEtBcConeDR04",VFLOAT);
+    PhotonBM.makeBranch("TrkSumPtSolidConeDR04","phoTrkSumPtSolidConeDR04",VFLOAT);
+    PhotonBM.makeBranch("TrkSumPtHollowConeDR04","phoTrkSumPtHollowConeDR04",VFLOAT);
+    PhotonBM.makeBranch("TrkSumPtHollowConeDR03","phoTrkSumPtHollowConeDR03",VFLOAT,"Sum of track pT in a hollow cone of outer radius, inner radius");// nano -> DR03?
 
-    PhotonBM.makeBranch("pfPhoIso03","phoPfPhoIso03",KUCMSBranch::VFLOAT,"PF abs iso dR=0.3, photon component (uncorrected)");//
-    PhotonBM.makeBranch("pfChargedIsoPFPV","phoPfChargedIsoPFPV",KUCMSBranch::VFLOAT,"PF abs iso dR=0.3, charged component (PF PV only)");//
-    PhotonBM.makeBranch("pfChargedIsoWorstVtx","phoPfChargedIsoWorstVtx",KUCMSBranch::VFLOAT,"PF abs iso dR=0.3, charged component (Vertex w/ largest iso)");//
-    //PhotonBM.makeBranch("pfRelIso03_chg_quadratic",KUCMSBranch::VFLOAT);//
-    //PhotonBM.makeBranch("pfRelIso03_all_quadratic",KUCMSBranch::VFLOAT);//
-    //PhotonBM.makeBranch("hoe_PUcorr","phoHoe_PUcorr",KUCMSBranch::VFLOAT,
+    PhotonBM.makeBranch("pfPhoIso03","phoPfPhoIso03",VFLOAT,"PF abs iso dR=0.3, photon component (uncorrected)");//
+    PhotonBM.makeBranch("pfChargedIsoPFPV","phoPfChargedIsoPFPV",VFLOAT,"PF abs iso dR=0.3, charged component (PF PV only)");//
+    PhotonBM.makeBranch("pfChargedIsoWorstVtx","phoPfChargedIsoWorstVtx",VFLOAT,"PF abs iso dR=0.3, charged component (Vertex w/ largest iso)");//
+    //PhotonBM.makeBranch("pfRelIso03_chg_quadratic",VFLOAT);//
+    //PhotonBM.makeBranch("pfRelIso03_all_quadratic",VFLOAT);//
+    //PhotonBM.makeBranch("hoe_PUcorr","phoHoe_PUcorr",VFLOAT,
 	//						"PU corrected H/E (cone-based with quadraticEA*rho*rho + linearEA*rho Winter22V1 corrections)");// userFloat
-    PhotonBM.makeBranch("isScEtaEB","phoIsScEtaEB",KUCMSBranch::VBOOL,"is supercluster eta within barrel acceptance");//
-    PhotonBM.makeBranch("isScEtaEE","phoIsScEtaEE",KUCMSBranch::VBOOL,"is supercluster eta within endcap acceptance");//
+    PhotonBM.makeBranch("isScEtaEB","phoIsScEtaEB",VBOOL,"is supercluster eta within barrel acceptance");//
+    PhotonBM.makeBranch("isScEtaEE","phoIsScEtaEE",VBOOL,"is supercluster eta within endcap acceptance");//
 
-    //PhotonBM.makeBranch("seedGain",KUCMSBranch::VINT);// ? can find through rh collection if needed
-    PhotonBM.makeBranch("seediEtaOriX","phoSeedIex",KUCMSBranch::VINT,"iEta or iX of seed crystal. iEta is barrel-only, iX is endcap-only. iEta runs from -85 to +85, with no crystal at iEta=0. iX runs from 1 to 100.");//
-    PhotonBM.makeBranch("seediPhiOriY","phoSeedIpy",KUCMSBranch::VINT,"iPhi or iY of seed crystal. iPhi is barrel-only, iY is endcap-only. iPhi runs from 1 to 360. iY runs from 1 to 100.");//
-    PhotonBM.makeBranch("x_calo","phoXcalo",KUCMSBranch::VFLOAT,"photon supercluster position on calorimeter, x coordinate (cm)");//
-    PhotonBM.makeBranch("y_calo","phoYcalo",KUCMSBranch::VFLOAT,"photon supercluster position on calorimeter, y coordinate (cm)");//
-    PhotonBM.makeBranch("z_calo","phoZcalo",KUCMSBranch::VFLOAT,"photon supercluster position on calorimeter, z coordinate (cm)");//
+    //PhotonBM.makeBranch("seedGain",VINT);// ? can find through rh collection if needed
+    PhotonBM.makeBranch("seediEtaOriX","phoSeedIex",VINT,"iEta or iX of seed crystal. iEta is barrel-only, iX is endcap-only. iEta runs from -85 to +85, with no crystal at iEta=0. iX runs from 1 to 100.");//
+    PhotonBM.makeBranch("seediPhiOriY","phoSeedIpy",VINT,"iPhi or iY of seed crystal. iPhi is barrel-only, iY is endcap-only. iPhi runs from 1 to 360. iY runs from 1 to 100.");//
+    PhotonBM.makeBranch("x_calo","phoXcalo",VFLOAT,"photon supercluster position on calorimeter, x coordinate (cm)");//
+    PhotonBM.makeBranch("y_calo","phoYcalo",VFLOAT,"photon supercluster position on calorimeter, y coordinate (cm)");//
+    PhotonBM.makeBranch("z_calo","phoZcalo",VFLOAT,"photon supercluster position on calorimeter, z coordinate (cm)");//
 
-    PhotonBM.makeBranch("esEffSigmaRR","phoEsEffSigmaRR",KUCMSBranch::VFLOAT,"preshower sigmaRR");//
-    PhotonBM.makeBranch("esEnergyOverRawE","phoEsEnergyOverRawE",KUCMSBranch::VFLOAT,"ratio of preshower energy to raw supercluster energy");
-    PhotonBM.makeBranch("haloTaggerMVAVal","phoHaloTaggerMVAVal",KUCMSBranch::VFLOAT,"Value of MVA based beam halo tagger in the Ecal endcap (valid for pT > 200 GeV)");//
+    PhotonBM.makeBranch("esEffSigmaRR","phoEsEffSigmaRR",VFLOAT,"preshower sigmaRR");//
+    PhotonBM.makeBranch("esEnergyOverRawE","phoEsEnergyOverRawE",VFLOAT,"ratio of preshower energy to raw supercluster energy");
+    PhotonBM.makeBranch("haloTaggerMVAVal","phoHaloTaggerMVAVal",VFLOAT,"Value of MVA based beam halo tagger in the Ecal endcap (valid for pT > 200 GeV)");//
 
-    PhotonBM.makeBranch("GenIdx","phoGenIdx",KUCMSBranch::VINT);
-    PhotonBM.makeBranch("GenDr","phoGenDr",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("GenDp","phoGenDp",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("GenSIdx","phoGenSIdx",KUCMSBranch::VINT);
-    PhotonBM.makeBranch("GenSDr","phoGenSDr",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("GenSDp","phoGenSDp",KUCMSBranch::VFLOAT);
+    PhotonBM.makeBranch("GenIdx","phoGenIdx",VINT);
+    PhotonBM.makeBranch("GenDr","phoGenDr",VFLOAT);
+    PhotonBM.makeBranch("GenDp","phoGenDp",VFLOAT);
+    PhotonBM.makeBranch("GenSIdx","phoGenSIdx",VINT);
+    PhotonBM.makeBranch("GenSDr","phoGenSDr",VFLOAT);
+    PhotonBM.makeBranch("GenSDp","phoGenSDp",VFLOAT);
 
-    PhotonBM.makeBranch("etaWidth","phoEtaWidth",KUCMSBranch::VFLOAT,"Width of the photon supercluster in eta");//
-    PhotonBM.makeBranch("phiWidth","phoPhiWidth",KUCMSBranch::VFLOAT,"Width of the photon supercluster in phi");//
-    PhotonBM.makeBranch("SMaj","phoSMaj",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("SMin","phoSMin",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("SAlp","phoSAlp",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("CovEtaEta","phoCovEtaEta",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("CovEtaPhi","phoCovEtaPhi",KUCMSBranch::VFLOAT);
-    PhotonBM.makeBranch("CovPhiPhi","phoCovPhiPhi",KUCMSBranch::VFLOAT);
+    PhotonBM.makeBranch("etaWidth","phoEtaWidth",VFLOAT,"Width of the photon supercluster in eta");//
+    PhotonBM.makeBranch("phiWidth","phoPhiWidth",VFLOAT,"Width of the photon supercluster in phi");//
+    PhotonBM.makeBranch("SMaj","phoSMaj",VFLOAT);
+    PhotonBM.makeBranch("SMin","phoSMin",VFLOAT);
+    PhotonBM.makeBranch("SAlp","phoSAlp",VFLOAT);
+    PhotonBM.makeBranch("CovEtaEta","phoCovEtaEta",VFLOAT);
+    PhotonBM.makeBranch("CovEtaPhi","phoCovEtaPhi",VFLOAT);
+    PhotonBM.makeBranch("CovPhiPhi","phoCovPhiPhi",VFLOAT);
 
     PhotonBM.attachBranches(outTree);
 
@@ -1402,21 +1402,21 @@ void KUCMSNtupilizer::processPhotons(){
 //-------------------------------------------------------------------------------------------
 void KUCMSNtupilizer::setBranchesElectrons(){
 
-    ElectronBM.makeBranch("RhIds","eleRhIds",KUCMSBranch::VVUINT); 
-    ElectronBM.makeBranch("SeedTOFTime","eleSeedTOFTime",KUCMSBranch::VFLOAT);
-    ElectronBM.makeBranch("Pt","elePt",KUCMSBranch::VFLOAT);
-    ElectronBM.makeBranch("Energy","eleEnergy",KUCMSBranch::VFLOAT);
-    ElectronBM.makeBranch("Phi","elePhi",KUCMSBranch::VFLOAT);
-    ElectronBM.makeBranch("Eta","eleEta",KUCMSBranch::VFLOAT);
-    ElectronBM.makeBranch("Px","elePx",KUCMSBranch::VFLOAT);
-    ElectronBM.makeBranch("Py","elePy",KUCMSBranch::VFLOAT);
-    ElectronBM.makeBranch("Pz","elePz",KUCMSBranch::VFLOAT);
-    ElectronBM.makeBranch("GenIdx","eleGenIdx",KUCMSBranch::VINT);
-    ElectronBM.makeBranch("GenDr","eleGenDr",KUCMSBranch::VFLOAT);
-    ElectronBM.makeBranch("GenDr","eleGenDp",KUCMSBranch::VFLOAT);
-    ElectronBM.makeBranch("GenSIdx","eleGenSIdx",KUCMSBranch::VINT);
-    ElectronBM.makeBranch("GenSDr","eleGenSDr",KUCMSBranch::VFLOAT);
-    ElectronBM.makeBranch("GenSDr","eleGenSDp",KUCMSBranch::VFLOAT);
+    ElectronBM.makeBranch("RhIds","eleRhIds",VVUINT); 
+    ElectronBM.makeBranch("SeedTOFTime","eleSeedTOFTime",VFLOAT);
+    ElectronBM.makeBranch("Pt","elePt",VFLOAT);
+    ElectronBM.makeBranch("Energy","eleEnergy",VFLOAT);
+    ElectronBM.makeBranch("Phi","elePhi",VFLOAT);
+    ElectronBM.makeBranch("Eta","eleEta",VFLOAT);
+    ElectronBM.makeBranch("Px","elePx",VFLOAT);
+    ElectronBM.makeBranch("Py","elePy",VFLOAT);
+    ElectronBM.makeBranch("Pz","elePz",VFLOAT);
+    ElectronBM.makeBranch("GenIdx","eleGenIdx",VINT);
+    ElectronBM.makeBranch("GenDr","eleGenDr",VFLOAT);
+    ElectronBM.makeBranch("GenDr","eleGenDp",VFLOAT);
+    ElectronBM.makeBranch("GenSIdx","eleGenSIdx",VINT);
+    ElectronBM.makeBranch("GenSDr","eleGenSDr",VFLOAT);
+    ElectronBM.makeBranch("GenSDr","eleGenSDp",VFLOAT);
 
     ElectronBM.attachBranches(outTree);
 
@@ -1482,14 +1482,14 @@ void KUCMSNtupilizer::processElectrons(){
 //----------------------------------------------------------------------
 void KUCMSNtupilizer::setBranchesGenParts(){
 
-    GenParticlesBM.makeBranch("genPt","genPt",KUCMSBranch::VFLOAT);
-    GenParticlesBM.makeBranch("genEnergy","genEnergy",KUCMSBranch::VFLOAT);
-    GenParticlesBM.makeBranch("genPhi","genPhi",KUCMSBranch::VFLOAT);
-    GenParticlesBM.makeBranch("genEta","genEta",KUCMSBranch::VFLOAT);
-    GenParticlesBM.makeBranch("genPx","genPx",KUCMSBranch::VFLOAT);
-    GenParticlesBM.makeBranch("genPy","genPy",KUCMSBranch::VFLOAT);
-    GenParticlesBM.makeBranch("genPz","genPz",KUCMSBranch::VFLOAT);
-    GenParticlesBM.makeBranch("genPdgId","genPdgId",KUCMSBranch::VUINT);
+    GenParticlesBM.makeBranch("genPt","genPt",VFLOAT);
+    GenParticlesBM.makeBranch("genEnergy","genEnergy",VFLOAT);
+    GenParticlesBM.makeBranch("genPhi","genPhi",VFLOAT);
+    GenParticlesBM.makeBranch("genEta","genEta",VFLOAT);
+    GenParticlesBM.makeBranch("genPx","genPx",VFLOAT);
+    GenParticlesBM.makeBranch("genPy","genPy",VFLOAT);
+    GenParticlesBM.makeBranch("genPz","genPz",VFLOAT);
+    GenParticlesBM.makeBranch("genPdgId","genPdgId",VUINT);
 
 	GenParticlesBM.attachBranches(outTree);
 
@@ -1528,12 +1528,12 @@ void KUCMSNtupilizer::processGenPart(){
 //-----------------------------------------------------------------------
 void KUCMSNtupilizer::setBranchesRecHits(){
 
-    EcalRecHitBM.makeBranch("rhEnergy","rhEnergy",KUCMSBranch::VFLOAT);
-    EcalRecHitBM.makeBranch("rhTime","rhTime",KUCMSBranch::VFLOAT);
-    EcalRecHitBM.makeBranch("rhTOF","rhTOF",KUCMSBranch::VFLOAT);
-    EcalRecHitBM.makeBranch("rhID","rhID",KUCMSBranch::VUINT);
-    EcalRecHitBM.makeBranch("rhisOOT","rhisOOT",KUCMSBranch::VBOOL);
-    EcalRecHitBM.makeBranch("rhSwCross","rhSwCross",KUCMSBranch::VFLOAT);	
+    EcalRecHitBM.makeBranch("rhEnergy","rhEnergy",VFLOAT);
+    EcalRecHitBM.makeBranch("rhTime","rhTime",VFLOAT);
+    EcalRecHitBM.makeBranch("rhTOF","rhTOF",VFLOAT);
+    EcalRecHitBM.makeBranch("rhID","rhID",VUINT);
+    EcalRecHitBM.makeBranch("rhisOOT","rhisOOT",VBOOL);
+    EcalRecHitBM.makeBranch("rhSwCross","rhSwCross",VFLOAT);	
 
 	EcalRecHitBM.attachBranches(outTree);
 

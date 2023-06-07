@@ -147,6 +147,7 @@
 #include "TGraph.h"
 #include "TMathBase.h"
 
+#include "KUCMSItemManager.hh"
 #include "KUCMSBranchManager.hh"
 
 #ifndef KUCMSNtupilizerHeader
@@ -248,6 +249,10 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
       	// ----------member data ---------------------------
 		////////////////////////////////////////////////////
 
+		// input parameters
+		ItemManager<float> cfValues;
+        ItemManager<bool> cfFlags;
+
 		// filtered collection vectors
     	std::vector<reco::PFJet>        fjets;
     	std::vector<int>                jetIds;
@@ -268,6 +273,7 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
     	std::vector<reco::GenJet>       fgenjets;
 
 		// global event varibles
+		ItemManager<float> gloEvtVars;
 		float evtMET;
         float evtVtxX; 
         float evtVtxY; 

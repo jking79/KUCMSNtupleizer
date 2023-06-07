@@ -24,25 +24,26 @@
 
 typedef unsigned int uInt;
 
+    // BranchType List
+    // --------------------------
+    // vector<vector<uInt>  VVUINT
+    // vector<uInt>         VUINT 
+    // vector<int>          VINT
+    // vector<float>        VFLOAT
+    // vector<string>       VSTR
+    // vector<bool>         VBOOL
+    // uInt                 UINT
+    // int                  INT
+    // float                FLOAT
+    // string               STR
+    // bool                 BOOL
+
+enum BType{ VVUINT, VUINT, VINT, VFLOAT, VSTR, VBOOL, UINT, INT, FLOAT, STR, BOOL };
+
+
 class KUCMSBranch {
 
 	public:
-
-	// BranchType List
-	// --------------------------
-	// vector<vector<uInt> 	VVUINT
-	// vector<uInt>			VUINT 
-	// vector<int>			VINT
-	// vector<float>		VFLOAT
-	// vector<string>		VSTR
-	// vector<bool>			VBOOL
-	// uInt					UINT
-	// int					INT
-	// float				FLOAT
-	// string				STR
-	// bool					BOOL
-	
-	enum BType{ VVUINT, VUINT, VINT, VFLOAT, VSTR, VBOOL, UINT, INT, FLOAT, STR, BOOL };
 
 	KUCMSBranch();
 	KUCMSBranch( BType type, std::string name, std::string doc );
@@ -99,9 +100,9 @@ class KUCMSBranch {
 
 };//<<>>class KUCMSBranch
 
-KUCMSBranch::KUCMSBranch(){}
+KUCMSBranch::KUCMSBranch(){};
 
-KUCMSBranch::KUCMSBranch( KUCMSBranch::BType type, std::string name, std::string doc = "" ):
+KUCMSBranch::KUCMSBranch( BType type, std::string name, std::string doc = "" ):
 
 	BranchType(type),
 	BranchName(name),
@@ -372,8 +373,8 @@ class KUCMSBranchManager {
 
 	public:
 
-	void makeBranch( std::string key, std::string name, KUCMSBranch::BType type, std::string doc );
-    void makeBranch( std::string name, KUCMSBranch::BType type, std::string doc );
+	void makeBranch( std::string key, std::string name, BType type, std::string doc );
+    void makeBranch( std::string name, BType type, std::string doc );
     void attachBranches( TTree* fOutTree );
 	void clearBranches();
 
@@ -409,14 +410,14 @@ class KUCMSBranchManager {
 
 };//<<>>class KUCMSBranchManager 
 
-void KUCMSBranchManager::makeBranch( std::string key, std::string name, KUCMSBranch::BType type, std::string doc = "" ){
+void KUCMSBranchManager::makeBranch( std::string key, std::string name, BType type, std::string doc = "" ){
 
 	KUCMSBranch newBranch( type, name, doc );
 	theBranches[key] = newBranch;
 	
 }//<<>>void KUCMSBranchManager::makeBranch( std::string key, std::string name, KUCMSBranch::BT type, std::string doc )
 
-void KUCMSBranchManager::makeBranch( std::string name, KUCMSBranch::BType type, std::string doc = "" ){
+void KUCMSBranchManager::makeBranch( std::string name, BType type, std::string doc = "" ){
 
     KUCMSBranch newBranch( type, name, doc );
     theBranches[name] = newBranch;
