@@ -237,6 +237,8 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
 		void processPhotons();
         void setBranchesElectrons();
 		void processElectrons();
+        void setBranchesMuons();
+        void processMuons();
         void setBranchesJets();
 		void processJets();
         void setBranchesClusterJets();

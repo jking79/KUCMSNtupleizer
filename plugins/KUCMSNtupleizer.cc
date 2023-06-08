@@ -402,7 +402,7 @@ void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
     if( DEBUG ) std::cout << "Collecting Muons" << std::endl;
 	fmuons.clear();
     //if( DEBUG ) std::cout << "Collecting Muons" << std::endl; //  set EB only filter
-    //for( const auto &muon : *muons_ ){ if( muon.energy() > minMuonE ) fmuons.push_back(muon); }
+    for( const auto &muon : *muons_ ){ if( muon.energy() > minMuonE ) fmuons.push_back(muon); }
 
     if( DEBUG ) std::cout << "Collecting Met" << std::endl;
     fpfmet.clear();
@@ -554,8 +554,10 @@ void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 	processMet();
     //processClJet();
 	processPhotons();
-    //processElectrons();
+    processElectrons();
 	processJets();
+    processMuons();
+
 
 	// Process RecHits : Must be processed last
     processRecHits();
@@ -604,8 +606,9 @@ void KUCMSNtupilizer::beginJob(){
 	setBranchesJets();
     //setBranchesClusterJets();
 	setBranchesPhotons();
-	//setBranchesElectrons();
-
+	setBranchesElectrons();
+    setBranchesMuons();
+    
 	// Gen collection branches
 	setBranchesGenParts();
 
@@ -653,10 +656,10 @@ bool KUCMSNtupilizer::selectedEvent(){
 //---------------------------------------------
 void KUCMSNtupilizer::setBranchesEvent(){
 
-	EventInfoBM.makeBranch("run","RunNumber",UINT,"Run number of event");
-    EventInfoBM.makeBranch("lumi","LumiSection",UINT,"Lumi section of event");
-    EventInfoBM.makeBranch("event","EventNumber",UINT);
-    EventInfoBM.makeBranch("wgt","EventWeight",FLOAT);
+	EventInfoBM.makeBranch("run","run",UINT,"Run number of event");
+    EventInfoBM.makeBranch("lumi","luminosityBlock",UINT,"Lumi section of event");
+    EventInfoBM.makeBranch("event","event",UINT);
+    EventInfoBM.makeBranch("wgt","weight",FLOAT);
 
     EventInfoBM.attachBranches(outTree);
 
@@ -683,10 +686,10 @@ void KUCMSNtupilizer::processEvent( const edm::Event& iEvent ){
 //----------------------------------------------
 void KUCMSNtupilizer::setBranchesVtx(){
 
-    VertexBM.makeBranch("nVtx","nVtx",UINT);
-	VertexBM.makeBranch("vtxX","vtxX",FLOAT);
-    VertexBM.makeBranch("vtxY","vtxY",FLOAT);
-    VertexBM.makeBranch("vtxZ","vtxZ",FLOAT);
+    VertexBM.makeBranch("nVtx","PV_npvs",UINT);
+	VertexBM.makeBranch("vtxX","PV_x",FLOAT);
+    VertexBM.makeBranch("vtxY","PV_y",FLOAT);
+    VertexBM.makeBranch("vtxZ","PV_z",FLOAT);
 
     VertexBM.attachBranches(outTree);
 
@@ -719,7 +722,7 @@ void KUCMSNtupilizer::processVtx(){
 //-------------------------------------------------
 void KUCMSNtupilizer::setBranchesMet(){
 
-	MetBM.makeBranch("SumEt","metSumEt",FLOAT,"scalar sum of Et");
+	MetBM.makeBranch("SumEt","umEt",FLOAT,"scalar sum of Et");
     MetBM.makeBranch("Px","metPx",FLOAT);
     MetBM.makeBranch("Py","metPy",FLOAT);
 
@@ -1477,6 +1480,11 @@ void KUCMSNtupilizer::processElectrons(){
     }//<<>>for( const auto electron : *electrons_ )
 
 }//<<>>processElectrons( felectrons, fgenparts )
+
+//------------------------------------------------------------
+void KUCMSNtupilizer::setBranchesMuons(){}
+
+void KUCMSNtupilizer::processMuons(){}
 
 //----------------------------------------------------------------------
 void KUCMSNtupilizer::setBranchesGenParts(){
