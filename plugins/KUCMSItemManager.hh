@@ -30,24 +30,24 @@ typedef unsigned int uInt;
 template <class T> 
 class Item {
 
-	public:
+    public:
 
-	Item();
-	Item( std::string name, std::string doc = "" );
+    Item();
+    Item( std::string name, std::string doc = "" );
     Item( std::string name, T value, std::string doc = "" );
-	//~Item();
+    //~Item();
 
     void make( std::string name, std::string doc = "" );
-	void fill( T val );
-	void clear();
-	T getvalue();
-	std::string getdoc();
+    void fill( T val );
+    void clear();
+    T getvalue();
+    std::string getdoc();
 
-	protected:
+    protected:
 
     std::string iName;
     std::string iDoc;
-	T iValue;
+    T iValue;
 
 };//<<>>class Item 
 
@@ -67,28 +67,28 @@ Item<T>::Item( std::string name, T value, std::string doc ):
     
     iName(name),
     iDoc(doc),
-	iValue(value)
+    iValue(value)
 
 {}//<<>>Item::Item( std::string name, std::string doc, T value  )
 
 template <class T>
 std::string Item<T>::getdoc(){
 
-	return iDoc;
+    return iDoc;
 
 }//<<>>std::string Item::getDoc
 
 template <class T>
 T Item<T>::getvalue(){
 
-	return iValue;
+    return iValue;
 
 }//<<>>Item::getVal<T>()
 
 template <class T>
 void Item<T>::clear(){
 
-	iValue = -std::numeric_limits<T>::max();
+    iValue = -std::numeric_limits<T>::max();
 
 }//<<>>void Item::clear()
 
@@ -117,14 +117,14 @@ template <class T>
 void Item<T>::make( std::string name, std::string doc ){
 
     iName = name;
-	iDoc = doc;
+    iDoc = doc;
 
 }//<<>>void Item::make(  std::string name, std::string doc  )
 
 template <class T>
 void Item<T>::fill( T val ){
 
-	iValue = val;
+    iValue = val;
 
 }//<<>>void Item::fill( T val )
 
@@ -139,7 +139,7 @@ class VectorItem {
     VectorItem( std::string name, T value, std::string doc );
     //~VectorItem();
 
-	void make( std::string name, std::string doc = "" );
+    void make( std::string name, std::string doc = "" );
     void fill( T val );
     void clear();
     std::vector<T> getvalue();
@@ -209,12 +209,14 @@ void VectorItem<T>::fill( T val ){
 }//<<>>void VectorItem::clear()
 
 //......................................................................................
+//   ItemManager
+//......................................................................................
 
 template < class T , template< class > class C = Item >
 class ItemManager {
 
     public:
-	
+    
     void set( std::string key, std::string name, std::string doc );
     void set( std::string name );
     void set( std::string name, T val );
@@ -222,11 +224,11 @@ class ItemManager {
     void fill( std::string key, T val );
     T get( std::string key );
 
-	void clear();
-	void clear( std::string key );
-	void reset();
+    void clear();
+    void clear( std::string key );
+    void reset();
 
-	T operator()( std::string key );
+    T operator()( std::string key );
 
     private:
 
@@ -238,8 +240,8 @@ class ItemManager {
 template < class T , template< class > class C >
 void ItemManager<T,C>::set( std::string key, std::string name, std::string doc ){
 
-	C<T> newitem( name, doc );
-	items[key] = newitem;
+    C<T> newitem( name, doc );
+    items[key] = newitem;
 
 }//>><<void ItemManager::set( std::string key, std::string name, std::string doc )
 
@@ -257,14 +259,14 @@ void ItemManager<T,C>::set( std::string name, T val ){
 template < class T , template< class > class C >
 void ItemManager<T,C>::fill( std::string key, T val ){
 
-	if( valid( key ) ) items[key].fill( val );
-	
+    if( valid( key ) ) items[key].fill( val );
+    
 }//<<>>void ItemManager<T>::fill( std::string key, T val )
 
 template < class T , template< class > class C >
 T ItemManager<T,C>::get( std::string key ){
 
-	return valid( key ) ? items[key].getvalue() : T();
+    return valid( key ) ? items[key].getvalue() : T();
 
 }//<<>>T ItemManager::get( std::string key )
 
@@ -292,17 +294,17 @@ void ItemManager<T,C>::clear( std::string key ){
 template < class T , template< class > class C >
 T ItemManager<T,C>::operator()( std::string key ){
 
-	return valid( key ) ? items[key].getvalue() : T();
+    return valid( key ) ? items[key].getvalue() : T();
 
 }//<<>>T ItemManager<T,C>::operator()( std::string key )
 
 template < class T , template< class > class C >
 bool ItemManager<T,C>::valid( std::string key ){ 
 
-	if( items.find(key) == items.end() ){
+    if( items.find(key) == items.end() ){
         std::cout << " -- Error: No Such Key : " << key << " !!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl; 
-		return false; 
-	} else return true;
+        return false; 
+    } else return true;
 
 }//<<>>bool ItemManager<T>::::valid( std::string key )
 

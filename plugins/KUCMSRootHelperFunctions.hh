@@ -165,9 +165,9 @@ void thresDivTH2D(TH2D* numi, TH2D* denom, float thres){
 
 }//<<>>void thresDivTH2D(TH2D* numi, TH2D* denom, float thres){
 
-vector<float> getDistStats( vector<float> values ){
+std::vector<float> getDistStats( std::vector<float> values ){
 
-    vector<float> results;
+    std::vector<float> results;
     int size = values.size();
 
     if( size == 0 ){
@@ -220,11 +220,11 @@ vector<float> getDistStats( vector<float> values ){
     results.push_back(1.2533*err);//11 error of median
 
     return results;
-}//>>>> vector<float> getDistStats( vector<float> values )
+}//>>>> std::vector<float> getDistStats( std::vector<float> values )
 
-vector<float> getDistStats( vector<float> values, vector<float> wts ){
+std::vector<float> getDistStats( std::vector<float> values, std::vector<float> wts ){
 
-    vector<float> results;
+    std::vector<float> results;
     int size = values.size();
     int wtsize = wts.size();
     if( size != wtsize || size == 0 ){
@@ -246,7 +246,7 @@ vector<float> getDistStats( vector<float> values, vector<float> wts ){
     }//<<>>if( size != rechits.size() || size == 0 )
 
     TH1D valueDist( "temp", "temp", 500, -10, 10 );
-    vector<float> wvalues;
+    std::vector<float> wvalues;
     float wtot(0.0);
     for( int it(0); it < size; it++ ){
         valueDist.Fill(values[it], wts[it]);
@@ -287,12 +287,12 @@ vector<float> getDistStats( vector<float> values, vector<float> wts ){
     results[2] = results[6] - results[10];
 
     return results;
-}//>>>>vector<float> getDistStats( vector<float> values, vector<float> weights )
+}//>>>>vector<float> getDistStats( std::vector<float> values, std::vector<float> weights )
 
-vector<float> getRhGrpEigen( vector<float> xs, vector<float> wts ){
+std::vector<float> getRhGrpEigen( std::vector<float> xs, std::vector<float> wts ){
 //spherical
 
-    vector<float> results;
+    std::vector<float> results;
 
     auto ts2 = wsin2( xs, wts );
     auto tc2 = wcos2( xs, wts );
@@ -321,11 +321,11 @@ vector<float> getRhGrpEigen( vector<float> xs, vector<float> wts ){
     results.push_back(ev);
 
     return results;
-}//<<>>vector<float> getRhGrpEigen2D( vector<float> xs, vector<float> ys, vector<float> zs, vector<float> wts )
+}//<<>>vector<float> getRhGrpEigen2D( std::vector<float> xs, std::vector<float> ys, std::vector<float> zs, std::vector<float> wts )
 
-vector<float> getRhGrpEigen( vector<float> xs, vector<float> ys, vector<float> wts ){
+std::vector<float> getRhGrpEigen( std::vector<float> xs, std::vector<float> ys, std::vector<float> wts ){
 
-    vector<float> results;
+    std::vector<float> results;
 
     auto mean_x = mean( xs, wts );
     auto mean_y = mean( ys, wts );
@@ -363,12 +363,12 @@ vector<float> getRhGrpEigen( vector<float> xs, vector<float> ys, vector<float> w
     results.push_back(ev);
 
     return results;
-}//<<>>vector<float> = getRhGrpEigen2D( vector<float> xs, vector<float> ys, vector<float> zs, vector<float> wts )
+}//<<>>vector<float> = getRhGrpEigen2D( std::vector<float> xs, std::vector<float> ys, std::vector<float> zs, std::vector<float> wts )
 
-vector<float> getRhGrpEigen( vector<float> xs, vector<float> ys, vector<float> zs, vector<float> wts ){
+std::vector<float> getRhGrpEigen( std::vector<float> xs, std::vector<float> ys, std::vector<float> zs, std::vector<float> wts ){
 // ieipt
 
-    vector<float> results;
+    std::vector<float> results;
 
     auto mean_x = mean( xs, wts );
     auto mean_y = mean( ys, wts );
@@ -422,7 +422,7 @@ vector<float> getRhGrpEigen( vector<float> xs, vector<float> ys, vector<float> z
     results.push_back(ev);//3
 
     return results;
-}//<<>>vector<float> getRhGrpEigen3D( vector<float> xs, vector<float> ys, vector<float> zs, vector<float> wts )
+}//<<>>vector<float> getRhGrpEigen3D( std::vector<float> xs, std::vector<float> ys, std::vector<float> zs, std::vector<float> wts )
 
 #endif
 //----------------------------------------------------------------------------------------------------------------------

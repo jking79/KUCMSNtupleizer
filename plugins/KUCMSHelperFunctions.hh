@@ -32,6 +32,18 @@
 #ifndef KUCMSHelperHeader
 #define KUCMSHelperHeader
 
+typedef unsigned int uInt;
+typedef unsigned long int ulInt;
+typedef const float CFlt;
+typedef const double CDbl;
+typedef const std::vector<float> CVFlt;
+typedef const std::vector<double> CVDbl;
+
+#define SOL 29.9792458 // speed of light in cm/ns
+#define PI 3.14159265358979323846 // pie ...  
+#define BUNCHES 3564
+#define SAMPLES 10
+
 //
 // Helper functions ( single line function defs, mostly )
 //

@@ -30,16 +30,16 @@ typedef unsigned int uInt;
 template < class T >
 class ScalarBranch : public Item<T> {
 
-	public:
-	
-	void attachBranch( TTree* fOutTree );
+    public:
+    
+    void attachBranch( TTree* fOutTree );
 
 };//<<>> class Branch : Item<T> 
 
 template <class T>
 void ScalarBranch<T>::attachBranch( TTree* fOutTree ){
 
-		fOutTree->Branch( iName.c_str(), &this->iValue )->SetTitle( iDoc.c_str() );
+    fOutTree->Branch( iName.c_str(), &this->iValue )->SetTitle( iDoc.c_str() );
 
 }//<<>>void Branch<T>::attachBranch( TTree* fOutTree )
 
@@ -85,20 +85,20 @@ class KUCMSBranchBase {
 template <class T>
 class KUCMSBranch : public KUCMSBranchBase {
 
-	public:
+    public:
 
-	KUCMSBranch( std::string name, BType type, std::string doc  );
-	~KUCMSBranch(){};
+    KUCMSBranch( std::string name, BType type, std::string doc  );
+    ~KUCMSBranch(){};
 
-	void attachBranch( TTree* fOutTree );
-	void clear();
+    void attachBranch( TTree* fOutTree );
+    void clear();
     void fill( T val );
-	
-	private:
+    
+    private:
 
-	BType vartype;
-	ScalarBranch<T> bscalar;
-	VectorBranch<T> bvector;
+    BType vartype;
+    ScalarBranch<T> bscalar;
+    VectorBranch<T> bvector;
  
 };//class Branch 
 
@@ -106,14 +106,14 @@ template <class T>
 KUCMSBranch<T>::KUCMSBranch( std::string name, BType type, std::string doc  ){
 
     vartype = type;
-	( vartype >= UINT ) ? bscalar.make( name, doc ) : bvector.make( name, doc );
+    ( vartype >= UINT ) ? bscalar.make( name, doc ) : bvector.make( name, doc );
 
 }//<<>>KUCMSBranch<T>::KUCMSBranch( std::string name, BType type, std::string doc  )
 
 template <class T>
 void KUCMSBranch<T>::attachBranch( TTree* fOutTree ){ 
 
-	( vartype >= UINT ) ? bscalar.attachBranch( fOutTree ) : bvector.attachBranch( fOutTree );
+    ( vartype >= UINT ) ? bscalar.attachBranch( fOutTree ) : bvector.attachBranch( fOutTree );
 
 }//<<>>void KUCMSBranch<T>::attachBranch()
 
@@ -133,33 +133,33 @@ void KUCMSBranch<T>::fill( T val ){
 
 class KUCMSBranchManager {
 
-	public:
+    public:
 
-	KUCMSBranchManager(){};
-	~KUCMSBranchManager();
+    KUCMSBranchManager(){};
+    ~KUCMSBranchManager();
 
-	void makeBranch( std::string key, std::string name, BType type, std::string doc = "" );
+    void makeBranch( std::string key, std::string name, BType type, std::string doc = "" );
     void makeBranch( std::string name, BType type, std::string doc = "" );
     void attachBranches( TTree* fOutTree );
-	void clearBranches();
+    void clearBranches();
 
     void fillBranch( std::string key, std::vector<uInt> val );
-	void fillBranch( std::string key, uInt val );
+    void fillBranch( std::string key, uInt val );
     void fillBranch( std::string key, int val );
     void fillBranch( std::string key, float val );
     void fillBranch( std::string key, std::string val );
     void fillBranch( std::string key, bool val );
 
-	private:
+    private:
 
     std::map< std::string, KUCMSBranchBase* > theBranches;
-	bool valid( std::string key );
+    bool valid( std::string key );
 
 };//<<>>class KUCMSBranchManager 
 
 KUCMSBranchManager::~KUCMSBranchManager(){ 
 
-	for( auto & branch : theBranches ){ delete branch.second; }
+    for( auto & branch : theBranches ){ delete branch.second; }
 
 }//<<>>KUCMSBranchManager::~KUCMSBranchManager()
 
@@ -181,27 +181,27 @@ void KUCMSBranchManager::makeBranch( std::string key, std::string name, BType ty
         default : std::cout << " -- KUCMSBranch " << name << " Error : BranchType error in makeBranch!!!! " << std::endl;
 
     }//<<>>switch( type )
-	
+    
 }//<<>>void KUCMSBranchManager::makeBranch( std::string key, std::string name, BT type, std::string doc )
 
 void KUCMSBranchManager::makeBranch( std::string name, BType type, std::string doc ){
 
-	makeBranch( name, name, type, doc );
+    makeBranch( name, name, type, doc );
 
 }//<<>>void KUCMSBranchManager::makeBranch( std::string name, BType type, std::string doc )
 
 void KUCMSBranchManager::attachBranches( TTree* fOutTree ){ 
 
-	for( auto & branch : theBranches ){ branch.second->attachBranch( fOutTree ); }
+    for( auto & branch : theBranches ){ branch.second->attachBranch( fOutTree ); }
 
 }//<<>>void KUCMSBranchManager::attachBranches( TTree* fOutTree )
 
 bool KUCMSBranchManager::valid( std::string key ){ 
 
-		if( theBranches.find(key) == theBranches.end() ){ 
-			std::cout << " -- Error: No Such Key : " << key << " !!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl; 
-			return false; 
-		} else return true;
+        if( theBranches.find(key) == theBranches.end() ){ 
+            std::cout << " -- Error: No Such Key : " << key << " !!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl; 
+            return false; 
+        } else return true;
 
 }//<<>>bool KUCMSBranchManager::valid( std::string key )
 
