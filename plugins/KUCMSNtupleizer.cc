@@ -26,8 +26,8 @@
 
 using namespace std;
 
-//#define DEBUG true
-#define DEBUG false
+#define DEBUG true
+//#define DEBUG false
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // constructors and destructor
@@ -103,12 +103,12 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig) :
 
     // genInfo
     genEvtInfoTag(iConfig.getParameter<edm::InputTag>("genEvt")),
-      gent0Tag(iConfig.getParameter<edm::InputTag>("gent0")),
-      genxyz0Tag(iConfig.getParameter<edm::InputTag>("genxyz0")),
-      pileupInfosTag(iConfig.getParameter<edm::InputTag>("pileups")),
+    gent0Tag(iConfig.getParameter<edm::InputTag>("gent0")),
+    genxyz0Tag(iConfig.getParameter<edm::InputTag>("genxyz0")),
+    pileupInfosTag(iConfig.getParameter<edm::InputTag>("pileups")),
 
     // genParticles
-      genParticlesTag(iConfig.getParameter<edm::InputTag>("genParticles")),
+    genParticlesTag(iConfig.getParameter<edm::InputTag>("genParticles")),
 
     // genJets
     genJetsTag(iConfig.getParameter<edm::InputTag>("genjets")),
@@ -237,9 +237,17 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig) :
         genxyz0Token_              = consumes<Point3D>(genxyz0Tag);
         pileupInfosToken_          = consumes<std::vector<PileupSummaryInfo>>(pileupInfosTag);
         genParticlesToken_         = consumes<std::vector<reco::GenParticle>>(genParticlesTag);
-        genJetsToken_           = consumes<std::vector<reco::GenJet>>(genJetsTag);
+        genJetsToken_              = consumes<std::vector<reco::GenJet>>(genJetsTag);
 
     }//<<>>if( hasGenInfo )
+
+	if( DEBUG ) std::cout << "Loading ObjMan" << std::endl;
+    auto recHitsObj = new KUCMSEcalRecHitObject( iConfig );
+	recHitsObj->LoadRecHitTokens( &recHitsEBToken_, &recHitsEEToken_ );
+    recHitsObj->LoadSCTokens( &scToken_, &ootScToken_ );
+    recHitsObj->LoadClusterTokens( &ccToken_  );
+	ObjMan.Load( "ECALRecHits", recHitsObj );
+
 
 // ---------------------------------------------------------------------------------
 }//>>>>KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig)
@@ -541,12 +549,17 @@ void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 
     if( DEBUG ) std::cout << "Processing Collections" << std::endl;
 
+    if( DEBUG ) std::cout << "LoadEvent ObjMan" << std::endl;
+	ObjMan.LoadEvent( iEvent, iSetup, geVar );
 
     //------------------------------------------------------------------------------------
     // ----   Object processing ----------------------------------------------------------
     //------------------------------------------------------------------------------------
     // call functions to process collections and fill tree varibles to be saved
     // varibles to be saved to ttree are declared in the header
+
+    if( DEBUG ) std::cout << "ProcessEvent ObjMan" << std::endl;
+	ObjMan.ProcessEvent( geVar );
 
     // process gen collections
     if( cfFlag("hasGenInfo") ){ processGenPart(); }//<<>>if( hasGenInfo )
@@ -593,6 +606,9 @@ void KUCMSNtupilizer::beginJob(){
     // Book //histograms ( if any )
     
     std::cout << "Histograms Booked" << std::endl;
+
+    if( DEBUG ) std::cout << "Init ObjMan" << std::endl;
+	ObjMan.Init( outTree );
 
     // Create output Tree branches -----------------------------
     // via the KUCMS BranchManager

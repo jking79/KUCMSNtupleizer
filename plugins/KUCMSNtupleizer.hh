@@ -149,7 +149,8 @@
 
 #include "KUCMSItemManager.hh"
 #include "KUCMSBranchManager.hh"
-//#include "KUCMSObjectBase.hh"
+#include "KUCMSObjectBase.hh"
+#include "KUCMSEcalRechit.hh"
 
 #ifndef KUCMSNtupilizerHeader
 #define KUCMSNtupilizerHeader
@@ -169,7 +170,7 @@ using namespace edm;
 // sort functions
 //
 
-const auto sortByPt = [](auto & obj1, auto & obj2) {return obj1.pt() > obj2.pt();};
+//const auto sortByPt = [](auto & obj1, auto & obj2) {return obj1.pt() > obj2.pt();};
 
 //
 //  constants, enums and typedefs
@@ -201,7 +202,7 @@ typedef ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<float>,ROOT::Math::
 #define BUNCHES 3564
 #define SAMPLES 10
 
-enum class ECAL {EB, EM, EP, EE, NONE};
+//enum class ECAL {EB, EM, EP, EE, NONE};
 
 //
 //  Class Declaration
@@ -215,6 +216,8 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
         ~KUCMSNtupilizer();
 
         static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
+
+		friend class KUCMSEcalRechit;
 
     private:
 
@@ -251,12 +254,16 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
         ////////////////////////////////////////////////////
         // ----------member data ---------------------------
         ////////////////////////////////////////////////////
-
+        //
         // input parameters
         ItemManager<double> cfPrm;
         ItemManager<int> cfCnt;
         ItemManager<std::string> cfStr;
         ItemManager<bool> cfFlag;
+
+		//KUCMSEcalRecHit recHitsObj; 
+
+		ObjectManager ObjMan;
 
         // filtered collection vectors
         std::vector<reco::PFJet>        fjets;
