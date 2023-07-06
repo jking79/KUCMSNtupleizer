@@ -3,7 +3,9 @@
 //
 // Original Author:  Jack W King III
 // 
-// KUCMS Object for Object Manager
+// Object Manager and
+// KUCMS Base Object for Object Manager
+//
 //
 
 //--------------------   hh file -------------------------------------------------------------
@@ -65,6 +67,10 @@
 #ifndef KUCMSObjectBaseHeader
 #define KUCMSObjectBaseHeader
 
+// This file contains both ObjectManager and KUCMSObjectBase
+
+//.............................................................................................
+// KUCMSObjectBase----------------------------------------------------------------------------
 //.............................................................................................
 
 typedef edm::View<reco::Candidate> CandidateView;
@@ -74,9 +80,7 @@ typedef ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<float>,ROOT::Math::
 #define BUNCHES 3564
 #define SAMPLES 10
 
-//class KUCMSObjectBase : public edm::ConsumesCollector {
 class KUCMSObjectBase : public edm::one::EDAnalyzer<edm::one::SharedResources> {
-//class KUCMSObjectBase {
 
     public:
 
@@ -84,13 +88,11 @@ class KUCMSObjectBase : public edm::one::EDAnalyzer<edm::one::SharedResources> {
     virtual ~KUCMSObjectBase(){};
 
     // object setup : 1) construct object 2) InitObject 3) CrossLoad 4) load into Object Manager
-	// ConfigObject is what the constructor should look like in the derived class
-    virtual void ConfigObject( const edm::ParameterSet& iConfig, edm::one::EDAnalyzer<edm::one::SharedResources>& IC ){};
     virtual void InitObject( TTree* fOutTree ){}; // sets up branches, do preloop jobs 
     // Load tokens for collections derived from iEvent 
-	// void LoadSCToken( edm::EDGetTokenT<reco::SuperClusterCollection>& scToken_ ); <- example code
+	// void LoadSCToken( edm::EDGetTokenT<reco::SuperClusterCollection> scToken_ ); <- example code
     // crossload functions are to be declared in derived classes
-    // void LoadObject( KUCMSObjectBase* otherObject ){ otherObjectRef = otherObject}; // overload with specific KUCMS object need here
+    // void LoadObject( KUCMSObjectBase* otherObject ){ otherObjectPtr = otherObject}; // overload with specific KUCMS object need here
 
     // object processing : 1) LoadEvent prior to event loop 2) ProcessEvent during event loop via objectManager
     // get collections, do initial processing
@@ -106,14 +108,15 @@ class KUCMSObjectBase : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 
     protected:
 
-	//edm::ConsumesCollector IC;
-
     // input parameters
     ItemManager<double> cfPrm; // confguration paramters loaded in object constructor step from iConfig
 	ItemManager<bool> cfFlag;    
 
     // Branch Manager
     KUCMSBranchManager Branches;
+
+	// other object pointers loaded with void LoadObject( KUCMSObjectBase* otherObject )
+	// KUCMSObjectBase* otherObjectPtr
 
     // Object Name
     std::string title;
@@ -125,41 +128,9 @@ class KUCMSObjectBase : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 
 };
 
-/*
-class exampleObject : public KUCMSObjectBase {};
-
-class DummyObject : public KUCMSObjectBase {
-
-    // use base class constructor
-    DummyObject(){};
-    DummyObject( const edm::ParameterSet& iConfig ){};
-
-    public:
-
-    // object setup : 1) construct object 2) InitObject 3) CrossLoad 4) load into Object Manager
-    void ConfigObject( const edm::ParameterSet& iConfig );
-    void InitObject( ItemManager<float>& geVar, TTree* fOutTree ); // load geVars and sets up branches, do preloop jobs
-    // new function needed for crosstalk - EXAMPLE CLASS USED HERE FOR REFRENCE ONLY -
-    void LoadObject( exampleObject* otherObject ){ otherObjectRef = otherObject; }; // define with specific KUCMS object(s) needed 
-
-    // object processing : 1) LoadEvent prior to event loop 2) ProcessEvent during event loop via objectManager
-    void LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup ); // get collections, do initial processing
-    void ProcessEvent(); // do cross talk jobs with other objects, do event processing, and load branches
-
-    // if there are any final tasks be to done after the event loop via objectManager
-    void EndJobs(); // do any jobs that need to be done after main event loop
-
-    // New functions specific to this collection
-    void answerCrossTalk(); // define functions that will be called in another object - this is an example
-    // ect ...
-
-    private: // example from photons
-
-    // Other object(s) need by this object - BASE CLASS USED HERE FOR REFRENCE ONLY -
-    exampleObject* otherObjectRef;
-
-};
-*/
+// ---------------------------------------------------------------------------------------
+// ObjectManager -------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------
 
 class ObjectManager {
 
