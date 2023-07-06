@@ -3,7 +3,9 @@
 //
 // Original Author:  Jack W King III
 // 
-// KUCMS Object for Object Manager
+// Object Manager and
+// KUCMS Base Object for Object Manager
+//
 //
 
 //--------------------   hh file -------------------------------------------------------------
@@ -65,143 +67,132 @@
 #ifndef KUCMSObjectBaseHeader
 #define KUCMSObjectBaseHeader
 
+// This file contains both ObjectManager and KUCMSObjectBase
+
+//.............................................................................................
+// KUCMSObjectBase----------------------------------------------------------------------------
 //.............................................................................................
 
 typedef edm::View<reco::Candidate> CandidateView;
 
-typedef unsigned int uInt;
-typedef unsigned long int ulInt;
-typedef const float CFlt;
-typedef const double CDbl;
-typedef const vector<float> CVFlt;
-typedef const vector<double> CVDbl;
-
 typedef ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<float>,ROOT::Math::DefaultCoordinateSystemTag> Point3D;
 
-#define nEBEEMaps 0
-#define nHists 4
-#define SOL 29.9792458 // speed of light in cm/ns
-#define PI 3.14159265358979323846 // pie ...  
 #define BUNCHES 3564
 #define SAMPLES 10
 
-const auto sortByPt = [](auto & obj1, auto & obj2) {return obj1.pt() > obj2.pt();};
-
-class KUCMSObjectBase {
+class KUCMSObjectBase : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 
     public:
 
-    KUCMSObjectBase( const edm::ParameterSet& iConfig, const ItemManager<bool>& cfFlag ) : iConfig(iConfig), cfFlag(cfFlag) {}; 
+    KUCMSObjectBase(){}; 
     virtual ~KUCMSObjectBase(){};
 
     // object setup : 1) construct object 2) InitObject 3) CrossLoad 4) load into Object Manager
-    virtual void InitObject( ItemManager<float>& geVar, TTree* fOutTree ); // load geVars and sets up branches, do preloop jobs 
+    virtual void InitObject( TTree* fOutTree ){}; // sets up branches, do preloop jobs 
+    // Load tokens for collections derived from iEvent 
+	// void LoadSCToken( edm::EDGetTokenT<reco::SuperClusterCollection> scToken_ ); <- example code
     // crossload functions are to be declared in derived classes
-    // void LoadObject( KUCMSObjectBase& otherObject ){ otherObjectRef = otherObject}; // overload with specific KUCMS object need here
+    // void LoadObject( KUCMSObjectBase* otherObject ){ otherObjectPtr = otherObject}; // overload with specific KUCMS object need here
 
     // object processing : 1) LoadEvent prior to event loop 2) ProcessEvent during event loop via objectManager
-    virtual void LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup ); // get collections, do initial processing
-    virtual void ProcessEvent(); // do cross talk jobs with other objects, do event processing, and load branches
+    // get collections, do initial processing
+    virtual void LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar ){}; 
+    // do cross talk jobs with other objects, do event processing, and load branches
+    virtual void ProcessEvent( ItemManager<float>& geVar ){}; 
+    virtual void PostProcessEvent( ItemManager<float>& geVar ){};
 
     // if there are any final tasks be to done after the event loop via objectManager
-    virtual void EndJobs(); // do any jobs that need to be done after main event loop
+    virtual void EndJobs(){}; // do any jobs that need to be done after main event loop
 
     void setName( std::string name ){ title = name; };
     std::string getName(){ return title; }; 
 
-    private:
-
-	const edm::ParameterSet iConfig;
-    const ItemManager<bool> cfFlag
+    protected:
 
     // input parameters
     ItemManager<double> cfPrm; // confguration paramters loaded in object constructor step from iConfig
-    
-    // global event varibles
-    std::reference_wrapper<ItemManager<float>> eventvars; // used to pass event level inforamtion
+	ItemManager<bool> cfFlag;    
 
     // Branch Manager
-    KUCMSBranchManager branches;
+    KUCMSBranchManager Branches;
+
+	// other object pointers loaded with void LoadObject( KUCMSObjectBase* otherObject )
+	// KUCMSObjectBase* otherObjectPtr
 
     // Object Name
     std::string title;
 
-};
+	private:
 
-class exampleObject : public KUCMSObjectBase {};
-
-class DummyObject : public KUCMSObjectBase {
-
-    // use base class constructor
-    using KUCMSObjectBase::KUCMSObjectBase;
-
-    public:
-
-    // object setup : 1) construct object 2) InitObject 3) CrossLoad 4) load into Object Manager
-    void InitObject( ItemManager<float>& geVar, TTree* fOutTree ); // load geVars and sets up branches, do preloop jobs
-    // new function needed for crosstalk - EXAMPLE CLASS USED HERE FOR REFRENCE ONLY -
-    void LoadObject( exampleObject& otherObject ){ otherObjectRef = otherObject; }; // define with specific KUCMS object(s) needed 
-
-    // object processing : 1) LoadEvent prior to event loop 2) ProcessEvent during event loop via objectManager
-    void LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup ); // get collections, do initial processing
-    void ProcessEvent(); // do cross talk jobs with other objects, do event processing, and load branches
-
-    // if there are any final tasks be to done after the event loop via objectManager
-    void EndJobs(); // do any jobs that need to be done after main event loop
-
-    // New functions specific to this collection
-    void answerCrossTalk(); // define functions that will be called in another object - this is an example
-    // ect ...
-
-    private: // example from photons
-
-    // Other object(s) need by this object - BASE CLASS USED HERE FOR REFRENCE ONLY -
-    std::reference_wrapper<exampleObject> otherObjectRef;
+    void analyze( const edm::Event& iEvent, const edm::EventSetup& iSetup)
+		{ std::cout << "Error!!!! analyze called in KUCMSObjectBase" << std::endl; }	
 
 };
+
+// ---------------------------------------------------------------------------------------
+// ObjectManager -------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------
 
 class ObjectManager {
 
     public:
 
-    void Load( std::string key, std::string name, KUCMSObjectBase& object );
-    void Load( std::string name, KUCMSObjectBase& object );
-    void LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup );
-    void ProcessEvent();
+    ~ObjectManager();
+
+    void Load( std::string key, std::string name, KUCMSObjectBase* object );
+    void Load( std::string name, KUCMSObjectBase* object );
+	void Init( TTree* fOutTree ); 
+    void LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar );
+    void ProcessEvent( ItemManager<float>& geVar );
+    void PostProcessEvent( ItemManager<float>& geVar );
     void EndJobs();
 
     private:
 
-    std::map< std::string, KUCMSObjectBase& > objects;
+    std::map< std::string, KUCMSObjectBase* > objects;
     bool valid( std::string key );
 
 };
 
-void ObjectManager::Load( std::string key, std::string name, KUCMSObjectBase& object  ){
+ObjectManager::~ObjectManager(){
+
+    for( auto & object : objects ){ delete object.second; }
+
+}//<<>>ObjectManager::~ObjectManager()
+
+void ObjectManager::Load( std::string key, std::string name, KUCMSObjectBase* object  ){
 
     if( objects.find(key) == objects.end() ){
-        object.setName(name);
+        object->setName(name);
         objects.insert( {key,object} );
     } else std::cout << " -- Error: " << key << "  already exists !!!!!!!!!!!!!!!!!!!" << std::endl;
 
 }//>><<void ObjectManager::set( std::string key, std::string name, std::string doc )
 
-void ObjectManager::Load( std::string name, KUCMSObjectBase& object ){ Load( name, name, object ); }
+void ObjectManager::Load( std::string name, KUCMSObjectBase* object ){ Load( name, name, object ); }
 
-void ObjectManager::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup ){
+void ObjectManager::Init( TTree* fOutTree ){
 
-    for( auto & object : objects ){ object.second.LoadEvent( iEvent, iSetup ); }
+    for( auto & object : objects ){ object.second->InitObject( fOutTree ); }
+
+}//<<>>void ObjectManager::Init( ItemManager<float>& geVar, TTree* fOutTree )
+
+void ObjectManager::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar ){
+
+    for( auto & object : objects ){ object.second->LoadEvent( iEvent, iSetup, geVar ); }
 
 }//<<>>void ObjectManager::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
-void ObjectManager::ProcessEvent(){ for( auto & object : objects ){ object.second.ProcessEvent(); } }
+void ObjectManager::ProcessEvent( ItemManager<float>& geVar ){ for( auto & object : objects ){object.second->ProcessEvent(geVar);}}
 
-void ObjectManager::EndJobs(){ for( auto & object : objects ){ object.second.EndJobs(); } }
+void ObjectManager::PostProcessEvent( ItemManager<float>& geVar ){ for( auto & object : objects ){object.second->PostProcessEvent(geVar);}}
+
+void ObjectManager::EndJobs(){ for( auto & object : objects ){ object.second->EndJobs(); } }
 
 bool ObjectManager::valid( std::string key ){
 
     if( objects.find(key) == objects.end() ){
-        std::cout << " -- Error: No Such Key : " << key << " !!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+        std::cout << " -- OM Error: No Such Key : " << key << " !!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
         return false;
     } else return true;
 

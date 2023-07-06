@@ -28,6 +28,7 @@
 #include <tuple>
 #include <random>
 #include <sys/stat.h>
+#include <cmath>
 
 #ifndef KUCMSHelperHeader
 #define KUCMSHelperHeader
@@ -41,12 +42,12 @@ typedef const std::vector<double> CVDbl;
 
 #define SOL 29.9792458 // speed of light in cm/ns
 #define PI 3.14159265358979323846 // pie ...  
-#define BUNCHES 3564
-#define SAMPLES 10
 
 //
 // Helper functions ( single line function defs, mostly )
 //
+
+const auto sortByPt = [](auto & obj1, auto & obj2) {return obj1.pt() > obj2.pt();};
 
 //
 // The "crystalball" function for ROOT 5.x (mimics ROOT 6.x).
@@ -57,9 +58,6 @@ typedef const std::vector<double> CVDbl;
 // crystalball->SetParNames("Constant", "Mean", "Sigma", "Alpha", "N");
 // crystalball->SetTitle("crystalball"); // not strictly necessary
 //
-
-// #include "TMath.h"
-#include <cmath>
 
 // see math/mathcore/src/PdfFuncMathCore.cxx in ROOT 6.x
 double crystalball_function(double x, double alpha, double n, double sigma, double mean) {

@@ -31,7 +31,7 @@ options.register('globalTag','94X_mc2017_realistic_v14',VarParsing.multiplicity.
 ## processName
 options.register('processName','TREE',VarParsing.multiplicity.singleton,VarParsing.varType.string,'process name to be considered');
 
-outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_v4.root' # ntuplizer test
+outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_Objectified_v5.root' # ntuplizer test
 
 options.register('outputFileName',outfilename,VarParsing.multiplicity.singleton,VarParsing.varType.string,'output file name created by cmsRun');
 
