@@ -69,6 +69,7 @@ class KUCMSPFMetObject : public KUCMSObjectBase {
     void LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar );
     // do cross talk jobs with other objects, do event processing, and load branches
     void ProcessEvent( ItemManager<float>& geVar );
+    void PostProcessEvent( ItemManager<float>& geVar ){};
 
     // if there are any final tasks be to done after the event loop via objectManager
     void EndJobs(); // do any jobs that need to be done after main event loop
@@ -116,6 +117,7 @@ void KUCMSPFMetObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("covXY","Met_covXY",FLOAT,"xy element of met covariance matrix");
     Branches.makeBranch("covYY","Met_covYY",FLOAT,"yy element of met covariance matrix");
 
+    Branches.makeBranch("CPt","Met_CPt",FLOAT,"Met Pt corrected for oootPhotons");
     Branches.makeBranch("CSumEt","Met_CsumEt",FLOAT,"SumEt corrected for ootPhotons");
     Branches.makeBranch("CPx","Met_Cpx",FLOAT,"Met Px corrected for oootPhotons");
     Branches.makeBranch("CPy","Met_Cpy",FLOAT,"Met Py corrected for oootPhotons");
@@ -161,27 +163,10 @@ void KUCMSPFMetObject::ProcessEvent( ItemManager<float>& geVar ){
     float CPx = Px;
     float CPy = Py;
 
-/*    // ???  need corrected values for photon Et and Pt
-    int nphidx = fphotons.size();
-    for( auto phidx = 0; phidx < nphidx; phidx++ ){
+    phoObj->correctMet( CSumEt, CPx, CPy );
 
-        auto photon = fphotons[phidx];
-        if( phoIsOotPho[phidx] && not phoExcluded[phidx] ){
-            CPx -= ((photon.pt())*std::cos(photon.phi()));
-            CPy -= ((photon.pt())*std::sin(photon.phi()));
-            CSumEt -= photon.et();
-        }//<<>>if( phoIsOotPho[phidx] && not phoExcluded[phidx] )
-        if( not phoIsOotPho[phidx] && phoExcluded[phidx] ){
-            CPx += ((photon.pt())*std::cos(photon.phi()));
-            CPy += ((photon.pt())*std::sin(photon.phi()));
-            CSumEt += photon.et();
-        }//<<>>if( phoIsOotPho[phidx] && not phoExcluded[phidx] )   
-
-    }//<<>>for( auto phidx = 0; phidx < fphotons.size(); phidx++ )
-*/
-
-    //evtMET = std::sqrt( sq2(Px) + sq2(Py));
-    geVar.set( "evtMET", Pt );
+    auto evtMET = std::sqrt( sq2(CPx) + sq2(CPy));
+    geVar.set( "evtMET", evtMET );
 
     Branches.fillBranch("SumEt",SumEt);
     Branches.fillBranch("Pt",Pt);
@@ -194,6 +179,7 @@ void KUCMSPFMetObject::ProcessEvent( ItemManager<float>& geVar ){
     Branches.fillBranch("covXY",covXY);
     Branches.fillBranch("covYY",covYY);
 
+    Branches.fillBranch("CPt",evtMET);;
     Branches.fillBranch("CSumEt",CSumEt);
     Branches.fillBranch("CPx",CPx);
     Branches.fillBranch("CPy",CPy);

@@ -75,6 +75,7 @@ class KUCMSGenObject : public KUCMSObjectBase {
     void LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar );
     // do cross talk jobs with other objects, do event processing, and load branches
     void ProcessEvent( ItemManager<float>& geVar );
+    void PostProcessEvent( ItemManager<float>& geVar ){};
 
     // if there are any final tasks be to done after the event loop via objectManager
     void EndJobs(); // do any jobs that need to be done after main event loop
@@ -143,6 +144,7 @@ KUCMSGenObject::KUCMSGenObject( const edm::ParameterSet& iConfig ){
 
     cfFlag.set( "hasGenInfo", iConfig.existsAs<bool>("hasGenInfo") ? iConfig.getParameter<bool>("hasGenInfo") : true );
     cfFlag.set( "onlyEB", iConfig.existsAs<bool>("onlyEB") ? iConfig.getParameter<bool>("onlyEB") : true );
+    cfPrm.set( "minGenE", iConfig.existsAs<double>("minGenE") ? iConfig.getParameter<double>("minGenE") : 0.0 );
 
 }//<<>>KUCMSg::KUCMSGen( const edm::ParameterSet& iConfig, const ItemManager<bool>& cfFlag )
 

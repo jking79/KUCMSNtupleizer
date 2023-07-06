@@ -81,6 +81,7 @@ class KUCMSPhotonObject : public KUCMSObjectBase {
     void LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar );
     // do cross talk jobs with other objects, do event processing, and load branches
     void ProcessEvent( ItemManager<float>& geVar );
+    void PostProcessEvent( ItemManager<float>& geVar ){};
 
     // if there are any final tasks be to done after the event loop via objectManager
     void EndJobs(); // do any jobs that need to be done after main event loop
@@ -91,6 +92,7 @@ class KUCMSPhotonObject : public KUCMSObjectBase {
     int getIndex( float kideta, float kidphi );
     float getPhotonSeedTime( pat::Photon photon );
     float getPhotonSeedTime( reco::Photon photon );
+	void correctMet( float & CSumEt, float & CPx, float & CPy );
 
     private:
 
@@ -191,7 +193,7 @@ void KUCMSPhotonObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("seediEtaOriX","Photon_seediEtaOriX",VINT,"iEta or iX of seed crystal. iEta is barrel-only, iX is endcap-only. iEta runs from -85 to +85, with no crystal at iEta=0. iX runs from 1 to 100.");//
     Branches.makeBranch("seediPhiOriY","Photon_seediPhiOriY",VINT,"iPhi or iY of seed crystal. iPhi is barrel-only, iY is endcap-only. iPhi runs from 1 to 360. iY runs from 1 to 100.");//
     Branches.makeBranch("x_calo","Photon_x_calo",VFLOAT,"photon supercluster position on calorimeter, x coordinate (cm)");//
-    Branches.makeBranch("y_calo","Photon_y-calo",VFLOAT,"photon supercluster position on calorimeter, y coordinate (cm)");//
+    Branches.makeBranch("y_calo","Photon_y_calo",VFLOAT,"photon supercluster position on calorimeter, y coordinate (cm)");//
     Branches.makeBranch("z_calo","Photon_z_calo",VFLOAT,"photon supercluster position on calorimeter, z coordinate (cm)");//
 
     Branches.makeBranch("esEffSigmaRR","Photon_esEffSigmaRR",VFLOAT,"preshower sigmaRR");//
@@ -512,5 +514,26 @@ int KUCMSPhotonObject::getIndex( float kideta, float kidphi ){
 	return idx;
 
 }//<<>>uInt KUCMSPhotonObject::getIndex( float kideta, float kidphi )
+
+void KUCMSPhotonObject::correctMet( float & CSumEt, float & CPx, float & CPy ){
+
+    int nphidx = fphotons.size();
+    for( auto phidx = 0; phidx < nphidx; phidx++ ){
+
+        auto photon = fphotons[phidx];
+        if( phoIsOotPho[phidx] && not phoExcluded[phidx] ){
+            CPx -= ((photon.pt())*std::cos(photon.phi()));
+            CPy -= ((photon.pt())*std::sin(photon.phi()));
+            CSumEt -= photon.et();
+        }//<<>>if( phoIsOotPho[phidx] && not phoExcluded[phidx] )
+        if( not phoIsOotPho[phidx] && phoExcluded[phidx] ){
+            CPx += ((photon.pt())*std::cos(photon.phi()));
+            CPy += ((photon.pt())*std::sin(photon.phi()));
+            CSumEt += photon.et();
+        }//<<>>if( phoIsOotPho[phidx] && not phoExcluded[phidx] )   
+
+    }//<<>>for( auto phidx = 0; phidx < fphotons.size(); phidx++ )
+
+}//<<>>void KUCMSPhotonObject::correctMet( float & CSumEt, float & CPx, float & CPy )
 
 #endif

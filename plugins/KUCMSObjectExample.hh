@@ -55,7 +55,7 @@ class KUCMSExampleObject : public KUCMSObjectBase {
 
     // object setup : 1) construct object 2) InitObject 3) CrossLoad 4) load into Object Manager
     // load tokens for eventt based collections
-    void LoadExampleTokens( edm::EDGetTokenT<example> exampleToken_ ); 
+    void LoadExampleTokens( edm::EDGetTokenT<example> exampleToken_ ){ exampleToken_ = exampleToken; }; 
     // sets up branches, do preloop jobs 
     void InitObject( TTree* fOutTree ); 
     // new function needed for crosstalk - EXAMPLE CLASS USED HERE FOR REFRENCE ONLY -
@@ -66,6 +66,7 @@ class KUCMSExampleObject : public KUCMSObjectBase {
     void LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar );
     // do cross talk jobs with other objects, do event processing, and load branches
     void ProcessEvent( ItemManager<float>& geVar );
+    void PostProcessEvent( ItemManager<float>& geVar );
 
     // if there are any final tasks be to done after the event loop via objectManager
     void EndJobs(); // do any jobs that need to be done after main event loop
@@ -78,7 +79,7 @@ class KUCMSExampleObject : public KUCMSObjectBase {
 
     std::vector<examnple> fexamples;
 
-    edm::EDGetTokenT<example> exampleToken_;
+    edm::EDGetTokenT<example> exampleToken;
     edm::Handle<example> example_;
 
     // Other object(s) need by this object - BASE CLASS USED HERE FOR REFRENCE ONLY -
@@ -93,12 +94,6 @@ KUCMSExampleObject::KUCMSExampleObject( const edm::ParameterSet& iConfig ){
     cfFlag.set( "onlyEB", iConfig.existsAs<bool>("onlyEB") ? iConfig.getParameter<bool>("onlyEB") : true );
 
 }//<<>>KUCMSExample::KUCMSExample( const edm::ParameterSet& iConfig, const ItemManager<bool>& cfFlag )
-
-void KUCMSExampleObject::LoadExampleTokens( edm::EDGetTokenT<ExampleCol> ExampleEBToken, edm::EDGetTokenT<ExampleCol> ExampleEEToken ){
-
-    ExampleEBToken_ = ExampleEBToken;
-
-}//<<>>void LoadExampleTokens( edm::EDGetTokenT<ExampleCol>* ExampleEBToken_, edm::EDGetTokenT<ExampleCol>* ExampleEEToken_ )
 
 void KUCMSExampleObject::InitObject( TTree* fOutTree ){
 
@@ -143,6 +138,12 @@ void KUCMSExampleObject::ProcessEvent( ItemManager<float>& geVar ){
     }//<<>>for (const auto Example : *ExampleEB_ ) 
 
 }//<<>>void KUCMSExample::ProcessEvent()
+
+void KUCMSExampleObject::PostProcessEvent( ItemManager<float>& geVar ){
+
+    // process anything that must be done after all crosstalk with other objects
+
+}//<<>>void KUCMSExampleObject::PostProcessEvent( ItemManager<float>& geVar )
 
 void KUCMSExampleObject::EndJobs(){}
 

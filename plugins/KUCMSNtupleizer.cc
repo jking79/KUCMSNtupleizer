@@ -24,6 +24,7 @@
 #include "KUCMSHelperFunctions.hh"
 #include "KUCMSRootHelperFunctions.hh"
 
+#include "KUCMSEventInfo.hh"
 #include "KUCMSEcalRechit.hh"
 #include "KUCMSPhoton.hh"
 #include "KUCMSAK4Jet.hh"
@@ -37,7 +38,7 @@ using namespace std;
 #define DEBUG false
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// constructors and destructor
+// constructor
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
@@ -66,22 +67,21 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     // -- consume tags ------------------------------------------------------------
     // creats "token" for all collections that we wish to process
     
-    if( DEBUG ) std::cout << "In constructor for KUCMSNtupilizer - tag and tokens" << std::endl;
+    //if( DEBUG ) std::cout << "In constructor for KUCMSNtupilizer - tag and tokens" << std::endl;
 
     // Triggers
     //triggerResultsToken_ = consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("triggerResults"));
     //triggerObjectsToken_ = consumes<std::vector<pat::TriggerObjectStandAlone>>(iConfig.getParameter<edm::InputTag>("triggerObjects"));
-
     // tracks 
     //tracksToken_ = consumes<std::vector<reco::Track>>(iConfig.getParameter<edm::InputTag>("tracks"));
-
-    // vertices
-    verticesToken_ = consumes<std::vector<reco::Vertex>>(iConfig.getParameter<edm::InputTag>("vertices"));
-
     // rho
     //rhoToken_ = consumes<double>(iConfig.getParameter<edm::InputTag>("rho"));
 
 	if( DEBUG ) std::cout << "Create Object Classes" << std::endl;
+
+    auto eventInfoObj = new KUCMSEventInfoObject(  iConfig ); 
+    auto vertexToken = consumes<std::vector<reco::Vertex>>(iConfig.getParameter<edm::InputTag>("vertices"));
+	eventInfoObj->LoadVertexTokens( vertexToken );
 
     auto recHitsObj = new KUCMSEcalRecHitObject( iConfig );
     auto rhEBtoken = consumes<recHitCol>(iConfig.getParameter<edm::InputTag>("recHitsEB"));
@@ -91,7 +91,7 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     auto ootsctoken = consumes<reco::SuperClusterCollection>(iConfig.getParameter<edm::InputTag>("ootSuperClusters"));
     recHitsObj->LoadSCTokens( sctoken, ootsctoken );
     auto ccltoken = consumes<std::vector<reco::CaloCluster>>(iConfig.getParameter<edm::InputTag>("caloClusters"));
-    recHitsObj->LoadClusterTokens( ccltoken  );
+    recHitsObj->LoadClusterTokens( ccltoken );
 
     auto electronsObj = new KUCMSElectronObject( iConfig );
     auto electronToken = consumes<edm::View<reco::GsfElectron>>(iConfig.getParameter<edm::InputTag>("electrons"));
@@ -125,12 +125,12 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
 
     if( DEBUG ) std::cout << "Loading Object Manager" << std::endl;
 
+    ObjMan.Load( "EventInfo", eventInfoObj );
     ObjMan.Load( "Electrons", electronsObj );
     ObjMan.Load( "Photons", photonsObj );
-    ObjMan.Load( "AK4Jets", ak4jetObj );
+    ObjMan.Load( "JetsAK4", ak4jetObj );
     ObjMan.Load( "PFMet", pfmetObj );
-    ObjMan.Load( "ECALRecHits", recHitsObj );// Load rechits last so that they process last 
-
+    ObjMan.Load( "ECALRecHits", recHitsObj );
 
     if( cfFlag("hasGenInfo") ){
 
@@ -150,16 +150,39 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
         auto genJetsToken = consumes<std::vector<reco::GenJet>>(iConfig.getParameter<edm::InputTag>("genjets"));
         genObjs->LoadGenJetsTokens( genJetsToken );
 
+        // Load gen object into other collections
 		electronsObj->LoadGenObject( genObjs );
         photonsObj->LoadGenObject( genObjs );
         ak4jetObj->LoadGenObject( genObjs );
 
+        // Load gen object into objman last, should be no dependence with other objects
         ObjMan.Load( "GenObjects", genObjs );
 
     }//<<>>if( hasGenInfo )
 
 // ---------------------------------------------------------------------------------
 }//>>>>KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig)
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ------------ Event Selection   -----------------------------
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+bool KUCMSNtupilizer::selectedEvent(){
+
+    bool hasMinMet = geVar("evtMET") > cfPrm("minEvtMet");
+
+    bool selected = hasMinMet;
+    return selected;
+
+}//<<>>bool KUCMSNtupilizer::selectedEvent()
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//   -------------------  Normally nothing needs to be modified below this point  --------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ------------ Destructor -----------------------------
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////i
 
 KUCMSNtupilizer::~KUCMSNtupilizer(){
 
@@ -181,18 +204,13 @@ void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
     // -- Consume Tokens --------------------------------------------
     // gets pointer to the collections from cmssw using the "token" for that collection
 
-    if( DEBUG ) std::cout << "Consume Tokens -------------------------------------------- " << std::endl;
+    //if( DEBUG ) std::cout << "Consume Tokens -------------------------------------------- " << std::endl;
 
     // TRIGGER
     //iEvent.getByToken(triggerResultsToken_,triggerResults_);
     //iEvent.getByToken(triggerObjectsToken_,triggerObjects_);
-
     // TRACKS
     //iEvent.getByToken(tracksToken_, tracks_);
-
-    // VERTICES
-    iEvent.getByToken(verticesToken_, vertices_);
-
     // RHO
     //iEvent.getByToken(rhoToken_, rho_);
 
@@ -209,11 +227,6 @@ void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
     // clear global event varibles 
     geVar.clear(); // floats
 
-    // process event varibles
-
-    if( DEBUG ) std::cout << "Process Event level varibles" << std::endl;
-    processEvent( iEvent );
-
     // -------------------------------------------------------------------------------------------------
     // ---  Collecting objects ( preprocessing object pruning & fill global object vectors )------------
     // -------------------------------------------------------------------------------------------------
@@ -226,9 +239,12 @@ void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
     //------------------------------------------------------------------------------------
     // call functions to process collections and fill tree varibles to be saved
     // varibles to be saved to ttree are declared in the header
+    // use LoadEvent() for any processing that must be done before crosstalk 
+    // use PostProcessEvent() for any processing that must be done after crosstalk
 
     if( DEBUG ) std::cout << "ProcessEvent ObjMan" << std::endl;
 	ObjMan.ProcessEvent( geVar );
+    ObjMan.PostProcessEvent( geVar );
 
     //------------------------------------------------------------------------------------
     //---- Object processing Completed ----------------------------------------------------------
@@ -239,8 +255,6 @@ void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
     if( DEBUG ) std::cout << "Select Event and Fill Tree" << std::endl;
     if( selectedEvent() ) outTree->Fill();
 
-    if( DEBUG ) std::cout << "---------- Next Event -----" << std::endl;
-
     // -- EOFun ------------------------------------------------------
     //     #ifdef THIS_IS_AN_EVENTSETUP_EXAMPLE
     //     ESHandle<SetupData> pSetup;
@@ -248,19 +262,6 @@ void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
     //     #endif
 
 }//>>>>void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ------------ Event Selection   -----------------------------
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-bool KUCMSNtupilizer::selectedEvent(){
-
-    bool hasMinMet = geVar("evtMET") > cfPrm("minEvtMet");
-
-    bool selected = hasMinMet;
-    return selected;
-
-}//<<>>bool KUCMSNtupilizer::selectedEvent()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ------------ beginJob/endJob methods called once each job just before/after starting event loop    ------------
@@ -281,20 +282,16 @@ void KUCMSNtupilizer::beginJob(){
     if( DEBUG ) std::cout << "Init ObjMan" << std::endl;
 	ObjMan.Init( outTree );
 
-    // Create output Tree branches -----------------------------
-    // via the KUCMS BranchManager
-
-    // Event varibles branches
-    setBranches();
-
 }//>>>>void KUCMSNtupilizer::beginJob()
 
 
 // ------------ method called once each job just after ending the event loop    ------------
-void KUCMSNtupilizer::endJob(){
+void KUCMSNtupilizer::endJob(){ 
+
+    if( DEBUG ) std::cout << "ObjMan EndJobs" << std::endl;
+    ObjMan.EndJobs(); 
 
 }//>>>>void KUCMSNtupilizer::endJob()
-
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module    ------------
 void KUCMSNtupilizer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
@@ -312,57 +309,6 @@ void KUCMSNtupilizer::fillDescriptions(edm::ConfigurationDescriptions& descripti
     //descriptions.addDefault(desc);
 
 }//>>>>void KUCMSNtupilizer::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
-
-//  --------------  collection processing and branch declaration functions ----------------------
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
-void KUCMSNtupilizer::setBranches(){
-
-    EventInfoBM.makeBranch("run","run",UINT,"Run number of event");
-    EventInfoBM.makeBranch("lumi","luminosityBlock",UINT,"Lumi section of event");
-    EventInfoBM.makeBranch("event","event",UINT);
-    EventInfoBM.makeBranch("nVtx","PV_npvs",UINT);
-    EventInfoBM.makeBranch("vtxX","PV_x",FLOAT);
-    EventInfoBM.makeBranch("vtxY","PV_y",FLOAT);
-    EventInfoBM.makeBranch("vtxZ","PV_z",FLOAT);
-
-    EventInfoBM.attachBranches(outTree);
-
-}//<<>>setBranchesEvent()
-
-void KUCMSNtupilizer::processEvent( const edm::Event& iEvent ){
-
-    EventInfoBM.clearBranches();
-
-    uInt run   = iEvent.id().run();
-    uInt lumi  = iEvent.luminosityBlock();
-    uInt event = iEvent.id().event();
-
-    if( DEBUG ) std::cout << "Processing event: " << event << " in run: " << run << " and lumiblock: " << lumi << std::endl;
-
-    EventInfoBM.fillBranch("run",run);
-    EventInfoBM.fillBranch("lumi",lumi);
-    EventInfoBM.fillBranch("event",event);
-
-    // do not need to pass in collectioon handel -> class varible   --  Fix This
-    //edm::Handle<std::vector<reco::Vertex>> vertices_
-    uInt nvtx = vertices_->size();
-    const auto & primevtx = vertices_->front();
-    const float vtxX = primevtx.position().x();
-    const float vtxY = primevtx.position().y();
-    const float vtxZ = primevtx.position().z();
-
-    // set global event varibles for vertix
-    geVar.set("vtxX",vtxX);
-    geVar.set("vtxY",vtxY);
-    geVar.set("vtxZ",vtxZ);
- 
-    EventInfoBM.fillBranch("nVtx",nvtx);
-    EventInfoBM.fillBranch("vtxX",vtxX);
-    EventInfoBM.fillBranch("vtxY",vtxY);
-    EventInfoBM.fillBranch("vtxZ",vtxZ);
-
-}//<<>>processEvent()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // ---------------- CMSSW Ana Helper Functions ---------------------------------------------------
@@ -392,5 +338,6 @@ vector<float> KUCMSNtupilizer::getTimeDistStats( vector<float> times, rhGroup re
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ------------ define this as a plug-in --------------------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 DEFINE_FWK_MODULE(KUCMSNtupilizer);
 

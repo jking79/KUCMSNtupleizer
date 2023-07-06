@@ -162,7 +162,6 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
 
         static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
-		friend class KUCMSEcalRechit;
 
     private:
 
@@ -171,9 +170,6 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
         virtual void endJob() override;
 
         bool selectedEvent();
-
-        void setBranches();
-        void processEvent( const edm::Event& iEvent );
 
         ////////////////////////////////////////////////////
         // ----------member data ---------------------------
@@ -203,18 +199,14 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
         // ----------- collection and branch declaration ----------
         ////////////////////////////////////////////////////////////
 
-        // Event ----------------------------------------------------------
-
-        KUCMSBranchManager EventInfoBM;
-
-        // Tracks ----------------------------------------------------------
-        
-        //const edm::InputTag tracksTag;
-        //edm::EDGetTokenT<TrackCollection> tracksToken_;  //used to select what tracks to read from configuration file
-        //edm::Handle<std::vector<reco::Track>> tracks_;
-
-        // Trigger  ----------------------------------------------------------
-
+//        // Tracks ----------------------------------------------------------
+//        
+//       const edm::InputTag tracksTag;
+//        edm::EDGetTokenT<TrackCollection> tracksToken_;  //used to select what tracks to read from configuration file
+//        edm::Handle<std::vector<reco::Track>> tracks_;
+//
+//        // Trigger  ----------------------------------------------------------
+//
 //        // Trigger Info -> From miniAOD code not converted
 //        // trigger inputs
 //        const std::string inputPaths;
@@ -233,13 +225,7 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
 //        // output triggers
 //        std::map<std::string,std::vector<pat::TriggerObjectStandAlone>> triggerObjectsByFilterMap; 
 //        // first index is filter label, second is trigger objects
-
-        // Vertices ----------------------------------------------------------
-
-        //const edm::InputTag verticesTag;
-        edm::EDGetTokenT<std::vector<reco::Vertex>> verticesToken_;
-        edm::Handle<std::vector<reco::Vertex>> vertices_;
-
+//
 //        // Met Filters  ----------------------------------------------------------
 //
 //        // Met Filters -> From miniAOD code not converted
@@ -251,7 +237,7 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
 //        const edm::InputTag triggerFlagsTag;
 //        edm::EDGetTokenT<edm::TriggerResults> triggerFlagsToken;
 //        edm::Handle<edm::TriggerResults> triggerFlagsH;
-
+//
 //        // Jet corrections  ----------------------------------------------------------
 //
 //        // JEC & JER  -> From miniAOD code not converted

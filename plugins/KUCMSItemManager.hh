@@ -302,7 +302,7 @@ template < class T , template< class > class C >
 bool ItemManager<T,C>::valid( std::string key ){ 
 
     if( items.find(key) == items.end() ){
-        std::cout << " -- Error: No Such Key : " << key << " !!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl; 
+        std::cout << " -- IM Error: No Such Key : " << key << " !!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl; 
         return false; 
     } else return true;
 

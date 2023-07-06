@@ -99,6 +99,7 @@ class KUCMSObjectBase : public edm::one::EDAnalyzer<edm::one::SharedResources> {
     virtual void LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar ){}; 
     // do cross talk jobs with other objects, do event processing, and load branches
     virtual void ProcessEvent( ItemManager<float>& geVar ){}; 
+    virtual void PostProcessEvent( ItemManager<float>& geVar ){};
 
     // if there are any final tasks be to done after the event loop via objectManager
     virtual void EndJobs(){}; // do any jobs that need to be done after main event loop
@@ -143,6 +144,7 @@ class ObjectManager {
 	void Init( TTree* fOutTree ); 
     void LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar );
     void ProcessEvent( ItemManager<float>& geVar );
+    void PostProcessEvent( ItemManager<float>& geVar );
     void EndJobs();
 
     private:
@@ -181,14 +183,16 @@ void ObjectManager::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& 
 
 }//<<>>void ObjectManager::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
-void ObjectManager::ProcessEvent( ItemManager<float>& geVar ){ for( auto & object : objects ){ object.second->ProcessEvent( geVar ); } }
+void ObjectManager::ProcessEvent( ItemManager<float>& geVar ){ for( auto & object : objects ){object.second->ProcessEvent(geVar);}}
+
+void ObjectManager::PostProcessEvent( ItemManager<float>& geVar ){ for( auto & object : objects ){object.second->PostProcessEvent(geVar);}}
 
 void ObjectManager::EndJobs(){ for( auto & object : objects ){ object.second->EndJobs(); } }
 
 bool ObjectManager::valid( std::string key ){
 
     if( objects.find(key) == objects.end() ){
-        std::cout << " -- Error: No Such Key : " << key << " !!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+        std::cout << " -- OM Error: No Such Key : " << key << " !!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
         return false;
     } else return true;
 
