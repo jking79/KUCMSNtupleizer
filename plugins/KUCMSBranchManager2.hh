@@ -199,7 +199,7 @@ void KUCMSBranchManager::attachBranches( TTree* fOutTree ){
 bool KUCMSBranchManager::valid( std::string key ){ 
 
         if( theBranches.find(key) == theBranches.end() ){ 
-            std::cout << " -- Error: No Such Key : " << key << " !!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl; 
+            std::cout << " -- BM Error: No Such Key : " << key << " !!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl; 
             return false; 
         } else return true;
 
