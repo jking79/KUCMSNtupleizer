@@ -271,8 +271,9 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
    pileups = cms.InputTag("addPileupInfo", ""),
    #pileups = cms.InputTag("mixData", ""),
    genParticles = cms.InputTag("genParticles", ""),		
-   genjets = cms.InputTag("ak4GenJets","")
-
+   genjets = cms.InputTag("ak4GenJets",""),
+   #event filters
+   noiselabel = cms.InputTag("hcalnoise")
 )##<<>>process.tree = cms.EDAnalyzer("LLPgammaAnalyzer_aod"
 
 

@@ -31,6 +31,7 @@
 #include "KUCMSPFMet.hh"
 #include "KUCMSElectron.hh"
 #include "KUCMSGenObjects.hh"
+#include "KUCMSEventFilterObject.hh"
 
 using namespace std;
 
@@ -123,6 +124,12 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
 	pfmetObj->LoadPFMetTokens( pfmetToken );
 	pfmetObj->LoadPhotonObject( photonsObj );
 
+
+    auto eventfilterObj = new KUCMSEventFilterObject( iConfig );
+    auto hcalNoiseSummaryToken = consumes<HcalNoiseSummary>(iConfig.getParameter<edm::InputTag>("noiselabel"));
+    eventfilterObj->LoadHcalNoiseToken(hcalNoiseSummaryToken);
+    auto bunchSpacingVal = consumes<unsigned int>(edm::InputTag("bunchSpacingProducer"));
+    eventfilterObj->LoadBunchSpacing(bunchSpacingVal);
     if( DEBUG ) std::cout << "Loading Object Manager" << std::endl;
 
     ObjMan.Load( "EventInfo", eventInfoObj );
@@ -131,6 +138,7 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     ObjMan.Load( "JetsAK4", ak4jetObj );
     ObjMan.Load( "PFMet", pfmetObj );
     ObjMan.Load( "ECALRecHits", recHitsObj );
+    ObjMan.Load( "EventFilters", eventfilterObj);
 
     if( cfFlag("hasGenInfo") ){
 
