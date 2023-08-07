@@ -31,7 +31,7 @@ options.register('globalTag','94X_mc2017_realistic_v14',VarParsing.multiplicity.
 ## processName
 options.register('processName','TREE',VarParsing.multiplicity.singleton,VarParsing.varType.string,'process name to be considered');
 
-outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_Objectified_v5.root' # ntuplizer test
+outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_Objectified_v8.root' # ntuplizer test
 
 options.register('outputFileName',outfilename,VarParsing.multiplicity.singleton,VarParsing.varType.string,'output file name created by cmsRun');
 
@@ -62,8 +62,8 @@ process.load("FWCore.MessageService.MessageLogger_cfi")
 #process.MessageLogger.destinations = ['cout', 'cerr']
 #process.MessageLogger.cerr.FwkReport.reportEvery = 1
 #process.MessageLogger.cerr.FwkReport.reportEvery = 10
-process.MessageLogger.cerr.FwkReport.reportEvery = 100
-#process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+#process.MessageLogger.cerr.FwkReport.reportEvery = 100
+process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 #process.MessageLogger.cerr.FwkReport.reportEvery = 10000
 
 ## Define the input source
@@ -179,9 +179,9 @@ process.source = cms.Source("PoolSource",
 
 ## How many events to process
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(5))
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#ST
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#ST
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))#TTi
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#LT
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#LT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500))#US
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(12500))#VS
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(25000))#SM
@@ -202,6 +202,8 @@ process.TFileService = cms.Service("TFileService", fileName = cms.string(options
 process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
    ## flags
    hasGenInfo = cms.bool(options.hasGenInfo),
+   #minEvtMet = cms.double(150.0),
+   minEvtMet = cms.double(50.0),
    ## additional collections
    ## tracks
    #tracks = cms.InputTag("unpackedTracksAndVertices"),

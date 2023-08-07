@@ -56,7 +56,7 @@ class VectorBranch : public VectorItem<T> {
 template <class T>
 void VectorBranch<T>::attachBranch( TTree* fOutTree ){
 
-        fOutTree->Branch( iName.c_str(), &this->iValue )->SetTitle( iDoc.c_str() );
+        fOutTree->Branch( iName.c_str(), &this->iVector )->SetTitle( iDoc.c_str() );
 
 }//<<>>void Branch<T>::attachBranch( TTree* fOutTree )
 

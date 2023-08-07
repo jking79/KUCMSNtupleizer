@@ -138,10 +138,10 @@ class KUCMSAK4JetObject : public KUCMSObjectBase {
 KUCMSAK4JetObject::KUCMSAK4JetObject( const edm::ParameterSet& iConfig ){   
 // ---- end constructor initilizations  --------------------------
 
-    cfFlag.set( "hasGenInfo", iConfig.existsAs<bool>("hasGenInfo") ? iConfig.getParameter<bool>("hasGenInfo") : true );
-    cfFlag.set( "onlyEB", iConfig.existsAs<bool>("onlyEB") ? iConfig.getParameter<bool>("onlyEB") : true );
-    cfPrm.set( "jetPTmin", iConfig.existsAs<double>("jetPTmin") ? iConfig.getParameter<double>("jetPTmin") : 15.0 );
-    cfPrm.set( "jetEtaMax", iConfig.existsAs<double>("jetEtaMax") ? iConfig.getParameter<double>("jetEtaMax") : 3.0 );
+    cfFlag.set( "hasGenInfo", iConfig.existsAs<bool>("hasGenInfo") ? iConfig.getParameter<bool>("hasGenInfo") : false );
+    cfFlag.set( "onlyEB", iConfig.existsAs<bool>("onlyEB") ? iConfig.getParameter<bool>("onlyEB") : false );
+    cfPrm.set( "jetPTmin", iConfig.existsAs<double>("jetPTmin") ? iConfig.getParameter<double>("jetPTmin") : 10.0 );
+    cfPrm.set( "jetEtaMax", iConfig.existsAs<double>("jetEtaMax") ? iConfig.getParameter<double>("jetEtaMax") : 3.5 );
     cfPrm.set( "ebMaxEta",iConfig.existsAs<double>("ebMaxEta")? iConfig.getParameter<double>("ebMaxEta") : 1.479 );
 
 }//<<>>KUCMSAK4Jet::KUCMSAK4Jet( const edm::ParameterSet& iConfig, const ItemManager<bool>& cfFlag )
@@ -178,6 +178,10 @@ void KUCMSAK4JetObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("GenTimeLLP","Jet_genTimeLLP",VFLOAT);
     Branches.makeBranch("GenTOF","Jet_genTOF",VFLOAT);
 
+    Branches.makeBranch("GenLlpId","Jet_genLlpId",VFLOAT);
+    Branches.makeBranch("GenLlpDr","Jet_genLlpDr",VFLOAT);
+    Branches.makeBranch("GenLlpDp","Jet_genLlpDp",VFLOAT);
+
     Branches.attachBranches(fOutTree);
 
 }//<<>>void KUCMSAK4Jet::InitObject( TTree* fOutTree )
@@ -194,10 +198,10 @@ void KUCMSAK4JetObject::LoadEvent( const edm::Event& iEvent, const edm::EventSet
     for(const auto &jet : *jets_ ){ // Filters jet collection & sorts by pt
 
         if( jet.pt() < cfPrm("jetPTmin") ) continue;
-          if( cfFlag("onlyEB") && std::abs(jet.eta()) > cfPrm("ebMaxEta") ) continue;
+        if( cfFlag("onlyEB") && std::abs(jet.eta()) > cfPrm("ebMaxEta") ) continue;
         if( std::abs(jet.eta()) > cfPrm("jetEtaMax") ) continue;
-          // save the jets, and then store the ID
-          fjets.emplace_back(jet);
+        // save the jets, and then store the ID
+        fjets.emplace_back(jet);
         auto jetID = 0;
         jetIds.push_back(jetID);
 
@@ -313,10 +317,16 @@ void KUCMSAK4JetObject::ProcessEvent( ItemManager<float>& geVar ){
             Branches.fillBranch("GenEta",genJetInfo[3]);
             Branches.fillBranch("GenPhi",genJetInfo[4]);
             Branches.fillBranch("GenEnergy",genJetInfo[5]);
+            //Branches.fillBranch("genEMFrac",genJetInfo[6]);
             Branches.fillBranch("GenDrMatch",genJetInfo[7]);
             Branches.fillBranch("GenDptMatch",genJetInfo[8]);
             Branches.fillBranch("GenTimeLLP",genJetInfo[9]);
             Branches.fillBranch("GenTOF",genJetInfo[10]);
+            //Branches.fillBranch("goodDr",genJetInfo[11]);
+            //Branches.fillBranch("goodDpt",genJetInfo[12]);
+            Branches.fillBranch("GenLlpId",genJetInfo[13]);
+            Branches.fillBranch("GenLlpDr",genJetInfo[14]);
+            Branches.fillBranch("GenLlpDp",genJetInfo[15]);
 
         }//<<>>if( hasGenInfo )
         if(AK4JetDEBUG ) std::cout << "Next Jet .......................... " << std::endl;
