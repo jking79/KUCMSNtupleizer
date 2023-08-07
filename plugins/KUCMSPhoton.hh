@@ -125,11 +125,11 @@ class KUCMSPhotonObject : public KUCMSObjectBase {
 KUCMSPhotonObject::KUCMSPhotonObject( const edm::ParameterSet& iConfig ){   
 // ---- end constructor initilizations  --------------------------
 
-    cfPrm.set( "minPhoE", iConfig.existsAs<double>("minPhoE") ? iConfig.getParameter<double>("minPhoE") : 0.0 );
+    cfPrm.set( "minPhoE", iConfig.existsAs<double>("minPhoE") ? iConfig.getParameter<double>("minPhoE") : 2.0 );
     cfPrm.set( "phoMinPt", iConfig.existsAs<double>("phoMinPt") ? iConfig.getParameter<double>("phoMinPt") : 0.0 );
     cfPrm.set( "phoMinSeedTime", iConfig.existsAs<double>("phoMinSeedTime") ? iConfig.getParameter<double>("phoMinSeedTime") : -25.0 );
-    cfFlag.set( "onlyEB", iConfig.existsAs<bool>("onlyEB") ? iConfig.getParameter<bool>("onlyEB") : true );
-    cfFlag.set( "hasGenInfo", iConfig.existsAs<bool>("hasGenInfo") ? iConfig.getParameter<bool>("hasGenInfo") : true );
+    cfFlag.set( "onlyEB", iConfig.existsAs<bool>("onlyEB") ? iConfig.getParameter<bool>("onlyEB") : false );
+    cfFlag.set( "hasGenInfo", iConfig.existsAs<bool>("hasGenInfo") ? iConfig.getParameter<bool>("hasGenInfo") : false );
 
 }//<<>>KUCMSPhoton::KUCMSPhoton( const edm::ParameterSet& iConfig, const ItemManager<bool>& cfFlag )
 
@@ -179,9 +179,9 @@ void KUCMSPhotonObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("TrkSumPtHollowConeDR04","Photon_trkSumPtHollowConeDR04",VFLOAT);
     Branches.makeBranch("TrkSumPtHollowConeDR03","Photon_trkSumPtHollowConeDR03",VFLOAT,"Sum of track pT in a hollow cone of outer radius, inner radius");// nano -> DR03?
 
-    Branches.makeBranch("pfPhoIso03","Photon_pfPhoIso03",VFLOAT,"PF abs iso dR=0.3, photon component (uncorrected)");//
-    Branches.makeBranch("pfChargedIsoPFPV","Photon_pfChargedIsoPFPV",VFLOAT,"PF abs iso dR=0.3, charged component (PF PV only)");//
-    Branches.makeBranch("pfChargedIsoWorstVtx","Photon_pfChargedIsoWorstVtx",VFLOAT,"PF abs iso dR=0.3, charged component (Vertex w/ largest iso)");//
+    //Branches.makeBranch("pfPhoIso03","Photon_pfPhoIso03",VFLOAT,"PF abs iso dR=0.3, photon component (uncorrected)");//
+    //Branches.makeBranch("pfChargedIsoPFPV","Photon_pfChargedIsoPFPV",VFLOAT,"PF abs iso dR=0.3, charged component (PF PV only)");//
+    //Branches.makeBranch("pfChargedIsoWorstVtx","Photon_pfChargedIsoWorstVtx",VFLOAT,"PF abs iso dR=0.3, charged component (Vertex w/ largest iso)");//
     //Branches.makeBranch("pfRelIso03_chg_quadratic",VFLOAT);//
     //Branches.makeBranch("pfRelIso03_all_quadratic",VFLOAT);//
     //Branches.makeBranch("hoe_PUcorr","Photon_Hoe_PUcorr",VFLOAT,
@@ -196,9 +196,9 @@ void KUCMSPhotonObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("y_calo","Photon_y_calo",VFLOAT,"photon supercluster position on calorimeter, y coordinate (cm)");//
     Branches.makeBranch("z_calo","Photon_z_calo",VFLOAT,"photon supercluster position on calorimeter, z coordinate (cm)");//
 
-    Branches.makeBranch("esEffSigmaRR","Photon_esEffSigmaRR",VFLOAT,"preshower sigmaRR");//
-    Branches.makeBranch("esEnergyOverRawE","Photon_esEnergyOverRawE",VFLOAT,"ratio of preshower energy to raw supercluster energy");
-    Branches.makeBranch("haloTaggerMVAVal","Photon_haloTaggerMVAVal",VFLOAT,"Value of MVA based beam halo tagger in the Ecal endcap (valid for pT > 200 GeV)");//
+    //Branches.makeBranch("esEffSigmaRR","Photon_esEffSigmaRR",VFLOAT,"preshower sigmaRR");//
+    //Branches.makeBranch("esEnergyOverRawE","Photon_esEnergyOverRawE",VFLOAT,"ratio of preshower energy to raw supercluster energy");
+    //Branches.makeBranch("haloTaggerMVAVal","Photon_haloTaggerMVAVal",VFLOAT,"Value of MVA based beam halo tagger in the Ecal endcap (valid for pT > 200 GeV)");//
 
     Branches.makeBranch("GenIdx","Photon_genIdx",VINT);
     Branches.makeBranch("GenDr","Photon_genDr",VFLOAT);
@@ -206,6 +206,8 @@ void KUCMSPhotonObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("GenSIdx","Photon_genSIdx",VINT);
     Branches.makeBranch("GenSDr","Photon_genSDr",VFLOAT);
     Branches.makeBranch("GenSDp","Photon_genSDp",VFLOAT);
+    Branches.makeBranch("GenLlpId","Photon_genLlpId",VFLOAT);
+    Branches.makeBranch("GenSLlpId","Photon_genSLlpId",VFLOAT);
 
     Branches.makeBranch("etaWidth","Photon_etaWidth",VFLOAT,"Width of the photon supercluster in eta");//
     Branches.makeBranch("phiWidth","Photon_phiWidth",VFLOAT,"Width of the photon supercluster in phi");//
@@ -361,13 +363,13 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
         Branches.fillBranch("Pz",phoPz);
 
         Branches.fillBranch("S4",s4);
-        Branches.fillBranch("esEffSigmaRR",esEffSigmaRR);
+        //Branches.fillBranch("esEffSigmaRR",esEffSigmaRR);
         //Branches.fillBranch("SigmaEtaEta",phoSigmaEtaEta);
         Branches.fillBranch("sieie",sieie);
         Branches.fillBranch("sieip",sieip);
         Branches.fillBranch("sipip",sipip);
         Branches.fillBranch("EnergyErr",phoEnergyErr);
-        Branches.fillBranch("haloTaggerMVAVal",haloTaggerMVAVal);
+        //Branches.fillBranch("haloTaggerMVAVal",haloTaggerMVAVal);
         Branches.fillBranch("hasPixelSeed",phoHasPixelSeed);
 
         Branches.fillBranch("HadOverEM",hadronicOverEm);
@@ -389,9 +391,9 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
         //Branches.fillBranch("NTrkSolidConeDR04",phoNTrkSolidConeDR04);
         //Branches.fillBranch("NTrkHollowConeDR04",phoNTrkHollowConeDR04);
 
-        Branches.fillBranch("pfPhoIso03",pfPhoIso03);
-        Branches.fillBranch("pfChargedIsoPFPV",pfChargedIsoPFPV);
-        Branches.fillBranch("pfChargedIsoWorstVtx",pfChargedIsoWorstVtx);
+        //Branches.fillBranch("pfPhoIso03",pfPhoIso03);
+        //Branches.fillBranch("pfChargedIsoPFPV",pfChargedIsoPFPV);
+        //Branches.fillBranch("pfChargedIsoWorstVtx",pfChargedIsoWorstVtx);
 
         if( PhotonDEBUG ) std::cout << " --- Proccesssing : " << photon << std::endl;
         const auto &phosc = photon.superCluster().isNonnull() ? photon.superCluster() : photon.parentSuperCluster();
@@ -432,7 +434,7 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
         Branches.fillBranch("x_calo",x_calo);
         Branches.fillBranch("y_calo",y_calo);
         Branches.fillBranch("z_calo",z_calo);
-        Branches.fillBranch("esEnergyOverRawE",esEnergyOverRawE);
+        //Branches.fillBranch("esEnergyOverRawE",esEnergyOverRawE);
         Branches.fillBranch("etaWidth",etaWidth);
         Branches.fillBranch("phiWidth",phiWidth);
 
@@ -473,6 +475,8 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
             Branches.fillBranch("GenSIdx",sidx);
             Branches.fillBranch("GenSDr",genInfo[4]);
             Branches.fillBranch("GenSDp",genInfo[5]);
+            Branches.fillBranch("GenLlpId",genInfo[6]);
+            Branches.fillBranch("GenSLlpId",genInfo[7]);
             if( PhotonDEBUG) std::cout << " Photon Match ------------------------- " << std::endl;
 
         }//<<>>if( hasGenInfo )
