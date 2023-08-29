@@ -308,7 +308,7 @@ void KUCMSAK4JetObject::ProcessEvent( ItemManager<float>& geVar ){
 
         if( cfFlag("hasGenInfo") ){
 
-			auto genJetInfo = genObjs->getGenJetInfo( jetEta, jetPhi, jetPt );
+			auto genJetInfo = genObjs->getGenJetInfo( jetEta, jetPhi, jetE );
             // load event level vectors for this jet with gen info
 
             Branches.fillBranch("GenImpactAngle",genJetInfo[0]);

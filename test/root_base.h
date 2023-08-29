@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Tue Jul 11 17:25:35 2023 by ROOT version 6.26/07
+// Tue Aug  8 11:42:53 2023 by ROOT version 6.26/07
 // from TTree llpgtree/KUCMSNtuple
-// found on file: gmsb_AODSIM_KUCMSNtuplizer_Objectified_v6.root
+// found on file: gmsb_AODSIM_KUCMSNtuplizer_Objectified_v8.root
 //////////////////////////////////////////////////////////
 
 #ifndef root_base_h
@@ -67,7 +67,8 @@ public :
    vector<float>   *Gen_px;
    vector<float>   *Gen_py;
    vector<float>   *Gen_pz;
-   Float_t         Gen_weight;
+   vector<int>     *Gen_susId;
+   Float_t         Evt_genWgt;
    vector<float>   *Jet_area;
    vector<float>   *Jet_chEmEF;
    vector<float>   *Jet_chHEF;
@@ -80,6 +81,9 @@ public :
    vector<float>   *Jet_genEnergy;
    vector<float>   *Jet_genEta;
    vector<float>   *Jet_genImpactAngle;
+   vector<float>   *Jet_genLlpDp;
+   vector<float>   *Jet_genLlpDr;
+   vector<float>   *Jet_genLlpId;
    vector<float>   *Jet_genPhi;
    vector<float>   *Jet_genPt;
    vector<float>   *Jet_genTOF;
@@ -104,10 +108,6 @@ public :
    Float_t         Met_px;
    Float_t         Met_py;
    Float_t         Met_sumEt;
-   Float_t         Met_covXX;
-   Float_t         Met_covXY;
-   Float_t         Met_covYY;
-   Float_t         Met_significance;
    vector<float>   *Photon_covEtaEta;
    vector<float>   *Photon_covEtaPhi;
    vector<float>   *Photon_covPhiPhi;
@@ -120,9 +120,11 @@ public :
    vector<float>   *Photon_genDp;
    vector<float>   *Photon_genDr;
    vector<int>     *Photon_genIdx;
+   vector<float>   *Photon_genLlpId;
    vector<float>   *Photon_genSDp;
    vector<float>   *Photon_genSDr;
    vector<int>     *Photon_genSIdx;
+   vector<float>   *Photon_genSLlpId;
    vector<float>   *Photon_hadOverEM;
    vector<float>   *Photon_hadTowOverEM;
    vector<float>   *Photon_hcalTowerSumEtBcConeDR04;
@@ -143,17 +145,11 @@ public :
    vector<float>   *Photon_trkSumPtHollowConeDR04;
    vector<float>   *Photon_trkSumPtSolidConeDR04;
    vector<bool>    *Photon_electronVeto;
-   vector<float>   *Photon_esEffSigmaRR;
-   vector<float>   *Photon_esEnergyOverRawE;
    vector<float>   *Photon_etaWidth;
-   vector<float>   *Photon_haloTaggerMVAVal;
    vector<bool>    *Photon_pixelSeed;
    vector<bool>    *Photon_seedIsEB;
    vector<bool>    *Photon_isScEtaEB;
    vector<bool>    *Photon_isScEtaEE;
-   vector<float>   *Photon_pfChargedIsoPFPV;
-   vector<float>   *Photon_pfChargedIsoWorstVtx;
-   vector<float>   *Photon_pfPhoIso03;
    vector<float>   *Photon_phiWidth;
    vector<int>     *Photon_seediEtaOriX;
    vector<int>     *Photon_seediPhiOriY;
@@ -205,7 +201,8 @@ public :
    TBranch        *b_Gen_px;   //!
    TBranch        *b_Gen_py;   //!
    TBranch        *b_Gen_pz;   //!
-   TBranch        *b_Gen_weight;   //!
+   TBranch        *b_Gen_susId;   //!
+   TBranch        *b_Evt_genWgt;   //!
    TBranch        *b_Jet_area;   //!
    TBranch        *b_Jet_chEmEF;   //!
    TBranch        *b_Jet_chHEF;   //!
@@ -218,6 +215,9 @@ public :
    TBranch        *b_Jet_genEnergy;   //!
    TBranch        *b_Jet_genEta;   //!
    TBranch        *b_Jet_genImpactAngle;   //!
+   TBranch        *b_Jet_genLlpDp;   //!
+   TBranch        *b_Jet_genLlpDr;   //!
+   TBranch        *b_Jet_genLlpId;   //!
    TBranch        *b_Jet_genPhi;   //!
    TBranch        *b_Jet_genPt;   //!
    TBranch        *b_Jet_genTOF;   //!
@@ -242,10 +242,6 @@ public :
    TBranch        *b_Met_px;   //!
    TBranch        *b_Met_py;   //!
    TBranch        *b_Met_sumEt;   //!
-   TBranch        *b_Met_covXX;   //!
-   TBranch        *b_Met_covXY;   //!
-   TBranch        *b_Met_covYY;   //!
-   TBranch        *b_Met_significance;   //!
    TBranch        *b_Photon_covEtaEta;   //!
    TBranch        *b_Photon_covEtaPhi;   //!
    TBranch        *b_Photon_covPhiPhi;   //!
@@ -258,9 +254,11 @@ public :
    TBranch        *b_Photon_genDp;   //!
    TBranch        *b_Photon_genDr;   //!
    TBranch        *b_Photon_genIdx;   //!
+   TBranch        *b_Photon_genLlpId;   //!
    TBranch        *b_Photon_genSDp;   //!
    TBranch        *b_Photon_genSDr;   //!
    TBranch        *b_Photon_genSIdx;   //!
+   TBranch        *b_Photon_genSLlpId;   //!
    TBranch        *b_Photon_hadOverEM;   //!
    TBranch        *b_Photon_hadTowOverEM;   //!
    TBranch        *b_Photon_hcalTowerSumEtBcConeDR04;   //!
@@ -281,17 +279,11 @@ public :
    TBranch        *b_Photon_trkSumPtHollowConeDR04;   //!
    TBranch        *b_Photon_trkSumPtSolidConeDR04;   //!
    TBranch        *b_Photon_electronVeto;   //!
-   TBranch        *b_Photon_esEffSigmaRR;   //!
-   TBranch        *b_Photon_esEnergyOverRawE;   //!
    TBranch        *b_Photon_etaWidth;   //!
-   TBranch        *b_Photon_haloTaggerMVAVal;   //!
    TBranch        *b_Photon_pixelSeed;   //!
    TBranch        *b_Photon_seedIsEB;   //!
    TBranch        *b_Photon_isScEtaEB;   //!
    TBranch        *b_Photon_isScEtaEE;   //!
-   TBranch        *b_Photon_pfChargedIsoPFPV;   //!
-   TBranch        *b_Photon_pfChargedIsoWorstVtx;   //!
-   TBranch        *b_Photon_pfPhoIso03;   //!
    TBranch        *b_Photon_phiWidth;   //!
    TBranch        *b_Photon_seediEtaOriX;   //!
    TBranch        *b_Photon_seediPhiOriY;   //!
@@ -321,11 +313,11 @@ root_base::root_base(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("gmsb_AODSIM_KUCMSNtuplizer_Objectified_v6.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("gmsb_AODSIM_KUCMSNtuplizer_Objectified_v8.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("gmsb_AODSIM_KUCMSNtuplizer_Objectified_v6.root");
+         f = new TFile("gmsb_AODSIM_KUCMSNtuplizer_Objectified_v8.root");
       }
-      TDirectory * dir = (TDirectory*)f->Get("gmsb_AODSIM_KUCMSNtuplizer_Objectified_v6.root:/tree");
+      TDirectory * dir = (TDirectory*)f->Get("gmsb_AODSIM_KUCMSNtuplizer_Objectified_v8.root:/tree");
       dir->GetObject("llpgtree",tree);
 
    }
@@ -401,6 +393,7 @@ void root_base::Init(TTree *tree)
    Gen_px = 0;
    Gen_py = 0;
    Gen_pz = 0;
+   Gen_susId = 0;
    Jet_area = 0;
    Jet_chEmEF = 0;
    Jet_chHEF = 0;
@@ -413,6 +406,9 @@ void root_base::Init(TTree *tree)
    Jet_genEnergy = 0;
    Jet_genEta = 0;
    Jet_genImpactAngle = 0;
+   Jet_genLlpDp = 0;
+   Jet_genLlpDr = 0;
+   Jet_genLlpId = 0;
    Jet_genPhi = 0;
    Jet_genPt = 0;
    Jet_genTOF = 0;
@@ -439,9 +435,11 @@ void root_base::Init(TTree *tree)
    Photon_genDp = 0;
    Photon_genDr = 0;
    Photon_genIdx = 0;
+   Photon_genLlpId = 0;
    Photon_genSDp = 0;
    Photon_genSDr = 0;
    Photon_genSIdx = 0;
+   Photon_genSLlpId = 0;
    Photon_hadOverEM = 0;
    Photon_hadTowOverEM = 0;
    Photon_hcalTowerSumEtBcConeDR04 = 0;
@@ -462,17 +460,11 @@ void root_base::Init(TTree *tree)
    Photon_trkSumPtHollowConeDR04 = 0;
    Photon_trkSumPtSolidConeDR04 = 0;
    Photon_electronVeto = 0;
-   Photon_esEffSigmaRR = 0;
-   Photon_esEnergyOverRawE = 0;
    Photon_etaWidth = 0;
-   Photon_haloTaggerMVAVal = 0;
    Photon_pixelSeed = 0;
    Photon_seedIsEB = 0;
    Photon_isScEtaEB = 0;
    Photon_isScEtaEE = 0;
-   Photon_pfChargedIsoPFPV = 0;
-   Photon_pfChargedIsoWorstVtx = 0;
-   Photon_pfPhoIso03 = 0;
    Photon_phiWidth = 0;
    Photon_seediEtaOriX = 0;
    Photon_seediPhiOriY = 0;
@@ -528,7 +520,8 @@ void root_base::Init(TTree *tree)
    fChain->SetBranchAddress("Gen_px", &Gen_px, &b_Gen_px);
    fChain->SetBranchAddress("Gen_py", &Gen_py, &b_Gen_py);
    fChain->SetBranchAddress("Gen_pz", &Gen_pz, &b_Gen_pz);
-   fChain->SetBranchAddress("Gen_weight", &Gen_weight, &b_Gen_weight);
+   fChain->SetBranchAddress("Gen_susId", &Gen_susId, &b_Gen_susId);
+   fChain->SetBranchAddress("Evt_genWgt", &Evt_genWgt, &b_Evt_genWgt);
    fChain->SetBranchAddress("Jet_area", &Jet_area, &b_Jet_area);
    fChain->SetBranchAddress("Jet_chEmEF", &Jet_chEmEF, &b_Jet_chEmEF);
    fChain->SetBranchAddress("Jet_chHEF", &Jet_chHEF, &b_Jet_chHEF);
@@ -541,6 +534,9 @@ void root_base::Init(TTree *tree)
    fChain->SetBranchAddress("Jet_genEnergy", &Jet_genEnergy, &b_Jet_genEnergy);
    fChain->SetBranchAddress("Jet_genEta", &Jet_genEta, &b_Jet_genEta);
    fChain->SetBranchAddress("Jet_genImpactAngle", &Jet_genImpactAngle, &b_Jet_genImpactAngle);
+   fChain->SetBranchAddress("Jet_genLlpDp", &Jet_genLlpDp, &b_Jet_genLlpDp);
+   fChain->SetBranchAddress("Jet_genLlpDr", &Jet_genLlpDr, &b_Jet_genLlpDr);
+   fChain->SetBranchAddress("Jet_genLlpId", &Jet_genLlpId, &b_Jet_genLlpId);
    fChain->SetBranchAddress("Jet_genPhi", &Jet_genPhi, &b_Jet_genPhi);
    fChain->SetBranchAddress("Jet_genPt", &Jet_genPt, &b_Jet_genPt);
    fChain->SetBranchAddress("Jet_genTOF", &Jet_genTOF, &b_Jet_genTOF);
@@ -565,10 +561,6 @@ void root_base::Init(TTree *tree)
    fChain->SetBranchAddress("Met_px", &Met_px, &b_Met_px);
    fChain->SetBranchAddress("Met_py", &Met_py, &b_Met_py);
    fChain->SetBranchAddress("Met_sumEt", &Met_sumEt, &b_Met_sumEt);
-   fChain->SetBranchAddress("Met_covXX", &Met_covXX, &b_Met_covXX);
-   fChain->SetBranchAddress("Met_covXY", &Met_covXY, &b_Met_covXY);
-   fChain->SetBranchAddress("Met_covYY", &Met_covYY, &b_Met_covYY);
-   fChain->SetBranchAddress("Met_significance", &Met_significance, &b_Met_significance);
    fChain->SetBranchAddress("Photon_covEtaEta", &Photon_covEtaEta, &b_Photon_covEtaEta);
    fChain->SetBranchAddress("Photon_covEtaPhi", &Photon_covEtaPhi, &b_Photon_covEtaPhi);
    fChain->SetBranchAddress("Photon_covPhiPhi", &Photon_covPhiPhi, &b_Photon_covPhiPhi);
@@ -581,9 +573,11 @@ void root_base::Init(TTree *tree)
    fChain->SetBranchAddress("Photon_genDp", &Photon_genDp, &b_Photon_genDp);
    fChain->SetBranchAddress("Photon_genDr", &Photon_genDr, &b_Photon_genDr);
    fChain->SetBranchAddress("Photon_genIdx", &Photon_genIdx, &b_Photon_genIdx);
+   fChain->SetBranchAddress("Photon_genLlpId", &Photon_genLlpId, &b_Photon_genLlpId);
    fChain->SetBranchAddress("Photon_genSDp", &Photon_genSDp, &b_Photon_genSDp);
    fChain->SetBranchAddress("Photon_genSDr", &Photon_genSDr, &b_Photon_genSDr);
    fChain->SetBranchAddress("Photon_genSIdx", &Photon_genSIdx, &b_Photon_genSIdx);
+   fChain->SetBranchAddress("Photon_genSLlpId", &Photon_genSLlpId, &b_Photon_genSLlpId);
    fChain->SetBranchAddress("Photon_hadOverEM", &Photon_hadOverEM, &b_Photon_hadOverEM);
    fChain->SetBranchAddress("Photon_hadTowOverEM", &Photon_hadTowOverEM, &b_Photon_hadTowOverEM);
    fChain->SetBranchAddress("Photon_hcalTowerSumEtBcConeDR04", &Photon_hcalTowerSumEtBcConeDR04, &b_Photon_hcalTowerSumEtBcConeDR04);
@@ -604,17 +598,11 @@ void root_base::Init(TTree *tree)
    fChain->SetBranchAddress("Photon_trkSumPtHollowConeDR04", &Photon_trkSumPtHollowConeDR04, &b_Photon_trkSumPtHollowConeDR04);
    fChain->SetBranchAddress("Photon_trkSumPtSolidConeDR04", &Photon_trkSumPtSolidConeDR04, &b_Photon_trkSumPtSolidConeDR04);
    fChain->SetBranchAddress("Photon_electronVeto", &Photon_electronVeto, &b_Photon_electronVeto);
-   fChain->SetBranchAddress("Photon_esEffSigmaRR", &Photon_esEffSigmaRR, &b_Photon_esEffSigmaRR);
-   fChain->SetBranchAddress("Photon_esEnergyOverRawE", &Photon_esEnergyOverRawE, &b_Photon_esEnergyOverRawE);
    fChain->SetBranchAddress("Photon_etaWidth", &Photon_etaWidth, &b_Photon_etaWidth);
-   fChain->SetBranchAddress("Photon_haloTaggerMVAVal", &Photon_haloTaggerMVAVal, &b_Photon_haloTaggerMVAVal);
    fChain->SetBranchAddress("Photon_pixelSeed", &Photon_pixelSeed, &b_Photon_pixelSeed);
    fChain->SetBranchAddress("Photon_seedIsEB", &Photon_seedIsEB, &b_Photon_seedIsEB);
    fChain->SetBranchAddress("Photon_isScEtaEB", &Photon_isScEtaEB, &b_Photon_isScEtaEB);
    fChain->SetBranchAddress("Photon_isScEtaEE", &Photon_isScEtaEE, &b_Photon_isScEtaEE);
-   fChain->SetBranchAddress("Photon_pfChargedIsoPFPV", &Photon_pfChargedIsoPFPV, &b_Photon_pfChargedIsoPFPV);
-   fChain->SetBranchAddress("Photon_pfChargedIsoWorstVtx", &Photon_pfChargedIsoWorstVtx, &b_Photon_pfChargedIsoWorstVtx);
-   fChain->SetBranchAddress("Photon_pfPhoIso03", &Photon_pfPhoIso03, &b_Photon_pfPhoIso03);
    fChain->SetBranchAddress("Photon_phiWidth", &Photon_phiWidth, &b_Photon_phiWidth);
    fChain->SetBranchAddress("Photon_seediEtaOriX", &Photon_seediEtaOriX, &b_Photon_seediEtaOriX);
    fChain->SetBranchAddress("Photon_seediPhiOriY", &Photon_seediPhiOriY, &b_Photon_seediPhiOriY);

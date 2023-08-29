@@ -330,11 +330,11 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
         //const float phoMaxEnergyXtal = photon.maxEnergyXtal();
         //const float phoSigmaEtaEta = photon.sigmaEtaEta();
         //const float phoSigmaIEtaIEta = photon.sigmaIetaIeta();
-        const float sieie = photon.full5x5_sigmaIetaIeta();
-        const float sieip = photon.full5x5_showerShapeVariables().sigmaIetaIphi;
+        const float sieie = photon.showerShapeVariables().sigmaIetaIeta;
+        const float sieip = photon.showerShapeVariables().sigmaIetaIphi;
         const float sipip = photon.showerShapeVariables().sigmaIphiIphi;
         const float s4 = photon.full5x5_showerShapeVariables().e2x2/photon.full5x5_showerShapeVariables().e5x5;
-        const float esEffSigmaRR = photon.full5x5_showerShapeVariables().effSigmaRR;
+        const float esEffSigmaRR = photon.showerShapeVariables().effSigmaRR;
 
         //const float phoR1x5 = photon.r1x5();
         //const float phoR2x5 = photon.r2x5();
@@ -466,7 +466,7 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
         // GenParticle Info for photon  -------------------------------------------------------------------
         if( cfFlag("hasGenInfo") ){
 
-            auto genInfo = genObjs->getGenPartMatch( scptr, phoPt );
+            auto genInfo = genObjs->getGenPhoMatch( scptr, phoEnergy );
             int idx = genInfo[0];
             int sidx = genInfo[3];
             Branches.fillBranch("GenIdx",idx);
