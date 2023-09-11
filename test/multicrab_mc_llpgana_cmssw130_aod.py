@@ -116,7 +116,7 @@ def docrab( dataset ):
             #trial          = "llpga_GMSB_AOD_v60" # slimmed output ( removed jets and clusters ) 
 
             #trial          = "kucmsntuple_JetHTi_Met50_AOD_v2" #
-            trial          = "kucmsntuple_GMSB_AOD_v7" # 
+            trial          = "kucmsntuple_GMSB_AOD_v9" # 
             #trial          = "kucmsntuple_GJETS_AOD_v5" # 
             #trial          = "kucmsntuple_WJETS_AOD_v5" # 
             #trial          = "kucmsntuple_ZJETS_AOD_v5" #
