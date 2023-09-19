@@ -209,6 +209,7 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
    ## vertices
    #vertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
    vertices = cms.InputTag("offlinePrimaryVertices"),
+   svSrc = cms.InputTag("inclusiveCandidateSecondaryVertices"),
    ## pfcandidates
    #pfcandidates = cms.InputTag("packedPFCandidates"),
    pfcandidates = cms.InputTag("particleFlow"),

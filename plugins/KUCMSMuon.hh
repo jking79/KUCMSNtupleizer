@@ -39,7 +39,7 @@
 #ifndef KUCMSMuon_hh
 #define KUCMSMuon_hh
 
-//#define ExampleEBUG true
+//#define DEBUG true
 #define DEBUG false
 
 using namespace edm; 
@@ -85,7 +85,7 @@ KUCMSMuon::KUCMSMuon(const edm::ParameterSet& iConfig) :
 
 void KUCMSMuon::InitObject( TTree* fOutTree ){
   
-  Branches.makeBranch("muonCharge","Muon_charge",VFLOAT);
+  Branches.makeBranch("muonCharge","Muon_charge",VINT);
   Branches.makeBranch("muonPt","Muon_pt",VFLOAT);
   Branches.makeBranch("muonPhi","Muon_phi",VFLOAT);
   Branches.makeBranch("muonEta","Muon_eta",VFLOAT);  
@@ -107,14 +107,14 @@ void KUCMSMuon::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSet
   
 }
 
-void KUCMSMuon::ProcessEvent( ItemManager<float>& geVar ){
+void KUCMSMuon::ProcessEvent( ItemManager<float>& geVar ) {
   
   if(DEBUG) std::cout << "Processing Muons" << std::endl;
   Branches.clearBranches();
 
   if(DEBUG) std::cout << " - entering Muon loop" << std::endl;
 
-  for(auto const &muon : fmuons){
+  for(auto const &muon : fmuons) {
     const int charge = muon.charge();
     const float pt = muon.pt();
     const float phi = muon.phi();
@@ -125,14 +125,13 @@ void KUCMSMuon::ProcessEvent( ItemManager<float>& geVar ){
     Branches.fillBranch("muonPt", pt);
     Branches.fillBranch("muonPhi", phi);
     Branches.fillBranch("muonEta", eta);
-    Branches.fillBranch("muonMass", mass);
-    
+    Branches.fillBranch("muonMass", mass);    
     //Branches.attachBranches(outTree);
 
   }  
 }
 
-void KUCMSMuon::PostProcessEvent( ItemManager<float>& geVar ){
+void KUCMSMuon::PostProcessEvent( ItemManager<float>& geVar ) {
   
   // process anything that must be done after all crosstalk with other objects
   

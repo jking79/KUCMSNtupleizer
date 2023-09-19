@@ -31,6 +31,7 @@
 #include "KUCMSPFMet.hh"
 #include "KUCMSElectron.hh"
 #include "KUCMSMuon.hh"
+#include "KUCMSSecondaryVertex.hh"
 #include "KUCMSGenObjects.hh"
 
 using namespace std;
@@ -124,6 +125,11 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     ak4jetObj->LoadPhotonObject( photonsObj );
     ak4jetObj->LoadElectronObject( electronsObj );
 
+    //SVs
+    auto svsObj = new KUCMSSecondaryVertex(iConfig);
+    auto svsToken = consumes<edm::View<reco::VertexCompositePtrCandidate>>(iConfig.getParameter<edm::InputTag>("svSrc"));
+    svsObj->LoadSVTokens(svsToken);
+
     auto pfmetObj = new KUCMSPFMetObject( iConfig );
     auto pfmetToken = consumes<std::vector<reco::PFMET>>(iConfig.getParameter<edm::InputTag>("mets")); 
     pfmetObj->LoadPFMetTokens( pfmetToken );
@@ -136,6 +142,7 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     ObjMan.Load( "Muons", muonsObj );
     ObjMan.Load( "Photons", photonsObj );
     ObjMan.Load( "JetsAK4", ak4jetObj );
+    ObjMan.Load( "SVs", svsObj );
     ObjMan.Load( "PFMet", pfmetObj );
     ObjMan.Load( "ECALRecHits", recHitsObj );
 
