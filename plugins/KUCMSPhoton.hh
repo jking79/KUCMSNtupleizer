@@ -125,9 +125,9 @@ class KUCMSPhotonObject : public KUCMSObjectBase {
 KUCMSPhotonObject::KUCMSPhotonObject( const edm::ParameterSet& iConfig ){   
 // ---- end constructor initilizations  --------------------------
 
-    cfPrm.set( "minPhoE", iConfig.existsAs<double>("minPhoE") ? iConfig.getParameter<double>("minPhoE") : 10.0 );
+    cfPrm.set( "minPhoE", iConfig.existsAs<double>("minPhoE") ? iConfig.getParameter<double>("minPhoE") : 2.0 );
     cfPrm.set( "phoMinPt", iConfig.existsAs<double>("phoMinPt") ? iConfig.getParameter<double>("phoMinPt") : 0.0 );
-    cfPrm.set( "phoMinSeedTime", iConfig.existsAs<double>("phoMinSeedTime") ? iConfig.getParameter<double>("phoMinSeedTime") : -25.0 );
+    cfPrm.set( "phoMinSeedTime", iConfig.existsAs<double>("phoMinSeedTime") ? iConfig.getParameter<double>("phoMinSeedTime") : 30.0 );
     cfFlag.set( "onlyEB", iConfig.existsAs<bool>("onlyEB") ? iConfig.getParameter<bool>("onlyEB") : false );
     cfFlag.set( "hasGenInfo", iConfig.existsAs<bool>("hasGenInfo") ? iConfig.getParameter<bool>("hasGenInfo") : false );
 
@@ -238,10 +238,10 @@ void KUCMSPhotonObject::LoadEvent( const edm::Event& iEvent, const edm::EventSet
         //auto idx = itPhoton - ootPhotons_->begin();//unsigned int
         //auto ootPhoRef = ootPhotons_->refAt(idx);//edm::RefToBase<reco::GsfElectron> 
         auto &ootPho = (*itPhoton);
-        if( cfFlag("onlyEB") && ootPho.isEE() ) continue;
-        auto minPhoPt = ootPho.pt() < cfPrm("phoMinPt");
+        //if( cfFlag("onlyEB") && ootPho.isEE() ) continue;
+        auto minPhoPt = ootPho.pt() < 0.0; //cfPrm("phoMinPt");
         auto phoSeedTime = getPhotonSeedTime(ootPho);
-        auto minTime = phoSeedTime < cfPrm("phoMinSeedTime");
+        auto minTime = std::abs(phoSeedTime) > cfPrm("phoMinSeedTime");
         auto minEnergy = ootPho.energy() < cfPrm("minPhoE");
         if( minPhoPt || minTime || minEnergy ) continue;
         double minDr(0.5);
@@ -251,7 +251,7 @@ void KUCMSPhotonObject::LoadEvent( const edm::Event& iEvent, const edm::EventSet
         auto oPhi = ootPho.phi();
         auto oPt = ootPho.pt();
         for( const auto &gedPho : *gedPhotons_ ){
-            if( cfFlag("onlyEB") && gedPho.isEE() ) continue;
+            //if( cfFlag("onlyEB") && gedPho.isEE() ) continue;
             auto pEta = gedPho.eta();
             auto pPhi = gedPho.phi();
             auto pPt = gedPho.pt();
@@ -269,9 +269,9 @@ void KUCMSPhotonObject::LoadEvent( const edm::Event& iEvent, const edm::EventSet
         //auto gedPhoRef = gedPhotons_->refAt(idx);//edm::RefToBase<reco::GsfElectron> 
         auto &gedPho = (*itPhoton);
         if( cfFlag("onlyEB") && gedPho.isEE() ) continue;
-        auto minPt = gedPho.pt() < cfPrm("phoMinPt");
+        auto minPt = gedPho.pt() < 0; //cfPrm("phoMinPt");
         auto phoSeedTime = getPhotonSeedTime(gedPho);
-        auto minTime = phoSeedTime < cfPrm("phoMinSeedTime");
+        auto minTime = std::abs(phoSeedTime) > cfPrm("phoMinSeedTime");
         auto minEnergy = gedPho.energy() < cfPrm("minPhoE");
         if( minPt || minTime || minEnergy ) continue;
         double minDr(0.5);
@@ -281,7 +281,7 @@ void KUCMSPhotonObject::LoadEvent( const edm::Event& iEvent, const edm::EventSet
         auto pPhi = gedPho.phi();
         auto pPt = gedPho.pt();
         for( const auto &ootPho : *ootPhotons_ ){
-            if( cfFlag("onlyEB") && ootPho.isEE() ) continue;
+            //if( cfFlag("onlyEB") && ootPho.isEE() ) continue;
             auto oEta = ootPho.eta();
             auto oPhi = ootPho.phi();
             auto oPt = ootPho.pt();
@@ -329,7 +329,7 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
         //const float phoHadTowOverEMValid = photon.hadTowOverEmValid();
         //const float phoMaxEnergyXtal = photon.maxEnergyXtal();
         //const float phoSigmaEtaEta = photon.sigmaEtaEta();
-        //const float phoSigmaIEtaIEta = photon.sigmaIetaIeta();
+        const float phoSigmaIEtaIEta = photon.sigmaIetaIeta();
         const float sieie = photon.showerShapeVariables().sigmaIetaIeta;
         const float sieip = photon.showerShapeVariables().sigmaIetaIphi;
         const float sipip = photon.showerShapeVariables().sigmaIphiIphi;
@@ -342,12 +342,12 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
 
         const float hadronicOverEm = photon.hadronicOverEm();
         const float phoEcalRHSumEtConeDR04 = photon.ecalRecHitSumEtConeDR04();
-        //const float phoHcalTwrSumEtConeDR04 = photon.hcalTowerSumEtConeDR04();
+        const float phoHcalTwrSumEtConeDR04 = photon.hcalTowerSumEtConeDR04();
         const float phoHcalTowerSumEtBcConeDR04 = photon.hcalTowerSumEtBcConeDR04();
         const float phoTrkSumPtSolidConeDR04 = photon.trkSumPtSolidConeDR04();
         const float phoTrkSumPtHollowConeDR04 = photon.trkSumPtHollowConeDR04();
-        //const float phoNTrkSolidConeDR04 = photon.nTrkSolidConeDR04();
-        //const float phoNTrkHollowConeDR04 = photon.nTrkHollowConeDR04();
+        const float phoNTrkSolidConeDR04 = photon.nTrkSolidConeDR04();
+        const float phoNTrkHollowConeDR04 = photon.nTrkHollowConeDR04();
         const float phoTrkSumPtHollowConeDR03 = photon.trkSumPtHollowConeDR03();
 
         const float pfPhoIso03 = photon.photonIso();
@@ -364,7 +364,7 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
 
         Branches.fillBranch("S4",s4);
         //Branches.fillBranch("esEffSigmaRR",esEffSigmaRR);
-        //Branches.fillBranch("SigmaEtaEta",phoSigmaEtaEta);
+        Branches.fillBranch("SigmaIEtaIEta",phoSigmaEtaEta);
         Branches.fillBranch("sieie",sieie);
         Branches.fillBranch("sieip",sieip);
         Branches.fillBranch("sipip",sipip);
@@ -383,16 +383,16 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
         Branches.fillBranch("R9",phoR9);
 
         Branches.fillBranch("EcalRHSumEtConeDR04",phoEcalRHSumEtConeDR04);
-        //Branches.fillBranch("HcalTwrSumEtConeDR04",phoHcalTwrSumEtConeDR04);
+        Branches.fillBranch("HcalTwrSumEtConeDR04",phoHcalTwrSumEtConeDR04);
         Branches.fillBranch("HcalTowerSumEtBcConeDR04",phoHcalTowerSumEtBcConeDR04);
         Branches.fillBranch("TrkSumPtSolidConeDR04",phoTrkSumPtSolidConeDR04);
         Branches.fillBranch("TrkSumPtHollowConeDR04",phoTrkSumPtHollowConeDR04);
         Branches.fillBranch("TrkSumPtHollowConeDR03",phoTrkSumPtHollowConeDR03);
-        //Branches.fillBranch("NTrkSolidConeDR04",phoNTrkSolidConeDR04);
-        //Branches.fillBranch("NTrkHollowConeDR04",phoNTrkHollowConeDR04);
+        Branches.fillBranch("NTrkSolidConeDR04",phoNTrkSolidConeDR04);
+        Branches.fillBranch("NTrkHollowConeDR04",phoNTrkHollowConeDR04);
 
-        //Branches.fillBranch("pfPhoIso03",pfPhoIso03);
-        //Branches.fillBranch("pfChargedIsoPFPV",pfChargedIsoPFPV);
+        Branches.fillBranch("pfPhoIso03",pfPhoIso03);
+        Branches.fillBranch("pfChargedIsoPFPV",pfChargedIsoPFPV);
         //Branches.fillBranch("pfChargedIsoWorstVtx",pfChargedIsoWorstVtx);
 
         if( PhotonDEBUG ) std::cout << " --- Proccesssing : " << photon << std::endl;

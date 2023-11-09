@@ -281,7 +281,7 @@ std::vector<float> KUCMSGenObject::getGenPhoMatch( const reco::SuperCluster* scp
         const auto gnY = genPart.vy();
         const auto gnZ = genPart.vz();
         const auto ge = genPart.energy();
-		if( ge < 5.0 ) continue;
+		//if( ge < 5.0 ) continue;
         auto cphoEta = std::asinh((rhZ-gnZ)/hypo(rhX-gnX,rhY-gnY));
         auto cphoPhi = std::atan2(rhY-gnY,rhX-gnX);
         auto dr = std::sqrt(reco::deltaR2(genPart.eta(), genPart.phi(), cphoEta, cphoPhi ));
@@ -340,7 +340,7 @@ std::vector<float> KUCMSGenObject::getGenPartMatch( const reco::SuperCluster* sc
         const auto gnY = genPart.vy();
         const auto gnZ = genPart.vz();
         const auto ge = genPart.energy();
-		if( ge < 1.0 ) continue;
+		//if( ge < 1.0 ) continue;
         auto cphoEta = std::asinh((rhZ-gnZ)/hypo(rhX-gnX,rhY-gnY));
         auto cphoPhi = std::atan2(rhY-gnY,rhX-gnX);
         auto dr = std::sqrt(reco::deltaR2(genPart.eta(), genPart.phi(), cphoEta, cphoPhi ));
