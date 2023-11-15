@@ -31,7 +31,7 @@ options.register('globalTag','94X_mc2017_realistic_v14',VarParsing.multiplicity.
 ## processName
 options.register('processName','TREE',VarParsing.multiplicity.singleton,VarParsing.varType.string,'process name to be considered');
 
-outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_Objectified_v8.root' # ntuplizer test
+outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_Objectified_v9.root' # ntuplizer test
 
 options.register('outputFileName',outfilename,VarParsing.multiplicity.singleton,VarParsing.varType.string,'output file name created by cmsRun');
 
@@ -102,30 +102,30 @@ process.source = cms.Source("PoolSource",
 
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-10000cm'+gmsbaodsim2+'10000/162DBEEE-DC29-E911-843B-0CC47A745294.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-10000cm'+gmsbaodsim2+'10000/BCE6A6F2-A929-E911-AEA9-24BE05C63651.root',
-         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-10000cm'+gmsbaodsim2+'100000/22F81F5B-3D33-E911-906C-0CC47AD24D28.root',
+#         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-10000cm'+gmsbaodsim2+'100000/22F81F5B-3D33-E911-906C-0CC47AD24D28.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-10000cm'+gmsbaodsim2+'100000/3CDA2489-9132-E911-B4E3-0025905D1E08.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-10000cm'+gmsbaodsim2+'100000/44349E62-F131-E911-97A6-848F69FD09D7.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-1000cm'+gmsbaodsim+'270000/26A7404E-C5DA-E811-92D3-001E675A6AB8.root',
-         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-1000cm'+gmsbaodsim+'270000/66971865-6ADA-E811-A9C2-002590D9D8C0.root',
+#         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-1000cm'+gmsbaodsim+'270000/66971865-6ADA-E811-A9C2-002590D9D8C0.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-1000cm'+gmsbaodsim+'270000/6E716649-6ADA-E811-B9E5-0025901AC0FC.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-1000cm'+gmsbaodsim+'270000/A89ECEA5-C5DA-E811-AB4B-D4AE526DDB3F.root',
-         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-10cm'+gmsbaodsim+'80000/08A3D920-E5B2-E811-85C5-0CC47A4DEEE4.root',
+#         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-10cm'+gmsbaodsim+'80000/08A3D920-E5B2-E811-85C5-0CC47A4DEEE4.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-10cm'+gmsbaodsim+'80000/0C51F68D-E5B2-E811-8703-002590E39F2E.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-10cm'+gmsbaodsim+'80000/2097D13F-30B3-E811-9FB3-0025905C96EA.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-1200cm'+gmsbaodsim+'60000/605B95ED-8AD8-E811-B640-001E67A3F70E.root',
-         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-1200cm'+gmsbaodsim+'60000/68C5DD84-EAD6-E811-9028-44A842CFD60C.root',
+#         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-1200cm'+gmsbaodsim+'60000/68C5DD84-EAD6-E811-9028-44A842CFD60C.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-1200cm'+gmsbaodsim+'60000/846C6D28-D4D8-E811-A8BE-00266CFFBEB4.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-1200cm'+gmsbaodsim+'60000/8EC1497F-E9D6-E811-A390-44A842CFC98B.root',
-         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-200cm'+gmsbaodsim+'120000/ACDBAA3E-9ED8-E811-813B-1866DA89095D.root',
+#         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-200cm'+gmsbaodsim+'120000/ACDBAA3E-9ED8-E811-813B-1866DA89095D.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-200cm'+gmsbaodsim+'120000/AEA9923B-9ED8-E811-87D6-34E6D7BDDECE.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-400cm'+gmsbaodsim+'80000/301550E4-81B5-E811-8362-FA163EF08F5B.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-400cm'+gmsbaodsim+'80000/34D601E8-3CB2-E811-B2BA-24BE05C6B701.root',
-         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-400cm'+gmsbaodsim+'80000/4ACDB9DD-C0AF-E811-A364-24BE05C6D731.root',
+#         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-400cm'+gmsbaodsim+'80000/4ACDB9DD-C0AF-E811-A364-24BE05C6D731.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-400cm'+gmsbaodsim+'80000/7411AE64-81B5-E811-9F51-FA163E301A96.root',
-         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-600cm'+gmsbaodsim+'60000/E25EAAE9-A5D6-E811-8502-34E6D7E05F0E.root',
+#         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-600cm'+gmsbaodsim+'60000/E25EAAE9-A5D6-E811-8502-34E6D7E05F0E.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-600cm'+gmsbaodsim+'60000/F65FFA8E-09D7-E811-81E5-A4BF0102A4F5.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-800cm'+gmsbaodsim+'270000/B624F4E1-86D8-E811-BD73-A0369F83633E.root',
-         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-800cm'+gmsbaodsim+'270000/DE490468-30D8-E811-99AC-0025B3E015D2.root',
+#         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-800cm'+gmsbaodsim+'270000/DE490468-30D8-E811-99AC-0025B3E015D2.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-800cm'+gmsbaodsim+'80000/2C3F963F-3BB2-E811-BA81-D8D385AF8902.root',
 
          #'file:BCB550D6-CAB3-5C4F-8866-77897305A646.root',#aodpath_125_25_15k
@@ -181,14 +181,14 @@ process.source = cms.Source("PoolSource",
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(5))
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#ST
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))#TTi
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#LT
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#LT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500))#US
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(12500))#VS
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(25000))#SM
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100000))#MS
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250000))#MD
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500000))#LG
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
 
 # Set the global tag depending on the sample type
 from Configuration.AlCa.GlobalTag import GlobalTag
@@ -202,8 +202,8 @@ process.TFileService = cms.Service("TFileService", fileName = cms.string(options
 process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
    ## flags
    hasGenInfo = cms.bool(options.hasGenInfo),
-   #minEvtMet = cms.double(150.0),
-   minEvtMet = cms.double(50.0),
+   minEvtMet = cms.double(150.0),
+   #minEvtMet = cms.double(50.0),
    ## additional collections
    ## tracks
    #tracks = cms.InputTag("unpackedTracksAndVertices"),
@@ -248,8 +248,8 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
    muons = cms.InputTag("muons"),
    ## photons
    #gedPhotons = cms.InputTag("slimmedPhotons"),
-   #gedPhotons = cms.InputTag("gedPhotons"),
-   gedPhotons = cms.InputTag("photons"),
+   gedPhotons = cms.InputTag("gedPhotons"),
+   #gedPhotons = cms.InputTag("photons"),
    phoCBIDLooseMap = cms.InputTag("PhotonIDProd", "PhotonCutBasedIDLooseEM"), 
    #ootPhotons = cms.InputTag("slimmedOOTPhotons"),
    ootPhotons = cms.InputTag("ootPhotons"),
