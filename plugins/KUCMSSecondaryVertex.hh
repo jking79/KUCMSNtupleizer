@@ -96,8 +96,6 @@ private:
 KUCMSSecondaryVertex::KUCMSSecondaryVertex(const edm::ParameterSet& iConfig) :
   svTag_(iConfig.getParameter<edm::InputTag>("svSrc")) {   
 
-
-
 }//<<>>KUCMSExample::KUCMSExample( const edm::ParameterSet& iConfig, const ItemManager<bool>& cfFlag )
 
 void KUCMSSecondaryVertex::InitObject( TTree* fOutTree ){

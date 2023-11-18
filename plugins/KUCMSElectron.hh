@@ -85,6 +85,8 @@ class KUCMSElectronObject : public KUCMSObjectBase {
     bool getElectronVeto( const edm::Ref<std::vector<reco::SuperCluster>> phosc ); 
     int getIndex( float kideta, float kidphi );
 
+  std::vector<reco::GsfElectron> get_electrons();
+
     private:
 
     //std::vector<examnple> fexamples;
@@ -156,7 +158,7 @@ void KUCMSElectronObject::InitObject( TTree* fOutTree ){
 void KUCMSElectronObject::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar ){
 
 
-	iEvent.getByToken(electronsToken_, electrons_);
+    iEvent.getByToken(electronsToken_, electrons_);
     iEvent.getByToken(conversionsToken_,conversions_);
     iEvent.getByToken(beamLineToken_,beamSpot_);
 
@@ -270,5 +272,9 @@ int KUCMSElectronObject::getIndex( float kideta, float kidphi ){
 	return idx;
 
 }//<<>>uInt KUCMSElectronObject::getIndex( float kideta, float kidphi )
+
+std::vector<reco::GsfElectron> KUCMSElectronObject::get_electrons(){
+  return this->felectrons;
+}
 
 #endif

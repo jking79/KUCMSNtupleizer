@@ -32,6 +32,8 @@
 #include "KUCMSElectron.hh"
 #include "KUCMSMuon.hh"
 #include "KUCMSSecondaryVertex.hh"
+#include "KUCMSTimedSVs.hh"
+//#include "KUCMSConversions.hh"
 #include "KUCMSGenObjects.hh"
 
 using namespace std;
@@ -125,11 +127,25 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     ak4jetObj->LoadPhotonObject( photonsObj );
     ak4jetObj->LoadElectronObject( electronsObj );
 
-    //SVs
+    // SVs
     auto svsObj = new KUCMSSecondaryVertex(iConfig);
     auto svsToken = consumes<edm::View<reco::VertexCompositePtrCandidate>>(iConfig.getParameter<edm::InputTag>("svSrc"));
     svsObj->LoadSVTokens(svsToken);
+    // Timed SVs
+    auto timedSVsObj = new KUCMSTimedSVs(iConfig);
+    auto timedSVsToken = consumes<edm::View<reco::Vertex>>(iConfig.getParameter<edm::InputTag>("timedVertices"));
+    auto lowPtElectronToken = consumes<edm::View<reco::GsfElectron>>(iConfig.getParameter<edm::InputTag>("lowPtElectrons"));
+    timedSVsObj->LoadSVTokens(timedSVsToken);
+    timedSVsObj->LoadElectronTokens(lowPtElectronToken);
 
+    //Conversions
+    /*
+    auto conversionsObj = new KUCMSConversions(iConfig);
+    auto conversionToken = consumes<reco::ConversionCollection>(iConfig.getParameter<edm::InputTag>("conversions"));
+    conversionsObj->LoadConversionTokens(conversionToken);
+    conversionsObj->LoadElectronObject(electronsObj);
+    conversionsObj->LoadRecHitObject(recHitsObj);
+    */
     auto pfmetObj = new KUCMSPFMetObject( iConfig );
     auto pfmetToken = consumes<std::vector<reco::PFMET>>(iConfig.getParameter<edm::InputTag>("mets")); 
     pfmetObj->LoadPFMetTokens( pfmetToken );
@@ -143,6 +159,8 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     ObjMan.Load( "Photons", photonsObj );
     ObjMan.Load( "JetsAK4", ak4jetObj );
     ObjMan.Load( "SVs", svsObj );
+    ObjMan.Load( "TimedSVs", timedSVsObj);
+    //ObjMan.Load( "Conversions", conversionsObj );
     ObjMan.Load( "PFMet", pfmetObj );
     ObjMan.Load( "ECALRecHits", recHitsObj );
 
@@ -267,7 +285,12 @@ void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
     // -- Fill output trees ------------------------------------------
 
     if( DEBUG ) std::cout << "Select Event and Fill Tree" << std::endl;
-    if( selectedEvent() ) outTree->Fill();
+    //if( selectedEvent() ) {
+    //std::cout << "filled events" << std::endl;
+    outTree->Fill();
+    //}
+    //else 
+    //std::cout << "events not filled" << std::endl;
 
     // -- EOFun ------------------------------------------------------
     //     #ifdef THIS_IS_AN_EVENTSETUP_EXAMPLE
