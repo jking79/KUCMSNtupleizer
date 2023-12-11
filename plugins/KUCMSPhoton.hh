@@ -51,7 +51,7 @@
 #ifndef KUCMSPhotonObjectHeader
 #define KUCMSPhotonObjectHeader
 
-//#define PhotonEBUG true
+//#define PhotonDEBUG true
 #define PhotonDEBUG false
 
 using namespace edm; 
@@ -73,7 +73,7 @@ class KUCMSPhotonObject : public KUCMSObjectBase {
     void InitObject( TTree* fOutTree ); 
     // new function needed for crosstalk - EXAMPLE CLASS USED HERE FOR REFRENCE ONLY -
     void LoadRecHitObject( KUCMSEcalRecHitObject* rhObj_ ){ rhObj = rhObj_; }; // define with specific KUCMS object(s) needed 
-    void LoadGenObject( KUCMSGenObject*  genObjs_ ){ genObjs = genObjs_; };
+    void LoadGenObject( KUCMSGenObject*  genObj_ ){ genObj = genObj_; };
     void LoadElectronObject( KUCMSElectronObject* electronObj_ ){ electronObj = electronObj_; };
 
     // object processing : 1) LoadEvent prior to event loop 2) ProcessEvent during event loop via objectManager
@@ -117,7 +117,7 @@ class KUCMSPhotonObject : public KUCMSObjectBase {
 
     // Other object(s) need by this object - BASE CLASS USED HERE FOR REFRENCE ONLY -
     KUCMSEcalRecHitObject* rhObj;
-    KUCMSGenObject*  genObjs;
+    KUCMSGenObject*  genObj;
     KUCMSElectronObject* electronObj;
 
 };//<<>>class KUCMSPhoton : public KUCMSObjectBase
@@ -216,13 +216,25 @@ void KUCMSPhotonObject::InitObject( TTree* fOutTree ){
     //Branches.makeBranch("haloTaggerMVAVal","Photon_haloTaggerMVAVal",VFLOAT,"Value of MVA based beam halo tagger in the Ecal endcap (valid for pT > 200 GeV)");//
 
     Branches.makeBranch("GenIdx","Photon_genIdx",VINT);
-    Branches.makeBranch("GenDr","Photon_genDr",VFLOAT);
-    Branches.makeBranch("GenDp","Photon_genDp",VFLOAT);
-    Branches.makeBranch("GenSIdx","Photon_genSIdx",VINT);
-    Branches.makeBranch("GenSDr","Photon_genSDr",VFLOAT);
-    Branches.makeBranch("GenSDp","Photon_genSDp",VFLOAT);
+    //Branches.makeBranch("GenDr","Photon_genDr",VFLOAT);
+    //Branches.makeBranch("GenDp","Photon_genDp",VFLOAT);
+    //Branches.makeBranch("GenSIdx","Photon_genSIdx",VINT);
+    //Branches.makeBranch("GenSDr","Photon_genSDr",VFLOAT);
+    //Branches.makeBranch("GenSDp","Photon_genSDp",VFLOAT);
     Branches.makeBranch("GenLlpId","Photon_genLlpId",VFLOAT);
-    Branches.makeBranch("GenSLlpId","Photon_genSLlpId",VFLOAT);
+    //Branches.makeBranch("GenSLlpId","Photon_genSLlpId",VFLOAT);
+    Branches.makeBranch("ninovx","Photon_genSigMomVx",VFLOAT);
+    Branches.makeBranch("ninovy","Photon_genSigMomVy",VFLOAT);
+    Branches.makeBranch("ninovz","Photon_genSigMomVz",VFLOAT);
+    Branches.makeBranch("ninopx","Photon_genSigMomPx",VFLOAT);
+    Branches.makeBranch("ninopy","Photon_genSigMomPy",VFLOAT);
+    Branches.makeBranch("ninopz","Photon_genSigMomPz",VFLOAT);
+    Branches.makeBranch("ninoeta","Photon_genSigMomEta",VFLOAT);
+    Branches.makeBranch("ninophi","Photon_genSigMomPhi",VFLOAT);
+    Branches.makeBranch("ninoe","Photon_genSigMomEnergy",VFLOAT);
+    Branches.makeBranch("ninom","Photon_genSigMomMass",VFLOAT);
+    Branches.makeBranch("ninopt","Photon_genSigMomPt",VFLOAT);
+
 
     Branches.makeBranch("etaWidth","Photon_etaWidth",VFLOAT,"Width of the photon supercluster in eta");//
     Branches.makeBranch("phiWidth","Photon_phiWidth",VFLOAT,"Width of the photon supercluster in phi");//
@@ -244,11 +256,16 @@ void KUCMSPhotonObject::LoadEvent( const edm::Event& iEvent, const edm::EventSet
     //iEvent.getByToken(phoCBIDLooseMapToken_, phoCBIDLooseMap_);
     iEvent.getByToken(ootPhotonsToken_, ootPhotons_);
 
-    if( PhotonDEBUG ) std::cout << "Collecting Photons/OOTPhotons" << std::endl;
     fphotons.clear();
     phoExcluded.clear();
     phoIsOotPho.clear();
-    phoIds.clear();// indexed by pho index ( 0,1,2 ) * number of ids ( 1 current, 6? possible ) + index of ID wanted
+	phoIds.clear();
+
+    if( PhotonDEBUG ) std::cout << "Collecting Photons/OOTPhotons" << std::endl;
+    std::vector<reco::Photon> fphotons_temp;
+    std::vector<bool> phoExcluded_temp;
+    std::vector<bool> phoIsOotPho_temp;
+    //std::vector<int> phoIds_temp;// indexed by pho index ( 0,1,2 ) * number of ids ( 1 current, 6? possible ) + index of ID wanted
     for (edm::View<reco::Photon>::const_iterator itPhoton = ootPhotons_->begin(); itPhoton != ootPhotons_->end(); itPhoton++) {
         //auto idx = itPhoton - ootPhotons_->begin();//unsigned int
         //auto ootPhoRef = ootPhotons_->refAt(idx);//edm::RefToBase<reco::GsfElectron> 
@@ -273,11 +290,11 @@ void KUCMSPhotonObject::LoadEvent( const edm::Event& iEvent, const edm::EventSet
             dRmatch = deltaR( pEta, oEta, pPhi, oPhi );
             if( dRmatch < minDr ){ minDr = dRmatch; matchpt = pPt; }
         }//<<>>for( int ip; ip < nPhotons; ip++ )
-        fphotons.push_back(ootPho);
-        phoIsOotPho.push_back(true);
+        fphotons_temp.push_back(ootPho);
+        phoIsOotPho_temp.push_back(true);
         //phoIdBools.push_back((*phoCBIDLooseMap_)[ootPhoRef]);// not implimented 
-        if( dRmatch < 0.1 && oPt < matchpt ) phoExcluded.push_back(true);
-        else phoExcluded.push_back(false);
+        if( dRmatch < 0.1 && oPt < matchpt ) phoExcluded_temp.push_back(true);
+        else phoExcluded_temp.push_back(false);
     }//<<>>for( int io = 0; io < nOotPhotons; io++ )
     for (edm::View<reco::Photon>::const_iterator itPhoton = gedPhotons_->begin(); itPhoton != gedPhotons_->end(); itPhoton++) {
         //auto idx = itPhoton - gedPhotons_->begin();//unsigned int
@@ -303,12 +320,32 @@ void KUCMSPhotonObject::LoadEvent( const edm::Event& iEvent, const edm::EventSet
             dRmatch = deltaR( pEta, oEta, pPhi, oPhi );
             if( dRmatch < minDr ){ minDr = dRmatch; matchpt = oPt; }
         }//<<>>for( int ip; ip < nPhotons; ip++ )
-        fphotons.push_back(gedPho);
-        phoIsOotPho.push_back(false);
+        fphotons_temp.push_back(gedPho);
+        phoIsOotPho_temp.push_back(false);
         //phoIdBools.push_back((*phoCBIDLooseMap_)[gedPhoRef]);
-        if( dRmatch < 0.1 && pPt < matchpt ) phoExcluded.push_back(true);
-        else phoExcluded.push_back(false);
+        if( dRmatch < 0.1 && pPt < matchpt ) phoExcluded_temp.push_back(true);
+        else phoExcluded_temp.push_back(false);
     }//<<>>for( int io = 0; io < nOotPhotons; io++ )
+
+	std::map< float,int > phoOrderIndx;
+	int it = 0;
+	for( auto pho : fphotons_temp ){ 
+		float ordpt = pho.pt();
+		float iordpt = ordpt;
+		float nordpt = ordpt - 0.00002;
+		while( phoOrderIndx.count(ordpt) > 0 ){ nordpt = ( iordpt + nordpt ) / 2.0; ordpt = nordpt; }
+		phoOrderIndx[ordpt] = it;
+		it++;
+	}//<<>>for( auto pho : fphotons_temp ){
+
+	for( auto phoptit = phoOrderIndx.crbegin(); phoptit != phoOrderIndx.crend(); phoptit++ ){
+
+		fphotons.push_back(fphotons_temp[phoptit->second]);
+        phoExcluded.push_back(phoExcluded_temp[phoptit->second]);
+        phoIsOotPho.push_back(phoIsOotPho_temp[phoptit->second]);
+
+	}//<<>>for( auto phoptit = phoOrderIndx.crbegin(); phoptit != phoOrderIndx.crend(); phoptit++ )
+
 
 }//<<>>void KUCMSPhoton::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
@@ -321,12 +358,15 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
     if( PhotonDEBUG ) std::cout << " - enetering Photon loop" << std::endl;
 
     uInt phoIdx = 0;
+	scGroup scptrs;
+	std::vector<float> scptres;
     for( const auto &photon : fphotons ){
 
         Branches.fillBranch("IsOotPho",phoIsOotPho[phoIdx]);
         Branches.fillBranch("Excluded",phoExcluded[phoIdx]);
 
         const float phoPt = photon.pt();
+		if( PhotonDEBUG ) std::cout << " -- Pho# " << phoIdx << " Pt: " << phoPt << " oot: " << phoIsOotPho[phoIdx]  << std::endl;
         const float phoEnergy = photon.energy();
         const float phoPhi = photon.phi();
         const float phoEta = photon.eta();
@@ -494,24 +534,48 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
 
         // GenParticle Info for photon  -------------------------------------------------------------------
         if( cfFlag("hasGenInfo") ){
-
-            auto genInfo = genObjs->getGenPhoMatch( scptr, phoEnergy );
-            int idx = genInfo[0];
-            int sidx = genInfo[3];
-            Branches.fillBranch("GenIdx",idx);
-            Branches.fillBranch("GenDr",genInfo[1]);
-            Branches.fillBranch("GenDp",genInfo[2]);
-            Branches.fillBranch("GenSIdx",sidx);
-            Branches.fillBranch("GenSDr",genInfo[4]);
-            Branches.fillBranch("GenSDp",genInfo[5]);
-            Branches.fillBranch("GenLlpId",genInfo[6]);
-            Branches.fillBranch("GenSLlpId",genInfo[7]);
-            if( PhotonDEBUG) std::cout << " Photon Match ------------------------- " << std::endl;
-
+			scptrs.push_back(*scptr);
+			scptres.push_back(phoEnergy);
         }//<<>>if( hasGenInfo )
 
         phoIdx++;
     }//<<>>for( const auto &photon : fPhotons 
+
+	if( cfFlag("hasGenInfo") ){
+		auto genInfo = genObj->getGenPhoMatch( scptrs, scptres );
+		if( PhotonDEBUG) std::cout << " Photon Match ------------------------- " << std::endl;
+		for( auto genidx : genInfo ){  
+			Branches.fillBranch("GenIdx",genidx); 			
+			if( genidx > -1 ){
+				std::vector<float> result = genObj->getGenSigPhoInfo( genidx );
+        		Branches.fillBranch("ninovx",result[0]);
+                Branches.fillBranch("ninovy",result[1]);
+                Branches.fillBranch("ninovz",result[2]);
+                Branches.fillBranch("ninopx",result[3]);
+                Branches.fillBranch("ninopy",result[4]);
+                Branches.fillBranch("ninopz",result[5]);
+                Branches.fillBranch("ninoeta",result[6]);
+                Branches.fillBranch("ninophi",result[7]);
+                Branches.fillBranch("ninoe",result[8]);
+                Branches.fillBranch("ninom",result[9]);
+                Branches.fillBranch("ninopt",result[10]);
+                Branches.fillBranch("GenLlpId",result[11]);
+			} else {
+                Branches.fillBranch("ninovx",0.f);
+                Branches.fillBranch("ninovy",0.f);
+                Branches.fillBranch("ninovz",0.f);
+                Branches.fillBranch("ninopx",0.f);
+                Branches.fillBranch("ninopy",0.f);
+                Branches.fillBranch("ninopz",0.f);
+                Branches.fillBranch("ninoeta",0.f);
+                Branches.fillBranch("ninophi",0.f);
+                Branches.fillBranch("ninoe",0.f);
+                Branches.fillBranch("ninom",0.f);
+                Branches.fillBranch("ninopt",0.f);
+                Branches.fillBranch("GenLlpId",-1.f);
+			}//<<>>if( genidx > -1 )
+		}//<<>>for( auto genidx : genInfo )
+	}//<<>>if( cfFlag("hasGenInfo") )
 
 }//<<>>void KUCMSPhoton::ProcessEvent()
 

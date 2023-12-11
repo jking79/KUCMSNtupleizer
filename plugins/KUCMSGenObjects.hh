@@ -43,7 +43,7 @@
 #ifndef KUCMSGenObjectHeader
 #define KUCMSGenObjectHeader
 
-//#define GenEBUG true
+//#define GenDEBUG true
 #define GenDEBUG false
 
 using namespace edm; 
@@ -92,19 +92,24 @@ class KUCMSGenObject : public KUCMSObjectBase {
     int llpGenChaseP( const reco::GenParticle kid, int depth );
     void kidChase( std::vector<reco::CandidatePtr> kids, float vx, float vy, float vz );
     std::vector<float> kidTOFChain( std::vector<reco::CandidatePtr> kids, float cx, float cy, float cz  );
+	// old single reco part gen matching
     std::vector<float> getGenPartMatch( const reco::SuperCluster* scptr, float pt );
-    std::vector<float> getGenPhoMatch( const reco::SuperCluster* scptr, float pt );
     std::vector<float> getGenJetInfo( float jetEta, float jetPhi, float jetPt );
+	// new exclusive gen matching
+	std::vector<int> getGenMatch( const std::vector<reco::SuperCluster> scptrs, std::vector<float> energies );
+	std::vector<int> getGenPhoMatch( const std::vector<reco::SuperCluster> scptrs, std::vector<float> energies );
+	std::vector<int> getGenMatch( const std::vector<reco::SuperCluster> scptrs, std::vector<float> energies, int select );
+    std::vector<float> getGenSigPhoInfo( uInt genIndex );
 
     private:
 
     std::vector<reco::GenParticle> fgenparts;
     std::vector<int> fgenpartllp;
     std::vector<reco::GenJet> fgenjets;
-    std::vector<reco::GenParticle> fgjquarks;
-    std::vector<int> fgjquarksllp;
-    std::vector<reco::GenParticle> fgenallpho;
-    std::vector<int> fgenallphollp;
+    //std::vector<reco::GenParticle> fgjquarks;
+    //std::vector<int> fgjquarksllp;
+    //std::vector<reco::GenParticle> fgenallpho;
+    //std::vector<int> fgenallphollp;
 
     // genEvtInfo
     //const edm::InputTag genEvtInfoTag;
@@ -161,9 +166,15 @@ void KUCMSGenObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("genPx","Gen_px",VFLOAT);
     Branches.makeBranch("genPy","Gen_py",VFLOAT);
     Branches.makeBranch("genPz","Gen_pz",VFLOAT);
+    Branches.makeBranch("genVx","Gen_vx",VFLOAT);
+    Branches.makeBranch("genVy","Gen_vy",VFLOAT);
+    Branches.makeBranch("genVz","Gen_vz",VFLOAT);
     Branches.makeBranch("genPdgId","Gen_pdgId",VUINT);
     Branches.makeBranch("genWgt","Evt_genWgt",FLOAT);
     Branches.makeBranch("genSusId","Gen_susId",VINT);
+    Branches.makeBranch("genStatus","Gen_status",VBOOL);
+    Branches.makeBranch("genCharge","Gen_charge",VINT);
+    Branches.makeBranch("genMass","Gen_mass",VFLOAT);
 
     Branches.attachBranches(fOutTree);
 
@@ -171,7 +182,7 @@ void KUCMSGenObject::InitObject( TTree* fOutTree ){
 
 void KUCMSGenObject::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar ){
 
-    // ECAL RECHITS
+    if( GenDEBUG ) std::cout << "Getting gen tokens" << std::endl;
 
     iEvent.getByToken(genEvtInfoToken_, genEvtInfo_);
     iEvent.getByToken(gent0Token_, gent0_);
@@ -180,35 +191,37 @@ void KUCMSGenObject::LoadEvent( const edm::Event& iEvent, const edm::EventSetup&
     iEvent.getByToken(genParticlesToken_, genParticles_);
     iEvent.getByToken(genJetsToken_, genJets_);
 
-    if( GenDEBUG ) std::cout << "Collecting Gens" << std::endl;
-
     fgenparts.clear();
     fgenpartllp.clear();
     fgenjets.clear();
-    fgjquarks.clear();
-    fgjquarksllp.clear();
-    fgenallpho.clear();
-    fgenallphollp.clear();
+    //fgjquarks.clear();
+    //fgjquarksllp.clear();
+    //fgenallpho.clear();
+    //fgenallphollp.clear();
     int nGenPart(0);
 
     if( GenDEBUG ) std::cout << "Collecting Gen Particles" << std::endl;
     for( const auto &genPart : *genParticles_ ){
 
         if( genPart.energy() < cfPrm("minGenE") ) continue;
-        auto genPartID = llpGenChaseP(genPart,0);
+        auto genPartSUSID = llpGenChaseP(genPart,0);
         nGenPart++;
-        if( genPart.pdgId() == 22 ){
-			fgenallpho.push_back(genPart);
-			fgenallphollp.push_back(genPartID);
-		}//<<>>if( genPart.pdgId() == 22 )
         if( genPart.status() == 1 ){
             fgenparts.push_back(genPart);
-            fgenpartllp.push_back(genPartID);
-        }//<<>>if( genPart.isLastCopy() )
-		else if( genPart.pdgId() < 9 ){
-			fgjquarks.push_back(genPart);
-            fgjquarksllp.push_back(genPartID);
-		}//<<>>else if( genpart.pdgId() < 9 && genPartID < 22 )
+            fgenpartllp.push_back(genPartSUSID);
+            if( GenDEBUG && genPartSUSID == 22 ) std::cout << "Found genParton signal photon" << std::endl;
+        } else {
+			//bool isPhoton( genPart.pdgId() == 22 );
+            bool isQuark( genPart.pdgId() < 9 );
+            //bool isNtlino( genPart.pdgId() == 1000022 );
+            //bool isChrino( genPart.pdgId() == 1000024 );
+			//if( GenDEBUG && isNtlino ) std::cout << "Found genParton isNtlino" << std::endl;
+			//bool keep( isPhoton || isQuark );
+        	if( isQuark ){
+            	fgenparts.push_back(genPart);
+            	fgenpartllp.push_back(genPartSUSID);
+        	}//<<>>if( genPart.pdgId() == 22 )
+		}//<<>> else if( genPart.status() == 1 )
 
     }//<<>>for(const auto& genPart : *genParticles_ )
 
@@ -223,8 +236,9 @@ void KUCMSGenObject::ProcessEvent( ItemManager<float>& geVar ){
 
     Branches.clearBranches();
 
-    if( GenDEBUG ) std::cout << " - enetering Gen loop" << std::endl;
+    //if( GenDEBUG ) std::cout << " - enetering Gen loop" << std::endl;
 
+	int nGenParts = 0;
     for (const auto & genpart : fgenparts ){
 
         const float genPt = genpart.pt();
@@ -235,8 +249,16 @@ void KUCMSGenObject::ProcessEvent( ItemManager<float>& geVar ){
         const float genPx = genpart.px();
         const float genPy = genpart.py();
         const float genPz = genpart.pz();
-		const int genSusId = llpGenChaseP( genpart, 0 );
-		if( GenDEBUG ) std::cout << "GenPart : genSusId = " << genSusId << std::endl;;
+        const bool genStatus = genpart.status();
+		//const int genSusId = llpGenChaseP( genpart, 0 );
+        const int genSusId = fgenpartllp[nGenParts];
+        const int genCharge = genpart.charge();
+        const float genVx = genpart.vx();
+        const float genVy = genpart.vy();
+        const float genVz = genpart.vz();
+        const float genMass = genpart.mass();		
+
+		//if( GenDEBUG ) std::cout << "GenPart : genSusId = " << genSusId << std::endl;;
 
         Branches.fillBranch("genPt",genPt);
         Branches.fillBranch("genEnergy",genEnergy);
@@ -246,8 +268,15 @@ void KUCMSGenObject::ProcessEvent( ItemManager<float>& geVar ){
         Branches.fillBranch("genPx",genPx);
         Branches.fillBranch("genPy",genPy);
         Branches.fillBranch("genPz",genPz);
+        Branches.fillBranch("genVx",genVx);
+        Branches.fillBranch("genVy",genVy);
+        Branches.fillBranch("genVz",genVz);
         Branches.fillBranch("genSusId",genSusId);
+        Branches.fillBranch("genStatus",genStatus);
+        Branches.fillBranch("genCharge",genCharge);
+        Branches.fillBranch("genMass",genMass);
 
+		nGenParts++;
     }//<<>> for (const auto genpart : fgenparts )
 
     float wgt = genEvtInfo_->weight();
@@ -257,69 +286,104 @@ void KUCMSGenObject::ProcessEvent( ItemManager<float>& geVar ){
 
 void KUCMSGenObject::EndJobs(){}
 
-std::vector<float> KUCMSGenObject::getGenPhoMatch( const reco::SuperCluster* scptr, float energy ){
+std::vector<int> KUCMSGenObject::getGenPhoMatch( const std::vector<reco::SuperCluster> sc, std::vector<float> reco_e ){
+
+	// gen matching to supcer clusters froom reeco phtons to gen photons
+	return getGenMatch( sc, reco_e, 22 );
+
+}//<<>>std::vector<int> KUCMSGenObject::getGenPhoMatch( const std::vector<reco::SuperCluster*> sc, std::vectro<float> reco_e )
+
+std::vector<int> KUCMSGenObject::getGenMatch( const std::vector<reco::SuperCluster> sc, std::vector<float> reco_e ){
+
+	// matchoing any particle :: matching valid for nutral particlees only
+	return getGenMatch( sc, reco_e, 0 );
+
+}//<<>>std::vector<int> KUCMSGenObject::getGenMatch( const std::vector<reco::SuperCluster*> sc, std::vectro<float> reco_e )
+
+std::vector<int> KUCMSGenObject::getGenMatch( const std::vector<reco::SuperCluster> sc, std::vector<float> reco_e, int select ){
 
     // GenParticle Info   -------------------------------------------------------------------
-    if( GenDEBUG ) std::cout << "Getting phoGenParton Information" << std::endl;
-    // set defaults for no match here
-    vector<float> results;
-    float minDr(0.3);
-    float minSDr(0.4);
-    float minRe(-1.0);
-    float minSRe(-1.0);
-    float llpId(-1.0);
-    float llpSId(-1.0);
-    int matchedIdx(-10);// 1
-    int matchedSIdx(-10);// 1
-    int index(0);
-    for(const auto & genPart : fgenallpho ){
+    if( GenDEBUG ) std::cout << "Getting phoGenParton Match Information" << std::endl;
+	// code caclutes eta & phi of the momentum vector requird for a nuetral particle 
+	// produced at a gen particles production vertix to cause the given supercluster and compares
+	// this to the actual gen particles mometum vectors eta & phi to find best, exclusive, match
+	// between a reco particle with that supercluster and a gen particle
 
-        const auto rhX = scptr->x();
-        const auto rhY = scptr->y();
-        const auto rhZ = scptr->z();
-        const auto gnX = genPart.vx();
-        const auto gnY = genPart.vy();
-        const auto gnZ = genPart.vz();
-        const auto ge = genPart.energy();
-		//if( ge < 5.0 ) continue;
-        auto cphoEta = std::asinh((rhZ-gnZ)/hypo(rhX-gnX,rhY-gnY));
-        auto cphoPhi = std::atan2(rhY-gnY,rhX-gnX);
-        auto dr = std::sqrt(reco::deltaR2(genPart.eta(), genPart.phi(), cphoEta, cphoPhi ));
-        auto re = energy/ge;
-        if( dr < minDr ){
-            minDr = dr;
-            minRe = re;
-            matchedIdx = index;
-			llpId = fgenallphollp[index];
-        } else if( dr < minSDr ){
-            minSDr = dr;
-            minSRe = re;
-            matchedSIdx = index;
-            llpSId = fgenallphollp[index];
-        }//<<>>if( dr < minDr && dp < minDp )
-        index++;
+    std::vector<int> genPartIndx;
+    std::vector<float> genMDR;
+	std::vector<int> genRecoIndx;
+	float drthres = 0.4;
+	int nGenPart = fgenparts.size();
+    for( int idx = 0; idx < nGenPart; idx++ ){
+		if( select != 0 && std::abs(fgenparts[idx].pdgId()) != select ) continue;
+        genPartIndx.push_back(idx);
+        genMDR.push_back(drthres);
+        genRecoIndx.push_back(-9);
+    }//<<>>for( int idx = 0; idx < nGenPart; idx++ )
 
-    }//<<>>for(const auto& genPart : fgenparts  ) 
+    int nSCPtrs = sc.size();
+	int nGPIs = genPartIndx.size();
+    std::vector<int> recoPartIndx;
+    for( int it = 0; it < nSCPtrs; it++ ){ recoPartIndx.push_back(-1); }
+    bool done = false;
+    int advance = 0;
+    while( not done ){
 
-    float matDr(-1.0), matRe(-1.0), matSDr(-1.0), matSRe(-1.0);
-    if( matchedIdx >=0 ){ matDr = minDr; matRe = minRe; matSDr = minSDr; matSRe = minSRe; }
+		if( GenDEBUG ) std::cout << " - Finding  Matches " << std::endl;
+        for( int it = advance; it < nSCPtrs; it++ ){
+            for( int pgidx = 0; pgidx < nGPIs; pgidx++ ){
+				//if( GenDEBUG ) std::cout << " -- Getting sc info " << std::endl;
+				auto partidx = genPartIndx[pgidx];
+        		const auto rhX = sc[it].x();
+        		const auto rhY = sc[it].y();
+        		const auto rhZ = sc[it].z();
+                const auto rhe = reco_e[it];
+                //if( GenDEBUG ) std::cout << " -- Getting genpart info " << std::endl;
+                const auto gnEta = fgenparts[partidx].eta();
+                const auto gnPhi = fgenparts[partidx].phi();
+        		const auto gnX = fgenparts[partidx].vx();
+        		const auto gnY = fgenparts[partidx].vy();
+        		const auto gnZ = fgenparts[partidx].vz();
+        		const auto ge = fgenparts[partidx].energy();
+                //if( GenDEBUG ) std::cout << " -- calc dr match " << std::endl;
+        		float cmEta = std::asinh((rhZ-gnZ)/hypo(rhX-gnX,rhY-gnY));
+        		float cmPhi = std::atan2(rhY-gnY,rhX-gnX);
+        		float dr = std::sqrt(reco::deltaR2( gnEta, gnPhi, cmEta, cmPhi ));
+                if( dr < genMDR[pgidx] ){ genMDR[pgidx] = dr; genRecoIndx[pgidx] = it; }
+            }//<<>>for( int pgidx = 0; pgidx < genSigPhoIdx.size(); pgidx++ )
+        }//<<>>for( int it = 0; it < nSCPtrs; it++ )
+        bool unassigned = false;
+		if( GenDEBUG ) std::cout << " - Checking Dup Matches " << std::endl;
+        for( long unsigned int pgidx = 0; pgidx < genMDR.size(); pgidx++ ){
+            for( long unsigned int pgidx2 = pgidx+1; pgidx2 < genMDR.size(); pgidx2++ ){
+                if( ( genRecoIndx[pgidx] != -9 ) && ( genRecoIndx[pgidx] == genRecoIndx[pgidx2] ) ){
+                    unassigned = true;
+                    if( genMDR[pgidx2] >= genMDR[pgidx] ){ genRecoIndx[pgidx2] = -9; genMDR[pgidx2] = drthres; }
+                    else { genRecoIndx[pgidx] = -9; genMDR[pgidx] = drthres; }
+                }//<<<>>if( genPhoIndx[pgidx] == genPhoIndx[pgidx2] )
+            }//<<>>for( int pgidx2 = pgidx; pgidx2 < genGenPhoMDR.size(); pgidx2++ )
+        }//<<>>for( int pgidx = 0; pgidx < genGenPhoMDR.size(); pgidx++ )
+		if( GenDEBUG ) std::cout << " - Checking for advancment and done " << std::endl;
+        if( unassigned ) advance++; else done = true;
+		if( advance == nSCPtrs ) done = true;
 
-    results.push_back( matchedIdx );
-    results.push_back( matDr );
-    results.push_back( matRe );
-    results.push_back( matchedSIdx );
-    results.push_back( matSDr );
-    results.push_back( matSRe );
-    results.push_back( llpId );
-    results.push_back( llpSId );
-    return results;
+    }//<<>>while()
+    if( GenDEBUG ) std::cout << " - Creating Reco matched gen part index list " << std::endl;
+    for( long unsigned int iter = 0; iter < genRecoIndx.size(); iter++ ){
+        if( genRecoIndx[iter] != -9 ) recoPartIndx[genRecoIndx[iter]] = genPartIndx[iter];
+    }//<<>>for( int iter = 0; iter < genRecoIndx.size(); iter++ )
+    if( GenDEBUG ){ std::cout << " -- dRLIST: #" << nGPIs << " "; for( auto it : genMDR ) std::cout << it << " "; std::cout << std::endl; }
+	if( GenDEBUG ){ std::cout << " -- IdLIST: #" << nSCPtrs << " "; for( auto it : recoPartIndx ) std::cout << it << " "; std::cout << std::endl; }
+	if( GenDEBUG ) std::cout << " - Done with Gen Matching" << std::endl;
+    return recoPartIndx;
 
 }//<<>>getGenPhoMatch( reco::SuperClusterCollection *scptr, std::vector<reco::GenParticle> fgenparts )
 
 std::vector<float> KUCMSGenObject::getGenPartMatch( const reco::SuperCluster* scptr, float energy ){
 
     // GenParticle Info   -------------------------------------------------------------------
-    if( GenDEBUG ) std::cout << "Getting phoGenParton Information" << std::endl;
+    // best match by dr for given SC to a gen particle ( exclusive not guaranteed )
+    if( GenDEBUG ) std::cout << "Getting phoGenParton Information Single" << std::endl;
     // set defaults for no match here
     vector<float> results;
     float minDr(0.3);
@@ -340,6 +404,7 @@ std::vector<float> KUCMSGenObject::getGenPartMatch( const reco::SuperCluster* sc
         const auto gnY = genPart.vy();
         const auto gnZ = genPart.vz();
         const auto ge = genPart.energy();
+		//if( GenDEBUG ) std::cout << " GenPart: " << gnX << " " << gnY << " " << gnZ << std::endl;
 		//if( ge < 1.0 ) continue;
         auto cphoEta = std::asinh((rhZ-gnZ)/hypo(rhX-gnX,rhY-gnY));
         auto cphoPhi = std::atan2(rhY-gnY,rhX-gnX);
@@ -374,6 +439,32 @@ std::vector<float> KUCMSGenObject::getGenPartMatch( const reco::SuperCluster* sc
     return results;
 
 }//<<>>getGenPartMatch( reco::SuperClusterCollection *scptr, std::vector<reco::GenParticle> fgenparts )
+
+std::vector<float> KUCMSGenObject::getGenSigPhoInfo( uInt genIndex ){
+
+	std::vector<float> result( 12, 0.0 );
+    auto gensusid = fgenpartllp[genIndex];
+	result[11] = gensusid;
+	if( gensusid == 22 ){
+		
+		auto nino = fgenparts[genIndex].mother();
+		result[0] = nino->vx();
+        result[1] = nino->vy();
+        result[2] = nino->vz();
+        result[3] = nino->px();
+        result[4] = nino->py();
+        result[5] = nino->pz();
+        result[6] = nino->eta();
+        result[7] = nino->phi();
+        result[8] = nino->energy();
+        result[9] = nino->mass();	
+        result[10] = nino->pt();	
+
+	}//<<>>if( gensusid == 22 )
+
+	return result;
+
+}//<<>>std::vector<float> KUCMSGenObject::getGenSigPhoInfo( uInt genIndex )
 
 std::vector<float> KUCMSGenObject::kidTOFChain( std::vector<reco::CandidatePtr> kids, float cx, float cy, float cz  ){
 // redo this function to give tof and impact angle for input gen particle
@@ -718,8 +809,9 @@ std::vector<float> KUCMSGenObject::getGenJetInfo( float jetEta, float jetPhi, fl
     float gRe(-1.0);
     int mIdx(-1);
     int idx(0);
-    for(const auto &genJet : fgjquarks ){
+    for(const auto &genJet : fgenparts ){
 
+		if( genJet.pdgId() > 9 ){ idx++; continue; }
         auto gjeta = genJet.eta();
         auto gjphi = genJet.phi();
         auto gje = genJet.energy();
@@ -735,13 +827,13 @@ std::vector<float> KUCMSGenObject::getGenJetInfo( float jetEta, float jetPhi, fl
 
     }//<<>>for(const auto& genJet : fgenjets ) 
 
-    if( mIdx >= 0 ){ genJetLLP = fgjquarksllp[mIdx]; }
+    if( mIdx >= 0 ){ genJetLLP = fgenpartllp[mIdx]; }
     else{ genJetLLP = 35; }
 
     if( matchedIdx >= 0 ){
 
         auto genJet = fgenjets[matchedIdx];
-        if( GenDEBUG ) std::cout << " --- Jet-GenJet dR match : " << goodDr << std::endl;
+        //if( GenDEBUG ) std::cout << " --- Jet-GenJet dR match : " << goodDr << std::endl;
 
         //auto nSources = genJet.numberOfSourceCandidatePtrs();
         auto kids = genJet.daughterPtrVector();
@@ -752,15 +844,15 @@ std::vector<float> KUCMSGenObject::getGenJetInfo( float jetEta, float jetPhi, fl
         auto tofcor = hypo( cx, cy, cz )/SOL;
         //if( GenDEBUG ) kidChase( kids, vtxX, vtxY, vtxZ );
         auto genKidInfo = kidTOFChain( kids, cx, cy, cz );
-        if( GenDEBUG ) std::cout << " - genJet GenTime noTOF : " << genKidInfo[0] << " rhPos: " << cx;
-        if( GenDEBUG ) std::cout << "," << cy << "," << cz << std::endl;
+        //if( GenDEBUG ) std::cout << " - genJet GenTime noTOF : " << genKidInfo[0] << " rhPos: " << cx;
+        //if( GenDEBUG ) std::cout << "," << cy << "," << cz << std::endl;
         genEta = genJet.eta();
         genPhi = genJet.phi();
         if( genKidInfo[0] > 25.0 ) genTime = -28.0;
         else if( genKidInfo[0] > -25.0 ) genTime = genKidInfo[0]-tofcor;
         else genTime = -27.0;
         genImpactAngle = genKidInfo[1];
-        if( GenDEBUG ) std::cout << " - genJet GenTime : " << genTime << " Angle: " << genImpactAngle << std::endl;
+        //if( GenDEBUG ) std::cout << " - genJet GenTime : " << genTime << " Angle: " << genImpactAngle << std::endl;
         genPt = genJet.pt();
         genEnergy = genJet.energy();
         genEMFrac = (genJet.chargedEmEnergy() + genJet.neutralEmEnergy())/genEnergy;
@@ -772,7 +864,7 @@ std::vector<float> KUCMSGenObject::getGenJetInfo( float jetEta, float jetPhi, fl
         //genLLPPurity = genKidInfo[5];
         //genNKids = genKidInfo[6];
         genTOF = tofcor;
-        if( GenDEBUG ) std::cout << " -- Energy : " << genEnergy << " Pt : " << genPt << " EMfrac : " << genEMFrac << std::endl;
+        //if( GenDEBUG ) std::cout << " -- Energy : " << genEnergy << " Pt : " << genPt << " EMfrac : " << genEMFrac << std::endl;
 
     }//<<>>if( matchedIdx >= 0 )i
 
