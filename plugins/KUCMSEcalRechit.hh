@@ -297,7 +297,8 @@ void KUCMSEcalRecHitObject::InitObject( TTree* fOutTree ){
 
     Branches.makeBranch("Energy","ECALRecHit_energy",VFLOAT);
     Branches.makeBranch("Time","ECALRecHit_time",VFLOAT);
-    Branches.makeBranch("TOF","ECALRecHit_TOF",VFLOAT);
+    Branches.makeBranch("TOFpv","ECALRecHit_pvTOF",VFLOAT);
+    Branches.makeBranch("TOF0","ECALRecHit_0TOF",VFLOAT);
     Branches.makeBranch("ID","ECALRecHit_ID",VUINT);
     Branches.makeBranch("isOOT","ECALRecHit_isOOT",VBOOL);
     Branches.makeBranch("SwCross","ECALRecHit_swCross",VFLOAT);
@@ -404,11 +405,12 @@ void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
         const float rhTime = recHit.time();
         const bool rhIsOOT = recHit.checkFlag(EcalRecHit::kOutOfTime);
         const float rhEnergy = recHit.energy();
-        const float rhAdjTime = rhTime-d_rh;  // Note : Margret adds d_rh to the time in her code & subtracts d_pv ( or TOF )
+        //const float rhAdjTime = rhTime-d_rh;  // Note : Margret adds d_rh to the time in her code & subtracts d_pv ( or TOF )
 
         Branches.fillBranch("ID",recHitID);
-        Branches.fillBranch("TOF",d_pv);
-        Branches.fillBranch("Time",rhAdjTime);
+        Branches.fillBranch("TOFpv",d_pv);
+        Branches.fillBranch("TOF0",d_rh);
+        Branches.fillBranch("Time",rhTime);
         Branches.fillBranch("isOOT",rhIsOOT);
         Branches.fillBranch("Energy",rhEnergy);
         Branches.fillBranch("SwCross",swisscross);
