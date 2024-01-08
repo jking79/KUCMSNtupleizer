@@ -276,7 +276,13 @@ void KUCMSPhotonObject::LoadEvent( const edm::Event& iEvent, const edm::EventSet
         auto minTime = std::abs(phoSeedTime) > cfPrm("phoMinSeedTime");
         auto minEnergy = ootPho.energy() < cfPrm("minPhoE");
         if( minPhoPt || minTime || minEnergy ) continue;
-        double minDr(0.5);
+        fphotons_temp.push_back(ootPho);
+        phoIsOotPho_temp.push_back(true);
+        //phoIdBools.push_back((*phoCBIDLooseMap_)[ootPhoRef]);// not implimented 
+/*
+		// Set photon excluded via dr and pt critera
+		//
+        double minDr(1.0);
         double dRmatch(10.0);
         float matchpt(0);
         auto oEta = ootPho.eta();
@@ -290,11 +296,14 @@ void KUCMSPhotonObject::LoadEvent( const edm::Event& iEvent, const edm::EventSet
             dRmatch = deltaR( pEta, oEta, pPhi, oPhi );
             if( dRmatch < minDr ){ minDr = dRmatch; matchpt = pPt; }
         }//<<>>for( int ip; ip < nPhotons; ip++ )
-        fphotons_temp.push_back(ootPho);
-        phoIsOotPho_temp.push_back(true);
-        //phoIdBools.push_back((*phoCBIDLooseMap_)[ootPhoRef]);// not implimented 
-        if( dRmatch < 0.1 && oPt < matchpt ) phoExcluded_temp.push_back(true);
+        if( dRmatch < 0.3 && oPt < matchpt ) phoExcluded_temp.push_back(true);
         else phoExcluded_temp.push_back(false);
+		////////////////////////////////////
+*/
+		// Set photon excluded false always
+		//
+		phoExcluded_temp.push_back(false);
+		///////////////////////////////////
     }//<<>>for( int io = 0; io < nOotPhotons; io++ )
     for (edm::View<reco::Photon>::const_iterator itPhoton = gedPhotons_->begin(); itPhoton != gedPhotons_->end(); itPhoton++) {
         //auto idx = itPhoton - gedPhotons_->begin();//unsigned int
@@ -306,7 +315,13 @@ void KUCMSPhotonObject::LoadEvent( const edm::Event& iEvent, const edm::EventSet
         auto minTime = std::abs(phoSeedTime) > cfPrm("phoMinSeedTime");
         auto minEnergy = gedPho.energy() < cfPrm("minPhoE");
         if( minPt || minTime || minEnergy ) continue;
-        double minDr(0.5);
+        fphotons_temp.push_back(gedPho);
+        phoIsOotPho_temp.push_back(false);
+        //phoIdBools.push_back((*phoCBIDLooseMap_)[gedPhoRef]);
+/*
+		// Set photon excluded via dr and pt critera
+		//
+        double minDr(1.0);
         double dRmatch(10.0);
         float matchpt(0);
         auto pEta = gedPho.eta();
@@ -320,11 +335,28 @@ void KUCMSPhotonObject::LoadEvent( const edm::Event& iEvent, const edm::EventSet
             dRmatch = deltaR( pEta, oEta, pPhi, oPhi );
             if( dRmatch < minDr ){ minDr = dRmatch; matchpt = oPt; }
         }//<<>>for( int ip; ip < nPhotons; ip++ )
-        fphotons_temp.push_back(gedPho);
-        phoIsOotPho_temp.push_back(false);
-        //phoIdBools.push_back((*phoCBIDLooseMap_)[gedPhoRef]);
-        if( dRmatch < 0.1 && pPt < matchpt ) phoExcluded_temp.push_back(true);
+        if( dRmatch < 0.3 && pPt < matchpt ) phoExcluded_temp.push_back(true);
         else phoExcluded_temp.push_back(false);
+		/////////////////////////////////////////
+*/
+        // Set photon excluded if dr match to oot photon
+        //
+        double minDr(1.0);
+        double dRmatch(10.0);
+        float matchpt(0);
+        auto pEta = gedPho.eta();
+        auto pPhi = gedPho.phi();
+        for( const auto &ootPho : *ootPhotons_ ){
+            //if( cfFlag("onlyEB") && ootPho.isEE() ) continue;
+            auto oEta = ootPho.eta();
+            auto oPhi = ootPho.phi();
+            dRmatch = deltaR( pEta, oEta, pPhi, oPhi );
+            if( dRmatch < minDr ){ minDr = dRmatch; }
+        }//<<>>for( int ip; ip < nPhotons; ip++ )
+        if( dRmatch < 0.3 ) phoExcluded_temp.push_back(true);
+        else phoExcluded_temp.push_back(false);
+		///////////////////////////////////////
+
     }//<<>>for( int io = 0; io < nOotPhotons; io++ )
 
 	std::map< float,int > phoOrderIndx;
