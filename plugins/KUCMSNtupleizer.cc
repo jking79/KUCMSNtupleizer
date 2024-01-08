@@ -152,18 +152,20 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     pfmetObj->LoadPhotonObject( photonsObj );
     
     if( DEBUG ) std::cout << "Loading Object Manager" << std::endl;
-
+    /*
     ObjMan.Load( "EventInfo", eventInfoObj );
     ObjMan.Load( "Electrons", electronsObj );
     ObjMan.Load( "Muons", muonsObj );
     ObjMan.Load( "Photons", photonsObj );
     ObjMan.Load( "JetsAK4", ak4jetObj );
     ObjMan.Load( "SVs", svsObj );
+    */
     ObjMan.Load( "TimedSVs", timedSVsObj);
     //ObjMan.Load( "Conversions", conversionsObj );
+    /*
     ObjMan.Load( "PFMet", pfmetObj );
     ObjMan.Load( "ECALRecHits", recHitsObj );
-
+    */
     if( cfFlag("hasGenInfo") ){
 
         if( DEBUG ) std::cout << "Create & Load Gen Information" << std::endl;
@@ -186,6 +188,7 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
 	electronsObj->LoadGenObject( genObjs );
         photonsObj->LoadGenObject( genObjs );
         ak4jetObj->LoadGenObject( genObjs );
+	timedSVsObj->LoadGenObject( genObjs );
 
         // Load gen object into objman last, should be no dependence with other objects
         ObjMan.Load( "GenObjects", genObjs );

@@ -57,6 +57,12 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 
+#process.load('RecoEgamma.EgammaPhotonProducers.conversionTrackSequence_cff')
+#from RecoEgamma.EgammaPhotonProducers.conversionTrackSequence_cff import *
+process.load('RecoEgamma.EgammaPhotonProducers.allTimingConversions_cfi')
+
+process.load('TimingWithSVs.SVsTimingProducer.svproducer_cfg')
+
 ## Message Logger settings
 process.load("FWCore.MessageService.MessageLogger_cfi")
 #process.MessageLogger.destinations = ['cout', 'cerr']
@@ -80,7 +86,7 @@ gmsbaodsim2 = '_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v2/
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
 
-		'root://cmsxrootd-site.fnal.gov//store/mc/RunIIFall17DRPremix/GMSB_L-100TeV_Ctau-200cm_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/80000/58DCC006-3FB2-E811-94AE-AC1F6B0DE454.root',	
+        #'root://cmsxrootd-site.fnal.gov//store/mc/RunIIFall17DRPremix/GMSB_L-100TeV_Ctau-200cm_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/80000/58DCC006-3FB2-E811-94AE-AC1F6B0DE454.root',	
 
 		  #'file:jwk_reco_data_DIGI2RAW.root'),
 
@@ -146,20 +152,20 @@ process.source = cms.Source("PoolSource",
          #aodpath_125_25_15k+'240000/6EA51191-B27D-B547-920E-66EF94292870.root',
 
 		  ## EGamma
+        '''
+        '/store/data/Run2018D/EGamma/MINIAOD/22Jan2019-v2/70001/F0FE59FC-F29E-904B-A1BC-817C1CB09A7E.root'
 
-        #'/store/data/Run2018D/EGamma/MINIAOD/22Jan2019-v2/70001/F0FE59FC-F29E-904B-A1BC-817C1CB09A7E.root'
-
-        #'/store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/100000/062A29F3-416F-6A43-8E0A-90BE80607677.root',
-        #'/store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/100000/0632DF20-D859-EE4B-8FC4-3ECC56B2987D.root',
-        #'/store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/100000/0685BE81-54CF-3A4C-8D66-8E0E059D263F.root',
-        #'/store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/100000/06CBEAC6-F3C1-BE48-96D9-A7EF3CF42048.root',
-        #'/store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/100000/06CC5637-77D3-8145-B3BD-0AF5F16410AB.root',
-        #'/store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/100000/06DE38F0-4330-C546-8D1A-0865C50FAA14.root',
-        #'/store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/100000/071F2728-A0CA-9446-A1E3-38B4FB08D6AE.root',
-        #'/store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/100000/077E7C54-C588-F642-BBA8-0960D5FD7A96.root',
-        #'/store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/100000/07971C26-63F0-D943-BA77-88D6F636F780.root',
-        #'/store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/100000/07A40762-F4E1-9E4D-8750-7DD65EA01B8A.root',
-
+        '/store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/100000/062A29F3-416F-6A43-8E0A-90BE80607677.root',
+        '/store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/100000/0632DF20-D859-EE4B-8FC4-3ECC56B2987D.root',
+        '/store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/100000/0685BE81-54CF-3A4C-8D66-8E0E059D263F.root',
+        '/store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/100000/06CBEAC6-F3C1-BE48-96D9-A7EF3CF42048.root',
+        '/store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/100000/06CC5637-77D3-8145-B3BD-0AF5F16410AB.root',
+        '/store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/100000/06DE38F0-4330-C546-8D1A-0865C50FAA14.root',
+        '/store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/100000/071F2728-A0CA-9446-A1E3-38B4FB08D6AE.root',
+        '/store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/100000/077E7C54-C588-F642-BBA8-0960D5FD7A96.root',
+        '/store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/100000/07971C26-63F0-D943-BA77-88D6F636F780.root',
+        '/store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/100000/07A40762-F4E1-9E4D-8750-7DD65EA01B8A.root',
+        '''
 		  ## JetHT
 
         #'/store/data/Run2018A/JetHT/MINIAOD/UL2018_MiniAODv2-v1/260000/00B87525-94D1-C741-9B03-00528106D15A.root',
@@ -210,6 +216,8 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
    #vertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
    vertices = cms.InputTag("offlinePrimaryVertices"),
    svSrc = cms.InputTag("inclusiveCandidateSecondaryVertices"),
+   timedVertices = cms.InputTag("timedSecondaryVertices"),
+   #allConversions = cms.InputTag("allConversions"),
    ## pfcandidates
    #pfcandidates = cms.InputTag("packedPFCandidates"),
    pfcandidates = cms.InputTag("particleFlow"),
@@ -221,7 +229,7 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
    #rho = cms.InputTag("fixedGridRhoFastjetAll"), #fixedGridRhoAll
    rho = cms.InputTag("fixedGridRhoAll"),
    ## conversions
-   conversions = cms.InputTag("allConversions"), 
+   conversions = cms.InputTag("allTimingConversions", "timing"), 
    ## beamSpot
    beamSpot = cms.InputTag("offlineBeamSpot"),
    ## trigger
@@ -276,11 +284,12 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
 
 )##<<>>process.tree = cms.EDAnalyzer("LLPgammaAnalyzer_aod"
 
-
 # Set up the path
 process.tree_step = cms.EndPath(process.tree)
 process.content = cms.EDAnalyzer("EventContentAnalyzer")
 process.content_step = cms.Path(process.content)
+
+process.conversion_step = cms.Path(process.allTimingConversions)
 
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.schedule = cms.Schedule(process.tree_step)
