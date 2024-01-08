@@ -212,12 +212,13 @@ void KUCMSGenObject::LoadEvent( const edm::Event& iEvent, const edm::EventSetup&
             if( GenDEBUG && genPartSUSID == 22 ) std::cout << "Found genParton signal photon" << std::endl;
         } else {
 			//bool isPhoton( genPart.pdgId() == 22 );
+			bool isZ( genPart.pdgId() == 23 );
             bool isQuark( genPart.pdgId() < 9 );
             //bool isNtlino( genPart.pdgId() == 1000022 );
             //bool isChrino( genPart.pdgId() == 1000024 );
 			//if( GenDEBUG && isNtlino ) std::cout << "Found genParton isNtlino" << std::endl;
 			//bool keep( isPhoton || isQuark );
-        	if( isQuark ){
+        	if( isQuark || isZ ){
             	fgenparts.push_back(genPart);
             	fgenpartllp.push_back(genPartSUSID);
         	}//<<>>if( genPart.pdgId() == 22 )

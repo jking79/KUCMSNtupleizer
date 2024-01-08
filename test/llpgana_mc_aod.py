@@ -6,7 +6,8 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('python')
 
 ## Flags
-options.register('hasGenInfo',True,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to get pcalo in mc');
+#options.register('hasGenInfo',True,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to get pcalo in mc');
+options.register('hasGenInfo',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to get pcalo in mc');
 
 ## object prep cuts
 #options.register('jetpTmin',15.0,VarParsing.multiplicity.singleton,VarParsing.varType.float,'jet pT minimum cut');
@@ -23,9 +24,11 @@ options.register('hasGenInfo',True,VarParsing.multiplicity.singleton,VarParsing.
 #options.register('muhighpTmin',50.0,VarParsing.multiplicity.singleton,VarParsing.varType.float,'muon high pT minimum cut');
 
 ## GT to be used
-options.register('globalTag','94X_mc2017_realistic_v14',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
+#options.register('globalTag','94X_mc2017_realistic_v14',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 #options.register('globalTag','106X_dataRun2_v28',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 #options.register('globalTag','112X_mcRun3_2021_realistic_v16',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
+#options.register('globalTag','124X_dataRun3_v15',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2022');
+options.register('globalTag','106X_dataRun2_v24',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2018UL');
 #112X_mcRun3_2021_realistic_v16
 
 ## processName
@@ -80,7 +83,10 @@ gmsbaodsim2 = '_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v2/
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
 
-		'root://cmsxrootd-site.fnal.gov//store/mc/RunIIFall17DRPremix/GMSB_L-100TeV_Ctau-200cm_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/80000/58DCC006-3FB2-E811-94AE-AC1F6B0DE454.root',	
+		#'root://cmsxrootd-site.fnal.gov//store/mc/RunIIFall17DRPremix/GMSB_L-100TeV_Ctau-200cm_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/80000/58DCC006-3FB2-E811-94AE-AC1F6B0DE454.root',	
+
+        #'root://cmsxrootd-site.fnal.gov//store/data/Run2022C/JetHT/AOD/27Jun2023-v2/25310000/161a4ef3-6d8f-4026-bc32-12473677119e.root',
+        'root://cmsxrootd-site.fnal.gov//store/data/Run2018A/JetHT/MINIAOD/12Nov2019_UL2018-v2/100000/07082E78-7805-EB44-BB4D-1D3AB8892FB7.root',
 
 		  #'file:jwk_reco_data_DIGI2RAW.root'),
 
