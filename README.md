@@ -25,6 +25,6 @@ Ntuples currently stored at: store/user/lpcsusylep/jaking/KUCMSNtuple
 Ntuples can be run one of two ways:
 - `cmsRun test/llpgana_mc_aod.py` will interactively run the Ntuplizer
 	- make sure this is running over the correct global tag, AOD files, and number of events
-- `python test/multicrab_mc_llpgana_cmssw130_aod.py` will run the Ntuplizer via condor
+- `python test/multicrab_mc_llpgana_cmssw130_aod.py` will run the Ntuplizer via crab
 	- make sure this is running over the correct file sets and number of events
 - ntuples are kept here on the LPC (accessed via eosls): `/store/user/lpcsusylep/jaking/KUCMSNtuple`
