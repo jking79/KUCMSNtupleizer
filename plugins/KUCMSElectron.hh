@@ -133,7 +133,8 @@ KUCMSElectronObject::KUCMSElectronObject( const edm::ParameterSet& iConfig ){
 
 void KUCMSElectronObject::InitObject( TTree* fOutTree ){
 
-    Branches.makeBranch("RhIds","Electron_rhIds",VVUINT);
+    //Branches.makeBranch("RhIds","Electron_rhIds",VVUINT);
+    Branches.makeBranch("scIndex","Electron_scIndex",VINT,"index of supercluster");
     Branches.makeBranch("SeedTOFTime","Electron_seedTOFTime",VFLOAT);
     Branches.makeBranch("Pt","Electron_pt",VFLOAT);
     Branches.makeBranch("Energy","Electron_energy",VFLOAT);
@@ -142,12 +143,28 @@ void KUCMSElectronObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("Px","Electron_px",VFLOAT);
     Branches.makeBranch("Py","Electron_py",VFLOAT);
     Branches.makeBranch("Pz","Electron_pz",VFLOAT);
+    Branches.makeBranch("TrackZ","Electron_trackz",VFLOAT);
     Branches.makeBranch("GenIdx","Electron_genIdx",VINT);
-    Branches.makeBranch("GenDr","Electron_genDr",VFLOAT);
-    Branches.makeBranch("GenDp","Electron_genDp",VFLOAT);
-    Branches.makeBranch("GenSIdx","Electron_genSIdx",VINT);
-    Branches.makeBranch("GenSDr","Electron_genSDr",VFLOAT);
-    Branches.makeBranch("GenSDr","Electron_genSDp",VFLOAT);
+    Branches.makeBranch("GenMomIdx","Electron_genSigMomId",VINT);
+    Branches.makeBranch("GenWZIdx","Electron_genSigWZId",VINT);
+    //Branches.makeBranch("GenDr","Electron_genDr",VFLOAT);
+    //Branches.makeBranch("GenDp","Electron_genDp",VFLOAT);
+    //Branches.makeBranch("GenSIdx","Electron_genSIdx",VINT);
+    //Branches.makeBranch("GenSDr","Electron_genSDr",VFLOAT);
+    //Branches.makeBranch("GenSDr","Electron_genSDp",VFLOAT);
+    //Branches.makeBranch("GenLlpId","Electron_genLlpId",VFLOAT);
+    //Branches.makeBranch("GenSLlpId","Electron_genSLlpId",VFLOAT);
+    //Branches.makeBranch("ninovx","Electron_genSigMomVx",VFLOAT);
+    //Branches.makeBranch("ninovy","Electron_genSigMomVy",VFLOAT);
+    //Branches.makeBranch("ninovz","Electron_genSigMomVz",VFLOAT);
+    //Branches.makeBranch("ninopx","Electron_genSigMomPx",VFLOAT);
+    //Branches.makeBranch("ninopy","Electron_genSigMomPy",VFLOAT);
+    //Branches.makeBranch("ninopz","Electron_genSigMomPz",VFLOAT);
+    //Branches.makeBranch("ninoeta","Electron_genSigMomEta",VFLOAT);
+    //Branches.makeBranch("ninophi","Electron_genSigMomPhi",VFLOAT);
+    //Branches.makeBranch("ninoe","Electron_genSigMomEnergy",VFLOAT);
+    //Branches.makeBranch("ninom","Electron_genSigMomMass",VFLOAT);
+    //Branches.makeBranch("ninopt","Electron_genSigMomPt",VFLOAT);
 
     Branches.attachBranches(fOutTree);
 
@@ -186,7 +203,8 @@ void KUCMSElectronObject::ProcessEvent( ItemManager<float>& geVar ){
 
     if( ElectronDEBUG ) std::cout << " - enetering Electron loop" << std::endl;
 
-    scGroup jetEleSCGroup;
+    scGroup scptrs;
+    std::vector<float> scptres;
     if( ElectronDEBUG ) std::cout << "Processing Electrons" << std::endl;
     for( const auto &electron : felectrons ){
 
@@ -197,6 +215,7 @@ void KUCMSElectronObject::ProcessEvent( ItemManager<float>& geVar ){
         const float elePx = electron.px();
         const float elePy = electron.py();
         const float elePz = electron.pz();
+        const float eleTrackZ = electron.trackPositionAtVtx().Z();
 
         Branches.fillBranch("Pt",elePt);
         Branches.fillBranch("Energy",eleEnergy);
@@ -205,17 +224,20 @@ void KUCMSElectronObject::ProcessEvent( ItemManager<float>& geVar ){
         Branches.fillBranch("Px",elePx);
         Branches.fillBranch("Py",elePy);
         Branches.fillBranch("Pz",elePz);
+		Branches.fillBranch("TrackZ",eleTrackZ);
 
         if( ElectronDEBUG ) std::cout << " --- Proccesssing : " << electron << std::endl;
         const auto &elesc = electron.superCluster().isNonnull() ? electron.superCluster() : electron.parentSuperCluster();
         const auto scptr = elesc.get();
-        const scGroup eleSCGroup{*scptr};
-        const auto eleRhGroup = rhObj->getRHGroup( eleSCGroup, 0.5 );
-        const auto eleRhIdsGroup = rhObj->getRhGrpIDs( eleRhGroup );
-        Branches.fillBranch("RhIds",eleRhIdsGroup );
-        rhObj->setRecHitUsed( eleRhIdsGroup );
-        if( ElectronDEBUG ) std::cout << " -- Electrons : " << scptr << " #: " << eleRhGroup.size() << std::endl;
-        const auto tofTimes = rhObj->getLeadTofRhTime( eleRhGroup, geVar("vtxX"), geVar("vtxY"), geVar("vtxZ") );
+        const auto scIndex = rhObj->getSuperClusterIndex(scptr);
+        Branches.fillBranch("scIndex",scIndex);
+        //const scGroup eleSCGroup{*scptr};
+        //const auto eleRhGroup = rhObj->getRHGroup( eleSCGroup, 0.2 );
+        //const auto eleRhIdsGroup = rhObj->getRhGrpIDs( eleRhGroup );
+        //Branches.fillBranch("RhIds",eleRhIdsGroup );
+        //rhObj->setRecHitUsed( eleRhIdsGroup );
+        //if( ElectronDEBUG ) std::cout << " -- Electrons : " << scptr << " #: " << eleRhGroup.size() << std::endl;
+        //const auto tofTimes = rhObj->getLeadTofRhTime( eleRhGroup, geVar("vtxX"), geVar("vtxY"), geVar("vtxZ") );
         //auto timeStats = getTimeDistStats( tofTimes, eleRhGroup );
         const float seedTOFTime = rhObj->getSeedTofTime( *scptr, geVar("vtxX"), geVar("vtxY"), geVar("vtxZ") );
 
@@ -223,25 +245,34 @@ void KUCMSElectronObject::ProcessEvent( ItemManager<float>& geVar ){
 
         // GenParticle Info for electron  -------------------------------------------------------------------
         if( cfFlag("hasGenInfo") ){
-
-
-            auto genInfo = genObjs->getGenPartMatch( scptr, elePt );
-            int idx = genInfo[0];
-            int sidx = genInfo[3];
-            if( ElectronDEBUG) std::cout << " Electron Match ------------------------- " << std::endl;
-
-
-            Branches.fillBranch("GenIdx",idx);
-            Branches.fillBranch("GenDr",genInfo[1]);
-            Branches.fillBranch("GenDp",genInfo[2]);
-            Branches.fillBranch("GenSIdx",sidx);
-            Branches.fillBranch("GenSDr",genInfo[4]);
-            Branches.fillBranch("GenSDr",genInfo[5]);
-
+            scptrs.push_back(*scptr);
+            scptres.push_back(eleEnergy);
         }//<<>>if( hasGenInfo )
 
     }//<<>>for( const auto electron : *electrons_ )
 
+    if( cfFlag("hasGenInfo") ){
+        auto genInfo = genObjs->getGenEleMatch( scptrs, scptres );
+        //if( ElectronDEBUG) 
+		//std::cout << " Electron Gen Match ------------------------- " << std::endl;
+        for( auto genidx : genInfo ){
+			//std::cout << " -- Filling genindex : " << genidx << std::endl;
+            Branches.fillBranch("GenIdx",genidx);
+            if( genidx > -1 ){
+                int genMomIndx = genObjs->getGenSigEleInfo( genidx );
+                //std::cout << " -- Electron Match : level 1 : genidx: " << genidx << " mom: " << genMomIndx  << std::endl;
+                Branches.fillBranch("GenWZIdx",genMomIndx);
+				if( genMomIndx > -1 ){
+					//uInt wzIndx = genMomIndx;
+                	int genGMomIndx = genObjs->getGenSigEleInfo( genMomIndx );
+                    //std::cout << "  -- Electron Match : level 2 : mom: " << genMomIndx << " gmom: " << genGMomIndx  << std::endl;
+					Branches.fillBranch("GenMomIdx",genGMomIndx);
+				} else { Branches.fillBranch("GenMomIdx",-5); }//<<>>if( genMomIndx > -1 )
+            } else { Branches.fillBranch("GenWZIdx",-5); Branches.fillBranch("GenMomIdx",-5); }//<<>>if( genidx > -1 )
+			//std::cout << " --- next electron -------------------------- " << std::endl;
+        }//<<>>for( auto genidx : genInfo )
+		//std::cout << " Electron Gen Match Finished ------------------------- " << std::endl;
+    }//<<>>if( cfFlag("hasGenInfo") )
 
 }//<<>>void KUCMSElectron::ProcessEvent()
 
