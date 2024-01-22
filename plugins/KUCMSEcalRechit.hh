@@ -373,6 +373,7 @@ void KUCMSEcalRecHitObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("zscnOExDr","SuperCluster_nOExDr",VFLOAT);
     Branches.makeBranch("zscnOver","SuperCluster_nXtalOverlap",VINT);
     Branches.makeBranch("zscnOtherSID","SuperCluster_otherSeedID",VUINT);
+    Branches.makeBranch("zscnOMatchSID","SuperCluster_otherMatchSeedID",VUINT);
 
     Branches.attachBranches(fOutTree);	
 
@@ -664,23 +665,31 @@ void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
         auto pEta = osupclstr.eta();
         auto pPhi = osupclstr.phi();
 		int nOverlap(-10);
+		uInt oMatchSID(0);
+		int iter(-1);
         for( const auto &fsupclstr : fsupclstrs ){
+			iter++;
+			if( fscIsOOT[iter] == false ) continue;
             auto oEta = fsupclstr.eta();
             auto oPhi = fsupclstr.phi();
             dRmatch = std::sqrt(reco::deltaR2( pEta, pPhi, oEta, oPhi ));
-            if( dRmatch < minDr ){ minDr = dRmatch; }
 			const scGroup fscgroup{fsupclstr};
         	const auto frhgroup = getRHGroup( fscgroup, 0 );
         	const auto frhidsgroup = getRhGrpIDs( frhgroup );
-            if( dRmatch < minDr ){ minDr = dRmatch; nOverlap = getOverLapCnt(orhidsgroup,frhidsgroup); 
-std::cout << " -- OtherSC new min : " << minDr << " With overlap: " << nOverlap << " from: " << orhidsgroup.size() ", " << frhidsgroup.size() << std::endl;
-			}
-            //const auto & fscSeedDetId = fsupclstr.seed()->seed(); // get seed detid 
-            //const auto fscSeedRawID = fscSeedDetId.rawId();
+            const auto & fscSeedDetId = fsupclstr.seed()->seed(); // get seed detid 
+            const auto fscSeedRawID = fscSeedDetId.rawId();
+            if( dRmatch < minDr ){ 
+				minDr = dRmatch; 
+				nOverlap = getOverLapCnt(orhidsgroup,frhidsgroup); 
+				oMatchSID = fscSeedRawID;
+				//std::cout << " -- OtherSC new min : " << minDr << " With overlap: " << nOverlap;
+				//std::cout << " from: " << orhidsgroup.size() << ", " << frhidsgroup.size() << std::endl;
+			}//<<>>if( dRmatch < minDr )
         	//if( oscSeedRawID == fscSeedRawID ){ matched = true; break; }
         }//<<>>for( int ip; ip < nPhotons; ip++ )
 		Branches.fillBranch("zscnOExDr",minDr);
         Branches.fillBranch("zscnOver",nOverlap);
+		Branches.fillBranch("zscnOMatchSID",oMatchSID);
         if( minDr < 0.03 ){ nOtherSCIn++; } //s"
         //if( matched ){ nOtherSCIn++; } //s"
         //{ fscExclude.push_back(true); } //std::cout << " -- OtherSC is EX cluded !!!!! " << std::endl; }
@@ -690,7 +699,6 @@ std::cout << " -- OtherSC new min : " << minDr << " With overlap: " << nOverlap 
     Branches.fillBranch("zscnOther",nOtherSC);
     Branches.fillBranch("zscnOtherEx",nOtherSCEx);
     Branches.fillBranch("zscnOtherIn",nOtherSCIn);
-
 
 }//<<>>void KUCMSEcalRecHit::ProcessEvent()
 

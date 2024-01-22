@@ -84,10 +84,10 @@ def docrab( dataset ):
         config.Data.inputDataset   = None
         #config.Data.lumiMask       = inputJSON    # Comment out for MC only
         #config.Data.splitting     = 'Automatic' # data
-        config.Data.unitsPerJob   = 25000 # data
+        #config.Data.unitsPerJob   = 25000 # data
         config.Data.splitting    = 'EventAwareLumiBased' # MC
         #config.Data.unitsPerJob  =  1500 # MC GMSB
-        #config.Data.unitsPerJob  =  10000 # MC GJet QCD
+        config.Data.unitsPerJob  =  10000 # MC GJet QCD
         #config.Data.unitsPerJob  =  50000 # MC TTJet
 
         config.JobType.allowUndistributedCMSSW = True
@@ -121,13 +121,13 @@ def docrab( dataset ):
 
 			# v10 : using gedPhotons instead of photons
 
-            trial          = "kucmsntuple_JetHT_Met150_AOD_v14" #
+            #trial          = "kucmsntuple_JetHT_Met150_AOD_v14" #
             #trial          = "kucmsntuple_GMSB_AOD_v14" # 
             #trial          = "kucmsntuple_GMSB_MiniAOD_v9" # 
             #trial          = "kucmsntuple_GJETS_AOD_v14" # 
             #trial          = "kucmsntuple_WJETS_AOD_v5" # 
             #trial          = "kucmsntuple_ZJETS_AOD_v5" #
-            #trial          = "kucmsntuple_QCD_AOD_v13" # 
+            trial          = "kucmsntuple_QCD_AOD_v14" # 
             #trial          = "kucmsntuple_DYTT_AOD_v5" # 
 
             #config.Data.outLFNDirBase  = "/store/user/jaking/LLPGamma/"+trial+"/"
@@ -140,7 +140,7 @@ def docrab( dataset ):
 #>>>>>>>>>>>>>>>>>>>     #2017UL #globalTag=106X_dataRun2_v20
             #config.JobType.pyCfgParams   = ['globalTag=106X_dataRun2_v20','outputFileName=output.root','hasGenInfo=False']
 #>>>>>>>>>>>>>>>>>>>     #2018UL #globalTag=106X_dataRun2_v36
-            config.JobType.pyCfgParams   = ['globalTag=106X_dataRun2_v36','outputFileName=output.root','hasGenInfo=False']
+            #config.JobType.pyCfgParams   = ['globalTag=106X_dataRun2_v36','outputFileName=output.root','hasGenInfo=False']
 #>>>>>>>>>>>>>>>>>>>     #2018   #globalTag=106X_dataRun2_v28
             ##config.JobType.pyCfgParams   = ['globalTag=106X_dataRun2_v28','outputFileName=output.root','hasGenInfo=False']
 #>>>>>>>>>>>>>>>>>>>	    #2017   #globalTag=106X_dataRun2_v20
@@ -159,7 +159,7 @@ def docrab( dataset ):
 #>>>>>>>>>>>>>>>>>>>     #MC GJets RunIISummer20UL18RECO  !!!!! CHANGE UNITS PER JOB !!!!!!!
             #config.JobType.pyCfgParams   = ['globalTag=106X_upgrade2018_realistic_v11_L1v1','outputFileName=output.root','hasGenInfo=True']
 #>>>>>>>>>>>>>>>>>>>     #MC QCD RunIIAutumn18DRPremix 102X_upgrade2018_realistic_v15  
-            #config.JobType.pyCfgParams   = ['globalTag=102X_upgrade2018_realistic_v15','outputFileName=output.root','hasGenInfo=True']
+            config.JobType.pyCfgParams   = ['globalTag=102X_upgrade2018_realistic_v15','outputFileName=output.root','hasGenInfo=True']
 #-----------------------------------------------------------------------------------------------------------------------------
             config.Data.inputDataset     = inDO[0]
             # Submit.
@@ -476,14 +476,14 @@ def run_multi():
         dsQCD = [
 
 			# 102X_upgrade2018_realistic_v15 
-            #['/QCD_HT50to100_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15-v1/AODSIM'],#187700000
-            #['/QCD_HT100to200_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15-v1/AODSIM'],#23670000
-            #['/QCD_HT200to300_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15-v1/AODSIM'],#1554000
-            #['/QCD_HT300to500_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15-v1/AODSIM'],#323800
-            #['/QCD_HT500to700_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15-v1/AODSIM'],#30010
-            #['/QCD_HT700to1000_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15-v1/AODSIM'],#6352
-            #['/QCD_HT1000to1500_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15-v1/AODSIM'],#1096
-            #['/QCD_HT1500to2000_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15-v1/AODSIM'],#99.12
+            ['/QCD_HT50to100_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15-v1/AODSIM'],#187700000
+            ['/QCD_HT100to200_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15-v1/AODSIM'],#23670000
+            ['/QCD_HT200to300_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15-v1/AODSIM'],#1554000
+            ['/QCD_HT300to500_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15-v1/AODSIM'],#323800
+            ['/QCD_HT500to700_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15-v1/AODSIM'],#30010
+            ['/QCD_HT700to1000_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15-v1/AODSIM'],#6352
+            ['/QCD_HT1000to1500_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15-v1/AODSIM'],#1096
+            ['/QCD_HT1500to2000_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15-v1/AODSIM'],#99.12
             ['/QCD_HT2000toInf_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15-v1/AODSIM'],#20.20
 
 #/QCD_HT1000to1500_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM
@@ -512,13 +512,13 @@ def run_multi():
         ]  
    
         #runDataset = doRedo
-        runDataset = dsData
+        #runDataset = dsData
         #runDataset = dsGMSB # !!!!  CHANGE UNITS PER JOB AND GT USED !!!!!!!
         #runDataset = dsGMSBMini
         #runDataset = dsGJET # !!!!  CHANGE UNITS PER JOB AND GT USED !!!!!!!
         #runDataset = dsWJET
         #runDataset = dsZJET
-        #runDataset = dsQCD
+        runDataset = dsQCD
         #runDataset = dsDYTT
 
         for dataset in runDataset :

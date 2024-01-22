@@ -35,7 +35,7 @@ options.register('globalTag','94X_mc2017_realistic_v14',VarParsing.multiplicity.
 options.register('processName','TREE',VarParsing.multiplicity.singleton,VarParsing.varType.string,'process name to be considered');
 
 #outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_Objectified_v14.root' # ntuplizer test
-outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_Objectified_v14_scdrtest2.root' # ntuplizer test
+outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_Objectified_v14_pfecal_oottrue.root' # ntuplizer test
 
 options.register('outputFileName',outfilename,VarParsing.multiplicity.singleton,VarParsing.varType.string,'output file name created by cmsRun');
 
@@ -271,10 +271,9 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
    ## superclusters
    #superClusters = cms.InputTag("reducedEgamma", "reducedSuperClusters"),
    superClusters = cms.InputTag("particleFlowEGamma"),
-   #otherSuperClusters = cms.InputTag("particleFlowSuperClusterECAL", "particleFlowSuperClusterECALBarrel"),
-   #superClusters = cms.InputTag("correctedHybridSuperClusters"), 
-   #otherSuperClusters = cms.InputTag("hybridSuperClusters", "uncleanOnlyHybridSuperClusters"),#51/1000
-   otherSuperClusters = cms.InputTag("correctedHybridSuperClusters"),
+   otherSuperClusters = cms.InputTag("particleFlowSuperClusterECAL", "particleFlowSuperClusterECALBarrel"),
+   ##otherSuperClusters = cms.InputTag("hybridSuperClusters", "uncleanOnlyHybridSuperClusters"),#51/1000
+   #otherSuperClusters = cms.InputTag("correctedHybridSuperClusters"),
    #ootSuperClusters = cms.InputTag("reducedEgamma", "reducedOOTSuperClusters"),
    ootSuperClusters = cms.InputTag("particleFlowSuperClusterOOTECAL", "particleFlowSuperClusterOOTECALBarrel"), 
    ## caloclusters
