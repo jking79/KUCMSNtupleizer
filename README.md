@@ -33,3 +33,17 @@ cd KUCMSNtupilizer/
 git clone https://github.com/jking79/KUCMSNtupilizer.git
 cd ../
 scram b -j 8
+
+To Run :
+
+kuntuple code in KUNtupleizer/KUNtupleizer/plugins
+cd KUNtupleizer/KUNtupleizer/test
+edit llpgana_mc_aod.py to change analysis and meta paramters ( number of eventts to proecess, event logging  #, input files .... ) 
+to run : 
+cmsRun llpgana_mc_aod.py
+
+
+
+
+
+
