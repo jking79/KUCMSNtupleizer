@@ -239,7 +239,7 @@ void KUCMSGenObject::LoadEvent( const edm::Event& iEvent, const edm::EventSetup&
 
 void KUCMSGenObject::ProcessEvent( ItemManager<float>& geVar ){
 
-    if( GenDEBUG ) std::cout << "Processing Gens" << std::endl;
+    //if( GenDEBUG ) std::cout << "Processing Gens" << std::endl;
 
     Branches.clearBranches();
 
@@ -256,6 +256,7 @@ void KUCMSGenObject::ProcessEvent( ItemManager<float>& geVar ){
         const float genPx = genpart.px();
         const float genPy = genpart.py();
         const float genPz = genpart.pz();
+		//if( GenDEBUG ) std::cout << "GenPart : 1/2 WAY " << std::endl;
         const bool genStatus = genpart.status();
 		//const int genSusId = llpGenChaseP( genpart, 0 );
         const int genSusId = fgenpartllp[nGenParts];
@@ -265,7 +266,7 @@ void KUCMSGenObject::ProcessEvent( ItemManager<float>& geVar ){
         const float genVz = genpart.vz();
         const float genMass = genpart.mass();		
 
-		//if( GenDEBUG ) std::cout << "GenPart : genSusId = " << genSusId << std::endl;;
+		//if( GenDEBUG ) std::cout << "GenPart : genSusId = " << genSusId << std::endl;
 
         Branches.fillBranch("genPt",genPt);
         Branches.fillBranch("genEnergy",genEnergy);
@@ -286,8 +287,10 @@ void KUCMSGenObject::ProcessEvent( ItemManager<float>& geVar ){
 		nGenParts++;
     }//<<>> for (const auto genpart : fgenparts )
 
+    //if( GenDEBUG ) std::cout << "GenPart : LOADING GEN WT " << std::endl;
     float wgt = genEvtInfo_->weight();
     Branches.fillBranch("genWgt",wgt);
+    //if( GenDEBUG ) std::cout << "GenPart : Done " << std::endl;
 
 }//<<>>void KUCMSGen::ProcessEvent()
 
@@ -459,7 +462,7 @@ int KUCMSGenObject::getGenSigPhoInfo( uInt genIndex ){
 	int result( -1 );
     if( genIndex > fgenpartllp.size() ){ std::cout << " --- INDEX Blown !!!!  getGenSigPhoInfo " << std::endl; return result; }
     auto gensusid = fgenpartllp[genIndex];
-    if( GenDEBUG ) std::cout << " -- getGenSigPhoInfo: " << genIndex << " gensusid: " << gensusid << std::endl;
+    //if( GenDEBUG ) std::cout << " -- getGenSigPhoInfo: " << genIndex << " gensusid: " << gensusid << std::endl;
 
 	if( gensusid == 22 || gensusid == 25 ){
 		
@@ -477,6 +480,7 @@ int KUCMSGenObject::getGenSigPhoInfo( uInt genIndex ){
             //if( foundpart ) break;
         }//<<>>for( it = 0; it < nMothers; it++ )
 
+		if( foundpart ){
 		auto ninoeta = foundpart->eta();
         auto ninophi = foundpart->phi();
 		int nFgen = fgenparts.size();
@@ -486,12 +490,13 @@ int KUCMSGenObject::getGenSigPhoInfo( uInt genIndex ){
             auto fgenphi = fgenparts[it].phi();
 			//if( fgenp4 == ninop4 ){ result = it; break; }
 			if( fgeneta == ninoeta && fgenphi == ninophi ){ 
-	//std::cout << " getGenSigPhoInfo22: " << genIndex << " to " << it << " llpid: " << fgenpartllp[it] << " pdgid: "  << fgenparts[it].pdgId() << std::endl;
+	//std::cout << " getGnSigPhoInf2225: " << genIndex << " to " << it << " llpid: " << fgenpartllp[it] << " pdgid: "  << fgenparts[it].pdgId() << std::endl;
 				result = it;
 				//break;
 			}//>><<if( fgeneta == ninoeta && fgenphi == ninophi )
-
 		}//<<>>for( auto fgen : fgenparts )
+        }//<<>>if( foundpart )
+
 		if( result == -1 ) result = -10;
 
 	}//<<>>if( gensusid == 22 )
@@ -502,30 +507,36 @@ int KUCMSGenObject::getGenSigPhoInfo( uInt genIndex ){
         int nMothers = fgenparts[genIndex].numberOfMothers();
         for( int it = 0; it < nMothers; it++ ){
             auto parent = fgenparts[genIndex].mother(it);
+			//std::cout << " searching 32/35 with " << parent << " target " << searchtype << " for " << it << " of " << nMothers << std::endl;
             foundpart = llpGenSearch( parent, searchtype );
+			//std::cout << " searching 32/35 Done : " << foundpart << std::endl;
             if( foundpart ) break;
         }//<<>>for( it = 0; it < nMothers; it++ )
 
         //auto nino = parent;
+        if( foundpart ){
         auto ninoeta = foundpart->eta();
         auto ninophi = foundpart->phi();
         int nFgen = fgenparts.size();
+		//std::cout << " Found Part: eta " << ninoeta << " phi " << ninophi << " pdgID " << foundpart->pdgId() << std::endl;
         for( int it = 0; it < nFgen; it++  ){
 
             auto fgeneta = fgenparts[it].eta();
             auto fgenphi = fgenparts[it].phi();
             //if( fgenp4 == ninop4 ){ result = it; break; }
             if( fgeneta == ninoeta && fgenphi == ninophi ){
-    //std::cout << " getGenSigPhoInfo: " << genIndex << " to " << it << " llpid: " << fgenpartllp[it] << " pdgid: "  << fgenparts[it].pdgId() << std::endl;
+   // std::cout << " getGnSigPhoIfo3235: " << genIndex << " to " << it << " llpid: " << fgenpartllp[it] << " pdgid: "  << fgenparts[it].pdgId() << std::endl;
                 result = it;
                 //break;
             }//>><<if( fgeneta == ninoeta && fgenphi == ninophi )
 
         }//<<>>for( auto fgen : fgenparts )
+		}//<<>>if( foundpart )
         if( result == -1 ) result = -10;
 
 	}//<<>>else if( gensusid == 32 )
-
+	
+	//std::cout << " -- getGenSigPhoInfo Done !! " << std::endl;
 	return result;
 
 }//<<>>std::vector<float> KUCMSGenObject::getGenSigPhoInfo( uInt genIndex )
@@ -547,6 +558,7 @@ int KUCMSGenObject::getGenSigEleInfo( uInt genIndex ){
 			if( foundpart ) break;
 		}//<<>>for( it = 0; it < nMothers; it++ )
 
+        if( foundpart ){
         auto ninoeta = foundpart->eta();
         auto ninophi = foundpart->phi();
         //auto ninoeta = parent->eta();
@@ -558,12 +570,13 @@ int KUCMSGenObject::getGenSigEleInfo( uInt genIndex ){
             auto fgenphi = fgenparts[it].phi();
             //if( fgenp4 == ninop4 ){ result = it; break; }
             if( fgeneta == ninoeta && fgenphi == ninophi ){
-    //std::cout << " getGenSigEleInfo2324: " << genIndex << " to " << it << " llpid: " << fgenpartllp[it] << " pdgid: "  << fgenparts[it].pdgId() << std::endl;
+    //std::cout << " getGnSigEleInf2324: " << genIndex << " to " << it << " llpid: " << fgenpartllp[it] << " pdgid: "  << fgenparts[it].pdgId() << std::endl;
                 result = it;
                 //break;
             }//>><<if( fgeneta == ninoeta && fgenphi == ninophi )
 
         }//<<>>for( auto fgen : fgenparts )
+        }//<<>>if( foundpart )
         if( result == -1 ) result = -10;
 
     }//<<>>if( gensusid == 33 || gensusid == 34 )
@@ -590,6 +603,7 @@ int KUCMSGenObject::getGenSigEleInfo( uInt genIndex ){
             //if( foundpart ) break;
         }//<<>>for( it = 0; it < nMothers; it++ )
 
+        if( foundpart ){
         auto ninoeta = foundpart->eta();
         auto ninophi = foundpart->phi();
         int nFgen = fgenparts.size();
@@ -599,12 +613,13 @@ int KUCMSGenObject::getGenSigEleInfo( uInt genIndex ){
             auto fgenphi = fgenparts[it].phi();
             //if( fgenp4 == ninop4 ){ result = it; break; }
             if( fgeneta == ninoeta && fgenphi == ninophi ){
-    //std::cout << " getGenSigEleInfo3334: " << genIndex << " to " << it << " llpid: " << fgenpartllp[it] << " pdgid: "  << fgenparts[it].pdgId() << std::endl;
+    //std::cout << " getGnSigEleInf3334: " << genIndex << " to " << it << " llpid: " << fgenpartllp[it] << " pdgid: "  << fgenparts[it].pdgId() << std::endl;
                 result = it;
                 //break;
             }//>><<if( fgeneta == ninoeta && fgenphi == ninophi )
 
         }//<<>>for( auto fgen : fgenparts )
+        }//<<>>if( foundpart )
         if( result == -1 ) result = -10;
 
 	}//<<>>else if( gensusid == 33 || gensusid == 34 )
@@ -829,8 +844,8 @@ const reco::Candidate* KUCMSGenObject::llpGenSearch( const reco::Candidate* kid,
     //bool eleFlag = ( kidPdgID == 11 ) ? true : false;
     bool qFlag = ( kidPdgID < 7 ) ? true : false;
     bool pFlag = ( kidPdgID == 2212 ) ? true : false;
-    //bool n1Flag = ( kidPdgID > 1000021 && kidPdgID < 1000026 ) ? true : false;
-    //bool n2Flag = ( kidPdgID == 1000035 || kidPdgID == 1000037 ) ? true : false;
+    bool n1Flag = ( kidPdgID > 1000021 && kidPdgID < 1000026 ) ? true : false;
+    bool n2Flag = ( kidPdgID == 1000035 || kidPdgID == 1000037 ) ? true : false;
 
     if( pFlag ) return notfound;
     int nMoms = kid->numberOfMothers();
@@ -869,6 +884,7 @@ const reco::Candidate* KUCMSGenObject::llpGenSearch( const reco::Candidate* kid,
         else if( pro ) type = 97;
 
 		if( type == target ){ result = kid; return result; }
+		else if( type == 97 || type == 37 ){ return result; }
         result = llpGenSearch(kid->mother(gmit),target);
 		if( result ) return result;
         //if( mGenPartID < genPartID ) genPartID = mGenPartID;
@@ -1015,6 +1031,8 @@ std::vector<float> KUCMSGenObject::getGenJetInfo( float jetEta, float jetPhi, fl
     float genTOF(-99.9);
     float genJetLLP(-1.0);
 
+	//std::cout << " --- Jet-GenJet matching " << std::endl;
+
     float goodDr(0.3);
     float goodRe(-1.0);
     int matchedIdx(-1);
@@ -1036,6 +1054,7 @@ std::vector<float> KUCMSGenObject::getGenJetInfo( float jetEta, float jetPhi, fl
 
     }//<<>>for(const auto& genJet : fgenjets ) 
 
+	//std::cout << " --- Jet-Genpart quark matching" << std::endl;
     float gDr(0.3);
     float gRe(-1.0);
     int mIdx(-1);
@@ -1061,28 +1080,29 @@ std::vector<float> KUCMSGenObject::getGenJetInfo( float jetEta, float jetPhi, fl
     if( mIdx >= 0 ){ genJetLLP = fgenpartllp[mIdx]; }
     else{ genJetLLP = 35; }
 
+	//std::cout << " --- Jet-GenJet genjet info " << std::endl;
     if( matchedIdx >= 0 ){
 
         auto genJet = fgenjets[matchedIdx];
         //if( GenDEBUG ) std::cout << " --- Jet-GenJet dR match : " << goodDr << std::endl;
 
         //auto nSources = genJet.numberOfSourceCandidatePtrs();
-        auto kids = genJet.daughterPtrVector();
-        auto theta = 2*std::atan(std::exp(-1*genJet.eta()));
-        auto cx = 120*std::sin(genJet.phi());
-        auto cy = 120*std::cos(genJet.phi());
-        auto cz = 120/std::tan(theta);
-        auto tofcor = hypo( cx, cy, cz )/SOL;
+//        auto kids = genJet.daughterPtrVector();
+//        auto theta = 2*std::atan(std::exp(-1*genJet.eta()));
+//        auto cx = 120*std::sin(genJet.phi());
+//        auto cy = 120*std::cos(genJet.phi());
+//        auto cz = 120/std::tan(theta);
+//        auto tofcor = hypo( cx, cy, cz )/SOL;
         //if( GenDEBUG ) kidChase( kids, vtxX, vtxY, vtxZ );
-        auto genKidInfo = kidTOFChain( kids, cx, cy, cz );
+//        auto genKidInfo = kidTOFChain( kids, cx, cy, cz );
         //if( GenDEBUG ) std::cout << " - genJet GenTime noTOF : " << genKidInfo[0] << " rhPos: " << cx;
         //if( GenDEBUG ) std::cout << "," << cy << "," << cz << std::endl;
         genEta = genJet.eta();
         genPhi = genJet.phi();
-        if( genKidInfo[0] > 25.0 ) genTime = -28.0;
-        else if( genKidInfo[0] > -25.0 ) genTime = genKidInfo[0]-tofcor;
-        else genTime = -27.0;
-        genImpactAngle = genKidInfo[1];
+//        if( genKidInfo[0] > 25.0 ) genTime = -28.0;
+//        else if( genKidInfo[0] > -25.0 ) genTime = genKidInfo[0]-tofcor;
+//        else genTime = -27.0;
+//        genImpactAngle = genKidInfo[1];
         //if( GenDEBUG ) std::cout << " - genJet GenTime : " << genTime << " Angle: " << genImpactAngle << std::endl;
         genPt = genJet.pt();
         genEnergy = genJet.energy();
@@ -1091,10 +1111,10 @@ std::vector<float> KUCMSGenObject::getGenJetInfo( float jetEta, float jetPhi, fl
         genReMatch = goodRe;
         //genTimeVar = genKidInfo[2];
         //genNextBX = genKidInfo[3];
-        genTimeLLP = genKidInfo[4];
+//        genTimeLLP = genKidInfo[4];
         //genLLPPurity = genKidInfo[5];
         //genNKids = genKidInfo[6];
-        genTOF = tofcor;
+        //genTOF = tofcor;
         //if( GenDEBUG ) std::cout << " -- Energy : " << genEnergy << " Pt : " << genPt << " EMfrac : " << genEMFrac << std::endl;
 
     }//<<>>if( matchedIdx >= 0 )i

@@ -42,7 +42,7 @@
 #ifndef KUCMSPFMetObjectHeader
 #define KUCMSPFMetObjectHeader
 
-//#define PFMetEBUG true
+//#define PFMetDEBUG true
 #define PFMetDEBUG false
 
 using namespace edm; 

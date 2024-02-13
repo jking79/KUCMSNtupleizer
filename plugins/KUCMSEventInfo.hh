@@ -41,7 +41,7 @@
 #define KUCMSEventInfoObjectHeader
 
 //#define EventInfoEBUG true
-#define eiDEBUG false
+#define EventInfoDEBUG false
 
 using namespace edm; 
 
@@ -115,14 +115,14 @@ void KUCMSEventInfoObject::LoadEvent( const edm::Event& iEvent, const edm::Event
     // ECAL RECHITS
     iEvent.getByToken( verticesToken, vertices_ );
 
-    //if( eiDEBUG ) std::cout << "Collecting EventInfos" << std::endl;
+    //if( EventInfoDEBUG ) std::cout << "Collecting EventInfos" << std::endl;
 
     eventVar.set("run",iEvent.id().run());
     eventVar.set("lumi", iEvent.luminosityBlock());
     eventVar.set("event", iEvent.id().event());
 
-    if( eiDEBUG ) std::cout << "Processing event: " << eventVar("event");
-    if( eiDEBUG ) std::cout << " in run: " << eventVar("run") << " and lumiblock: " << eventVar("lumi") << std::endl;
+    if( EventInfoDEBUG ) std::cout << "Processing event: " << eventVar("event");
+    if( EventInfoDEBUG ) std::cout << " in run: " << eventVar("run") << " and lumiblock: " << eventVar("lumi") << std::endl;
 
     const auto & primevtx = vertices_->front();
     const float vtxX = primevtx.position().x();
@@ -138,7 +138,7 @@ void KUCMSEventInfoObject::LoadEvent( const edm::Event& iEvent, const edm::Event
 
 void KUCMSEventInfoObject::ProcessEvent( ItemManager<float>& geVar ){
 
-    if( eiDEBUG ) std::cout << "Processing EventInfo" << std::endl;
+    if( EventInfoDEBUG ) std::cout << "Processing EventInfo" << std::endl;
 
     Branches.clearBranches();
 

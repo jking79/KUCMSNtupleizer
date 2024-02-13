@@ -84,11 +84,12 @@ def docrab( dataset ):
         config.Data.inputDataset   = None
         #config.Data.lumiMask       = inputJSON    # Comment out for MC only
         #config.Data.splitting     = 'Automatic' # data
-        #config.Data.unitsPerJob   = 25000 # data
+        config.Data.unitsPerJob   = 25000 # data
         config.Data.splitting    = 'EventAwareLumiBased' # MC
         #config.Data.unitsPerJob  =  1500 # MC GMSB
-        config.Data.unitsPerJob  =  10000 # MC GJet QCD
+        #config.Data.unitsPerJob  =  10000 # MC GJet QCD
         #config.Data.unitsPerJob  =  50000 # MC TTJet
+        #config.Data.unitsPerJob  =  750 # MC DiPhoBox (DPB)
 
         config.JobType.allowUndistributedCMSSW = True
         #config.JobType.inputFiles  = [ inptCfgEB, inptCfgEE ]
@@ -106,10 +107,10 @@ def docrab( dataset ):
             print( 'Input dataset for Crab Job : ' )
             #print( inDO )
             # inDO[0] is of the form /A/B/C. Since A+B is unique for each inDS, use this in the CRAB request name.
-            primaryDataset = (inDO[0].split('/')[1]).split('_T')[0]
+            primaryDataset = (inDO[0].split('/')[1]).split('_13T')[0]
             print( primaryDataset )
-            runEra         = ((inDO[0].split('/')[2]).split('_')[0]+'_'+(inDO[0].split('/')[2]).split('_')[1]).split('-PU')[0]
-            #runEra         = ((inDO[0].split('/')[2]).split('_')[0]+'_'+(inDO[0].split('/')[2]).split('-')[1]).split('-PU')[0]
+            #runEra         = ((inDO[0].split('/')[2]).split('_')[0]+'_'+(inDO[0].split('/')[2]).split('_')[1]).split('-PU')[0]
+            runEra         = ((inDO[0].split('/')[2]).split('_')[0]+'_'+(inDO[0].split('/')[2]).split('-')[1]).split('106')[0]
             print( runEra )
             dataset        = inDO[0].split('/')[3]
             print( dataset )
@@ -122,13 +123,15 @@ def docrab( dataset ):
 			# v10 : using gedPhotons instead of photons
 
             #trial          = "kucmsntuple_JetHT_Met150_AOD_v14" #
+            trial          = "kucmsntuple_MET_Met150_AOD_v14" #
             #trial          = "kucmsntuple_GMSB_AOD_v14" # 
             #trial          = "kucmsntuple_GMSB_MiniAOD_v9" # 
-            #trial          = "kucmsntuple_GJETS_AOD_v14" # 
+            #trial          = "kucmsntuple_GJETS_AOD_v14B" # 
             #trial          = "kucmsntuple_WJETS_AOD_v5" # 
             #trial          = "kucmsntuple_ZJETS_AOD_v5" #
-            trial          = "kucmsntuple_QCD_AOD_v14" # 
+            #trial          = "kucmsntuple_QCD_AOD_v14B" # 
             #trial          = "kucmsntuple_DYTT_AOD_v5" # 
+            #trial          = "kucmsntuple_DiPhoBox_AOD_v14"
 
             #config.Data.outLFNDirBase  = "/store/user/jaking/LLPGamma/"+trial+"/"
             #config.Data.outLFNDirBase  = "/store/group/lpcsusylep/jaking/LLPGamma/"+trial+"/"
@@ -137,6 +140,8 @@ def docrab( dataset ):
             config.Data.outputDatasetTag = trial+"_"+primaryDataset+"_"+dataset+"_"+runEra
 
 #-----------------------------------------------------------------------------------------------------------------------------
+#>>>>>>>>>>>>>>>>>>>     #MET/Run2018*-15Feb2022_UL2018-v1/AOD #globalTag=106X_dataRun2_v36
+            config.JobType.pyCfgParams   = ['globalTag=106X_dataRun2_v36','outputFileName=output.root','hasGenInfo=False']
 #>>>>>>>>>>>>>>>>>>>     #2017UL #globalTag=106X_dataRun2_v20
             #config.JobType.pyCfgParams   = ['globalTag=106X_dataRun2_v20','outputFileName=output.root','hasGenInfo=False']
 #>>>>>>>>>>>>>>>>>>>     #2018UL #globalTag=106X_dataRun2_v36
@@ -159,7 +164,10 @@ def docrab( dataset ):
 #>>>>>>>>>>>>>>>>>>>     #MC GJets RunIISummer20UL18RECO  !!!!! CHANGE UNITS PER JOB !!!!!!!
             #config.JobType.pyCfgParams   = ['globalTag=106X_upgrade2018_realistic_v11_L1v1','outputFileName=output.root','hasGenInfo=True']
 #>>>>>>>>>>>>>>>>>>>     #MC QCD RunIIAutumn18DRPremix 102X_upgrade2018_realistic_v15  
-            config.JobType.pyCfgParams   = ['globalTag=102X_upgrade2018_realistic_v15','outputFileName=output.root','hasGenInfo=True']
+            #config.JobType.pyCfgParams   = ['globalTag=102X_upgrade2018_realistic_v15','outputFileName=output.root','hasGenInfo=True']
+#>>>>>>>>>>>>>>>>>>>     #MC DiPhotonBox
+            #config.JobType.pyCfgParams   = ['globalTag=106X_upgrade2018_realistic_v16_L1v1','outputFileName=output.root','hasGenInfo=True'] 
+
 #-----------------------------------------------------------------------------------------------------------------------------
             config.Data.inputDataset     = inDO[0]
             # Submit.
@@ -208,10 +216,10 @@ def run_multi():
 			#['/JetHT/Run2018D-UL2018_MiniAODv2-v1/MINIAOD',''],
 			#['/JetHT/Run2018D-UL2018_MiniAODv2-v2/MINIAOD',''],
 
-            ['/JetHT/Run2018A-15Feb2022_UL2018-v2/AOD',''],
-            ['/JetHT/Run2018B-15Feb2022_UL2018-v1/AOD',''],
-    	    ['/JetHT/Run2018C-15Feb2022_UL2018-v1/AOD',''],
-            ['/JetHT/Run2018D-15Feb2022_UL2018-v1/AOD',''],
+            #['/JetHT/Run2018A-15Feb2022_UL2018-v2/AOD',''],
+            #['/JetHT/Run2018B-15Feb2022_UL2018-v1/AOD',''],
+    	    #['/JetHT/Run2018C-15Feb2022_UL2018-v1/AOD',''],
+            #['/JetHT/Run2018D-15Feb2022_UL2018-v1/AOD',''],
 
             # Dataset: JetHT UL2017
 
@@ -220,6 +228,11 @@ def run_multi():
             #['/JetHT/Run2017D-09Aug2019_UL2017-v1/AOD',''],
             #['/JetHT/Run2017E-09Aug2019_UL2017-v1/AOD',''],
             #['/JetHT/Run2017F-09Aug2019_UL2017-v1/AOD',''],
+
+			# Dataset : MET
+		
+            ['/MET/Run2018B-15Feb2022_UL2018-v1/AOD',''],
+
 
             # Dataset: JetHT 2022 ReReco
 
@@ -510,16 +523,32 @@ def run_multi():
             ##['/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15_ext1-v2/AODSIM'],
             ['/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v1/AODSIM'],#726.5
         ]  
+
+        diPhoBox = [
+            #Global Tag: 106X_upgrade2018_realistic_v16_L1v1
+
+            ['/DiPhotonJetsBox_MGG-1000to2000_13TeV-sherpa/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM'],
+            ['/DiPhotonJetsBox_MGG-2000to4000_13TeV-sherpa/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM'],
+            ['/DiPhotonJetsBox_MGG-200to500_13TeV-sherpa/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM'],
+            ['/DiPhotonJetsBox_MGG-4000to8000_13TeV-sherpa/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM'],
+            ['/DiPhotonJetsBox_MGG-500to1000_13TeV-sherpa/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM'],
+            ['/DiPhotonJetsBox_MGG-8000toInf_13TeV-sherpa/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM'],
+            ['/DiPhotonJetsBox_MGG-80to200_13TeV-sherpa/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM'],
+            #['/DiPhotonJetsBox_MGG-80toInf_13TeV-sherpa/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM'],
+
+        ]
+
    
         #runDataset = doRedo
-        #runDataset = dsData
+        runDataset = dsData
         #runDataset = dsGMSB # !!!!  CHANGE UNITS PER JOB AND GT USED !!!!!!!
         #runDataset = dsGMSBMini
         #runDataset = dsGJET # !!!!  CHANGE UNITS PER JOB AND GT USED !!!!!!!
         #runDataset = dsWJET
         #runDataset = dsZJET
-        runDataset = dsQCD
+        #runDataset = dsQCD
         #runDataset = dsDYTT
+        #runDataset = diPhoBox
 
         for dataset in runDataset :
             docrab( dataset )

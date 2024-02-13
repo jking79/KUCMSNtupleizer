@@ -105,9 +105,14 @@ process.source = cms.Source("PoolSource",
          #lpcpath_350_600+'120000/8A9DEBDE-DDD6-E811-838E-D4AE526DF2E1.root',
          #lpcpath_350_600+'120000/A8DE3FA7-99D6-E811-92C5-34E6D7BEAF0E.root'
 
+         # AODSIM DPJB model
+
+         '/store/mc/RunIISummer20UL18RECO/DiPhotonJetsBox_MGG-1000to2000_13TeV-sherpa/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/2550000/0B4130F1-3785-8043-957B-E0C2F86E1A50.root',
+
 		 # AODSIM GMSB model		
 
-         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-10000cm'+gmsbaodsim2+'10000/162DBEEE-DC29-E911-843B-0CC47A745294.root',
+         #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-10000cm'+gmsbaodsim2+'10000/162DBEEE-DC29-E911-843B-0CC47A745294.root',
+
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-10000cm'+gmsbaodsim2+'10000/BCE6A6F2-A929-E911-AEA9-24BE05C63651.root',
 #         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-10000cm'+gmsbaodsim2+'100000/22F81F5B-3D33-E911-906C-0CC47AD24D28.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-10000cm'+gmsbaodsim2+'100000/3CDA2489-9132-E911-B4E3-0025905D1E08.root',
@@ -187,8 +192,8 @@ process.source = cms.Source("PoolSource",
 ## How many events to process
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(5))
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#ST
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))#TTi
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#LT
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))#TTi
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#LT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500))#US
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(12500))#VS
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(25000))#SM
@@ -284,7 +289,7 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
    gent0 = cms.InputTag("genParticles", "t0"), 
    genxyz0 = cms.InputTag("genParticles", "xyz0"), 
    pileups = cms.InputTag("addPileupInfo", ""),
-   #pileups = cms.InputTag("mixData", ""),
+   #Phoronpileups = cms.InputTag("mixData", ""),
    genParticles = cms.InputTag("genParticles", ""),		
    genjets = cms.InputTag("ak4GenJets","")
 

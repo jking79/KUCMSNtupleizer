@@ -1,0 +1,5 @@
+ntuple_master_lists/kuntuple_GJets_HT-100To200_v14.txt 0 999999
+ntuple_master_lists/kuntuple_GJets_HT-200To400_v14.txt 0 999999
+ntuple_master_lists/kuntuple_GJets_HT-400To600_v14.txt 0 999999
+ntuple_master_lists/kuntuple_GJets_HT-40To100_v14.txt 0 999999
+ntuple_master_lists/kuntuple_GJets_HT-600ToInf_v14.txt 0 999999

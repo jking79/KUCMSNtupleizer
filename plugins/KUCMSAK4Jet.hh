@@ -57,7 +57,7 @@
 #ifndef KUCMSAK4JetObjectHeader
 #define KUCMSAK4JetObjectHeader
 
-//#define AK4JetEBUG true
+//#define AK4JetDEBUG true
 #define AK4JetDEBUG false
 
 using namespace edm; 
@@ -142,7 +142,7 @@ KUCMSAK4JetObject::KUCMSAK4JetObject( const edm::ParameterSet& iConfig ){
     cfFlag.set( "onlyEB", iConfig.existsAs<bool>("onlyEB") ? iConfig.getParameter<bool>("onlyEB") : false );
     cfPrm.set( "jetPTmin", iConfig.existsAs<double>("jetPTmin") ? iConfig.getParameter<double>("jetPTmin") : 10.0 );
     cfPrm.set( "jetEtaMax", iConfig.existsAs<double>("jetEtaMax") ? iConfig.getParameter<double>("jetEtaMax") : 3.5 );
-    cfPrm.set( "ebMaxEta",iConfig.existsAs<double>("ebMaxEta")? iConfig.getParameter<double>("ebMaxEta") : 1.479 );
+    cfPrm.set( "ebMaxEta",iConfig.existsAs<double>("ebMaxEta")? iConfig.getParameter<double>("ebMaxEta") : 1.44 );
 
 }//<<>>KUCMSAK4Jet::KUCMSAK4Jet( const edm::ParameterSet& iConfig, const ItemManager<bool>& cfFlag )
 
