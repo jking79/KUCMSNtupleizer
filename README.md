@@ -16,4 +16,34 @@
 //
 //
 
-Comments to be added
+CMSSW install for KUCMSNtupilizer:
+
+cmsrel CMSSW_13_0_X
+cd CMSSW_13_0_X/src 
+cmsenv 
+git cms-init
+
+( make sure the analysis package is cloned into its own folder inside scr/  example( timing/timing/…  ) )
+( yes ..  its required by CMSSW )
+( initial scram b -j8 must be in src/ ?  after maybe scram-ed  from plugins/ or test/ …. )
+
+
+mkdir KUCMSNtupilizer
+cd KUCMSNtupilizer/
+git clone https://github.com/jking79/KUCMSNtupilizer.git
+cd ../
+scram b -j 8
+
+To Run :
+
+kuntuple code in KUNtupleizer/KUNtupleizer/plugins
+cd KUNtupleizer/KUNtupleizer/test
+edit llpgana_mc_aod.py to change analysis and meta paramters ( number of eventts to proecess, event logging  #, input files .... ) 
+to run : 
+cmsRun llpgana_mc_aod.py
+
+
+
+
+
+
