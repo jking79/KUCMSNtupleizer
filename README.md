@@ -41,3 +41,54 @@ cd KUNtupleizer/KUNtupleizer/test
 edit llpgana_mc_aod.py to change analysis and meta paramters ( number of eventts to proecess, event logging  #, input files .... ) 
 to run : 
 cmsRun llpgana_mc_aod.py
+
+
+
+When make and object keeo in mind the order of processing :
+
+    // ---  Collecting objests ( preprocessing object pruning ) ---------------------------------------
+    // -------------------------------------------------------------------------------------------------
+    // -- Process Event  ---------------------------------------    
+    // ** extracted from disphoana : starting point **** not all functios/varibles defined ***************
+    // ** for example only -- convert to nano?, use ewkino varibles for output, find rechit information ** 
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    if( DEBUG ) std::cout << "***********************************************************************************************" << std::endl;
+
+    // clear global event varibles 
+    geVar.clear(); // floats
+
+    // -------------------------------------------------------------------------------------------------
+    // ---  Collecting objects ( preprocessing object pruning & fill global object vectors )------------
+    // -------------------------------------------------------------------------------------------------
+
+    if( DEBUG ) std::cout << "LoadEvent ObjMan" << std::endl;
+    ObjMan.LoadEvent( iEvent, iSetup, geVar );
+
+    //------------------------------------------------------------------------------------
+    // ----   Object processing ----------------------------------------------------------
+    //------------------------------------------------------------------------------------
+    // call functions to process collections and fill tree varibles to be saved
+    // varibles to be saved to ttree are declared in the header
+    // use LoadEvent() for any processing that must be done before crosstalk 
+    // use PostProcessEvent() for any processing that must be done after crosstalk <<<  Most work should be done now.
+
+    if( DEBUG ) std::cout << "ProcessEvent ObjMan" << std::endl;
+    ObjMan.ProcessEvent( geVar );
+    ObjMan.PostProcessEvent( geVar );
+
+    //------------------------------------------------------------------------------------
+    //---- Object processing Completed ----------------------------------------------------------
+    //------------------------------------------------------------------------------------
+
+    // -- Fill output trees ------------------------------------------
+
+    if( DEBUG ) std::cout << "Select Event and Fill Tree" << std::endl;
+    if( selectedEvent() ) outTree->Fill();
+
+    // -- EOFun ------------------------------------------------------
+    //     #ifdef THIS_IS_AN_EVENTSETUP_EXAMPLE
+    //     ESHandle<SetupData> pSetup;
+    //     iSetup.get<SetupRecord>().get(pSetup);
+    //     #endif
+
