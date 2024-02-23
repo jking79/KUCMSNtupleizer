@@ -71,7 +71,7 @@ When make and object keeo in mind the order of processing :
     // call functions to process collections and fill tree varibles to be saved
     // varibles to be saved to ttree are declared in the header
     // use LoadEvent() for any processing that must be done before crosstalk 
-    // use PostProcessEvent() for any processing that must be done after crosstalk <<<  Most work should be done now.
+    // use PostProcessEvent() for any processing that must be done after crosstalk <<<  Most work should be done here.
 
     if( DEBUG ) std::cout << "ProcessEvent ObjMan" << std::endl;
     ObjMan.ProcessEvent( geVar );
