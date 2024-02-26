@@ -92,6 +92,8 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     recHitsObj->LoadSCTokens( sctoken, ootsctoken );
     auto ccltoken = consumes<std::vector<reco::CaloCluster>>(iConfig.getParameter<edm::InputTag>("caloClusters"));
     recHitsObj->LoadClusterTokens( ccltoken );
+    auto othersctoken = consumes<reco::SuperClusterCollection>(iConfig.getParameter<edm::InputTag>("otherSuperClusters"));
+    recHitsObj->LoadSCTokens( othersctoken );
 
     auto electronsObj = new KUCMSElectronObject( iConfig );
     auto electronToken = consumes<edm::View<reco::GsfElectron>>(iConfig.getParameter<edm::InputTag>("electrons"));
@@ -240,7 +242,7 @@ void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
     // call functions to process collections and fill tree varibles to be saved
     // varibles to be saved to ttree are declared in the header
     // use LoadEvent() for any processing that must be done before crosstalk 
-    // use PostProcessEvent() for any processing that must be done after crosstalk
+    // use PostProcessEvent() for any processing that must be done after crosstalk <<<  Most work should be done now.
 
     if( DEBUG ) std::cout << "ProcessEvent ObjMan" << std::endl;
 	ObjMan.ProcessEvent( geVar );

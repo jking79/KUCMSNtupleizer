@@ -57,7 +57,7 @@
 #ifndef KUCMSAK4JetObjectHeader
 #define KUCMSAK4JetObjectHeader
 
-//#define AK4JetEBUG true
+//#define AK4JetDEBUG true
 #define AK4JetDEBUG false
 
 using namespace edm; 
@@ -88,7 +88,7 @@ class KUCMSAK4JetObject : public KUCMSObjectBase {
     void LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar );
     // do cross talk jobs with other objects, do event processing, and load branches
     void ProcessEvent( ItemManager<float>& geVar );
-    void PostProcessEvent( ItemManager<float>& geVar ){};
+    void PostProcessEvent( ItemManager<float>& geVar );
 
     // if there are any final tasks be to done after the event loop via objectManager
     void EndJobs(); // do any jobs that need to be done after main event loop
@@ -142,7 +142,7 @@ KUCMSAK4JetObject::KUCMSAK4JetObject( const edm::ParameterSet& iConfig ){
     cfFlag.set( "onlyEB", iConfig.existsAs<bool>("onlyEB") ? iConfig.getParameter<bool>("onlyEB") : false );
     cfPrm.set( "jetPTmin", iConfig.existsAs<double>("jetPTmin") ? iConfig.getParameter<double>("jetPTmin") : 10.0 );
     cfPrm.set( "jetEtaMax", iConfig.existsAs<double>("jetEtaMax") ? iConfig.getParameter<double>("jetEtaMax") : 3.5 );
-    cfPrm.set( "ebMaxEta",iConfig.existsAs<double>("ebMaxEta")? iConfig.getParameter<double>("ebMaxEta") : 1.479 );
+    cfPrm.set( "ebMaxEta",iConfig.existsAs<double>("ebMaxEta")? iConfig.getParameter<double>("ebMaxEta") : 1.44 );
 
 }//<<>>KUCMSAK4Jet::KUCMSAK4Jet( const edm::ParameterSet& iConfig, const ItemManager<bool>& cfFlag )
 
@@ -211,7 +211,9 @@ void KUCMSAK4JetObject::LoadEvent( const edm::Event& iEvent, const edm::EventSet
 
 }//<<>>void KUCMSAK4Jet::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
-void KUCMSAK4JetObject::ProcessEvent( ItemManager<float>& geVar ){
+void KUCMSAK4JetObject::ProcessEvent( ItemManager<float>& geVar ){}
+
+void KUCMSAK4JetObject::PostProcessEvent( ItemManager<float>& geVar ){
 
     if( AK4JetDEBUG ) std::cout << "Processing AK4Jets" << std::endl;
 

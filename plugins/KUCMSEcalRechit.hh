@@ -4,6 +4,7 @@
 // Original Author:  Jack W King III
 // 
 // KUCMS ECAL RecHit Object
+// This object process information for ECAL rechits and SuperClusters   
 //
 
 //--------------------   hh file -------------------------------------------------------------
@@ -123,6 +124,7 @@ class KUCMSEcalRecHitObject : public KUCMSObjectBase {
 	void LoadRecHitTokens( edm::EDGetTokenT<recHitCol> recHitsEBToken_, edm::EDGetTokenT<recHitCol> recHitsEEToken_ );
     void LoadSCTokens( edm::EDGetTokenT<supClusterCol> scToken_, edm::EDGetTokenT<supClusterCol> ootScToken_ );
     void LoadClusterTokens( edm::EDGetTokenT<std::vector<reco::CaloCluster>> ccToken_ );
+    void LoadSCTokens( edm::EDGetTokenT<supClusterCol> otherscToken_ );
     // sets up branches, do preloop jobs 
     void InitObject( TTree* fOutTree ); 
     // new function needed for crosstalk - EXAMPLE CLASS USED HERE FOR REFRENCE ONLY -
@@ -132,7 +134,7 @@ class KUCMSEcalRecHitObject : public KUCMSObjectBase {
     // get collections, do initial processing
     void LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar ); 
     // do cross talk jobs with other objects, do event processing, and load branches
-    void ProcessEvent( ItemManager<float>& geVar ){}; 
+    void ProcessEvent( ItemManager<float>& geVar ); 
 	void PostProcessEvent( ItemManager<float>& geVar );
 
     // if there are any final tasks be to done after the event loop via objectManager
@@ -144,6 +146,7 @@ class KUCMSEcalRecHitObject : public KUCMSObjectBase {
 
     // sc functions
     float getSuperClusterSeedTime( reco::SuperClusterRef supercluster );
+	int getSuperClusterIndex( const reco::SuperCluster* supercluster );
 
     // rechit group functions
     rhGroup getRHGroup( float eta, float phi, float drmin, float minenr );
@@ -156,6 +159,8 @@ class KUCMSEcalRecHitObject : public KUCMSObjectBase {
     EcalRecHit getLeadRh( rhGroup recHits );
     std::vector<float> getRhTofTime( rhGroup recHits, double vtxX, double vtxY, double vtxZ );
     std::vector<float> getLeadTofRhTime( rhGroup recHits, double vtxX, double vtxY, double vtxZ );
+    std::vector<float> getFractionList( const scGroup superClusterGroup, rhGroup recHits );
+	std::tuple<uInt,float> getHFList( const scGroup superClusterGroup );
 
     float getRhTOF( EcalRecHit rechit, double vtxX, double vtxY, double vtxZ );
     float getLeadTofTime( rhGroup recHits, double vtxX, double vtxY, double vtxZ );
@@ -163,21 +168,26 @@ class KUCMSEcalRecHitObject : public KUCMSObjectBase {
     void  mrgRhGrp( rhGroup & x, rhGroup & y );
     bool  reduceRhGrps( std::vector<rhGroup> & x );
     void  setRecHitUsed( rhIdGroup idgroup );
+    void  setRecHitUsed( rhIdGroup idgroup, bool isOOT, float energy, std::vector<float> fracs );
 
-    const auto getRawID(const EcalRecHit recHit){ auto recHitId = recHit.detid(); return recHitId.rawId();}
-    const auto getIsEB(const EcalRecHit recHit){ auto recHitId = recHit.detid(); return (recHitId.subdetId() == EcalBarrel)?1:0;}
+	// Helper functions for rechit infomation & IDs
+    const uInt getRawID(const EcalRecHit recHit){ auto recHitId = recHit.detid(); return recHitId.rawId();}
+    const bool getIsEB(const EcalRecHit recHit){ auto recHitId = recHit.detid(); return (recHitId.subdetId() == EcalBarrel)?1:0;}
     const auto getSubDetID(const EcalRecHit recHit){ auto recHitId = recHit.detid(); return recHitId.subdetId();}
-    const auto rhMatch(const EcalRecHit rhx, const EcalRecHit rhy){ return getRawID(rhx) == getRawID(rhy);}
-    const auto dupRhFnd(const rhGroup x, const rhGroup y){
+    const bool rhMatch(const EcalRecHit rhx, const EcalRecHit rhy){ return getRawID(rhx) == getRawID(rhy);}
+    const bool dupRhFnd(const rhGroup x, const rhGroup y){
                for(auto rhx : x ){ for(auto rhy : y ){if(rhMatch(rhx,rhy)){ return true;}}} return false;}
-    const auto isRhGrpEx(const rhGroup x){ int s=x.size();for( int i=0;i<s;i++){
+    const bool isRhGrpEx(const rhGroup x){ int s=x.size();for( int i=0;i<s;i++){
                for( int j=i+1;j<s;j++){if(rhMatch(x[i],x[j])) return false;}} return true;}
-    const auto getRhGrpEnr(const rhGroup x){float e(0.0);for( auto ix : x ){e+=ix.energy();} return e;}
-    const auto getDupCnt(const std::vector<rhGroup> x){ int c=0; int s=x.size();
+    const float getRhGrpEnr(const rhGroup x){float e(0.0);for( auto ix : x ){e+=ix.energy();} return e;}
+    const int getDupCnt(const std::vector<rhGroup> x){ int c=0; int s=x.size();
                for( int a=0;a<s;a++){for( int b=a+1;b<s;b++){if(dupRhFnd(x[a],x[b]))c++;}} return c;}
-    const auto getRhGrpIDs(const rhGroup rhs ){ rhIdGroup rt; if(rhs.empty()){ rt.push_back(0);} else{
+    const rhIdGroup getRhGrpIDs(const rhGroup rhs ){ rhIdGroup rt; if(rhs.empty()){ rt.push_back(0);} else{
                for(const auto rh : rhs ){ rt.push_back(getRawID(rh));}} return rt;}
+    const int getOverLapCnt(const rhIdGroup x, const rhIdGroup y){ int c=0; int sx=x.size(); int sy=y.size();
+               for( int a=0;a<sx;a++){for( int b=0;b<sy;b++){if(x[a]==y[b]){c++;break;}}} return c;}
 
+	// Wrapper functions for EcalClusterTools functions 
 	Cluster2ndMoments getCluster2ndMoments( const reco::SuperCluster* scptr );
     std::array<float, 3> getCovariances( const reco::SuperCluster* scptr );
 
@@ -185,6 +195,10 @@ class KUCMSEcalRecHitObject : public KUCMSObjectBase {
 
     std::vector<EcalRecHit> frechits;
     std::vector<bool> frhused;
+
+    std::vector<reco::SuperCluster> fsupclstrs;
+    std::vector<bool> fscExclude;
+    std::vector<bool> fscIsOOT;
 
     //const edm::InputTag recHitsEBTag;
     edm::EDGetTokenT<recHitCol> recHitsEBToken_;
@@ -208,6 +222,12 @@ class KUCMSEcalRecHitObject : public KUCMSObjectBase {
     const edm::InputTag ootSuperClusterCollectionTag;
     edm::EDGetTokenT<reco::SuperClusterCollection> ootScToken_;
     edm::Handle<reco::SuperClusterCollection> ootSuperCluster_;
+
+	int nOtherSC;
+    int nOtherSCEx;
+    const edm::InputTag otherSuperClusterCollectionTag;
+    edm::EDGetTokenT<reco::SuperClusterCollection> otherScToken_;
+    edm::Handle<reco::SuperClusterCollection> otherSuperCluster_;
 
     // calocluster
     const edm::InputTag caloClusterTag;
@@ -266,7 +286,8 @@ KUCMSEcalRecHitObject::KUCMSEcalRecHitObject( const edm::ParameterSet& iConfig )
 {   // ---- end constructor initilizations  --------------------------
 
     cfPrm.set( "minRHEi", iConfig.existsAs<double>("minRHEi") ? iConfig.getParameter<double>("minRHEi") : 0.0 );
-    cfPrm.set( "minRHEf", iConfig.existsAs<double>("minRHEf") ? iConfig.getParameter<double>("minRHEf") : 2.0 );
+    cfPrm.set( "minRHEf", iConfig.existsAs<double>("minRHEf") ? iConfig.getParameter<double>("minRHEf") : 0.0 );
+    cfPrm.set( "minSCE", iConfig.existsAs<double>("minSCE") ? iConfig.getParameter<double>("minSCE") : 0.0 );
     cfFlag.set( "onlyEB", iConfig.existsAs<bool>("onlyEB") ? iConfig.getParameter<bool>("onlyEB") : false );
     cfPrm.set( "ebMaxEta",iConfig.existsAs<double>("ebMaxEta")? iConfig.getParameter<double>("ebMaxEta") : 1.479 );
 
@@ -293,6 +314,12 @@ void KUCMSEcalRecHitObject::LoadClusterTokens( edm::EDGetTokenT<std::vector<reco
 
 }//<<>>void KUCMSEcalRecHitObject::LoadClusterTokens( edm::EDGetTokenT<std::vector<reco::CaloCluster>>* ccToken )
 
+void KUCMSEcalRecHitObject::LoadSCTokens( edm::EDGetTokenT<reco::SuperClusterCollection> otherScToken ){
+
+    otherScToken_ = otherScToken;
+
+}//<<>>void KUCMSEcalRecHitObject::LoadSCTokens( edm::EDGetTokenT<reco::SuperClusterCollection>*
+
 void KUCMSEcalRecHitObject::InitObject( TTree* fOutTree ){
 
     Branches.makeBranch("Energy","ECALRecHit_energy",VFLOAT);
@@ -307,6 +334,52 @@ void KUCMSEcalRecHitObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("rhx","ECALRecHit_rhx",VFLOAT);
     Branches.makeBranch("rhy","ECALRecHit_rhy",VFLOAT);
     Branches.makeBranch("rhz","ECALRecHit_rhz",VFLOAT);
+    Branches.makeBranch("amplitude","ECALRecHit_amplitude",VFLOAT);
+    Branches.makeBranch("ampres","ECALRecHit_ampres",VFLOAT);
+
+    Branches.makeBranch("zscnSC","SuperCluster_nSuperCluster",INT);
+    Branches.makeBranch("zscOOT","SuperCluster_isOot",VBOOL);
+    Branches.makeBranch("zscExcluded","SuperCluster_excluded",VBOOL);
+    Branches.makeBranch("zscsid","SuperCluster_XtalSeedID",VUINT);
+    Branches.makeBranch("zsclcx","SuperCluster_clcx",VFLOAT,"x coordinate of cluster centroid");
+    Branches.makeBranch("zsclcy","SuperCluster_clcy",VFLOAT,"y coordinate of cluster centroid");
+    Branches.makeBranch("zsclcz","SuperCluster_clcz",VFLOAT,"z coordinate of cluster centroid");
+    Branches.makeBranch("zsceta","SuperCluster_eta",VFLOAT,"pseudorapidity of cluster centroid");
+    Branches.makeBranch("zscphi","SuperCluster_phi",VFLOAT,"azimuthal angle of cluster centroid");
+    Branches.makeBranch("zscenergy","SuperCluster_energy",VFLOAT);
+    Branches.makeBranch("zscnrh","SuperCluster_nRHXtals",VUINT, "size of the rechitgroup found from the H&F list for the supercluster");
+    Branches.makeBranch("zscsize","SuperCluster_nHFXtals",VUINT,"size of the H&F list for the supercluster");
+    Branches.makeBranch("zscsizedif","SuperCluster_diffXtrals",VUINT,"diff of nRHXtals and nHFXtals");
+    Branches.makeBranch("zscrhids","SuperCluster_rhIds",VVUINT,"list of rechit raw ids in hits and fractions list from supercluster");
+    Branches.makeBranch("zscrhfracs","SuperCluster_rhFracs",VVFLOAT,"list of rechit energy fractions in hits and fractions list from supercluster");
+
+    Branches.makeBranch("zscEnergyRaw","SuperCluster_energyRaw",VFLOAT,"raw energy of photon supercluster");//
+    Branches.makeBranch("zscIsEB","SuperCluster_seedIsEB",VBOOL,"photon supercluster seed crystal is in ecal barrel");
+
+    Branches.makeBranch("zscIsScEtaEB","SuperCluster_isScEtaEB",VBOOL,"is supercluster eta within barrel acceptance");//
+    Branches.makeBranch("zscIsScEtaEE","SuperCluster_isScEtaEE",VBOOL,"is supercluster eta within endcap acceptance");//
+    Branches.makeBranch("zscSeediEtaOriX","SuperCluster_seediEtaOriX",VINT,"iEta or iX of seed crystal. iEta is barrel-only, iX is endcap-only. iEta runs from -85 to +85, with no crystal at iEta=0. iX runs from 1 to 100.");//
+    Branches.makeBranch("zscSeediPhiOriY","SuperCluster_seediPhiOriY",VINT,"iPhi or iY of seed crystal. iPhi is barrel-only, iY is endcap-only. iPhi runs from 1 to 360. iY runs from 1 to 100.");//
+    Branches.makeBranch("zscx_calo","SuperCluster_x_calo",VFLOAT,"photon supercluster position on calorimeter, x coordinate (cm)");//
+    Branches.makeBranch("zscy_calo","SuperCluster_y_calo",VFLOAT,"photon supercluster position on calorimeter, y coordinate (cm)");//
+    Branches.makeBranch("zscz_calo","SuperCluster_z_calo",VFLOAT,"photon supercluster position on calorimeter, z coordinate (cm)");//
+
+    Branches.makeBranch("zscEtaWidth","SuperCluster_etaWidth",VFLOAT,"Width of the photon supercluster in eta");//
+    Branches.makeBranch("zscPhiWidth","SuperCluster_phiWidth",VFLOAT,"Width of the photon supercluster in phi");//
+    Branches.makeBranch("zscSMaj","SuperCluster_smaj",VFLOAT);
+    Branches.makeBranch("zscSMin","SuperCluster_smin",VFLOAT);
+    Branches.makeBranch("zscSAlp","SuperCluster_salp",VFLOAT);
+    Branches.makeBranch("zscCovEtaEta","SuperCluster_covEtaEta",VFLOAT);
+    Branches.makeBranch("zscCovEtaPhi","SuperCluster_covEtaPhi",VFLOAT);
+    Branches.makeBranch("zscCovPhiPhi","SuperCluster_covPhiPhi",VFLOAT);
+
+    Branches.makeBranch("zscnOther","SuperCluster_nOther",INT);
+    Branches.makeBranch("zscnOtherEx","SuperCluster_nOtherEx",INT);
+    Branches.makeBranch("zscnOtherIn","SuperCluster_nOtherIn",INT);
+    Branches.makeBranch("zscnOExDr","SuperCluster_nOExDr",VFLOAT);
+    Branches.makeBranch("zscnOver","SuperCluster_nXtalOverlap",VINT);
+    Branches.makeBranch("zscnOtherSID","SuperCluster_otherSeedID",VUINT);
+    Branches.makeBranch("zscnOMatchSID","SuperCluster_otherMatchSeedID",VUINT);
 
     Branches.attachBranches(fOutTree);	
 
@@ -321,6 +394,7 @@ void KUCMSEcalRecHitObject::LoadEvent( const edm::Event& iEvent, const edm::Even
     // SUPERCLUSTERS
     iEvent.getByToken( scToken_, superCluster_);
     iEvent.getByToken( ootScToken_, ootSuperCluster_);
+    iEvent.getByToken( otherScToken_, otherSuperCluster_);
 
     // CALOCLUSTERS
     iEvent.getByToken( ccToken_, caloCluster_);
@@ -354,13 +428,75 @@ void KUCMSEcalRecHitObject::LoadEvent( const edm::Event& iEvent, const edm::Even
     pedestals_ = iSetup.getHandle(EcalPedestalsToken_);
 
     if( ERHODEBUG ) std::cout << "Collecting ECAL RecHits" << std::endl;
+	//std::cout << "Collecting ECAL RecHits w " << cfPrm("minRHEi") << std::endl;
     frechits.clear();
     frhused.clear();
-    for( const auto &recHit : *recHitsEB_ ){ if(recHit.energy() > cfPrm("minRHEi")) frechits.push_back(recHit); frhused.push_back(false);}
-    for( const auto &recHit : *recHitsEE_ ){ if(recHit.energy() > cfPrm("minRHEi")) frechits.push_back(recHit); frhused.push_back(false);}
+    for( const auto &recHit : *recHitsEB_ ){ if(recHit.energy() > cfPrm("minRHEi")){ frechits.push_back(recHit); frhused.push_back(false);}}
+    for( const auto &recHit : *recHitsEE_ ){ if(recHit.energy() > cfPrm("minRHEi")){ frechits.push_back(recHit); frhused.push_back(false);}}
+
+    if( ERHODEBUG ) std::cout << "Collecting SuperClusters" << std::endl;
+    fsupclstrs.clear();
+    fscExclude.clear();
+    fscIsOOT.clear();
+    for( const auto &supclstr : *ootSuperCluster_ ){ 
+		if(supclstr.energy() < cfPrm("minSCE"))  continue;
+		fsupclstrs.push_back(supclstr);
+		fscExclude.push_back(false);
+		fscIsOOT.push_back(true);
+	}//<<>>for( const auto &supclstr : *ootSuperCluster_ )
+    for( const auto &supclstr : *superCluster_ ){
+		if(supclstr.energy() < cfPrm("minSCE")) continue;
+        fsupclstrs.push_back(supclstr);
+        fscIsOOT.push_back(false);
+        double minDr(10.0);
+        double dRmatch(10.0);
+        //float matchpt(0);
+        auto pEta = supclstr.eta();
+        auto pPhi = supclstr.phi();
+        for( const auto &ootsc : *ootSuperCluster_ ){
+            //if( cfFlag("onlyEB") && ootPho.isEE() ) continue;
+            auto oEta = ootsc.eta();
+            auto oPhi = ootsc.phi();
+            dRmatch = std::sqrt(reco::deltaR2( pEta, pPhi, oEta, oPhi ));
+            if( dRmatch < minDr ){ minDr = dRmatch; }
+        }//<<>>for( int ip; ip < nPhotons; ip++ )
+        if( minDr < 0.05 ) fscExclude.push_back(true);
+        else fscExclude.push_back(false);
+	}//<<>>for( const auto &supclstr : *superCluster_ )
+
+/*
+    for( const auto &osupclstr : *otherSuperCluster_ ){
+        if(osupclstr.energy() < cfPrm("minSCE")) continue;
+        //fsupclstrs.push_back(osupclstr);
+        //fscIsOOT.push_back(false);
+        //const auto & oscSeedDetId = osupclstr.seed()->seed(); // get seed detid 
+        //const auto oscSeedRawID = oscSeedDetId.rawId();
+		//bool matched = false;
+        double minDr(10.0);
+        double dRmatch(10.0);
+        //float matchpt(0);
+        auto pEta = osupclstr.eta();
+        auto pPhi = osupclstr.phi();
+        for( const auto &fsupclstr : fsupclstrs ){
+            //if( cfFlag("onlyEB") && ootPho.isEE() ) continue;
+            auto oEta = fsupclstr.eta();
+            auto oPhi = fsupclstr.phi();
+            dRmatch = std::sqrt(reco::deltaR2( pEta, pPhi, oEta, oPhi ));
+            if( dRmatch < minDr ){ minDr = dRmatch; }
+            //const auto & fscSeedDetId = fsupclstr.seed()->seed(); // get seed detid 
+			//const auto fscSeedRawID = fscSeedDetId.rawId();
+			//if( oscSeedRawID == fscSeedRawID ){ matched = true; break; }
+        }//<<>>for( int ip; ip < nPhotons; ip++ )
+        if( minDr < 0.03 ){ fscExclude.push_back(true); } //std::cout << " -- OtherSC is EX cluded !!!!! " << std::endl; }
+		//if( matched ){ fscExclude.push_back(true); } //std::cout << " -- OtherSC is EX cluded !!!!! " << std::endl; }
+        else { fscExclude.push_back(false); } //std::cout << " -- OtherSC is IN cluded !!!!! " << std::endl; }
+    }//<<>>for( const auto &supclstr : *superCluster_ )
+	//std::cout << " -- OtherSC is IN cluded : " << nOtherSC << std::endl;
+*/
 
 }//<<>>void KUCMSEcalRecHit::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
+void KUCMSEcalRecHitObject::ProcessEvent( ItemManager<float>& geVar ){}
 
 void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
 
@@ -368,15 +504,107 @@ void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
 
     Branches.clearBranches();
 
-    if( ERHODEBUG ) std::cout << " - enetering RecHit loop" << std::endl;
+    if( ERHODEBUG ) std::cout << " - enetering SuperCluster loop" << std::endl;
+    int nSupClstrs = fsupclstrs.size();
+    Branches.fillBranch("zscnSC",nSupClstrs);
+    for ( int it = 0; it < nSupClstrs; it++ ){
 
+        auto supclstr = fsupclstrs[it];
+        bool excluded = fscExclude[it];
+        bool isOOT = fscIsOOT[it];
+        DetId xsDetId = supclstr.seed()->seed();
+        uInt xseed = xsDetId.rawId();
+        float clcx = supclstr.x();
+        float clcy = supclstr.y();
+        float clcz = supclstr.z();
+        float sceta = supclstr.eta();
+        float scphi = supclstr.phi();
+        float scenergy = supclstr.rawEnergy();
+        //uInt bcsize = supclstr.clustersSize();
+
+        Branches.fillBranch("zscOOT",isOOT);
+        Branches.fillBranch("zscExcluded",excluded);
+        Branches.fillBranch("zscsid",xseed);
+        Branches.fillBranch("zsclcx",clcx);
+        Branches.fillBranch("zsclcy",clcy);
+        Branches.fillBranch("zsclcz",clcz);
+        Branches.fillBranch("zsceta",sceta);
+        Branches.fillBranch("zscphi",scphi);
+        Branches.fillBranch("zscenergy",scenergy);
+
+        const scGroup scSCGroup{supclstr};
+        const rhGroup scRhGroup = getRHGroup( scSCGroup, cfPrm("minRHEi") );
+        const rhIdGroup scRhIdsGroup = getRhGrpIDs( scRhGroup );
+		std::vector<float> fracList = getFractionList( scSCGroup, scRhGroup );
+        Branches.fillBranch("zscrhids",scRhIdsGroup);
+        Branches.fillBranch("zscrhfracs",fracList);
+        setRecHitUsed(scRhIdsGroup);
+        //setRecHitUsed(scRhIdsGroup, isOOT, scenergy, fracList );
+        uInt scrhgsize = scRhIdsGroup.size();
+        uInt schflsize = supclstr.hitsAndFractions().size();
+        Branches.fillBranch("zscsize",schflsize);
+        Branches.fillBranch("zscnrh",scrhgsize);
+        Branches.fillBranch("zscsizedif",schflsize-scrhgsize);
+
+        const float scEnergyRaw = supclstr.rawEnergy();
+        const bool isScEtaEB = abs(supclstr.eta()) < 1.4442;
+        const bool isScEtaEE = abs(supclstr.eta()) > 1.566 && abs(supclstr.eta()) < 2.5;
+        const int seediEtaOriX = supclstr.seedCrysIEtaOrIx();
+        const int seediPhiOriY = supclstr.seedCrysIPhiOrIy();
+        const float x_calo = supclstr.seed()->position().x();
+        const float y_calo = supclstr.seed()->position().y();
+        const float z_calo = supclstr.seed()->position().z();
+        //const float esEnergyOverRawE = supclstr.preshowerEnergy()/scEnergyRaw;
+        const float etaWidth = supclstr.etaWidth();
+        const float phiWidth = supclstr.phiWidth();
+
+        if( ERHODEBUG ) std::cout << " --- Finding Moments & Covariences : " << supclstr << std::endl;
+        const auto &seedDetId = supclstr.seed()->seed();// seed detid
+        const auto isEB = (seedDetId.subdetId() == EcalBarrel);// which subdet
+        const auto ph2ndMoments = getCluster2ndMoments( &supclstr );
+        const auto lCov = getCovariances( &supclstr );
+
+        if( ERHODEBUG ) std::cout << " --- Storing Moments & Covariences : " << supclstr << std::endl;
+        const float scSMaj = ph2ndMoments.sMaj;
+        const float scSMin = ph2ndMoments.sMin;
+        const float scSAlp = ph2ndMoments.alpha;
+        const float scCovEtaEta = lCov[0];
+        const float scCovEtaPhi = lCov[1];
+        const float scCovPhiPhi = lCov[2];
+
+        Branches.fillBranch("zscIsEB",isEB);
+        Branches.fillBranch("zscEnergyRaw",scEnergyRaw);
+
+        Branches.fillBranch("zscIsScEtaEB",isScEtaEB);
+        Branches.fillBranch("zscIsScEtaEE",isScEtaEE);
+        Branches.fillBranch("zscSeediEtaOriX",seediEtaOriX);
+        Branches.fillBranch("zscSeediPhiOriY",seediPhiOriY);
+        Branches.fillBranch("zscx_calo",x_calo);
+        Branches.fillBranch("zscy_calo",y_calo);
+        Branches.fillBranch("zscz_calo",z_calo);
+
+        Branches.fillBranch("zscEtaWidth",etaWidth);
+        Branches.fillBranch("zscPhiWidth",phiWidth);
+        Branches.fillBranch("zscSMaj",scSMaj);
+        Branches.fillBranch("zscSMin",scSMin);
+        Branches.fillBranch("zscSAlp",scSAlp);
+        Branches.fillBranch("zscCovEtaEta",scCovEtaEta);
+        Branches.fillBranch("zscCovEtaPhi",scCovEtaPhi);
+        Branches.fillBranch("zscCovPhiPhi",scCovPhiPhi);
+
+    }//<<>>for ( int it = 0; it < nSupClstrs; it++ )
+
+    if( ERHODEBUG ) std::cout << " - enetering RecHit loop" << std::endl;
     int nRecHits = frechits.size();
+	//std::cout << " - enetering RecHit loop with " << cfPrm("minRHEf") << std::endl;
     for ( int it = 0; it < nRecHits; it++ ){
 
         auto recHit = frechits[it];
         auto used = frhused[it];
-        //if( not used ) continue;
-        if( not used && recHit.energy() < cfPrm("minRHEf") ) continue;
+		//if( recHit.energy() < 1.0 ) std::cout << " -- checking rh " << getRawID(recHit) << " w/ " << recHit.energy() << " - " << used << std::endl;
+		//if( not ( not used && recHit.energy() < cfPrm("minRHEf") ) ) if( recHit.energy() < 1.0 ) std::cout << " --- cut passed old " << std::endl;
+        if( ( not used ) &&  ( recHit.energy() < cfPrm("minRHEf") ) ) continue;
+        //if( recHit.energy() < 1.0 ) std::cout << " --- cut passed  rh " << getRawID(recHit) << " w/ " << recHit.energy() << std::endl;
 
         const auto recHitID = getRawID(recHit);
         const bool isEB = getIsEB(recHit); // which subdet
@@ -395,12 +623,22 @@ void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
         const float swisscross = (isEB) ?
                 EcalTools::swissCross(recHitID, *recHitsEB_, 0.0, true) : EcalTools::swissCross(recHitID, *recHitsEE_, 0.0, true);
 
+        //if( DEBUG ) std::cout << " -- proccesing LASER info" << std::endl;
+        // adcToGeVInfo : http://cmslxr.fnal.gov/source/RecoEcal/EgammaCoreTools/src/EcalClusterLazyTools.cc#0204
+        const auto laser = laser_->getLaserCorrection(recHitID,evTime);
+        const auto interCalibIter = interCalibMap->find(recHitID);
+        const auto interCalib = ((interCalibIter != interCalibMap->end()) ? (*interCalibIter) : - 1.f);
+        //if( DEBUG ) std::cout << " -- proccesing ADC info" << std::endl;
+        //if ((laser > 0.f) && (interCalib > 0.f) && (adcToGeV > 0.f)) rhadcToGeV[pos] = (laser*interCalib*adcToGeV);
+        const float adcToGeV0( isEB ? adcToGeVEB : adcToGeVEE );
+        //if( DEBUG ) std::cout << " -- proccesing PED info" << std::endl;
+        // pedestal info
+        const auto & pediter = pedestals_->find(recHitID);
+        const auto pedrms12 = (pediter != pedestals_->end()) ? pediter->rms(1) : 0.0;
+        const float adcToGeV = laser*interCalib*adcToGeV0;
+		const float amplitude = ( adcToGeV != 0 ) ? recHit.energy()/adcToGeV : 0;
+        const float ampres = ( pedrms12 != 0 ) ? amplitude/pedrms12 : 0;
 
-        //const auto laser = laser_->getLaserCorrection(recHitID,evTime);
-        //const auto interCalibIter = interCalibMap->find(recHitID);
-        //const auto interCalib = ((interCalibIter != interCalibMap->end()) ? (*interCalibIter) : - 1.f);
-        //const float adcToGeV( isEB ? adcToGeVEB : adcToGeVEE );
-        //const auto & pediter = pedestals_->find(recHitID);
 
         const float rhTime = recHit.time();
         const bool rhIsOOT = recHit.checkFlag(EcalRecHit::kOutOfTime);
@@ -419,10 +657,66 @@ void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
         Branches.fillBranch("rhx",rhX);
         Branches.fillBranch("rhy",rhY);
         Branches.fillBranch("rhz",rhZ);
+		Branches.fillBranch("amplitude",amplitude);
+		Branches.fillBranch("ampres",ampres);
         //Branches.fillBranch("rhisWeird",recHit.checkFlag(EcalRecHit::kWeird));
         //Branches.fillBranch("rhisDiWeird",recHit.checkFlag(EcalRecHit::kDiWeird));
 
     }//<<>>for (const auto recHit : *recHitsEB_ ) 
+
+
+    nOtherSC = otherSuperCluster_->size();
+    nOtherSCEx = 0;
+	int nOtherSCIn = 0;
+    for( const auto &osupclstr : *otherSuperCluster_ ){
+	//for( const auto &osupclstr : fsupclstrs ){
+        if(osupclstr.energy() < cfPrm("minSCE")) continue;
+        const auto & oscSeedDetId = osupclstr.seed()->seed(); // get seed detid 
+        const auto oscSeedRawID = oscSeedDetId.rawId();
+		Branches.fillBranch("zscnOtherSID",oscSeedRawID);
+        const scGroup oscgroup{osupclstr};
+        const rhGroup orhgroup = getRHGroup( oscgroup, 0 );
+        const auto orhidsgroup = getRhGrpIDs( orhgroup );
+        //bool matched = false;
+        float minDr(10.0);
+        float dRmatch(10.0);
+        auto pEta = osupclstr.eta();
+        auto pPhi = osupclstr.phi();
+		int nOverlap(-10);
+		uInt oMatchSID(0);
+		int iter(-1);
+        for( const auto &fsupclstr : fsupclstrs ){
+			iter++;
+			if( fscIsOOT[iter] == false ) continue;
+            auto oEta = fsupclstr.eta();
+            auto oPhi = fsupclstr.phi();
+            dRmatch = std::sqrt(reco::deltaR2( pEta, pPhi, oEta, oPhi ));
+			const scGroup fscgroup{fsupclstr};
+        	const rhGroup frhgroup = getRHGroup( fscgroup, 0 );
+        	const auto frhidsgroup = getRhGrpIDs( frhgroup );
+            const auto & fscSeedDetId = fsupclstr.seed()->seed(); // get seed detid 
+            const auto fscSeedRawID = fscSeedDetId.rawId();
+            if( dRmatch < minDr ){ 
+				minDr = dRmatch; 
+				nOverlap = getOverLapCnt(orhidsgroup,frhidsgroup); 
+				oMatchSID = fscSeedRawID;
+				//std::cout << " -- OtherSC new min : " << minDr << " With overlap: " << nOverlap;
+				//std::cout << " from: " << orhidsgroup.size() << ", " << frhidsgroup.size() << std::endl;
+			}//<<>>if( dRmatch < minDr )
+        	//if( oscSeedRawID == fscSeedRawID ){ matched = true; break; }
+        }//<<>>for( int ip; ip < nPhotons; ip++ )
+		Branches.fillBranch("zscnOExDr",minDr);
+        Branches.fillBranch("zscnOver",nOverlap);
+		Branches.fillBranch("zscnOMatchSID",oMatchSID);
+        if( minDr < 0.03 ){ nOtherSCIn++; } //s"
+        //if( matched ){ nOtherSCIn++; } //s"
+        //{ fscExclude.push_back(true); } //std::cout << " -- OtherSC is EX cluded !!!!! " << std::endl; }
+        else { nOtherSCEx++; } //Branches.fillBranch("zscnOExDr",dRmatch); } //std::cout << " -- OtherSC is IN cluded !!!!! " << std::endl; }
+    }//<<>>for( const auto &supclstr : *superCluster_ )
+    //std::cout << " -- OtherSC is IN cluded : " << nOtherSC << std::endl;
+    Branches.fillBranch("zscnOther",nOtherSC);
+    Branches.fillBranch("zscnOtherEx",nOtherSCEx);
+    Branches.fillBranch("zscnOtherIn",nOtherSCIn);
 
 }//<<>>void KUCMSEcalRecHit::ProcessEvent()
 
@@ -435,7 +729,29 @@ void KUCMSEcalRecHitObject::setRecHitUsed( rhIdGroup idgroup){
         for( int it = 0; it < nRecHits; it++ ){ if( getRawID( frechits[it] ) == rhid ){ frhused[it] = true; break; } }
     }//<<>>for( auto rhid : phoRhIdsGroup )
 
-};
+};//<<>>void KUCMSEcalRecHitObject::setRecHitUsed( rhIdGroup idgroup)
+
+void KUCMSEcalRecHitObject::setRecHitUsed( rhIdGroup idgroup, bool isOOT, float sce, std::vector<float> fracs ){
+
+	//std::cout << " - enetering setRecHitUsed loop with sce " << sce << " isOOT:  " <<  isOOT << std::endl;
+    int nRecHits = frechits.size();
+	int idxRhid = 0;
+	int nRhids = idgroup.size();
+    for( auto rhid : idgroup ){
+        for( int it = 0; it < nRecHits; it++ ){ 
+			if( getRawID( frechits[it] ) == rhid ){ 
+				frhused[it] = true;
+				if( frechits[it].energy() < 0.2 ){ 
+					std::cout << " - In setRecHitUsed loop with sce " << sce << " isOOT:  " << isOOT << " #rhs: " << nRhids;
+					std::cout << " --- rh energy: " << frechits[it].energy() << " frac: " << fracs[idxRhid] << std::endl;  
+				}//<<>>if( frechits[it].energy() < 0.2 )
+				break; 
+			}//<<>>if( getRawID( frechits[it] ) == rhid ) 
+		}//<<>>for( int it = 0; it < nRecHits; it++ ){
+		idxRhid++;
+    }//<<>>for( auto rhid : idgroup )
+
+};//<<>>void KUCMSEcalRecHitObject::setRecHitUsed( rhIdGroup idgroup)
 
 float KUCMSEcalRecHitObject::getSuperClusterSeedTime( reco::SuperClusterRef supercluster ){
 
@@ -447,6 +763,34 @@ float KUCMSEcalRecHitObject::getSuperClusterSeedTime( reco::SuperClusterRef supe
     return seedTime;
 
 }//<<>>getSuperClusterSeedTime( reco::SuperClusterRef supercluster )
+
+int KUCMSEcalRecHitObject::getSuperClusterIndex( const reco::SuperCluster* supercluster ){
+
+	const auto & scSeedDetId = supercluster->seed()->seed(); // get seed detid	
+	const auto scSeedRawID = scSeedDetId.rawId();
+	//const auto osceta = supercluster->eta();
+    //const auto oscphi = supercluster->phi();
+	int fscIter = 0;
+	int retIndex = -1;
+	//float mindr = 0.4;
+    //std::cout << " -- SC matching : " << scSeedRawID << " eta: " << osceta << std::endl;
+	for( const auto & fsclsrt : fsupclstrs ){ 
+		
+		const auto & fscSeedDetId = fsclsrt.seed()->seed(); // get seed detid 
+		const auto fscSeedRawID = fscSeedDetId.rawId();
+		//std::cout << " --- SC compared to : " << scSeedRawID << " ?= " << fscSeedRawID << std::endl;
+		if( scSeedRawID == fscSeedRawID ){ retIndex = fscIter; break; }
+		//const auto sceta = fsclsrt.eta();
+		//const auto scphi = fsclsrt.phi();
+		//auto dr = std::sqrt(reco::deltaR2( osceta, oscphi, sceta, scphi ));
+		//if( dr < mindr ){ mindr = dr; retIndex = fscIter; std::cout << " --- SC matched: " << retIndex << " dr: " << mindr << std::endl; }
+		fscIter++;		
+
+	}//<<>>for( sclsrt : fsupclstrs )		
+	//std::cout << " --- SC matched: " << retIndex << std::endl;
+	return retIndex;
+
+}//<<>>float KUCMSEcalRecHitObject::getSuperClusterIndex( reco::SuperCluster supercluster )
 
 bool KUCMSEcalRecHitObject::reduceRhGrps( std::vector<rhGroup> & x ){
 
@@ -676,7 +1020,9 @@ rhGroup KUCMSEcalRecHitObject::getRHGroup( const scGroup superClusterGroup, floa
         const auto nHAF = hitsAndFractions.size();
         for( uInt iHAF = 0; iHAF < nHAF; iHAF++ ){
             const auto detId = hitsAndFractions[iHAF].first;
+			//const auto frac = hitsAndFractions[iHAF].second; 
             const auto rawId = detId.rawId();
+            //std::cout << " h&f : rawid " << rawId << " frac : " << frac << std::endl;
             if( std::find( rawIds.begin(), rawIds.end(), rawId ) == rawIds.end() ) rawIds.push_back(rawId);
         }//<<>>for( uInt iHAF = 0; iHAF < nHAF; iHAF++ )
     }//<<>>for ( const auto superCluster : superClusterGroup )  
@@ -698,6 +1044,27 @@ rhGroup KUCMSEcalRecHitObject::getRHGroup( const scGroup superClusterGroup, floa
     return result;
 
 }//>>>>rhGroup KUCMSEcalRecHitObject::getRHGroup( const scGroup superClusterGroup, float minenr = 0.0 )
+
+std::vector<float> KUCMSEcalRecHitObject::getFractionList( const scGroup superClusterGroup, rhGroup recHits ){
+
+    std::vector<float> fracs;
+	for (const auto &recHit : recHits ){
+		const auto recHitId = recHit.detid();
+		const uInt rhRawId = recHitId.rawId();
+    	for ( const auto &superCluster : superClusterGroup ){
+        	auto & hitsAndFractions = superCluster.hitsAndFractions();
+        	const uInt nHAF = hitsAndFractions.size();
+        	for( uInt iHAF = 0; iHAF < nHAF; iHAF++ ){
+            	const auto scDetId = hitsAndFractions[iHAF].first;
+				const float frac = hitsAndFractions[iHAF].second;	
+            	const uInt scRawId = scDetId.rawId();
+				if( rhRawId == scRawId ){ fracs.push_back(frac); break; }
+			}//<<>>for( uInt iHAF = 0; iHAF < nHAF; iHAF++ ) 
+		}//<<>>for ( const auto &superCluster : superClusterGroup )
+    }//<<>>for (const auto &recHit : recHits )
+	return fracs;
+
+}//<<>>std::vector<float> KUCMSEcalRecHitObject::getFractionList( const scGroup superClusterGroup, rhGroup recHits )
 
 rhGroup KUCMSEcalRecHitObject::getRHGroup( uInt detid ){
 

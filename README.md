@@ -19,8 +19,9 @@
 CMSSW install for KUCMSNtupilizer:
 
 cmsrel CMSSW_13_0_X
-cd CMSSW_13_0_X/src 
-cmsenv 
+cd CMSSW_13_0_X/src 
+cmsenv 
+
 git cms-init
 
 ( make sure the analysis package is cloned into its own folder inside scr/  example( timing/timing/…  ) )
@@ -44,7 +45,8 @@ cmsRun llpgana_mc_aod.py
 
 
 
-When make and object keeo in mind the order of processing :
+
+When make and object keep in mind the order of processing :
 
     // ---  Collecting objests ( preprocessing object pruning ) ---------------------------------------
     // -------------------------------------------------------------------------------------------------
@@ -91,4 +93,5 @@ When make and object keeo in mind the order of processing :
     //     ESHandle<SetupData> pSetup;
     //     iSetup.get<SetupRecord>().get(pSetup);
     //     #endif
+
 

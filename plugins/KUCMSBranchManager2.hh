@@ -61,7 +61,7 @@ void VectorBranch<T>::attachBranch( TTree* fOutTree ){
 }//<<>>void Branch<T>::attachBranch( TTree* fOutTree )
 
 
-enum BType{ VVUINT, VUINT, VINT, VFLOAT, VSTR, VBOOL, UINT, INT, FLOAT, STR, BOOL };
+enum BType{ VVFLOAT, VVUINT, VUINT, VINT, VFLOAT, VSTR, VBOOL, UINT, INT, FLOAT, STR, BOOL };
 
 class KUCMSBranchBase {
 
@@ -73,6 +73,7 @@ class KUCMSBranchBase {
     virtual void attachBranch( TTree* fOutTree ){};
     virtual void clear(){};
 
+    virtual void fill( std::vector<float> val ){};
     virtual void fill( std::vector<uInt> val ){};
     virtual void fill( uInt val ){};
     virtual void fill( int val ){};
@@ -143,6 +144,7 @@ class KUCMSBranchManager {
     void attachBranches( TTree* fOutTree );
     void clearBranches();
 
+    void fillBranch( std::string key, std::vector<float> val );
     void fillBranch( std::string key, std::vector<uInt> val );
     void fillBranch( std::string key, uInt val );
     void fillBranch( std::string key, int val );
@@ -167,6 +169,7 @@ void KUCMSBranchManager::makeBranch( std::string key, std::string name, BType ty
 
     switch( type ){
 
+        case VVFLOAT : theBranches[key] = new KUCMSBranch<std::vector<float>>( name, type, doc ); break;
         case VVUINT : theBranches[key] = new KUCMSBranch<std::vector<uInt>>( name, type, doc ); break;
         case VUINT  : theBranches[key] = new KUCMSBranch<uInt>( name, type, doc ); break;
         case VINT   : theBranches[key] = new KUCMSBranch<int>( name, type, doc ); break;
@@ -206,6 +209,7 @@ bool KUCMSBranchManager::valid( std::string key ){
 }//<<>>bool KUCMSBranchManager::valid( std::string key )
 
 void KUCMSBranchManager::clearBranches(){ for( auto & branch : theBranches ){ (branch.second)->clear();}}
+void KUCMSBranchManager::fillBranch( std::string key, std::vector<float> val ){ if(valid(key)) theBranches[key]->fill( val );}
 void KUCMSBranchManager::fillBranch( std::string key, std::vector<uInt> val ){ if(valid(key)) theBranches[key]->fill( val );}
 void KUCMSBranchManager::fillBranch( std::string key, uInt val ){ if(valid(key)) theBranches[key]->fill( val );}
 void KUCMSBranchManager::fillBranch( std::string key, int val ){ if(valid(key)) theBranches[key]->fill( val );}

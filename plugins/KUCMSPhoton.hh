@@ -81,7 +81,7 @@ class KUCMSPhotonObject : public KUCMSObjectBase {
     void LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar );
     // do cross talk jobs with other objects, do event processing, and load branches
     void ProcessEvent( ItemManager<float>& geVar );
-    void PostProcessEvent( ItemManager<float>& geVar ){};
+    void PostProcessEvent( ItemManager<float>& geVar );
 
     // if there are any final tasks be to done after the event loop via objectManager
     void EndJobs(); // do any jobs that need to be done after main event loop
@@ -144,6 +144,7 @@ void KUCMSPhotonObject::InitObject( TTree* fOutTree ){
 
     Branches.makeBranch("IsOotPho","Photon_isOot",VBOOL);
     Branches.makeBranch("Excluded","Photon_excluded",VBOOL);
+    //Branches.makeBranch("hasSC","Photon_hasSC",VBOOL);
 
     Branches.makeBranch("Pt","Photon_pt",VFLOAT);
     Branches.makeBranch("Energy","Photon_energy",VFLOAT);
@@ -154,17 +155,18 @@ void KUCMSPhotonObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("Pz","Photon_pz",VFLOAT);
 
     Branches.makeBranch("EnergyErr","Photon_energyErr",VFLOAT,"energy error of the cluster from regression");//
-    Branches.makeBranch("EnergyRaw","Photon_energyRaw",VFLOAT,"raw energy of photon supercluster");//
+    //Branches.makeBranch("EnergyRaw","Photon_energyRaw",VFLOAT,"raw energy of photon supercluster");//
 
     //Branches.makeBranch("JetIdx",VUINT);// index of matching jet/ele -> can do at skimmer ..
     //Branches.makeBranch("eleIdx",VUINT);// index of matching jet/ele -> can do at skimmer ..
     // superclusterEta  = Var("superCluster().eta()",float,doc="supercluster eta",precision=10),
 
     Branches.makeBranch("SeedTOFTime","Photon_seedTOFTime",VFLOAT,"time of flight from PV to photon seed crystal");
-    Branches.makeBranch("RhIds","Photon_rhIds",VVUINT,"list of rechit raw ids in hits and fractions list from supercluster");
+    //Branches.makeBranch("RhIds","Photon_rhIds",VVUINT,"list of rechit raw ids in hits and fractions list from supercluster");
+    Branches.makeBranch("scIndex","Photon_scIndex",VINT,"index of supercluster");
     Branches.makeBranch("hasPixelSeed","Photon_pixelSeed",VBOOL,"has pixel seed");
     Branches.makeBranch("eleVeto","Photon_electronVeto",VBOOL,"pass electron veto");//
-    Branches.makeBranch("isEB","Photon_seedIsEB",VBOOL,"photon supercluster seed crystal is in ecal barrel");
+    //Branches.makeBranch("isEB","Photon_seedIsEB",VBOOL,"photon supercluster seed crystal is in ecal barrel");
     Branches.makeBranch("hasConversionTracks", VBOOL, "Variable specifying if photon has associated conversion tracks (one-legged or two-legged)");
 	// hasConversionTracks = Var("hasConversionTracks()",bool,doc="Variable specifying if photon has associated conversion tracks (one-legged or two-legged)"
 
@@ -201,15 +203,15 @@ void KUCMSPhotonObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("pfRelIso03_all_quadratic",VFLOAT);//
     Branches.makeBranch("hoe_PUcorr","Photon_Hoe_PUcorr",VFLOAT, "PU crt H/E (cone-based w/ quadraticEA*rho*rho + linearEA*rho Winter22V1 corts)");//UF
 
-    Branches.makeBranch("isScEtaEB","Photon_isScEtaEB",VBOOL,"is supercluster eta within barrel acceptance");//
-    Branches.makeBranch("isScEtaEE","Photon_isScEtaEE",VBOOL,"is supercluster eta within endcap acceptance");//
+    //Branches.makeBranch("isScEtaEB","Photon_isScEtaEB",VBOOL,"is supercluster eta within barrel acceptance");//
+    //Branches.makeBranch("isScEtaEE","Photon_isScEtaEE",VBOOL,"is supercluster eta within endcap acceptance");//
 
     //Branches.makeBranch("seedGain",VINT);// ? can find through rh collection if needed
-    Branches.makeBranch("seediEtaOriX","Photon_seediEtaOriX",VINT,"iEta or iX of seed crystal. iEta is barrel-only, iX is endcap-only. iEta runs from -85 to +85, with no crystal at iEta=0. iX runs from 1 to 100.");//
-    Branches.makeBranch("seediPhiOriY","Photon_seediPhiOriY",VINT,"iPhi or iY of seed crystal. iPhi is barrel-only, iY is endcap-only. iPhi runs from 1 to 360. iY runs from 1 to 100.");//
-    Branches.makeBranch("x_calo","Photon_x_calo",VFLOAT,"photon supercluster position on calorimeter, x coordinate (cm)");//
-    Branches.makeBranch("y_calo","Photon_y_calo",VFLOAT,"photon supercluster position on calorimeter, y coordinate (cm)");//
-    Branches.makeBranch("z_calo","Photon_z_calo",VFLOAT,"photon supercluster position on calorimeter, z coordinate (cm)");//
+    //Branches.makeBranch("seediEtaOriX","Photon_seediEtaOriX",VINT,"iEta or iX of seed crystal. iEta is barrel-only, iX is endcap-only. iEta runs from -85 to +85, with no crystal at iEta=0. iX runs from 1 to 100.");//
+    //Branches.makeBranch("seediPhiOriY","Photon_seediPhiOriY",VINT,"iPhi or iY of seed crystal. iPhi is barrel-only, iY is endcap-only. iPhi runs from 1 to 360. iY runs from 1 to 100.");//
+    //Branches.makeBranch("x_calo","Photon_x_calo",VFLOAT,"photon supercluster position on calorimeter, x coordinate (cm)");//
+    //Branches.makeBranch("y_calo","Photon_y_calo",VFLOAT,"photon supercluster position on calorimeter, y coordinate (cm)");//
+    //Branches.makeBranch("z_calo","Photon_z_calo",VFLOAT,"photon supercluster position on calorimeter, z coordinate (cm)");//
 
     //Branches.makeBranch("esEffSigmaRR","Photon_esEffSigmaRR",VFLOAT,"preshower sigmaRR");//
     //Branches.makeBranch("esEnergyOverRawE","Photon_esEnergyOverRawE",VFLOAT,"ratio of preshower energy to raw supercluster energy");
@@ -221,29 +223,30 @@ void KUCMSPhotonObject::InitObject( TTree* fOutTree ){
     //Branches.makeBranch("GenSIdx","Photon_genSIdx",VINT);
     //Branches.makeBranch("GenSDr","Photon_genSDr",VFLOAT);
     //Branches.makeBranch("GenSDp","Photon_genSDp",VFLOAT);
-    Branches.makeBranch("GenLlpId","Photon_genLlpId",VFLOAT);
+    //Branches.makeBranch("GenLlpId","Photon_genLlpId",VFLOAT);
     //Branches.makeBranch("GenSLlpId","Photon_genSLlpId",VFLOAT);
-    Branches.makeBranch("ninovx","Photon_genSigMomVx",VFLOAT);
-    Branches.makeBranch("ninovy","Photon_genSigMomVy",VFLOAT);
-    Branches.makeBranch("ninovz","Photon_genSigMomVz",VFLOAT);
-    Branches.makeBranch("ninopx","Photon_genSigMomPx",VFLOAT);
-    Branches.makeBranch("ninopy","Photon_genSigMomPy",VFLOAT);
-    Branches.makeBranch("ninopz","Photon_genSigMomPz",VFLOAT);
-    Branches.makeBranch("ninoeta","Photon_genSigMomEta",VFLOAT);
-    Branches.makeBranch("ninophi","Photon_genSigMomPhi",VFLOAT);
-    Branches.makeBranch("ninoe","Photon_genSigMomEnergy",VFLOAT);
-    Branches.makeBranch("ninom","Photon_genSigMomMass",VFLOAT);
-    Branches.makeBranch("ninopt","Photon_genSigMomPt",VFLOAT);
+    Branches.makeBranch("GenMomIdx","Photon_genSigMomId",VINT);
+    //Branches.makeBranch("ninovx","Photon_genSigMomVx",VFLOAT);
+    //Branches.makeBranch("ninovy","Photon_genSigMomVy",VFLOAT);
+    //Branches.makeBranch("ninovz","Photon_genSigMomVz",VFLOAT);
+    //Branches.makeBranch("ninopx","Photon_genSigMomPx",VFLOAT);
+    //Branches.makeBranch("ninopy","Photon_genSigMomPy",VFLOAT);
+    //Branches.makeBranch("ninopz","Photon_genSigMomPz",VFLOAT);
+    //Branches.makeBranch("ninoeta","Photon_genSigMomEta",VFLOAT);
+    //Branches.makeBranch("ninophi","Photon_genSigMomPhi",VFLOAT);
+    //Branches.makeBranch("ninoe","Photon_genSigMomEnergy",VFLOAT);
+    //Branches.makeBranch("ninom","Photon_genSigMomMass",VFLOAT);
+    //Branches.makeBranch("ninopt","Photon_genSigMomPt",VFLOAT);
 
 
-    Branches.makeBranch("etaWidth","Photon_etaWidth",VFLOAT,"Width of the photon supercluster in eta");//
-    Branches.makeBranch("phiWidth","Photon_phiWidth",VFLOAT,"Width of the photon supercluster in phi");//
-    Branches.makeBranch("SMaj","Photon_smaj",VFLOAT);
-    Branches.makeBranch("SMin","Photon_smin",VFLOAT);
-    Branches.makeBranch("SAlp","Photon_salp",VFLOAT);
-    Branches.makeBranch("CovEtaEta","Photon_covEtaEta",VFLOAT);
-    Branches.makeBranch("CovEtaPhi","Photon_covEtaPhi",VFLOAT);
-    Branches.makeBranch("CovPhiPhi","Photon_covPhiPhi",VFLOAT);
+    //Branches.makeBranch("etaWidth","Photon_etaWidth",VFLOAT,"Width of the photon supercluster in eta");//
+    //Branches.makeBranch("phiWidth","Photon_phiWidth",VFLOAT,"Width of the photon supercluster in phi");//
+    //Branches.makeBranch("SMaj","Photon_smaj",VFLOAT);
+    //Branches.makeBranch("SMin","Photon_smin",VFLOAT);
+    //Branches.makeBranch("SAlp","Photon_salp",VFLOAT);
+    //Branches.makeBranch("CovEtaEta","Photon_covEtaEta",VFLOAT);
+    //Branches.makeBranch("CovEtaPhi","Photon_covEtaPhi",VFLOAT);
+    //Branches.makeBranch("CovPhiPhi","Photon_covPhiPhi",VFLOAT);
 
     Branches.attachBranches(fOutTree);
 
@@ -293,7 +296,11 @@ void KUCMSPhotonObject::LoadEvent( const edm::Event& iEvent, const edm::EventSet
             auto pEta = gedPho.eta();
             auto pPhi = gedPho.phi();
             auto pPt = gedPho.pt();
-            dRmatch = deltaR( pEta, oEta, pPhi, oPhi );
+            dRmatch = std::sqrt(reco::deltaR2( pEta, pPhi, oEta, oPhi ));
+			Branches.fillBranch("zscnOExDr",dRmatch);
+			Branches.fillBranch("zscnOExDr",dRmatch);
+			Branches.fillBranch("zscnOExDr",dRmatch);
+			Branches.fillBranch("zscnOExDr",dRmatch);
             if( dRmatch < minDr ){ minDr = dRmatch; matchpt = pPt; }
         }//<<>>for( int ip; ip < nPhotons; ip++ )
         if( dRmatch < 0.3 && oPt < matchpt ) phoExcluded_temp.push_back(true);
@@ -332,7 +339,7 @@ void KUCMSPhotonObject::LoadEvent( const edm::Event& iEvent, const edm::EventSet
             auto oEta = ootPho.eta();
             auto oPhi = ootPho.phi();
             auto oPt = ootPho.pt();
-            dRmatch = deltaR( pEta, oEta, pPhi, oPhi );
+            dRmatch = std::sqrt(reco::deltaR2( pEta, pPhi, oEta, oPhi ));
             if( dRmatch < minDr ){ minDr = dRmatch; matchpt = oPt; }
         }//<<>>for( int ip; ip < nPhotons; ip++ )
         if( dRmatch < 0.3 && pPt < matchpt ) phoExcluded_temp.push_back(true);
@@ -343,14 +350,14 @@ void KUCMSPhotonObject::LoadEvent( const edm::Event& iEvent, const edm::EventSet
         //
         double minDr(1.0);
         double dRmatch(10.0);
-        float matchpt(0);
+        //float matchpt(0);
         auto pEta = gedPho.eta();
         auto pPhi = gedPho.phi();
         for( const auto &ootPho : *ootPhotons_ ){
             //if( cfFlag("onlyEB") && ootPho.isEE() ) continue;
             auto oEta = ootPho.eta();
             auto oPhi = ootPho.phi();
-            dRmatch = deltaR( pEta, oEta, pPhi, oPhi );
+            dRmatch = std::sqrt(reco::deltaR2( pEta, pPhi, oEta, oPhi ));
             if( dRmatch < minDr ){ minDr = dRmatch; }
         }//<<>>for( int ip; ip < nPhotons; ip++ )
         if( dRmatch < 0.3 ) phoExcluded_temp.push_back(true);
@@ -381,7 +388,9 @@ void KUCMSPhotonObject::LoadEvent( const edm::Event& iEvent, const edm::EventSet
 
 }//<<>>void KUCMSPhoton::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
-void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
+void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){}
+
+void KUCMSPhotonObject::PostProcessEvent( ItemManager<float>& geVar ){
 
     if( PhotonDEBUG ) std::cout << "Processing Photons" << std::endl;
 
@@ -392,6 +401,7 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
     uInt phoIdx = 0;
 	scGroup scptrs;
 	std::vector<float> scptres;
+	//std::vector<int> scmatched;
     for( const auto &photon : fphotons ){
 
         Branches.fillBranch("IsOotPho",phoIsOotPho[phoIdx]);
@@ -422,7 +432,10 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
         const float sieip = photon.showerShapeVariables().sigmaIetaIphi;
         const float sipip = photon.showerShapeVariables().sigmaIphiIphi;
         const float s4 = photon.full5x5_showerShapeVariables().e2x2/photon.full5x5_showerShapeVariables().e5x5;
-        //const float esEffSigmaRR = photon.showerShapeVariables().effSigmaRR;
+    	//const float smaj = photon.showerShapeVariables().smMajor;
+        //const float smin = photon.showerShapeVariables().smMinor;
+        //const float salpha = photon.showerShapeVariables().smAlpha;
+    	//const float esEffSigmaRR = photon.showerShapeVariables().effSigmaRR;
 
         //const float phoR1x5 = photon.r1x5();
         //const float phoR2x5 = photon.r2x5();
@@ -461,6 +474,10 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
         Branches.fillBranch("sieie",sieie);
         Branches.fillBranch("sieip",sieip);
         Branches.fillBranch("sipip",sipip);
+        //Branches.fillBranch("SMaj",smaj);
+        //Branches.fillBranch("SMin",smin);
+        //Branches.fillBranch("SAlp",salpha);
+
         Branches.fillBranch("EnergyErr",phoEnergyErr);
         //Branches.fillBranch("haloTaggerMVAVal",haloTaggerMVAVal);
         Branches.fillBranch("hasPixelSeed",phoHasPixelSeed);
@@ -496,10 +513,11 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
         Branches.fillBranch("pfRelIso03_chg_quadratic",pfRelIso03_chg_quadratic);
         Branches.fillBranch("pfRelIso03_all_quadratic",pfRelIso03_all_quadratic);
 
+
         if( PhotonDEBUG ) std::cout << " --- Proccesssing : " << photon << std::endl;
         const auto &phosc = photon.superCluster().isNonnull() ? photon.superCluster() : photon.parentSuperCluster();
         const auto scptr = phosc.get();
-
+/*
         const float phoEnergyRaw = scptr->rawEnergy();
         const bool isScEtaEB = abs(scptr->eta()) < 1.4442;
         const bool isScEtaEE = abs(scptr->eta()) > 1.566 && abs(scptr->eta()) < 2.5;
@@ -545,18 +563,22 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
         Branches.fillBranch("CovEtaEta",phoCovEtaEta);
         Branches.fillBranch("CovEtaPhi",phoCovEtaPhi);
         Branches.fillBranch("CovPhiPhi",phoCovPhiPhi);
-
+*/
 
 		auto passelectronveto = electronObj->getElectronVeto( phosc ); 
         Branches.fillBranch("eleVeto",passelectronveto);
 
         if( PhotonDEBUG ) std::cout << " --- Gathering SC info : " << scptr << std::endl;
-        const scGroup phoSCGroup{*scptr};
-        const auto phoRhGroup = rhObj->getRHGroup( phoSCGroup, 0.5 );
-        const auto phoRhIdsGroup = rhObj->getRhGrpIDs( phoRhGroup );
-        Branches.fillBranch("RhIds",phoRhIdsGroup);
-        rhObj->setRecHitUsed(phoRhIdsGroup);
-        if( PhotonDEBUG ) std::cout << " -- gedPhotons : " << scptr << " #: " << phoRhGroup.size() << std::endl;
+		const auto scIndex = rhObj->getSuperClusterIndex(scptr);
+		Branches.fillBranch("scIndex",scIndex);
+		//scmatched.push_back(scIndex);
+		//if( scIndex == -1 ) std::cout << " - phoSC: " << scIndex << " - " << phoEnergyRaw << " - " << " - " << seedDetId.rawId() << std::endl;   
+        //const scGroup phoSCGroup{*scptr};
+        //const auto phoRhGroup = rhObj->getRHGroup( phoSCGroup, 0.2 );
+        //const auto phoRhIdsGroup = rhObj->getRhGrpIDs( phoRhGroup );
+        //Branches.fillBranch("RhIds",phoRhIdsGroup);
+        //rhObj->setRecHitUsed(phoRhIdsGroup);
+        //if( PhotonDEBUG ) std::cout << " -- gedPhotons : " << scptr << " #: " << phoRhGroup.size() << std::endl;
         //auto tofTimes = rhObj->getLeadTofRhTime( phoRhGroup, geVar("vtxX"), geVar("vtxY"), geVar("vtxZ") );
         //auto timeStats = getTimeDistStats( tofTimes, phoRhGroup );
         const auto seedTOFTime = rhObj->getSeedTofTime( *scptr, geVar("vtxX"), geVar("vtxY"), geVar("vtxZ") );
@@ -575,38 +597,21 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
 
 	if( cfFlag("hasGenInfo") ){
 		auto genInfo = genObj->getGenPhoMatch( scptrs, scptres );
-		if( PhotonDEBUG) std::cout << " Photon Match ------------------------- " << std::endl;
-		for( auto genidx : genInfo ){  
-			Branches.fillBranch("GenIdx",genidx); 			
-			if( genidx > -1 ){
-				std::vector<float> result = genObj->getGenSigPhoInfo( genidx );
-        		Branches.fillBranch("ninovx",result[0]);
-                Branches.fillBranch("ninovy",result[1]);
-                Branches.fillBranch("ninovz",result[2]);
-                Branches.fillBranch("ninopx",result[3]);
-                Branches.fillBranch("ninopy",result[4]);
-                Branches.fillBranch("ninopz",result[5]);
-                Branches.fillBranch("ninoeta",result[6]);
-                Branches.fillBranch("ninophi",result[7]);
-                Branches.fillBranch("ninoe",result[8]);
-                Branches.fillBranch("ninom",result[9]);
-                Branches.fillBranch("ninopt",result[10]);
-                Branches.fillBranch("GenLlpId",result[11]);
-			} else {
-                Branches.fillBranch("ninovx",0.f);
-                Branches.fillBranch("ninovy",0.f);
-                Branches.fillBranch("ninovz",0.f);
-                Branches.fillBranch("ninopx",0.f);
-                Branches.fillBranch("ninopy",0.f);
-                Branches.fillBranch("ninopz",0.f);
-                Branches.fillBranch("ninoeta",0.f);
-                Branches.fillBranch("ninophi",0.f);
-                Branches.fillBranch("ninoe",0.f);
-                Branches.fillBranch("ninom",0.f);
-                Branches.fillBranch("ninopt",0.f);
-                Branches.fillBranch("GenLlpId",-1.f);
-			}//<<>>if( genidx > -1 )
+		//std::cout << " - genmatched - scmatched comp : " << std::endl;
+		//std::cout << " Photon Gen Match ------------------------- " << std::endl;
+		//for( uInt i = 0; i < genInfo.size(); i++ ){ std::cout << " -- gen: " << genInfo[i] << " sc: " << scmatched[i] << std::endl; }
+		//if( PhotonDEBUG) std::cout << " Photon Match ------------------------- " << std::endl;
+		for( auto genidx : genInfo ){
+			//std::cout << " -- Filling genindex : " << genidx << std::endl;  
+			Branches.fillBranch("GenIdx",genidx);
+			if( genidx > -1 ){ 
+			 	int genMomIndx = genObj->getGenSigPhoInfo( genidx );
+				//std::cout << " -- Photon Match : level 1 : genidx: " << genidx << " mom: " << genMomIndx  << std::endl;		
+				Branches.fillBranch("GenMomIdx",genMomIndx);
+			} else { Branches.fillBranch("GenMomIdx",-5); }//<<>>if( genidx > -1 )
+			//std::cout << " --- next photon -------------------------- " << std::endl;
 		}//<<>>for( auto genidx : genInfo )
+		//std::cout << " Photon Gen Match Finished ------------------------- " << std::endl;
 	}//<<>>if( cfFlag("hasGenInfo") )
 
 }//<<>>void KUCMSPhoton::ProcessEvent()

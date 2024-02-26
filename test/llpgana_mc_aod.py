@@ -6,8 +6,8 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('python')
 
 ## Flags
-#options.register('hasGenInfo',True,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to get pcalo in mc');
-options.register('hasGenInfo',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to get pcalo in mc');
+options.register('hasGenInfo',True,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to get pcalo in mc');
+#options.register('hasGenInfo',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to get pcalo in mc');
 
 ## object prep cuts
 #options.register('jetpTmin',15.0,VarParsing.multiplicity.singleton,VarParsing.varType.float,'jet pT minimum cut');
@@ -24,17 +24,18 @@ options.register('hasGenInfo',False,VarParsing.multiplicity.singleton,VarParsing
 #options.register('muhighpTmin',50.0,VarParsing.multiplicity.singleton,VarParsing.varType.float,'muon high pT minimum cut');
 
 ## GT to be used
-#options.register('globalTag','94X_mc2017_realistic_v14',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
+options.register('globalTag','94X_mc2017_realistic_v14',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 #options.register('globalTag','106X_dataRun2_v28',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 #options.register('globalTag','112X_mcRun3_2021_realistic_v16',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 #options.register('globalTag','124X_dataRun3_v15',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2022');
-options.register('globalTag','106X_dataRun2_v24',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2018UL');
+#options.register('globalTag','106X_dataRun2_v24',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2018UL');
 #112X_mcRun3_2021_realistic_v16
 
 ## processName
 options.register('processName','TREE',VarParsing.multiplicity.singleton,VarParsing.varType.string,'process name to be considered');
 
-outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_Objectified_v12.root' # ntuplizer test
+#outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_Objectified_v14.root' # ntuplizer test
+outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_Objectified_v14_pfecal_oottrue.root' # ntuplizer test
 
 options.register('outputFileName',outfilename,VarParsing.multiplicity.singleton,VarParsing.varType.string,'output file name created by cmsRun');
 
@@ -65,8 +66,8 @@ process.load("FWCore.MessageService.MessageLogger_cfi")
 #process.MessageLogger.destinations = ['cout', 'cerr']
 #process.MessageLogger.cerr.FwkReport.reportEvery = 1
 #process.MessageLogger.cerr.FwkReport.reportEvery = 10
-#process.MessageLogger.cerr.FwkReport.reportEvery = 100
-process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
+#process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 #process.MessageLogger.cerr.FwkReport.reportEvery = 10000
 
 ## Define the input source
@@ -86,7 +87,10 @@ process.source = cms.Source("PoolSource",
 		#'root://cmsxrootd-site.fnal.gov//store/mc/RunIIFall17DRPremix/GMSB_L-100TeV_Ctau-200cm_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/80000/58DCC006-3FB2-E811-94AE-AC1F6B0DE454.root',	
 
         #'root://cmsxrootd-site.fnal.gov//store/data/Run2022C/JetHT/AOD/27Jun2023-v2/25310000/161a4ef3-6d8f-4026-bc32-12473677119e.root',
-        'root://cmsxrootd-site.fnal.gov//store/data/Run2018A/JetHT/MINIAOD/12Nov2019_UL2018-v2/100000/07082E78-7805-EB44-BB4D-1D3AB8892FB7.root',
+        #'root://cmsxrootd-site.fnal.gov//store/data/Run2018A/JetHT/MINIAOD/12Nov2019_UL2018-v2/100000/07082E78-7805-EB44-BB4D-1D3AB8892FB7.root',
+
+		#'/store/mc/RunIISummer20UL18RECO/GJets_HT-40To100_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/2550000/06CC60F3-D74E-174E-8AD7-DCDAB14FB26F.root',
+		#'/store/data/Run2018C/JetHT/AOD/15Feb2022_UL2018-v1/2530001/B2C0793B-3D7B-104F-B34B-87D010EFDEF4.root',	
 
 		  #'file:jwk_reco_data_DIGI2RAW.root'),
 
@@ -104,9 +108,14 @@ process.source = cms.Source("PoolSource",
          #lpcpath_350_600+'120000/8A9DEBDE-DDD6-E811-838E-D4AE526DF2E1.root',
          #lpcpath_350_600+'120000/A8DE3FA7-99D6-E811-92C5-34E6D7BEAF0E.root'
 
+         # AODSIM DPJB model
+
+         #'/store/mc/RunIISummer20UL18RECO/DiPhotonJetsBox_MGG-1000to2000_13TeV-sherpa/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/2550000/0B4130F1-3785-8043-957B-E0C2F86E1A50.root',
+
 		 # AODSIM GMSB model		
 
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-10000cm'+gmsbaodsim2+'10000/162DBEEE-DC29-E911-843B-0CC47A745294.root',
+
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-10000cm'+gmsbaodsim2+'10000/BCE6A6F2-A929-E911-AEA9-24BE05C63651.root',
 #         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-10000cm'+gmsbaodsim2+'100000/22F81F5B-3D33-E911-906C-0CC47AD24D28.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-10000cm'+gmsbaodsim2+'100000/3CDA2489-9132-E911-B4E3-0025905D1E08.root',
@@ -122,7 +131,7 @@ process.source = cms.Source("PoolSource",
 #         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-1200cm'+gmsbaodsim+'60000/68C5DD84-EAD6-E811-9028-44A842CFD60C.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-1200cm'+gmsbaodsim+'60000/846C6D28-D4D8-E811-A8BE-00266CFFBEB4.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-1200cm'+gmsbaodsim+'60000/8EC1497F-E9D6-E811-A390-44A842CFC98B.root',
-#         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-200cm'+gmsbaodsim+'120000/ACDBAA3E-9ED8-E811-813B-1866DA89095D.root',
+         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-200cm'+gmsbaodsim+'120000/ACDBAA3E-9ED8-E811-813B-1866DA89095D.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-200cm'+gmsbaodsim+'120000/AEA9923B-9ED8-E811-87D6-34E6D7BDDECE.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-400cm'+gmsbaodsim+'80000/301550E4-81B5-E811-8362-FA163EF08F5B.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-400cm'+gmsbaodsim+'80000/34D601E8-3CB2-E811-B2BA-24BE05C6B701.root',
@@ -185,7 +194,7 @@ process.source = cms.Source("PoolSource",
 
 ## How many events to process
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(5))
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#ST
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#ST
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))#TTi
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#LT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500))#US
@@ -194,7 +203,7 @@ process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#ST
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100000))#MS
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250000))#MD
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500000))#LG
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
 
 # Set the global tag depending on the sample type
 from Configuration.AlCa.GlobalTag import GlobalTag
@@ -211,6 +220,8 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
    #hasGenInfo = cms.bool(False),
    minEvtMet = cms.double(150.0),
    #minEvtMet = cms.double(50.0),
+   minRHEi = cms.double(0.0),
+   minRHEf = cms.double(0.2),
    ## additional collections
    ## tracks
    #tracks = cms.InputTag("unpackedTracksAndVertices"),
@@ -267,7 +278,10 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
    recHitsEE = cms.InputTag("reducedEcalRecHitsEE"),
    ## superclusters
    #superClusters = cms.InputTag("reducedEgamma", "reducedSuperClusters"),
-   superClusters = cms.InputTag("particleFlowSuperClusterECAL", "particleFlowSuperClusterECALBarrel"),
+   superClusters = cms.InputTag("particleFlowEGamma"),
+   otherSuperClusters = cms.InputTag("particleFlowSuperClusterECAL", "particleFlowSuperClusterECALBarrel"),
+   ##otherSuperClusters = cms.InputTag("hybridSuperClusters", "uncleanOnlyHybridSuperClusters"),#51/1000
+   #otherSuperClusters = cms.InputTag("correctedHybridSuperClusters"),
    #ootSuperClusters = cms.InputTag("reducedEgamma", "reducedOOTSuperClusters"),
    ootSuperClusters = cms.InputTag("particleFlowSuperClusterOOTECAL", "particleFlowSuperClusterOOTECALBarrel"), 
    ## caloclusters
@@ -278,7 +292,7 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
    gent0 = cms.InputTag("genParticles", "t0"), 
    genxyz0 = cms.InputTag("genParticles", "xyz0"), 
    pileups = cms.InputTag("addPileupInfo", ""),
-   #pileups = cms.InputTag("mixData", ""),
+   #Phoronpileups = cms.InputTag("mixData", ""),
    genParticles = cms.InputTag("genParticles", ""),		
    genjets = cms.InputTag("ak4GenJets","")
 
