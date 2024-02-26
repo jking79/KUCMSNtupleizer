@@ -66,9 +66,9 @@ process.load("FWCore.MessageService.MessageLogger_cfi")
 #process.MessageLogger.destinations = ['cout', 'cerr']
 #process.MessageLogger.cerr.FwkReport.reportEvery = 1
 #process.MessageLogger.cerr.FwkReport.reportEvery = 10
-#process.MessageLogger.cerr.FwkReport.reportEvery = 100
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
 #process.MessageLogger.cerr.FwkReport.reportEvery = 1000
-process.MessageLogger.cerr.FwkReport.reportEvery = 10000
+#process.MessageLogger.cerr.FwkReport.reportEvery = 10000
 
 ## Define the input source
 aodpath_1k_450_100k = '/store/mc/Run3Winter20DRPremixMiniAOD/HTo2LongLivedTo4b_MH-1000_MFF-450_CTau-100000mm_TuneCP5_14TeV_pythia8/AODSIM/110X_mcRun3_2021_realistic_v6-v2/'
@@ -88,6 +88,9 @@ process.source = cms.Source("PoolSource",
 
         #'root://cmsxrootd-site.fnal.gov//store/data/Run2022C/JetHT/AOD/27Jun2023-v2/25310000/161a4ef3-6d8f-4026-bc32-12473677119e.root',
         #'root://cmsxrootd-site.fnal.gov//store/data/Run2018A/JetHT/MINIAOD/12Nov2019_UL2018-v2/100000/07082E78-7805-EB44-BB4D-1D3AB8892FB7.root',
+
+		#'/store/mc/RunIISummer20UL18RECO/GJets_HT-40To100_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/2550000/06CC60F3-D74E-174E-8AD7-DCDAB14FB26F.root',
+		#'/store/data/Run2018C/JetHT/AOD/15Feb2022_UL2018-v1/2530001/B2C0793B-3D7B-104F-B34B-87D010EFDEF4.root',	
 
 		  #'file:jwk_reco_data_DIGI2RAW.root'),
 
@@ -192,7 +195,7 @@ process.source = cms.Source("PoolSource",
 ## How many events to process
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(5))
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#ST
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))#TTi
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))#TTi
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#LT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500))#US
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(12500))#VS
@@ -200,7 +203,7 @@ process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))#TTi
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100000))#MS
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250000))#MD
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500000))#LG
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
 
 # Set the global tag depending on the sample type
 from Configuration.AlCa.GlobalTag import GlobalTag

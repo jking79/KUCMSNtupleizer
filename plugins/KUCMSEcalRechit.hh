@@ -134,7 +134,7 @@ class KUCMSEcalRecHitObject : public KUCMSObjectBase {
     // get collections, do initial processing
     void LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar ); 
     // do cross talk jobs with other objects, do event processing, and load branches
-    void ProcessEvent( ItemManager<float>& geVar ){}; 
+    void ProcessEvent( ItemManager<float>& geVar ); 
 	void PostProcessEvent( ItemManager<float>& geVar );
 
     // if there are any final tasks be to done after the event loop via objectManager
@@ -160,6 +160,7 @@ class KUCMSEcalRecHitObject : public KUCMSObjectBase {
     std::vector<float> getRhTofTime( rhGroup recHits, double vtxX, double vtxY, double vtxZ );
     std::vector<float> getLeadTofRhTime( rhGroup recHits, double vtxX, double vtxY, double vtxZ );
     std::vector<float> getFractionList( const scGroup superClusterGroup, rhGroup recHits );
+	std::tuple<uInt,float> getHFList( const scGroup superClusterGroup );
 
     float getRhTOF( EcalRecHit rechit, double vtxX, double vtxY, double vtxZ );
     float getLeadTofTime( rhGroup recHits, double vtxX, double vtxY, double vtxZ );
@@ -346,8 +347,11 @@ void KUCMSEcalRecHitObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("zsceta","SuperCluster_eta",VFLOAT,"pseudorapidity of cluster centroid");
     Branches.makeBranch("zscphi","SuperCluster_phi",VFLOAT,"azimuthal angle of cluster centroid");
     Branches.makeBranch("zscenergy","SuperCluster_energy",VFLOAT);
-    Branches.makeBranch("zscsize","SuperCluster_nXtals",VUINT);
+    Branches.makeBranch("zscnrh","SuperCluster_nRHXtals",VUINT, "size of the rechitgroup found from the H&F list for the supercluster");
+    Branches.makeBranch("zscsize","SuperCluster_nHFXtals",VUINT,"size of the H&F list for the supercluster");
+    Branches.makeBranch("zscsizedif","SuperCluster_diffXtrals",VUINT,"diff of nRHXtals and nHFXtals");
     Branches.makeBranch("zscrhids","SuperCluster_rhIds",VVUINT,"list of rechit raw ids in hits and fractions list from supercluster");
+    Branches.makeBranch("zscrhfracs","SuperCluster_rhFracs",VVFLOAT,"list of rechit energy fractions in hits and fractions list from supercluster");
 
     Branches.makeBranch("zscEnergyRaw","SuperCluster_energyRaw",VFLOAT,"raw energy of photon supercluster");//
     Branches.makeBranch("zscIsEB","SuperCluster_seedIsEB",VBOOL,"photon supercluster seed crystal is in ecal barrel");
@@ -492,6 +496,7 @@ void KUCMSEcalRecHitObject::LoadEvent( const edm::Event& iEvent, const edm::Even
 
 }//<<>>void KUCMSEcalRecHit::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
+void KUCMSEcalRecHitObject::ProcessEvent( ItemManager<float>& geVar ){}
 
 void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
 
@@ -532,10 +537,14 @@ void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
         const rhIdGroup scRhIdsGroup = getRhGrpIDs( scRhGroup );
 		std::vector<float> fracList = getFractionList( scSCGroup, scRhGroup );
         Branches.fillBranch("zscrhids",scRhIdsGroup);
-        //setRecHitUsed(scRhIdsGroup);
-        setRecHitUsed(scRhIdsGroup, isOOT, scenergy, fracList );
-        uInt scsize = scRhIdsGroup.size();
-        Branches.fillBranch("zscsize",scsize);
+        Branches.fillBranch("zscrhfracs",fracList);
+        setRecHitUsed(scRhIdsGroup);
+        //setRecHitUsed(scRhIdsGroup, isOOT, scenergy, fracList );
+        uInt scrhgsize = scRhIdsGroup.size();
+        uInt schflsize = supclstr.hitsAndFractions().size();
+        Branches.fillBranch("zscsize",schflsize);
+        Branches.fillBranch("zscnrh",scrhgsize);
+        Branches.fillBranch("zscsizedif",schflsize-scrhgsize);
 
         const float scEnergyRaw = supclstr.rawEnergy();
         const bool isScEtaEB = abs(supclstr.eta()) < 1.4442;
@@ -724,15 +733,17 @@ void KUCMSEcalRecHitObject::setRecHitUsed( rhIdGroup idgroup){
 
 void KUCMSEcalRecHitObject::setRecHitUsed( rhIdGroup idgroup, bool isOOT, float sce, std::vector<float> fracs ){
 
-	std::cout << " - enetering setRecHitUsed loop with sce " << sce << " isOOT:  " <<  isOOT << std::endl;
+	//std::cout << " - enetering setRecHitUsed loop with sce " << sce << " isOOT:  " <<  isOOT << std::endl;
     int nRecHits = frechits.size();
 	int idxRhid = 0;
+	int nRhids = idgroup.size();
     for( auto rhid : idgroup ){
         for( int it = 0; it < nRecHits; it++ ){ 
 			if( getRawID( frechits[it] ) == rhid ){ 
 				frhused[it] = true;
 				if( frechits[it].energy() < 0.2 ){ 
-					std::cout << " -- rh energy: " << frechits[it].energy() << " frac: " << fracs[idxRhid] << std::endl;  
+					std::cout << " - In setRecHitUsed loop with sce " << sce << " isOOT:  " << isOOT << " #rhs: " << nRhids;
+					std::cout << " --- rh energy: " << frechits[it].energy() << " frac: " << fracs[idxRhid] << std::endl;  
 				}//<<>>if( frechits[it].energy() < 0.2 )
 				break; 
 			}//<<>>if( getRawID( frechits[it] ) == rhid ) 

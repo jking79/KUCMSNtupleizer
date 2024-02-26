@@ -12,7 +12,9 @@ test/myWorkingArea/
 test/myWorkSpace/
 test/*WorkSpace/
 test/compWorkingArea/
+test/mySmallWorkspace/
 *.root
+*.txt
 *.pyc
 *.obj
 *.log

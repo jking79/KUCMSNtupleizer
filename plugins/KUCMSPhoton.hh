@@ -81,7 +81,7 @@ class KUCMSPhotonObject : public KUCMSObjectBase {
     void LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar );
     // do cross talk jobs with other objects, do event processing, and load branches
     void ProcessEvent( ItemManager<float>& geVar );
-    void PostProcessEvent( ItemManager<float>& geVar ){};
+    void PostProcessEvent( ItemManager<float>& geVar );
 
     // if there are any final tasks be to done after the event loop via objectManager
     void EndJobs(); // do any jobs that need to be done after main event loop
@@ -388,7 +388,9 @@ void KUCMSPhotonObject::LoadEvent( const edm::Event& iEvent, const edm::EventSet
 
 }//<<>>void KUCMSPhoton::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
-void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
+void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){}
+
+void KUCMSPhotonObject::PostProcessEvent( ItemManager<float>& geVar ){
 
     if( PhotonDEBUG ) std::cout << "Processing Photons" << std::endl;
 

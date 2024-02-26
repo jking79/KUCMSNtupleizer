@@ -122,6 +122,9 @@ class KUCMSObjectBase : public edm::one::EDAnalyzer<edm::one::SharedResources> {
     // Object Name
     std::string title;
 
+	//Internal information passing
+    ItemManager<float> objVars;
+
 	private:
 
     void analyze( const edm::Event& iEvent, const edm::EventSetup& iSetup)

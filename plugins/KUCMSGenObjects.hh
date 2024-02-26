@@ -75,7 +75,7 @@ class KUCMSGenObject : public KUCMSObjectBase {
     void LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar );
     // do cross talk jobs with other objects, do event processing, and load branches
     void ProcessEvent( ItemManager<float>& geVar );
-    void PostProcessEvent( ItemManager<float>& geVar ){};
+    void PostProcessEvent( ItemManager<float>& geVar );
 
     // if there are any final tasks be to done after the event loop via objectManager
     void EndJobs(); // do any jobs that need to be done after main event loop
@@ -221,7 +221,7 @@ void KUCMSGenObject::LoadEvent( const edm::Event& iEvent, const edm::EventSetup&
             bool isGlino( genPart.pdgId() == 1000021 );
             bool isNtlino( genPart.pdgId() == 1000022 || genPart.pdgId() == 1000023 || genPart.pdgId() == 1000025 || genPart.pdgId() == 1000035 );
             bool isChrino( genPart.pdgId() == 1000024 || genPart.pdgId() == 1000037 );
-            bool isGrvtino( genPart.pdgId() == 1000021 );
+            bool isGrvtino( genPart.pdgId() == 1000039 );
 			//if( GenDEBUG && isNtlino ) std::cout << "Found genParton isNtlino" << std::endl;
 			//bool keep( isPhoton || isQuark );
         	if( isQuark || isZW || isNtlino || isChrino || isGrvtino || isSQuark || isGlino ){
@@ -237,7 +237,9 @@ void KUCMSGenObject::LoadEvent( const edm::Event& iEvent, const edm::EventSetup&
 
 }//<<>>void KUCMSGen::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
-void KUCMSGenObject::ProcessEvent( ItemManager<float>& geVar ){
+void KUCMSGenObject::ProcessEvent( ItemManager<float>& geVar ){}
+
+void KUCMSGenObject::PostProcessEvent( ItemManager<float>& geVar ){
 
     //if( GenDEBUG ) std::cout << "Processing Gens" << std::endl;
 
@@ -252,7 +254,7 @@ void KUCMSGenObject::ProcessEvent( ItemManager<float>& geVar ){
         const float genEnergy = genpart.energy();
         const float genPhi = genpart.phi();
         const float genEta = genpart.eta();
-        const uInt genPdgId = genpart.pdgId();
+        const uInt genPdgId = std::abs(genpart.pdgId());
         const float genPx = genpart.px();
         const float genPy = genpart.py();
         const float genPz = genpart.pz();

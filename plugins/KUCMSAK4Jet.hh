@@ -88,7 +88,7 @@ class KUCMSAK4JetObject : public KUCMSObjectBase {
     void LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar );
     // do cross talk jobs with other objects, do event processing, and load branches
     void ProcessEvent( ItemManager<float>& geVar );
-    void PostProcessEvent( ItemManager<float>& geVar ){};
+    void PostProcessEvent( ItemManager<float>& geVar );
 
     // if there are any final tasks be to done after the event loop via objectManager
     void EndJobs(); // do any jobs that need to be done after main event loop
@@ -211,7 +211,9 @@ void KUCMSAK4JetObject::LoadEvent( const edm::Event& iEvent, const edm::EventSet
 
 }//<<>>void KUCMSAK4Jet::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
-void KUCMSAK4JetObject::ProcessEvent( ItemManager<float>& geVar ){
+void KUCMSAK4JetObject::ProcessEvent( ItemManager<float>& geVar ){}
+
+void KUCMSAK4JetObject::PostProcessEvent( ItemManager<float>& geVar ){
 
     if( AK4JetDEBUG ) std::cout << "Processing AK4Jets" << std::endl;
 

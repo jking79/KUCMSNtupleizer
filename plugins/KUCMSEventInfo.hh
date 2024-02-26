@@ -67,7 +67,7 @@ class KUCMSEventInfoObject : public KUCMSObjectBase {
     void LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar );
     // do cross talk jobs with other objects, do event processing, and load branches
     void ProcessEvent( ItemManager<float>& geVar );
-    void PostProcessEvent( ItemManager<float>& geVar ){};
+    void PostProcessEvent( ItemManager<float>& geVar );
 
     // if there are any final tasks be to done after the event loop via objectManager
     void EndJobs(); // do any jobs that need to be done after main event loop
@@ -156,6 +156,8 @@ void KUCMSEventInfoObject::ProcessEvent( ItemManager<float>& geVar ){
     Branches.fillBranch("vtxZ",geVar("vtxZ"));
 
 }//<<>>void KUCMSEventInfo::ProcessEvent()
+
+void KUCMSEventInfoObject::PostProcessEvent( ItemManager<float>& geVar ){}
 
 void KUCMSEventInfoObject::EndJobs(){}
 
