@@ -1,9 +1,11 @@
+#ifndef KUCMSDisplacedElectron_hh
+#define KUCMSDisplacedElectron_hh
 // -*- C++ -*-
 //
 //
-// Original Author:  Jack W King III
+// Original Author:  Andres Abreu
 // 
-// KUCMS Example Object
+// 
 //
 
 //--------------------   hh file -------------------------------------------------------------
@@ -66,9 +68,6 @@
 #include "KUCMSBranchManager.hh"
 #include "KUCMSObjectBase.hh"
 
-#ifndef KUCMSDisplacedElectron_hh
-#define KUCMSDisplacedElectron_hh
-
 //#define DEBUG true
 #define DEBUG false
 
@@ -107,8 +106,7 @@ public:
   
   // if there are any final tasks be to done after the event loop via objectManager
   void EndJobs(); // do any jobs that need to be done after main event loop
-  
-  
+    
 private:
 
   typedef std::vector<TrackInfo> TrackInfoCollection;
@@ -230,19 +228,15 @@ void KUCMSDisplacedElectron::LoadEvent( const edm::Event& iEvent, const edm::Eve
   // Collect general tracks
   nGeneralTracks_ = 0; 
   for(const auto &track : *generalTracksHandle_) {
-    if(track.pt() > 0.95) {
-      transientTracks_.emplace_back(ttBuilder->build(track));
-      nGeneralTracks_++;
-    }
+    transientTracks_.emplace_back(ttBuilder->build(track));
+    nGeneralTracks_++;
   }
 
   // Collect Gsf tracks
   nGsfTracks_ = 0;
   for(const auto &track : *gsfTracksHandle_) {
-    if(track.pt() > 0.95) {
-      transientTracks_.emplace_back(ttBuilder->build(track));
-      nGsfTracks_++;
-    }
+    transientTracks_.emplace_back(ttBuilder->build(track));
+    nGsfTracks_++;
   }
 
   // Collect SuperClusters
@@ -269,9 +263,22 @@ void KUCMSDisplacedElectron::PostProcessEvent( ItemManager<float>& geVar ){
   Branches.clearBranches();
   signalGenElectrons_.clear();
 
+  // Get Gen-Matching information if available
+  float genCost = -1;
   if(cfFlag("hasGenInfo")) {
     for(auto const &gen : genObjs_->GetSignalGenElectrons()) {
       signalGenElectrons_.emplace_back(gen);
+    }
+
+    if(signalGenElectrons_.size() > 0 && matchedTracksToSCs_.size() > 0) {
+      TrackInfoCollection candidateInfo;
+      CollectCandidateInfo(matchedTracksToSCs_, candidateInfo);
+      DeltaRMatchHungarian<TrackInfo, reco::GenParticle> genToTrackAssigner(candidateInfo, signalGenElectrons_);
+
+      for(auto const & pair : genToTrackAssigner.GetPairedObjects())
+	matchedTracksToSCs_[pair.GetIndexA()].setGenMatchInfo(pair.GetIndexB(), pair.GetDeltaR());
+
+      genCost = genToTrackAssigner.GetCost();
     }
   }
 
@@ -285,20 +292,6 @@ void KUCMSDisplacedElectron::PostProcessEvent( ItemManager<float>& geVar ){
   Branches.fillBranch("nOOTSuperClusters", int(ootSuperClusterHandle_->size()) );
   Branches.fillBranch("nDisplacedElectron", int(matchedTracksToSCs_.size()) );
   Branches.fillBranch("DisplacedElectron_costSC", float(matchedTracksToSCs_.GetCost()) );
-
-  float genCost = -1;
-  if(signalGenElectrons_.size() > 0 && matchedTracksToSCs_.size() > 0 && cfFlag("hasGenInfo")) {
-
-    TrackInfoCollection candidateInfo;
-    CollectCandidateInfo(matchedTracksToSCs_, candidateInfo);
-    DeltaRMatchHungarian<TrackInfo, reco::GenParticle> genToTrackAssigner(candidateInfo, signalGenElectrons_);
-
-    for(auto const & pair : genToTrackAssigner.GetPairedObjects()) 
-      matchedTracksToSCs_[pair.GetIndexA()].setGenMatchInfo(pair.GetIndexB(), pair.GetDeltaR());
-
-    genCost = genToTrackAssigner.GetCost();
-  }
-
   Branches.fillBranch("DisplacedElectron_costGen", float(genCost));
   
   for(auto const &candidate : matchedTracksToSCs_) {
@@ -306,6 +299,14 @@ void KUCMSDisplacedElectron::PostProcessEvent( ItemManager<float>& geVar ){
     const auto track(candidate.GetTrack().track());
     const reco::SuperCluster superCluster(candidate.GetSuperCluster());
     const GlobalPoint trackAtECAL(candidate.GetTrackLocationAtECAL());
+    
+    const int trackIndex = (candidate.GetTrackIndex() < int(nGeneralTracks_)) ? 
+      candidate.GetTrackIndex() : 
+      candidate.GetTrackIndex() - nGeneralTracks_;
+    
+    const int scIndex = (candidate.GetSCIndex() < int(superClusterHandle_->size()) ) ? 
+      candidate.GetSCIndex() : 
+      candidate.GetSCIndex() - superClusterHandle_->size();
     
     Branches.fillBranch("DisplacedElectron_charge", int(track.charge()) );
     Branches.fillBranch("DisplacedElectron_p", float(track.p()) );
@@ -332,24 +333,9 @@ void KUCMSDisplacedElectron::PostProcessEvent( ItemManager<float>& geVar ){
     Branches.fillBranch("DisplacedElectron_isGsfTrack", bool(candidate.GetTrackIndex() >= int(nGeneralTracks_)) );
     Branches.fillBranch("DisplacedElectron_isSC", bool(candidate.GetSCIndex() < int(superClusterHandle_->size())) );
     Branches.fillBranch("DisplacedElectron_isOOTSC", bool(candidate.GetSCIndex() >= int(superClusterHandle_->size())) );
-			
-
-    if(candidate.GetTrackIndex() < int(nGeneralTracks_) ) {
-      Branches.fillBranch("DisplacedElectron_indexTrack", int(candidate.GetTrackIndex()) );
-    }
-    else {
-      Branches.fillBranch("DisplacedElectron_indexTrack", int(candidate.GetTrackIndex() - nGeneralTracks_) );
-    }
-
-    if(candidate.GetSCIndex() < int(superClusterHandle_->size()) ) {
-      Branches.fillBranch("DisplacedElectron_indexSC", int(candidate.GetSCIndex()) );
-    }
-    else {
-      Branches.fillBranch("DisplacedElectron_indexSC", int(candidate.GetSCIndex() - superClusterHandle_->size()) );
-    }
+    Branches.fillBranch("DisplacedElectron_indexTrack", trackIndex);
+    Branches.fillBranch("DisplacedElectron_indexSC", scIndex);
   }
-  //Branches.fillBranch("", );
-
 }//<<>>void KUCMSDisplacedElectron::PostProcessEvent()
 
 void KUCMSDisplacedElectron::CollectCandidateInfo(const MatchedTrackSCPairs<reco::TransientTrack> &candidates, TrackInfoCollection &trackInfo) const {
