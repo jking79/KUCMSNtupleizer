@@ -290,7 +290,7 @@ void KUCMSDisplacedElectron::PostProcessEvent( ItemManager<float>& geVar ){
   Branches.fillBranch("nTracks", int(transientTracks_.size()) );
   Branches.fillBranch("nSuperClusters", int(superClusterHandle_->size()) );
   Branches.fillBranch("nOOTSuperClusters", int(ootSuperClusterHandle_->size()) );
-  Branches.fillBranch("nDisplacedElectron", int(matchedTracksToSCs_.size()) );
+  Branches.fillBranch("DisplacedElectron_nTotal", int(matchedTracksToSCs_.size()) );
   Branches.fillBranch("DisplacedElectron_costSC", float(matchedTracksToSCs_.GetCost()) );
   Branches.fillBranch("DisplacedElectron_costGen", float(genCost));
   
