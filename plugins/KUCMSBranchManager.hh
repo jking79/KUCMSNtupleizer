@@ -149,7 +149,7 @@ void KUCMSBranch::clearBranch(){
         case VFLOAT    : VFLOATBranch.clear(); break;
         case VSTR    : VSTRBranch.clear(); break;
         case VBOOL  : VBOOLBranch.clear(); break;
-        case UINT   : UINTBranch = std::numeric_limits<unsigned int>::max(); break;
+        case UINT   : UINTBranch =  std::numeric_limits<unsigned int>::max(); break;
         case INT    : INTBranch = std::numeric_limits<int>::max(); break;
         case FLOAT  : FLOATBranch = std::numeric_limits<float>::max(); break;
         case STR    : STRBranch = ""; break;
