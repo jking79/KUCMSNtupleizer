@@ -171,7 +171,7 @@ void KUCMSDisplacedElectron::InitObject( TTree* fOutTree ){
   Branches.makeBranch("nSuperClusters","nSuperClusters", INT);
   Branches.makeBranch("nOOTSuperClusters","nOOTSuperClusters", INT);
   Branches.makeBranch("nGenElectronSig","nGenElectronSig", INT); 
-  Branches.makeBranch("nDisplacedElectron", "nDisplacedElectron", INT);
+  Branches.makeBranch("DisplacedElectron_nTotal", "DisplacedElectron_nTotal", INT);
   Branches.makeBranch("DisplacedElectron_charge", "DisplacedElectron_charge", VINT);
   Branches.makeBranch("DisplacedElectron_p", "DisplacedElectron_p", VFLOAT);
   Branches.makeBranch("DisplacedElectron_pt", "DisplacedElectron_pt", VFLOAT);
