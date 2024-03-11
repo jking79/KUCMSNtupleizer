@@ -237,9 +237,9 @@ void KUCMSGenObject::LoadEvent( const edm::Event& iEvent, const edm::EventSetup&
 
 }//<<>>void KUCMSGen::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
-void KUCMSGenObject::ProcessEvent( ItemManager<float>& geVar ){}
+void KUCMSGenObject::PostProcessEvent( ItemManager<float>& geVar ){}
 
-void KUCMSGenObject::PostProcessEvent( ItemManager<float>& geVar ){
+void KUCMSGenObject::ProcessEvent( ItemManager<float>& geVar ){
 
     //if( GenDEBUG ) std::cout << "Processing Gens" << std::endl;
 
@@ -846,8 +846,8 @@ const reco::Candidate* KUCMSGenObject::llpGenSearch( const reco::Candidate* kid,
     //bool eleFlag = ( kidPdgID == 11 ) ? true : false;
     bool qFlag = ( kidPdgID < 7 ) ? true : false;
     bool pFlag = ( kidPdgID == 2212 ) ? true : false;
-    bool n1Flag = ( kidPdgID > 1000021 && kidPdgID < 1000026 ) ? true : false;
-    bool n2Flag = ( kidPdgID == 1000035 || kidPdgID == 1000037 ) ? true : false;
+    //bool n1Flag = ( kidPdgID > 1000021 && kidPdgID < 1000026 ) ? true : false;
+    //bool n2Flag = ( kidPdgID == 1000035 || kidPdgID == 1000037 ) ? true : false;
 
     if( pFlag ) return notfound;
     int nMoms = kid->numberOfMothers();

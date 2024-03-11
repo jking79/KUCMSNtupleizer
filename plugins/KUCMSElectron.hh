@@ -134,6 +134,7 @@ KUCMSElectronObject::KUCMSElectronObject( const edm::ParameterSet& iConfig ){
 void KUCMSElectronObject::InitObject( TTree* fOutTree ){
 
     //Branches.makeBranch("RhIds","Electron_rhIds",VVUINT);
+    Branches.makeBranch("nEle","Electron_nElectrons",INT);
     Branches.makeBranch("scIndex","Electron_scIndex",VINT,"index of supercluster");
     Branches.makeBranch("SeedTOFTime","Electron_seedTOFTime",VFLOAT);
     Branches.makeBranch("Pt","Electron_pt",VFLOAT);
@@ -174,8 +175,8 @@ void KUCMSElectronObject::LoadEvent( const edm::Event& iEvent, const edm::EventS
 
 
 	iEvent.getByToken(electronsToken_, electrons_);
-    iEvent.getByToken(conversionsToken_,conversions_);
-    iEvent.getByToken(beamLineToken_,beamSpot_);
+    iEvent.getByToken(conversionsToken_, conversions_);
+    iEvent.getByToken(beamLineToken_, beamSpot_);
 
     if( ElectronDEBUG ) std::cout << "Collecting Electrons" << std::endl;
 
@@ -195,9 +196,9 @@ void KUCMSElectronObject::LoadEvent( const edm::Event& iEvent, const edm::EventS
 
 }//<<>>void KUCMSElectron::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
-void KUCMSElectronObject::ProcessEvent( ItemManager<float>& geVar ){}
+void KUCMSElectronObject::PostProcessEvent( ItemManager<float>& geVar ){}
 
-void KUCMSElectronObject::PostProcessEvent( ItemManager<float>& geVar ){
+void KUCMSElectronObject::ProcessEvent( ItemManager<float>& geVar ){
 
     if( ElectronDEBUG ) std::cout << "Processing Electrons" << std::endl;
 
@@ -205,6 +206,7 @@ void KUCMSElectronObject::PostProcessEvent( ItemManager<float>& geVar ){
 
     if( ElectronDEBUG ) std::cout << " - enetering Electron loop" << std::endl;
 
+	int eleIndx = 0;
     scGroup scptrs;
     std::vector<float> scptres;
     if( ElectronDEBUG ) std::cout << "Processing Electrons" << std::endl;
@@ -231,7 +233,8 @@ void KUCMSElectronObject::PostProcessEvent( ItemManager<float>& geVar ){
         if( ElectronDEBUG ) std::cout << " --- Proccesssing : " << electron << std::endl;
         const auto &elesc = electron.superCluster().isNonnull() ? electron.superCluster() : electron.parentSuperCluster();
         const auto scptr = elesc.get();
-        const auto scIndex = rhObj->getSuperClusterIndex(scptr);
+		//int encIndx = eleIndx+1;
+        const auto scIndex = rhObj->getSuperClusterIndex(scptr,11,eleIndx);
         Branches.fillBranch("scIndex",scIndex);
         //const scGroup eleSCGroup{*scptr};
         //const auto eleRhGroup = rhObj->getRHGroup( eleSCGroup, 0.2 );
@@ -245,6 +248,7 @@ void KUCMSElectronObject::PostProcessEvent( ItemManager<float>& geVar ){
 
         Branches.fillBranch("SeedTOFTime",seedTOFTime);
 
+	    eleIndx++;
         // GenParticle Info for electron  -------------------------------------------------------------------
         if( cfFlag("hasGenInfo") ){
             scptrs.push_back(*scptr);
@@ -252,6 +256,7 @@ void KUCMSElectronObject::PostProcessEvent( ItemManager<float>& geVar ){
         }//<<>>if( hasGenInfo )
 
     }//<<>>for( const auto electron : *electrons_ )
+	Branches.fillBranch("nEle",eleIndx);
 
     if( cfFlag("hasGenInfo") ){
         auto genInfo = genObjs->getGenEleMatch( scptrs, scptres );

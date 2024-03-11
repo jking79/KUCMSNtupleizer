@@ -220,8 +220,8 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
    #hasGenInfo = cms.bool(False),
    minEvtMet = cms.double(150.0),
    #minEvtMet = cms.double(50.0),
-   minRHEi = cms.double(0.0),
-   minRHEf = cms.double(0.2),
+   minRHEi = cms.double(0.5),
+   minRHEf = cms.double(0.5),
    ## additional collections
    ## tracks
    #tracks = cms.InputTag("unpackedTracksAndVertices"),
