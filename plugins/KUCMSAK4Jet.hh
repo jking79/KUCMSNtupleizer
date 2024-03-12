@@ -211,9 +211,9 @@ void KUCMSAK4JetObject::LoadEvent( const edm::Event& iEvent, const edm::EventSet
 
 }//<<>>void KUCMSAK4Jet::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
-void KUCMSAK4JetObject::ProcessEvent( ItemManager<float>& geVar ){}
+void KUCMSAK4JetObject::PostProcessEvent( ItemManager<float>& geVar ){}
 
-void KUCMSAK4JetObject::PostProcessEvent( ItemManager<float>& geVar ){
+void KUCMSAK4JetObject::ProcessEvent( ItemManager<float>& geVar ){
 
     if( AK4JetDEBUG ) std::cout << "Processing AK4Jets" << std::endl;
 

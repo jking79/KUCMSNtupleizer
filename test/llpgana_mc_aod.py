@@ -220,88 +220,89 @@ process.TFileService = cms.Service("TFileService", fileName = cms.string(options
 				   
 # Make the tree 
 process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
-                              tkAssocParamBlock,
-                              ## flags
-                              hasGenInfo = cms.bool(options.hasGenInfo),
-                              #hasGenInfo = cms.bool(False),
-                              minEvtMet = cms.double(150.0),
-                              #minEvtMet = cms.double(50.0),
-                              minRHEi = cms.double(0.0),
-                              minRHEf = cms.double(0.2),
-                              ## additional collections
-                              ## tracks
-                              tracks = cms.InputTag("ecalTracks", "ecalGeneralTracks"),
-                              gsfTracksSrc = cms.InputTag("ecalTracks", "ecalGsfTracks"),
-                              displacedSCs = cms.InputTag("ecalTracks", "displacedElectronSCs"),
-                              ## vertices
-                              #vertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
-                              vertices = cms.InputTag("offlinePrimaryVertices"),
-                              ## pfcandidates
-                              #pfcandidates = cms.InputTag("packedPFCandidates"),
-                              pfcandidates = cms.InputTag("particleFlow"),
-                              particleflow = cms.InputTag("particleFlow",""),	
-                              pfcanphomap = cms.InputTag("particleFlow","photons"),
-                              pfcanootphomap = cms.InputTag("particleFlow","photons"),
-                              pfcanelemap = cms.InputTag("particleFlow","electrons"),
-                              ## rho
-                              #rho = cms.InputTag("fixedGridRhoFastjetAll"), #fixedGridRhoAll
-                              rho = cms.InputTag("fixedGridRhoAll"),
-                              ## conversions
-                              conversions = cms.InputTag("allConversions"), 
-                              ## beamSpot
-                              beamSpot = cms.InputTag("offlineBeamSpot"),
-                              ## trigger
-                              triggerResults = cms.InputTag("TriggerResults"),
-                              triggerObjects = cms.InputTag("TriggerResults"),
-                              ## METs
-                              #mets = cms.InputTag("slimmedMETs"),
-                              mets = cms.InputTag("pfMet"),
-                              ## jets
-                              #Charge Hadron Subtracted : charged particles from non-primary vertices (pileup) are removed before clustering.
-                              #jets = cms.InputTag("updatedPatJetsUpdatedJEC"),
-                              #jets = cms.InputTag("slimmedJets"),
-                              #jets = cms.InputTag("ak4PFJets"),
-                              jets = cms.InputTag("ak4PFJetsCHS"),
-                              #jets = cms.InputTag("ak8PFJetsCHS"),
-                              calojets = cms.InputTag("ak4CaloJets",""),
-                              ## electrons
-                              #electrons = cms.InputTag("slimmedElectrons"),
-                              electrons = cms.InputTag("gedGsfElectrons"),
-                              eleMVAIDLooseMap = cms.InputTag("PhotonIDProdGED", "PhotonCutBasedIDLooseEM"),
-                              ## muons
-                              #muons = cms.InputTag("slimmedMuons"),
-                              muons = cms.InputTag("muons"),
-                              ## photons
-                              #gedPhotons = cms.InputTag("slimmedPhotons"),
-                              gedPhotons = cms.InputTag("gedPhotons"),
-                              #gedPhotons = cms.InputTag("photons"),
-                              phoCBIDLooseMap = cms.InputTag("PhotonIDProd", "PhotonCutBasedIDLooseEM"), 
-                              #ootPhotons = cms.InputTag("slimmedOOTPhotons"),
-                              ootPhotons = cms.InputTag("ootPhotons"),
-                              ## ecal recHits
-                              #recHitsEB = cms.InputTag("reducedEgamma", "reducedEBRecHits"),
-                              #recHitsEE = cms.InputTag("reducedEgamma", "reducedEERecHits"),
-                              recHitsEB = cms.InputTag("reducedEcalRecHitsEB"),
-                              recHitsEE = cms.InputTag("reducedEcalRecHitsEE"),
-                              ## superclusters
-                              #superClusters = cms.InputTag("reducedEgamma", "reducedSuperClusters"),
-                              superClusters = cms.InputTag("particleFlowEGamma"),
-                              otherSuperClusters = cms.InputTag("particleFlowSuperClusterECAL", "particleFlowSuperClusterECALBarrel"),
-                              ##otherSuperClusters = cms.InputTag("hybridSuperClusters", "uncleanOnlyHybridSuperClusters"),#51/1000
-                              #otherSuperClusters = cms.InputTag("correctedHybridSuperClusters"),
-                              #ootSuperClusters = cms.InputTag("reducedEgamma", "reducedOOTSuperClusters"),
-                              ootSuperClusters = cms.InputTag("particleFlowSuperClusterOOTECAL", "particleFlowSuperClusterOOTECALBarrel"), 
-                              ## caloclusters
-                              #caloClusters = cms.InputTag("reducedEgamma", "reducedEBEEClusters"),
-                              caloClusters = cms.InputTag("particleFlowEGamma", "EBEEClusters"),
-                              ## gen info
-                              genEvt = cms.InputTag("generator", ""),
-                              gent0 = cms.InputTag("genParticles", "t0"), 
-                              genxyz0 = cms.InputTag("genParticles", "xyz0"), 
-                              pileups = cms.InputTag("addPileupInfo", ""),
-                              #Phoronpileups = cms.InputTag("mixData", ""),
-                              genParticles = cms.InputTag("genParticles", ""),		
-                              genjets = cms.InputTag("ak4GenJets","")
+
+        tkAssocParamBlock,
+        ## flags
+        hasGenInfo = cms.bool(options.hasGenInfo),
+        #hasGenInfo = cms.bool(False),
+        minEvtMet = cms.double(150.0),
+        #minEvtMet = cms.double(50.0),
+        minRHEi = cms.double(0.0),
+        minRHEf = cms.double(0.2),
+        ## additional collections
+        ## tracks
+        tracks = cms.InputTag("ecalTracks", "ecalGeneralTracks"),
+        gsfTracksSrc = cms.InputTag("ecalTracks", "ecalGsfTracks"),
+        displacedSCs = cms.InputTag("ecalTracks", "displacedElectronSCs"),
+        ## vertices
+        #vertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
+        vertices = cms.InputTag("offlinePrimaryVertices"),
+        ## pfcandidates
+        #pfcandidates = cms.InputTag("packedPFCandidates"),
+        pfcandidates = cms.InputTag("particleFlow"),
+        particleflow = cms.InputTag("particleFlow",""),	
+        pfcanphomap = cms.InputTag("particleFlow","photons"),
+        pfcanootphomap = cms.InputTag("particleFlow","photons"),
+        pfcanelemap = cms.InputTag("particleFlow","electrons"),
+        ## rho
+        #rho = cms.InputTag("fixedGridRhoFastjetAll"), #fixedGridRhoAll
+        rho = cms.InputTag("fixedGridRhoAll"),
+        ## conversions
+        conversions = cms.InputTag("allConversions"), 
+        ## beamSpot
+        beamSpot = cms.InputTag("offlineBeamSpot"),
+        ## trigger
+        triggerResults = cms.InputTag("TriggerResults"),
+        triggerObjects = cms.InputTag("TriggerResults"),
+        ## METs
+        #mets = cms.InputTag("slimmedMETs"),
+        mets = cms.InputTag("pfMet"),
+        ## jets
+        #Charge Hadron Subtracted : charged particles from non-primary vertices (pileup) are removed before clustering.
+        #jets = cms.InputTag("updatedPatJetsUpdatedJEC"),
+        #jets = cms.InputTag("slimmedJets"),
+        #jets = cms.InputTag("ak4PFJets"),
+        jets = cms.InputTag("ak4PFJetsCHS"),
+        #jets = cms.InputTag("ak8PFJetsCHS"),
+        calojets = cms.InputTag("ak4CaloJets",""),
+        ## electrons
+        #electrons = cms.InputTag("slimmedElectrons"),
+        electrons = cms.InputTag("gedGsfElectrons"),
+        eleMVAIDLooseMap = cms.InputTag("PhotonIDProdGED", "PhotonCutBasedIDLooseEM"),
+        ## muons
+        #muons = cms.InputTag("slimmedMuons"),
+        muons = cms.InputTag("muons"),
+        ## photons
+        #gedPhotons = cms.InputTag("slimmedPhotons"),
+        gedPhotons = cms.InputTag("gedPhotons"),
+        #gedPhotons = cms.InputTag("photons"),
+        phoCBIDLooseMap = cms.InputTag("PhotonIDProd", "PhotonCutBasedIDLooseEM"), 
+        #ootPhotons = cms.InputTag("slimmedOOTPhotons"),
+        ootPhotons = cms.InputTag("ootPhotons"),
+        ## ecal recHits
+        #recHitsEB = cms.InputTag("reducedEgamma", "reducedEBRecHits"),
+        #recHitsEE = cms.InputTag("reducedEgamma", "reducedEERecHits"),
+        recHitsEB = cms.InputTag("reducedEcalRecHitsEB"),
+        recHitsEE = cms.InputTag("reducedEcalRecHitsEE"),
+        ## superclusters
+        #superClusters = cms.InputTag("reducedEgamma", "reducedSuperClusters"),
+        superClusters = cms.InputTag("particleFlowEGamma"),
+        otherSuperClusters = cms.InputTag("particleFlowSuperClusterECAL", "particleFlowSuperClusterECALBarrel"),
+        ##otherSuperClusters = cms.InputTag("hybridSuperClusters", "uncleanOnlyHybridSuperClusters"),#51/1000
+        #otherSuperClusters = cms.InputTag("correctedHybridSuperClusters"),
+        #ootSuperClusters = cms.InputTag("reducedEgamma", "reducedOOTSuperClusters"),
+        ootSuperClusters = cms.InputTag("particleFlowSuperClusterOOTECAL", "particleFlowSuperClusterOOTECALBarrel"), 
+        ## caloclusters
+        #caloClusters = cms.InputTag("reducedEgamma", "reducedEBEEClusters"),
+        caloClusters = cms.InputTag("particleFlowEGamma", "EBEEClusters"),
+        ## gen info
+        genEvt = cms.InputTag("generator", ""),
+        gent0 = cms.InputTag("genParticles", "t0"), 
+        genxyz0 = cms.InputTag("genParticles", "xyz0"), 
+        pileups = cms.InputTag("addPileupInfo", ""),
+        #Phoronpileups = cms.InputTag("mixData", ""),
+        genParticles = cms.InputTag("genParticles", ""),		
+        genjets = cms.InputTag("ak4GenJets","")
 
 )##<<>>process.tree = cms.EDAnalyzer("LLPgammaAnalyzer_aod"
 

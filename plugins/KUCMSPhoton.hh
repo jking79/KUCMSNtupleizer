@@ -153,6 +153,7 @@ void KUCMSPhotonObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("Px","Photon_px",VFLOAT);
     Branches.makeBranch("Py","Photon_py",VFLOAT);
     Branches.makeBranch("Pz","Photon_pz",VFLOAT);
+    Branches.makeBranch("nPho","Photon_nPhoton",INT);
 
     Branches.makeBranch("EnergyErr","Photon_energyErr",VFLOAT,"energy error of the cluster from regression");//
     //Branches.makeBranch("EnergyRaw","Photon_energyRaw",VFLOAT,"raw energy of photon supercluster");//
@@ -388,9 +389,9 @@ void KUCMSPhotonObject::LoadEvent( const edm::Event& iEvent, const edm::EventSet
 
 }//<<>>void KUCMSPhoton::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
-void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){}
+void KUCMSPhotonObject::PostProcessEvent( ItemManager<float>& geVar ){}
 
-void KUCMSPhotonObject::PostProcessEvent( ItemManager<float>& geVar ){
+void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
 
     if( PhotonDEBUG ) std::cout << "Processing Photons" << std::endl;
 
@@ -398,7 +399,7 @@ void KUCMSPhotonObject::PostProcessEvent( ItemManager<float>& geVar ){
 
     if( PhotonDEBUG ) std::cout << " - enetering Photon loop" << std::endl;
 
-    uInt phoIdx = 0;
+    int phoIdx = 0;
 	scGroup scptrs;
 	std::vector<float> scptres;
 	//std::vector<int> scmatched;
@@ -569,7 +570,8 @@ void KUCMSPhotonObject::PostProcessEvent( ItemManager<float>& geVar ){
         Branches.fillBranch("eleVeto",passelectronveto);
 
         if( PhotonDEBUG ) std::cout << " --- Gathering SC info : " << scptr << std::endl;
-		const auto scIndex = rhObj->getSuperClusterIndex(scptr);
+		//int encIndx = int(phoIdx)*100;
+		const auto scIndex = rhObj->getSuperClusterIndex(scptr,22,phoIdx);
 		Branches.fillBranch("scIndex",scIndex);
 		//scmatched.push_back(scIndex);
 		//if( scIndex == -1 ) std::cout << " - phoSC: " << scIndex << " - " << phoEnergyRaw << " - " << " - " << seedDetId.rawId() << std::endl;   
@@ -594,6 +596,7 @@ void KUCMSPhotonObject::PostProcessEvent( ItemManager<float>& geVar ){
 
         phoIdx++;
     }//<<>>for( const auto &photon : fPhotons 
+	Branches.fillBranch("nPho",phoIdx);
 
 	if( cfFlag("hasGenInfo") ){
 		auto genInfo = genObj->getGenPhoMatch( scptrs, scptres );
