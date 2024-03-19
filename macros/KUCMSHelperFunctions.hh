@@ -28,7 +28,6 @@
 #include <tuple>
 #include <random>
 #include <sys/stat.h>
-#include <string>
 #include <cmath>
 
 #ifndef KUCMSHelperHeader
@@ -295,6 +294,27 @@ const auto wsincos  (CVFlt x, CVFlt wv){
                         for(auto ix : x ){ sum += wv[it]*sin(ix)*cos(ix); wt += wv[it]; it++;}
                         return sum/wt;
                     }//const auto wsincos
+
+//-----------  misc helper functions -------------------------------------------
+
+const auto  splitString( std::string str, const char* separator ) {
+
+	std::vector < std::string > strings;
+    int startIndex(0), endIndex(0);
+    for ( int i = 0; i <= str.size(); i++ ){
+        if ( str[i] == *separator || i == str.size() ){
+
+            endIndex = i;
+            std::string temp;
+            temp.append(str, startIndex, endIndex - startIndex);
+            strings.push_back(temp);
+            startIndex = endIndex + 1;
+
+        }//<<>>if (str[i] == separator || i == str.size())
+    }//<<>>for (int i = 0; i <= str.size(); i++)
+	return strings;
+
+}//<<>>const auto  splitString(string str, char separator)
 
 #endif
 //-------------------------------------------------------------------------------------------------------------------

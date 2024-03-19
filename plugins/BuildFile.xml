@@ -42,6 +42,8 @@
 <use name="SimTracker/TrackAssociation"/>
 <use name="TrackingTools/IPTools"/>
 <use name="TrackingTools/MaterialEffects"/>
+<use name="TrackingTools/TrackAssociator"/>
+<use name="KUNTupleFW/KUCMSNtupleizer"/>
 <use name="root"/>
 <use name="rootgraphics"/>
 <use name="roothistmatrix"/>

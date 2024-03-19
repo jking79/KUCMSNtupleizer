@@ -41,7 +41,7 @@
 #define KUCMSEventInfoObjectHeader
 
 //#define EventInfoEBUG true
-#define eiDEBUG false
+#define EventInfoDEBUG false
 
 using namespace edm; 
 
@@ -67,7 +67,7 @@ class KUCMSEventInfoObject : public KUCMSObjectBase {
     void LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar );
     // do cross talk jobs with other objects, do event processing, and load branches
     void ProcessEvent( ItemManager<float>& geVar );
-    void PostProcessEvent( ItemManager<float>& geVar ){};
+    void PostProcessEvent( ItemManager<float>& geVar );
 
     // if there are any final tasks be to done after the event loop via objectManager
     void EndJobs(); // do any jobs that need to be done after main event loop
@@ -115,14 +115,14 @@ void KUCMSEventInfoObject::LoadEvent( const edm::Event& iEvent, const edm::Event
     // ECAL RECHITS
     iEvent.getByToken( verticesToken, vertices_ );
 
-    //if( eiDEBUG ) std::cout << "Collecting EventInfos" << std::endl;
+    //if( EventInfoDEBUG ) std::cout << "Collecting EventInfos" << std::endl;
 
     eventVar.set("run",iEvent.id().run());
     eventVar.set("lumi", iEvent.luminosityBlock());
     eventVar.set("event", iEvent.id().event());
 
-    if( eiDEBUG ) std::cout << "Processing event: " << eventVar("event");
-    if( eiDEBUG ) std::cout << " in run: " << eventVar("run") << " and lumiblock: " << eventVar("lumi") << std::endl;
+    if( EventInfoDEBUG ) std::cout << "Processing event: " << eventVar("event");
+    if( EventInfoDEBUG ) std::cout << " in run: " << eventVar("run") << " and lumiblock: " << eventVar("lumi") << std::endl;
 
     const auto & primevtx = vertices_->front();
     const float vtxX = primevtx.position().x();
@@ -138,7 +138,7 @@ void KUCMSEventInfoObject::LoadEvent( const edm::Event& iEvent, const edm::Event
 
 void KUCMSEventInfoObject::ProcessEvent( ItemManager<float>& geVar ){
 
-    if( eiDEBUG ) std::cout << "Processing EventInfo" << std::endl;
+    if( EventInfoDEBUG ) std::cout << "Processing EventInfo" << std::endl;
 
     Branches.clearBranches();
 
@@ -156,6 +156,8 @@ void KUCMSEventInfoObject::ProcessEvent( ItemManager<float>& geVar ){
     Branches.fillBranch("vtxZ",geVar("vtxZ"));
 
 }//<<>>void KUCMSEventInfo::ProcessEvent()
+
+void KUCMSEventInfoObject::PostProcessEvent( ItemManager<float>& geVar ){}
 
 void KUCMSEventInfoObject::EndJobs(){}
 

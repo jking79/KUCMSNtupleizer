@@ -42,7 +42,7 @@
 #ifndef KUCMSPFMetObjectHeader
 #define KUCMSPFMetObjectHeader
 
-//#define PFMetEBUG true
+//#define PFMetDEBUG true
 #define PFMetDEBUG false
 
 using namespace edm; 
@@ -69,7 +69,7 @@ class KUCMSPFMetObject : public KUCMSObjectBase {
     void LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar );
     // do cross talk jobs with other objects, do event processing, and load branches
     void ProcessEvent( ItemManager<float>& geVar );
-    void PostProcessEvent( ItemManager<float>& geVar ){};
+    void PostProcessEvent( ItemManager<float>& geVar );
 
     // if there are any final tasks be to done after the event loop via objectManager
     void EndJobs(); // do any jobs that need to be done after main event loop
@@ -112,10 +112,10 @@ void KUCMSPFMetObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("Px","Met_px",FLOAT);
     Branches.makeBranch("Py","Met_py",FLOAT);
 
-    Branches.makeBranch("signif","Met_significance",FLOAT,"MET significance");
-    Branches.makeBranch("covXX","Met_covXX",FLOAT,"xx element of met covariance matrix");
-    Branches.makeBranch("covXY","Met_covXY",FLOAT,"xy element of met covariance matrix");
-    Branches.makeBranch("covYY","Met_covYY",FLOAT,"yy element of met covariance matrix");
+    //Branches.makeBranch("signif","Met_significance",FLOAT,"MET significance");
+    //Branches.makeBranch("covXX","Met_covXX",FLOAT,"xx element of met covariance matrix");
+    //Branches.makeBranch("covXY","Met_covXY",FLOAT,"xy element of met covariance matrix");
+    //Branches.makeBranch("covYY","Met_covYY",FLOAT,"yy element of met covariance matrix");
 
     Branches.makeBranch("CPt","Met_CPt",FLOAT,"Met Pt corrected for oootPhotons");
     Branches.makeBranch("CSumEt","Met_CsumEt",FLOAT,"SumEt corrected for ootPhotons");
@@ -139,7 +139,9 @@ void KUCMSPFMetObject::LoadEvent( const edm::Event& iEvent, const edm::EventSetu
 
 }//<<>>void KUCMSPFMet::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
-void KUCMSPFMetObject::ProcessEvent( ItemManager<float>& geVar ){
+void KUCMSPFMetObject::ProcessEvent( ItemManager<float>& geVar ){}
+
+void KUCMSPFMetObject::PostProcessEvent( ItemManager<float>& geVar ){
 
     if( PFMetDEBUG ) std::cout << "Processing PFMets" << std::endl;
 
@@ -154,10 +156,10 @@ void KUCMSPFMetObject::ProcessEvent( ItemManager<float>& geVar ){
     const float Py = t1pfMET.py();
     const float Phi = t1pfMET.phi();
 
-    const float signif = t1pfMET.significance();
-    const float covXX = t1pfMET.getSignificanceMatrix().At(0,0);
-    const float covXY = t1pfMET.getSignificanceMatrix().At(0,1);
-    const float covYY = t1pfMET.getSignificanceMatrix().At(1,1);
+    //const float signif = t1pfMET.significance();
+    //const float covXX = t1pfMET.getSignificanceMatrix().At(0,0);
+    //const float covXY = t1pfMET.getSignificanceMatrix().At(0,1);
+    //const float covYY = t1pfMET.getSignificanceMatrix().At(1,1);
 
     float CSumEt = SumEt;
     float CPx = Px;
@@ -174,10 +176,10 @@ void KUCMSPFMetObject::ProcessEvent( ItemManager<float>& geVar ){
     Branches.fillBranch("Px",Px);
     Branches.fillBranch("Py",Py);
 
-    Branches.fillBranch("signif",signif);
-    Branches.fillBranch("covXX",covXX);
-    Branches.fillBranch("covXY",covXY);
-    Branches.fillBranch("covYY",covYY);
+    //Branches.fillBranch("signif",signif);
+    //Branches.fillBranch("covXX",covXX);
+    //Branches.fillBranch("covXY",covXY);
+    //Branches.fillBranch("covYY",covYY);
 
     Branches.fillBranch("CPt",evtMET);;
     Branches.fillBranch("CSumEt",CSumEt);
