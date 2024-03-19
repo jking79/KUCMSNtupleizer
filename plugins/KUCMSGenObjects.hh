@@ -36,6 +36,8 @@
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/JetReco/interface/GenJet.h"
+#include "KUNTupleFW/KUCMSNtupleizer/interface/MatchingTools.h"
+#include "KUNTupleFW/KUCMSNtupleizer/interface/DeltaRMatch.h"
 
 //  KUCMS Object includes
 #include "KUCMSObjectBase.hh"
@@ -107,6 +109,12 @@ class KUCMSGenObject : public KUCMSObjectBase {
     // Gen electrons
     void GenElectronContent() const;
     std::vector<reco::GenParticle> GetSignalGenElectrons() const {return genSignalElectrons_;}
+    std::vector<reco::GenParticle> GetGenElectrons() const {return genElectrons_;}
+    std::vector<reco::GenParticle> GetGenParticles() const {return fgenparts;}
+    LepType ClassifyGenElectron(const reco::GenParticle &genElectron) const;
+    std::vector<int> MomIDs(const reco::GenParticle &genElectron) const; 
+ //template <typename T>
+    //GenClassifiedElectrons<T> GetGenClassifiedElectrons(const std::vector<T> &candidateTracks) const;
   //std::map<std::string, float> GenMatchElectrons(const Lorentz4Vec &electronTrack, const int charge) const;
   //std::map<std::string, float> getGenPartMatch( const reco::SuperCluster &scptr, float pt ) const;
   //std::map<std::string, bool> MotherID(const int genIndex) const;
@@ -114,7 +122,7 @@ class KUCMSGenObject : public KUCMSObjectBase {
 
     private:
 
-    enum LepType {kW, kZ, kTau, kConversion, kLight, kHeavy, kSusy, kUnmatched};
+  //enum LepType {kW, kZ, kTau, kConversion, kLight, kHeavy, kSusy, kUnmatched};
 
     std::vector<reco::GenParticle> fgenparts;
     std::vector<int> fgenpartllp;
@@ -158,9 +166,10 @@ class KUCMSGenObject : public KUCMSObjectBase {
     edm::EDGetTokenT<std::vector<reco::GenJet>> genJetsToken_;
     edm::Handle<std::vector<reco::GenJet>> genJets_;
 
-  std::vector<int> MomIDs(const reco::GenParticle &genElectron) const;
+  //std::vector<int> MomIDs(const reco::GenParticle &genElectron) const;
   LepType AssignLeptonMomType(const int motherID) const;
-  LepType ClassifyGenElectron(const std::vector<int> &motherIDs) const;
+  //LepType ClassifyGenElectron(const std::vector<int> &motherIDs) const;
+  //LepType ClassifyGenElectron(const reco::GenParticle &genElectron) const;
   bool isSignalGenElectron(const reco::GenParticle &genElectron) const;
   void PrintMother(const LepType &momType) const;
 
@@ -235,6 +244,9 @@ void KUCMSGenObject::LoadEvent( const edm::Event& iEvent, const edm::EventSetup&
 	    // Gen electron collections
 	    if(abs(genPart.pdgId()) == 11) {
 	      genElectrons_.push_back(genPart);
+	      //std::cout << "\nmatched as electron!" << std::endl;
+	      //for(const auto &id : MomIDs(genPart))
+	      //std::cout << "  id = " << id << std::endl;
 	      if(isSignalGenElectron(genPart))
 		genSignalElectrons_.push_back(genPart);
 	    }
@@ -1195,18 +1207,32 @@ std::vector<int>KUCMSGenObject:: MomIDs(const reco::GenParticle &genElectron) co
 }
 
 bool KUCMSGenObject::IsMotherZ(const reco::GenParticle &genElectron) const {
-  LepType momType = ClassifyGenElectron(MomIDs(genElectron));
+  LepType momType = ClassifyGenElectron(genElectron);
   return (momType == kZ);
 }
 
 bool KUCMSGenObject::isSignalGenElectron(const reco::GenParticle &genElectron) const {
 
-  LepType momType = ClassifyGenElectron(MomIDs(genElectron));
+  LepType momType = ClassifyGenElectron(genElectron);
   return (momType == kZ || momType == kSusy);
 
 }
+/*
+LepType KUCMSGenObject::ClassifyGenElectron(const std::vector<int> &motherIDs) const {
 
-KUCMSGenObject::LepType KUCMSGenObject::ClassifyGenElectron(const std::vector<int> &motherIDs) const {
+  LepType momType = kUnmatched;
+  for(auto const& id : motherIDs) {
+    momType = AssignLeptonMomType(id);
+
+    if(momType != kUnmatched)
+      break;
+  }
+  return momType;
+}
+*/
+LepType KUCMSGenObject::ClassifyGenElectron(const reco::GenParticle &genElectron) const {
+
+  std::vector<int> motherIDs(MomIDs(genElectron));
 
   LepType momType = kUnmatched;
   for(auto const& id : motherIDs) {
@@ -1249,7 +1275,7 @@ void KUCMSGenObject::GenElectronContent() const {
 
     std::vector<int> motherIDs = MomIDs(genElectron);
 
-    LepType momType = ClassifyGenElectron(motherIDs);
+    LepType momType = ClassifyGenElectron(genElectron);
 
     if (genSignalElectrons_.size() > 2 && index == 0)
       std::cout << "There are " << genElectrons_.size() << " gen electrons in this event." << std::endl;
@@ -1271,8 +1297,47 @@ void KUCMSGenObject::GenElectronContent() const {
   }
 }
 
-KUCMSGenObject::LepType KUCMSGenObject::AssignLeptonMomType(const int motherID) const {
+LepType KUCMSGenObject::AssignLeptonMomType(const int motherID) const {
+  /*
+ LepType type = kUnmatched;
+  int absMotherId = abs(motherID);
+  int motherIdMod1000 = absMotherId % 1000;
+ 
+  switch (true) {
+  case absMotherId == 24:
+    type = kW;
+    break;
+  case motherID == 23:
+    type = kZ;
+    break;
+  case absMotherId == 15:
+    type = kTau;
+    break;
+  case (motherIdMod1000 > 100 && motherIdMod1000 < 400) ||
+    (motherIdMod1000 > 1000 && motherIdMod1000 < 4000) ||
+    (absMotherId > 0 && absMotherId < 4) ||
+    motherID == 21:
+    type = kLight;
+    break;
+  case (motherIdMod1000 > 400 && motherIdMod1000 < 600) ||
+    (motherIdMod1000 > 4000 && motherIdMod1000 < 6000) ||
+    (absMotherId > 3 && absMotherId < 7):
+    type = kHeavy;
+    break;
+  case motherID == 22 || absMotherId == 11:
+    type = kConversion;
+    break;
+  case motherID == 1000022:
+    type = kSusy;
+    break;
+  case absMotherId > 1000000:
+    type = kOther;
+    break;
+  }
 
+  return type;
+  }*/
+  
   LepType type = kUnmatched;
 
   if(abs(motherID) == 24)
@@ -1290,14 +1355,51 @@ KUCMSGenObject::LepType KUCMSGenObject::AssignLeptonMomType(const int motherID) 
           || (abs(motherID%1000) > 4000 && abs(motherID%1000) < 6000)
           || (abs(motherID) > 3 && abs(motherID) < 7))
     type = kHeavy;
-  else if(motherID == 22)
+  else if(motherID == 22)// || abs(motherID) == 11)
     type = kConversion;
   else if(motherID == 1000022)
     type = kSusy;
+  else if(abs(motherID) > 1000000)
+    type = kOther;
 
   return type;
+  
 }
+ /*
+template <typename T>
+GenClassifiedElectrons<T> KUCMSGenObject::GetGenClassifiedElectrons(const std::vector<T> &candidateTracks) const {
+  
+  // Create output collection
+  GenClassifiedElectrons<T> classifiedElectrons;
 
+  // Match input tracks to Gen electrons using hungarian algorithm 
+  DeltaRMatchHungarian<T, reco::GenParticle> assigner(candidateTracks, genElectrons_);
+  
+  std::vector<int> matchedIndexes;
+  // Loop over matches
+  for(const auto &pair : assigner.GetPairedObjects()) {
+    const T track(pair.GetObjectA());
+    const reco::GenParticle genElectron(pair.GetObjectB());
+    const double deltaR(pair.GetDeltaR());
+    const LepType type(ClassifyGenElectron(genElectron));
+    
+    ElectronGenType genType(track, type, deltaR);
 
+    matchedIndexes.push_back(pair.GetIndexA());
+    classifiedElectrons.emplace_back(genType);
+  }
 
+  // Classify any track that did not get matched in the event as unmatched
+  for(int i = 0; i < candidateTracks.size(); i++) {
+   
+    if (std::find(matchedIndexes.begin(), matchedIndexes.end(), i) != matchedIndexes.end())
+      continue;
+    
+    ElectronGenType genType(candidateTracks[i], kUnmatched);
+    classifiedElectrons.emplace_back(genType);
+  }
+
+  return classifiedElectrons;
+}
+*/
 #endif

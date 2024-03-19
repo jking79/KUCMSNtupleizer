@@ -5,6 +5,9 @@
 
 #include "DataFormats/Math/interface/deltaR.h"
 #include "KUNTupleFW/KUCMSNtupleizer/interface/Hungarian.h"
+#include "KUNTupleFW/KUCMSNtupleizer/interface/MatchingTools.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
 
 template <class A, class B> class DeltaRMatch {
 
@@ -98,28 +101,6 @@ template <class A, class B> class DeltaRMatch {
 
 };
 
-class MatchedPair {
-  
- public: 
-
- MatchedPair() 
-   : indexA_(-1), indexB_(-1), criteria_(999.) {}
-
- MatchedPair(const int &indexA, const int &indexB, const double &matchCriteria) 
-   : indexA_(indexA), indexB_(indexB), criteria_(matchCriteria) {}
-
- int GetIndexA() const {return indexA_;}
- int GetIndexB() const {return indexB_;}
- double GetMatchCriteria() const {return criteria_;}
-  
- private: 
-  
-  int indexA_;
-  int indexB_; 
-  double criteria_;
-
-};
-
 template <class A, class B> class PairedObjects {
   
  public:
@@ -128,9 +109,6 @@ template <class A, class B> class PairedObjects {
    : objectA_(objectA), objectB_(objectB), matchedPair_(matchedPair) {
 
     deltaR_ = sqrt(reco::deltaR2(objectA, objectB) );
-    //if(deltaR_ < 0.5)
-    //CompareObjects();
-    //std::cout<< "Let's get that deltaR again to be sure: " << deltaR_ << std::endl;
   }
 
   A GetObjectA() const { return objectA_;}
@@ -153,66 +131,29 @@ template <class A, class B> class PairedObjects {
     std::cout << "  phi: " << objectB_.phi() << std::endl;
   }
   
-
  private:
   
   A objectA_;
   B objectB_;
   MatchedPair matchedPair_;
   double deltaR_;
-  /*
-  void CompareObjects() const {
-    
-    std::cout << "\nComparing objects with deltaR: " << deltaR_ << std::endl;
-    std::cout << "Object A Summary: " << std::endl;
-    std::cout << "  pT: " << objectA_.pt() << std::endl;
-    std::cout << "  eta: " << objectA_.eta() << std::endl;
-    std::cout << "  phi: " << objectA_.phi() << std::endl;
-
-    std::cout << "\nObject B Summary: " << std::endl;
-    std::cout << "  pT: " << objectB_.pt() << std::endl;
-    std::cout << "  eta: " << objectB_.eta() << std::endl;
-    std::cout << "  phi: " << objectB_.phi() << std::endl;
-  }
-  */
 };
 
+//===============================================================================================//
+//                               class: DeltaRMatchHungarian                                     //
+//-----------------------------------------------------------------------------------------------//
+// General delta R matching algorithm between any two lists of objects, as long as they possess  //
+// eta() and phi() public methods (this is the only requirement!). Matching is performed using   //
+// the Hungarian algorithm.                                                                      //
+//-----------------------------------------------------------------------------------------------//
+//===============================================================================================//
 template <class A, class B> class DeltaRMatchHungarian {
   
  public:
 
-  DeltaRMatchHungarian(std::vector<std::vector<double> > &costMatrix) {
+  DeltaRMatchHungarian(Matrix<double> &costMatrix);
     
-    HungarianAlgorithm assigner;
-    cost_ = assigner.Solve(costMatrix, matchedIndexes_);
-
-    matchedPairs_ = ConstructMatchedPairs(costMatrix);
-  }
-
-  DeltaRMatchHungarian(const std::vector<A> &objectsA, const std::vector<B> &objectsB) {
-    
-    const int dimensionA = objectsA.size();
-    const int dimensionB = objectsB.size();
-
-    // If either collection is empty, assignment is not possible (obviously)
-    // Initialize members to default values and empty vectors
-    if(dimensionA == 0 || dimensionB == 0) {
-      cost_ = 999.;
-      matchedIndexes_ = std::vector<int>();
-      matchedPairs_ = std::vector<MatchedPair>();
-    }
-
-    else {
-      //std::cout << dimensionA << " objects in A and " << dimensionB << " objects in B" << std::endl;
-      std::vector<std::vector<double> > costMatrix = CalculateCostMatrix(objectsA, objectsB);
-      //PrintCostMatrix(costMatrix);
-      HungarianAlgorithm assigner;
-      cost_ = assigner.Solve(costMatrix, matchedIndexes_);
-      //std::cout << "cost: \n" << cost_ << std::endl;
-      matchedPairs_ = ConstructMatchedPairs(costMatrix, objectsA, objectsB);
-    }
-      
-  } 
+  DeltaRMatchHungarian(const std::vector<A> &objectsA, const std::vector<B> &objectsB);
 
   virtual ~DeltaRMatchHungarian() = default;
 
@@ -240,84 +181,131 @@ template <class A, class B> class DeltaRMatchHungarian {
   std::vector<MatchedPair> matchedPairs_;
   std::vector<PairedObjects<A,B> > pairedObjects_;
 
-  std::vector<MatchedPair> ConstructMatchedPairs(const std::vector<std::vector<double> > &costMatrix, 
+  std::vector<MatchedPair> ConstructMatchedPairs(const Matrix<double> &costMatrix, 
 						 const std::vector<A> &objectsA, 
-						 const std::vector<B> &objectsB) {
+						 const std::vector<B> &objectsB);
 
-    matchedObjectsA_.clear();
-    matchedObjectsB_.clear();
+  Matrix<double> CalculateCostMatrix(const std::vector<A> &objectsA, const std::vector<B> &objectsB) const;
 
-    std::vector<MatchedPair> matchedPairs;
-    for(unsigned int mi = 0; mi < costMatrix.size(); mi++) { 
-      if(matchedIndexes_[mi] == -1)
-	continue;
+  void Solve(const std::vector<A> &objectsA, const std::vector<B> &objectsB);
 
-      const double deltaR = costMatrix[mi][matchedIndexes_[mi]];
-      const MatchedPair thisMatchedPair(mi, matchedIndexes_[mi], deltaR);
-
-      matchedObjectsA_.emplace_back(objectsA[mi]);
-      matchedObjectsB_.emplace_back(objectsB[matchedIndexes_[mi]]);
-      matchedPairs.emplace_back(MatchedPair(mi, matchedIndexes_[mi], deltaR));
-      pairedObjects_.emplace_back(PairedObjects<A,B>(objectsA[mi], objectsB[matchedIndexes_[mi]], thisMatchedPair) );
-    }
-    // Sort paired objects from smallest to largest DeltaR
-    std::sort(pairedObjects_.begin(), pairedObjects_.end(), [](const PairedObjects<A,B>& a, const PairedObjects<A,B>& b) {
-        return a.GetDeltaR() < b.GetDeltaR();
-      });
-
-    return matchedPairs;
-  }
-  
-  std::vector<std::vector<double>> CalculateCostMatrix(const std::vector<A> &objectsA, const std::vector<B> &objectsB) const {
-
-    const int dimensionA = objectsA.size();
-    const int dimensionB = objectsB.size();
-    std::vector<std::vector<double>> costMatrix(dimensionA, std::vector<double>(dimensionB) );
-
-    for(int ai = 0; ai < dimensionA; ai++) 
-      for(int bi = 0; bi < dimensionB; bi++) 
-	costMatrix[ai][bi] = sqrt(reco::deltaR2(objectsA[ai], objectsB[bi]) );
-
-    return costMatrix;
-  }
-
-  void PrintCostMatrix( std::vector<std::vector<double>> &costMatrix) {
-
-    std::cout << "Cost Matrix: " << std::endl;
-    for(const auto &row : costMatrix) {
-      for(const auto &element : row) {
-
-	std::cout << element << ", ";
-      }
-      std::cout << std::endl;
-    }
-  }
+  void PrintCostMatrix(Matrix<double> &costMatrix) const;
 };
 
-template <typename T>
-std::vector<T> EraseIndices(const std::vector<T>& data, std::vector<size_t>& indicesToDelete) {
-  if(indicesToDelete.empty())
-    return data;
 
-  std::vector<T> ret;
-  ret.reserve(data.size() - indicesToDelete.size());
+//===============================================================================================//
+//-----------------------------------------------------------------------------------------------//
+//-----------------------------------------------------------------------------------------------//
+//===============================================================================================// 
+template <typename A, typename B>
+  void DeltaRMatchHungarian<A,B>::Solve(const std::vector<A> &objectsA, const std::vector<B> &objectsB) {
+  
+  Matrix<double> costMatrix = CalculateCostMatrix(objectsA, objectsB);
+  HungarianAlgorithm assigner;
+  cost_ = assigner.Solve(costMatrix, matchedIndexes_);
+  matchedPairs_ = ConstructMatchedPairs(costMatrix, objectsA, objectsB);
+}
 
-  std::sort(indicesToDelete.begin(), indicesToDelete.end());
+template <typename A, typename B>
+  DeltaRMatchHungarian<A,B>::DeltaRMatchHungarian(Matrix<double> &costMatrix) {
 
-  typename std::vector<T>::const_iterator itBlockBegin = data.begin();
-  for(std::vector<size_t>::const_iterator it = indicesToDelete.begin(); it != indicesToDelete.end(); ++ it) {
-    typename std::vector<T>::const_iterator itBlockEnd = data.begin() + *it;
-    if(itBlockBegin != itBlockEnd) {
-      std::copy(itBlockBegin, itBlockEnd, std::back_inserter(ret));
+  HungarianAlgorithm assigner;
+  cost_ = assigner.Solve(costMatrix, matchedIndexes_);
+  matchedPairs_ = ConstructMatchedPairs(costMatrix);
+}
+
+template <typename A, typename B>
+  DeltaRMatchHungarian<A,B>::DeltaRMatchHungarian(const std::vector<A> &objectsA, const std::vector<B> &objectsB) {
+
+  const int dimensionA = objectsA.size();
+  const int dimensionB = objectsB.size();
+
+  // If either collection is empty, assignment is not possible (obviously)                                                                                                      
+  // Initialize members to default values and empty vectors                                                                                                                     
+  if(dimensionA == 0 || dimensionB == 0) {
+    cost_ = 999.;
+    matchedIndexes_ = std::vector<int>();
+    matchedPairs_ = std::vector<MatchedPair>();
+  }
+
+  else this->Solve(objectsA, objectsB);
+}
+
+template <typename A, typename B>
+  std::vector<MatchedPair> DeltaRMatchHungarian<A,B>::ConstructMatchedPairs(const std::vector<std::vector<double> > &costMatrix,
+									    const std::vector<A> &objectsA,
+									    const std::vector<B> &objectsB) {
+
+  matchedObjectsA_.clear();
+  matchedObjectsB_.clear();
+
+  std::vector<MatchedPair> matchedPairs;
+  for(unsigned int mi = 0; mi < costMatrix.size(); mi++) {
+    if(matchedIndexes_[mi] == -1)
+      continue;
+
+    const double deltaR = costMatrix[mi][matchedIndexes_[mi]];
+    const MatchedPair thisMatchedPair(mi, matchedIndexes_[mi], deltaR);
+
+    matchedObjectsA_.emplace_back(objectsA[mi]);
+    matchedObjectsB_.emplace_back(objectsB[matchedIndexes_[mi]]);
+    matchedPairs.emplace_back(MatchedPair(mi, matchedIndexes_[mi], deltaR));
+    pairedObjects_.emplace_back(PairedObjects<A,B>(objectsA[mi], objectsB[matchedIndexes_[mi]], thisMatchedPair) );
+  }
+  // Sort paired objects from smallest to largest DeltaR                                                                                                                        
+  std::sort(pairedObjects_.begin(), pairedObjects_.end(), [](const PairedObjects<A,B>& a, const PairedObjects<A,B>& b) {
+      return a.GetDeltaR() < b.GetDeltaR();
+    });
+
+  return matchedPairs;
+}
+
+template <typename A, typename B>
+  Matrix<double> DeltaRMatchHungarian<A,B>::CalculateCostMatrix(const std::vector<A> &objectsA, const std::vector<B> &objectsB) const {
+
+  const int dimensionA = objectsA.size();
+  const int dimensionB = objectsB.size();
+  Matrix<double> costMatrix(dimensionA, std::vector<double>(dimensionB) );
+
+  for(int ai = 0; ai < dimensionA; ai++)
+    for(int bi = 0; bi < dimensionB; bi++)
+      costMatrix[ai][bi] = sqrt(reco::deltaR2(objectsA[ai], objectsB[bi]) );
+
+  return costMatrix;
+}
+
+template <>
+inline Matrix<double> DeltaRMatchHungarian<TrackInfo, reco::GenParticle>::CalculateCostMatrix(const std::vector<TrackInfo> &objectsA, 
+											      const reco::GenParticleCollection &objectsB) const {
+
+  const int dimensionA = objectsA.size();
+  const int dimensionB = objectsB.size();
+  Matrix<double> costMatrix(dimensionA, std::vector<double>(dimensionB));
+
+  for(int ai = 0; ai < dimensionA; ai++) {
+    for(int bi = 0; bi < dimensionB; bi++) {
+      
+      if(objectsB[bi].status() == 1)
+	costMatrix[ai][bi] = sqrt(reco::deltaR2(objectsA[ai], objectsB[bi]) );  
+      else
+	costMatrix[ai][bi] = 5.;
     }
-    itBlockBegin = itBlockEnd + 1;
   }
 
-  if(itBlockBegin != data.end()) {
-    std::copy(itBlockBegin, data.end(), std::back_inserter(ret));
-  }
+  return costMatrix;
+}
 
-  return ret;
+template <typename A, typename B>
+  void DeltaRMatchHungarian<A,B>::PrintCostMatrix(Matrix<double> &costMatrix) const {
+
+  std::cout << "Cost Matrix: " << std::endl;
+  for(const auto &row : costMatrix) {
+    for(const auto &element : row) {
+
+      std::cout << element << ", ";
+    }
+    std::cout << std::endl;
+  }
 }
 
 #endif

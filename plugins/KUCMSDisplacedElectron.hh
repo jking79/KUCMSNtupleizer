@@ -59,7 +59,7 @@
 #include "KUNTupleFW/KUCMSNtupleizer/interface/DeltaRMatch.h"
 #include "KUNTupleFW/KUCMSNtupleizer/interface/Hungarian.h"
 #include "KUNTupleFW/KUCMSNtupleizer/interface/MatchTracksToSC.h"
-#include "KUNTupleFW/KUCMSNtupleizer/interface/ElectronTools.h"
+#include "KUNTupleFW/KUCMSNtupleizer/interface/MatchingTools.h"
 
 #include "TVector3.h"
 
@@ -81,7 +81,7 @@ public:
 
   // use base class constructor
   KUCMSDisplacedElectron( const edm::ParameterSet& iConfig );
-  ~KUCMSDisplacedElectron() = default;
+  virtual ~KUCMSDisplacedElectron() = default;
   
   // object setup : 1) construct object 2) InitObject 3) CrossLoad 4) load into Object Manager
   // load tokens for eventt based collections
@@ -109,8 +109,6 @@ public:
     
 private:
 
-  typedef std::vector<TrackInfo> TrackInfoCollection;
-  typedef std::vector<std::vector<double> > Matrix;
   typedef std::vector<std::vector<GlobalPoint> > TrackRecHitLocations;
 
   int nGeneralTracks_;
@@ -150,13 +148,15 @@ private:
   
   MatchedTrackSCPairs<reco::TransientTrack> matchedTracksToSCs_;
 
+  //GenClassifiedElectrons<reco::Track> generalTracksGenTypes_;
+  //GenClassifiedElectrons<reco::GsfTrack> gsfTracksGenTypes_;
+
   void CollectCandidateInfo(const MatchedTrackSCPairs<reco::TransientTrack> &candidates, TrackInfoCollection &trackInfo) const;
 
 };//<<>>class KUCMSDisplacedElectron : public KUCMSObjectBase
 
 KUCMSDisplacedElectron::KUCMSDisplacedElectron( const edm::ParameterSet& iConfig ) 
   : caloGeometryToken_(esConsumes()) {
-    //transientTrackBuilder_(esConsumes(edm::ESInputTag("", "TransientTrackBuilder"))){   
 
   trackAssociator_.useDefaultPropagator();
   cfFlag.set( "hasGenInfo", iConfig.existsAs<bool>("hasGenInfo") ? iConfig.getParameter<bool>("hasGenInfo") : true );
@@ -165,12 +165,9 @@ KUCMSDisplacedElectron::KUCMSDisplacedElectron( const edm::ParameterSet& iConfig
 
 void KUCMSDisplacedElectron::InitObject( TTree* fOutTree ){
 
-  Branches.makeBranch("nGeneralTracks","nGeneralTracks", INT);
-  Branches.makeBranch("nGsfTracks","nGsfTracks", INT); 
-  Branches.makeBranch("nTracks","nTracks", INT);
-  Branches.makeBranch("nSuperClusters","nSuperClusters", INT);
-  Branches.makeBranch("nOOTSuperClusters","nOOTSuperClusters", INT);
-  Branches.makeBranch("nGenElectronSig","nGenElectronSig", INT); 
+  Branches.makeBranch("DisplacedElectron_nSCs","DisplacedElectron_nSCs", INT);
+  Branches.makeBranch("DisplacedElectron_nOOTSCs","DisplacedElectron_nOOTSCs", INT);
+  Branches.makeBranch("DisplacedElectron_nGenSig","DisplacedElectron_nGenSig", INT); 
   Branches.makeBranch("DisplacedElectron_nTotal", "DisplacedElectron_nTotal", INT);
   Branches.makeBranch("DisplacedElectron_charge", "DisplacedElectron_charge", VINT);
   Branches.makeBranch("DisplacedElectron_p", "DisplacedElectron_p", VFLOAT);
@@ -201,6 +198,12 @@ void KUCMSDisplacedElectron::InitObject( TTree* fOutTree ){
   Branches.makeBranch("DisplacedElectron_isOOTSC","DisplacedElectron_isOOTSC", VBOOL);
   Branches.makeBranch("DisplacedElectron_isBarrel","DisplacedElectron_isBarrel", VBOOL);
   Branches.makeBranch("DisplacedElectron_isEndCap","DisplacedElectron_isEndCap", VBOOL);
+  Branches.makeBranch("DisplacedElectron_isSignal","DisplacedElectron_isSignal", VBOOL);
+  Branches.makeBranch("DisplacedElectron_isTau","DisplacedElectron_isTau", VBOOL);
+  Branches.makeBranch("DisplacedElectron_isLight","DisplacedElectron_isLight", VBOOL);
+  Branches.makeBranch("DisplacedElectron_isHeavy","DisplacedElectron_isHeavy", VBOOL);
+  Branches.makeBranch("DisplacedElectron_isConversion","DisplacedElectron_isConversion", VBOOL);
+  Branches.makeBranch("DisplacedElectron_isUnmatched","DisplacedElectron_isUnmatched", VBOOL);
 
   Branches.attachBranches(fOutTree);
   
@@ -254,7 +257,7 @@ void KUCMSDisplacedElectron::LoadEvent( const edm::Event& iEvent, const edm::Eve
 
 }//<<>>void KUCMSDisplacedElectron::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
-void KUCMSDisplacedElectron::ProcessEvent( ItemManager<float>& geVar ){}
+void KUCMSDisplacedElectron::ProcessEvent( ItemManager<float>& geVar ) {}
 
 void KUCMSDisplacedElectron::PostProcessEvent( ItemManager<float>& geVar ){
 
@@ -262,36 +265,68 @@ void KUCMSDisplacedElectron::PostProcessEvent( ItemManager<float>& geVar ){
 
   Branches.clearBranches();
   signalGenElectrons_.clear();
-
-  // Get Gen-Matching information if available
+  
+  // Get Gen-Matching information, if available
   float genCost = -1;
   if(cfFlag("hasGenInfo")) {
     for(auto const &gen : genObjs_->GetSignalGenElectrons()) {
-      signalGenElectrons_.emplace_back(gen);
+
+      if(abs(gen.pdgId()) == 11) {
+	const LepType type(genObjs_->ClassifyGenElectron(gen));
+	if(type == kZ || type == kSusy)
+	  signalGenElectrons_.emplace_back(gen);
+      }
     }
 
-    if(signalGenElectrons_.size() > 0 && matchedTracksToSCs_.size() > 0) {
+    //if(signalGenElectrons_.size() > 0)
+    //std::cout << "\nThere are " << signalGenElectrons_.size() << " signal gen electrons in this event!" << std::endl;
+
+    //for(auto const &gen : signalGenElectrons_) {
+    //std::cout << "status: " << gen.status() << std::endl;
+    //for(const auto &id : genObjs_->MomIDs(gen)) 
+    //std::cout << "  id = " << id << std::endl;
+    //}
+
+    if(matchedTracksToSCs_.size() > 0) {
       TrackInfoCollection candidateInfo;
       CollectCandidateInfo(matchedTracksToSCs_, candidateInfo);
-      DeltaRMatchHungarian<TrackInfo, reco::GenParticle> genToTrackAssigner(candidateInfo, signalGenElectrons_);
+      DeltaRMatchHungarian<TrackInfo, reco::GenParticle> genToTrackAssigner(candidateInfo, genObjs_->GetGenParticles());
 
-      for(auto const & pair : genToTrackAssigner.GetPairedObjects())
-	matchedTracksToSCs_[pair.GetIndexA()].setGenMatchInfo(pair.GetIndexB(), pair.GetDeltaR());
+      //std::cout << "This event" << std::endl;
+ 
+      for(auto const &pair : genToTrackAssigner.GetPairedObjects()) {
+	const reco::GenParticle genElectron(pair.GetObjectB());
+
+	//std::cout << "status: " << genElectron.status() << ", pdgID = " << genElectron.pdgId() << ", deltaR = " << pair.GetDeltaR() << std::endl;
+	
+	if(abs(genElectron.pdgId()) != 11)
+	  continue;
+
+	const LepType type(genObjs_->ClassifyGenElectron(genElectron));
+	/*
+	if(type == kZ || type == kSusy) {
+	  std::cout << "\nmatched it!" << std::endl;
+	  std::cout << "pdgID = " << genElectron.pdgId() << std::endl;
+	  for(const auto &id : genObjs_->MomIDs(genElectron))
+	    std::cout << "  id = " << id << std::endl;
+	  std::cout << std::endl;
+	}
+	*/
+	GenLeptonType genType(pair.GetIndexB(), genElectron, type, pair.GetDeltaR());
+	matchedTracksToSCs_[pair.GetIndexA()].setGenMatchInfo(genType);
+      }
 
       genCost = genToTrackAssigner.GetCost();
     }
   }
-
+  
   if( DEBUG ) std::cout << " - Entering Electron Builder loop" << std::endl;
 
-  Branches.fillBranch("nGenElectronSig", int(signalGenElectrons_.size()) );
-  Branches.fillBranch("nGeneralTracks", int(nGeneralTracks_) );
-  Branches.fillBranch("nGsfTracks", int(nGsfTracks_) );
-  Branches.fillBranch("nTracks", int(transientTracks_.size()) );
-  Branches.fillBranch("nSuperClusters", int(superClusterHandle_->size()) );
-  Branches.fillBranch("nOOTSuperClusters", int(ootSuperClusterHandle_->size()) );
-  Branches.fillBranch("DisplacedElectron_nTotal", int(matchedTracksToSCs_.size()) );
-  Branches.fillBranch("DisplacedElectron_costSC", float(matchedTracksToSCs_.GetCost()) );
+  Branches.fillBranch("DisplacedElectron_nGenSig", int(signalGenElectrons_.size()) );
+  Branches.fillBranch("DisplacedElectron_nSCs",    int(superClusterHandle_->size()) );
+  Branches.fillBranch("DisplacedElectron_nOOTSCs", int(ootSuperClusterHandle_->size()) );
+  Branches.fillBranch("DisplacedElectron_nTotal",  int(matchedTracksToSCs_.size()) );
+  Branches.fillBranch("DisplacedElectron_costSC",  float(matchedTracksToSCs_.GetCost()) );
   Branches.fillBranch("DisplacedElectron_costGen", float(genCost));
   
   for(auto const &candidate : matchedTracksToSCs_) {
@@ -308,33 +343,43 @@ void KUCMSDisplacedElectron::PostProcessEvent( ItemManager<float>& geVar ){
       candidate.GetSCIndex() : 
       candidate.GetSCIndex() - superClusterHandle_->size();
     
-    Branches.fillBranch("DisplacedElectron_charge", int(track.charge()) );
-    Branches.fillBranch("DisplacedElectron_p", float(track.p()) );
-    Branches.fillBranch("DisplacedElectron_pt", float(track.pt()) );
-    Branches.fillBranch("DisplacedElectron_eta", float(track.eta()) );
-    Branches.fillBranch("DisplacedElectron_phi", float(track.phi()) );
-    Branches.fillBranch("DisplacedElectron_energy", float(superCluster.rawEnergy()) );
-    Branches.fillBranch("DisplacedElectron_x", float(track.vx()) );
-    Branches.fillBranch("DisplacedElectron_y", float(track.vy()) );
-    Branches.fillBranch("DisplacedElectron_z", float(track.vz()) );
-    Branches.fillBranch("DisplacedElectron_etaECAL", float(trackAtECAL.eta()) );
-    Branches.fillBranch("DisplacedElectron_phiECAL", float(trackAtECAL.phi()) );
-    Branches.fillBranch("DisplacedElectron_xECAL", float(trackAtECAL.x()) );
-    Branches.fillBranch("DisplacedElectron_yECAL", float(trackAtECAL.y()) );
-    Branches.fillBranch("DisplacedElectron_zECAL", float(trackAtECAL.z()) );
-    Branches.fillBranch("DisplacedElectron_dxy", float(GetDXY(track)) );
-    Branches.fillBranch("DisplacedElectron_dRSC", float(candidate.GetDeltaR()) );
-    Branches.fillBranch("DisplacedElectron_dRGen", float(candidate.GetGenDeltaR()) );
-    Branches.fillBranch("DisplacedElectron_nHits", int(track.numberOfValidHits()) );
-    Branches.fillBranch("DisplacedElectron_indexGen", int(candidate.GetGenIndex()) );
-    Branches.fillBranch("DisplacedElectron_isBarrel", bool(fabs(trackAtECAL.eta()) <= 1.479) );
-    Branches.fillBranch("DisplacedElectron_isEndCap", bool(fabs(trackAtECAL.eta()) > 1.479) );
+    Branches.fillBranch("DisplacedElectron_charge",         int(track.charge()) );
+    Branches.fillBranch("DisplacedElectron_p",              float(track.p()) );
+    Branches.fillBranch("DisplacedElectron_pt",             float(track.pt()) );
+    Branches.fillBranch("DisplacedElectron_eta",            float(track.eta()) );
+    Branches.fillBranch("DisplacedElectron_phi",            float(track.phi()) );
+    Branches.fillBranch("DisplacedElectron_energy",         float(superCluster.rawEnergy()) );
+    Branches.fillBranch("DisplacedElectron_x",              float(track.vx()) );
+    Branches.fillBranch("DisplacedElectron_y",              float(track.vy()) );
+    Branches.fillBranch("DisplacedElectron_z",              float(track.vz()) );
+    Branches.fillBranch("DisplacedElectron_etaECAL",        float(trackAtECAL.eta()) );
+    Branches.fillBranch("DisplacedElectron_phiECAL",        float(trackAtECAL.phi()) );
+    Branches.fillBranch("DisplacedElectron_xECAL",          float(trackAtECAL.x()) );
+    Branches.fillBranch("DisplacedElectron_yECAL",          float(trackAtECAL.y()) );
+    Branches.fillBranch("DisplacedElectron_zECAL",          float(trackAtECAL.z()) );
+    Branches.fillBranch("DisplacedElectron_dxy",            float(GetDXY(track)) );
+    Branches.fillBranch("DisplacedElectron_dRSC",           float(candidate.GetDeltaR()) );
+    Branches.fillBranch("DisplacedElectron_dRGen",          float(candidate.GetGenInfo().GetDeltaR()) );
+    Branches.fillBranch("DisplacedElectron_nHits",          int(track.numberOfValidHits()) );
+    Branches.fillBranch("DisplacedElectron_indexGen",       int(candidate.GetGenInfo().GetIndex()) );
+    Branches.fillBranch("DisplacedElectron_isBarrel",       bool(fabs(trackAtECAL.eta()) <= 1.479) );
+    Branches.fillBranch("DisplacedElectron_isEndCap",       bool(fabs(trackAtECAL.eta()) > 1.479) );
     Branches.fillBranch("DisplacedElectron_isGeneralTrack", bool(candidate.GetTrackIndex() < int(nGeneralTracks_)) );
-    Branches.fillBranch("DisplacedElectron_isGsfTrack", bool(candidate.GetTrackIndex() >= int(nGeneralTracks_)) );
-    Branches.fillBranch("DisplacedElectron_isSC", bool(candidate.GetSCIndex() < int(superClusterHandle_->size())) );
-    Branches.fillBranch("DisplacedElectron_isOOTSC", bool(candidate.GetSCIndex() >= int(superClusterHandle_->size())) );
-    Branches.fillBranch("DisplacedElectron_indexTrack", trackIndex);
-    Branches.fillBranch("DisplacedElectron_indexSC", scIndex);
+    Branches.fillBranch("DisplacedElectron_isGsfTrack",     bool(candidate.GetTrackIndex() >= int(nGeneralTracks_)) );
+    Branches.fillBranch("DisplacedElectron_isSC",           bool(candidate.GetSCIndex() < int(superClusterHandle_->size())) );
+    Branches.fillBranch("DisplacedElectron_isOOTSC",        bool(candidate.GetSCIndex() >= int(superClusterHandle_->size())) );
+    Branches.fillBranch("DisplacedElectron_indexTrack",     trackIndex);
+    Branches.fillBranch("DisplacedElectron_indexSC",        scIndex);
+    
+    if(cfFlag("hasGenInfo")) {
+      GenLeptonType genInfo(candidate.GetGenInfo());
+      Branches.fillBranch("DisplacedElectron_isSignal",     bool(genInfo.GetLepType() == kZ || genInfo.GetLepType() == kSusy) );
+      Branches.fillBranch("DisplacedElectron_isTau",        bool(genInfo.GetLepType() == kTau) );
+      Branches.fillBranch("DisplacedElectron_isLight",      bool(genInfo.GetLepType() == kLight) );
+      Branches.fillBranch("DisplacedElectron_isHeavy",      bool(genInfo.GetLepType() == kHeavy) );
+      Branches.fillBranch("DisplacedElectron_isConversion", bool(genInfo.GetLepType() == kConversion) );
+      Branches.fillBranch("DisplacedElectron_isUnmatched",  bool(genInfo.GetLepType() == kUnmatched) );
+    }
   }
 }//<<>>void KUCMSDisplacedElectron::PostProcessEvent()
 
