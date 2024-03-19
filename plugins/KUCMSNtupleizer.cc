@@ -96,6 +96,8 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     recHitsObj->LoadClusterTokens( ccltoken );
     auto othersctoken = consumes<reco::SuperClusterCollection>(iConfig.getParameter<edm::InputTag>("otherSuperClusters"));
     recHitsObj->LoadSCTokens( othersctoken );
+    auto beamLineToken = consumes<reco::BeamSpot>(iConfig.getParameter<edm::InputTag>("beamSpot"));
+    recHitsObj->LoadBeamSpotTokens( beamLineToken );
 
     //ECAL Tracks
     KUCMSECALTracks* ecalTracksObj = new KUCMSECALTracks(iConfig);
@@ -121,7 +123,7 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     electronsObj->LoadElectronTokens( electronToken );
     auto conversionsToken = consumes<reco::ConversionCollection>(iConfig.getParameter<edm::InputTag>("conversions"));
     electronsObj->LoadConversionTokens( conversionsToken );
-    auto beamLineToken = consumes<reco::BeamSpot>(iConfig.getParameter<edm::InputTag>("beamSpot"));
+	//auto beamLineToken = consumes<reco::BeamSpot>(iConfig.getParameter<edm::InputTag>("beamSpot"));
     electronsObj->LoadBeamSpotTokens( beamLineToken );
     electronsObj->LoadRecHitObject( recHitsObj );
 
@@ -173,7 +175,7 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     ObjMan.Load( "Photons", photonsObj );
     ObjMan.Load( "JetsAK4", ak4jetObj );
     ObjMan.Load( "PFMet", pfmetObj );
-    ObjMan.Load( "ECALRecHits", recHitsObj );
+    ObjMan.Load( "ECALRecHits", recHitsObj );// loaded last to process feedback from other objects
 
     if( cfFlag("hasGenInfo") ){
 

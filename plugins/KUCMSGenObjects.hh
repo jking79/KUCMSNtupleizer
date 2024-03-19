@@ -275,9 +275,9 @@ void KUCMSGenObject::LoadEvent( const edm::Event& iEvent, const edm::EventSetup&
 
 }//<<>>void KUCMSGen::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
-void KUCMSGenObject::ProcessEvent( ItemManager<float>& geVar ){}
+void KUCMSGenObject::PostProcessEvent( ItemManager<float>& geVar ){}
 
-void KUCMSGenObject::PostProcessEvent( ItemManager<float>& geVar ){
+void KUCMSGenObject::ProcessEvent( ItemManager<float>& geVar ){
 
     //if( GenDEBUG ) std::cout << "Processing Gens" << std::endl;
 
