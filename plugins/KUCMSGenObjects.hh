@@ -1357,7 +1357,7 @@ LepType KUCMSGenObject::AssignLeptonMomType(const int motherID) const {
     type = kHeavy;
   else if(motherID == 22)// || abs(motherID) == 11)
     type = kConversion;
-  else if(motherID == 1000022)
+  else if(motherID == 1000022 || abs(motherID) == 9000006)
     type = kSusy;
   else if(abs(motherID) > 1000000)
     type = kOther;

@@ -1,12 +1,12 @@
-#ifndef KUNTupleFW_KUCMSNtupleizer_MatchTracksToSC_h
-#define KUNTupleFW_KUCMSNtupleizer_MatchTracksToSC_h
+#ifndef KUCMSNtupleizer_KUCMSNtupleizer_MatchTracksToSC_h
+#define KUCMSNtupleizer_KUCMSNtupleizer_MatchTracksToSC_h
 
 // -*- C++ -*-
 //
-// Package:    KUNTupleFW/KUCMSNtupleizer
+// Package:    KUCMSNtupleizer/KUCMSNtupleizer
 // Class:      MatchTracksToSC
 //
-/**\class MatchTracksToSC MatchTracksToSC.h KUNTupleFW/KUCMSNtupleizer/interface/MatchTracksToSC.h
+/**\class MatchTracksToSC MatchTracksToSC.h KUCMSNtupleizer/KUCMSNtupleizer/interface/MatchTracksToSC.h
 
    Description: Class for matching any set of tracks to a set of reco::SuperCluster. 
 
@@ -261,7 +261,7 @@ double MatchTracksToSC<T>::GetMinDeltaRTrackSC(const std::vector<GlobalPoint> &c
 //===============================================================================================// 
 template <class T>
 Matrix<double> MatchTracksToSC<T>::TrackToSuperClusterCostMatrix(const TrackRecHitLocations &trackLocationsAtECAL,
-										      const reco::SuperClusterCollection &superClusters) {
+								 const reco::SuperClusterCollection &superClusters) {
   
   const int trackDimension(trackLocationsAtECAL.size());
   const int scDimension(superClusters.size());
