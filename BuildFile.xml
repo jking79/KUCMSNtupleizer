@@ -1,0 +1,5 @@
+<use name="DataFormats/TrackReco"/>
+<use name="TrackingTools/TrajectoryState"/>
+<export>
+  <lib name="1"/>
+</export>

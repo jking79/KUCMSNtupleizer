@@ -29,7 +29,9 @@
 #include "KUCMSPhoton.hh"
 #include "KUCMSAK4Jet.hh"
 #include "KUCMSPFMet.hh"
+#include "KUCMSECALTracks.hh"
 #include "KUCMSElectron.hh"
+#include "KUCMSDisplacedElectron.hh"
 #include "KUCMSGenObjects.hh"
 
 using namespace std;
@@ -81,13 +83,13 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
 
     auto eventInfoObj = new KUCMSEventInfoObject(  iConfig ); 
     auto vertexToken = consumes<std::vector<reco::Vertex>>(iConfig.getParameter<edm::InputTag>("vertices"));
-	eventInfoObj->LoadVertexTokens( vertexToken );
+    eventInfoObj->LoadVertexTokens( vertexToken );
 
     auto recHitsObj = new KUCMSEcalRecHitObject( iConfig );
     auto rhEBtoken = consumes<recHitCol>(iConfig.getParameter<edm::InputTag>("recHitsEB"));
     auto rhEEtoken = consumes<recHitCol>(iConfig.getParameter<edm::InputTag>("recHitsEE"));
-	recHitsObj->LoadRecHitTokens( rhEBtoken, rhEEtoken );
-	auto sctoken = consumes<reco::SuperClusterCollection>(iConfig.getParameter<edm::InputTag>("superClusters"));
+    recHitsObj->LoadRecHitTokens( rhEBtoken, rhEEtoken );
+    auto sctoken = consumes<reco::SuperClusterCollection>(iConfig.getParameter<edm::InputTag>("superClusters"));
     auto ootsctoken = consumes<reco::SuperClusterCollection>(iConfig.getParameter<edm::InputTag>("ootSuperClusters"));
     recHitsObj->LoadSCTokens( sctoken, ootsctoken );
     auto ccltoken = consumes<std::vector<reco::CaloCluster>>(iConfig.getParameter<edm::InputTag>("caloClusters"));
@@ -96,6 +98,25 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     recHitsObj->LoadSCTokens( othersctoken );
     auto beamLineToken = consumes<reco::BeamSpot>(iConfig.getParameter<edm::InputTag>("beamSpot"));
     recHitsObj->LoadBeamSpotTokens( beamLineToken );
+
+    //ECAL Tracks
+    KUCMSECALTracks* ecalTracksObj = new KUCMSECALTracks(iConfig);
+    auto generalTracksToken = consumes<edm::View<reco::Track>>(iConfig.getParameter<edm::InputTag>("tracks"));
+    auto gsfTracksToken = consumes<edm::View<reco::GsfTrack>>(iConfig.getParameter<edm::InputTag>("gsfTracksSrc"));
+    auto parameters = iConfig.getParameter<edm::ParameterSet>("TrackAssociatorParameters");
+    auto magneticFieldToken = esConsumes<MagneticField, IdealMagneticFieldRecord>();
+    auto transientTrackBuilderToken = esConsumes<TransientTrackBuilder, TransientTrackRecord>(edm::ESInputTag("", "TransientTrackBuilder"));
+
+    // Setup the track associator
+    TrackAssociatorParameters trackAssocParameters;
+    edm::ConsumesCollector iC = consumesCollector();
+    trackAssocParameters.loadParameters(parameters, iC);
+    
+    ecalTracksObj->LoadGeneralTrackTokens(generalTracksToken);
+    ecalTracksObj->LoadGsfTrackTokens(gsfTracksToken);
+    ecalTracksObj->LoadAssociationParameters(trackAssocParameters);
+    ecalTracksObj->LoadMagneticField(magneticFieldToken);
+    ecalTracksObj->LoadTTrackBuilder(transientTrackBuilderToken);
 
     auto electronsObj = new KUCMSElectronObject( iConfig );
     auto electronToken = consumes<edm::View<reco::GsfElectron>>(iConfig.getParameter<edm::InputTag>("electrons"));
@@ -106,10 +127,28 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     electronsObj->LoadBeamSpotTokens( beamLineToken );
     electronsObj->LoadRecHitObject( recHitsObj );
 
-	auto photonsObj = new KUCMSPhotonObject( iConfig );
-	auto photonToken = consumes<edm::View<reco::Photon>>(iConfig.getParameter<edm::InputTag>("gedPhotons"));
+    //Displaced Electrons
+    KUCMSDisplacedElectron* displacedElectronObj = new KUCMSDisplacedElectron(iConfig);    
+    //auto generalTracksToken = consumes<edm::View<reco::Track>>(iConfig.getParameter<edm::InputTag>("tracks"));
+    //auto gsfTracksToken = consumes<edm::View<reco::GsfTrack>>(iConfig.getParameter<edm::InputTag>("gsfTracksSrc"));
+    auto ootSuperClusterToken = consumes<edm::View<reco::SuperCluster>>(iConfig.getParameter<edm::InputTag>("ootSuperClusters"));
+    //auto parameters = iConfig.getParameter<edm::ParameterSet>("TrackAssociatorParameters");
+    //auto magneticFieldToken = esConsumes<MagneticField, IdealMagneticFieldRecord>();
+    auto displacedSCToken = consumes<edm::View<reco::SuperCluster>>(iConfig.getParameter<edm::InputTag>("displacedSCs"));
+    //auto transientTrackBuilderToken = esConsumes<TransientTrackBuilder, TransientTrackRecord>(edm::ESInputTag("", "TransientTrackBuilder"));
+
+    displacedElectronObj->LoadGeneralTrackTokens(generalTracksToken);
+    displacedElectronObj->LoadGsfTrackTokens(gsfTracksToken);
+    displacedElectronObj->LoadSuperClusterTokens(displacedSCToken);
+    displacedElectronObj->LoadOotSuperClusterTokens(ootSuperClusterToken);
+    displacedElectronObj->LoadAssociationParameters(trackAssocParameters);
+    displacedElectronObj->LoadMagneticField(magneticFieldToken);
+    displacedElectronObj->LoadTTrackBuilder(transientTrackBuilderToken);    
+
+    auto photonsObj = new KUCMSPhotonObject( iConfig );
+    auto photonToken = consumes<edm::View<reco::Photon>>(iConfig.getParameter<edm::InputTag>("gedPhotons"));
     auto ootPhotonToken = consumes<edm::View<reco::Photon>>(iConfig.getParameter<edm::InputTag>("ootPhotons"));
-	photonsObj->LoadPhotonTokens( photonToken, ootPhotonToken );
+    photonsObj->LoadPhotonTokens( photonToken, ootPhotonToken );
     photonsObj->LoadRecHitObject( recHitsObj );
     photonsObj->LoadElectronObject( electronsObj );
 
@@ -122,15 +161,17 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     ak4jetObj->LoadPhotonObject( photonsObj );
     ak4jetObj->LoadElectronObject( electronsObj );
 
-	auto pfmetObj = new KUCMSPFMetObject( iConfig );
-	auto pfmetToken = consumes<std::vector<reco::PFMET>>(iConfig.getParameter<edm::InputTag>("mets")); 
-	pfmetObj->LoadPFMetTokens( pfmetToken );
-	pfmetObj->LoadPhotonObject( photonsObj );
+    auto pfmetObj = new KUCMSPFMetObject( iConfig );
+    auto pfmetToken = consumes<std::vector<reco::PFMET>>(iConfig.getParameter<edm::InputTag>("mets")); 
+    pfmetObj->LoadPFMetTokens( pfmetToken );
+    pfmetObj->LoadPhotonObject( photonsObj );
 
     if( DEBUG ) std::cout << "Loading Object Manager" << std::endl;
 
     ObjMan.Load( "EventInfo", eventInfoObj );
+    ObjMan.Load( "ECALTracks", ecalTracksObj );
     ObjMan.Load( "Electrons", electronsObj );
+    ObjMan.Load( "DisplacedElectrons", displacedElectronObj );
     ObjMan.Load( "Photons", photonsObj );
     ObjMan.Load( "JetsAK4", ak4jetObj );
     ObjMan.Load( "PFMet", pfmetObj );
@@ -155,7 +196,9 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
         genObjs->LoadGenJetsTokens( genJetsToken );
 
         // Load gen object into other collections
-		electronsObj->LoadGenObject( genObjs );
+	ecalTracksObj->LoadGenObject( genObjs );
+	electronsObj->LoadGenObject( genObjs );
+	displacedElectronObj->LoadGenObject( genObjs );
         photonsObj->LoadGenObject( genObjs );
         ak4jetObj->LoadGenObject( genObjs );
 
