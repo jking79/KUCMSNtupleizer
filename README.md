@@ -1,7 +1,7 @@
 // -*- C++ -*-
 //
-// Package:    KUCMSNtupilizer
-// Class:      KUCMSNtupilizer
+// Package:    KUCMSNtupleizer
+// Class:      KUCMSNtupleizer
 //
 /**\class KUCMSNtupilizer LLPgammaAnalyzer.cc LLPgammaAnalyzer/plugins/KUCMSNtupilizer.cc
 
@@ -16,7 +16,7 @@
 //
 //
 
-CMSSW install for KUCMSNtupilizer:
+CMSSW install for KUCMSNtupleizer:
 
 cmsrel CMSSW_13_3_0
 cd CMSSW_13_3_0/src 
@@ -29,9 +29,9 @@ git cms-init
 ( initial scram b -j8 must be in src/ ?  after maybe scram-ed  from plugins/ or test/ …. )
 
 
-mkdir KUCMSNtupilizer
-cd KUCMSNtupilizer/
-git clone https://github.com/jking79/KUCMSNtupilizer.git
+mkdir KUCMSNtupleizer
+cd KUCMSNtupleizer/
+git clone https://github.com/jking79/KUCMSNtupleizer.git
 cd ../
 scram b -j 8
 
