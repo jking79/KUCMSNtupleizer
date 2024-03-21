@@ -18,8 +18,8 @@
 
 CMSSW install for KUCMSNtupilizer:
 
-cmsrel CMSSW_13_0_X
-cd CMSSW_13_0_X/src 
+cmsrel CMSSW_13_3_0
+cd CMSSW_13_3_0/src 
 cmsenv 
 
 git cms-init
