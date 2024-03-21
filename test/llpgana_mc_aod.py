@@ -218,10 +218,12 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
    ## flags
    hasGenInfo = cms.bool(options.hasGenInfo),
    #hasGenInfo = cms.bool(False),
-   minEvtMet = cms.double(150.0),
-   #minEvtMet = cms.double(50.0),
-   minRHEi = cms.double(0.5),
-   minRHEf = cms.double(0.5),
+   #minEvtMet = cms.double(150.0),
+   minEvtMet = cms.double(0.0),
+   #minRHEi = cms.double(0.5),
+   #minRHEf = cms.double(0.5),
+   minRHEi = cms.double(5.0),
+   minRHEf = cms.double(5.0),
    ## additional collections
    ## tracks
    #tracks = cms.InputTag("unpackedTracksAndVertices"),
