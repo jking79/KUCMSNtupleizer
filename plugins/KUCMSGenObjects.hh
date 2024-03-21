@@ -36,8 +36,8 @@
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/JetReco/interface/GenJet.h"
-#include "KUNTupleFW/KUCMSNtupleizer/interface/MatchingTools.h"
-#include "KUNTupleFW/KUCMSNtupleizer/interface/DeltaRMatch.h"
+#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/MatchingTools.h"
+#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/DeltaRMatch.h"
 
 //  KUCMS Object includes
 #include "KUCMSObjectBase.hh"

@@ -71,8 +71,8 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 100
 #process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 #process.MessageLogger.cerr.FwkReport.reportEvery = 10000
 
-process.load('KUNTupleFW.KUCMSNtupleizer.ECALTracks_cfi')
-from KUNTupleFW.KUCMSNtupleizer.ECALTracks_cfi import *
+process.load('KUCMSNtupleizer.KUCMSNtupleizer.ECALTracks_cfi')
+from KUCMSNtupleizer.KUCMSNtupleizer.ECALTracks_cfi import *
 
 ## Define the input source
 aodpath_1k_450_100k = '/store/mc/Run3Winter20DRPremixMiniAOD/HTo2LongLivedTo4b_MH-1000_MFF-450_CTau-100000mm_TuneCP5_14TeV_pythia8/AODSIM/110X_mcRun3_2021_realistic_v6-v2/'

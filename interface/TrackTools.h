@@ -12,8 +12,8 @@
 #include "TrackingTools/TrackAssociator/interface/TrackAssociatorParameters.h"
 #include "TrackingTools/TrajectoryState/interface/TrajectoryStateTransform.h"
 
-//===============================================================================================//                                                                               
-//                                      class: PropagatedTrack                                   //                                                                               
+//===============================================================================================//
+//                                      class: PropagatedTrack                                   //
 //-----------------------------------------------------------------------------------------------//
 // Class for storing a track that was succesfully propagated to the ECAL with its index and its  //
 // associated TrackDetInfo.                                                                      //
