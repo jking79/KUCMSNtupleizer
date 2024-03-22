@@ -296,7 +296,7 @@ void KUCMSECALTracks::FillTrackBranches(const PropagatedTracks<T> &propagatedTra
     Branches.fillBranch("ECALTrack_isGeneral", bool(typeid(T) == typeid(reco::Track)) );
     Branches.fillBranch("ECALTrack_isGsf", bool(typeid(T) == typeid(reco::GsfTrack)) );
 
-    if(bool(typeid(T) == typeid(reco::Track))) {
+    if(typeid(T) == typeid(reco::Track)) {
       Branches.fillBranch("ECALTrack_genIndex", int(generalTrackGenInfo_[trackDet.GetIndex()].first) );
       Branches.fillBranch("ECALTrack_genDeltaR", float(generalTrackGenInfo_[trackDet.GetIndex()].second) );
     }
