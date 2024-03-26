@@ -674,4 +674,3 @@ void KUCMSPhotonObject::correctMet( float & CSumEt, float & CPx, float & CPy ){
 }//<<>>void KUCMSPhotonObject::correctMet( float & CSumEt, float & CPx, float & CPy )
 
 #endif
->>>>>>> 2f0e277fb0524b1d969b7ed35559585a2c17f0ba

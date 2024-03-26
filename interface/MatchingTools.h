@@ -8,7 +8,6 @@
 #include "DataFormats/GeometryVector/interface/GlobalPoint.h"
 
 class TrackInfo;
-
 typedef std::vector<TrackInfo> TrackInfoCollection;
 typedef std::vector<std::vector<GlobalPoint> > TrackRecHitLocations;
 template <typename S> using Matrix = std::vector<std::vector<S>>;
@@ -29,6 +28,11 @@ class GenLeptonType {
   LepType GetLepType() const { return type_; }
   double GetDeltaR() const { return deltaR_; }
   bool isValid() const { return (index_ > 0 && deltaR_ > 0); }
+  int GetPdgID() const { 
+    if(isValid()) 
+      return int(genElectron_.pdgId());
+    else
+      return -999;}
 
  private:
   
@@ -127,16 +131,27 @@ class TrackInfo {
 
  public:
 
+  template <typename T> TrackInfo(const T &track, const int index) 
+    : pt_(track.pt()), eta_(track.eta()), phi_(track.phi()), index_(index) {
+    if(typeid(T) == typeid(reco::Track))
+      type_ = kGeneral;
+    else if(typeid(T) == typeid(reco::GsfTrack))
+      type_ = kGsf;
+  }
+
   TrackInfo(const double &pt, const double &eta, const double &phi)
-    : pt_(pt), eta_(eta), phi_(phi) {}
+    : pt_(pt), eta_(eta), phi_(phi), index_(-1), type_(kUnkown) {}
 
   virtual ~TrackInfo() = default;
 
   // Getters
+  int GetIndex() const {return index_;} 
   double pt() const {return pt_;}
   double eta() const {return eta_;}
   double phi() const {return phi_;}
 
+  bool isGeneral() const { return type_ == kGeneral; }
+  bool isGsf() const { return type_ == kGsf; }
   bool isEmpty() {
     return pt_ < 0 && eta_ < 0 && phi_ < 0;
   }
@@ -146,9 +161,22 @@ class TrackInfo {
   }
 
  private:
-
+  enum type {kGeneral, kGsf, kUnkown};
   double pt_, eta_, phi_;
+  int index_;
+  type type_;
 };
+
+template <typename T>
+inline TrackInfoCollection GetTrackInfo(const std::vector<T> &tracks) {
+  
+  TrackInfoCollection trackInfo;
+  for(size_t t = 0; t < tracks.size(); t++) {
+    const T track(tracks[t]);
+    trackInfo.emplace_back(TrackInfo(track, int(t)));
+  }
+  return trackInfo;  
+}
 
 template <class T> class MatchedTrackSCPairs : public std::vector<MatchedTrackSCPair<T>> {
  public:
@@ -195,16 +223,18 @@ std::vector<T> RemoveDataAtIndices(const std::vector<T>& data, std::vector<size_
   return ret;
 }
 
-inline reco::GenParticleCollection CleanGenParticles(const reco::GenParticleCollection &genParticles) {
-  std::vector<size_t> indecesToRemove;
+inline reco::GenParticleCollection CleanGenParticles(const reco::GenParticleCollection &genParticles, std::map<int, int> &indexMap) {
 
+  reco::GenParticleCollection statusOne;
   for(size_t i = 0; i < genParticles.size(); i++) {
-    if(genParticles[i].status() == 1)
-      continue;    
-    indecesToRemove.push_back(i);
+
+    if(genParticles[i].status() == 1 && genParticles[i].charge() != 0) {
+      indexMap.emplace(statusOne.size(), i);
+      statusOne.emplace_back(genParticles[i]);
+    }
   }
   
-  return RemoveDataAtIndices<reco::GenParticle>(genParticles, indecesToRemove);
+  return statusOne;
 }
 
 #endif
