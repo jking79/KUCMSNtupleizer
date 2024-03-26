@@ -3,10 +3,10 @@
 
 // -*- C++ -*-
 //
-// Package:    KUCMSNtupleizer/KUCMSNtupleizer
+// Package:    KUNTupleFW/KUCMSNtupleizer
 // Class:      MatchTracksToSC
 //
-/**\class MatchTracksToSC MatchTracksToSC.h KUCMSNtupleizer/KUCMSNtupleizer/interface/MatchTracksToSC.h
+/**\class MatchTracksToSC MatchTracksToSC.h KUNTupleFW/KUCMSNtupleizer/interface/MatchTracksToSC.h
 
    Description: Class for matching any set of tracks to a set of reco::SuperCluster. 
 

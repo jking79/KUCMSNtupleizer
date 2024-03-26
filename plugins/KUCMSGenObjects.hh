@@ -36,6 +36,8 @@
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/JetReco/interface/GenJet.h"
+#include "DataFormats/GeometryVector/interface/GlobalPoint.h"
+
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/MatchingTools.h"
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/DeltaRMatch.h"
 
@@ -97,7 +99,11 @@ class KUCMSGenObject : public KUCMSObjectBase {
     std::vector<float> kidTOFChain( std::vector<reco::CandidatePtr> kids, float cx, float cy, float cz  );
     // old single reco part gen matching
     std::vector<float> getGenPartMatch( const reco::SuperCluster* scptr, float pt );
+  //std::map<std::string, float> getGenPartMatch( const reco::SuperCluster &scptr, float pt ) const; 
+  //std::map<std::string, bool> MotherID(const int genIndex) const;
     std::vector<float> getGenJetInfo( float jetEta, float jetPhi, float jetPt );
+    GlobalPoint GenVertex() {return GlobalPoint(genxyz0_->x(), genxyz0_->y(), genxyz0_->z()); };
+
     // new exclusive gen matching
     std::vector<int> getGenMatch( const std::vector<reco::SuperCluster> scptrs, std::vector<float> energies );
     std::vector<int> getGenPhoMatch( const std::vector<reco::SuperCluster> scptrs, std::vector<float> energies );
@@ -121,8 +127,6 @@ class KUCMSGenObject : public KUCMSObjectBase {
     bool IsMotherZ(const reco::GenParticle &genElectron) const;
 
     private:
-
-  //enum LepType {kW, kZ, kTau, kConversion, kLight, kHeavy, kSusy, kUnmatched};
 
     std::vector<reco::GenParticle> fgenparts;
     std::vector<int> fgenpartllp;
@@ -189,6 +193,7 @@ KUCMSGenObject::KUCMSGenObject( const edm::ParameterSet& iConfig ){
 
 void KUCMSGenObject::InitObject( TTree* fOutTree ){
 
+    Branches.makeBranch("genNtotal","Gen_nTotal",UINT);
     Branches.makeBranch("genPt","Gen_pt",VFLOAT);
     Branches.makeBranch("genEnergy","Gen_energy",VFLOAT);
     Branches.makeBranch("genPhi","Gen_phi",VFLOAT);
@@ -307,7 +312,7 @@ void KUCMSGenObject::ProcessEvent( ItemManager<float>& geVar ){
         const float genMass = genpart.mass();		
 
 		//if( GenDEBUG ) std::cout << "GenPart : genSusId = " << genSusId << std::endl;
-
+	Branches.fillBranch("genNtotal", unsigned(fgenparts.size()) );
         Branches.fillBranch("genPt",genPt);
         Branches.fillBranch("genEnergy",genEnergy);
         Branches.fillBranch("genPhi",genPhi);
@@ -1217,19 +1222,7 @@ bool KUCMSGenObject::isSignalGenElectron(const reco::GenParticle &genElectron) c
   return (momType == kZ || momType == kSusy);
 
 }
-/*
-LepType KUCMSGenObject::ClassifyGenElectron(const std::vector<int> &motherIDs) const {
 
-  LepType momType = kUnmatched;
-  for(auto const& id : motherIDs) {
-    momType = AssignLeptonMomType(id);
-
-    if(momType != kUnmatched)
-      break;
-  }
-  return momType;
-}
-*/
 LepType KUCMSGenObject::ClassifyGenElectron(const reco::GenParticle &genElectron) const {
 
   std::vector<int> motherIDs(MomIDs(genElectron));
@@ -1298,45 +1291,6 @@ void KUCMSGenObject::GenElectronContent() const {
 }
 
 LepType KUCMSGenObject::AssignLeptonMomType(const int motherID) const {
-  /*
- LepType type = kUnmatched;
-  int absMotherId = abs(motherID);
-  int motherIdMod1000 = absMotherId % 1000;
- 
-  switch (true) {
-  case absMotherId == 24:
-    type = kW;
-    break;
-  case motherID == 23:
-    type = kZ;
-    break;
-  case absMotherId == 15:
-    type = kTau;
-    break;
-  case (motherIdMod1000 > 100 && motherIdMod1000 < 400) ||
-    (motherIdMod1000 > 1000 && motherIdMod1000 < 4000) ||
-    (absMotherId > 0 && absMotherId < 4) ||
-    motherID == 21:
-    type = kLight;
-    break;
-  case (motherIdMod1000 > 400 && motherIdMod1000 < 600) ||
-    (motherIdMod1000 > 4000 && motherIdMod1000 < 6000) ||
-    (absMotherId > 3 && absMotherId < 7):
-    type = kHeavy;
-    break;
-  case motherID == 22 || absMotherId == 11:
-    type = kConversion;
-    break;
-  case motherID == 1000022:
-    type = kSusy;
-    break;
-  case absMotherId > 1000000:
-    type = kOther;
-    break;
-  }
-
-  return type;
-  }*/
   
   LepType type = kUnmatched;
 
@@ -1355,7 +1309,7 @@ LepType KUCMSGenObject::AssignLeptonMomType(const int motherID) const {
           || (abs(motherID%1000) > 4000 && abs(motherID%1000) < 6000)
           || (abs(motherID) > 3 && abs(motherID) < 7))
     type = kHeavy;
-  else if(motherID == 22)// || abs(motherID) == 11)
+  else if(motherID == 22)
     type = kConversion;
   else if(motherID == 1000022 || abs(motherID) == 9000006)
     type = kSusy;

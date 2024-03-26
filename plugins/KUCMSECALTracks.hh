@@ -174,13 +174,13 @@ void KUCMSECALTracks::InitObject( TTree* fOutTree ){
   Branches.makeBranch("ECALTrack_nLostHits", "ECALTrack_nLostHits", VINT);
   Branches.makeBranch("ECALTrack_isGeneral", "ECALTrack_isGeneral", VBOOL);
   Branches.makeBranch("ECALTrack_isGsf", "ECALTrack_isGsf", VBOOL);
-  Branches.makeBranch("ECALTrack_genIndex", "ECALTrack_genIndex", VINT);
   Branches.makeBranch("ECALTrack_genDeltaR", "ECALTrack_genDeltaR", VFLOAT);
   Branches.makeBranch("ECALTrackDetID_detId", "ECALTrackDetID_detId", VUINT);
   Branches.makeBranch("ECALTrackDetID_trackIndex", "ECALTrackDetID_trackIndex", VUINT);
   Branches.makeBranch("ECALTrackDetID_isECAL", "ECALTrackDetID_isECAL", VBOOL);
   Branches.makeBranch("ECALTrackDetID_isHCAL", "ECALTrackDetID_isHCAL", VBOOL);
-
+  Branches.makeBranch("ECALTrack_genIndex", "ECALTrack_genIndex", VINT);
+  Branches.makeBranch("ECALTrack_pdgId", "ECALTrack_pdgId", VINT);
   Branches.attachBranches(fOutTree);
   
 }//<<>>void KUCMSECALTracks::InitObject( TTree* fOutTree )
@@ -240,11 +240,11 @@ void KUCMSECALTracks::PostProcessEvent( ItemManager<float>& geVar ){
 
   if(cfFlag("hasGenInfo")) {
     DeltaRMatchHungarian<TrackInfo, reco::GenParticle> genToTrackAssigner(mergedTrackInfo_, genObjs_->GetGenParticles());
-
     for(auto const &pair : genToTrackAssigner.GetPairedObjects()) {
-      if(pair.GetObjectA().isGeneral())
+      const reco::GenParticle genElectron(pair.GetObjectB());
+      if(pair.GetObjectA().isGeneral()) 
 	generalTrackGenInfo_[pair.GetObjectA().GetIndex()] = std::make_pair(pair.GetIndexB(), pair.GetDeltaR());  
-      if(pair.GetObjectA().isGsf())
+      if(pair.GetObjectA().isGsf()) 
 	gsfTrackGenInfo_[pair.GetObjectA().GetIndex()] = std::make_pair(pair.GetIndexB(), pair.GetDeltaR());
     }
   }
@@ -296,13 +296,17 @@ void KUCMSECALTracks::FillTrackBranches(const PropagatedTracks<T> &propagatedTra
     Branches.fillBranch("ECALTrack_isGeneral", bool(typeid(T) == typeid(reco::Track)) );
     Branches.fillBranch("ECALTrack_isGsf", bool(typeid(T) == typeid(reco::GsfTrack)) );
 
-    if(bool(typeid(T) == typeid(reco::Track))) {
-      Branches.fillBranch("ECALTrack_genIndex", int(generalTrackGenInfo_[trackDet.GetIndex()].first) );
-      Branches.fillBranch("ECALTrack_genDeltaR", float(generalTrackGenInfo_[trackDet.GetIndex()].second) );
-    }
-    else {
-      Branches.fillBranch("ECALTrack_genIndex", int(gsfTrackGenInfo_[trackDet.GetIndex()].first) );
-      Branches.fillBranch("ECALTrack_genDeltaR", float(gsfTrackGenInfo_[trackDet.GetIndex()].second) );
+    if(cfFlag("hasGenInfo")) {
+      if(typeid(T) == typeid(reco::Track)) {
+	Branches.fillBranch("ECALTrack_pdgId", int(genObjs_->GetGenParticles()[generalTrackGenInfo_[trackDet.GetIndex()].first].pdgId()) );
+	Branches.fillBranch("ECALTrack_genIndex", int(generalTrackGenInfo_[trackDet.GetIndex()].first) );
+	Branches.fillBranch("ECALTrack_genDeltaR", float(generalTrackGenInfo_[trackDet.GetIndex()].second) );
+      }
+      else {
+	Branches.fillBranch("ECALTrack_pdgId", int(genObjs_->GetGenParticles()[gsfTrackGenInfo_[trackDet.GetIndex()].first].pdgId()) );
+	Branches.fillBranch("ECALTrack_genIndex", int(gsfTrackGenInfo_[trackDet.GetIndex()].first) );
+	Branches.fillBranch("ECALTrack_genDeltaR", float(gsfTrackGenInfo_[trackDet.GetIndex()].second) );
+      }
     }
     
     FillDetIdBranches<T>(detInfo.crossedEcalIds, trackDet, true);
