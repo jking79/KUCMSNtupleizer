@@ -8,7 +8,6 @@
 #include "DataFormats/GeometryVector/interface/GlobalPoint.h"
 
 class TrackInfo;
-
 typedef std::vector<TrackInfo> TrackInfoCollection;
 typedef std::vector<std::vector<GlobalPoint> > TrackRecHitLocations;
 template <typename S> using Matrix = std::vector<std::vector<S>>;
@@ -29,6 +28,11 @@ class GenLeptonType {
   LepType GetLepType() const { return type_; }
   double GetDeltaR() const { return deltaR_; }
   bool isValid() const { return (index_ > 0 && deltaR_ > 0); }
+  int GetPdgID() const { 
+    if(isValid()) 
+      return int(genElectron_.pdgId());
+    else
+      return -999;}
 
  private:
   
@@ -219,16 +223,18 @@ std::vector<T> RemoveDataAtIndices(const std::vector<T>& data, std::vector<size_
   return ret;
 }
 
-inline reco::GenParticleCollection CleanGenParticles(const reco::GenParticleCollection &genParticles) {
-  std::vector<size_t> indecesToRemove;
+inline reco::GenParticleCollection CleanGenParticles(const reco::GenParticleCollection &genParticles, std::map<int, int> &indexMap) {
 
+  reco::GenParticleCollection statusOne;
   for(size_t i = 0; i < genParticles.size(); i++) {
-    if(genParticles[i].status() == 1)
-      continue;    
-    indecesToRemove.push_back(i);
+
+    if(genParticles[i].status() == 1 && genParticles[i].charge() != 0) {
+      indexMap.emplace(statusOne.size(), i);
+      statusOne.emplace_back(genParticles[i]);
+    }
   }
   
-  return RemoveDataAtIndices<reco::GenParticle>(genParticles, indecesToRemove);
+  return statusOne;
 }
 
 #endif

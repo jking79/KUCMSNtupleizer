@@ -206,6 +206,29 @@ template <typename A, typename B>
   matchedPairs_ = ConstructMatchedPairs(costMatrix, objectsA, objectsB);
 }
 
+template <>
+inline void DeltaRMatchHungarian<TrackInfo, reco::GenParticle>::Solve(const std::vector<TrackInfo> &objectsA,
+								      const reco::GenParticleCollection &objectsB) {
+
+  std::map<int, int> indexMap;
+  reco::GenParticleCollection statusOne = CleanGenParticles(objectsB, indexMap);
+
+  Matrix<double> costMatrix = CalculateCostMatrix(objectsA, statusOne);
+  HungarianAlgorithm assigner;
+  cost_ = assigner.Solve(costMatrix, matchedIndexes_);
+
+  //PrintCostMatrix(costMatrix);
+
+  for(size_t i = 0; i < matchedIndexes_.size(); i++) {
+    matchedIndexes_[i] = indexMap[matchedIndexes_[i]];
+    if(objectsB[matchedIndexes_[i]].pdgId() == 12 || objectsB[matchedIndexes_[i]].pdgId() == 2112)
+      std::cout << "Matching is incorrect, there shouldn't be a pdgID =  " << objectsB[matchedIndexes_[i]].pdgId() << std::endl; 
+  }
+
+  matchedPairs_ = ConstructMatchedPairs(costMatrix, objectsA, objectsB);
+}
+
+//===============================================================================================//
 template <typename A, typename B>
   DeltaRMatchHungarian<A,B>::DeltaRMatchHungarian(Matrix<double> &costMatrix) {
 
@@ -273,7 +296,7 @@ template <typename A, typename B>
 
   return costMatrix;
 }
-
+/*
 template <>
 inline Matrix<double> DeltaRMatchHungarian<TrackInfo, reco::GenParticle>::CalculateCostMatrix(const std::vector<TrackInfo> &objectsA, 
 											      const reco::GenParticleCollection &objectsB) const {
@@ -288,22 +311,25 @@ inline Matrix<double> DeltaRMatchHungarian<TrackInfo, reco::GenParticle>::Calcul
       if(objectsB[bi].status() == 1)
 	costMatrix[ai][bi] = sqrt(reco::deltaR2(objectsA[ai], objectsB[bi]) );  
       else
-	costMatrix[ai][bi] = 5.;
+	costMatrix[ai][bi] = 999.;
     }
   }
 
   return costMatrix;
 }
-
+*/
 template <typename A, typename B>
   void DeltaRMatchHungarian<A,B>::PrintCostMatrix(Matrix<double> &costMatrix) const {
 
   std::cout << "Cost Matrix: " << std::endl;
+  int indexRow = 0;
   for(const auto &row : costMatrix) {
+    std::cout << "track " << indexRow << std::endl;
     for(const auto &element : row) {
-
-      std::cout << element << ", ";
+      if(element < 0.01)
+	std::cout << element << ", ";
     }
+    indexRow++;
     std::cout << std::endl;
   }
 }
