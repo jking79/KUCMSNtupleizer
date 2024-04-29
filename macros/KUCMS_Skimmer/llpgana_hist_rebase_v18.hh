@@ -17,12 +17,14 @@
 
 using namespace std;
 
-class llpgana_hist_rebase {
-public :
+class root_rebase {
+
+	public :
+
    TTree          *fChain;   //!pointer to the analyzed TTree or TChain
    //Int_t           fCurrent; //!current Tree number in a TChain
 
-// Fixed size dimensions of array or collections stored in the TTree if any.
+	// Fixed size dimensions of array or collections stored in the TTree if any.
 
    // Declaration of leaf types
    UInt_t          run;
@@ -281,8 +283,8 @@ Long64_t llpgana_hist_rebase::LoadTree(Long64_t entry)
 }
 */
 
-void llpgana_hist_rebase::Init(TTree *tree)
-{
+void root_rebase::Init(TTree *tree){
+
    // The Init() function is called when the selector needs to initialize
    // a new tree or chain. Typically here the branch addresses and branch
    // pointers of the tree will be set.

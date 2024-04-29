@@ -9,29 +9,15 @@
 //--------------------   hh file -------------------------------------------------------------
 //---------------------------------------------------------------------------------------------
 
-#include "KUCMSHelperFunctions.hh"
+#include "./KUCMSHelperFunctions.hh"
 
-// ROOT includes
-#include "TFile.h"
-#include "TTree.h"
-#include "TH1F.h"
-#include "TH1D.h"
-#include "TH2F.h"
-#include "TGraphAsymmErrors.h"
-#include "TMath.h"
-#include "TCanvas.h"
-#include "TROOT.h"
-#include "TStyle.h"
-#include "TString.h"
-#include "TColor.h"
-#include "TPaveText.h"
-#include "TText.h"
-#include "TChain.h"
+// ROOT
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
-#include "TF1.h"
 #include "TFormula.h"
+#include "TF1.h"
+#include "TTree.h"
 #include "Math/PositionVector3D.h"
 #include "TMatrixD.h"
 #include "TVectorD.h"
@@ -113,7 +99,7 @@ void normTH1D(TH1D* hist){
 
 }//<<>>void NormTH1D(TH1D* hist)
 
-void profileTH2D(TH2D* nhist, TH1D* prof, TH1D* fithist){
+void profileTH2D(TH2D* nhist, TH1D* prof, TH1D* fithist, float range = 0.2 ){
 
     std::cout << "Profile " << " hist: " << nhist->GetName() << std::endl;
 
@@ -124,9 +110,9 @@ void profileTH2D(TH2D* nhist, TH1D* prof, TH1D* fithist){
         auto mean = phist->GetMean();
         auto stdv = phist->GetStdDev();
         auto norm = phist->GetBinContent(phist->GetMaximumBin());
-        auto high = mean + 0.2*stdv;
-        auto low = mean - 0.2*stdv;
-        if( abs(stdv) > 0.01 && abs(norm) > 1 ){
+        auto high = mean + range*stdv;
+        auto low = mean - range*stdv;
+        if( abs(stdv) > 0.0 && abs(norm) > 1 ){
             auto tmp_form = new TFormula("tmp_formula","[0]*exp(-0.5*((x-[1])/[2])**2)");
             auto tmp_fit  = new TF1("tmp_fit",tmp_form->GetName(),low,high);
             tmp_fit->SetParameter(0,norm); //tmp_fit->SetParLimits(0,norm/2,norm*2);
@@ -137,10 +123,12 @@ void profileTH2D(TH2D* nhist, TH1D* prof, TH1D* fithist){
             auto error = tmp_fit->GetParError(1);
             auto fNdf = tmp_fit->GetNDF();
             auto fProb = tmp_fit->GetProb();
+			auto fChi2 = tmp_fit->GetChisquare();
             // set new contents
-            if( fNdf > 0 && fProb > 0.05 && error < 1.0 ){
-                //auto fChi2Ndf = fChi2/fNdf;
-                fithist->SetBinContent( ibinX, fProb );
+            //if( fNdf > 0 && fProb > 0.001 && error < fmean ){
+            if( fNdf > 0 && error < stdv ){
+                auto fChi2Ndf = fChi2/fNdf;
+                fithist->SetBinContent( ibinX, fChi2Ndf );
                 fithist->SetBinError( ibinX, 0 );
                 prof->SetBinContent( ibinX, fmean );
                 prof->SetBinError( ibinX, error );
@@ -302,7 +290,7 @@ std::vector<float> getDistStats( std::vector<float> values, std::vector<float> w
     results[2] = results[6] - results[10];
 
     return results;
-}//>>>>std::vector<float> getDistStats( std::vector<float> values, std::vector<float> weights )
+}//>>>>vector<float> getDistStats( std::vector<float> values, std::vector<float> weights )
 
 std::vector<float> getRhGrpEigen( std::vector<float> xs, std::vector<float> wts ){
 //spherical
@@ -336,7 +324,7 @@ std::vector<float> getRhGrpEigen( std::vector<float> xs, std::vector<float> wts 
     results.push_back(ev);
 
     return results;
-}//<<>>std::vector<float> getRhGrpEigen2D( std::vector<float> xs, std::vector<float> ys, std::vector<float> zs, std::vector<float> wts )
+}//<<>>vector<float> getRhGrpEigen2D( std::vector<float> xs, std::vector<float> ys, std::vector<float> zs, std::vector<float> wts )
 
 std::vector<float> getRhGrpEigen( std::vector<float> xs, std::vector<float> ys, std::vector<float> wts ){
 
@@ -344,7 +332,7 @@ std::vector<float> getRhGrpEigen( std::vector<float> xs, std::vector<float> ys, 
 
     auto mean_x = mean( xs, wts );
     auto mean_y = mean( ys, wts );
-    auto swts = accum( wts );
+    auto swts = vfsum( wts );
     auto var_x = var( xs, mean_x, wts, swts );
     auto var_y = var( ys, mean_y, wts, swts );
     auto var_xy = cvar( xs, mean_x, ys, mean_y, wts, swts );
@@ -378,7 +366,7 @@ std::vector<float> getRhGrpEigen( std::vector<float> xs, std::vector<float> ys, 
     results.push_back(ev);
 
     return results;
-}//<<>>std::vector<float> = getRhGrpEigen2D( std::vector<float> xs, std::vector<float> ys, std::vector<float> zs, std::vector<float> wts )
+}//<<>>vector<float> = getRhGrpEigen2D( std::vector<float> xs, std::vector<float> ys, std::vector<float> zs, std::vector<float> wts )
 
 std::vector<float> getRhGrpEigen( std::vector<float> xs, std::vector<float> ys, std::vector<float> zs, std::vector<float> wts ){
 // ieipt
@@ -388,7 +376,7 @@ std::vector<float> getRhGrpEigen( std::vector<float> xs, std::vector<float> ys, 
     auto mean_x = mean( xs, wts );
     auto mean_y = mean( ys, wts );
     auto mean_z = mean( zs, wts );
-    auto swts = accum( wts );
+    auto swts = vfsum( wts );
     auto var_x = var( xs, mean_x, wts, swts );
     auto var_y = var( ys, mean_y, wts, swts );
     auto var_z = var( zs, mean_z, wts, swts );
@@ -437,7 +425,7 @@ std::vector<float> getRhGrpEigen( std::vector<float> xs, std::vector<float> ys, 
     results.push_back(ev);//3
 
     return results;
-}//<<>>std::vector<float> getRhGrpEigen3D( std::vector<float> xs, std::vector<float> ys, std::vector<float> zs, std::vector<float> wts )
+}//<<>>vector<float> getRhGrpEigen3D( std::vector<float> xs, std::vector<float> ys, std::vector<float> zs, std::vector<float> wts )
 
 #endif
 //----------------------------------------------------------------------------------------------------------------------

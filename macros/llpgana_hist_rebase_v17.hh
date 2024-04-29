@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Wed Mar 22 13:42:18 2023 by ROOT version 6.14/09
+// Fri Dec  9 13:55:08 2022 by ROOT version 6.14/09
 // from TTree llpgtree/llpgtree
-// found on file: llpgana_mc_AODSIM_ntuplizer_EB_cl2mom_v18.root
+// found on file: llpgana_mc_AODSIM_ntuplizer_test_v17.root
 //////////////////////////////////////////////////////////
 
 //#ifndef llpgana_hist_rebase_h
@@ -40,11 +40,19 @@ public :
    Float_t         metCSumEt;
    Float_t         metCPx;
    Float_t         metCPy;
+   Float_t         jetHt;
+   UInt_t          nJets;
+   vector<float>   *jetE;
+   vector<float>   *jetPt;
+   vector<float>   *jetEta;
+   vector<float>   *jetPhi;
+   vector<int>     *jetID;
    UInt_t          nPhotons;
    vector<bool>    *phoIsOotPho;
    vector<bool>    *phoExcluded;
    vector<float>   *phoSeedTOFTime;
    vector<float>   *phoCMeanTime;
+   vector<float>   *phoSc2dEv;
    vector<float>   *phoPt;
    vector<float>   *phoEnergy;
    vector<float>   *phoPhi;
@@ -53,8 +61,11 @@ public :
    vector<float>   *phoPy;
    vector<float>   *phoPz;
    vector<vector<unsigned int> > *phoRhIds;
+   vector<bool>    *phoIsPFPhoton;
+   vector<bool>    *phoIsStdPhoton;
    vector<bool>    *phoHasConTracks;
    vector<bool>    *phoIsPixelSeed;
+   vector<bool>    *phoIsPhoton;
    vector<bool>    *phoIsEB;
    vector<bool>    *phoIsEE;
    vector<float>   *phoHadOverEM;
@@ -96,12 +107,6 @@ public :
    vector<int>     *phoNTrkHollowConeDR04;
    vector<int>     *genPhoIdx;
    vector<float>   *genPhoDr;
-   vector<float>   *phoSMaj;
-   vector<float>   *phoSMin;
-   vector<float>   *phoSAlp;
-   vector<float>   *phoCovEtaEta;
-   vector<float>   *phoCovEtaPhi;
-   vector<float>   *phoCovPhiPhi;
    UInt_t          nGenParts;
    vector<float>   *genPt;
    vector<float>   *genEnergy;
@@ -140,11 +145,19 @@ public :
    TBranch        *b_metCSumEt;   //!
    TBranch        *b_metCPx;   //!
    TBranch        *b_metCPy;   //!
+   TBranch        *b_jetHt;   //!
+   TBranch        *b_nJets;   //!
+   TBranch        *b_jetE;   //!
+   TBranch        *b_jetPt;   //!
+   TBranch        *b_jetEta;   //!
+   TBranch        *b_jetPhi;   //!
+   TBranch        *b_jetID;   //!
    TBranch        *b_nPhotons;   //!
    TBranch        *b_phoIsOotPho;   //!
    TBranch        *b_phoExcluded;   //!
    TBranch        *b_phoSeedTOFTime;   //!
    TBranch        *b_phoCMeanTime;   //!
+   TBranch        *b_phoSc2dEv;   //!
    TBranch        *b_phoPt;   //!
    TBranch        *b_phoEnergy;   //!
    TBranch        *b_phoPhi;   //!
@@ -153,8 +166,11 @@ public :
    TBranch        *b_phoPy;   //!
    TBranch        *b_phoPz;   //!
    TBranch        *b_phoRhIds;   //!
+   TBranch        *b_phoIsPFPhoton;   //!
+   TBranch        *b_phoIsStdPhoton;   //!
    TBranch        *b_phoHasConTracks;   //!
    TBranch        *b_phoIsPixelSeed;   //!
+   TBranch        *b_phoIsPhoton;   //!
    TBranch        *b_phoIsEB;   //!
    TBranch        *b_phoIsEE;   //!
    TBranch        *b_phoHadOverEM;   //!
@@ -196,12 +212,6 @@ public :
    TBranch        *b_phoNTrkHollowConeDR04;   //!
    TBranch        *b_genPhoIdx;   //!
    TBranch        *b_genPhoDr;   //!
-   TBranch        *b_phoSMaj;   //!
-   TBranch        *b_phoSMin;   //!
-   TBranch        *b_phoSAlp;   //!
-   TBranch        *b_phoCovEtaEta;   //!
-   TBranch        *b_phoCovEtaPhi;   //!
-   TBranch        *b_phoCovPhiPhi;   //!
    TBranch        *b_nGenParts;   //!
    TBranch        *b_genPt;   //!
    TBranch        *b_genEnergy;   //!
@@ -244,11 +254,11 @@ llpgana_hist_rebase::llpgana_hist_rebase(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("llpgana_mc_AODSIM_ntuplizer_EB_cl2mom_v18.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("llpgana_mc_AODSIM_ntuplizer_test_v17.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("llpgana_mc_AODSIM_ntuplizer_EB_cl2mom_v18.root");
+         f = new TFile("llpgana_mc_AODSIM_ntuplizer_test_v17.root");
       }
-      TDirectory * dir = (TDirectory*)f->Get("llpgana_mc_AODSIM_ntuplizer_EB_cl2mom_v18.root:/tree");
+      TDirectory * dir = (TDirectory*)f->Get("llpgana_mc_AODSIM_ntuplizer_test_v17.root:/tree");
       dir->GetObject("llpgtree",tree);
 
    }
@@ -292,10 +302,16 @@ void llpgana_hist_rebase::Init(TTree *tree)
    // (once per file to be processed).
 
    // Set object pointer
+   jetE = 0;
+   jetPt = 0;
+   jetEta = 0;
+   jetPhi = 0;
+   jetID = 0;
    phoIsOotPho = 0;
    phoExcluded = 0;
    phoSeedTOFTime = 0;
    phoCMeanTime = 0;
+   phoSc2dEv = 0;
    phoPt = 0;
    phoEnergy = 0;
    phoPhi = 0;
@@ -304,8 +320,11 @@ void llpgana_hist_rebase::Init(TTree *tree)
    phoPy = 0;
    phoPz = 0;
    phoRhIds = 0;
+   phoIsPFPhoton = 0;
+   phoIsStdPhoton = 0;
    phoHasConTracks = 0;
    phoIsPixelSeed = 0;
+   phoIsPhoton = 0;
    phoIsEB = 0;
    phoIsEE = 0;
    phoHadOverEM = 0;
@@ -347,12 +366,6 @@ void llpgana_hist_rebase::Init(TTree *tree)
    phoNTrkHollowConeDR04 = 0;
    genPhoIdx = 0;
    genPhoDr = 0;
-   phoSMaj = 0;
-   phoSMin = 0;
-   phoSAlp = 0;
-   phoCovEtaEta = 0;
-   phoCovEtaPhi = 0;
-   phoCovPhiPhi = 0;
    genPt = 0;
    genEnergy = 0;
    genPhi = 0;
@@ -393,11 +406,19 @@ void llpgana_hist_rebase::Init(TTree *tree)
    fChain->SetBranchAddress("metCSumEt", &metCSumEt, &b_metCSumEt);
    fChain->SetBranchAddress("metCPx", &metCPx, &b_metCPx);
    fChain->SetBranchAddress("metCPy", &metCPy, &b_metCPy);
+   fChain->SetBranchAddress("jetHt", &jetHt, &b_jetHt);
+   fChain->SetBranchAddress("nJets", &nJets, &b_nJets);
+   fChain->SetBranchAddress("jetE", &jetE, &b_jetE);
+   fChain->SetBranchAddress("jetPt", &jetPt, &b_jetPt);
+   fChain->SetBranchAddress("jetEta", &jetEta, &b_jetEta);
+   fChain->SetBranchAddress("jetPhi", &jetPhi, &b_jetPhi);
+   fChain->SetBranchAddress("jetID", &jetID, &b_jetID);
    fChain->SetBranchAddress("nPhotons", &nPhotons, &b_nPhotons);
    fChain->SetBranchAddress("phoIsOotPho", &phoIsOotPho, &b_phoIsOotPho);
    fChain->SetBranchAddress("phoExcluded", &phoExcluded, &b_phoExcluded);
    fChain->SetBranchAddress("phoSeedTOFTime", &phoSeedTOFTime, &b_phoSeedTOFTime);
    fChain->SetBranchAddress("phoCMeanTime", &phoCMeanTime, &b_phoCMeanTime);
+   fChain->SetBranchAddress("phoSc2dEv", &phoSc2dEv, &b_phoSc2dEv);
    fChain->SetBranchAddress("phoPt", &phoPt, &b_phoPt);
    fChain->SetBranchAddress("phoEnergy", &phoEnergy, &b_phoEnergy);
    fChain->SetBranchAddress("phoPhi", &phoPhi, &b_phoPhi);
@@ -406,8 +427,11 @@ void llpgana_hist_rebase::Init(TTree *tree)
    fChain->SetBranchAddress("phoPy", &phoPy, &b_phoPy);
    fChain->SetBranchAddress("phoPz", &phoPz, &b_phoPz);
    fChain->SetBranchAddress("phoRhIds", &phoRhIds, &b_phoRhIds);
+   fChain->SetBranchAddress("phoIsPFPhoton", &phoIsPFPhoton, &b_phoIsPFPhoton);
+   fChain->SetBranchAddress("phoIsStdPhoton", &phoIsStdPhoton, &b_phoIsStdPhoton);
    fChain->SetBranchAddress("phoHasConTracks", &phoHasConTracks, &b_phoHasConTracks);
    fChain->SetBranchAddress("phoIsPixelSeed", &phoIsPixelSeed, &b_phoIsPixelSeed);
+   fChain->SetBranchAddress("phoIsPhoton", &phoIsPhoton, &b_phoIsPhoton);
    fChain->SetBranchAddress("phoIsEB", &phoIsEB, &b_phoIsEB);
    fChain->SetBranchAddress("phoIsEE", &phoIsEE, &b_phoIsEE);
    fChain->SetBranchAddress("phoHadOverEM", &phoHadOverEM, &b_phoHadOverEM);
@@ -449,12 +473,6 @@ void llpgana_hist_rebase::Init(TTree *tree)
    fChain->SetBranchAddress("phoNTrkHollowConeDR04", &phoNTrkHollowConeDR04, &b_phoNTrkHollowConeDR04);
    fChain->SetBranchAddress("genPhoIdx", &genPhoIdx, &b_genPhoIdx);
    fChain->SetBranchAddress("genPhoDr", &genPhoDr, &b_genPhoDr);
-   fChain->SetBranchAddress("phoSMaj", &phoSMaj, &b_phoSMaj);
-   fChain->SetBranchAddress("phoSMin", &phoSMin, &b_phoSMin);
-   fChain->SetBranchAddress("phoSAlp", &phoSAlp, &b_phoSAlp);
-   fChain->SetBranchAddress("phoCovEtaEta", &phoCovEtaEta, &b_phoCovEtaEta);
-   fChain->SetBranchAddress("phoCovEtaPhi", &phoCovEtaPhi, &b_phoCovEtaPhi);
-   fChain->SetBranchAddress("phoCovPhiPhi", &phoCovPhiPhi, &b_phoCovPhiPhi);
    fChain->SetBranchAddress("nGenParts", &nGenParts, &b_nGenParts);
    fChain->SetBranchAddress("genPt", &genPt, &b_genPt);
    fChain->SetBranchAddress("genEnergy", &genEnergy, &b_genEnergy);

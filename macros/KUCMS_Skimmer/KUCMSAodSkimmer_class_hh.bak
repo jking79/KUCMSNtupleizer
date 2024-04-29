@@ -12,17 +12,21 @@
 
 #include "KUCMSHelperFunctions.hh"
 #include "KUCMSRootHelperFunctions.hh"
+#include "KUCMSBranchManager2.hh"
+#include "RestFrames/RestFrames.hh"
 
 #define n1dHists 512
 #define n2dHists 512 
 #define n3dHists 16
 #define nEBEEMaps 36
 
-#include "llpgana_hist_rebase_v18.hh"
+#include "kucmsntuple_root_rebase_v1.hh"
 
 //--------------------------------------------------------------------------------------------------------------------------------------
 // KUCMSAodSkimmer class ---------------------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------------------------------------------
+
+using namespace RestFrames;
 
 class KUCMSAodSkimmer : public root_rebase {
 
@@ -34,15 +38,16 @@ class KUCMSAodSkimmer : public root_rebase {
     std::string listdir;
 
     KUCMSAodSkimmer();
-	//~KUCMSAodSkimmer();
+	~KUCMSAodSkimmer();
 
 	// tchian processing functions
-    void kucmsAodSkimmer( std::string indir, std::string infilelist, std::string outfilename, int pct );
+    void kucmsAodSkimmer( std::string indir, std::string infilelist, std::string outfilename );
     void initHists();
     void getBranches( Long64_t entry );
     bool eventLoop( Long64_t entry );
 	void startJobs();
-    void endJobs( TTree* fOutTree );
+    void endJobs();
+	void fillConfigTree( TTree* fOutTree, std::string key, float crossSection );
     void setOutputBranches( TTree* fOutTree );
 
 	// object processing & selection
@@ -55,6 +60,10 @@ class KUCMSAodSkimmer : public root_rebase {
 	void processMuons();
     void processJets();
 	void processMet();
+	void processRJR();
+
+	int getPhoQuality( int it );
+    int getJetQuality( int it );	
 
 	// event processing and selection
 	bool eventSelection();
@@ -75,23 +84,43 @@ class KUCMSAodSkimmer : public root_rebase {
     std::map<UInt_t,DetIDStruct> DetIDMap;
 
     int getRhIdx( uInt rhDetID );
-    uInt getLeadRhID( vector<uInt> recHitIds );
-    float clstrR9( vector<uInt> recHitIds );
-    vector<float> getLeadTofRhTime( vector<uInt> recHitIds, double vtxX, double vtxY, double vtxZ );
-    vector<float> getRhGrpEigen_sph( vector<float> times, vector<uInt> rechitids );
+    uInt getLeadRhID( std::vector<uInt> recHitIds );
+    float clstrR9( std::vector<uInt> recHitIds );
+	std::vector<float> getRhGrpTimes( std::vector<uInt> rechitids );
+    std::vector<float> getRhGrpEnergies( std::vector<uInt> rechitids );
+	std::vector<float> getRhGrpEigenFromAngles( std::vector<uInt> rechitids );
+    std::vector<float> getLeadTofRhTime( std::vector<uInt> recHitIds, double vtxX, double vtxY, double vtxZ );
+    std::vector<float> getRhGrpEigen_sph( std::vector<float> times, std::vector<uInt> rechitids );
+
+  	// RestFrames frames and friends
+
+  	LabRecoFrame* LAB;
+  	DecayRecoFrame* S;
+	DecayRecoFrame*	X2a; 
+	DecayRecoFrame* X2b;
+  	VisibleRecoFrame* Ja; 
+    VisibleRecoFrame* Jb;
+  	InvisibleRecoFrame* X1a; 
+    InvisibleRecoFrame* X1b;
+
+  	InvisibleGroup* INV;
+  	SetMassInvJigsaw* InvM;
+  	SetRapidityInvJigsaw* InvEta;
+  	MinMassesSqInvJigsaw* InvSplit;
+
+  	CombinatoricGroup* COMB_J;
+  	MinMassesSqCombJigsaw* CombSplit_J;
+
+	// event counting varibles
+	
+	uInt nEvents, nSelectedEvents;
 
     // Output Branch variables
 
-    uInt RunNumber;
-    uInt nEvents, nSelectedEvents;
-	float Met;
-	uInt nSelPhotons; 
-	vector<uInt> selPhoID;
-	vector<float> selPhoTime, selPhoGEgnVal, selPhoEta, selPhoPt, selPhoSMaj, selPhoSMin;
-	uint nSelJets;
-	vector<uInt> selJetID;
-	float JetHt;
-	vector<float> selJetPt, selJetEta, selJetTime;
-
+	KUCMSBranchManager selEvtVars;
+	KUCMSBranchManager selMet;
+	KUCMSBranchManager selPhotons;
+	KUCMSBranchManager selJets;
+	KUCMSBranchManager selRjrVars;
 
 };
