@@ -158,7 +158,11 @@ met_list = [
 
 ]
 
-runlist = qcd_list
+deg_list = [ 'cms:/DoubleEG/Run2017D-17Nov2017-v1/AOD', ]
+
+
+runlist = deg_list
+#runlist = qcd_list
 #runlist = gjets_list
 #runlist = gmsb_list
 #runlist = met_list

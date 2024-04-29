@@ -35,7 +35,7 @@ options.register('globalTag','94X_mc2017_realistic_v14',VarParsing.multiplicity.
 options.register('processName','TREE',VarParsing.multiplicity.singleton,VarParsing.varType.string,'process name to be considered');
 
 #outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_Objectified_v14.root' # ntuplizer test
-outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_Objectified_v14_pfecal_oottrue.root' # ntuplizer test
+outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_Objectified_v17_scstudy_oottrue.root' # ntuplizer test
 
 options.register('outputFileName',outfilename,VarParsing.multiplicity.singleton,VarParsing.varType.string,'output file name created by cmsRun');
 
@@ -67,8 +67,8 @@ process.load("FWCore.MessageService.MessageLogger_cfi")
 #process.MessageLogger.destinations = ['cout', 'cerr']
 #process.MessageLogger.cerr.FwkReport.reportEvery = 1
 #process.MessageLogger.cerr.FwkReport.reportEvery = 10
-process.MessageLogger.cerr.FwkReport.reportEvery = 100
-#process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+#process.MessageLogger.cerr.FwkReport.reportEvery = 100
+process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 #process.MessageLogger.cerr.FwkReport.reportEvery = 10000
 
 process.load('KUCMSNtupleizer.KUCMSNtupleizer.ECALTracks_cfi')
@@ -87,7 +87,7 @@ gmsbaodsim2 = '_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v2/
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        '/store/mc/RunIIFall17DRPremix/GMSB_L-100TeV_Ctau-0p001cm_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/100000/009A3F2E-C7B9-E811-9FCA-441EA171A998.root',
+        #'/store/mc/RunIIFall17DRPremix/GMSB_L-100TeV_Ctau-0p001cm_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/100000/009A3F2E-C7B9-E811-9FCA-441EA171A998.root',
 
 		#'root://cmsxrootd-site.fnal.gov//store/mc/RunIIFall17DRPremix/GMSB_L-100TeV_Ctau-200cm_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/80000/58DCC006-3FB2-E811-94AE-AC1F6B0DE454.root',	
 
@@ -136,7 +136,7 @@ process.source = cms.Source("PoolSource",
 #         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-1200cm'+gmsbaodsim+'60000/68C5DD84-EAD6-E811-9028-44A842CFD60C.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-1200cm'+gmsbaodsim+'60000/846C6D28-D4D8-E811-A8BE-00266CFFBEB4.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-1200cm'+gmsbaodsim+'60000/8EC1497F-E9D6-E811-A390-44A842CFC98B.root',
-        #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-200cm'+gmsbaodsim+'120000/ACDBAA3E-9ED8-E811-813B-1866DA89095D.root',
+         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-200cm'+gmsbaodsim+'120000/44485BE6-E2D7-E811-9916-1866DA89095D.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-200cm'+gmsbaodsim+'120000/AEA9923B-9ED8-E811-87D6-34E6D7BDDECE.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-400cm'+gmsbaodsim+'80000/301550E4-81B5-E811-8362-FA163EF08F5B.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-400cm'+gmsbaodsim+'80000/34D601E8-3CB2-E811-B2BA-24BE05C6B701.root',
@@ -198,17 +198,17 @@ process.source = cms.Source("PoolSource",
 
 
 ## How many events to process
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(5))
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#ST
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))#TTi
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#LT
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#LT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500))#US
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(12500))#VS
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(25000))#SM
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100000))#MS
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250000))#MD
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500000))#LG
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#FL
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#FL
 
 # Set the global tag depending on the sample type
 from Configuration.AlCa.GlobalTag import GlobalTag
@@ -227,8 +227,9 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
         #hasGenInfo = cms.bool(False),
         minEvtMet = cms.double(150.0),
         #minEvtMet = cms.double(50.0),
-        minRHEi = cms.double(0.0),
-        minRHEf = cms.double(0.2),
+        #minEvtMet = cms.double(0.0),
+        minRHEi = cms.double(0.5),
+        minRHEf = cms.double(0.5),
         ## additional collections
         ## tracks
         tracks = cms.InputTag("ecalTracks", "ecalGeneralTracks"),
@@ -330,7 +331,7 @@ process.options = cms.untracked.PSet()
 process.options = cms.untracked.PSet( 
     #numberOfThreads = cms.untracked.uint32(4), 
     #numberOfStreams = cms.untracked.uint32(4), 
-    SkipEvent = cms.untracked.vstring('ProductNotFound'), 
+    TryToContinue = cms.untracked.vstring('ProductNotFound'), 
     #wantSummary = cms.untracked.bool(True) 
 )
 
