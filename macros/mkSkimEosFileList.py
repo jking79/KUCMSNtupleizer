@@ -28,25 +28,50 @@ eosll = 'eos root://cmseos.fnal.gov ls '
 #command = eosll+mdis+'/ecalTiming/tt_KUCCRes_126_Test/EGamma/'
 #command = eosll+mdis+'LLPGamma/llpga_GJets_AOD_v57/'
 #command = eosll+mdis+'LLPGamma/llpga_GMSB_AOD_v59/'
-#command = eosll+mspc+'ecalTiming/gammares_ttcc_131_v11_diag/'
+#command = eosll+mspc+'ecalTiming/'
 #command = eosll+mdis+'ecalTiming/EGamma/'
 #command = eosll+mspc+'EGamma/'
 #command = eosll+mdis+'KUCMSNtuple/GMSB_AOD_v1/'
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_GJETS_AOD_v5/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_GJETS_AOD_v14B/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_GJETS_R17_v16_MET0/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_GJETS_rhe1k_v14/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_GJETS_R17_v19/'
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_WJETS_AOD_v5/'
-#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_QCD_AOD_v5/'
-#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_GMSB_AOD_v6/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_QCD_AOD_v14B/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_QCD_R17_v15/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_QCD_R17_v16/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_QCD_R17_v19/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_GMSB_AOD_v144/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_GMSB_R17_v15/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_GMSB_R17_v19/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_GMSB_rhe1k_v14/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_GMSB_R17_v171/'
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_ZJETS_AOD_v5/'
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_DYTT_AOD_v5/'
-#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_JetHTi_Met50_AOD_v2/'
-#command = eosll+mdis+'EcalTiming/ZeroBias/'
-command = eosll+mspc+'ecalTiming/EGamma0/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_JetHT_AOD_v144/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_JetHT_rhe1k_v14/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_DiPhoBox_AOD_v14/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_MET_R17_v15/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_MET_R17_v16/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_MET_R17_v19/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_JetHT_R17_v18/'
+command = eosll+mdis+'KUCMSNtuple/kucmsntuple_DEG_R17_v18/'
 
-version = ''
-#version = '_v11_'
+#version = 'Run2018D'
+#version = 'GJets'
+#version = 'QCD'
+#version = '_Ctau-0p'
 #version = '_noOOTAmp_'
 #version = '_wthOOTAmp_'
+#version = 'GMSB'
+#version = 'JetHT' 
+#version = 'DiPhotonJetsBox'
+#version = 'MET'
+version = 'DoubleEG'
+
 rootfile = '.root'
+
 #dirselect = 'HTo2LongLivedTo4b'
 #dirselect = '_newRtParams4_v26b_'
 #dirselect = '_newRtParams3_test_v26_'
@@ -56,28 +81,31 @@ rootfile = '.root'
 #dirselect = '22eraC_CCstc0_EGamma_MINIAOD_Run2022C-PromptReco-v1_357328-357331'
 #dirselect = 'noOOTCC_kustc0_EGamma_MINIAOD_Run2022C-PromptReco-v1_357101-357268'
 #dirselect = 'CCstc0_EGamma_MINIAOD_Run2022C-PromptReco-v1_357101-357268'
-
 #dirselect = 'GMSB'
+#dirselect = 'GMSB_L-250'
 #dirselect = 'AOD'
 #dirselect = 'WJetsToLNu_HT-800'
-#dirselect = 'QCD_HT100to200'
+#dirselect = 'QCD'
 #dirselect = 'GMSB_L-400TeV'
 #dirselect = 'DYJetsToLL_M-50'
 #dirselect = 'TTJets'
-dirselect = 'v2_EGamma'
-#dirselect = 'ecaltiming_dqm_132r3prompt3'
+#dirselect = 'JetHT'
+#dirselect = 'GJets'
+#dirselect = 'GJets_HT-100To200'
+#dirselect = 'DiPhotonJetsBox'
+#dirselect = 'Run2018C'
+#dirselect = 'MET'
+dirselect = 'DoubleEG'
 
 #dirselect = ''
 
-#debug = True
-debug = False
-
-#deep = True
-deep = False
+debug = True
+#debug = False
 
 targdirs = []
 
 dirls = bashout( command ).splitlines()
+print( dirls )
 print( '************************************************')
 for line in dirls:
 	#print( line )
@@ -122,18 +150,18 @@ for line2 in targdirs :
             #subdir5 = bashout( command5 ).rstrip().splitlines()
             #for subsubdir in subdir5 :
                 #subdirlist3.append(thesubdir+subdir+'/'+subsubdir+'/')
-
+    
+    
     if debug : print( subdirlist3 )
     for subdir2 in subdirlist3:
     	lists = bashout( command+subdir2 ).rstrip().splitlines()
     	for lline in lists :
     		if rootfile in lline : filelist.append(subdir2+lline)
-
+   
     select =  line2.split("Tune")
-    outfile = 'kuntuple_' + select[0] + '_v6.txt'
-    print( outfile )
+    outfile = 'kuntuple_' + select[0] + '_R17_v18.txt'
+    #print( outfile )
     outf = open( outfile, 'w' )
-    filelist = subdirlist3
     for thefile in filelist:
     	outf.write( thefile + '\n' )
     outf.close()
