@@ -44,6 +44,7 @@
 <use name="TrackingTools/MaterialEffects"/>
 <use name="TrackingTools/TrackAssociator"/>
 <use name="KUCMSNtupleizer/KUCMSNtupleizer"/>
+<use name="RecoVertex/AdaptiveVertexFinder"/>
 <use name="root"/>
 <use name="rootgraphics"/>
 <use name="roothistmatrix"/>

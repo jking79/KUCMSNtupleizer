@@ -80,6 +80,14 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 100
 process.load('KUCMSNtupleizer.KUCMSNtupleizer.ECALTracks_cfi')
 from KUCMSNtupleizer.KUCMSNtupleizer.ECALTracks_cfi import *
 
+process.load('KUCMSNtupleizer.KUCMSNtupleizer.DisplacedElectrons_cfi')
+from KUCMSNtupleizer.KUCMSNtupleizer.DisplacedElectrons_cfi import *
+
+process.load('KUCMSNtupleizer.KUCMSNtupleizer.TimedSecondaryVertices_cfi')
+from KUCMSNtupleizer.KUCMSNtupleizer.TimedSecondaryVertices_cfi import *
+
+#timedSVs = cms.EDProducer('TimedSVsProducer', electronSrc = cms.InputTag("displacedElectrons", "displacedElectrons"))
+
 ## Define the input source
 aodpath_1k_450_100k = '/store/mc/Run3Winter20DRPremixMiniAOD/HTo2LongLivedTo4b_MH-1000_MFF-450_CTau-100000mm_TuneCP5_14TeV_pythia8/AODSIM/110X_mcRun3_2021_realistic_v6-v2/'
 aodpath_1k_450_10k = '/store/mc/Run3Winter20DRPremixMiniAOD/HTo2LongLivedTo4b_MH-1000_MFF-450_CTau-10000mm_TuneCP5_14TeV_pythia8/AODSIM/110X_mcRun3_2021_realistic_v6-v2/'
@@ -92,10 +100,11 @@ gmsbaodsim = '_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/'
 gmsbaodsim2 = '_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v2/'
 
 process.source = cms.Source("PoolSource",
-                            #eventsToProcess = cms.untracked.VEventRange("1:55050-1:55200"),
+                            #eventsToProcess = cms.untracked.VEventRange("1:54095-1:55195"),
                             fileNames = cms.untracked.vstring(
-                                'file:root/GMSB_L-150TeV_Ctau-0p001cm_Fall17_AODSIM-2.root',
+                                #'file:root/GMSB_L-150TeV_Ctau-10cm_Fall17_AODSIM.root',
                                 'file:root/GMSB_L-150TeV_Ctau-0p001cm_Fall17_AODSIM.root',
+                                #'file:root/GMSB_L-150TeV_Ctau-10cm_Fall17_AODSIM.root',
                             ),##<<>>fileNames = cms.untracked.vstring
 )##<<>>process.source = cms.Source("PoolSource",
 
@@ -111,7 +120,7 @@ process.source = cms.Source("PoolSource",
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100000))#MS
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250000))#MD
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500000))#LG
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#FL
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#FL
 
 # Set the global tag depending on the sample type
 from Configuration.AlCa.GlobalTag import GlobalTag
@@ -133,12 +142,17 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
                               minRHEf = cms.double(0.2),
                               ## additional collections
                               ## tracks
+                              ogGeneralTracks = cms.InputTag("generalTracks"),
+                              ogGsfTracks = cms.InputTag("electronGsfTracks"),
+                              ecalTracks = cms.InputTag("ecalTracks", "ecalTracks"),
                               tracks = cms.InputTag("ecalTracks", "ecalGeneralTracks"),
                               gsfTracksSrc = cms.InputTag("ecalTracks", "ecalGsfTracks"),
                               displacedSCs = cms.InputTag("ecalTracks", "displacedElectronSCs"),
+                              displacedTracks = cms.InputTag("displacedElectrons", "displacedCandidateTracks"),
                               ## vertices
                               #vertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
                               vertices = cms.InputTag("offlinePrimaryVertices"),
+                              timedSVs = cms.InputTag("timedSVs", "timedSecondaryVertices"),
                               ## pfcandidates
                               #pfcandidates = cms.InputTag("packedPFCandidates"),
                               pfcandidates = cms.InputTag("particleFlow"),
@@ -169,6 +183,8 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
                               calojets = cms.InputTag("ak4CaloJets",""),
                               ## electrons
                               #electrons = cms.InputTag("slimmedElectrons"),
+                              displacedElectrons = cms.InputTag("displacedElectrons", "displacedElectrons"),
+                              #signalDisplacedElectrons = cms.InputTag("displacedElectrons", "signalDisplacedElectrons"),
                               electrons = cms.InputTag("gedGsfElectrons"),
                               eleMVAIDLooseMap = cms.InputTag("PhotonIDProdGED", "PhotonCutBasedIDLooseEM"),
                               ## muons
@@ -210,6 +226,8 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
 
 # Set up the path
 process.ecalTracks_path = cms.Path(ecalTracks)
+process.displacedElectrons_path = cms.Path(displacedElectrons)
+process.timedSVs_path = cms.Path(timedSVs) 
 process.content = cms.EDAnalyzer("EventContentAnalyzer")
 process.content_step = cms.Path(process.content)
 process.tree_step = cms.EndPath(process.tree)
@@ -218,6 +236,8 @@ process.tree_step = cms.EndPath(process.tree)
 
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.schedule = cms.Schedule(process.ecalTracks_path,
+                                process.displacedElectrons_path,
+                                process.timedSVs_path,
                                 process.tree_step)
 process.options = cms.untracked.PSet()
 

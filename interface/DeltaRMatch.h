@@ -1,13 +1,18 @@
-#ifndef KUCMSNtupleizer_KUCMSNtupleizer_DeltaRMatch_h_
-#define KUCMSNtupleizer_KUCMSNtupleizer_DeltaRMatch_h_
+#ifndef KUCMSNtupleizer_KUCMSNtupleizer_DeltaRMatch_h
+#define KUCMSNtupleizer_KUCMSNtupleizer_DeltaRMatch_h
 
 #include <algorithm>
 
 #include "DataFormats/Math/interface/deltaR.h"
-#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/Hungarian.h"
-#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/MatchingTools.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
+#include "DataFormats/EgammaCandidates/interface/Electron.h"
+#include "DataFormats/EgammaCandidates/interface/ElectronFwd.h"
+
+#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/Hungarian.h"
+#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/MatchingTools.h"
+#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/MatchedPair.h"
+#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/PairedObjects.h"
 
 template <class A, class B> class DeltaRMatch {
 
@@ -101,55 +106,23 @@ template <class A, class B> class DeltaRMatch {
 
 };
 
-template <class A, class B> class PairedObjects {
-  
- public:
-  
- PairedObjects(const A &objectA, const B &objectB, const MatchedPair &matchedPair) 
-   : objectA_(objectA), objectB_(objectB), matchedPair_(matchedPair) {
-
-    deltaR_ = sqrt(reco::deltaR2(objectA, objectB) );
-  }
-
-  A GetObjectA() const { return objectA_;}
-  B GetObjectB() const { return objectB_;}
-  int GetIndexA() const { return matchedPair_.GetIndexA();}
-  int GetIndexB() const { return matchedPair_.GetIndexB();}
-  double GetDeltaR() const { return deltaR_;}
-  
-  void CompareObjects() const {
-
-    std::cout << "\nComparing objects with deltaR: " << deltaR_ << std::endl;
-    std::cout << "Object A Summary: " << std::endl;
-    std::cout << "  pT: " << objectA_.pt() << std::endl;
-    std::cout << "  eta: " << objectA_.eta() << std::endl;
-    std::cout << "  phi: " << objectA_.phi() << std::endl;
-
-    std::cout << "\nObject B Summary: " << std::endl;
-    std::cout << "  pT: " << objectB_.pt() << std::endl;
-    std::cout << "  eta: " << objectB_.eta() << std::endl;
-    std::cout << "  phi: " << objectB_.phi() << std::endl;
-  }
-  
- private:
-  
-  A objectA_;
-  B objectB_;
-  MatchedPair matchedPair_;
-  double deltaR_;
-};
+template <typename S> using Matrix = std::vector<std::vector<S> >;
 
 //===============================================================================================//
 //                               class: DeltaRMatchHungarian                                     //
 //-----------------------------------------------------------------------------------------------//
 // General delta R matching algorithm between any two lists of objects, as long as they possess  //
 // eta() and phi() public methods (this is the only requirement!). Matching is performed using   //
-// the Hungarian algorithm.                                                                      //
+// the Hungarian algorithm. Matches are always guaranteed using this method, which means the net //
+// number of matches will always equal the smaller of the two input object vectors given (even   //
+// when some of the matches are "bad").                                                          //
 //-----------------------------------------------------------------------------------------------//
 //===============================================================================================//
 template <class A, class B> class DeltaRMatchHungarian {
   
  public:
+
+  DeltaRMatchHungarian();
 
   DeltaRMatchHungarian(Matrix<double> &costMatrix);
     
@@ -172,8 +145,8 @@ template <class A, class B> class DeltaRMatchHungarian {
     return deltaRs;
   }  
 
- private:
-
+ protected:
+  
   double cost_;
   std::vector<int> matchedIndexes_;
   std::vector<A> matchedObjectsA_;
@@ -192,9 +165,21 @@ template <class A, class B> class DeltaRMatchHungarian {
   void PrintCostMatrix(Matrix<double> &costMatrix) const;
 };
 
+//===============================================================================================//
+//-----------------------------------------------------------------------------------------------//
+//                         Default Constructor for DeltaRMatchHungarian                          //
+//-----------------------------------------------------------------------------------------------//
+//===============================================================================================//
+template <typename A, typename B>
+  DeltaRMatchHungarian<A,B>::DeltaRMatchHungarian() 
+  : cost_(-999.),
+  matchedIndexes_(std::vector<int>()),
+  matchedPairs_(std::vector<MatchedPair>()),
+  pairedObjects_(std::vector<PairedObjects<A,B>>()) {}
 
 //===============================================================================================//
 //-----------------------------------------------------------------------------------------------//
+//                            Templated Private Method: Solve<A, B>                              //
 //-----------------------------------------------------------------------------------------------//
 //===============================================================================================// 
 template <typename A, typename B>
@@ -206,28 +191,27 @@ template <typename A, typename B>
   matchedPairs_ = ConstructMatchedPairs(costMatrix, objectsA, objectsB);
 }
 
-template <>
-inline void DeltaRMatchHungarian<TrackInfo, reco::GenParticle>::Solve(const std::vector<TrackInfo> &objectsA,
-								      const reco::GenParticleCollection &objectsB) {
+//===============================================================================================//
+//-----------------------------------------------------------------------------------------------//
+//                        Standard Constructor for DeltaRMatchHungarian                          //
+//-----------------------------------------------------------------------------------------------//
+//===============================================================================================//
+template <typename A, typename B>
+  DeltaRMatchHungarian<A,B>::DeltaRMatchHungarian(const std::vector<A> &objectsA, const std::vector<B> &objectsB) {
 
-  std::map<int, int> indexMap;
-  reco::GenParticleCollection statusOne = CleanGenParticles(objectsB, indexMap);
+  // If either collection is empty, assignment is not possible (obviously)
+  // Initialize members to default values and empty vectors
+  if(objectsA.size() == 0 || objectsB.size() == 0)// || typeid(B) == typeid(reco::GenParticle)) {
+    *this = DeltaRMatchHungarian();
+  
+  else this->Solve(objectsA, objectsB);
 
-  Matrix<double> costMatrix = CalculateCostMatrix(objectsA, statusOne);
-  HungarianAlgorithm assigner;
-  cost_ = assigner.Solve(costMatrix, matchedIndexes_);
-
-  //PrintCostMatrix(costMatrix);
-
-  for(size_t i = 0; i < matchedIndexes_.size(); i++) {
-    matchedIndexes_[i] = indexMap[matchedIndexes_[i]];
-    if(objectsB[matchedIndexes_[i]].pdgId() == 12 || objectsB[matchedIndexes_[i]].pdgId() == 2112)
-      std::cout << "Matching is incorrect, there shouldn't be a pdgID =  " << objectsB[matchedIndexes_[i]].pdgId() << std::endl; 
-  }
-
-  matchedPairs_ = ConstructMatchedPairs(costMatrix, objectsA, objectsB);
 }
 
+//===============================================================================================//
+//-----------------------------------------------------------------------------------------------//
+//           Alternate constructor for DeltaRMatchHungarian (user has own cost matrix)           //
+//-----------------------------------------------------------------------------------------------//
 //===============================================================================================//
 template <typename A, typename B>
   DeltaRMatchHungarian<A,B>::DeltaRMatchHungarian(Matrix<double> &costMatrix) {
@@ -237,23 +221,13 @@ template <typename A, typename B>
   matchedPairs_ = ConstructMatchedPairs(costMatrix);
 }
 
-template <typename A, typename B>
-  DeltaRMatchHungarian<A,B>::DeltaRMatchHungarian(const std::vector<A> &objectsA, const std::vector<B> &objectsB) {
-
-  const int dimensionA = objectsA.size();
-  const int dimensionB = objectsB.size();
-
-  // If either collection is empty, assignment is not possible (obviously)                                                                                                      
-  // Initialize members to default values and empty vectors                                                                                                                     
-  if(dimensionA == 0 || dimensionB == 0) {
-    cost_ = 999.;
-    matchedIndexes_ = std::vector<int>();
-    matchedPairs_ = std::vector<MatchedPair>();
-  }
-
-  else this->Solve(objectsA, objectsB);
-}
-
+//===============================================================================================//
+//-----------------------------------------------------------------------------------------------//
+//                          Templated Private Method: ConstructMatchedPairs                      //
+//-----------------------------------------------------------------------------------------------//
+// First step in the book-keeping of paired objects. Saves indexes of each match w.r.t the input //
+// collections and the DR of the resulting match.                                                //
+//===============================================================================================//
 template <typename A, typename B>
   std::vector<MatchedPair> DeltaRMatchHungarian<A,B>::ConstructMatchedPairs(const std::vector<std::vector<double> > &costMatrix,
 									    const std::vector<A> &objectsA,
@@ -275,14 +249,19 @@ template <typename A, typename B>
     matchedPairs.emplace_back(MatchedPair(mi, matchedIndexes_[mi], deltaR));
     pairedObjects_.emplace_back(PairedObjects<A,B>(objectsA[mi], objectsB[matchedIndexes_[mi]], thisMatchedPair) );
   }
-  // Sort paired objects from smallest to largest DeltaR                                                                                                                        
+  // Sort paired objects from smallest to largest DeltaR
   std::sort(pairedObjects_.begin(), pairedObjects_.end(), [](const PairedObjects<A,B>& a, const PairedObjects<A,B>& b) {
       return a.GetDeltaR() < b.GetDeltaR();
     });
-
+  
   return matchedPairs;
 }
 
+//===============================================================================================//
+//-----------------------------------------------------------------------------------------------//
+//                         Templated Private Method: CalculateCostMatrix                         //
+//-----------------------------------------------------------------------------------------------//
+//===============================================================================================//
 template <typename A, typename B>
   Matrix<double> DeltaRMatchHungarian<A,B>::CalculateCostMatrix(const std::vector<A> &objectsA, const std::vector<B> &objectsB) const {
 
@@ -296,28 +275,12 @@ template <typename A, typename B>
 
   return costMatrix;
 }
-/*
-template <>
-inline Matrix<double> DeltaRMatchHungarian<TrackInfo, reco::GenParticle>::CalculateCostMatrix(const std::vector<TrackInfo> &objectsA, 
-											      const reco::GenParticleCollection &objectsB) const {
 
-  const int dimensionA = objectsA.size();
-  const int dimensionB = objectsB.size();
-  Matrix<double> costMatrix(dimensionA, std::vector<double>(dimensionB));
-
-  for(int ai = 0; ai < dimensionA; ai++) {
-    for(int bi = 0; bi < dimensionB; bi++) {
-      
-      if(objectsB[bi].status() == 1)
-	costMatrix[ai][bi] = sqrt(reco::deltaR2(objectsA[ai], objectsB[bi]) );  
-      else
-	costMatrix[ai][bi] = 999.;
-    }
-  }
-
-  return costMatrix;
-}
-*/
+//===============================================================================================//
+//-----------------------------------------------------------------------------------------------//
+//                           Templated Private Method: PrintCostMatrix                           //
+//-----------------------------------------------------------------------------------------------//
+//===============================================================================================//
 template <typename A, typename B>
   void DeltaRMatchHungarian<A,B>::PrintCostMatrix(Matrix<double> &costMatrix) const {
 
@@ -333,5 +296,43 @@ template <typename A, typename B>
     std::cout << std::endl;
   }
 }
+
+//===============================================================================================//
+//-----------------------------------------------------------------------------------------------//
+//                              class: DeltaRGenMatchHungarian                                   //
+//-----------------------------------------------------------------------------------------------//
+// Specialized version of DeltaRMatchHungarian for gen matching. Makes sure that only status one //
+// charged gen particles are used, while preserving the original indexing of the gen collection. //  
+//===============================================================================================//
+template <class A>
+class DeltaRGenMatchHungarian : public DeltaRMatchHungarian<A, reco::GenParticle> {
+
+ public:
+
+ DeltaRGenMatchHungarian() : DeltaRMatchHungarian<A, reco::GenParticle>() {}
+   
+  DeltaRGenMatchHungarian(const std::vector<A>& objectsA, const std::vector<reco::GenParticle>& objectsB) {
+    if(objectsA.size() == 0 || objectsB.size() == 0)
+      *this = DeltaRGenMatchHungarian();
+
+    else Solve(objectsA, objectsB);
+  }
+
+ private:
+  
+  void Solve(const std::vector<A> &objectsA, const reco::GenParticleCollection &objectsB) {
+    std::map<int, int> indexMap;
+    reco::GenParticleCollection statusOne = CleanGenParticles(objectsB, indexMap);
+
+    Matrix<double> costMatrix = this->CalculateCostMatrix(objectsA, statusOne);
+    HungarianAlgorithm assigner;
+    this->cost_ = assigner.Solve(costMatrix, this->matchedIndexes_);
+
+    for(auto &idx : this->matchedIndexes_) 
+      if(idx >= 0) idx = indexMap[idx];
+    
+    this->matchedPairs_ = this->ConstructMatchedPairs(costMatrix, objectsA, objectsB);
+  }
+};
 
 #endif

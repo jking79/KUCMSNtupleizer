@@ -38,7 +38,7 @@
 #include "DataFormats/JetReco/interface/GenJet.h"
 #include "DataFormats/GeometryVector/interface/GlobalPoint.h"
 
-#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/MatchingTools.h"
+#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/GenLeptonInfo.h"
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/DeltaRMatch.h"
 
 //  KUCMS Object includes
@@ -117,7 +117,7 @@ class KUCMSGenObject : public KUCMSObjectBase {
     std::vector<reco::GenParticle> GetSignalGenElectrons() const {return genSignalElectrons_;}
     std::vector<reco::GenParticle> GetGenElectrons() const {return genElectrons_;}
     std::vector<reco::GenParticle> GetGenParticles() const {return fgenparts;}
-    LepType ClassifyGenElectron(const reco::GenParticle &genElectron) const;
+    LepMomType ClassifyGenElectron(const reco::GenParticle &genElectron) const;
     std::vector<int> MomIDs(const reco::GenParticle &genElectron) const; 
  //template <typename T>
     //GenClassifiedElectrons<T> GetGenClassifiedElectrons(const std::vector<T> &candidateTracks) const;
@@ -171,11 +171,11 @@ class KUCMSGenObject : public KUCMSObjectBase {
     edm::Handle<std::vector<reco::GenJet>> genJets_;
 
   //std::vector<int> MomIDs(const reco::GenParticle &genElectron) const;
-  LepType AssignLeptonMomType(const int motherID) const;
+  LepMomType AssignLeptonMomType(const int motherID) const;
   //LepType ClassifyGenElectron(const std::vector<int> &motherIDs) const;
   //LepType ClassifyGenElectron(const reco::GenParticle &genElectron) const;
   bool isSignalGenElectron(const reco::GenParticle &genElectron) const;
-  void PrintMother(const LepType &momType) const;
+  void PrintMother(const LepMomType &momType) const;
 
     // Other object(s) need by this object - BASE CLASS USED HERE FOR REFRENCE ONLY -
     // exampleObject* otherObjectPtr;
@@ -1212,22 +1212,22 @@ std::vector<int>KUCMSGenObject:: MomIDs(const reco::GenParticle &genElectron) co
 }
 
 bool KUCMSGenObject::IsMotherZ(const reco::GenParticle &genElectron) const {
-  LepType momType = ClassifyGenElectron(genElectron);
+  LepMomType momType = ClassifyGenElectron(genElectron);
   return (momType == kZ);
 }
 
 bool KUCMSGenObject::isSignalGenElectron(const reco::GenParticle &genElectron) const {
 
-  LepType momType = ClassifyGenElectron(genElectron);
+  LepMomType momType = ClassifyGenElectron(genElectron);
   return (momType == kZ || momType == kSusy);
 
 }
 
-LepType KUCMSGenObject::ClassifyGenElectron(const reco::GenParticle &genElectron) const {
+LepMomType KUCMSGenObject::ClassifyGenElectron(const reco::GenParticle &genElectron) const {
 
   std::vector<int> motherIDs(MomIDs(genElectron));
 
-  LepType momType = kUnmatched;
+  LepMomType momType = kUnmatched;
   for(auto const& id : motherIDs) {
     momType = AssignLeptonMomType(id);
 
@@ -1237,7 +1237,7 @@ LepType KUCMSGenObject::ClassifyGenElectron(const reco::GenParticle &genElectron
   return momType;
 }
 
-void KUCMSGenObject::PrintMother(const LepType &momType) const {
+void KUCMSGenObject::PrintMother(const LepMomType &momType) const {
 
   std::cout << "mother: ";
   if (momType == kW) std::cout << "W boson" << std::endl;
@@ -1268,7 +1268,7 @@ void KUCMSGenObject::GenElectronContent() const {
 
     std::vector<int> motherIDs = MomIDs(genElectron);
 
-    LepType momType = ClassifyGenElectron(genElectron);
+    LepMomType momType = ClassifyGenElectron(genElectron);
 
     if (genSignalElectrons_.size() > 2 && index == 0)
       std::cout << "There are " << genElectrons_.size() << " gen electrons in this event." << std::endl;
@@ -1290,9 +1290,9 @@ void KUCMSGenObject::GenElectronContent() const {
   }
 }
 
-LepType KUCMSGenObject::AssignLeptonMomType(const int motherID) const {
+LepMomType KUCMSGenObject::AssignLeptonMomType(const int motherID) const {
   
-  LepType type = kUnmatched;
+  LepMomType type = kUnmatched;
 
   if(abs(motherID) == 24)
     type = kW;

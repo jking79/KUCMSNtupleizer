@@ -54,12 +54,12 @@
 #include "TrackingTools/TransientTrack/interface/TransientTrack.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
 #include "TrackingTools/Records/interface/TransientTrackRecord.h"
+#include "RecoEgamma/EgammaIsolationAlgos/interface/ElectronTkIsolation.h"
 
-// Add includes for specfic collections
+// Add includes for interface collections
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/DeltaRMatch.h"
-#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/Hungarian.h"
-#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/MatchTracksToSC.h"
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/TrackTools.h"
+#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/TrackInfo.h"
 
 #include "TVector3.h"
 
@@ -83,12 +83,15 @@ public:
   
   // object setup : 1) construct object 2) InitObject 3) CrossLoad 4) load into Object Manager
   // load tokens for eventt based collections
+  void LoadECALTracksToken( edm::EDGetTokenT<reco::TrackCollection> token ){ ecalTracksToken_ = token; }
   void LoadGeneralTrackTokens( edm::EDGetTokenT<edm::View<reco::Track>> token ){ generalTracksToken_ = token; }
   void LoadGsfTrackTokens( edm::EDGetTokenT<edm::View<reco::GsfTrack>> token ){ gsfTracksToken_ = token; }
   void LoadAssociationParameters(  TrackAssociatorParameters parameters){ trackAssocParameters_ = parameters;}
   void LoadMagneticField( edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> token){magneticFieldToken_ = token; }
+  //void LoadIsolation(DisplacedElectronIsolation* isoTool) { isoTool_ = isoTool; }
   void LoadGenObject(KUCMSGenObject* genObjs){ genObjs_ = genObjs; };
-
+  void LoadBeamSpot(edm::EDGetTokenT<reco::BeamSpot> token) { beamspotToken_ = token; }
+ 
   // sets up branches, do preloop jobs 
   void InitObject( TTree* fOutTree ); 
   
@@ -96,11 +99,11 @@ public:
   // get collections, do initial processing
   void LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar );
   // do cross talk jobs with other objects, do event processing, and load branches
-  void ProcessEvent( ItemManager<float>& geVar );
+  void ProcessEvent( ItemManager<float>& geVar ){}
   void PostProcessEvent( ItemManager<float>& geVar );
   
   // if there are any final tasks be to done after the event loop via objectManager
-  void EndJobs(); // do any jobs that need to be done after main event loop
+  void EndJobs() {} // do any jobs that need to be done after main event loop
     
 private:
 
@@ -108,9 +111,15 @@ private:
 
   std::vector<std::pair<int, double> > generalTrackGenInfo_;
   std::vector<std::pair<int, double> > gsfTrackGenInfo_; 
+  reco::TrackCollection generalTracks_;
+  reco::TrackCollection mergedTracks_;
   TrackInfoCollection mergedTrackInfo_;
   PropagatedTracks<reco::Track> generalECALTracks_;
   PropagatedTracks<reco::GsfTrack> gsfECALTracks_;
+
+  //ECAL tracks 
+  edm::EDGetTokenT<reco::TrackCollection> ecalTracksToken_;
+  edm::Handle<reco::TrackCollection> ecalTracksHandle_;
   
   // General Tracks
   edm::EDGetTokenT<edm::View<reco::Track>> generalTracksToken_;
@@ -124,16 +133,17 @@ private:
 
   edm::ESGetToken<CaloGeometry, CaloGeometryRecord> caloGeometryToken_;
   edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> magneticFieldToken_;
+  edm::EDGetTokenT<reco::BeamSpot> beamspotToken_;
+  reco::BeamSpot beamSpot_;
 
   TrackDetectorAssociator trackAssociator_;
   TrackAssociatorParameters trackAssocParameters_;
 
   template <typename T>
-  void FillTrackBranches(const PropagatedTracks<T> &propagatedTracks);
+  void FillTrackBranches(PropagatedTracks<T> &propagatedTracks);
 
   template <typename T>
   void FillDetIdBranches(const std::vector<DetId> &detIDs, const PropagatedTrack<T> &trackDet, const bool isECAL);
-
 };//<<>>class KUCMSECALTracks : public KUCMSObjectBase
 
 KUCMSECALTracks::KUCMSECALTracks( const edm::ParameterSet& iConfig ) 
@@ -189,13 +199,16 @@ void KUCMSECALTracks::LoadEvent( const edm::Event& iEvent, const edm::EventSetup
   
   if( DEBUG ) std::cout << "Collecting Tracks" << std::endl;
 
+  mergedTracks_.clear();
   mergedTrackInfo_.clear();
   generalTrackGenInfo_.clear();
   gsfTrackGenInfo_.clear();
   
   // Get event track and super cluster information from AOD
+  iEvent.getByToken( ecalTracksToken_, ecalTracksHandle_ );
   iEvent.getByToken( generalTracksToken_, generalTracksHandle_ );
   iEvent.getByToken( gsfTracksToken_, gsfTracksHandle_ );
+  beamSpot_ = iEvent.get(beamspotToken_);
 
   reco::TrackCollection generalTracks;
   reco::GsfTrackCollection gsfTracks;
@@ -230,8 +243,6 @@ void KUCMSECALTracks::LoadEvent( const edm::Event& iEvent, const edm::EventSetup
 
 }//<<>>void KUCMSECALTracks::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
-void KUCMSECALTracks::ProcessEvent( ItemManager<float>& geVar ){}
-
 void KUCMSECALTracks::PostProcessEvent( ItemManager<float>& geVar ){
   
   if( DEBUG ) std::cout << "Processing Tracks" << std::endl;
@@ -239,9 +250,8 @@ void KUCMSECALTracks::PostProcessEvent( ItemManager<float>& geVar ){
   Branches.clearBranches();
 
   if(cfFlag("hasGenInfo")) {
-    DeltaRMatchHungarian<TrackInfo, reco::GenParticle> genToTrackAssigner(mergedTrackInfo_, genObjs_->GetGenParticles());
+    DeltaRGenMatchHungarian<TrackInfo> genToTrackAssigner(mergedTrackInfo_, genObjs_->GetGenParticles());
     for(auto const &pair : genToTrackAssigner.GetPairedObjects()) {
-      const reco::GenParticle genElectron(pair.GetObjectB());
       if(pair.GetObjectA().isGeneral()) 
 	generalTrackGenInfo_[pair.GetObjectA().GetIndex()] = std::make_pair(pair.GetIndexB(), pair.GetDeltaR());  
       if(pair.GetObjectA().isGsf()) 
@@ -260,15 +270,13 @@ void KUCMSECALTracks::PostProcessEvent( ItemManager<float>& geVar ){
   
 }//<<>>void KUCMSECALTracks::PostProcessEvent()
 
-void KUCMSECALTracks::EndJobs(){}
-
 template <typename T>
-void KUCMSECALTracks::FillTrackBranches(const PropagatedTracks<T> &propagatedTracks) {
+void KUCMSECALTracks::FillTrackBranches(PropagatedTracks<T> &propagatedTracks) {
 
   for(const auto &trackDet : propagatedTracks) {
     const T track = trackDet.GetTrack();
     const TrackDetMatchInfo detInfo = trackDet.GetDetInfo();
-    
+
     Branches.fillBranch("ECALTrack_charge", int(track.charge()) );
     Branches.fillBranch("ECALTrack_p", float(track.p()) );
     Branches.fillBranch("ECALTrack_px", float(track.px()) );

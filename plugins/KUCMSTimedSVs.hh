@@ -31,14 +31,25 @@
 #include "DataFormats/Common/interface/Handle.h"
 
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
-#include "DataFormats/EgammaCandidates/interface/GsfElectronFwd.h"
+#include "DataFormats/EgammaCandidates/interface/Electron.h"
+#include "DataFormats/EgammaCandidates/interface/ElectronFwd.h"
+#include "DataFormats/EgammaReco/interface/SuperCluster.h"
+#include "DataFormats/EgammaReco/interface/SuperClusterFwd.h"
 #include "DataFormats/GsfTrackReco/interface/GsfTrackFwd.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
+
+#include "TrackingTools/TransientTrack/interface/TransientTrack.h"
+#include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
+#include "TrackingTools/Records/interface/TransientTrackRecord.h"
+
+#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/TrackTools.h"
+#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/VertexAssembly.h"
+#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/DeltaRMatchApplications.h"
 
 //  KUCMS Object includes
 #include "KUCMSObjectBase.hh"
-#include "KUCMSGenObjects.hh"
 
 #define DEBUG false
 
@@ -46,12 +57,14 @@ class KUCMSTimedSVs : public KUCMSObjectBase {
   
 public:
   
-  KUCMSTimedSVs(const edm::ParameterSet& iConfig);
-  ~KUCMSTimedSVs(){}
+  KUCMSTimedSVs(const edm::ParameterSet& iConfig) {}
+  virtual ~KUCMSTimedSVs() = default;
 
   void LoadSVTokens(edm::EDGetTokenT<edm::View<reco::Vertex> > svToken){ svToken_ = svToken; } 
-  void LoadElectronTokens(edm::EDGetTokenT<edm::View<reco::GsfElectron>> electronToken ){ electronToken_ = electronToken; }
-  void LoadGenObject(KUCMSGenObject* genObjs){ genObjs_ = genObjs; };
+  void LoadElectronToken(edm::EDGetTokenT<reco::ElectronCollection> electronToken ){ electronToken_ = electronToken; }
+  void LoadElectronTracksToken(edm::EDGetTokenT<reco::TrackCollection> token ){ trackToken_ = token; }
+  void LoadGenParticlesToken(edm::EDGetTokenT<reco::GenParticleCollection> token ){ genToken_ = token; }
+  void LoadTTrackBuilder(edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> ttbuilder) {transientTrackBuilder_ = ttbuilder; }
 
   // sets up branches, do preloop jobs 
   void InitObject(TTree* fOutTree); 
@@ -61,117 +74,78 @@ public:
   void LoadEvent(const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar);
 
   // do cross talk jobs with other objects, do event processing, and load branches
-  void ProcessEvent(ItemManager<float>& geVar);
-  void PostProcessEvent(ItemManager<float>& geVar){}
+  void ProcessEvent(ItemManager<float>& geVar) {}
+  void PostProcessEvent(ItemManager<float>& geVar);
 
   // if there are any final tasks be to done after the event loop via objectManager
   void EndJobs(){}
 
 private:
   
-  typedef std::map<std::pair<float, float>, reco::GsfElectron> TrackToElectronMap;
-
   reco::VertexCollection timedVertices_;
-  reco::GsfElectronCollection electrons_;
-  TrackToElectronMap trackToElectronMap_;
-
+  reco::ElectronCollection signalElectrons_;
+  reco::TrackCollection tracks_;
+ 
   // SV collection from timed SVs producer
   edm::EDGetTokenT<edm::View<reco::Vertex> > svToken_;
   edm::Handle<edm::View<reco::Vertex> > svHandle_;
 
-  // Electron collection (currently using low pt electrons)
-  edm::EDGetTokenT<edm::View<reco::GsfElectron> > electronToken_;
-  edm::Handle<edm::View<reco::GsfElectron> > electronHandle_;
+  // DisplacedElectron collection 
+  edm::EDGetTokenT<reco::ElectronCollection> electronToken_;
+  edm::Handle<reco::ElectronCollection> electronHandle_;
 
-  // Gen Particles collection
-  edm::EDGetTokenT<std::vector<reco::GenParticle>> genParticlesToken_;
-  edm::Handle<std::vector<reco::GenParticle>> genParticles_;
+  // Displaced Electron Tracks
+  edm::EDGetTokenT<reco::TrackCollection> trackToken_;
+  edm::Handle<reco::TrackCollection> trackHandle_;
 
-  KUCMSGenObject* genObjs_;
+  //Gen particles
+  edm::EDGetTokenT<reco::GenParticleCollection> genToken_;
+  edm::Handle<reco::GenParticleCollection> genHandle_;
+
+  // Transient track builder
+  edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> transientTrackBuilder_;
+
+  VertexAssembly vertexBuilder_;
 
   void SortByPt(reco::TrackCollection &tracks) const;
   void SortByChi2(reco::VertexCollection &vertices) const;
+  int FindIndex(const reco::Track &track) const;  
+
+  reco::TrackCollection ExtractTracks(const reco::ElectronCollection &electrons) const;
+  
 };
-
-KUCMSTimedSVs::KUCMSTimedSVs(const edm::ParameterSet& iConfig) {
-  cfFlag.set( "hasGenInfo", iConfig.existsAs<bool>("hasGenInfo") ? iConfig.getParameter<bool>("hasGenInfo") : true );
-
-}
 
 void KUCMSTimedSVs::InitObject(TTree* fOutTree) {  
 
-  // Vertex Branches
-  Branches.makeBranch("nVertex","nVertex", INT);
-  Branches.makeBranch("Vertex_x","Vertex_x", VFLOAT);
-  Branches.makeBranch("Vertex_y","Vertex_y", VFLOAT);
-  Branches.makeBranch("Vertex_z","Vertex_z", VFLOAT);
-  Branches.makeBranch("Vertex_chi2","Vertex_chi2", VFLOAT);
-  Branches.makeBranch("Vertex_normalizedChi2","Vertex_normalizedChi2", VFLOAT);
-  Branches.makeBranch("Vertex_ndof","Vertex_ndof", VFLOAT);
+  Branches.makeBranch("TimedSV_nTotal","TimedSV_nTotal", INT);
+  Branches.makeBranch("TimedSV_nTracks","TimedSV_nTracks", VINT);
+  Branches.makeBranch("TimedSV_vertexIndex","TimedSV_vertexIndex", VUINT);
+  Branches.makeBranch("TimedSV_displacedElectronIndex","TimedSV_displacedElectronIndex", VINT);
+  Branches.makeBranch("TimedSV_x","TimedSV_x", VFLOAT);
+  Branches.makeBranch("TimedSV_y","TimedSV_y", VFLOAT);
+  Branches.makeBranch("TimedSV_z","TimedSV_z", VFLOAT);
+  Branches.makeBranch("TimedSV_dxy","TimedSV_dxy", VFLOAT);
+  Branches.makeBranch("TimedSV_chi2","TimedSV_chi2", VFLOAT);
+  Branches.makeBranch("TimedSV_normalizedChi2","TimedSV_normalizedChi2", VFLOAT);
+  Branches.makeBranch("TimedSV_ndof","TimedSV_ndof", VFLOAT);
+  Branches.makeBranch("TimedSV_pathLength","TimedSV_pathLength", VFLOAT);
+  Branches.makeBranch("TimedSV_linearDistance","TimedSV_linearDistance", VFLOAT);
+  Branches.makeBranch("TimedSV_trackPt","TimedSV_trackPt", VFLOAT);
 
-  // Track Branches
-  Branches.makeBranch("nTracks","nTracks",VINT);
-  Branches.makeBranch("LinearDist","LinearDist", VFLOAT);
-  Branches.makeBranch("PathLength","PathLength",VFLOAT);
-  Branches.makeBranch("Track_pt", "Track_pt", VFLOAT);
-  Branches.makeBranch("Track_eta", "Track_eta", VFLOAT);
-  Branches.makeBranch("Track_phi", "Track_phi", VFLOAT);
-  Branches.makeBranch("Track_x", "Track_x", VFLOAT);
-  Branches.makeBranch("Track_y", "Track_y", VFLOAT);
-  Branches.makeBranch("Track_z", "Track_z", VFLOAT);
-  Branches.makeBranch("Track0_pt", "Track0_pt", VFLOAT);
-  Branches.makeBranch("Track1_pt", "Track1_pt", VFLOAT);
-  Branches.makeBranch("Track0_pathLength", "Track0_pathLength", VFLOAT);
-  Branches.makeBranch("Track1_pathLength", "Track1_pathLength", VFLOAT);
-
-  // Matched Electron Branches
-  Branches.makeBranch("VertexID","VertexID", VINT);
-  Branches.makeBranch("PositionAtECAL_x","PositionAtECAL_x", VFLOAT);
-  Branches.makeBranch("PositionAtECAL_y","PositionAtECAL_y", VFLOAT);
-  Branches.makeBranch("PositionAtECAL_z","PositionAtECAL_z", VFLOAT);
-  Branches.makeBranch("Electron0_pt", "Electron0_pt", VFLOAT);
-  Branches.makeBranch("Electron1_pt", "Electron1_pt", VFLOAT);
-  Branches.makeBranch("LowPtElectron_mass", "LowPtElectron_mass", VFLOAT);
-  Branches.makeBranch("LowPtElectron_energy", "LowPtElectron_energy", VFLOAT);
-  Branches.makeBranch("LowPtElectron_et", "LowPtElectron_et", VFLOAT);
-  Branches.makeBranch("LowPtElectron_pt", "LowPtElectron_pt", VFLOAT);
-  Branches.makeBranch("LowPtElectron_eta", "LowPtElectron_eta", VFLOAT);
-  Branches.makeBranch("LowPtElectron_theta", "LowPtElectron_theta", VFLOAT);
-  Branches.makeBranch("LowPtElectron_phi", "LowPtElectron_phi", VFLOAT);
-  Branches.makeBranch("LowPtElectron_charge", "LowPtElectron_charge", VFLOAT);
-  Branches.makeBranch("isEB","isEB", VBOOL);
-  Branches.makeBranch("isEE","isEE", VBOOL);
-  Branches.makeBranch("SC_energy","SC_energy", VFLOAT); 
-  
-  // Gen matching Branches
-  Branches.makeBranch("PdgID", "PdgID", VINT);
-  Branches.makeBranch("SPdgID", "SPdgID", VINT);
-  Branches.makeBranch("LowPtElectronGenIdx", "LowPtElectronGenIdx", VINT);
-  Branches.makeBranch("LowPtElectronGenDr", "LowPtElectronGenDr", VFLOAT);
-  Branches.makeBranch("LowPtElectronGenDp", "LowPtElectronGenDp", VFLOAT);
-  Branches.makeBranch("LowPtElectronGenSIdx", "LowPtElectronGenSIdx", VINT);
-  Branches.makeBranch("LowPtElectronGenSDr", "LowPtElectronGenSDr", VFLOAT);
-  Branches.makeBranch("LowPtElectronGenSDr", "LowPtElectronGenSDr", VFLOAT);
-  Branches.makeBranch("DiffVertex_x","DiffVertex_x", VFLOAT, "Difference between gen and reco vertex in x coordinate");
-  Branches.makeBranch("DiffVertex_y","DiffVertex_y", VFLOAT, "Difference between gen and reco vertex in y coordinate");
-  Branches.makeBranch("DiffVertex_z","DiffVertex_z", VFLOAT, "Difference between gen and reco vertex in z coordinate");
-  Branches.makeBranch("GenVertex_x","GenVertex_x", VFLOAT, "Gen particle vertex x coordinate");
-  Branches.makeBranch("GenVertex_y","GenVertex_y", VFLOAT, "Gen particle vertex y coordinate");
-  Branches.makeBranch("GenVertex_z","GenVertex_z", VFLOAT, "Gen particle vertex z coordinate");
-  Branches.makeBranch("GenVertexPV_x","GenVertexPV_x", FLOAT, "Gen particle primary vertex x coordinate");
-  Branches.makeBranch("GenVertexPV_y","GenVertexPV_y", FLOAT, "Gen particle primary vertex y coordinate");
-  Branches.makeBranch("GenVertexPV_z","GenVertexPV_z", FLOAT, "Gen particle primary vertex z coordinate");
-  Branches.makeBranch("isW","isW", VBOOL);
-  Branches.makeBranch("isZ","isZ", VBOOL);
-  Branches.makeBranch("isTau","isTau", VBOOL);
-  Branches.makeBranch("isLight","isLight", VBOOL);
-  Branches.makeBranch("isHeavy","isHeavy", VBOOL);
-  Branches.makeBranch("isConversion","isConversion", VBOOL);
-  Branches.makeBranch("isUnmatched","isUnmatched", VBOOL);
-
-  //Branches.makeBranch("","", VINT);
-  //Branches.makeBranch("","", VFLOAT);
-  //Branches.makeBranch("","", VBOOL);
+  //SignalSV
+  Branches.makeBranch("SignalSV_nTotal","SignalSV_nTotal", INT);
+  Branches.makeBranch("SignalSV_nTracks","SignalSV_nTracks", VINT);
+  Branches.makeBranch("SignalSV_vertexIndex","SignalSV_vertexIndex", VUINT);
+  Branches.makeBranch("SignalSV_displacedElectronIndex","SignalSV_displacedElectronIndex", VINT);
+  Branches.makeBranch("SignalSV_trackWeight","SignalSV_trackWeight", VFLOAT);
+  Branches.makeBranch("SignalSV_x","SignalSV_x", VFLOAT);
+  Branches.makeBranch("SignalSV_y","SignalSV_y", VFLOAT);
+  Branches.makeBranch("SignalSV_z","SignalSV_z", VFLOAT);
+  Branches.makeBranch("SignalSV_dxy","SignalSV_dxy", VFLOAT);
+  Branches.makeBranch("SignalSV_chi2","SignalSV_chi2", VFLOAT);
+  Branches.makeBranch("SignalSV_normalizedChi2","SignalSV_normalizedChi2", VFLOAT);
+  Branches.makeBranch("SignalSV_ndof","SignalSV_ndof", VFLOAT);
+  //Branches.makeBranch("","", );
   Branches.attachBranches(fOutTree);
 }
 
@@ -179,128 +153,90 @@ void KUCMSTimedSVs::LoadEvent(const edm::Event& iEvent, const edm::EventSetup& i
 
   iEvent.getByToken(svToken_, svHandle_);
   iEvent.getByToken(electronToken_, electronHandle_);
+  iEvent.getByToken(trackToken_, trackHandle_);
+  iEvent.getByToken(genToken_, genHandle_);
+
+  const TransientTrackBuilder* ttBuilder = &iSetup.getData(transientTrackBuilder_);
+  vertexBuilder_ = VertexAssembly(ttBuilder, trackHandle_);
 
   if(DEBUG) std::cout << "Collecting Timed SVs" << std::endl;
   timedVertices_.clear();
+  tracks_.clear();
 
   // Fill vertex container for the event 
-  for(const auto &vertex : *svHandle_) {
+  for(const auto &vertex : *svHandle_) 
     timedVertices_.push_back(vertex);
-  }
 
-  for(const auto &electron : *electronHandle_) {
-    electrons_.push_back(electron);
-    const reco::GsfTrack *track = electron.gsfTrack().get();
-    const double pt = track->pt();
-    const double chi2 = track->chi2();
-
-    trackToElectronMap_.emplace(std::make_pair(chi2, pt), electron);
-  }
+  tracks_ = ExtractTracks(*electronHandle_);
+  signalElectrons_ = GetSignalElectrons(*electronHandle_, *genHandle_);
 }
 
-void KUCMSTimedSVs::ProcessEvent(ItemManager<float>& geVar) {
+void KUCMSTimedSVs::PostProcessEvent(ItemManager<float>& geVar) {
 
   if(DEBUG) std::cout << "Processing timed secondary vertices" << std::endl;
 
   Branches.clearBranches();
   
   SortByChi2(timedVertices_);
-  Branches.fillBranch("nVertex", int(timedVertices_.size()) );
-
-  if(cfFlag("hasGenInfo")) {
-    Branches.fillBranch("GenVertexPV_x", float(genObjs_->GenVertex().x()) );
-    Branches.fillBranch("GenVertexPV_y", float(genObjs_->GenVertex().y()) );
-    Branches.fillBranch("GenVertexPV_z", float(genObjs_->GenVertex().z()) );
-  }
-
+  Branches.fillBranch("TimedSV_nTotal", int(timedVertices_.size()) );
+  
   // Loop over vertex collection
   int vertexIdx = 0;
   for(reco::Vertex const &vertex : timedVertices_) {
 
-    Branches.fillBranch("Vertex_x", float(vertex.x()) ); 
-    Branches.fillBranch("Vertex_y", float(vertex.y()) );
-    Branches.fillBranch("Vertex_z", float(vertex.z()) );
-    Branches.fillBranch("Vertex_chi2", float(vertex.chi2()) );
-    Branches.fillBranch("Vertex_normalizedChi2", float(vertex.normalizedChi2()) );
-    Branches.fillBranch("Vertex_ndof", float(vertex.ndof()) );
+    Branches.fillBranch("TimedSV_x", float(vertex.x()) ); 
+    Branches.fillBranch("TimedSV_y", float(vertex.y()) );
+    Branches.fillBranch("TimedSV_z", float(vertex.z()) );
+    Branches.fillBranch("TimedSV_chi2", float(vertex.chi2()) );
+    Branches.fillBranch("TimedSV_normalizedChi2", float(vertex.normalizedChi2()) );
+    Branches.fillBranch("TimedSV_ndof", float(vertex.ndof()) );
+    Branches.fillBranch("TimedSV_dxy", float(sqrt(vertex.x()*vertex.x()+vertex.y()*vertex.y())) );
 
     const int nTracks = vertex.refittedTracks().size();
-    Branches.fillBranch("nTracks", nTracks);
-
+    Branches.fillBranch("TimedSV_nTracks", nTracks);
+    
     // Get tracks and sort them by pt
     reco::TrackCollection tracks = vertex.refittedTracks();
     SortByPt(tracks);
-
-    // Get leading and subleading electron and track information
-    const reco::GsfElectron leadingElectron = trackToElectronMap_[std::make_pair(tracks[0].chi2(), tracks[0].pt())];
-    const reco::GsfElectron subLeadingElectron = trackToElectronMap_[std::make_pair(tracks[1].chi2(), tracks[1].pt())];
-
-    Branches.fillBranch("Track0_pt", float(tracks[0].pt()) );
-    Branches.fillBranch("Track1_pt", float(tracks[1].pt()) );
-    Branches.fillBranch("Track0_pathLength", float(tracks[0].t0()) );
-    Branches.fillBranch("Track1_pathLength", float(tracks[1].t0()) );
-    Branches.fillBranch("Electron0_pt", float(leadingElectron.pt()) );
-    Branches.fillBranch("Electron1_pt", float(subLeadingElectron.pt()) );
-
+  
     // Loop over tracks in vertex
-    for(reco::Track const &track : tracks){
-      
-      const reco::GsfElectron electron = trackToElectronMap_[std::make_pair(track.chi2(), track.pt())];
-      Branches.fillBranch("VertexID", vertexIdx);
-      Branches.fillBranch("PositionAtECAL_x", float(electron.trackPositionAtCalo().x()) );
-      Branches.fillBranch("PositionAtECAL_y", float(electron.trackPositionAtCalo().y()) );
-      Branches.fillBranch("PositionAtECAL_z", float(electron.trackPositionAtCalo().z()) ); 
-      Branches.fillBranch("PathLength", float(track.t0()) );
-      Branches.fillBranch("LinearDist", float(track.beta()) );
-      Branches.fillBranch("Track_x", float(track.vx()) );
-      Branches.fillBranch("Track_y", float(track.vy()) );
-      Branches.fillBranch("Track_z", float(track.vz()) );
-      Branches.fillBranch("Track_pt", float(track.pt()) );
-      Branches.fillBranch("Track_eta", float(track.eta()) );
-      Branches.fillBranch("Track_phi", float(track.phi()) );
-      Branches.fillBranch("isEB", bool(electron.isEB()) );
-      Branches.fillBranch("isEE", bool(electron.isEE()) );
-      Branches.fillBranch("LowPtElectron_mass", float(electron.mass()) );
-      Branches.fillBranch("LowPtElectron_energy", float(electron.energy()) );
-      Branches.fillBranch("LowPtElectron_et", float(electron.et()) );
-      Branches.fillBranch("LowPtElectron_pt", float(electron.pt()) );
-      Branches.fillBranch("LowPtElectron_eta", float(electron.eta()) );
-      Branches.fillBranch("LowPtElectron_theta", float(electron.theta()) );
-      Branches.fillBranch("LowPtElectron_phi", float(electron.phi()) );
-      Branches.fillBranch("LowPtElectron_charge", float(electron.charge()) );
-      Branches.fillBranch("SC_energy", float(electron.superCluster()->correctedEnergy()) ); 
-      //Branches.fillBranch("", );
-
-      if(!cfFlag("hasGenInfo"))
-	continue;
-
-      std::map<string,float> genInfo = genObjs_->getGenPartMatch(*(electron.superCluster().get()), electron.pt() );
-      std::map<string, bool> momType = genObjs_->MotherID(genInfo["matchedIdx"]);
-
-      Branches.fillBranch("PdgID", int(genInfo["matchedId"]));
-      Branches.fillBranch("SPdgID", int(genInfo["matchedSId"]));
-      Branches.fillBranch("isW", momType["isW"]);
-      Branches.fillBranch("isZ", momType["isZ"]);
-      Branches.fillBranch("isTau", momType["isTau"]);
-      Branches.fillBranch("isLight", momType["isLight"]);
-      Branches.fillBranch("isHeavy", momType["isHeavy"]);
-      Branches.fillBranch("isConversion", momType["isConversion"]);
-      Branches.fillBranch("isUnmatched", momType["isUnmatched"]);
-      Branches.fillBranch("LowPtElectronGenIdx", int(genInfo["matchedIdx"]));
-      Branches.fillBranch("LowPtElectronGenDr", genInfo["GenDR"]);
-      Branches.fillBranch("LowPtElectronGenDp", genInfo["GenDpt"]);
-      Branches.fillBranch("LowPtElectronGenSIdx", int(genInfo["matchedSIdx"]));
-      Branches.fillBranch("LowPtElectronGenSDr", genInfo["GenSDR"]);
-      Branches.fillBranch("LowPtElectronGenSDr", genInfo["GenSDpt"]);
-      Branches.fillBranch("GenVertex_x", genInfo["GenVertex_x"]);
-      Branches.fillBranch("GenVertex_y", genInfo["GenVertex_y"]);
-      Branches.fillBranch("GenVertex_z", genInfo["GenVertex_z"]);
-      Branches.fillBranch("DiffVertex_x", float(genInfo["GenVertex_x"] - vertex.x()) );
-      Branches.fillBranch("DiffVertex_y", float(genInfo["GenVertex_y"] - vertex.y()) );
-      Branches.fillBranch("DiffVertex_z", float(genInfo["GenVertex_z"] - vertex.z()) );
+    for(reco::Track const &track : tracks) { 
+      Branches.fillBranch("TimedSV_displacedElectronIndex", FindIndex(track) );
+      Branches.fillBranch("TimedSV_vertexIndex", unsigned(vertexIdx) );
+      Branches.fillBranch("TimedSV_pathLength", float(track.t0()) );
+      Branches.fillBranch("TimedSV_linearDistance", float(track.beta()) );
+      Branches.fillBranch("TimedSV_trackPt", float(track.pt()) );
     }
     vertexIdx++;
   }
+
+  //Signal Vertices
+  reco::VertexCollection signalVertices = vertexBuilder_.CreateVertexCollection(signalElectrons_);
+
+  Branches.fillBranch("SignalSV_nTotal", int(signalVertices.size()));
+
+  vertexIdx = 0;
+  for(reco::Vertex &vertex : signalVertices) {
+
+    Branches.fillBranch("SignalSV_x", float(vertex.x()) );
+    Branches.fillBranch("SignalSV_y", float(vertex.y()) );
+    Branches.fillBranch("SignalSV_z", float(vertex.z()) );
+    Branches.fillBranch("SignalSV_dxy", float(sqrt(vertex.x()*vertex.x()+vertex.y()*vertex.y())) );
+    Branches.fillBranch("SignalSV_chi2", float(vertex.chi2()) );
+    Branches.fillBranch("SignalSV_normalizedChi2", float(vertex.normalizedChi2()) );
+    Branches.fillBranch("SignalSV_ndof", float(vertex.ndof()) );
+
+    reco::TrackCollection tracks;
+    for(const auto &track : vertex.tracks()) tracks.emplace_back(*(track.get()));
+
+    Branches.fillBranch("SignalSV_nTracks", int(tracks.size()) );
+    for(reco::Track const &track : tracks) {
+      Branches.fillBranch("SignalSV_trackWeight", float(vertex.trackWeight(reco::TrackRef(trackHandle_, FindIndex(track)))));
+      Branches.fillBranch("SignalSV_displacedElectronIndex", FindIndex(track) );
+      Branches.fillBranch("SignalSV_vertexIndex", unsigned(vertexIdx) );
+    }
+    vertexIdx++;
+  } 
 }
 
 // Private methods
@@ -324,6 +260,27 @@ void KUCMSTimedSVs::SortByChi2(reco::VertexCollection &vertices) const {
 
   // Sorting the vector using the lambda function
   std::sort(vertices.begin(), vertices.end(), compareByChi2);
+}
+
+int KUCMSTimedSVs::FindIndex(const reco::Track &track) const {
+
+  int index(-1);  
+  for(int t = 0; t < int(tracks_.size()); t++) {
+    if(track.pt() == tracks_[t].pt() && track.chi2() == tracks_[t].chi2())
+      index = t;
+  } 
+  
+  return index;
+}
+
+reco::TrackCollection KUCMSTimedSVs::ExtractTracks(const reco::ElectronCollection &electrons) const {
+
+  reco::TrackCollection tracks;
+
+  for(const auto &electron : electrons) {
+    tracks.emplace_back(*(electron.track().get()) );
+  }
+  return tracks;
 }
 
 #endif

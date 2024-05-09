@@ -1,5 +1,9 @@
 <use name="DataFormats/TrackReco"/>
 <use name="TrackingTools/TrajectoryState"/>
+<use name="RecoEgamma/EgammaIsolationAlgos"/>
+<use name="TrackingTools/TransientTrack"/>
+<use name="RecoVertex/AdaptiveVertexFinder"/>
+<use name="RecoVertex/VertexPrimitives"/>
 <export>
   <lib name="1"/>
 </export>

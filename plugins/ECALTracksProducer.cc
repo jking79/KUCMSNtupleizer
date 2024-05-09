@@ -76,21 +76,13 @@
 #include <Math/VectorUtil.h>
 
 //Local includes
-#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/Hungarian.h"
-#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/DeltaRMatch.h"
-#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/MatchTracksToSC.h"
+#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/DeltaRMatchApplications.h"
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/TrackTools.h"
-#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/MatchingTools.h"
+
 
 //
 // class declaration
 //
-
-bool IsIndexMatched(const std::vector<int>& matchedIndexes, int index);
-//template<typename T>
-//std::vector<T> EraseIndices(const std::vector<T>& data, std::vector<size_t>& indicesToDelete);
-
-//typedef ROOT::Math::PtEtaPhiMVector LorentzVec;
 
 class ECALTracksProducer : public edm::stream::EDProducer<> {
 public:
@@ -104,22 +96,8 @@ private:
   typedef edm::Handle<reco::GsfTrackCollection> GsfTracksHandle;
   typedef edm::Handle<reco::SuperClusterCollection> SCsHandle;
 
-  //template <typename T> using PropagatedTrack = std::pair<T, TrackDetMatchInfo>;
-  //template <typename T> using PropagatedTracks = std::vector<PropagatedTrack<T> >;
-  //template <typename T> using TrackToECAL = edm::AssociationMap<edm::OneToOne<T, TrackDetMatchInfo> >;
-  
   void produce(edm::Event&, const edm::EventSetup&) override;
 
-  template <typename T, typename S>
-  std::vector<T> RemoveOverlap(const std::vector<T> &toReduce, const std::vector<S> &toMatch, const double &deltaRcut); 
-  /*
-  template <typename T>
-  PropagatedTracks<T> GetAcceptedTracks(const edm::Event &iEvent, const edm::EventSetup &iSetup,
-					std::vector<T> &tracks, const MagneticField &magneticField); 
-
-  TrackDetMatchInfo GetTrackDetMatchInfo(const edm::Event &iEvent, const edm::EventSetup &iSetup,
-					 const reco::Track& track, const MagneticField &magneticField);
-  */
   // ----------member data ---------------------------
   edm::EDGetTokenT<reco::TrackCollection> generalTrackToken_;
   edm::EDGetTokenT<reco::GsfTrackCollection> gsfElectronTrackToken_;
@@ -152,6 +130,7 @@ ECALTracksProducer::ECALTracksProducer(const edm::ParameterSet& iConfig) :
 
   produces<reco::TrackCollection>("ecalGeneralTracks").setBranchAlias("ecalGeneralTracks");
   produces<reco::GsfTrackCollection>("ecalGsfTracks").setBranchAlias("ecalGsfTracks");
+  produces<reco::TrackCollection>("ecalTracks").setBranchAlias("ecalTracks");
   //produces<std::vector<GlobalPoint> >("generalTracksECALPosition").setBranchAlias("generalTracksECALPosition");
   //produces<std::vector<GlobalPoint> >("gsfTracksECALPosition").setBranchAlias("gsfTracksECALPosition");
   produces<reco::SuperClusterCollection>("displacedElectronSCs").setBranchAlias("displacedElectronSCs");
@@ -187,6 +166,7 @@ void ECALTracksProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSet
   // Smart pointers to containers of output collections
   std::unique_ptr<reco::TrackCollection> ecalGeneralTracks = std::make_unique<reco::TrackCollection>();
   std::unique_ptr<reco::GsfTrackCollection> ecalGsfTracks = std::make_unique<reco::GsfTrackCollection>();
+  std::unique_ptr<reco::TrackCollection> ecalTracks = std::make_unique<reco::TrackCollection>();
   //std::unique_ptr<std::vector<GlobalPoint> > generalTracksECALPosition = std::make_unique<std::vector<GlobalPoint> >();
   //std::unique_ptr<std::vector<GlobalPoint> > gsfTracksECALPosition = std::make_unique<std::vector<GlobalPoint> >();
   std::unique_ptr<reco::SuperClusterCollection> displacedElectronSCs = std::make_unique<reco::SuperClusterCollection>();
@@ -197,30 +177,20 @@ void ECALTracksProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSet
 
   // Retain only General tracks that make it to the ECAL
   generalTracks = RemoveOverlap<reco::Track, reco::GsfTrack>(generalTracks, gsfTracks, 0.1);
-  //PropagatedTracks<reco::Track> propagatedGeneralTracks = GetAcceptedTracks(iEvent, iSetup, generalTracks, *(magfield.product()) );
   TrackPropagator<reco::Track> generalTracksPropagator(iEvent, iSetup, magfield, trackAssocParameters_, generalTracks);
   generalTracks = generalTracksPropagator.GetTracks();
   ecalGeneralTracks->insert(ecalGeneralTracks->end(), generalTracks.begin(), generalTracks.end());
-  /*
-  for(auto const &pair : propagatedGeneralTracks) {
-    ecalGeneralTracks->emplace_back(pair.first);
-    generalTracksDetMatchInfo->emplace_back(pair.second);
-  }
-  */
-  //propagatedGeneralTracks->insert(propagatedGeneralTracks->end(), propGeneralTracks.begin(), propGeneralTracks.end());
 
   // Retain only Gsf tracks that make it to the ECAL
-  //PropagatedTracks<reco::GsfTrack> propagatedGsfTracks = GetAcceptedTracks(iEvent, iSetup, gsfTracks, *(magfield.product()) );
   TrackPropagator<reco::GsfTrack> gsfTracksPropagator(iEvent, iSetup, magfield, trackAssocParameters_, gsfTracks);
   gsfTracks = gsfTracksPropagator.GetTracks();
   ecalGsfTracks->insert(ecalGsfTracks->end(), gsfTracks.begin(), gsfTracks.end());
-  /*
-  for(auto const &pair : propagatedGsfTracks) {
-    ecalGsfTracks->emplace_back(pair.first);
-    gsfTracksDetMatchInfo->emplace_back(pair.second);
-  }
-  */
-  //propagatedGsfTracks->insert(propagatedGsfTracks->end(), propGsfTracks.begin(), propGsfTracks.end());
+
+  reco::TrackCollection ecalTracksTemp(generalTracks);
+  for(const auto &track : gsfTracks)
+    ecalTracksTemp.emplace_back(track);
+  for(const auto &track : ecalTracksTemp)
+    ecalTracks->emplace_back(track);
 
   // Remove overlap between superClusters and out-of-time superClusters
   reco::SuperClusterCollection superClusters(*superClusterHandle);
@@ -231,6 +201,7 @@ void ECALTracksProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSet
 
   iEvent.put(std::move(ecalGeneralTracks), "ecalGeneralTracks");
   iEvent.put(std::move(ecalGsfTracks), "ecalGsfTracks");
+  iEvent.put(std::move(ecalTracks), "ecalTracks");
   //iEvent.put(std::move(generalTracksDetMatchInfo), "generalTracksDetMatchInfo");
   //iEvent.put(std::move(gsfTracksDetMatchInfo), "gsfTracksDetMatchInfo");
   iEvent.put(std::move(displacedElectronSCs), "displacedElectronSCs");
@@ -250,58 +221,5 @@ void ECALTracksProducer::fillDescriptions(edm::ConfigurationDescriptions& descri
   descriptions.addDefault(desc);
 }
 
-template <typename T, typename S>
-std::vector<T> ECALTracksProducer::RemoveOverlap(const std::vector<T> &toReduce, const std::vector<S> &toMatch, const double &deltaRcut) {
-
-  DeltaRMatchHungarian<T, S> assigner(toReduce, toMatch);
-
-  std::vector<size_t> matchedIndexes;
-
-  for(auto const &pair : assigner.GetPairedObjects()) {
-    if(pair.GetDeltaR() < deltaRcut) {
-      matchedIndexes.push_back(size_t(pair.GetIndexA()));
-    }
-  }
-
-  return RemoveDataAtIndices<T>(toReduce, matchedIndexes);
-}
-
-/*
-template <typename T>
-ECALTracksProducer::PropagatedTracks<T> ECALTracksProducer::GetAcceptedTracks(const edm::Event &iEvent,
-									      const edm::EventSetup &iSetup,
-									      std::vector<T> &tracks, 
-									      const MagneticField &magneticField) {
-
-  ECALTracksProducer::PropagatedTracks<T> propagatedTracks;
-  std::vector<T> acceptedTracks;
-  for(const auto &track : tracks) {
-    
-    TrackDetMatchInfo detInfo(GetTrackDetMatchInfo(iEvent, iSetup, track, magneticField));
-    
-    if(detInfo.crossedEcalIds.size() != 0 && track.pt() > 0.95) {
-      propagatedTracks.emplace_back(std::make_pair(track, detInfo));
-      acceptedTracks.emplace_back(track);
-    }
-  } 
-
-  tracks = acceptedTracks;
-
-  return propagatedTracks;
-}
-
-TrackDetMatchInfo ECALTracksProducer::GetTrackDetMatchInfo(const edm::Event &iEvent,
-							   const edm::EventSetup &iSetup,
-							   const reco::Track& track, 
-							   const MagneticField &magneticField) {
-
-  FreeTrajectoryState initialState = trajectoryStateTransform::initialFreeState(track, &magneticField);
-  
-  const TrackDetMatchInfo detInfo(trackAssociator_.associate(iEvent, iSetup, trackAssocParameters_, &initialState));
-
-  return detInfo;
-
-}
-*/
 //define this as a plug-in
 DEFINE_FWK_MODULE(ECALTracksProducer);
