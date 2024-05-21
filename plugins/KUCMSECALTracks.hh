@@ -58,7 +58,7 @@
 
 // Add includes for interface collections
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/DeltaRMatch.h"
-#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/TrackTools.h"
+#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/TrackPropagator.h"
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/TrackInfo.h"
 
 #include "TVector3.h"

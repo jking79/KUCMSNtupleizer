@@ -51,4 +51,83 @@ template <class A, class B> class PairedObjects {
   double deltaR_;
 };
 
+template <class A, class B> 
+class PairedObjectCollection : public std::vector<PairedObjects<A,B> > {
+
+public:
+
+  int FindIndexA(const int indexB) const ;
+  int FindIndexB(const A &objectA) const ;
+  B FindObjectB(const A &objectA) const;
+  
+  std::vector<A> GetObjectAList() const;
+  std::vector<B> GetObjectBList() const;
+  
+};
+
+template <class A, class B>
+int PairedObjectCollection<A,B>::FindIndexA(const int indexB) const {
+
+  int index = -1;
+  for(const auto &pair : *this) {
+    if(pair.GetIndexB() == indexB)
+      index = pair.GetIndexA();
+  }
+  
+  if(index == -1) std::cout << "Warning: Index not found in list of objectB" << std::endl;
+  
+  return index;
+}
+
+template <class A, class B>
+int PairedObjectCollection<A,B>::FindIndexB(const A &objectA) const {
+
+  int index = -1;
+  for(const auto &pair : *this)	{
+    //std::cout << pair.GetIndexA() << std::endl; 
+    if(pair.GetObjectA().pt() == objectA.pt() && pair.GetObjectA().eta() == objectA.eta()) {
+      index = pair.GetIndexB();
+      //std::cout << index << std::endl; 
+    }
+  }
+
+  if(index == -1) {
+    std::cout << "Warning: Index not found in list of objectA" << std::endl;
+    
+  }
+   
+  return index;
+}
+
+template <class A, class B>
+B PairedObjectCollection<A,B>::FindObjectB(const A &objectA) const {
+
+  B objectB;
+  for(const auto &pair : *this) 
+    if(pair.GetObjectA().pt() == objectA.pt() && pair.GetObjectA().eta() == objectA.eta()) 
+      objectB = pair.GetObjectB();
+    
+  return objectB;
+}
+
+template <class A, class B>
+std::vector<A> PairedObjectCollection<A,B>::GetObjectAList() const {
+
+  std::vector<A> listA;
+  for(const auto &pair : *this) 
+    listA.emplace_back(pair.GetObjectA());
+
+  return listA;
+}
+
+template <class A, class B>
+std::vector<B> PairedObjectCollection<A,B>::GetObjectBList() const {
+
+  std::vector<B> listB;
+  for(const auto &pair : *this)	
+    listB.emplace_back(pair.GetObjectB());
+
+  return listB;
+}
+
 #endif

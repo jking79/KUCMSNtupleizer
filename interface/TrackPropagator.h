@@ -1,5 +1,5 @@
-#ifndef KUCMSNtupleizer_KUCMSNtupleizer_TrackTools_h
-#define KUCMSNtupleizer_KUCMSNtupleizer_TrackTools_h
+#ifndef KUCMSNtupleizer_KUCMSNtupleizer_TrackPropagator_h
+#define KUCMSNtupleizer_KUCMSNtupleizer_TrackPropagator_h
 
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "MagneticField/Engine/interface/MagneticField.h"
@@ -11,6 +11,7 @@
 #include "TrackingTools/TrackAssociator/interface/TrackDetectorAssociator.h"
 #include "TrackingTools/TrackAssociator/interface/TrackAssociatorParameters.h"
 #include "TrackingTools/TrajectoryState/interface/TrajectoryStateTransform.h"
+#include "TrackPropagation/SteppingHelixPropagator/interface/SteppingHelixPropagator.h"
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/PropagatedTrack.h"
 
 //===============================================================================================//
@@ -93,26 +94,6 @@ TrackDetMatchInfo TrackPropagator<T>::GetTrackDetMatchInfo(const edm::Event &iEv
 
   return detInfo;
 
-}
-
-template <typename T> double GetDXY(T &object) {
-  const double objectDx = object.vx();
-  const double objectDy = object.vy();
-  const double objectDxy = sqrt(objectDx*objectDx + objectDy*objectDy);
-  return objectDxy;
-}
-
-inline int FindTrackIndex(const reco::Track &track, const reco::TrackCollection &trackCollection) {
-
-  int index = -1;
-  for(size_t i = 0; i < trackCollection.size(); i++) {
-    reco::Track trk(trackCollection[i]);
-    if(track.pt() == trk.pt() && track.eta() == trk.eta()) {
-      index = int(i);
-      break;
-    }
-  }
-  return index;
 }
 
 #endif

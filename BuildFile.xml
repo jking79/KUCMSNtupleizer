@@ -4,6 +4,7 @@
 <use name="TrackingTools/TransientTrack"/>
 <use name="RecoVertex/AdaptiveVertexFinder"/>
 <use name="RecoVertex/VertexPrimitives"/>
+<use name="TrackPropagation/SteppingHelixPropagator"/>
 <export>
   <lib name="1"/>
 </export>

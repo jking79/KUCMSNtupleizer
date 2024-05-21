@@ -122,10 +122,13 @@ template <class A, class B> class DeltaRMatchHungarian {
   
  public:
 
+  // Default constructor
   DeltaRMatchHungarian();
 
+  // Initialize with pre-made cost matrix
   DeltaRMatchHungarian(Matrix<double> &costMatrix);
-    
+
+  // Solve assignment problem between two sets (objectsA and objectsB) using the Hungarian algorithm
   DeltaRMatchHungarian(const std::vector<A> &objectsA, const std::vector<B> &objectsB);
 
   virtual ~DeltaRMatchHungarian() = default;
@@ -137,7 +140,8 @@ template <class A, class B> class DeltaRMatchHungarian {
   std::vector<A> GetMatchedObjectsA() const {matchedObjectsA_;}
   std::vector<B> GetMatchedObjectsB() const {matchedObjectsB_;}  
   std::vector<MatchedPair> GetMatchedPairs() const {return matchedPairs_;}
-  std::vector<PairedObjects<A,B> > GetPairedObjects() const {return pairedObjects_;}
+  //std::vector<PairedObjects<A,B> > GetPairedObjects() const {return pairedObjects_;}
+  PairedObjectCollection<A,B> GetPairedObjects() const {return pairedObjects_;}
   std::vector<double> GetDeltaRs() const {
     std::vector<double> deltaRs;
     for(auto const &pair : pairedObjects_)
@@ -152,7 +156,8 @@ template <class A, class B> class DeltaRMatchHungarian {
   std::vector<A> matchedObjectsA_;
   std::vector<B> matchedObjectsB_;
   std::vector<MatchedPair> matchedPairs_;
-  std::vector<PairedObjects<A,B> > pairedObjects_;
+  //std::vector<PairedObjects<A,B> > pairedObjects_;
+  PairedObjectCollection<A,B> pairedObjects_;
 
   std::vector<MatchedPair> ConstructMatchedPairs(const Matrix<double> &costMatrix, 
 						 const std::vector<A> &objectsA, 
@@ -175,7 +180,7 @@ template <typename A, typename B>
   : cost_(-999.),
   matchedIndexes_(std::vector<int>()),
   matchedPairs_(std::vector<MatchedPair>()),
-  pairedObjects_(std::vector<PairedObjects<A,B>>()) {}
+  pairedObjects_(PairedObjectCollection<A,B>()) {}
 
 //===============================================================================================//
 //-----------------------------------------------------------------------------------------------//
@@ -249,6 +254,7 @@ template <typename A, typename B>
     matchedPairs.emplace_back(MatchedPair(mi, matchedIndexes_[mi], deltaR));
     pairedObjects_.emplace_back(PairedObjects<A,B>(objectsA[mi], objectsB[matchedIndexes_[mi]], thisMatchedPair) );
   }
+  
   // Sort paired objects from smallest to largest DeltaR
   std::sort(pairedObjects_.begin(), pairedObjects_.end(), [](const PairedObjects<A,B>& a, const PairedObjects<A,B>& b) {
       return a.GetDeltaR() < b.GetDeltaR();

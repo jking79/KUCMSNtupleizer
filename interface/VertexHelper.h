@@ -5,6 +5,8 @@
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
 
 class VertexHelper {
 
@@ -13,10 +15,14 @@ class VertexHelper {
   static int CountInstances(const reco::Vertex &vertex, const reco::TrackCollection &tracks);
   static double CalculateTotalPt(const reco::Vertex &vertex);
   static double CalculateTotalPt(const reco::TrackCollection &tracks);
-  static double CalculateWeightedPt(const reco::Vertex &vertex);
+  static double CalculateTotalWeightedPt(const reco::Vertex &vertex);
+  static double CalculateTotalTrackWeight(const reco::Vertex &vertex);
   static double CalculateEcalness(const reco::Vertex &vertex, const reco::TrackCollection &ecalTracks);
   static double CalculateTrackOverlap(const reco::Vertex &vertex1, const reco::Vertex &vertex2);
-  static reco::TrackCollection GetTracks(const reco::Vertex &vertex);
+  static double GetDxyDiff(const reco::Vertex &vertex, const reco::GenParticle &genParticle);
+  static double Get3Ddiff(const reco::Vertex &vertex, const reco::GenParticle &genParticle);
+  static reco::TrackCollection GetTracks(const reco::Vertex &vertex, const bool aboveThreshold = false);
+  static reco::Vertex TimeStampVertex(const reco::Vertex &vertex, const double tof); 
 
   static void SortByPt(reco::VertexCollection &vertices);
 

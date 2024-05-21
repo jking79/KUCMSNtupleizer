@@ -44,7 +44,7 @@
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
 #include "TrackingTools/Records/interface/TransientTrackRecord.h"
 
-#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/TrackTools.h"
+#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/TrackHelper.h"
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/VertexAssembly.h"
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/DeltaRMatchApplications.h"
 
@@ -109,7 +109,7 @@ private:
 
   void SortByPt(reco::TrackCollection &tracks) const;
   void SortByChi2(reco::VertexCollection &vertices) const;
-  int FindIndex(const reco::Track &track) const;  
+  //int FindIndex(const reco::Track &track) const;  
 
   reco::TrackCollection ExtractTracks(const reco::ElectronCollection &electrons) const;
   
@@ -201,7 +201,7 @@ void KUCMSTimedSVs::PostProcessEvent(ItemManager<float>& geVar) {
   
     // Loop over tracks in vertex
     for(reco::Track const &track : tracks) { 
-      Branches.fillBranch("TimedSV_displacedElectronIndex", FindIndex(track) );
+      Branches.fillBranch("TimedSV_displacedElectronIndex", TrackHelper::FindIndex(track, tracks_) );
       Branches.fillBranch("TimedSV_vertexIndex", unsigned(vertexIdx) );
       Branches.fillBranch("TimedSV_pathLength", float(track.t0()) );
       Branches.fillBranch("TimedSV_linearDistance", float(track.beta()) );
@@ -231,8 +231,8 @@ void KUCMSTimedSVs::PostProcessEvent(ItemManager<float>& geVar) {
 
     Branches.fillBranch("SignalSV_nTracks", int(tracks.size()) );
     for(reco::Track const &track : tracks) {
-      Branches.fillBranch("SignalSV_trackWeight", float(vertex.trackWeight(reco::TrackRef(trackHandle_, FindIndex(track)))));
-      Branches.fillBranch("SignalSV_displacedElectronIndex", FindIndex(track) );
+      Branches.fillBranch("SignalSV_trackWeight", float(vertex.trackWeight(reco::TrackRef(trackHandle_, TrackHelper::FindIndex(track, tracks_)))));
+      Branches.fillBranch("SignalSV_displacedElectronIndex", TrackHelper::FindIndex(track, tracks_) );
       Branches.fillBranch("SignalSV_vertexIndex", unsigned(vertexIdx) );
     }
     vertexIdx++;
@@ -261,7 +261,7 @@ void KUCMSTimedSVs::SortByChi2(reco::VertexCollection &vertices) const {
   // Sorting the vector using the lambda function
   std::sort(vertices.begin(), vertices.end(), compareByChi2);
 }
-
+/*
 int KUCMSTimedSVs::FindIndex(const reco::Track &track) const {
 
   int index(-1);  
@@ -272,7 +272,7 @@ int KUCMSTimedSVs::FindIndex(const reco::Track &track) const {
   
   return index;
 }
-
+*/
 reco::TrackCollection KUCMSTimedSVs::ExtractTracks(const reco::ElectronCollection &electrons) const {
 
   reco::TrackCollection tracks;

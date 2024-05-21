@@ -1,6 +1,7 @@
 import os, re
 import FWCore.ParameterSet.Config as cms
-  
+from KUCMSNtupleizer.KUCMSNtupleizer.TrackAssociator_cfi import tkAssocParamBlock
+
 ### CMSSW command line parameter parser
 from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('python')

@@ -49,12 +49,13 @@
 #include "DataFormats/Common/interface/Handle.h"
 
 // Add includes for interface collections
-#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/TrackTools.h"
+#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/TrackPropagator.h"
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/IsolationInfo.h"
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/MatchedTrackSCPair.h"
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/DeltaRMatchApplications.h"
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/VertexAssembly.h"
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/VertexHelper.h"
+#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/TrackHelper.h"
 
 // KUCMS Object includes
 #include "KUCMSObjectBase.hh"
@@ -106,7 +107,7 @@ private:
   std::vector<reco::TransientTrack> ttracks_;
   reco::VertexCollection generalVertices_;
   PropagatedTracks<reco::Track> propECALTracks_;
-  std::vector<PairedObjects<reco::Track, reco::GenParticle> > genMatchedTracks_;
+  PairedObjectCollection<reco::Track, reco::GenParticle> genMatchedTracks_;
 
   edm::EDGetTokenT<reco::TrackCollection> generalTracksToken_;
   edm::Handle<reco::TrackCollection> generalTracksHandle_;
@@ -130,6 +131,7 @@ private:
   reco::BeamSpot beamSpot_;
 
   edm::EDGetTokenT<reco::VertexCollection> pvToken_;
+  edm::Handle<reco::VertexCollection> pvHandle_;
   reco::Vertex primaryVertex_;
 
   edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> transientTrackBuilder_;
@@ -155,6 +157,11 @@ DisplacedGeneralVertices::DisplacedGeneralVertices( const edm::ParameterSet& iCo
 }//<<>>DisplacedGeneralVertices::DisplacedGeneralVertices( const edm::ParameterSet& iConfig, const ItemManager<bool>& cfFlag )
 
 void DisplacedGeneralVertices::InitObject( TTree* fOutTree ) {
+
+  //Beamspot
+  Branches.makeBranch("Beamspot_x", "Beamspot_x", FLOAT);
+  Branches.makeBranch("Beamspot_y", "Beamspot_y", FLOAT);
+  Branches.makeBranch("Beamspot_z", "Beamspot_z", FLOAT);
   
   // Track variables
   Branches.makeBranch("Track_nTotal","Track_nTotal", UINT);
@@ -194,12 +201,19 @@ void DisplacedGeneralVertices::InitObject( TTree* fOutTree ) {
   Branches.makeBranch("GenParticle_pdgId","GenParticle_pdgId", VINT);
   Branches.makeBranch("GenParticle_matchedTrackIndex","GenParticle_matchedTrackIndex", VINT);
   Branches.makeBranch("GenParticle_charge","GenParticle_charge", VINT);
+  Branches.makeBranch("GenParticle_deltaR","GenParticle_deltaR", VFLOAT);
   Branches.makeBranch("GenParticle_pt","GenParticle_pt", VFLOAT);
   Branches.makeBranch("GenParticle_eta","GenParticle_eta", VFLOAT);
   Branches.makeBranch("GenParticle_phi","GenParticle_phi", VFLOAT);
+  Branches.makeBranch("GenParticle_x","GenParticle_x", VFLOAT);
+  Branches.makeBranch("GenParticle_y","GenParticle_y", VFLOAT);
+  Branches.makeBranch("GenParticle_z","GenParticle_z", VFLOAT);
+  Branches.makeBranch("GenParticle_dxy","GenParticle_dxy", VFLOAT);
   Branches.makeBranch("GenParticle_p","GenParticle_p", VFLOAT);
+  //Branches.makeBranch("GenParticle_matchDxyDiff","GenParticle_matchDxyDiff", VFLOAT);
+  //Branches.makeBranch("GenParticle_match3Ddiff","GenParticle_match3Ddiff", VFLOAT);
   Branches.makeBranch("GenParticle_isSignal","GenParticle_isSignal", VBOOL);
-
+  
   // Primary Vertex
   Branches.makeBranch("PV_nTracks","PV_nTracks", UINT);
   Branches.makeBranch("PV_signalCount","PV_signalCount", UINT);
@@ -208,10 +222,20 @@ void DisplacedGeneralVertices::InitObject( TTree* fOutTree ) {
   Branches.makeBranch("PV_y","PV_y", FLOAT);
   Branches.makeBranch("PV_z","PV_z", FLOAT);
   Branches.makeBranch("PV_sumPt","PV_sumPt", FLOAT);
+  Branches.makeBranch("PV_weightedSumPt","PV_weightedSumPt", FLOAT);
   Branches.makeBranch("PV_chi2","PV_chi2", FLOAT);
   Branches.makeBranch("PV_ndof","PV_ndof", FLOAT);
   Branches.makeBranch("PV_normalizedChi2","PV_normalizedChi2", FLOAT);
   Branches.makeBranch("PV_ecalness","PV_ecalness", FLOAT);
+  Branches.makeBranch("PV_trackIndex","PV_trackIndex", VUINT);
+  Branches.makeBranch("PV_trackWeight","PV_trackWeight", VFLOAT);
+  Branches.makeBranch("PVCollection_signalWeight", "PVCollection_signalWeight", VFLOAT, "weight of matched signal track in vertex");
+  Branches.makeBranch("PVCollection_pvIndex", "PVCollection_pvIndex", VUINT);
+  Branches.makeBranch("PVCollection_trackIndex", "PVCollection_trackIndex", VUINT);
+  Branches.makeBranch("PVCollection_genIndex", "PVCollection_genIndex", VUINT);
+  Branches.makeBranch("PVCollection_x", "PVCollection_x", VFLOAT);
+  Branches.makeBranch("PVCollection_y", "PVCollection_y", VFLOAT);
+  Branches.makeBranch("PVCollection_z", "PVCollection_z", VFLOAT);
 
   // Vertex Variables
   Branches.makeBranch("Vertex_nTotal","Vertex_nTotal", UINT);
@@ -238,6 +262,7 @@ void DisplacedGeneralVertices::InitObject( TTree* fOutTree ) {
   Branches.makeBranch("SignalSV_trackIndex","SignalSV_trackIndex", VUINT);
   Branches.makeBranch("SignalSV_vertexIndex","SignalSV_vertexIndex", VUINT);
   Branches.makeBranch("SignalSV_trackWeight","SignalSV_trackWeight", VFLOAT);
+  Branches.makeBranch("SignalSV_genIndex","SignalSV_genIndex", VUINT);
   Branches.makeBranch("SignalSV_x","SignalSV_x", VFLOAT);
   Branches.makeBranch("SignalSV_y","SignalSV_y", VFLOAT);
   Branches.makeBranch("SignalSV_z","SignalSV_z", VFLOAT);
@@ -259,6 +284,7 @@ void DisplacedGeneralVertices::LoadEvent( const edm::Event& iEvent, const edm::E
   iEvent.getByToken( electronToken_, electronHandle_);
   iEvent.getByToken( pfCandidatesToken_, pfCandidatesHandle_);
   iEvent.getByToken(genToken_, genHandle_);
+  iEvent.getByToken(pvToken_, pvHandle_);
   beamSpot_ = iEvent.get(beamspotToken_);
   primaryVertex_ = iEvent.get(pvToken_).at(0);
 
@@ -272,7 +298,7 @@ void DisplacedGeneralVertices::LoadEvent( const edm::Event& iEvent, const edm::E
   const edm::ESTransientHandle<MagneticField> magfield = iSetup.getTransientHandle(magneticFieldToken_);
   const CaloGeometry ecalGeometry = iSetup.getData(caloGeometryToken_);
 
-  const double ptCut = 0.95;
+  const double ptCut = 5;
 
   vertexBuilder_ = VertexAssembly(ttBuilder, generalTracksHandle_, beamSpot_);
   generalVertices_ = vertexBuilder_.CreateVertexCollection(ptCut);
@@ -282,7 +308,7 @@ void DisplacedGeneralVertices::LoadEvent( const edm::Event& iEvent, const edm::E
     vertexCount += int(vtx.tracksSize());
 
   for(const auto &track : *generalTracksHandle_)
-    if(track.pt() > 0.95) {
+    if(track.pt() > ptCut) {
       tracks_.emplace_back(track);
       ttracks_.emplace_back(ttBuilder->build(track));
     }
@@ -295,17 +321,16 @@ void DisplacedGeneralVertices::LoadEvent( const edm::Event& iEvent, const edm::E
     int sigCount(0);
     for(const auto &gen : *genHandle_) {
       if(abs(gen.pdgId()) == 11 && gen.status() == 1)
-        if(isSignalGenElectron(gen))
-          sigCount++;
+        if(isSignalGenElectron(gen)) sigCount++;
     }
 
-    DeltaRGenMatchHungarian<reco::Track> assigner(ecalTracks_, *genHandle_);
+    DeltaRGenMatchHungarian<reco::Track> assigner(tracks_, *genHandle_);
     genMatchedTracks_ = assigner.GetPairedObjects();
 
     for(const auto &pair : genMatchedTracks_)
-      if(isSignalGenElectron(pair.GetObjectB()))
+      if(isSignalGenElectron(pair.GetObjectB())) {
 	signalTracks_.emplace_back(pair.GetObjectA());
-    
+      }
   }
 
 }//<<>>void DisplacedGeneralVertices::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
@@ -313,6 +338,11 @@ void DisplacedGeneralVertices::LoadEvent( const edm::Event& iEvent, const edm::E
 void DisplacedGeneralVertices::PostProcessEvent( ItemManager<float>& geVar ) {
 
   Branches.clearBranches();
+
+  // Fill Beamspot branches
+  Branches.fillBranch("Beamspot_x", float(beamSpot_.x0()));
+  Branches.fillBranch("Beamspot_y", float(beamSpot_.y0()));
+  Branches.fillBranch("Beamspot_z", float(beamSpot_.z0()));
 
   // Fill track branches
   Branches.fillBranch("Track_nTotal", unsigned(ttracks_.size()) );
@@ -350,24 +380,56 @@ void DisplacedGeneralVertices::PostProcessEvent( ItemManager<float>& geVar ) {
     Branches.fillBranch("Track_qualityMask", int(track.qualityMask()) );
     Branches.fillBranch("Track_nValidHits", int(track.numberOfValidHits()) );
     Branches.fillBranch("Track_nLostHits", int(track.numberOfLostHits()) );
-    Branches.fillBranch("Track_ecalTrackIndex", int(FindTrackIndex(track, ecalTracks_)) );
-    Branches.fillBranch("Track_isECAL", bool(FindTrackIndex(track, ecalTracks_) >= 0) );
+    Branches.fillBranch("Track_ecalTrackIndex", int(TrackHelper::FindTrackIndex(track, ecalTracks_)) );
+    Branches.fillBranch("Track_isECAL", bool(TrackHelper::FindTrackIndex(track, ecalTracks_) >= 0) );
   }
 
   // Fill PV branches
-  int sigCounter(0);
   Branches.fillBranch("PV_nTracks", unsigned(primaryVertex_.tracksSize()) );
-  Branches.fillBranch("PV_hasSignal", VertexHasSignal(primaryVertex_, sigCounter));
-  Branches.fillBranch("PV_signalCount", unsigned(sigCounter));
   Branches.fillBranch("PV_x", float(primaryVertex_.x()) );
   Branches.fillBranch("PV_y", float(primaryVertex_.y()) );
   Branches.fillBranch("PV_z", float(primaryVertex_.z()) );
   Branches.fillBranch("PV_ecalness", float(VertexHelper::CalculateEcalness(primaryVertex_, ecalTracks_)) );
   Branches.fillBranch("PV_sumPt", float(VertexHelper::CalculateTotalPt(primaryVertex_)) );
+  Branches.fillBranch("PV_weightedSumPt", float(VertexHelper::CalculateTotalWeightedPt(primaryVertex_)) );
   Branches.fillBranch("PV_chi2", float(primaryVertex_.chi2()) );
   Branches.fillBranch("PV_ndof", float(primaryVertex_.ndof()) );
   Branches.fillBranch("PV_normalizedChi2", float(primaryVertex_.normalizedChi2()) );
 
+  for(const auto &trackRef : primaryVertex_.tracks()) {
+    const reco::Track track(*trackRef);
+    const double trackWeight = primaryVertex_.trackWeight(trackRef);
+    Branches.fillBranch("PV_trackIndex", unsigned(TrackHelper::FindTrackIndex(track, tracks_)) );
+    Branches.fillBranch("PV_trackWeight", float(trackWeight) );
+  }
+
+  int sigCounter(0);
+  if(cfFlag("hasGenInfo")) {
+
+    Branches.fillBranch("PV_hasSignal", VertexHasSignal(primaryVertex_, sigCounter));
+    Branches.fillBranch("PV_signalCount", unsigned(sigCounter));
+
+    int pvIndex(0);
+    for(const auto &pv : *pvHandle_) {
+      for(const auto &matchPair : genMatchedTracks_) {
+	const reco::Track track(matchPair.GetObjectA());
+	const reco::GenParticle gen(matchPair.GetObjectB());
+	if(VertexHelper::isInVertex(pv, track) && isSignalGenElectron(gen)) {
+	  const int index = TrackHelper::FindTrackIndex(track, VertexHelper::GetTracks(pv));
+	  const double trackWeight = pv.trackWeight(pv.tracks().at(index));
+	  Branches.fillBranch("PVCollection_signalWeight", float(trackWeight));
+	  Branches.fillBranch("PVCollection_pvIndex", unsigned(pvIndex));
+	  Branches.fillBranch("PVCollection_trackIndex", unsigned(TrackHelper::FindTrackIndex(track, tracks_)) );
+	  Branches.fillBranch("PVCollection_genIndex", unsigned(TrackHelper::FindIndex(gen, genMatchedTracks_.GetObjectBList())) );
+	  Branches.fillBranch("PVCollection_x", float(pv.x()));
+	  Branches.fillBranch("PVCollection_y", float(pv.y()));
+	  Branches.fillBranch("PVCollection_z", float(pv.z()));
+	}
+      }
+      pvIndex++;
+    }
+  }
+  
   // Fill Vertex branches
   Branches.fillBranch("Vertex_nTotal", unsigned(generalVertices_.size()) );
   int vtxIndex(0);
@@ -388,61 +450,72 @@ void DisplacedGeneralVertices::PostProcessEvent( ItemManager<float>& geVar ) {
 
     for(const auto &trackRef : vertex.tracks()) {
       const reco::Track track(*trackRef);
-      const int trackIndex = FindTrackIndex(track, *generalTracksHandle_);
-      const double trackWeight = vertex.trackWeight(reco::TrackRef(generalTracksHandle_, trackIndex));
+      const double trackWeight = vertex.trackWeight(trackRef);
       Branches.fillBranch("Vertex_vertexIndex", unsigned(vtxIndex) );
-      Branches.fillBranch("Vertex_trackIndex", unsigned(FindTrackIndex(track, tracks_)) );      
+      Branches.fillBranch("Vertex_trackIndex", unsigned(TrackHelper::FindTrackIndex(track, tracks_)) );      
       Branches.fillBranch("Vertex_trackWeight", float(trackWeight) );
     }
     vtxIndex++;
   }
 
-  // Signal SVs
-  reco::VertexCollection signalVertices = vertexBuilder_.CreateVertexCollection(signalTracks_);
-
-  Branches.fillBranch("SignalSV_nTotal", int(signalVertices.size()) );
-
-  vtxIndex = 0;
-  for(reco::Vertex &vertex : signalVertices) {
-
-    Branches.fillBranch("SignalSV_x", float(vertex.x()) );
-    Branches.fillBranch("SignalSV_y", float(vertex.y()) );
-    Branches.fillBranch("SignalSV_z", float(vertex.z()) );
-    Branches.fillBranch("SignalSV_dxy", float(sqrt(vertex.x()*vertex.x()+vertex.y()*vertex.y())) );
-    Branches.fillBranch("SignalSV_chi2", float(vertex.chi2()) );
-    Branches.fillBranch("SignalSV_normalizedChi2", float(vertex.normalizedChi2()) );
-    Branches.fillBranch("SignalSV_ndof", float(vertex.ndof()) );
-    Branches.fillBranch("SignalSV_nTracks", int(vertex.tracksSize()) );
-
-    for(const auto &trackRef : vertex.tracks()) {
-      const reco::Track track(*trackRef);
-      const int trackIndex = FindTrackIndex(track, *generalTracksHandle_);
-      const double trackWeight = vertex.trackWeight(reco::TrackRef(generalTracksHandle_, trackIndex));
-      Branches.fillBranch("SignalSV_trackIndex", unsigned(trackIndex) );
-      Branches.fillBranch("SignalSV_vertexIndex", unsigned(vtxIndex) );
-      Branches.fillBranch("SignalSV_trackWeight", float(trackWeight) );
-    }
-    vtxIndex++;
-  }
-
-  // Fill gen branches 
+  // Fill branches that depend on gen information
   if(cfFlag("hasGenInfo")) {
+  
+    // Signal SVs
+    reco::VertexCollection signalVertices = vertexBuilder_.CreateVertexCollection(signalTracks_, false);
     
+    Branches.fillBranch("SignalSV_nTotal", int(signalVertices.size()) );
+
+    vtxIndex = 0;
+    for(reco::Vertex &vertex : signalVertices) {
+      
+      Branches.fillBranch("SignalSV_x", float(vertex.x()) );
+      Branches.fillBranch("SignalSV_y", float(vertex.y()) );
+      Branches.fillBranch("SignalSV_z", float(vertex.z()) );
+      Branches.fillBranch("SignalSV_dxy", float(sqrt(vertex.x()*vertex.x()+vertex.y()*vertex.y())) );
+      Branches.fillBranch("SignalSV_chi2", float(vertex.chi2()) );
+      Branches.fillBranch("SignalSV_normalizedChi2", float(vertex.normalizedChi2()) );
+      Branches.fillBranch("SignalSV_ndof", float(vertex.ndof()) );
+      Branches.fillBranch("SignalSV_nTracks", int(vertex.tracksSize()) );
+      
+      for(const auto &trackRef : vertex.tracks()) {
+	const reco::Track track(*trackRef);
+	const int trackIndex = TrackHelper::FindTrackIndex(track, tracks_);
+	const int genIndex = TrackHelper::FindIndex(genMatchedTracks_.FindObjectB(track), genMatchedTracks_.GetObjectBList());
+	const double trackWeight = vertex.trackWeight(trackRef);
+	
+	Branches.fillBranch("SignalSV_trackIndex", unsigned(trackIndex) );
+	Branches.fillBranch("SignalSV_vertexIndex", unsigned(vtxIndex) );
+	Branches.fillBranch("SignalSV_trackWeight", float(trackWeight) );
+	Branches.fillBranch("SignalSV_genIndex", unsigned(genIndex));
+      }
+      vtxIndex++;
+    }
+    
+    // Gen Particle
     sigCounter = 0;
     Branches.fillBranch("GenParticle_nMatches", unsigned(genMatchedTracks_.size()) );
 
     for(const auto &pair : genMatchedTracks_) {
       const reco::Track track(pair.GetObjectA());
       const reco::GenParticle gen(pair.GetObjectB());
+
       const bool isSignal(abs(gen.pdgId()) == 11 && isSignalGenElectron(gen));
 
-      Branches.fillBranch("GenParticle_matchedTrackIndex", int(FindTrackIndex(track, tracks_)));
+      Branches.fillBranch("GenParticle_matchedTrackIndex", int(TrackHelper::FindTrackIndex(track, tracks_)));
       Branches.fillBranch("GenParticle_pdgId", int(gen.pdgId()));
       Branches.fillBranch("GenParticle_charge", int(gen.charge()));
+      Branches.fillBranch("GenParticle_deltaR", float(pair.GetDeltaR()));
       Branches.fillBranch("GenParticle_pt", float(gen.pt()));
       Branches.fillBranch("GenParticle_eta", float(gen.pt()));
       Branches.fillBranch("GenParticle_phi", float(gen.phi()));
+      Branches.fillBranch("GenParticle_x", float(gen.vx()));
+      Branches.fillBranch("GenParticle_y", float(gen.vy()));
+      Branches.fillBranch("GenParticle_z", float(gen.vz()));
+      Branches.fillBranch("GenParticle_dxy", float( sqrt(gen.vx()*gen.vx() + gen.vy()*gen.vy())) );
       Branches.fillBranch("GenParticle_p", float(gen.p()));
+      //Branches.fillBranch("GenParticle_matchDxyDiff", float(TrackHelper::GetDxyDiff(track, gen)));
+      //Branches.fillBranch("GenParticle_match3Ddiff", float(TrackHelper::Get3Ddiff(track, gen)));
       Branches.fillBranch("GenParticle_isSignal", isSignal);
       if(isSignal) sigCounter++;
     }

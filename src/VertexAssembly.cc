@@ -13,6 +13,11 @@ reco::VertexCollection VertexAssembly::CreateVertexCollection(const double ptCut
   return CreateVertexCollection<reco::Track>(selectedTracks);  
 }
 
+reco::VertexCollection RefineVertices(const reco::VertexCollection &vertices) {
+
+  return reco::VertexCollection();
+}
+
 std::vector<reco::TransientTrack> VertexAssembly::BuildTransientTracks(const reco::ElectronCollection &electrons) const {
 
   std::vector<reco::TransientTrack> ttracks;
@@ -60,4 +65,62 @@ reco::TrackRef VertexAssembly::GetTrackRef(const reco::Track &track) const {
       trackRef = reco::TrackRef(trackHandle_, i);
   
   return trackRef;
+}
+
+reco::VertexCollection VertexAssembly::TryRefineVertex(const reco::Vertex &vertex, const bool useBeamSpot) const {
+
+  const int totalTracks(vertex.tracksSize());
+  reco::VertexCollection splitVertices;//(CreateVertexCollection(VertexHelper::GetTracks(vertex), useBeamSpot));
+
+  // Check whether there are any tracks below threshold weight, 
+  if(IsVertexUnrefined(vertex))
+    splitVertices = CreateVertexCollection(VertexHelper::GetTracks(vertex, true), useBeamSpot);
+  else {
+    splitVertices.emplace_back(vertex);
+    return splitVertices;
+  }
+    
+  reco::VertexCollection refinedVertices;
+  const double originalWeight(VertexHelper::CalculateTotalTrackWeight(vertex));
+
+  std::cout << "original vertex weight: " << originalWeight << " and weight ratio: " << originalWeight/totalTracks << ", total tracks: " << totalTracks << std::endl; 
+  
+  for(size_t v = 0; v < splitVertices.size(); v++) {
+    const reco::Vertex vtx(splitVertices[v]);
+    const double totalWeight(VertexHelper::CalculateTotalTrackWeight(vtx));
+    
+    if(!IsVertexUnrefined(vtx)) {
+      refinedVertices.emplace_back(vtx);
+      continue;
+    }
+    
+    std::cout << "  first split vertex weight: " << totalWeight << " and weight ratio: " << totalWeight/vtx.tracksSize() << ", total tracks: " << vtx.tracksSize() << std::endl;
+
+    reco::VertexCollection newSplit;
+    if(v == 0 && useBeamSpot)
+      newSplit = CreateVertexCollection(VertexHelper::GetTracks(vtx, true), true);
+    else
+      newSplit = CreateVertexCollection(VertexHelper::GetTracks(vtx, true), false);
+    
+    for(const auto &newVtx : newSplit)
+      //if(IsVertexUnrefined(newVtx))
+	std::cout << "    second split vertex weight: " << VertexHelper::CalculateTotalTrackWeight(newVtx)
+		  << " and weight ratio: " << VertexHelper::CalculateTotalTrackWeight(newVtx)/newVtx.tracksSize() << ", total tracks: " << newVtx.tracksSize() <<  std::endl;
+      
+    //}
+    
+  }
+
+  return refinedVertices;
+}
+
+bool VertexAssembly::IsVertexUnrefined(const reco::Vertex &vertex) const {
+
+  bool isUnrefined(false);
+  for(const auto &trackRef : vertex.tracks())
+    if(vertex.trackWeight(trackRef) < 0.5) {
+      isUnrefined = true;
+      break;
+    }
+  return isUnrefined;
 }

@@ -21,3 +21,6 @@ test/mySmallWorkspace/
 *.png
 *.pdf
 __*
+*~
+*old
+*_

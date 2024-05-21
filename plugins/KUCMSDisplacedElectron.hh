@@ -59,6 +59,7 @@
 // Add includes for specfic collections
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/DeltaRMatch.h"
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/MatchTracksToSC.h"
+#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/TrackHelper.h"
 
 #include "TVector3.h"
 
@@ -335,7 +336,7 @@ void KUCMSDisplacedElectron::PostProcessEvent( ItemManager<float>& geVar ){
     Branches.fillBranch("DisplacedElectron_xECAL",          float(trackAtECAL.x()) );
     Branches.fillBranch("DisplacedElectron_yECAL",          float(trackAtECAL.y()) );
     Branches.fillBranch("DisplacedElectron_zECAL",          float(trackAtECAL.z()) );
-    Branches.fillBranch("DisplacedElectron_dxy",            float(GetDXY(track)) );
+    Branches.fillBranch("DisplacedElectron_dxy",            float(TrackHelper::GetDXY(track)) );
     Branches.fillBranch("DisplacedElectron_dRSC",           float(candidate.GetDeltaR()) );
     Branches.fillBranch("DisplacedElectron_dRGen",          float(candidate.GetGenInfo().GetDeltaR()) );
     Branches.fillBranch("DisplacedElectron_nHits",          int(track.numberOfValidHits()) );

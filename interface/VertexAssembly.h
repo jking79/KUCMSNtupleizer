@@ -32,8 +32,10 @@ class VertexAssembly {
   reco::VertexCollection CreateVertexCollection(const double ptCut = 0) const;
 
   template <typename T>
-    reco::VertexCollection CreateVertexCollection(const std::vector<T> &tracksSource) const;
+    reco::VertexCollection CreateVertexCollection(const std::vector<T> &tracksSource, const bool useBeamSpot=true) const;
 
+  reco::VertexCollection RefineVertices(const reco::VertexCollection &vertices);
+  reco::VertexCollection TryRefineVertex(const reco::Vertex &vertex, const bool useBeamSpot = false) const;
  private:
   
   const TransientTrackBuilder* ttBuilder_;
@@ -44,17 +46,25 @@ class VertexAssembly {
   std::vector<reco::TransientTrack> BuildTransientTracks(const reco::TrackCollection &tracks) const;
   reco::Vertex ConvertFitVertex(const TransientVertex &vertex) const;
   reco::TrackRef GetTrackRef(const reco::Track &track) const;
+  //reco::VertexCollection TryRefineVertex(const reco::Vertex &vertex, const bool useBeamSpot = false) const;
+
+  bool IsVertexUnrefined(const reco::Vertex &vertex) const;
+  
 };
 
 template <typename T>
-reco::VertexCollection VertexAssembly::CreateVertexCollection(const std::vector<T> &tracksSource) const {
+reco::VertexCollection VertexAssembly::CreateVertexCollection(const std::vector<T> &tracksSource, const bool useBeamSpot) const {
 
   reco::VertexCollection vertexCollection;
   if(tracksSource.size() < 2)
     return vertexCollection;
 
   AdaptiveVertexReconstructor vertexConstructor(2.0, 6.0, 0.5, true);
-  std::vector<TransientVertex> transientVertexCollection = vertexConstructor.vertices(BuildTransientTracks(tracksSource), beamSpot_);
+  std::vector<TransientVertex> transientVertexCollection;
+  if(useBeamSpot)
+    transientVertexCollection = vertexConstructor.vertices(BuildTransientTracks(tracksSource), beamSpot_);
+  else
+    transientVertexCollection = vertexConstructor.vertices(BuildTransientTracks(tracksSource));
 
   int vtxIndex(0);
   for(const auto &vtx : transientVertexCollection) {

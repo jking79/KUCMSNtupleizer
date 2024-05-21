@@ -49,7 +49,7 @@
 #include "DataFormats/Common/interface/Handle.h"
 
 // Add includes for interface collections
-#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/TrackTools.h"
+#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/TrackPropagator.h"
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/IsolationInfo.h"
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/MatchedTrackSCPair.h"
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/DeltaRMatchApplications.h"
