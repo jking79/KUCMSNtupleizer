@@ -1,12 +1,12 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Fri Aug 18 13:40:14 2023 by ROOT version 6.14/09
+// Fri May 17 05:42:16 2024 by ROOT version 6.26/11
 // from TTree kuSkimTree/output root file for kUCMSSkimmer
-// found on file: skim_v7_files/kuntuple_gmsb_L100_v11_Ntuple_v11_LLPgama_Skim_v12.root
+// found on file: rjr_skim_files/kuntuple_GJets_HT-100To200_Met0_R17_v19_Ntuple_v19_LLPgama_Skim_v19_Met0_rjrcombo.root
 //////////////////////////////////////////////////////////
 
-#ifndef kuSkimTree_h
-#define kuSkimTree_h
+#ifndef skim_mod2_h
+#define skim_mod2_h
 
 #include <TROOT.h>
 #include <TChain.h>
@@ -15,14 +15,11 @@
 // Header file for the classes stored in the TTree if any.
 #include "string"
 #include "vector"
+#include "vector"
+#include "vector"
+#include "vector"
 
-//#define mdebug true
-#define mdebug false
-
-using std::string;
-using std::vector;
-
-class kuSkimTree {
+class skim_mod2 {
 public :
    TTree          *fChain;   //!pointer to the analyzed TTree or TChain
    Int_t           fCurrent; //!current Tree number in a TChain
@@ -30,42 +27,41 @@ public :
 // Fixed size dimensions of array or collections stored in the TTree if any.
 
    // Declaration of leaf types
-   string          *DataSetKey;
-   Float_t         evtGenWgt;
-
-   Float_t         selCMet;
-   Float_t         selCMetPx;
-   Float_t         selCMetPy;
-
-   Float_t         selMet;
-   Float_t         selMetPx;
-   Float_t         selMetPy;
-
    Float_t         PVx;
    Float_t         PVy;
    Float_t         PVz;
-
-   std::vector<int>     *genCharge;
-   std::vector<float>   *genMass;
-   std::vector<float>   *genPartEnergy;
-   std::vector<float>   *genPartEta;
-   std::vector<unsigned int> *genPartPdgId;
-   std::vector<float>   *genPartPhi;
-   std::vector<float>   *genPartPt;
-   std::vector<int>     *genPartSusId;
-   std::vector<float>   *genPx;
-   std::vector<float>   *genPy;
-   std::vector<float>   *genPz;
-   std::vector<float>   *genSGMass;
-   std::vector<float>   *genSQMass;
+   string          *DataSetKey;
+   Float_t         evtGenWgt;
+   Float_t         evtXSection;
+   Float_t         selCMet;
+   Float_t         selCMetPx;
+   Float_t         selCMetPy;
+   Float_t         selMet;
+   Float_t         selMetPx;
+   Float_t         selMetPy;
+   vector<int>     *genCharge;
+   vector<float>   *genMass;
+   vector<float>   *genPartEnergy;
+   vector<float>   *genPartEta;
+   vector<unsigned int> *genPartPdgId;
+   vector<float>   *genPartPhi;
+   vector<float>   *genPartPt;
+   vector<int>     *genPartSusId;
+   vector<float>   *genPx;
+   vector<float>   *genPy;
+   vector<float>   *genPz;
+   vector<float>   *genSGMass;
+   vector<float>   *genSQMass;
    Int_t           genSigType;
    Bool_t          genStatus;
-   std::vector<float>   *genVx;
-   std::vector<float>   *genVy;
-   std::vector<float>   *genVz;
-
-
-   //Int_t           leadSelPho;
+   vector<float>   *genVx;
+   vector<float>   *genVy;
+   vector<float>   *genVz;
+   vector<float>   *elePhoMinDr;
+   vector<float>   *epDrMatch;
+   vector<float>   *epSeedIdMatch;
+   vector<float>   *epSeedIdUnique;
+   UInt_t          nElectrons;
    UInt_t          nPhotons;
    UInt_t          nSelPhotons;
    vector<float>   *selPhoClstrRn;
@@ -74,36 +70,14 @@ public :
    vector<float>   *selPhoCovEtaEta;
    vector<float>   *selPhoCovEtaPhi;
    vector<float>   *selPhoCovPhiPhi;
+   vector<float>   *selPhoEcalPFClusterIso;
    vector<float>   *selPhoEcalRHSumEtConeDR04;
+   UInt_t          selPhoEleVeto;
    vector<float>   *selPhoEnergy;
    vector<float>   *selPhoEta;
    vector<float>   *selPhoEtaWidth;
    vector<int>     *selPhoGenIdx;
    vector<float>   *selPhoGenPt;
-   vector<float>   *selPhoHadOverEM;
-   vector<float>   *selPhoHadTowOverEM;
-   vector<float>   *selPhoHcalTowerSumEtBcConeDR04;
-   vector<unsigned int> *selPhoNrh;
-   vector<bool>    *selPhoOOT;
-   vector<float>   *selPhoPhi;
-   vector<float>   *selPhoPhiWidth;
-   vector<float>   *selPhoPhoIsoDr;
-   vector<float>   *selPhoPixelSeed;
-   vector<float>   *selPhoPt;
-   vector<int>     *selPhoQuality;
-   vector<float>   *selPhoR9;
-   vector<float>   *selPhoS4;
-   vector<float>   *selPhoSAlp;
-   vector<float>   *selPhoSMaj;
-   vector<float>   *selPhoSMin;
-   vector<float>   *selPhoSieie;
-   vector<float>   *selPhoSieip;
-   vector<float>   *selPhoSipip;
-   vector<float>   *selPhoSusyId;
-   vector<float>   *selPhoTime;
-   vector<float>   *selPhoTrkSumPtHollowConeDR03;
-   vector<float>   *selPhoTrkSumPtHollowConeDR04;
-   vector<float>   *selPhoTrkSumPtSolidConeDR04;
    vector<float>   *selPhoGenSigMomEnergy;
    vector<float>   *selPhoGenSigMomEta;
    vector<float>   *selPhoGenSigMomMass;
@@ -115,21 +89,48 @@ public :
    vector<float>   *selPhoGenSigMomVx;
    vector<float>   *selPhoGenSigMomVy;
    vector<float>   *selPhoGenSigMomVz;
+   vector<float>   *selPhoHadOverEM;
+   vector<float>   *selPhoHadTowOverEM;
+   vector<bool>    *selPhoHasConversionTracks;
+   vector<float>   *selPhoHcalPFClusterIso;
+   vector<float>   *selPhoHcalTowerSumEtBcConeDR04;
+   vector<float>   *selPhoHcalTowerSumEtConeDR04;
+   vector<float>   *selPhoHoe_PUcorr;
    vector<float>   *selPhoMBetaEql;
    vector<float>   *selPhoMBetaPmt;
-   vector<float>   *selPhoEcalPFClusterIso;
-   vector<bool>    *selPhoHasConversionTracks;
-   vector<float>   *selPhoHcalTowerSumEtConeDR04;
    vector<float>   *selPhoNTrkHollowConeDR04;
    vector<float>   *selPhoNTrkSolidConeDR04;
+   vector<unsigned int> *selPhoNrh;
+   vector<bool>    *selPhoOOT;
    vector<float>   *selPhoPfChargedIso;
    vector<float>   *selPhoPfChargedIsoPFPV;
+   vector<float>   *selPhoPfChargedIsoWorstVtx;
    vector<float>   *selPhoPfPhoIso03;
-   vector<float>   *selPhoSigmaIEtaIEta;
+   vector<float>   *selPhoPfRelIso03_all_quadratic;
+   vector<float>   *selPhoPfRelIso03_chg_quadratic;
+   vector<float>   *selPhoPhi;
+   vector<float>   *selPhoPhiWidth;
+   vector<float>   *selPhoPhoIsoDr;
+   vector<bool>    *selPhoPixelSeed;
+   vector<float>   *selPhoPt;
+   vector<int>     *selPhoQuality;
+   vector<float>   *selPhoR9;
+   vector<float>   *selPhoS4;
+   vector<float>   *selPhoSAlp;
    vector<float>   *selPhoSCx;
    vector<float>   *selPhoSCy;
    vector<float>   *selPhoSCz;
-
+   vector<float>   *selPhoSMaj;
+   vector<float>   *selPhoSMin;
+   vector<float>   *selPhoSieie;
+   vector<float>   *selPhoSieip;
+   vector<float>   *selPhoSigmaIEtaIEta;
+   vector<float>   *selPhoSipip;
+   vector<float>   *selPhoSusyId;
+   vector<float>   *selPhoTime;
+   vector<float>   *selPhoTrkSumPtHollowConeDR03;
+   vector<float>   *selPhoTrkSumPtHollowConeDR04;
+   vector<float>   *selPhoTrkSumPtSolidConeDR04;
    UInt_t          nJets;
    UInt_t          nSelJets;
    vector<float>   *selGenJetDpt;
@@ -159,7 +160,6 @@ public :
    vector<float>   *selJetSusyId;
    vector<float>   *selJetTime;
    vector<float>   *selJetchHEF;
-
    vector<float>   *rjrASMass;
    vector<float>   *rjrAX2Ave;
    vector<float>   *rjrAX2Diff;
@@ -172,75 +172,64 @@ public :
    vector<float>   *rjrAX2bMass;
    vector<float>   *rjrDiffPJX2a;
    vector<float>   *rjrDiffPJX2b;
-
-   std::vector<float>   *rjrDphiMETV;
-   std::vector<float>   *rjrEVa;
-   std::vector<float>   *rjrEVb;
-   std::vector<float>   *rjrMET;
-   std::vector<float>   *rjrMV;
-   std::vector<float>   *rjrMVa;
-   std::vector<float>   *rjrMVb;
+   vector<float>   *rjrDphiMETV;
+   vector<float>   *rjrEVa;
+   vector<float>   *rjrEVb;
+   vector<float>   *rjrMET;
+   vector<float>   *rjrMV;
+   vector<float>   *rjrMVa;
+   vector<float>   *rjrMVb;
    vector<int>     *rjrNJetsJa;
    vector<int>     *rjrNJetsJb;
-   //Int_t           rjrNJetsJa;
-   //Int_t           rjrNJetsJb;
-   std::vector<int>     *rjrNRjrJets;
-   std::vector<int>     *rjrNRjrPhotons;
-
+   vector<int>     *rjrNRjrJets;
+   vector<int>     *rjrNRjrPhotons;
    vector<float>   *rjrPJX2a;
    vector<float>   *rjrPJX2b;
    vector<float>   *rjrPTS;
-
-   std::vector<float>   *rjrPV;
-   std::vector<float>   *rjrPVa;
-   std::vector<float>   *rjrPVb;
-   std::vector<float>   *rjrPVlab;
-
+   vector<float>   *rjrPV;
+   vector<float>   *rjrPVa;
+   vector<float>   *rjrPVb;
+   vector<float>   *rjrPVlab;
    vector<float>   *rjrPX1X2a;
    vector<float>   *rjrPX1X2b;
    vector<float>   *rjrPX2Sa;
    vector<float>   *rjrPX2Sb;
    vector<float>   *rjrPZS;
-
-   std::vector<float>   *rjrSCosA;
-   std::vector<float>   *rjrSMass;
-   std::vector<float>   *rjrSdphiBV;
-   std::vector<float>   *rjrSdphiDA;
-   std::vector<float>   *rjrX1aCosA;
-   std::vector<float>   *rjrX1aMass;
-   std::vector<float>   *rjrX1bCosA;
-   std::vector<float>   *rjrX1bMass;
-   std::vector<float>   *rjrX2Ave;
-   std::vector<float>   *rjrX2Diff;
-   std::vector<float>   *rjrX2GMean;
-   std::vector<float>   *rjrX2NAve;
-   std::vector<float>   *rjrX2NGMean;
-   std::vector<float>   *rjrX2NVSum;
-   std::vector<float>   *rjrX2VSum;
-   std::vector<float>   *rjrX2aCosA;
-   std::vector<float>   *rjrX2aMass;
-   std::vector<float>   *rjrX2aPtS;
-   std::vector<float>   *rjrX2bCosA;
-   std::vector<float>   *rjrX2bMass;
-   std::vector<float>   *rjrX2bPtS;
+   vector<float>   *rjrSCosA;
+   vector<float>   *rjrSMass;
+   vector<float>   *rjrSdphiBV;
+   vector<float>   *rjrSdphiDA;
+   vector<float>   *rjrX1aCosA;
+   vector<float>   *rjrX1aMass;
+   vector<float>   *rjrX1bCosA;
+   vector<float>   *rjrX1bMass;
+   vector<float>   *rjrX2Ave;
+   vector<float>   *rjrX2Diff;
+   vector<float>   *rjrX2GMean;
+   vector<float>   *rjrX2NAve;
+   vector<float>   *rjrX2NGMean;
+   vector<float>   *rjrX2NVSum;
+   vector<float>   *rjrX2VSum;
+   vector<float>   *rjrX2aCosA;
+   vector<float>   *rjrX2aMass;
+   vector<float>   *rjrX2aPtS;
+   vector<float>   *rjrX2bCosA;
+   vector<float>   *rjrX2bMass;
+   vector<float>   *rjrX2bPtS;
 
    // List of branches
+   TBranch        *b_PVx;   //!
+   TBranch        *b_PVy;   //!
+   TBranch        *b_PVz;   //!
    TBranch        *b_DataSetKey;   //!
-   TBranch        *b_evtGenWgt;
-
+   TBranch        *b_evtGenWgt;   //!
+   TBranch        *b_evtXSection;   //!
    TBranch        *b_selCMet;   //!
    TBranch        *b_selCMetPx;   //!
    TBranch        *b_selCMetPy;   //!
-
    TBranch        *b_selMet;   //!
    TBranch        *b_selMetPx;   //!
    TBranch        *b_selMetPy;   //!
-
-
-   TBranch        *b_PVx;
-   TBranch        *b_PVy;
-   TBranch        *b_PVz;
-
    TBranch        *b_genCharge;   //!
    TBranch        *b_genMass;   //!
    TBranch        *b_genPartEnergy;   //!
@@ -259,8 +248,11 @@ public :
    TBranch        *b_genVx;   //!
    TBranch        *b_genVy;   //!
    TBranch        *b_genVz;   //!
-
-   //TBranch        *b_leadSelPho;   //!
+   TBranch        *b_elePhoMinDr;   //!
+   TBranch        *b_epDrMatch;   //!
+   TBranch        *b_epSeedIdMatch;   //!
+   TBranch        *b_epSeedIdUnique;   //!
+   TBranch        *b_nElectrons;   //!
    TBranch        *b_nPhotons;   //!
    TBranch        *b_nSelPhotons;   //!
    TBranch        *b_selPhoClstrRn;   //!
@@ -269,40 +261,14 @@ public :
    TBranch        *b_selPhoCovEtaEta;   //!
    TBranch        *b_selPhoCovEtaPhi;   //!
    TBranch        *b_selPhoCovPhiPhi;   //!
+   TBranch        *b_selPhoEcalPFClusterIso;   //!
    TBranch        *b_selPhoEcalRHSumEtConeDR04;   //!
+   TBranch        *b_selPhoEleVeto;   //!
    TBranch        *b_selPhoEnergy;   //!
    TBranch        *b_selPhoEta;   //!
    TBranch        *b_selPhoEtaWidth;   //!
-   TBranch        *b_selPhoGenDp;   //!
-   TBranch        *b_selPhoGenDr;   //!
    TBranch        *b_selPhoGenIdx;   //!
    TBranch        *b_selPhoGenPt;   //!
-   TBranch        *b_selPhoHadOverEM;   //!
-   TBranch        *b_selPhoHadTowOverEM;   //!
-   TBranch        *b_selPhoHcalTowerSumEtBcConeDR04;   //!
-   TBranch        *b_selPhoNrh;   //!
-   TBranch        *b_selPhoOOT;   //!
-   TBranch        *b_selPhoPhi;   //!
-   TBranch        *b_selPhoPhiWidth;   //!
-   TBranch        *b_selPhoPhoIsoDr;   //!
-   TBranch        *b_selPhoPixelSeed;   //!
-   TBranch        *b_selPhoPt;   //!
-   //TBranch        *b_selPhoPtOrder;   //!
-   TBranch        *b_selPhoQuality;   //!
-   TBranch        *b_selPhoR9;   //!
-   TBranch        *b_selPhoS4;   //!
-   TBranch        *b_selPhoSAlp;   //!
-   TBranch        *b_selPhoSMaj;   //!
-   TBranch        *b_selPhoSMin;   //!
-   TBranch        *b_selPhoSieie;   //!
-   TBranch        *b_selPhoSieip;   //!
-   TBranch        *b_selPhoSipip;   //!
-   TBranch        *b_selPhoSusyId;   //!
-   TBranch        *b_selPhoTime;   //!
-   TBranch        *b_selPhoTrkSumPtHollowConeDR03;   //!
-   TBranch        *b_selPhoTrkSumPtHollowConeDR04;   //!
-   TBranch        *b_selPhoTrkSumPtSolidConeDR04;   //!
-   //TBranch        *b_subLeadSelPho;   //!
    TBranch        *b_selPhoGenSigMomEnergy;   //!
    TBranch        *b_selPhoGenSigMomEta;   //!
    TBranch        *b_selPhoGenSigMomMass;   //!
@@ -314,21 +280,48 @@ public :
    TBranch        *b_selPhoGenSigMomVx;   //!
    TBranch        *b_selPhoGenSigMomVy;   //!
    TBranch        *b_selPhoGenSigMomVz;   //!
+   TBranch        *b_selPhoHadOverEM;   //!
+   TBranch        *b_selPhoHadTowOverEM;   //!
+   TBranch        *b_selPhoHasConversionTracks;   //!
+   TBranch        *b_selPhoHcalPFClusterIso;   //!
+   TBranch        *b_selPhoHcalTowerSumEtBcConeDR04;   //!
+   TBranch        *b_selPhoHcalTowerSumEtConeDR04;   //!
+   TBranch        *b_selPhoHoe_PUcorr;   //!
    TBranch        *b_selPhoMBetaEql;   //!
    TBranch        *b_selPhoMBetaPmt;   //!
-   TBranch        *b_selPhoEcalPFClusterIso;   //!    
-   TBranch        *b_selPhoHasConversionTracks;   //!
-   TBranch        *b_selPhoHcalTowerSumEtConeDR04;   //!
    TBranch        *b_selPhoNTrkHollowConeDR04;   //!
    TBranch        *b_selPhoNTrkSolidConeDR04;   //!
+   TBranch        *b_selPhoNrh;   //!
+   TBranch        *b_selPhoOOT;   //!
    TBranch        *b_selPhoPfChargedIso;   //!
    TBranch        *b_selPhoPfChargedIsoPFPV;   //!
-   TBranch        *b_selPhoPfPhoIso03;   //!   
-   TBranch        *b_selPhoSigmaIEtaIEta;   //!
+   TBranch        *b_selPhoPfChargedIsoWorstVtx;   //!
+   TBranch        *b_selPhoPfPhoIso03;   //!
+   TBranch        *b_selPhoPfRelIso03_all_quadratic;   //!
+   TBranch        *b_selPhoPfRelIso03_chg_quadratic;   //!
+   TBranch        *b_selPhoPhi;   //!
+   TBranch        *b_selPhoPhiWidth;   //!
+   TBranch        *b_selPhoPhoIsoDr;   //!
+   TBranch        *b_selPhoPixelSeed;   //!
+   TBranch        *b_selPhoPt;   //!
+   TBranch        *b_selPhoQuality;   //!
+   TBranch        *b_selPhoR9;   //!
+   TBranch        *b_selPhoS4;   //!
+   TBranch        *b_selPhoSAlp;   //!
    TBranch        *b_selPhoSCx;   //!
    TBranch        *b_selPhoSCy;   //!
    TBranch        *b_selPhoSCz;   //!
-
+   TBranch        *b_selPhoSMaj;   //!
+   TBranch        *b_selPhoSMin;   //!
+   TBranch        *b_selPhoSieie;   //!
+   TBranch        *b_selPhoSieip;   //!
+   TBranch        *b_selPhoSigmaIEtaIEta;   //!
+   TBranch        *b_selPhoSipip;   //!
+   TBranch        *b_selPhoSusyId;   //!
+   TBranch        *b_selPhoTime;   //!
+   TBranch        *b_selPhoTrkSumPtHollowConeDR03;   //!
+   TBranch        *b_selPhoTrkSumPtHollowConeDR04;   //!
+   TBranch        *b_selPhoTrkSumPtSolidConeDR04;   //!
    TBranch        *b_nJets;   //!
    TBranch        *b_nSelJets;   //!
    TBranch        *b_selGenJetDpt;   //!
@@ -358,7 +351,6 @@ public :
    TBranch        *b_selJetSusyId;   //!
    TBranch        *b_selJetTime;   //!
    TBranch        *b_selJetchHEF;   //!
-
    TBranch        *b_rjrASMass;   //!
    TBranch        *b_rjrAX2Ave;   //!
    TBranch        *b_rjrAX2Diff;   //!
@@ -371,7 +363,6 @@ public :
    TBranch        *b_rjrAX2bMass;   //!
    TBranch        *b_rjrDiffPJX2a;   //!
    TBranch        *b_rjrDiffPJX2b;   //!
-
    TBranch        *b_rjrDphiMETV;   //!
    TBranch        *b_rjrEVa;   //!
    TBranch        *b_rjrEVb;   //!
@@ -417,30 +408,28 @@ public :
    TBranch        *b_rjrX2bMass;   //!
    TBranch        *b_rjrX2bPtS;   //!
 
-   //kuSkimTree(TTree *tree=0);
-   //virtual ~kuSkimTree();
-   //virtual Int_t    Cut(Long64_t entry);
-   //virtual Int_t    GetEntry(Long64_t entry);
-   //virtual Long64_t LoadTree(Long64_t entry);
+   skim_mod2(TTree *tree=0);
+   virtual ~skim_mod2();
+   virtual Int_t    Cut(Long64_t entry);
+   virtual Int_t    GetEntry(Long64_t entry);
+   virtual Long64_t LoadTree(Long64_t entry);
    virtual void     Init(TTree *tree);
-   virtual void     getBranches(Long64_t entry);
-   //virtual void     Loop();
-   //virtual Bool_t   Notify();
-   //virtual void     Show(Long64_t entry = -1);
+   virtual void     Loop();
+   virtual Bool_t   Notify();
+   virtual void     Show(Long64_t entry = -1);
 };
 
-/*
 #endif
 
-#ifdef kuSkimTree_cxx
-kuSkimTree::kuSkimTree(TTree *tree) : fChain(0) 
+#ifdef skim_mod2_cxx
+skim_mod2::skim_mod2(TTree *tree) : fChain(0) 
 {
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("skim_v7_files/kuntuple_gmsb_L100_v5_AODSIM_Ntuple_v2_LLPgama_Skim_v8.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("rjr_skim_files/kuntuple_GJets_HT-100To200_Met0_R17_v19_Ntuple_v19_LLPgama_Skim_v19_Met0_rjrcombo.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("skim_v7_files/kuntuple_gmsb_L100_v5_AODSIM_Ntuple_v2_LLPgama_Skim_v8.root");
+         f = new TFile("rjr_skim_files/kuntuple_GJets_HT-100To200_Met0_R17_v19_Ntuple_v19_LLPgama_Skim_v19_Met0_rjrcombo.root");
       }
       f->GetObject("kuSkimTree",tree);
 
@@ -448,19 +437,19 @@ kuSkimTree::kuSkimTree(TTree *tree) : fChain(0)
    Init(tree);
 }
 
-kuSkimTree::~kuSkimTree()
+skim_mod2::~skim_mod2()
 {
    if (!fChain) return;
    delete fChain->GetCurrentFile();
 }
 
-Int_t kuSkimTree::GetEntry(Long64_t entry)
+Int_t skim_mod2::GetEntry(Long64_t entry)
 {
 // Read contents of entry.
    if (!fChain) return 0;
    return fChain->GetEntry(entry);
 }
-Long64_t kuSkimTree::LoadTree(Long64_t entry)
+Long64_t skim_mod2::LoadTree(Long64_t entry)
 {
 // Set the environment to read one entry
    if (!fChain) return -5;
@@ -472,9 +461,8 @@ Long64_t kuSkimTree::LoadTree(Long64_t entry)
    }
    return centry;
 }
-*/
 
-void kuSkimTree::Init(TTree *tree)
+void skim_mod2::Init(TTree *tree)
 {
    // The Init() function is called when the selector needs to initialize
    // a new tree or chain. Typically here the branch addresses and branch
@@ -486,7 +474,6 @@ void kuSkimTree::Init(TTree *tree)
 
    // Set object pointer
    DataSetKey = 0;
-
    genCharge = 0;
    genMass = 0;
    genPartEnergy = 0;
@@ -503,45 +490,23 @@ void kuSkimTree::Init(TTree *tree)
    genVx = 0;
    genVy = 0;
    genVz = 0;
-
+   elePhoMinDr = 0;
+   epDrMatch = 0;
+   epSeedIdMatch = 0;
+   epSeedIdUnique = 0;
    selPhoClstrRn = 0;
    selPhoCorEnergy = 0;
    selPhoCorPt = 0;
+   selPhoCovEtaEta = 0;
    selPhoCovEtaPhi = 0;
    selPhoCovPhiPhi = 0;
+   selPhoEcalPFClusterIso = 0;
    selPhoEcalRHSumEtConeDR04 = 0;
    selPhoEnergy = 0;
    selPhoEta = 0;
    selPhoEtaWidth = 0;
-   //selPhoGenDp = 0;
-   //selPhoGenDr = 0;
    selPhoGenIdx = 0;
    selPhoGenPt = 0;
-   selPhoHadOverEM = 0;
-   selPhoHadTowOverEM = 0;
-   selPhoHcalTowerSumEtBcConeDR04 = 0;
-   selPhoNrh = 0;
-   selPhoOOT = 0;
-   selPhoPhi = 0;
-   selPhoPhiWidth = 0;
-   selPhoPhoIsoDr = 0;
-   selPhoPixelSeed = 0;
-   selPhoPt = 0;
-   //selPhoPtOrder = 0;
-   selPhoQuality = 0;
-   selPhoR9 = 0;
-   selPhoS4 = 0;
-   selPhoSAlp = 0;
-   selPhoSMaj = 0;
-   selPhoSMin = 0;
-   selPhoSieie = 0;
-   selPhoSieip = 0;
-   selPhoSipip = 0;
-   selPhoSusyId = 0;
-   selPhoTime = 0;
-   selPhoTrkSumPtHollowConeDR03 = 0;
-   selPhoTrkSumPtHollowConeDR04 = 0;
-   selPhoTrkSumPtSolidConeDR04 = 0;
    selPhoGenSigMomEnergy = 0;
    selPhoGenSigMomEta = 0;
    selPhoGenSigMomMass = 0;
@@ -553,21 +518,48 @@ void kuSkimTree::Init(TTree *tree)
    selPhoGenSigMomVx = 0;
    selPhoGenSigMomVy = 0;
    selPhoGenSigMomVz = 0;
+   selPhoHadOverEM = 0;
+   selPhoHadTowOverEM = 0;
+   selPhoHasConversionTracks = 0;
+   selPhoHcalPFClusterIso = 0;
+   selPhoHcalTowerSumEtBcConeDR04 = 0;
+   selPhoHcalTowerSumEtConeDR04 = 0;
+   selPhoHoe_PUcorr = 0;
    selPhoMBetaEql = 0;
    selPhoMBetaPmt = 0;
-   selPhoEcalPFClusterIso = 0;
-   selPhoHasConversionTracks = 0;
-   selPhoHcalTowerSumEtConeDR04 = 0;
    selPhoNTrkHollowConeDR04 = 0;
    selPhoNTrkSolidConeDR04 = 0;
+   selPhoNrh = 0;
+   selPhoOOT = 0;
    selPhoPfChargedIso = 0;
    selPhoPfChargedIsoPFPV = 0;
-//   TBranch        *b_selPhoPfPhoIso03;
-   selPhoSigmaIEtaIEta = 0;
+   selPhoPfChargedIsoWorstVtx = 0;
+   selPhoPfPhoIso03 = 0;
+   selPhoPfRelIso03_all_quadratic = 0;
+   selPhoPfRelIso03_chg_quadratic = 0;
+   selPhoPhi = 0;
+   selPhoPhiWidth = 0;
+   selPhoPhoIsoDr = 0;
+   selPhoPixelSeed = 0;
+   selPhoPt = 0;
+   selPhoQuality = 0;
+   selPhoR9 = 0;
+   selPhoS4 = 0;
+   selPhoSAlp = 0;
    selPhoSCx = 0;
    selPhoSCy = 0;
    selPhoSCz = 0;
-
+   selPhoSMaj = 0;
+   selPhoSMin = 0;
+   selPhoSieie = 0;
+   selPhoSieip = 0;
+   selPhoSigmaIEtaIEta = 0;
+   selPhoSipip = 0;
+   selPhoSusyId = 0;
+   selPhoTime = 0;
+   selPhoTrkSumPtHollowConeDR03 = 0;
+   selPhoTrkSumPtHollowConeDR04 = 0;
+   selPhoTrkSumPtSolidConeDR04 = 0;
    selGenJetDpt = 0;
    selGenJetEnergy = 0;
    selGenJetImpAng = 0;
@@ -595,7 +587,6 @@ void kuSkimTree::Init(TTree *tree)
    selJetSusyId = 0;
    selJetTime = 0;
    selJetchHEF = 0;
-
    rjrASMass = 0;
    rjrAX2Ave = 0;
    rjrAX2Diff = 0;
@@ -652,28 +643,24 @@ void kuSkimTree::Init(TTree *tree)
    rjrX2bCosA = 0;
    rjrX2bMass = 0;
    rjrX2bPtS = 0;
-
-  // Set branch addresses and branch pointers
+   // Set branch addresses and branch pointers
    if (!tree) return;
    fChain = tree;
    fCurrent = -1;
-   //fChain->SetMakeClass(1);
-
-   fChain->SetBranchAddress("DataSetKey", &DataSetKey, &b_DataSetKey);
-   fChain->SetBranchAddress("evtGenWgt", &evtGenWgt, &b_evtGenWgt);
-
-   fChain->SetBranchAddress("selCMet", &selCMet, &b_selCMet);
-   fChain->SetBranchAddress("selCMetPx", &selCMetPx, &b_selCMetPx);
-   fChain->SetBranchAddress("selCMetPy", &selCMetPy, &b_selCMetPy);
-
-   fChain->SetBranchAddress("selMet", &selMet, &b_selMet);
-   fChain->SetBranchAddress("selMetPx", &selMetPx, &b_selMetPx);
-   fChain->SetBranchAddress("selMetPy", &selMetPy, &b_selMetPy);
+   fChain->SetMakeClass(1);
 
    fChain->SetBranchAddress("PVx", &PVx, &b_PVx);
    fChain->SetBranchAddress("PVy", &PVy, &b_PVy);
    fChain->SetBranchAddress("PVz", &PVz, &b_PVz);
-
+   fChain->SetBranchAddress("DataSetKey", &DataSetKey, &b_DataSetKey);
+   fChain->SetBranchAddress("evtGenWgt", &evtGenWgt, &b_evtGenWgt);
+   fChain->SetBranchAddress("evtXSection", &evtXSection, &b_evtXSection);
+   fChain->SetBranchAddress("selCMet", &selCMet, &b_selCMet);
+   fChain->SetBranchAddress("selCMetPx", &selCMetPx, &b_selCMetPx);
+   fChain->SetBranchAddress("selCMetPy", &selCMetPy, &b_selCMetPy);
+   fChain->SetBranchAddress("selMet", &selMet, &b_selMet);
+   fChain->SetBranchAddress("selMetPx", &selMetPx, &b_selMetPx);
+   fChain->SetBranchAddress("selMetPy", &selMetPy, &b_selMetPy);
    fChain->SetBranchAddress("genCharge", &genCharge, &b_genCharge);
    fChain->SetBranchAddress("genMass", &genMass, &b_genMass);
    fChain->SetBranchAddress("genPartEnergy", &genPartEnergy, &b_genPartEnergy);
@@ -692,50 +679,27 @@ void kuSkimTree::Init(TTree *tree)
    fChain->SetBranchAddress("genVx", &genVx, &b_genVx);
    fChain->SetBranchAddress("genVy", &genVy, &b_genVy);
    fChain->SetBranchAddress("genVz", &genVz, &b_genVz);
-
-   //fChain->SetBranchAddress("leadSelPho", &leadSelPho, &b_leadSelPho);
+   fChain->SetBranchAddress("elePhoMinDr", &elePhoMinDr, &b_elePhoMinDr);
+   fChain->SetBranchAddress("epDrMatch", &epDrMatch, &b_epDrMatch);
+   fChain->SetBranchAddress("epSeedIdMatch", &epSeedIdMatch, &b_epSeedIdMatch);
+   fChain->SetBranchAddress("epSeedIdUnique", &epSeedIdUnique, &b_epSeedIdUnique);
+   fChain->SetBranchAddress("nElectrons", &nElectrons, &b_nElectrons);
    fChain->SetBranchAddress("nPhotons", &nPhotons, &b_nPhotons);
    fChain->SetBranchAddress("nSelPhotons", &nSelPhotons, &b_nSelPhotons);
    fChain->SetBranchAddress("selPhoClstrRn", &selPhoClstrRn, &b_selPhoClstrRn);
-   fChain->SetBranchAddress("selPhoCovEtaEta", &selPhoCovEtaEta, &b_selPhoCovEtaEta);
    fChain->SetBranchAddress("selPhoCorEnergy", &selPhoCorEnergy, &b_selPhoCorEnergy);
    fChain->SetBranchAddress("selPhoCorPt", &selPhoCorPt, &b_selPhoCorPt);
+   fChain->SetBranchAddress("selPhoCovEtaEta", &selPhoCovEtaEta, &b_selPhoCovEtaEta);
    fChain->SetBranchAddress("selPhoCovEtaPhi", &selPhoCovEtaPhi, &b_selPhoCovEtaPhi);
    fChain->SetBranchAddress("selPhoCovPhiPhi", &selPhoCovPhiPhi, &b_selPhoCovPhiPhi);
+   fChain->SetBranchAddress("selPhoEcalPFClusterIso", &selPhoEcalPFClusterIso, &b_selPhoEcalPFClusterIso);
    fChain->SetBranchAddress("selPhoEcalRHSumEtConeDR04", &selPhoEcalRHSumEtConeDR04, &b_selPhoEcalRHSumEtConeDR04);
+   fChain->SetBranchAddress("selPhoEleVeto", &selPhoEleVeto, &b_selPhoEleVeto);
    fChain->SetBranchAddress("selPhoEnergy", &selPhoEnergy, &b_selPhoEnergy);
    fChain->SetBranchAddress("selPhoEta", &selPhoEta, &b_selPhoEta);
    fChain->SetBranchAddress("selPhoEtaWidth", &selPhoEtaWidth, &b_selPhoEtaWidth);
-   //fChain->SetBranchAddress("selPhoGenDp", &selPhoGenDp, &b_selPhoGenDp);
-   //fChain->SetBranchAddress("selPhoGenDr", &selPhoGenDr, &b_selPhoGenDr);
    fChain->SetBranchAddress("selPhoGenIdx", &selPhoGenIdx, &b_selPhoGenIdx);
    fChain->SetBranchAddress("selPhoGenPt", &selPhoGenPt, &b_selPhoGenPt);
-   fChain->SetBranchAddress("selPhoHadOverEM", &selPhoHadOverEM, &b_selPhoHadOverEM);
-   fChain->SetBranchAddress("selPhoHadTowOverEM", &selPhoHadTowOverEM, &b_selPhoHadTowOverEM);
-   fChain->SetBranchAddress("selPhoHcalTowerSumEtBcConeDR04", &selPhoHcalTowerSumEtBcConeDR04, &b_selPhoHcalTowerSumEtBcConeDR04);
-   fChain->SetBranchAddress("selPhoNrh", &selPhoNrh, &b_selPhoNrh);
-   fChain->SetBranchAddress("selPhoOOT", &selPhoOOT, &b_selPhoOOT);
-   fChain->SetBranchAddress("selPhoPhi", &selPhoPhi, &b_selPhoPhi);
-   fChain->SetBranchAddress("selPhoPhiWidth", &selPhoPhiWidth, &b_selPhoPhiWidth);
-   fChain->SetBranchAddress("selPhoPhoIsoDr", &selPhoPhoIsoDr, &b_selPhoPhoIsoDr);
-   fChain->SetBranchAddress("selPhoPixelSeed", &selPhoPixelSeed, &b_selPhoPixelSeed);
-   fChain->SetBranchAddress("selPhoPt", &selPhoPt, &b_selPhoPt);
-   //fChain->SetBranchAddress("selPhoPtOrder", &selPhoPtOrder, &b_selPhoPtOrder);
-   fChain->SetBranchAddress("selPhoQuality", &selPhoQuality, &b_selPhoQuality);
-   fChain->SetBranchAddress("selPhoR9", &selPhoR9, &b_selPhoR9);
-   fChain->SetBranchAddress("selPhoS4", &selPhoS4, &b_selPhoS4);
-   fChain->SetBranchAddress("selPhoSAlp", &selPhoSAlp, &b_selPhoSAlp);
-   fChain->SetBranchAddress("selPhoSMaj", &selPhoSMaj, &b_selPhoSMaj);
-   fChain->SetBranchAddress("selPhoSMin", &selPhoSMin, &b_selPhoSMin);
-   fChain->SetBranchAddress("selPhoSieie", &selPhoSieie, &b_selPhoSieie);
-   fChain->SetBranchAddress("selPhoSieip", &selPhoSieip, &b_selPhoSieip);
-   fChain->SetBranchAddress("selPhoSipip", &selPhoSipip, &b_selPhoSipip);
-   fChain->SetBranchAddress("selPhoSusyId", &selPhoSusyId, &b_selPhoSusyId);
-   fChain->SetBranchAddress("selPhoTime", &selPhoTime, &b_selPhoTime);
-   fChain->SetBranchAddress("selPhoTrkSumPtHollowConeDR03", &selPhoTrkSumPtHollowConeDR03, &b_selPhoTrkSumPtHollowConeDR03);
-   fChain->SetBranchAddress("selPhoTrkSumPtHollowConeDR04", &selPhoTrkSumPtHollowConeDR04, &b_selPhoTrkSumPtHollowConeDR04);
-   fChain->SetBranchAddress("selPhoTrkSumPtSolidConeDR04", &selPhoTrkSumPtSolidConeDR04, &b_selPhoTrkSumPtSolidConeDR04);
-   //fChain->SetBranchAddress("subLeadSelPho", &subLeadSelPho, &b_subLeadSelPho);
    fChain->SetBranchAddress("selPhoGenSigMomEnergy", &selPhoGenSigMomEnergy, &b_selPhoGenSigMomEnergy);
    fChain->SetBranchAddress("selPhoGenSigMomEta", &selPhoGenSigMomEta, &b_selPhoGenSigMomEta);
    fChain->SetBranchAddress("selPhoGenSigMomMass", &selPhoGenSigMomMass, &b_selPhoGenSigMomMass);
@@ -747,21 +711,48 @@ void kuSkimTree::Init(TTree *tree)
    fChain->SetBranchAddress("selPhoGenSigMomVx", &selPhoGenSigMomVx, &b_selPhoGenSigMomVx);
    fChain->SetBranchAddress("selPhoGenSigMomVy", &selPhoGenSigMomVy, &b_selPhoGenSigMomVy);
    fChain->SetBranchAddress("selPhoGenSigMomVz", &selPhoGenSigMomVz, &b_selPhoGenSigMomVz);
+   fChain->SetBranchAddress("selPhoHadOverEM", &selPhoHadOverEM, &b_selPhoHadOverEM);
+   fChain->SetBranchAddress("selPhoHadTowOverEM", &selPhoHadTowOverEM, &b_selPhoHadTowOverEM);
+   fChain->SetBranchAddress("selPhoHasConversionTracks", &selPhoHasConversionTracks, &b_selPhoHasConversionTracks);
+   fChain->SetBranchAddress("selPhoHcalPFClusterIso", &selPhoHcalPFClusterIso, &b_selPhoHcalPFClusterIso);
+   fChain->SetBranchAddress("selPhoHcalTowerSumEtBcConeDR04", &selPhoHcalTowerSumEtBcConeDR04, &b_selPhoHcalTowerSumEtBcConeDR04);
+   fChain->SetBranchAddress("selPhoHcalTowerSumEtConeDR04", &selPhoHcalTowerSumEtConeDR04, &b_selPhoHcalTowerSumEtConeDR04);
+   fChain->SetBranchAddress("selPhoHoe_PUcorr", &selPhoHoe_PUcorr, &b_selPhoHoe_PUcorr);
    fChain->SetBranchAddress("selPhoMBetaEql", &selPhoMBetaEql, &b_selPhoMBetaEql);
    fChain->SetBranchAddress("selPhoMBetaPmt", &selPhoMBetaPmt, &b_selPhoMBetaPmt);
-   fChain->SetBranchAddress("selPhoEcalPFClusterIso", &selPhoEcalPFClusterIso, &b_selPhoEcalPFClusterIso);
-   fChain->SetBranchAddress("selPhoHasConversionTracks", &selPhoHasConversionTracks, &b_selPhoHasConversionTracks);
-   fChain->SetBranchAddress("selPhoHcalTowerSumEtConeDR04", &selPhoHcalTowerSumEtConeDR04, &b_selPhoHcalTowerSumEtConeDR04);
    fChain->SetBranchAddress("selPhoNTrkHollowConeDR04", &selPhoNTrkHollowConeDR04, &b_selPhoNTrkHollowConeDR04);
    fChain->SetBranchAddress("selPhoNTrkSolidConeDR04", &selPhoNTrkSolidConeDR04, &b_selPhoNTrkSolidConeDR04);
+   fChain->SetBranchAddress("selPhoNrh", &selPhoNrh, &b_selPhoNrh);
+   fChain->SetBranchAddress("selPhoOOT", &selPhoOOT, &b_selPhoOOT);
    fChain->SetBranchAddress("selPhoPfChargedIso", &selPhoPfChargedIso, &b_selPhoPfChargedIso);
-//    TBranch        *b_selPhoPfPhoIso03;
    fChain->SetBranchAddress("selPhoPfChargedIsoPFPV", &selPhoPfChargedIsoPFPV, &b_selPhoPfChargedIsoPFPV);
-   fChain->SetBranchAddress("selPhoSigmaIEtaIEta", &selPhoSigmaIEtaIEta, &b_selPhoSigmaIEtaIEta);
+   fChain->SetBranchAddress("selPhoPfChargedIsoWorstVtx", &selPhoPfChargedIsoWorstVtx, &b_selPhoPfChargedIsoWorstVtx);
+   fChain->SetBranchAddress("selPhoPfPhoIso03", &selPhoPfPhoIso03, &b_selPhoPfPhoIso03);
+   fChain->SetBranchAddress("selPhoPfRelIso03_all_quadratic", &selPhoPfRelIso03_all_quadratic, &b_selPhoPfRelIso03_all_quadratic);
+   fChain->SetBranchAddress("selPhoPfRelIso03_chg_quadratic", &selPhoPfRelIso03_chg_quadratic, &b_selPhoPfRelIso03_chg_quadratic);
+   fChain->SetBranchAddress("selPhoPhi", &selPhoPhi, &b_selPhoPhi);
+   fChain->SetBranchAddress("selPhoPhiWidth", &selPhoPhiWidth, &b_selPhoPhiWidth);
+   fChain->SetBranchAddress("selPhoPhoIsoDr", &selPhoPhoIsoDr, &b_selPhoPhoIsoDr);
+   fChain->SetBranchAddress("selPhoPixelSeed", &selPhoPixelSeed, &b_selPhoPixelSeed);
+   fChain->SetBranchAddress("selPhoPt", &selPhoPt, &b_selPhoPt);
+   fChain->SetBranchAddress("selPhoQuality", &selPhoQuality, &b_selPhoQuality);
+   fChain->SetBranchAddress("selPhoR9", &selPhoR9, &b_selPhoR9);
+   fChain->SetBranchAddress("selPhoS4", &selPhoS4, &b_selPhoS4);
+   fChain->SetBranchAddress("selPhoSAlp", &selPhoSAlp, &b_selPhoSAlp);
    fChain->SetBranchAddress("selPhoSCx", &selPhoSCx, &b_selPhoSCx);
    fChain->SetBranchAddress("selPhoSCy", &selPhoSCy, &b_selPhoSCy);
    fChain->SetBranchAddress("selPhoSCz", &selPhoSCz, &b_selPhoSCz);
-
+   fChain->SetBranchAddress("selPhoSMaj", &selPhoSMaj, &b_selPhoSMaj);
+   fChain->SetBranchAddress("selPhoSMin", &selPhoSMin, &b_selPhoSMin);
+   fChain->SetBranchAddress("selPhoSieie", &selPhoSieie, &b_selPhoSieie);
+   fChain->SetBranchAddress("selPhoSieip", &selPhoSieip, &b_selPhoSieip);
+   fChain->SetBranchAddress("selPhoSigmaIEtaIEta", &selPhoSigmaIEtaIEta, &b_selPhoSigmaIEtaIEta);
+   fChain->SetBranchAddress("selPhoSipip", &selPhoSipip, &b_selPhoSipip);
+   fChain->SetBranchAddress("selPhoSusyId", &selPhoSusyId, &b_selPhoSusyId);
+   fChain->SetBranchAddress("selPhoTime", &selPhoTime, &b_selPhoTime);
+   fChain->SetBranchAddress("selPhoTrkSumPtHollowConeDR03", &selPhoTrkSumPtHollowConeDR03, &b_selPhoTrkSumPtHollowConeDR03);
+   fChain->SetBranchAddress("selPhoTrkSumPtHollowConeDR04", &selPhoTrkSumPtHollowConeDR04, &b_selPhoTrkSumPtHollowConeDR04);
+   fChain->SetBranchAddress("selPhoTrkSumPtSolidConeDR04", &selPhoTrkSumPtSolidConeDR04, &b_selPhoTrkSumPtSolidConeDR04);
    fChain->SetBranchAddress("nJets", &nJets, &b_nJets);
    fChain->SetBranchAddress("nSelJets", &nSelJets, &b_nSelJets);
    fChain->SetBranchAddress("selGenJetDpt", &selGenJetDpt, &b_selGenJetDpt);
@@ -791,7 +782,6 @@ void kuSkimTree::Init(TTree *tree)
    fChain->SetBranchAddress("selJetSusyId", &selJetSusyId, &b_selJetSusyId);
    fChain->SetBranchAddress("selJetTime", &selJetTime, &b_selJetTime);
    fChain->SetBranchAddress("selJetchHEF", &selJetchHEF, &b_selJetchHEF);
-
    fChain->SetBranchAddress("rjrASMass", &rjrASMass, &b_rjrASMass);
    fChain->SetBranchAddress("rjrAX2Ave", &rjrAX2Ave, &b_rjrAX2Ave);
    fChain->SetBranchAddress("rjrAX2Diff", &rjrAX2Diff, &b_rjrAX2Diff);
@@ -822,8 +812,8 @@ void kuSkimTree::Init(TTree *tree)
    fChain->SetBranchAddress("rjrPVa", &rjrPVa, &b_rjrPVa);
    fChain->SetBranchAddress("rjrPVb", &rjrPVb, &b_rjrPVb);
    fChain->SetBranchAddress("rjrPVlab", &rjrPVlab, &b_rjrPVlab);
-//   fChain->SetBranchAddress("rjrPX1X2a", &rjrPX1X2a, &b_rjrPX1X2a);
-//   fChain->SetBranchAddress("rjrPX1X2b", &rjrPX1X2b, &b_rjrPX1X2b);
+   fChain->SetBranchAddress("rjrPX1X2a", &rjrPX1X2a, &b_rjrPX1X2a);
+   fChain->SetBranchAddress("rjrPX1X2b", &rjrPX1X2b, &b_rjrPX1X2b);
    fChain->SetBranchAddress("rjrPX2Sa", &rjrPX2Sa, &b_rjrPX2Sa);
    fChain->SetBranchAddress("rjrPX2Sb", &rjrPX2Sb, &b_rjrPX2Sb);
    fChain->SetBranchAddress("rjrPZS", &rjrPZS, &b_rjrPZS);
@@ -848,220 +838,10 @@ void kuSkimTree::Init(TTree *tree)
    fChain->SetBranchAddress("rjrX2bCosA", &rjrX2bCosA, &b_rjrX2bCosA);
    fChain->SetBranchAddress("rjrX2bMass", &rjrX2bMass, &b_rjrX2bMass);
    fChain->SetBranchAddress("rjrX2bPtS", &rjrX2bPtS, &b_rjrX2bPtS);
-
-   //Notify();
+   Notify();
 }
 
-void kuSkimTree::getBranches(Long64_t entry){
-
-   if( mdebug ) std::cout << "Branch 1" << std::endl;
-   b_DataSetKey->GetEntry(entry);   //!
-   b_evtGenWgt->GetEntry(entry);   //!
-
-   b_selCMet->GetEntry(entry);   //!
-   b_selCMetPx->GetEntry(entry);   //!
-   b_selCMetPy->GetEntry(entry);   //!
-
-   b_selMet->GetEntry(entry);   //!
-   b_selMetPx->GetEntry(entry);   //!
-   b_selMetPy->GetEntry(entry);   //!
-
-   b_PVx->GetEntry(entry);   //!
-   b_PVy->GetEntry(entry);   //!
-   b_PVz->GetEntry(entry);   //!
-
-   b_genCharge->GetEntry(entry);   //!
-   b_genMass->GetEntry(entry);   //!
-   b_genPartEnergy->GetEntry(entry);   //!
-   b_genPartEta->GetEntry(entry);   //!
-   b_genPartPdgId->GetEntry(entry);   //!
-   b_genPartPhi->GetEntry(entry);   //!
-   b_genPartPt->GetEntry(entry);   //!
-   b_genPartSusId->GetEntry(entry);   //!
-   b_genPx->GetEntry(entry);   //!
-   b_genPy->GetEntry(entry);   //!
-   b_genPz->GetEntry(entry);   //!
-   b_genSGMass->GetEntry(entry);   //!
-   b_genSQMass->GetEntry(entry);   //!
-   b_genSigType->GetEntry(entry);   //!
-   b_genStatus->GetEntry(entry);   //!
-   b_genVx->GetEntry(entry);   //!
-   b_genVy->GetEntry(entry);   //!
-   b_genVz->GetEntry(entry);   //!
-
-   if( mdebug ) std::cout << "Branch 2" << std::endl;//->GetEntry(entry);
-   //b_leadSelPho->GetEntry(entry);   //!
-   b_nPhotons->GetEntry(entry);   //!
-   b_nSelPhotons->GetEntry(entry);   //!
-   b_selPhoClstrRn->GetEntry(entry);   //!
-   b_selPhoCovEtaEta->GetEntry(entry);   //!
-   b_selPhoCovEtaPhi->GetEntry(entry);   //!
-   b_selPhoCovPhiPhi->GetEntry(entry);   //!
-   b_selPhoCorEnergy->GetEntry(entry);   //!
-   b_selPhoCorPt->GetEntry(entry);   //!
-   b_selPhoEcalRHSumEtConeDR04->GetEntry(entry);   //!
-   b_selPhoEnergy->GetEntry(entry);   //!
-   b_selPhoEta->GetEntry(entry);   //!
-   b_selPhoEtaWidth->GetEntry(entry);   //!
-   if( mdebug ) std::cout << "Branch 2a" << std::endl;//->GetEntry(entry);
-   //b_selPhoGenDp->GetEntry(entry);   //!
-   //b_selPhoGenDr->GetEntry(entry);   //!
-   b_selPhoGenIdx->GetEntry(entry);   //!
-   b_selPhoGenPt->GetEntry(entry);   //!
-   b_selPhoHadOverEM->GetEntry(entry);   //!
-   //b_selPhoHadTowOverEM->GetEntry(entry);   //!
-   b_selPhoHcalTowerSumEtBcConeDR04->GetEntry(entry);   //!
-   b_selPhoMBetaEql->GetEntry(entry);   //!
-   b_selPhoMBetaPmt->GetEntry(entry);   //!
-   if( mdebug ) std::cout << "Branch 2b" << std::endl;//->GetEntry(entry);
-   b_selPhoNrh->GetEntry(entry);   //!
-   b_selPhoOOT->GetEntry(entry);   //!
-   b_selPhoPhi->GetEntry(entry);   //!
-   if( mdebug ) std::cout << "Branch 2c" << std::endl;//->GetEntry(entry);
-   b_selPhoPhiWidth->GetEntry(entry);   //!
-   //b_selPhoPhoIsoDr->GetEntry(entry);   //!
-   //b_selPhoPixelSeed->GetEntry(entry);   //!
-   b_selPhoPt->GetEntry(entry);   //!
-   if( mdebug ) std::cout << "Branch 3" << std::endl;//->GetEntry(entry);
-   //b_selPhoPtOrder->GetEntry(entry);   //!
-   b_selPhoQuality->GetEntry(entry);   //!
-   b_selPhoR9->GetEntry(entry);   //!
-   b_selPhoS4->GetEntry(entry);   //!
-   b_selPhoSAlp->GetEntry(entry);   //!
-   b_selPhoSMaj->GetEntry(entry);   //!
-   b_selPhoSMin->GetEntry(entry);   //!
-   b_selPhoSieie->GetEntry(entry);   //!
-   b_selPhoSieip->GetEntry(entry);   //!
-   b_selPhoSipip->GetEntry(entry);   //!
-   b_selPhoSusyId->GetEntry(entry);   //!
-   b_selPhoTime->GetEntry(entry);   //!
-   b_selPhoTrkSumPtHollowConeDR03->GetEntry(entry);   //!
-   b_selPhoTrkSumPtHollowConeDR04->GetEntry(entry);   //!
-   b_selPhoTrkSumPtSolidConeDR04->GetEntry(entry);   //!
-   if( mdebug ) std::cout << "Branch 4" << std::endl;//->GetEntry(entry);
-   //b_subLeadSelPho->GetEntry(entry);   //!
-   b_selPhoGenSigMomEnergy->GetEntry(entry);   //!
-   b_selPhoGenSigMomEta->GetEntry(entry);   //!
-   b_selPhoGenSigMomMass->GetEntry(entry);   //!
-   b_selPhoGenSigMomPhi->GetEntry(entry);   //!
-   b_selPhoGenSigMomPt->GetEntry(entry);   //!
-   b_selPhoGenSigMomPx->GetEntry(entry);   //!
-   b_selPhoGenSigMomPy->GetEntry(entry);   //!
-   b_selPhoGenSigMomPz->GetEntry(entry);   //!
-   b_selPhoGenSigMomVx->GetEntry(entry);   //!
-   b_selPhoGenSigMomVy->GetEntry(entry);   //!
-   b_selPhoGenSigMomVz->GetEntry(entry);   //!
-   //std::cout << "Branch 4a" << std::endl->GetEntry(entry); 
-   b_selPhoEcalPFClusterIso->GetEntry(entry);   //!     
-   b_selPhoHasConversionTracks->GetEntry(entry);   //!
-   b_selPhoHcalTowerSumEtConeDR04->GetEntry(entry);   //!
-   b_selPhoNTrkHollowConeDR04->GetEntry(entry);   //!
-   b_selPhoNTrkSolidConeDR04->GetEntry(entry);   //!
-   //std::cout << "Branch 4b" << std::endl->GetEntry(entry);
-   b_selPhoPfChargedIso->GetEntry(entry);   //!
-   b_selPhoPfChargedIsoPFPV->GetEntry(entry);   //!
-   //b_selPhoPfPhoIso03->GetEntry(entry);   //!   
-   b_selPhoSigmaIEtaIEta->GetEntry(entry);   //!
-   //std::cout << "Branch 4c" << std::endl->GetEntry(entry);
-   b_selPhoSCx->GetEntry(entry);   //!
-   b_selPhoSCy->GetEntry(entry);   //!
-   b_selPhoSCz->GetEntry(entry);   //!
-
-   if( mdebug ) std::cout << "Branch 5" << std::endl;//->GetEntry(entry);
-   b_nJets->GetEntry(entry);   //!
-   b_nSelJets->GetEntry(entry);   //!
-   b_selGenJetDpt->GetEntry(entry);   //!
-   b_selGenJetEnergy->GetEntry(entry);   //!
-   b_selGenJetImpAng->GetEntry(entry);   //!
-   b_selGenJetLlpTime->GetEntry(entry);   //!
-   b_selGenJetPt->GetEntry(entry);   //!
-   b_selGenJetTime->GetEntry(entry);   //!
-   b_selGenJetTof->GetEntry(entry);   //!
-   b_selGenJetdr->GetEntry(entry);   //!
-   b_selGenJeteta->GetEntry(entry);   //!
-   b_selJetArea->GetEntry(entry);   //!
-   b_selJetChEmEF->GetEntry(entry);   //!
-   b_selJetChHM->GetEntry(entry);   //!
-   b_selJetEnergy->GetEntry(entry);   //!
-   b_selJetEta->GetEntry(entry);   //!
-   b_selJetLlpDp->GetEntry(entry);   //!
-   b_selJetLlpDr->GetEntry(entry);   //!
-   b_selJetMass->GetEntry(entry);   //!
-   b_selJetMuEF->GetEntry(entry);   //!
-   b_selJetNeEmEF->GetEntry(entry);   //!
-   b_selJetNeHEF->GetEntry(entry);   //!
-   b_selJetNeHM->GetEntry(entry);   //!
-   b_selJetPhi->GetEntry(entry);   //!
-   b_selJetPt->GetEntry(entry);   //!
-   b_selJetQuality->GetEntry(entry);   //!
-   b_selJetSusyId->GetEntry(entry);   //!
-   b_selJetTime->GetEntry(entry);   //!
-   b_selJetchHEF->GetEntry(entry);   //!
-
-   if( mdebug ) std::cout << "Branch 6" << std::endl;//->GetEntry(entry);
-   b_rjrASMass->GetEntry(entry);   //!
-   b_rjrAX2Ave->GetEntry(entry);   //!
-   b_rjrAX2Diff->GetEntry(entry);   //!
-   b_rjrAX2GMean->GetEntry(entry);   //!
-   b_rjrAX2NAve->GetEntry(entry);   //!
-   b_rjrAX2NGMean->GetEntry(entry);   //!
-   b_rjrAX2NVSum->GetEntry(entry);   //!
-   b_rjrAX2VSum->GetEntry(entry);   //!
-   b_rjrAX2aMass->GetEntry(entry);   //!
-   b_rjrAX2bMass->GetEntry(entry);   //!
-   b_rjrDiffPJX2a->GetEntry(entry);   //!
-   b_rjrDiffPJX2b->GetEntry(entry);   //!
-   b_rjrDphiMETV->GetEntry(entry);   //!
-   b_rjrEVa->GetEntry(entry);   //!
-   b_rjrEVb->GetEntry(entry);   //!
-   b_rjrMET->GetEntry(entry);   //!
-   b_rjrMV->GetEntry(entry);   //!
-   b_rjrMVa->GetEntry(entry);   //!
-   b_rjrMVb->GetEntry(entry);   //!
-   b_rjrNJetsJa->GetEntry(entry);   //!
-   b_rjrNJetsJb->GetEntry(entry);   //!
-   b_rjrNRjrJets->GetEntry(entry);   //!
-   b_rjrNRjrPhotons->GetEntry(entry);   //!
-   b_rjrPJX2a->GetEntry(entry);   //!
-   b_rjrPJX2b->GetEntry(entry);   //!
-   b_rjrPTS->GetEntry(entry);   //!
-   b_rjrPV->GetEntry(entry);   //!
-   b_rjrPVa->GetEntry(entry);   //!
-   b_rjrPVb->GetEntry(entry);   //!
-   b_rjrPVlab->GetEntry(entry);   //!
-//   b_rjrPX1X2a->GetEntry(entry);   //!
-//   b_rjrPX1X2b->GetEntry(entry);   //!
-   b_rjrPX2Sa->GetEntry(entry);   //!
-   b_rjrPX2Sb->GetEntry(entry);   //!
-   b_rjrPZS->GetEntry(entry);   //!
-   b_rjrSCosA->GetEntry(entry);   //!
-   b_rjrSMass->GetEntry(entry);   //!
-   b_rjrSdphiBV->GetEntry(entry);   //!
-   b_rjrSdphiDA->GetEntry(entry);   //!
-   b_rjrX1aCosA->GetEntry(entry);   //!
-   b_rjrX1aMass->GetEntry(entry);   //!
-   b_rjrX1bCosA->GetEntry(entry);   //!
-   b_rjrX1bMass->GetEntry(entry);   //!
-   b_rjrX2Ave->GetEntry(entry);   //!
-   b_rjrX2Diff->GetEntry(entry);   //!
-   b_rjrX2GMean->GetEntry(entry);   //!
-   b_rjrX2NAve->GetEntry(entry);   //!
-   b_rjrX2NGMean->GetEntry(entry);   //!
-   b_rjrX2NVSum->GetEntry(entry);   //!
-   b_rjrX2VSum->GetEntry(entry);   //!
-   b_rjrX2aCosA->GetEntry(entry);   //!
-   b_rjrX2aMass->GetEntry(entry);   //!
-   b_rjrX2aPtS->GetEntry(entry);   //!
-   b_rjrX2bCosA->GetEntry(entry);   //!
-   b_rjrX2bMass->GetEntry(entry);   //!
-   b_rjrX2bPtS->GetEntry(entry);   //!
-
-   if( mdebug ) std::cout << "Done getting entries" << std::endl;
-
-}//<<>>void kuSkimTree::getBranches(Long64_t entry)
-
-/*
-Bool_t kuSkimTree::Notify()
+Bool_t skim_mod2::Notify()
 {
    // The Notify() function is called when a new file is opened. This
    // can be either for a new TTree in a TChain or when when a new TTree
@@ -1072,20 +852,18 @@ Bool_t kuSkimTree::Notify()
    return kTRUE;
 }
 
-void kuSkimTree::Show(Long64_t entry)
+void skim_mod2::Show(Long64_t entry)
 {
 // Print contents of entry.
 // If entry is not specified, print current entry
    if (!fChain) return;
    fChain->Show(entry);
 }
-Int_t kuSkimTree::Cut(Long64_t entry)
+Int_t skim_mod2::Cut(Long64_t entry)
 {
 // This function may be called from Loop.
 // returns  1 if entry is accepted.
 // returns -1 otherwise.
    return 1;
 }
-*/
-
-#endif // #ifdef kuSkimTree_cxx
+#endif // #ifdef skim_mod2_cxx

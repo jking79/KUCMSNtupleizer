@@ -16,10 +16,12 @@ test/myGjetsSpace/
 test/myQcdSpace/
 test/mySmallWorkSpace/
 test/oldWorkingSpace/
+test/myOldWorkSpaces/
 macros/*.obj
 .nfs*
 *.txt
 !*List.txt
+test/*WorkSpace/
 *.root
 *.pyc
 *.obj

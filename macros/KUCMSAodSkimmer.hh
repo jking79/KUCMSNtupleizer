@@ -44,6 +44,7 @@ class KUCMSAodSkimmer : public root_base {
 	// tchian processing functions
     void kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo );
     void kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect );
+    void kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, int skipCnt );
     void initHists();
     bool eventLoop( Long64_t entry );
 	void startJobs();
@@ -62,7 +63,7 @@ class KUCMSAodSkimmer : public root_base {
 	void processMuons();
     void processJets();
 	void processMet();
-	void processRJR();
+	void processRJR( int type, bool newEvent );
 
 	int getPhoQuality( int it );
     int getJetQuality( int it );	

@@ -56,11 +56,13 @@ eosll = 'eos root://cmseos.fnal.gov ls '
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_MET_R17_v16/'
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_MET_R17_v19/'
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_JetHT_R17_v18/'
-command = eosll+mdis+'KUCMSNtuple/kucmsntuple_DEG_R17_v18/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_DEG_R17_v18/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_GJETS_R17_v19_Met0/'
+command = eosll+mdis+'KUCMSNtuple/kucmsntuple_QCD_R17_v19_MET0/'
 
 #version = 'Run2018D'
 #version = 'GJets'
-#version = 'QCD'
+version = 'QCD'
 #version = '_Ctau-0p'
 #version = '_noOOTAmp_'
 #version = '_wthOOTAmp_'
@@ -68,7 +70,7 @@ command = eosll+mdis+'KUCMSNtuple/kucmsntuple_DEG_R17_v18/'
 #version = 'JetHT' 
 #version = 'DiPhotonJetsBox'
 #version = 'MET'
-version = 'DoubleEG'
+#version = 'DoubleEG'
 
 rootfile = '.root'
 
@@ -85,7 +87,7 @@ rootfile = '.root'
 #dirselect = 'GMSB_L-250'
 #dirselect = 'AOD'
 #dirselect = 'WJetsToLNu_HT-800'
-#dirselect = 'QCD'
+dirselect = 'QCD'
 #dirselect = 'GMSB_L-400TeV'
 #dirselect = 'DYJetsToLL_M-50'
 #dirselect = 'TTJets'
@@ -95,7 +97,7 @@ rootfile = '.root'
 #dirselect = 'DiPhotonJetsBox'
 #dirselect = 'Run2018C'
 #dirselect = 'MET'
-dirselect = 'DoubleEG'
+#dirselect = 'DoubleEG'
 
 #dirselect = ''
 
@@ -159,7 +161,7 @@ for line2 in targdirs :
     		if rootfile in lline : filelist.append(subdir2+lline)
    
     select =  line2.split("Tune")
-    outfile = 'kuntuple_' + select[0] + '_R17_v18.txt'
+    outfile = 'kuntuple_' + select[0] + 'Met0_R17_v19.txt'
     #print( outfile )
     outf = open( outfile, 'w' )
     for thefile in filelist:

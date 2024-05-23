@@ -18,6 +18,7 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
     n = 0
 
     setTDRStyle()
+    gROOT.SetBatch(True)
     gStyle.SetPadTickY(1)
     gStyle.SetPadTickX(1)
     if layout['logx'] : gStyle.SetOptLogx(1)
@@ -67,6 +68,7 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
         #norm2 = float(orighist2.Integral(1,lenmybins-1))
         if norm1 == 0 : norm1 = 1.0
         #if norm2 == 0 : norm2 = 1.0
+        if cutside == "no" : norm1 = 1.0;
 
         for bn in range(1,lenmybins):
             binmid1 = float(orighist1.GetBinCenter(bn))
@@ -129,7 +131,7 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
     mg.SetTitle(layout['title'])
 #+';X axis '+layout['xtitle']+';Y Axis '+layout['ytitle']+';')
     mg.GetXaxis().CenterTitle(True)
-    mg.GetXaxis().SetTitle(layout['xtitle']+' '+cutside)
+    mg.GetXaxis().SetTitle(layout['xtitle'])
     mg.GetYaxis().CenterTitle(True)
     mg.GetYaxis().SetTitle(layout['ytitle'])
     mg.SetMinimum(y[0])
@@ -149,11 +151,11 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
     #lat_form = '#sigma^{2}_{i} = (#frac{N}{A_{eff}/#sigma_{n}})^{2} + 2C^{2}'
     lat_form = '#sigma^{2}_{i} = (#frac{N}{A_{eff}/#sigma_{n}})^{2} + #frac{S^{2}}{A_{eff}/#sigma_{n}} + 2C^{2}'
     #lat_form = '#sigma^{2}_{i} = (N/Eeff)^{2} + 2C^{2}'
-    lat.SetTextSize(0.05);
+    lat.SetTextSize(0.035);
     lat.SetTextFont(42);
     lat.DrawLatex(0.15,0.965,lat_cms);
     lat.DrawLatex((0.82-t[2]),0.9325,lat_title);
-    lat.SetTextSize(0.04);
+    lat.SetTextSize(0.035);
     lat.DrawLatex(t[0],t[1],ptitle[2]);
     
     if layout['logx'] : c1.SetLogx()
@@ -168,8 +170,6 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
     c1.Close()
 
 from overlay_hist_defs_v3 import *
-
-date = time.strftime('%d%m%Y') +  time.strftime('%H%M%S')
 
 legtitle = ''
 #legtitle = 'KuStc'
@@ -209,23 +209,34 @@ l = [ 0.7,0.725,0.925,0.9 ] # legend position top right
 #l = [ 0.25,0.20,0.52,0.525 ] # legend position bottom left
 t = [0.2,0.825,0.0,0.175,0.225] # titles position
 
-y1 = [ 0.001, 0.9 ]
-cut = ''
+y1 = [ 0.000001, 100000000 ]
+y1l = [ 0.00001, 4 ]
+norm = 'no'
+norml = 'yes'
 
 #rhname1 = [ "selPhoHcalTowerSumEtBcConeDR04", "pho30ptHcalTowerSumEtBcConeDR04", "pho100ptHTSumEtBcConeDR04" ]
-rhname1 = [ "rjrX2NGMean" ]
-#rhname1 = [ "rjrX2NAve" ]
+#rhname1 = [ "rjrX2NGMean" ]
+#rhname1a = [ "rjrAX2NGMean" ]
+#rhname1 = [ "rjrAX2NAve" ]
 #rhname1 = [ "rjrX2NVSum" ]
-x1 = [ 0.15, 0.5 ]
+#rhname1a = [ "rjrAX2NVSum" ]
+#x1 = [ 0.0, 1.0 ]
 
 #rhname1 = [ "SMass" ]
-#x1 = [ 0, 10000 ]
+#rhname1a = [ "ASMass" ]
+#x1 = [ 0, 15000 ]
 
 #rhname1 = [ "X2aMass" ]
+#rhname1a = [ "AX2aMass" ]
 #rhname1 = [ "X2bMass" ]
+#rhname1a = [ "AX2bMass" ]
 #rhname1 = [ "rjrX2GMean" ]
+#rhname1a = [ "rjrAX2GMean" ]
 #rhname1 = [ "rjrX2Ave" ]
 #rhname1 = [ "rjrX2VSum" ]
+#rhname1a = [ "rjrAX2VSum" ]
+#rhname1 = [ "rjrVSVis" ]
+#rhname1a = [ "rjrVSViscA" ]
 #x1 = [ 0, 3600 ]
 
 #rhname1 = [ "rjrX2aPtS" ]
@@ -234,18 +245,22 @@ x1 = [ 0.15, 0.5 ]
 
 #rhname1 = [ "rjrNJetsJa" ]
 #rhname1 = [ "rjrNJetsJb" ]
+#y1 = [ 0.00001, 1.0 ]
 #x1 = [ 0, 15 ]
 
 #rhname1 = [ "rjrX2Diff" ]
-#x1 = [ 0, 1.0 ]
+#rhname1a = [ "rjrAX2Diff" ]
+#rhname1 = [ "rjrVDiff" ]
+#rhname1a = [ "rjrVDiffcA" ]
+#x1 = [ -1.0, 1.0 ]
 
 #rhname1 = [ "SCosA" ]
 #x1 = [ -1.5, 1.5 ]
 #y1 = [ 0.01, 1 ]
 
-#rhname1 = [ "evtMetPt" ]
-#rhname1 = [ "evtRjrMetPt" ]
-#rhname1 = [ "evtRawMetPt" ]
+#rhname1a = [ "evtMetPt" ]
+#rhname1b = [ "evtRjrMetPt" ]
+#rhname1c = [ "evtRawMetPt" ]
 #x1 = [ 0, 10000 ]
 
 #rhname1 = [ "rjrDphiMETV" ]
@@ -254,45 +269,161 @@ x1 = [ 0.15, 0.5 ]
 #x1 = [ -1.5, 1.5 ]
 #y1 = [ 0.01, 1 ]
 
-rjrgjetsp1 = "KUCMS_GJets_v19_NGM0p2_RjrSkim_multiHists.root"
-rjrqcdp1 = "KUCMS_QCD_v19_NGM0p2_RjrSkim_multiHists.root"
+#rhname1 = [ "selPhoMBetaEql" ]
+#rhname1a = [ "selPhoMBetaPmt" ]
+#x1 = [ 0, 1200.0 ]
 
-rjrgmsbl100t11p1 = "KUCMS_GMSB_L100_T11_v19_genSigPerfect_nSigPho1_NGM0p2_RjrSkim_multiHists.root"
-rjrgmsbl100t11p2 = "KUCMS_GMSB_L100_T11_v19_genSigPerfect_nSigPho2_NGM0p2_RjrSkim_multiHists.root"
-rjrgmsbl100t22p1 = "KUCMS_GMSB_L100_T22_v19_genSigPerfect_nSigPho1_NGM0p2_RjrSkim_multiHists.root"
-rjrgmsbl100t22p2 = "KUCMS_GMSB_L100_T22_v19_genSigPerfect_nSigPho2_NGM0p2_RjrSkim_multiHists.root"
-rjrgmsbl100t33p1 = "KUCMS_GMSB_L100_T33_v19_genSigPerfect_nSigPho1_NGM0p2_RjrSkim_multiHists.root"
-rjrgmsbl100t33p2 = "KUCMS_GMSB_L100_T33_v19_genSigPerfect_nSigPho2_NGM0p2_RjrSkim_multiHists.root"
-rjrgmsbl100t44p1 = "KUCMS_GMSB_L100_T44_v19_genSigPerfect_nSigPho1_NGM0p2_RjrSkim_multiHists.root"
-rjrgmsbl100t44p2 = "KUCMS_GMSB_L100_T44_v19_genSigPerfect_nSigPho2_NGM0p2_RjrSkim_multiHists.root"
+rhname1 = [ "selPhoNMBetaEql" ]
+rhname1a = [ "selPhoNMBetaPmt" ]
+x1 = [ 0, 2 ]
 
-rjrgmsbl300t11p1 = "KUCMS_GMSB_L300_T11_v19_genSigPerfect_nSigPho1_NGM0p2_RjrSkim_multiHists.root"
-rjrgmsbl300t11p2 = "KUCMS_GMSB_L300_T11_v19_genSigPerfect_nSigPho2_NGM0p2_RjrSkim_multiHists.root"
-rjrgmsbl300t22p1 = "KUCMS_GMSB_L300_T22_v19_genSigPerfect_nSigPho1_NGM0p2_RjrSkim_multiHists.root"
-rjrgmsbl300t22p2 = "KUCMS_GMSB_L300_T22_v19_genSigPerfect_nSigPho2_NGM0p2_RjrSkim_multiHists.root"
-rjrgmsbl300t33p1 = "KUCMS_GMSB_L300_T33_v19_genSigPerfect_nSigPho1_NGM0p2_RjrSkim_multiHists.root"
-rjrgmsbl300t33p2 = "KUCMS_GMSB_L300_T33_v19_genSigPerfect_nSigPho2_NGM0p2_RjrSkim_multiHists.root"
-rjrgmsbl300t44p1 = "KUCMS_GMSB_L300_T44_v19_genSigPerfect_nSigPho1_NGM0p2_RjrSkim_multiHists.root"
-rjrgmsbl300t44p2 = "KUCMS_GMSB_L300_T44_v19_genSigPerfect_nSigPho2_NGM0p2_RjrSkim_multiHists.root"
+#rjrgjpj = "rjr_multihist_files/KUCMS_GJets_v19_wt2_RjrSkim_v21_phojet_alt2_multiHists.root"
+#rjrgjpm = "rjr_multihist_files/KUCMS_GJets_v19_wt2_RjrSkim_v21_phomet_c1a_multiHists.root"
+#rjrgjpj = "rjr_multihist_files/KUCMS_GJets_v19_wt2_RjrSkim_v21_phojet_met0_multiHists.root"
+#rjrgjpm = "rjr_multihist_files/KUCMS_GJets_v19_wt2_RjrSkim_v21_phomet_met0_multiHists.root"
+rjrgjpj = "rjr_multihist_files/KUCMS_GJets_v19_wt2_RjrSkim_v21a_phojet_multiHists.root"
+rjrgjpm = "rjr_multihist_files/KUCMS_GJets_v19_wt2_RjrSkim_v21a_phomet_multiHists.root"
 
-boutname = 'llpa_NGM0p2_P1_rjr'
+
+rjrg1pj = "rjr_multihist_files/KUCMS_GMSB_L100_T30_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21a_phojet_multiHists.root"
+rjrg1pm = "rjr_multihist_files/KUCMS_GMSB_L100_T30_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21a_phomet_multiHists.root"
+rjrg3pj = "rjr_multihist_files/KUCMS_GMSB_L350_T30_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21a_phojet_multiHists.root"
+rjrg3pm = "rjr_multihist_files/KUCMS_GMSB_L350_T30_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21a_phomet_multiHists.root"
+
+#rjrg1pj = "rjr_multihist_files/KUCMS_GMSB_L100_T11_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phojet_multiHists.root"
+#rjrg1pm = "rjr_multihist_files/KUCMS_GMSB_L100_T11_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phomet_multiHists.root"
+#rjrg3pj = "rjr_multihist_files/KUCMS_GMSB_L350_T11_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phojet_multiHists.root"
+#rjrg3pm = "rjr_multihist_files/KUCMS_GMSB_L350_T11_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phomet_multiHists.root"
+
+#rjrg1pj = "rjr_multihist_files/KUCMS_GMSB_L100_T22_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phojet_multiHists.root"
+#rjrg1pm = "rjr_multihist_files/KUCMS_GMSB_L100_T22_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phomet_multiHists.root"
+#rjrg3pj = "rjr_multihist_files/KUCMS_GMSB_L350_T22_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phojet_multiHists.root"
+#rjrg3pm = "rjr_multihist_files/KUCMS_GMSB_L350_T22_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phomet_multiHists.root"
+
+#rjrg1pj = "rjr_multihist_files/KUCMS_GMSB_L100_T12_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phojet_multiHists.root"
+#rjrg1pm = "rjr_multihist_files/KUCMS_GMSB_L100_T12_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phomet_multiHists.root"
+#rjrg3pj = "rjr_multihist_files/KUCMS_GMSB_L350_T12_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phojet_multiHists.root"
+#rjrg3pm = "rjr_multihist_files/KUCMS_GMSB_L350_T12_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phomet_multiHists.root"
+
+#rjrg1pj = "rjr_multihist_files/KUCMS_GMSB_L100_T50_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phojet_multiHists.root"
+#rjrg1pm = "rjr_multihist_files/KUCMS_GMSB_L100_T50_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phomet_multiHists.root"
+#rjrg3pj = "rjr_multihist_files/KUCMS_GMSB_L350_T50_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phojet_multiHists.root"
+#rjrg3pm = "rjr_multihist_files/KUCMS_GMSB_L350_T50_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phomet_multiHists.root"
+
+
+#rjrqcpj = "rjr_multihist_files/KUCMS_QCD_v19_wt2_RjrSkim_v21_phojet_alt2_multiHists.root"
+#rjrqcpm = "rjr_multihist_files/KUCMS_QCD_v19_wt2_RjrSkim_v21_phomet_c1a_multiHists.root"
+#rjrqcpj = "rjr_multihist_files/KUCMS_QCD_v19_wt2_RjrSkim_v21_phojet_met0_multiHists.root"
+#rjrqcpm = "rjr_multihist_files/KUCMS_QCD_v19_wt2_RjrSkim_v21_phomet_met0_multiHists.root"
+rjrqcpj = "rjr_multihist_files/KUCMS_QCD_v19_wt2_RjrSkim_v21a_phojet_multiHists.root"
+rjrqcpm = "rjr_multihist_files/KUCMS_QCD_v19_wt2_RjrSkim_v21a_phomet_multiHists.root"
+
+boutname = 'llpa_rjr'
 title = ' 2017 '
-ptcut = ''
-#isocut = 'hadTowOverEM < 0.02'
-isocut = ''
+ptnorm = ''
+#isonorm = 'hadTowOverEM < 0.02'
+isonorm = ''
 ptlist = [ '' ]
 #ptlist = [ '100','300' ]
 
-for rhname, pt in zip(rhname1,ptlist) :
-  ptitle=[ title, ptcut+pt, isocut ]
-  soutname = boutname+pt+'_'
-  inhistlist = [[rhname,"",rjrgjetsp1,"GJet",cut ],[rhname,"",rjrqcdp1,"QCD",cut],
-                [rhname,"",rjrgmsbl100t11p2,"L100t22",cut],[rhname,"",rjrgmsbl300t11p2,"L300t22",cut],
-                [rhname,"",rjrgmsbl100t33p2,"L100t33",cut],[rhname,"",rjrgmsbl300t33p2,"L300t33",cut]]
+for rhname,rhnamea,pt in zip(rhname1,rhname1a,ptlist) :
+  ptitle=[ title, ptnorm+pt, isonorm ]
+  soutname1 = boutname+pt+'_pm_'
+  soutname2 = boutname+pt+'_pj_'
 
-  outname = soutname + rhname
+#  ifname = rjrgjetsc02;
+#  inhistlist = [[rhnamea,"",ifname,"GJet",norm ],[rhnameb,"",ifname,"GJets2",norm],
+#                [rhnamec,"",ifname,"GJetsC",norm],
+#                #[rhnamea,"",rjrqcdv1,"QCD",norm],
+#                #[rhname,"",rjrqcdv1,"QCD2",norm],[rhname,"",rjrqcdc02,"QCDC",norm]]
+#                ]
+
+#  inhistlist = [[rhname,"",rjrgjwt,"GJet",norm ],[rhname,"",rjrqwt,"QCD",norm],
+#                [rhname,"",rjrg1wt,"L100",norm],[rhname,"",rjrg3wt,"L300",norm],
+#                #[rhname,"",rjrgmsbl100t33p1c02,"L100t33",norm],[rhname,"",rjrgmsbl300t33p1c02,"L300t33",norm]]
+#                ]
+
+#  inhistlist = [[rhname,"",rjrgjc2wt,"GJet",norm ],[rhname,"",rjrqc2wt,"QCD",norm],
+#                [rhname,"",rjrg1c2wt,"L100",norm],[rhname,"",rjrg3c2wt,"L300",norm],
+#                #[rhname,"",rjrgmsbl100t33p1c02,"L100t33",norm],[rhname,"",rjrgmsbl300t33p1c02,"L300t33",norm]]
+#                ]
+
+  inhistlist1 = [[rhname,"",rjrgjpm,"GJet PM",norm ],#[rhname,"",rjrgjpj,"GJets PJ",norm],
+                [rhname,"",rjrqcpm,"QCD PM",norm ],#[rhname,"",rjrqcpj,"QCD PJ",norm],
+                [rhname,"",rjrg1pm,"L100 PM",norm],#[rhname,"",rjrg1pj,"L100 PJ",norm],
+                [rhname,"",rjrg3pm,"L350 PM",norm],#[rhname,"",rjrg3pj,"L350 PJ",norm],
+                ]
+
+  inhistlist2 = [[rhname,"",rjrgjpj,"GJets PJ",norm],
+                [rhname,"",rjrqcpj,"QCD PJ",norm],
+                [rhname,"",rjrg1pj,"L100 PJ",norm],
+                [rhname,"",rjrg3pj,"L350 PJ",norm],
+                ]
+
+  inhistlist1a = [[rhnamea,"",rjrgjpm,"GJet PM",norm ],#[rhname,"",rjrgjpj,"GJets PJ",norm],
+                [rhnamea,"",rjrqcpm,"QCD PM",norm ],#[rhname,"",rjrqcpj,"QCD PJ",norm],
+                [rhnamea,"",rjrg1pm,"L100 PM",norm],#[rhname,"",rjrg1pj,"L100 PJ",norm],
+                [rhnamea,"",rjrg3pm,"L350 PM",norm],#[rhname,"",rjrg3pj,"L350 PJ",norm],
+                ]
+
+  inhistlist2a = [[rhnamea,"",rjrgjpj,"GJets PJ",norm],
+                [rhnamea,"",rjrqcpj,"QCD PJ",norm],
+                [rhnamea,"",rjrg1pj,"L100 PJ",norm],
+                [rhnamea,"",rjrg3pj,"L350 PJ",norm],
+                ]
+
+  date = time.strftime('%d%m%Y') +  time.strftime('%H%M%S')
+  outname1 = soutname1 + rhname
+  outname2 = soutname2 + rhname
   layout = { 'xtitle' : rhname, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'legtitle' : legtitle }
-  dostack(inhistlist, outname, date, layout, ptitle,  y1, x1, l, t)
+  dostack(inhistlist1, outname1, date, layout, ptitle,  y1, x1, l, t)
+  dostack(inhistlist2, outname2, date, layout, ptitle,  y1, x1, l, t)
+
+  date = time.strftime('%d%m%Y') +  time.strftime('%H%M%S')
+  outname1 = soutname1 + rhnamea
+  outname2 = soutname2 + rhnamea
+  layout = { 'xtitle' : rhnamea, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'legtitle' : legtitle }
+  dostack(inhistlist1a, outname1, date, layout, ptitle,  y1, x1, l, t)
+  dostack(inhistlist2a, outname2, date, layout, ptitle,  y1, x1, l, t)
+
+  inhistlist1 = [[rhname,"",rjrgjpm,"GJet PM",norml ],#[rhname,"",rjrgjpj,"GJets PJ",norm],
+                [rhname,"",rjrqcpm,"QCD PM",norml ],#[rhname,"",rjrqcpj,"QCD PJ",norm],
+                [rhname,"",rjrg1pm,"L100 PM",norml],#[rhname,"",rjrg1pj,"L100 PJ",norm],
+                [rhname,"",rjrg3pm,"L350 PM",norml],#[rhname,"",rjrg3pj,"L350 PJ",norm],
+                ]
+
+  inhistlist2 = [[rhname,"",rjrgjpj,"GJets PJ",norml],
+                [rhname,"",rjrqcpj,"QCD PJ",norml],
+                [rhname,"",rjrg1pj,"L100 PJ",norml],
+                [rhname,"",rjrg3pj,"L350 PJ",norml],
+                ]
+
+  inhistlist1a = [[rhnamea,"",rjrgjpm,"GJet PM",norml ],#[rhname,"",rjrgjpj,"GJets PJ",norm],
+                [rhnamea,"",rjrqcpm,"QCD PM",norml ],#[rhname,"",rjrqcpj,"QCD PJ",norm],
+                [rhnamea,"",rjrg1pm,"L100 PM",norml],#[rhname,"",rjrg1pj,"L100 PJ",norm],
+                [rhnamea,"",rjrg3pm,"L350 PM",norml],#[rhname,"",rjrg3pj,"L350 PJ",norm],
+                ]
+
+  inhistlist2a = [[rhnamea,"",rjrgjpj,"GJets PJ",norml],
+                [rhnamea,"",rjrqcpj,"QCD PJ",norml],
+                [rhnamea,"",rjrg1pj,"L100 PJ",norml],
+                [rhnamea,"",rjrg3pj,"L350 PJ",norml],
+                ]
+
+  date = time.strftime('%d%m%Y') +  time.strftime('%H%M%S')
+  outname1 = soutname1 + rhname + "_norm"
+  outname2 = soutname2 + rhname + "_norm"
+  layout = { 'xtitle' : rhname, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'legtitle' : legtitle }
+  dostack(inhistlist1, outname1, date, layout, ptitle,  y1l, x1, l, t)
+  dostack(inhistlist2, outname2, date, layout, ptitle,  y1l, x1, l, t)
+
+  date = time.strftime('%d%m%Y') +  time.strftime('%H%M%S')
+  outname1 = soutname1 + rhnamea + "_norm"
+  outname2 = soutname2 + rhnamea + "_norm"
+  layout = { 'xtitle' : rhnamea, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'legtitle' : legtitle }
+  dostack(inhistlist1a, outname1, date, layout, ptitle,  y1l, x1, l, t)
+  dostack(inhistlist2a, outname2, date, layout, ptitle,  y1l, x1, l, t)
+
 
 
 #ptitle=[' 2022 IOV5 359421-360089','','#splitline{EBEB}{CC Ave RH Time by Channel}'] #{GT 106X_dataRun2_v28}'

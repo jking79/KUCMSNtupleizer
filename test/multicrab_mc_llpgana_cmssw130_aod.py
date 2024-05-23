@@ -88,9 +88,9 @@ def docrab( dataset ):
         #config.Data.splitting     = 'Automatic' # data
         #config.Data.unitsPerJob   = 25000 # data  !!!!!! lumimask ?
         config.Data.splitting    = 'EventAwareLumiBased' # MC   Set unitsperjob correctly for dataset !!!!!!!!!!!!!!!!!!!!!!!!!!
-        config.Data.unitsPerJob  =  1500 # MC GMSB
+        #config.Data.unitsPerJob  =  1500 # MC GMSB
         #config.Data.unitsPerJob  =  10000 # MC GJet
-        #config.Data.unitsPerJob  =  15000 # MC QCD
+        config.Data.unitsPerJob  =  15000 # MC QCD
         #config.Data.unitsPerJob  =  50000 # MC TTJet
         #config.Data.unitsPerJob  =  750 # MC DiPhoBox (DPB)
 
@@ -133,9 +133,10 @@ def docrab( dataset ):
             #trial          = "kucmsntuple_MET_R17_v19" #
             #trial          = "kucmsntuple_DEG_R17_v18" #
             #trial          = "kucmsntuple_JetHT_R17_v18" #
-            trial          = "kucmsntuple_GMSB_R17_v19" # 
+            #trial          = "kucmsntuple_GMSB_R17_v19" # 
             ##trial          = "kucmsntuple_GMSB_rhe1k_v14" #
             #trial          = "kucmsntuple_GJETS_R17_v19" 
+            #trial          = "kucmsntuple_GJETS_R17_v19_Met75"
             #trial          = "kucmsntuple_GJETS_R17_v16_MET0" # 
             ##trial          = "kucmsntuple_GJETS_R18_v16" # 
             ##trial          = "kucmsntuple_GJETS_rhe1k_v14" #
@@ -143,7 +144,7 @@ def docrab( dataset ):
             ##trial          = "kucmsntuple_ZJETS_AOD_v5" #
             ##trial          = "kucmsntuple_QCD_AOD_v14B" #
             #trial          = "kucmsntuple_QCD_R17_v19" #
-            #trial          = "kucmsntuple_QCD_R17_v16_MET0" #
+            trial          = "kucmsntuple_QCD_R17_v19_MET75" #
             ##trial          = "kucmsntuple_DYTT_AOD_v5" # 
             ##trial          = "kucmsntuple_DiPhoBox_AOD_v14"
 
@@ -181,14 +182,14 @@ def docrab( dataset ):
 
 #-----------------------------------------------------------------------------------------------------------------------------
 #>>>>>      #MC GMSB RunIIFall17DRPremix  #globalTag=94X_mc2017_realistic_v14  #  <<< comment/uncomment lumi mask when using/!using MC
-            config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v14','outputFileName=output.root','hasGenInfo=True']
+            #config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v14','outputFileName=output.root','hasGenInfo=True']
             ###config.JobType.pyCfgParams   = ['globalTag=106X_dataRun2_v28','outputFileName=output.root','hasGenInfo=True']
 #>>>>>>>>>>>>>>>>>>>     #MC GJets RunIIFall17DRPremix && RunIISummer20UL18RECO  !!!!! CHANGE UNITS PER JOB !!!!!!!
             ##config.JobType.pyCfgParams   = ['globalTag=106X_upgrade2018_realistic_v11_L1v1','outputFileName=output.root','hasGenInfo=True']
             #config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v11','outputFileName=output.root','hasGenInfo=True']
 #>>>>>>>>>>>>>>>>>>>     #MC QCD RunIIAutumn18DRPremix 102X_upgrade2018_realistic_v15  
             ##config.JobType.pyCfgParams   = ['globalTag=102X_upgrade2018_realistic_v15','outputFileName=output.root','hasGenInfo=True']
-            #config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v11','outputFileName=output.root','hasGenInfo=True']
+            config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v11','outputFileName=output.root','hasGenInfo=True']
 #>>>>>>>>>>>>>>>>>>>     #MC DiPhotonBox
             #config.JobType.pyCfgParams   = ['globalTag=106X_upgrade2018_realistic_v16_L1v1','outputFileName=output.root','hasGenInfo=True'] 
 
@@ -612,12 +613,12 @@ def run_multi():
    
         #runDataset = doRedo
         #runDataset = dsData
-        runDataset = dsGMSB # !!!!  CHANGE UNITS PER JOB AND GT USED !!!!!!!
+        #runDataset = dsGMSB # !!!!  CHANGE UNITS PER JOB AND GT USED !!!!!!!
         #runDataset = dsGMSBMini
         #runDataset = dsGJET # !!!!  CHANGE UNITS PER JOB AND GT USED !!!!!!!
         #runDataset = dsWJET
         #runDataset = dsZJET
-        #runDataset = dsQCD # !!!!  CHANGE UNITS PER JOB AND GT USED !!!!!!!
+        runDataset = dsQCD # !!!!  CHANGE UNITS PER JOB AND GT USED !!!!!!!
         #runDataset = dsDYTT
         #runDataset = diPhoBox
 

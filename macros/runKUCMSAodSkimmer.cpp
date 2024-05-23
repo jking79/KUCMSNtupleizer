@@ -21,7 +21,8 @@ int main ( int argc, char *argv[] ){
 				//const std::string eosdir = "";				
 
                 //const std::string infilename = "KUCMS_Ntuple_Master_BG_Files_List.txt";
-                const std::string infilename = "KUCMS_Ntuple_Master_GMSB_Files_List.txt";
+                const std::string infilename = "KUCMS_Ntuple_Master_BG_Met0_Files_List.txt";
+                //const std::string infilename = "KUCMS_Ntuple_Master_GMSB_Files_List.txt";
                 //const std::string infilename = "KUCMS_Ntuple_Test_GMSB_Files_List.txt";
                 //const std::string infilename = "KUCMS_Ntuple_Master_JetHT_Files_List.txt";
                 //const std::string infilename = "KUCMS_Ntuple_Test_Files_List.txt";
@@ -31,14 +32,19 @@ int main ( int argc, char *argv[] ){
                 //const std::string outfilename = "_LLPgama_Skim_v16_rhe0p2.root";
 				//const std::string outfilename = "_LLPgama_Skim_v17_noseedmatch_scstudies.root";
                 //const std::string outfilename = "_Ntuple_v19_LLPgama_Skim_v17_scstudies2.root";
-                const std::string outfilename = "_Ntuple_v19_LLPgama_Skim_v18_rjrstudies.root";
+                //const std::string outfilename = "_Ntuple_v19_LLPgama_Skim_v19_rjrcombo.root";
+                //const std::string outfilename = "_Ntuple_v19_LLPgama_Skim_v19_rawmet_rjrcombo.root";
+				const std::string outfilename = "_Ntuple_v19_LLPgama_Skim_v19_Met0_rjrcombo.root";
 
 				bool hasGenInfo = true;
                 //bool hasGenInfo = false;
-				bool genSigPerfect = true;
-                //bool genSigPerfect = false;
+				//bool genSigPerfect = true;
+                bool genSigPerfect = false;
+                 //int skipCnt = 0;// Normal
+				//int skipCnt = 10;// Met0 GMSB
+                int skipCnt = 100;// Met0 QCD
                 KUCMSAodSkimmer llpgana;
-                llpgana.kucmsAodSkimmer( listdir, eosdir, infilename, outfilename, hasGenInfo, genSigPerfect );
+                llpgana.kucmsAodSkimmer( listdir, eosdir, infilename, outfilename, hasGenInfo, genSigPerfect, skipCnt );
     //}
     return 1;
 

@@ -1,6 +1,6 @@
 from ROOT import *
 
-can_x_width = 700
+can_x_width = 800
 can_y_width = 600
 
 def fixOverlay():
@@ -106,13 +106,13 @@ def setTDRStyle():
 
         tdrStyle.SetTitleColor(1, "XYZ")
         tdrStyle.SetTitleFont(42, "XYZ")
-        tdrStyle.SetTitleSize(0.05, "XYZ")
+        tdrStyle.SetTitleSize(0.025, "XYZ")
         #tdrStyle.SetTitleXSize(0.06)  #// Another way to set the size?  0.02
         #tdrStyle.SetTitleYSize(0.06) 
         #tdrStyle.SetTitleXOffset(0.9)
-        tdrStyle.SetTitleXOffset(1.0)
+        tdrStyle.SetTitleXOffset(0.8)
         #tdrStyle.SetTitleYOffset(1.1)
-        tdrStyle.SetTitleYOffset(1.4)
+        tdrStyle.SetTitleYOffset(1.2)
         #//  tdrStyle.SetTitleOffset(1.1, "Y")  // Another way to set the Offset
 
 #// For the axis labels:
@@ -121,7 +121,7 @@ def setTDRStyle():
         tdrStyle.SetLabelFont(42, "XYZ")
         tdrStyle.SetLabelOffset(0.007, "XYZ")
         #tdrStyle.SetLabelSize(0.05, "XYZ")
-        tdrStyle.SetLabelSize(0.03, "XYZ")
+        tdrStyle.SetLabelSize(0.02, "XYZ")
 
 #// For the axis:
 
