@@ -48,44 +48,56 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
 
     mg = TMultiGraph();
 
-    for histname, tree, infile1, lego, cutside in hist_list :
+    for histname, infile1, infile2, lego, cutside in hist_list :
     
+        tree = ''
         f1.append(TFile.Open(infile1))
         if tree == '' : hist = histname
         else : hist = tree+'/'+histname
  
-        #f2.append(TFile.Open(infile2))
-        #if tree == '' : hist = histname
-        #else : hist = tree+'/'+histname
+        f2.append(TFile.Open(infile2))
+        if tree == '' : hist = histname
+        else : hist = tree+'/'+histname
 
         orighist1 = f1[n].Get(hist)
-        #orighist2 = f2[n].Get(hist)
+        orighist2 = f2[n].Get(hist)
         htitle = 'hist' + str(n)
         lenmybins = int(orighist1.GetNbinsX())
         h1.append(TGraphErrors(lenmybins))
         #h1.append(TGraphErrors(lenmybins))
         norm1 = float(orighist1.Integral())
-        #norm2 = float(orighist2.Integral(1,lenmybins-1))
+        norm2 = float(orighist2.Integral())
         if norm1 == 0 : norm1 = 1.0
-        #if norm2 == 0 : norm2 = 1.0
-        if cutside == "no" : norm1 = 1.0;
+        if norm2 == 0 : norm2 = 1.0
+        if cutside == "no" : 
+            norm1 = 1.0
+            norm2 = 1.0
 
         for bn in range(1,lenmybins):
             binmid1 = float(orighist1.GetBinCenter(bn))
             #binmid2 = float(orighist2.GetBinCenter(bn))
             obinval1 = float(orighist1.GetBinContent(bn)/norm1)
-            #obinval2 = float(orighist2.GetBinContent(bn)/norm2)
+            obinval2 = float(orighist2.GetBinContent(bn)/norm2)
             binerr1 = float(orighist1.GetBinError(bn)/norm1)
-            #binerr2 = float(orighist2.GetBinError(bn)/norm2)
+            binerr2 = float(orighist2.GetBinError(bn)/norm2)
             binwidth1 = float(orighist1.GetBinWidth(bn))
             #binwidth2 = float(orighist2.GetBinWidth(bn))
-            h1[n].SetPoint(bn,binmid1,obinval1)
-            #h1[n+1].SetPoint(bn,binmid2,obinval2)
-            if obinval1 == 0 : obinval1 = 1;
+            rval = 0
+            if obinval2 == 0 and obinval1 == 0 : rval = 0.0000000001
+            if obinval2 == 0 and obinval1 > 0 : rval = 0.0000000001
+            if obinval2 > 0 and obinval1 > 0 : rval = float(obinval1/obinval2)
+            h1[n].SetPoint(bn,binmid1,rval)
+            #h1[n].SetPoint(bn,binmid1,obinval1)
+            #h1[n].SetPoint(bn,binmid1,obinval2)
+            #if obinval1 == 0 : obinval1 = 1;
             #if obinval2 == 0 : obinval2 = 1; 
-            widtherr1 = 0 #binwidth1/(2*sqrt(obinval1))
+            #widtherr1 = 0 #binwidth1/(2*sqrt(obinval1))
             #widtherr2 = 0 #binwidth2/(2*sqrt(obinval2))
-            h1[n].SetPointError(bn,widtherr1,binerr1)
+            #if obinval2 == 0 : obinval2 = 1
+            #t1 = binerr1/obinval2
+            #t2 = obinval1*binerr2/(obinval2*obinval2)
+            #rerror = sqrt(t1*t1+t2*t2) 
+            #h1[n].SetPointError(bn,widtherr1,rerror)
             #h1[n+1].SetPointError(bn,widtherr2,binerr2)
 
         h1[n].UseCurrentStyle()
@@ -193,8 +205,8 @@ ytitle = 'a.u.'
 htitle = ''
 #islogx = True
 islogx = False
-islogy = True
-#islogy = False
+#islogy = True
+islogy = False
 
 #---------------------------------------------------------------
 #hl_mc_fms_loc = [
@@ -213,6 +225,10 @@ t = [0.2,0.825,0.0,0.175,0.225] # titles position
 
 y1 = [ 0.000001, 100000000 ]
 y1l = [ 0.00001, 4 ]
+#yn = [0.75,1.25 ]
+#yn = [0.95,1.05 ]
+yn = [0.98,1.02 ]
+y = [0.95,1.05 ]
 norm = 'no'
 norml = 'yes'
 
@@ -245,7 +261,8 @@ rhname1a = [ "rjrAX2QSum" ]
 #rhname1 = [ "rjrVSum" ]
 #rhname1a = [ "rjrVSum" ]
 #x1 = [ 0, 3600 ]
-x1 = [ 0, 500 ]
+x1 = [ 0, 400 ]
+#x1 = [ 0, 500 ]
 
 #rhname1 = [ "rjrX2aPtS" ]
 #rhname1 = [ "rjrX2bPtS" ]
@@ -286,72 +303,72 @@ x1 = [ 0, 500 ]
 #rhname1a = [ "selPhoNMBetaPmt" ]
 #x1 = [ 0, 2 ]
 
-#rjrgjpj = "rjr_multihist_files/KUCMS_GJets_v19_wt2_RjrSkim_v21_phojet_alt2_tc_multiHists.root"
-#rjrgjpm = "rjr_multihist_files/KUCMS_GJets_v19_wt2_RjrSkim_v21_phomet_c1a_tc_multiHists.root"
-#rjrgjpj = "rjr_multihist_files/KUCMS_GJets_v19_wt2_RjrSkim_v21_phojet_met0_tc_multiHists.root"
-#rjrgjpm = "rjr_multihist_files/KUCMS_GJets_v19_wt2_RjrSkim_v21_phomet_met0_tc_multiHists.root"
-#rjrgjpj = "rjr_multihist_files/KUCMS_GJets_v19_wt2_RjrSkim_v21a_phojet_tc_multiHists.root"
-#rjrgjpm = "rjr_multihist_files/KUCMS_GJets_v19_wt2_RjrSkim_v21a_phomet_tc_multiHists.root"
+#rjrgjpj = "rjr_multihist_files/KUCMS_GJets_v19_wt2_RjrSkim_v21_phojet_alt2_ztc4_multiHists.root"
+#rjrgjpm = "rjr_multihist_files/KUCMS_GJets_v19_wt2_RjrSkim_v21_phomet_c1a_ztc4_multiHists.root"
+#rjrgjpj = "rjr_multihist_files/KUCMS_GJets_v19_wt2_RjrSkim_v21_phojet_met0_ztc4_multiHists.root"
+#rjrgjpm = "rjr_multihist_files/KUCMS_GJets_v19_wt2_RjrSkim_v21_phomet_met0_ztc4_multiHists.root"
+#rjrgjpj = "rjr_multihist_files/KUCMS_GJets_v19_wt2_RjrSkim_v21a_phojet_ztc4_multiHists.root"
+#rjrgjpm = "rjr_multihist_files/KUCMS_GJets_v19_wt2_RjrSkim_v21a_phomet_ztc4_multiHists.root"
 
-rjrgjpj = "rjr_multihist_files/KUCMS_GJets_v19_wt2_RjrSkim_v22_rawmet_phojet_tc4_multiHists.root"
-rjrgjpm = "rjr_multihist_files/KUCMS_GJets_v19_wt2_RjrSkim_v22_rawmet_phomet_tc4_multiHists.root"
-#rjrgjpj = "rjr_multihist_files/KUCMS_GJets_v19_wt2_RjrSkim_v22_ootmet_phojet_tc4_multiHists.root"
-#rjrgjpm = "rjr_multihist_files/KUCMS_GJets_v19_wt2_RjrSkim_v22_ootmet_phomet_tc4_multiHists.root"
+rjrgjpjr = "rjr_multihist_files/KUCMS_GJets_v19_wt2_RjrSkim_v22_rawmet_phojet_ztc4_multiHists.root"
+rjrgjpmr = "rjr_multihist_files/KUCMS_GJets_v19_wt2_RjrSkim_v22_rawmet_phomet_ztc4_multiHists.root"
+rjrgjpjo = "rjr_multihist_files/KUCMS_GJets_v19_wt2_RjrSkim_v22_ootmet_phojet_ztc4_multiHists.root"
+rjrgjpmo = "rjr_multihist_files/KUCMS_GJets_v19_wt2_RjrSkim_v22_ootmet_phomet_ztc4_multiHists.root"
 
-#rjrg1pj = "rjr_multihist_files/KUCMS_GMSB_L100_T30_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21a_phojet_tc_multiHists.root"
-#rjrg1pm = "rjr_multihist_files/KUCMS_GMSB_L100_T30_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21a_phomet_tc_multiHists.root"
-#rjrg3pj = "rjr_multihist_files/KUCMS_GMSB_L350_T30_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21a_phojet_tc_multiHists.root"
-#rjrg3pm = "rjr_multihist_files/KUCMS_GMSB_L350_T30_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21a_phomet_tc_multiHists.root"
+#rjrg1pj = "rjr_multihist_files/KUCMS_GMSB_L100_T30_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21a_phojet_ztc4_multiHists.root"
+#rjrg1pm = "rjr_multihist_files/KUCMS_GMSB_L100_T30_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21a_phomet_ztc4_multiHists.root"
+#rjrg3pj = "rjr_multihist_files/KUCMS_GMSB_L350_T30_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21a_phojet_ztc4_multiHists.root"
+#rjrg3pm = "rjr_multihist_files/KUCMS_GMSB_L350_T30_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21a_phomet_ztc4_multiHists.root"
 
-rjrg1pj = "rjr_multihist_files/KUCMS_GMSB_L100_T30_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v22_rawmet_phojet_tc4_multiHists.root"
-rjrg1pm = "rjr_multihist_files/KUCMS_GMSB_L100_T30_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v22_rawmet_phomet_tc4_multiHists.root"
-rjrg3pj = "rjr_multihist_files/KUCMS_GMSB_L350_T30_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v22_rawmet_phojet_tc4_multiHists.root"
-rjrg3pm = "rjr_multihist_files/KUCMS_GMSB_L350_T30_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v22_rawmet_phomet_tc4_multiHists.root"
-#rjrg1pj = "rjr_multihist_files/KUCMS_GMSB_L100_T30_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v22_ootmet_phojet_tc4_multiHists.root"
-#rjrg1pm = "rjr_multihist_files/KUCMS_GMSB_L100_T30_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v22_ootmet_phomet_tc4_multiHists.root"
-#rjrg3pj = "rjr_multihist_files/KUCMS_GMSB_L350_T30_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v22_ootmet_phojet_tc4_multiHists.root"
-#rjrg3pm = "rjr_multihist_files/KUCMS_GMSB_L350_T30_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v22_ootmet_phomet_tc4_multiHists.root"
+rjrg1pjr = "rjr_multihist_files/KUCMS_GMSB_L100_T30_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v22_rawmet_phojet_ztc4_multiHists.root"
+rjrg1pmr = "rjr_multihist_files/KUCMS_GMSB_L100_T30_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v22_rawmet_phomet_ztc4_multiHists.root"
+rjrg3pjr = "rjr_multihist_files/KUCMS_GMSB_L350_T30_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v22_rawmet_phojet_ztc4_multiHists.root"
+rjrg3pmr = "rjr_multihist_files/KUCMS_GMSB_L350_T30_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v22_rawmet_phomet_ztc4_multiHists.root"
+rjrg1pjo = "rjr_multihist_files/KUCMS_GMSB_L100_T30_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v22_ootmet_phojet_ztc4_multiHists.root"
+rjrg1pmo = "rjr_multihist_files/KUCMS_GMSB_L100_T30_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v22_ootmet_phomet_ztc4_multiHists.root"
+rjrg3pjo = "rjr_multihist_files/KUCMS_GMSB_L350_T30_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v22_ootmet_phojet_ztc4_multiHists.root"
+rjrg3pmo = "rjr_multihist_files/KUCMS_GMSB_L350_T30_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v22_ootmet_phomet_ztc4_multiHists.root"
 
-#rjrg1pj = "rjr_multihist_files/KUCMS_GMSB_L100_T11_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phojet_tc_multiHists.root"
-#rjrg1pm = "rjr_multihist_files/KUCMS_GMSB_L100_T11_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phomet_tc_multiHists.root"
-#rjrg3pj = "rjr_multihist_files/KUCMS_GMSB_L350_T11_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phojet_tc_multiHists.root"
-#rjrg3pm = "rjr_multihist_files/KUCMS_GMSB_L350_T11_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phomet_tc_multiHists.root"
+#rjrg1pj = "rjr_multihist_files/KUCMS_GMSB_L100_T11_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phojet_ztc4_multiHists.root"
+#rjrg1pm = "rjr_multihist_files/KUCMS_GMSB_L100_T11_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phomet_ztc4_multiHists.root"
+#rjrg3pj = "rjr_multihist_files/KUCMS_GMSB_L350_T11_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phojet_ztc4_multiHists.root"
+#rjrg3pm = "rjr_multihist_files/KUCMS_GMSB_L350_T11_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phomet_ztc4_multiHists.root"
 
-#rjrg1pj = "rjr_multihist_files/KUCMS_GMSB_L100_T22_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phojet_tc_multiHists.root"
-#rjrg1pm = "rjr_multihist_files/KUCMS_GMSB_L100_T22_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phomet_tc_multiHists.root"
-#rjrg3pj = "rjr_multihist_files/KUCMS_GMSB_L350_T22_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phojet_tc_multiHists.root"
-#rjrg3pm = "rjr_multihist_files/KUCMS_GMSB_L350_T22_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phomet_tc_multiHists.root"
+#rjrg1pj = "rjr_multihist_files/KUCMS_GMSB_L100_T22_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phojet_ztc4_multiHists.root"
+#rjrg1pm = "rjr_multihist_files/KUCMS_GMSB_L100_T22_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phomet_ztc4_multiHists.root"
+#rjrg3pj = "rjr_multihist_files/KUCMS_GMSB_L350_T22_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phojet_ztc4_multiHists.root"
+#rjrg3pm = "rjr_multihist_files/KUCMS_GMSB_L350_T22_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phomet_ztc4_multiHists.root"
 
-#rjrg1pj = "rjr_multihist_files/KUCMS_GMSB_L100_T12_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phojet_tc_multiHists.root"
-#rjrg1pm = "rjr_multihist_files/KUCMS_GMSB_L100_T12_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phomet_tc_multiHists.root"
-#rjrg3pj = "rjr_multihist_files/KUCMS_GMSB_L350_T12_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phojet_tc_multiHists.root"
-#rjrg3pm = "rjr_multihist_files/KUCMS_GMSB_L350_T12_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phomet_tc_multiHists.root"
+#rjrg1pj = "rjr_multihist_files/KUCMS_GMSB_L100_T12_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phojet_ztc4_multiHists.root"
+#rjrg1pm = "rjr_multihist_files/KUCMS_GMSB_L100_T12_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phomet_ztc4_multiHists.root"
+#rjrg3pj = "rjr_multihist_files/KUCMS_GMSB_L350_T12_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phojet_ztc4_multiHists.root"
+#rjrg3pm = "rjr_multihist_files/KUCMS_GMSB_L350_T12_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phomet_ztc4_multiHists.root"
 
-#rjrg1pj = "rjr_multihist_files/KUCMS_GMSB_L100_T50_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phojet_tc_multiHists.root"
-#rjrg1pm = "rjr_multihist_files/KUCMS_GMSB_L100_T50_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phomet_tc_multiHists.root"
-#rjrg3pj = "rjr_multihist_files/KUCMS_GMSB_L350_T50_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phojet_tc_multiHists.root"
-#rjrg3pm = "rjr_multihist_files/KUCMS_GMSB_L350_T50_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phomet_tc_multiHists.root"
-
-
-#rjrqcpj = "rjr_multihist_files/KUCMS_QCD_v19_wt2_RjrSkim_v21_phojet_alt2_tc_multiHists.root"
-#rjrqcpm = "rjr_multihist_files/KUCMS_QCD_v19_wt2_RjrSkim_v21_phomet_c1a_tc_multiHists.root"
-#rjrqcpj = "rjr_multihist_files/KUCMS_QCD_v19_wt2_RjrSkim_v21_phojet_met0_tc_multiHists.root"
-#rjrqcpm = "rjr_multihist_files/KUCMS_QCD_v19_wt2_RjrSkim_v21_phomet_met0_tc_multiHists.root"
-#rjrqcpj = "rjr_multihist_files/KUCMS_QCD_v19_wt2_RjrSkim_v21a_phojet_tc_multiHists.root"
-#rjrqcpm = "rjr_multihist_files/KUCMS_QCD_v19_wt2_RjrSkim_v21a_phomet_tc_multiHists.root"
-
-rjrqcpj = "rjr_multihist_files/KUCMS_QCD_v19_wt2_RjrSkim_v22_rawmet_phojet_tc4_multiHists.root"
-rjrqcpm = "rjr_multihist_files/KUCMS_QCD_v19_wt2_RjrSkim_v22_rawmet_phomet_tc4_multiHists.root"
-#rjrqcpj = "rjr_multihist_files/KUCMS_QCD_v19_wt2_RjrSkim_v22_ootmet_phojet_tc4_multiHists.root"
-#rjrqcpm = "rjr_multihist_files/KUCMS_QCD_v19_wt2_RjrSkim_v22_ootmet_phomet_tc4_multiHists.root"
+#rjrg1pj = "rjr_multihist_files/KUCMS_GMSB_L100_T50_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phojet_ztc4_multiHists.root"
+#rjrg1pm = "rjr_multihist_files/KUCMS_GMSB_L100_T50_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phomet_ztc4_multiHists.root"
+#rjrg3pj = "rjr_multihist_files/KUCMS_GMSB_L350_T50_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phojet_ztc4_multiHists.root"
+#rjrg3pm = "rjr_multihist_files/KUCMS_GMSB_L350_T50_v19_genSigPerfect_nSigPho1_wt2_RjrSkim_v21_phomet_ztc4_multiHists.root"
 
 
-rjrdpj = "rjr_multihist_files/KUCMS_DEG_v19_wt2_RjrSkim_v22_rawmet_phojet_tc4_multiHists.root"
-rjrdpm = "rjr_multihist_files/KUCMS_DEG_v19_wt2_RjrSkim_v22_rawmet_phomet_tc4_multiHists.root"
-#rjrdpj = "rjr_multihist_files/KUCMS_DEG_v19_wt2_RjrSkim_v22_ootmet_phojet_tc4_multiHists.root"
-#rjrdpm = "rjr_multihist_files/KUCMS_DEG_v19_wt2_RjrSkim_v22_ootmet_phomet_tc4_multiHists.root"
+#rjrqcpj = "rjr_multihist_files/KUCMS_QCD_v19_wt2_RjrSkim_v21_phojet_alt2_ztc4_multiHists.root"
+#rjrqcpm = "rjr_multihist_files/KUCMS_QCD_v19_wt2_RjrSkim_v21_phomet_c1a_ztc4_multiHists.root"
+#rjrqcpj = "rjr_multihist_files/KUCMS_QCD_v19_wt2_RjrSkim_v21_phojet_met0_ztc4_multiHists.root"
+#rjrqcpm = "rjr_multihist_files/KUCMS_QCD_v19_wt2_RjrSkim_v21_phomet_met0_ztc4_multiHists.root"
+#rjrqcpj = "rjr_multihist_files/KUCMS_QCD_v19_wt2_RjrSkim_v21a_phojet_ztc4_multiHists.root"
+#rjrqcpm = "rjr_multihist_files/KUCMS_QCD_v19_wt2_RjrSkim_v21a_phomet_ztc4_multiHists.root"
 
-boutname = 'llpa_rjr_rawmet'
+rjrqcpjr = "rjr_multihist_files/KUCMS_QCD_v19_wt2_RjrSkim_v22_rawmet_phojet_ztc4_multiHists.root"
+rjrqcpmr = "rjr_multihist_files/KUCMS_QCD_v19_wt2_RjrSkim_v22_rawmet_phomet_ztc4_multiHists.root"
+rjrqcpjo = "rjr_multihist_files/KUCMS_QCD_v19_wt2_RjrSkim_v22_ootmet_phojet_ztc4_multiHists.root"
+rjrqcpmo = "rjr_multihist_files/KUCMS_QCD_v19_wt2_RjrSkim_v22_ootmet_phomet_ztc4_multiHists.root"
+
+
+rjrdpjr = "rjr_multihist_files/KUCMS_DEG_v19_wt2_RjrSkim_v22_rawmet_phojet_ztc4_multiHists.root"
+rjrdpmr = "rjr_multihist_files/KUCMS_DEG_v19_wt2_RjrSkim_v22_rawmet_phomet_ztc4_multiHists.root"
+rjrdpjo = "rjr_multihist_files/KUCMS_DEG_v19_wt2_RjrSkim_v22_ootmet_phojet_ztc4_multiHists.root"
+rjrdpmo = "rjr_multihist_files/KUCMS_DEG_v19_wt2_RjrSkim_v22_ootmet_phomet_ztc4_multiHists.root"
+
+boutname = 'llpa_rjr'
 title = ' 2017 '
 ptnorm = ''
 #isonorm = 'hadTowOverEM < 0.02'
@@ -381,32 +398,32 @@ for rhname,rhnamea,pt in zip(rhname1,rhname1a,ptlist) :
 #                #[rhname,"",rjrgmsbl100t33p1c02,"L100t33",norm],[rhname,"",rjrgmsbl300t33p1c02,"L300t33",norm]]
 #                ]
 
-  inhistlist1 = [[rhname,"",rjrgjpm,"GJet PM",norm ],#[rhname,"",rjrgjpj,"GJets PJ",norm],
-                [rhname,"",rjrqcpm,"QCD PM",norm ],#[rhname,"",rjrqcpj,"QCD PJ",norm],
-                [rhname,"",rjrg1pm,"L100 PM",norm],#[rhname,"",rjrg1pj,"L100 PJ",norm],
-                [rhname,"",rjrg3pm,"L350 PM",norm],#[rhname,"",rjrg3pj,"L350 PJ",norm],
-                [rhname,"",rjrdpm,"DEG PM",norm],
+#  inhistlist1 = [[rhname,"",rjrgjpm,"GJet PM",norm ],#[rhname,"",rjrgjpj,"GJets PJ",norm],
+#                [rhname,"",rjrqcpm,"QCD PM",norm ],#[rhname,"",rjrqcpj,"QCD PJ",norm],
+#                [rhname,"",rjrg1pm,"L100 PM",norm],#[rhname,"",rjrg1pj,"L100 PJ",norm],
+#                [rhname,"",rjrg3pm,"L350 PM",norm],#[rhname,"",rjrg3pj,"L350 PJ",norm],
+#                [rhname,"",rjrdpm,"DEG PM",norm],
+#                ]
+
+#  inhistlist2 = [[rhname,"",rjrgjpj,"GJets PJ",norm],
+#                [rhname,"",rjrqcpj,"QCD PJ",norm],
+#                [rhname,"",rjrg1pj,"L100 PJ",norm],
+#                [rhname,"",rjrg3pj,"L350 PJ",norm],
+#                [rhname,"",rjrdpj,"DEG PJ",norm],
+#                ]
+
+  inhistlist1a = [[rhnamea,rjrgjpmr,rjrgjpmo,"GJet PM",norm ],#[rhname,"",rjrgjpj,"GJets PJ",norm],
+                [rhnamea,rjrqcpmr,rjrqcpmo,"QCD PM",norm ],#[rhname,"",rjrqcpj,"QCD PJ",norm],
+                [rhnamea,rjrg1pmr,rjrg1pmo,"L100 PM",norm],#[rhname,"",rjrg1pj,"L100 PJ",norm],
+                [rhnamea,rjrg3pmr,rjrg3pmo,"L350 PM",norm],#[rhname,"",rjrg3pj,"L350 PJ",norm],
+                [rhnamea,rjrdpmr,rjrdpmo,"DEG PM",norm],
                 ]
 
-  inhistlist2 = [[rhname,"",rjrgjpj,"GJets PJ",norm],
-                [rhname,"",rjrqcpj,"QCD PJ",norm],
-                [rhname,"",rjrg1pj,"L100 PJ",norm],
-                [rhname,"",rjrg3pj,"L350 PJ",norm],
-                [rhname,"",rjrdpj,"DEG PJ",norm],
-                ]
-
-  inhistlist1a = [#[rhnamea,"",rjrgjpm,"GJet PM",norm ],#[rhname,"",rjrgjpj,"GJets PJ",norm],
-                #[rhnamea,"",rjrqcpm,"QCD PM",norm ],#[rhname,"",rjrqcpj,"QCD PJ",norm],
-                [rhnamea,"",rjrg1pm,"L100 PM",norm],#[rhname,"",rjrg1pj,"L100 PJ",norm],
-                [rhnamea,"",rjrg3pm,"L350 PM",norm],#[rhname,"",rjrg3pj,"L350 PJ",norm],
-                [rhnamea,"",rjrdpm,"DEG PM",norm],
-                ]
-
-  inhistlist2a = [#[rhnamea,"",rjrgjpj,"GJets PJ",norm],
-                #[rhnamea,"",rjrqcpj,"QCD PJ",norm],
-                [rhnamea,"",rjrg1pj,"L100 PJ",norm],
-                [rhnamea,"",rjrg3pj,"L350 PJ",norm],
-                [rhnamea,"",rjrdpj,"DEG PJ",norm],
+  inhistlist2a = [[rhnamea,rjrgjpjr,rjrgjpjo,"GJets PJ",norm],
+                [rhnamea,rjrqcpjr,rjrqcpjo,"QCD PJ",norm],
+                [rhnamea,rjrg1pjr,rjrg1pjo,"L100 PJ",norm],
+                [rhnamea,rjrg3pjr,rjrg3pjo,"L350 PJ",norm],
+                [rhnamea,rjrdpjr,rjrdpjo,"DEG PJ",norm],
                 ]
 
   date = time.strftime('%d%m%Y') +  time.strftime('%H%M%S')
@@ -420,35 +437,35 @@ for rhname,rhnamea,pt in zip(rhname1,rhname1a,ptlist) :
   outname1 = soutname1 + rhnamea
   outname2 = soutname2 + rhnamea
   layout = { 'xtitle' : rhnamea, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'legtitle' : legtitle }
-  dostack(inhistlist1a, outname1, date, layout, ptitle,  y1, x1, l, t)
-  dostack(inhistlist2a, outname2, date, layout, ptitle,  y1, x1, l, t)
+  dostack(inhistlist1a, outname1, date, layout, ptitle,  y, x1, l, t)
+  dostack(inhistlist2a, outname2, date, layout, ptitle,  y, x1, l, t)
 
-  inhistlist1 = [[rhname,"",rjrgjpm,"GJet PM",norml ],#[rhname,"",rjrgjpj,"GJets PJ",norm],
-                [rhname,"",rjrqcpm,"QCD PM",norml ],#[rhname,"",rjrqcpj,"QCD PJ",norm],
-                [rhname,"",rjrg1pm,"L100 PM",norml ],#[rhname,"",rjrg1pj,"L100 PJ",norm],
-                [rhname,"",rjrg3pm,"L350 PM",norml ],#[rhname,"",rjrg3pj,"L350 PJ",norm],
-                [rhname,"",rjrdpm,"DEG PM",norml ],
+#  inhistlist1 = [[rhname,"",rjrgjpm,"GJet PM",norml ],#[rhname,"",rjrgjpj,"GJets PJ",norm],
+#                [rhname,"",rjrqcpm,"QCD PM",norml ],#[rhname,"",rjrqcpj,"QCD PJ",norm],
+#                [rhname,"",rjrg1pm,"L100 PM",norml ],#[rhname,"",rjrg1pj,"L100 PJ",norm],
+#                [rhname,"",rjrg3pm,"L350 PM",norml ],#[rhname,"",rjrg3pj,"L350 PJ",norm],
+#                [rhname,"",rjrdpm,"DEG PM",norml ],
+#                ]
+
+#  inhistlist2 = [[rhname,"",rjrgjpj,"GJets PJ",norml],
+#                [rhname,"",rjrqcpj,"QCD PJ",norml],
+#                [rhname,"",rjrg1pj,"L100 PJ",norml],
+#                [rhname,"",rjrg3pj,"L350 PJ",norml],
+#                [rhname,"",rjrdpj,"DEG PJ",norml ],
+#                ]
+
+  inhistlist1a = [[rhnamea,rjrgjpmr,rjrgjpmo,"GJet PM",norml ],#[rhname,"",rjrgjpj,"GJets PJ",norm],
+                [rhnamea,rjrqcpmr,rjrqcpmo,"QCD PM",norml ],#[rhname,"",rjrqcpj,"QCD PJ",norm],
+                [rhnamea,rjrg1pmr,rjrg1pmo,"L100 PM",norml],#[rhname,"",rjrg1pj,"L100 PJ",norm],
+                [rhnamea,rjrg3pmr,rjrg3pmo,"L350 PM",norml],#[rhname,"",rjrg3pj,"L350 PJ",norm],
+                [rhnamea,rjrdpmr,rjrdpmo,"DEG PM",norml],
                 ]
 
-  inhistlist2 = [[rhname,"",rjrgjpj,"GJets PJ",norml],
-                [rhname,"",rjrqcpj,"QCD PJ",norml],
-                [rhname,"",rjrg1pj,"L100 PJ",norml],
-                [rhname,"",rjrg3pj,"L350 PJ",norml],
-                [rhname,"",rjrdpj,"DEG PJ",norml ],
-                ]
-
-  inhistlist1a = [#[rhnamea,"",rjrgjpm,"GJet PM",norml ],#[rhname,"",rjrgjpj,"GJets PJ",norm],
-                #[rhnamea,"",rjrqcpm,"QCD PM",norml ],#[rhname,"",rjrqcpj,"QCD PJ",norm],
-                [rhnamea,"",rjrg1pm,"L100 PM",norml],#[rhname,"",rjrg1pj,"L100 PJ",norm],
-                [rhnamea,"",rjrg3pm,"L350 PM",norml],#[rhname,"",rjrg3pj,"L350 PJ",norm],
-                [rhnamea,"",rjrdpm,"DEG PM",norml],
-                ]
-
-  inhistlist2a = [#[rhnamea,"",rjrgjpj,"GJets PJ",norml],
-                #[rhnamea,"",rjrqcpj,"QCD PJ",norml],
-                [rhnamea,"",rjrg1pj,"L100 PJ",norml],
-                [rhnamea,"",rjrg3pj,"L350 PJ",norml],
-                [rhnamea,"",rjrdpj,"DEG PJ",norml ],
+  inhistlist2a = [[rhnamea,rjrgjpjr,rjrgjpjo,"GJets PJ",norml],
+                [rhnamea,rjrqcpjr,rjrqcpjo,"QCD PJ",norml],
+                [rhnamea,rjrg1pjr,rjrg1pjo,"L100 PJ",norml],
+                [rhnamea,rjrg3pjr,rjrg3pjo,"L350 PJ",norml],
+                [rhnamea,rjrdpjr,rjrdpjo,"DEG PJ",norml ],
                 ]
 
   date = time.strftime('%d%m%Y') +  time.strftime('%H%M%S')
@@ -462,8 +479,8 @@ for rhname,rhnamea,pt in zip(rhname1,rhname1a,ptlist) :
   outname1 = soutname1 + rhnamea + "_norm"
   outname2 = soutname2 + rhnamea + "_norm"
   layout = { 'xtitle' : rhnamea, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'legtitle' : legtitle }
-  dostack(inhistlist1a, outname1, date, layout, ptitle,  y1l, x1, l, t)
-  dostack(inhistlist2a, outname2, date, layout, ptitle,  y1l, x1, l, t)
+  #dostack(inhistlist1a, outname1, date, layout, ptitle,  yn, x1, l, t)
+  #dostack(inhistlist2a, outname2, date, layout, ptitle,  yn, x1, l, t)
 
 
 

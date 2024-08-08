@@ -59,7 +59,7 @@
 
 // KUCMS
 #include "KUCMSItemManager.hh"
-#include "KUCMSBranchManager2.hh"
+#include "KUCMSBranchManager.hh"
 
 #include "KUCMSHelperFunctions.hh"
 #include "KUCMSRootHelperFunctions.hh"

@@ -166,8 +166,8 @@ public :
    vector<float>   *rjrAX2GMean;
    vector<float>   *rjrAX2NAve;
    vector<float>   *rjrAX2NGMean;
-   vector<float>   *rjrAX2NVSum;
-   vector<float>   *rjrAX2VSum;
+   vector<float>   *rjrAX2NQSum;
+   vector<float>   *rjrAX2QSum;
    vector<float>   *rjrAX2aMass;
    vector<float>   *rjrAX2bMass;
    vector<float>   *rjrDiffPJX2a;
@@ -215,8 +215,8 @@ public :
    std::vector<float>   *rjrX2GMean;
    std::vector<float>   *rjrX2NAve;
    std::vector<float>   *rjrX2NGMean;
-   std::vector<float>   *rjrX2NVSum;
-   std::vector<float>   *rjrX2VSum;
+   std::vector<float>   *rjrX2NQSum;
+   std::vector<float>   *rjrX2QSum;
    std::vector<float>   *rjrX2aCosA;
    std::vector<float>   *rjrX2aMass;
    std::vector<float>   *rjrX2aPtS;
@@ -365,8 +365,8 @@ public :
    TBranch        *b_rjrAX2GMean;   //!
    TBranch        *b_rjrAX2NAve;   //!
    TBranch        *b_rjrAX2NGMean;   //!
-   TBranch        *b_rjrAX2NVSum;   //!
-   TBranch        *b_rjrAX2VSum;   //!
+   TBranch        *b_rjrAX2NQSum;   //!
+   TBranch        *b_rjrAX2QSum;   //!
    TBranch        *b_rjrAX2aMass;   //!
    TBranch        *b_rjrAX2bMass;   //!
    TBranch        *b_rjrDiffPJX2a;   //!
@@ -408,8 +408,8 @@ public :
    TBranch        *b_rjrX2GMean;   //!
    TBranch        *b_rjrX2NAve;   //!
    TBranch        *b_rjrX2NGMean;   //!
-   TBranch        *b_rjrX2NVSum;   //!
-   TBranch        *b_rjrX2VSum;   //!
+   TBranch        *b_rjrX2NQSum;   //!
+   TBranch        *b_rjrX2QSum;   //!
    TBranch        *b_rjrX2aCosA;   //!
    TBranch        *b_rjrX2aMass;   //!
    TBranch        *b_rjrX2aPtS;   //!
@@ -602,8 +602,8 @@ void kuSkimTree::Init(TTree *tree)
    rjrAX2GMean = 0;
    rjrAX2NAve = 0;
    rjrAX2NGMean = 0;
-   rjrAX2NVSum = 0;
-   rjrAX2VSum = 0;
+   rjrAX2NQSum = 0;
+   rjrAX2QSum = 0;
    rjrAX2aMass = 0;
    rjrAX2bMass = 0;
    rjrDiffPJX2a = 0;
@@ -644,8 +644,8 @@ void kuSkimTree::Init(TTree *tree)
    rjrX2GMean = 0;
    rjrX2NAve = 0;
    rjrX2NGMean = 0;
-   rjrX2NVSum = 0;
-   rjrX2VSum = 0;
+   rjrX2NQSum = 0;
+   rjrX2QSum = 0;
    rjrX2aCosA = 0;
    rjrX2aMass = 0;
    rjrX2aPtS = 0;
@@ -798,8 +798,12 @@ void kuSkimTree::Init(TTree *tree)
    fChain->SetBranchAddress("rjrAX2GMean", &rjrAX2GMean, &b_rjrAX2GMean);
    fChain->SetBranchAddress("rjrAX2NAve", &rjrAX2NAve, &b_rjrAX2NAve);
    fChain->SetBranchAddress("rjrAX2NGMean", &rjrAX2NGMean, &b_rjrAX2NGMean);
-   fChain->SetBranchAddress("rjrAX2NVSum", &rjrAX2NVSum, &b_rjrAX2NVSum);
-   fChain->SetBranchAddress("rjrAX2VSum", &rjrAX2VSum, &b_rjrAX2VSum);
+
+   fChain->SetBranchAddress("rjrAX2NQSum", &rjrAX2NQSum, &b_rjrAX2NQSum);
+   fChain->SetBranchAddress("rjrAX2QSum", &rjrAX2QSum, &b_rjrAX2QSum);
+   //fChain->SetBranchAddress("rjrAX2NVSum", &rjrAX2NQSum, &b_rjrAX2NQSum);
+   //fChain->SetBranchAddress("rjrAX2VSum", &rjrAX2QSum, &b_rjrAX2QSum);
+
    fChain->SetBranchAddress("rjrAX2aMass", &rjrAX2aMass, &b_rjrAX2aMass);
    fChain->SetBranchAddress("rjrAX2bMass", &rjrAX2bMass, &b_rjrAX2bMass);
    fChain->SetBranchAddress("rjrDiffPJX2a", &rjrDiffPJX2a, &b_rjrDiffPJX2a);
@@ -840,8 +844,12 @@ void kuSkimTree::Init(TTree *tree)
    fChain->SetBranchAddress("rjrX2GMean", &rjrX2GMean, &b_rjrX2GMean);
    fChain->SetBranchAddress("rjrX2NAve", &rjrX2NAve, &b_rjrX2NAve);
    fChain->SetBranchAddress("rjrX2NGMean", &rjrX2NGMean, &b_rjrX2NGMean);
-   fChain->SetBranchAddress("rjrX2NVSum", &rjrX2NVSum, &b_rjrX2NVSum);
-   fChain->SetBranchAddress("rjrX2VSum", &rjrX2VSum, &b_rjrX2VSum);
+
+   fChain->SetBranchAddress("rjrX2NQSum", &rjrX2NQSum, &b_rjrX2NQSum);
+   fChain->SetBranchAddress("rjrX2QSum", &rjrX2QSum, &b_rjrX2QSum);
+   //fChain->SetBranchAddress("rjrX2NVSum", &rjrX2NQSum, &b_rjrX2NQSum);
+   //fChain->SetBranchAddress("rjrX2VSum", &rjrX2QSum, &b_rjrX2QSum);
+
    fChain->SetBranchAddress("rjrX2aCosA", &rjrX2aCosA, &b_rjrX2aCosA);
    fChain->SetBranchAddress("rjrX2aMass", &rjrX2aMass, &b_rjrX2aMass);
    fChain->SetBranchAddress("rjrX2aPtS", &rjrX2aPtS, &b_rjrX2aPtS);
@@ -1005,8 +1013,8 @@ void kuSkimTree::getBranches(Long64_t entry){
    b_rjrAX2GMean->GetEntry(entry);   //!
    b_rjrAX2NAve->GetEntry(entry);   //!
    b_rjrAX2NGMean->GetEntry(entry);   //!
-   b_rjrAX2NVSum->GetEntry(entry);   //!
-   b_rjrAX2VSum->GetEntry(entry);   //!
+   b_rjrAX2NQSum->GetEntry(entry);   //!
+   b_rjrAX2QSum->GetEntry(entry);   //!
    b_rjrAX2aMass->GetEntry(entry);   //!
    b_rjrAX2bMass->GetEntry(entry);   //!
    b_rjrDiffPJX2a->GetEntry(entry);   //!
@@ -1047,8 +1055,8 @@ void kuSkimTree::getBranches(Long64_t entry){
    b_rjrX2GMean->GetEntry(entry);   //!
    b_rjrX2NAve->GetEntry(entry);   //!
    b_rjrX2NGMean->GetEntry(entry);   //!
-   b_rjrX2NVSum->GetEntry(entry);   //!
-   b_rjrX2VSum->GetEntry(entry);   //!
+   b_rjrX2NQSum->GetEntry(entry);   //!
+   b_rjrX2QSum->GetEntry(entry);   //!
    b_rjrX2aCosA->GetEntry(entry);   //!
    b_rjrX2aMass->GetEntry(entry);   //!
    b_rjrX2aPtS->GetEntry(entry);   //!

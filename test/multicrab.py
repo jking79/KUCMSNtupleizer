@@ -4,7 +4,7 @@ This is a small script that does the equivalent of multicrab.
 """
 import os
 from optparse import OptionParser
-
+import CRABClient
 from CRABAPI.RawCommand import crabCommand
 
 

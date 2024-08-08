@@ -136,7 +136,7 @@ process.source = cms.Source("PoolSource",
 #         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-1200cm'+gmsbaodsim+'60000/68C5DD84-EAD6-E811-9028-44A842CFD60C.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-1200cm'+gmsbaodsim+'60000/846C6D28-D4D8-E811-A8BE-00266CFFBEB4.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-1200cm'+gmsbaodsim+'60000/8EC1497F-E9D6-E811-A390-44A842CFC98B.root',
-         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-200cm'+gmsbaodsim+'120000/44485BE6-E2D7-E811-9916-1866DA89095D.root',
+         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-200cm'+gmsbaodsim+'120000/44485BE6-E2D7-E811-9916-1866DA89095D.root',# <<<<<
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-200cm'+gmsbaodsim+'120000/AEA9923B-9ED8-E811-87D6-34E6D7BDDECE.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-400cm'+gmsbaodsim+'80000/301550E4-81B5-E811-8362-FA163EF08F5B.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-400cm'+gmsbaodsim+'80000/34D601E8-3CB2-E811-B2BA-24BE05C6B701.root',
@@ -166,6 +166,12 @@ process.source = cms.Source("PoolSource",
          #aodpath_125_25_15k+'240000/6EA51191-B27D-B547-920E-66EF94292870.root',
 
 		  ## EGamma
+
+        #'/store/data/Run2017E/DoubleEG/AOD/17Nov2017-v1/20000/0009F8BE-23D3-E711-84AA-02163E011C79.root'
+        #'/store/data/Run2017E/DoubleEG/AOD/17Nov2017-v1/20000/02C3735A-7DD3-E711-83C0-0025904C66E4.root'
+        #'/store/data/Run2022A/EGamma/AOD/16Jun2023-v1/2820000/11cf75d2-bdf0-4768-bd5e-830c2b03655c.root'
+        #'/store/data/Run2023E/EGamma/AOD/PromptReco-v1/000/372/597/00000/c97d22a6-fc8d-416f-92b4-01e27f9776c4.root'
+        #'/store/data/Run2017E/MET/AOD/17Nov2017-v1/50000/00864810-19DD-E711-A884-02163E01A63A.root'
 
         #'/store/data/Run2018D/EGamma/MINIAOD/22Jan2019-v2/70001/F0FE59FC-F29E-904B-A1BC-817C1CB09A7E.root'
 
@@ -198,17 +204,17 @@ process.source = cms.Source("PoolSource",
 
 
 ## How many events to process
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#ST
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))#TTi
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#LT
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))#ONE
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#LT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500))#US
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(12500))#VS
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(25000))#SM
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100000))#MS
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250000))#MD
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500000))#LG
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#FL
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
 
 # Set the global tag depending on the sample type
 from Configuration.AlCa.GlobalTag import GlobalTag
@@ -255,8 +261,10 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
         ## beamSpot
         beamSpot = cms.InputTag("offlineBeamSpot"),
         ## trigger
+        #triggerResults = cms.InputTag("TriggerResults","","SIM"),
         triggerResults = cms.InputTag("TriggerResults"),
-        triggerObjects = cms.InputTag("TriggerResults"),
+        #triggerObjects = cms.InputTag(""),
+        triggerEvent = cms.InputTag("hltTriggerSummaryAOD"),
         ## METs
         #mets = cms.InputTag("slimmedMETs"),
         mets = cms.InputTag("pfMet"),
@@ -309,16 +317,43 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
 
 )##<<>>process.tree = cms.EDAnalyzer("LLPgammaAnalyzer_aod"
 
+process.load('RecoMET.METFilters.metFilters_cff')
+#process.myGlobalSuperTightHalo2016Filter = process.globalSuperTightHalo2016Filter.clone( taggingMode = True ) 
+process.Flag_goodVertices = cms.Path( process.goodVertices )
+process.Flag_globalSuperTightHalo2016Filter = cms.Path( process.globalSuperTightHalo2016Filter )
+process.hbheSequence = cms.Sequence( process.HBHENoiseFilterResultProducer * process.HBHENoiseFilter )
+process.Flag_HBHENoiseFilter = cms.Path( process.hbheSequence )
+process.Flag_HBHENoiseIsoFilter = cms.Path( process.HBHENoiseIsoFilter )
+process.Flag_EcalDeadCellTriggerPrimitiveFilter = cms.Path( process.EcalDeadCellTriggerPrimitiveFilter )
+process.Flag_BadPFMuonFilter = cms.Path( process.BadPFMuonFilter )
+process.Flag_BadPFMuonDzFilter = cms.Path( process.BadPFMuonDzFilter )
+process.Flag_hfNoisyHitsFilter = cms.Path( process.hfNoisyHitsFilter )
+process.Flag_BadChargedCandidateFilter = cms.Path( process.BadChargedCandidateFilter )
+process.Flag_eeBadScFilter = cms.Path( process.eeBadScFilter )
+process.Flag_ecalBadCalibFilter = cms.Path( process.ecalBadCalibFilter )
 
 # Set up the path
 process.ecalTracks_path = cms.Path(ecalTracks)
-process.content = cms.EDAnalyzer("EventContentAnalyzer")
-process.content_step = cms.Path(process.content)
 process.tree_step = cms.EndPath(process.tree)
-
 process.endjob_step = cms.EndPath(process.endOfProcess)
-process.schedule = cms.Schedule(process.ecalTracks_path,
-                                process.tree_step)
+
+process.schedule = cms.Schedule(
+        process.ecalTracks_path,
+        process.Flag_goodVertices,
+        process.Flag_globalSuperTightHalo2016Filter,
+        process.Flag_HBHENoiseFilter,
+        process.Flag_HBHENoiseIsoFilter,
+        process.Flag_EcalDeadCellTriggerPrimitiveFilter,
+        process.Flag_BadPFMuonFilter,
+        process.Flag_BadPFMuonDzFilter,
+        process.Flag_hfNoisyHitsFilter,
+        process.Flag_BadChargedCandidateFilter,
+        process.Flag_eeBadScFilter,
+        process.Flag_ecalBadCalibFilter,
+        process.tree_step,
+        process.endjob_step,
+)#process.schedule
+
 process.options = cms.untracked.PSet()
 
 #do not add changes to your config after this point (unless you know what you are doing)
@@ -335,5 +370,5 @@ process.options = cms.untracked.PSet(
     #numberOfStreams = cms.untracked.uint32(4), 
     TryToContinue = cms.untracked.vstring('ProductNotFound'), 
     #wantSummary = cms.untracked.bool(True) 
-)
+)#process.options
 

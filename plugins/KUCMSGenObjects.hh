@@ -273,10 +273,10 @@ void KUCMSGenObject::LoadEvent( const edm::Event& iEvent, const edm::EventSetup&
         } else {
 			int gen_pdgId = std::abs( genPart.pdgId() );
 			//bool isPhoton( gen_pdgId == 22 );
-			bool isZW( gen_pdgId == 23 || gen_pdgId == 24 );
-            bool isQuark( gen_pdgId < 9 );
-            bool isSQuark( gen_pdgId > 1000000 && gen_pdgId < 1000007 );
-            bool isGlino( gen_pdgId == 1000021 );
+			//bool isZW( gen_pdgId == 23 || gen_pdgId == 24 );
+            //bool isQuark( gen_pdgId < 9 );
+            //bool isSQuark( gen_pdgId > 1000000 && gen_pdgId < 1000007 );
+            //bool isGlino( gen_pdgId == 1000021 );
             bool isNtlino( gen_pdgId == 1000022 ); //|| gen_pdgId == 1000023 || gen_pdgId == 1000025 || gen_pdgId == 1000035 );
             bool isChrino( gen_pdgId == 1000024 ); //|| gen_pdgId == 1000037 );
             bool isGrvtino( gen_pdgId == 1000039 );

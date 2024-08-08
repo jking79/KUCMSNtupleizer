@@ -205,6 +205,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir,
 			getBranches( entry, doGenInfo );
 			geCnts.clear();
             geVars.clear();
+            //geVects.clear();
 			if( genSigPerfect ) geVars.set( "genSigPerfect", 1 ); else geVars.set( "genSigPerfect", 0 );
 			if(DEBUG) std::cout << " -- Event Loop " << std::endl;
 			auto saveToTree = eventLoop(entry);
@@ -1159,18 +1160,18 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     selRjrVars.fillBranch( "rjrPZS", m_PZS );
 
 
-	float X2VSum = std::sqrt((sq2(m_MX2a)+sq2(m_MX2b))/2);
-    float X2NVSum = X2VSum/m_MS;
+	float X2QSum = std::sqrt((sq2(m_MX2a)+sq2(m_MX2b))/2);
+    float X2NQSum = X2QSum/m_MS;
     float X2Ave = (m_MX2a+m_MX2b)/2;
 	float X2NAve = X2Ave/m_MS;
     float X2GMean = std::sqrt(m_MX2a*m_MX2b);
     float X2NGMean = X2GMean/m_MS;
     float X2Diff = (m_MX2a-m_MX2b)/(m_MX2a+m_MX2b);
 
-    selRjrVars.fillBranch( "rjrX2NVSum", X2NVSum );
+    selRjrVars.fillBranch( "rjrX2NQSum", X2NQSum );
     selRjrVars.fillBranch( "rjrX2NAve", X2NAve );
     selRjrVars.fillBranch( "rjrX2NGMean", X2NGMean );
-    selRjrVars.fillBranch( "rjrX2VSum", X2VSum );
+    selRjrVars.fillBranch( "rjrX2QSum", X2QSum );
     selRjrVars.fillBranch( "rjrX2Ave", X2Ave );
     selRjrVars.fillBranch( "rjrX2GMean", X2GMean );
     selRjrVars.fillBranch( "rjrX2Diff", X2Diff );
@@ -1208,8 +1209,8 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     //float a_MX2b = 2*m_PX1X2b;
 	//float a_MS = sqrt(sq2(m_PX2Sa)+sq2(a_MX2a)) + sqrt(sq2(m_PX2Sb)+sq2(a_MX2b));
 
-    float AX2VSum = std::sqrt((sq2(a_MX2a)+sq2(a_MX2b))/2);
-    float AX2NVSum = 2*AX2VSum/a_MS;//*2
+    float AX2QSum = std::sqrt((sq2(a_MX2a)+sq2(a_MX2b))/2);
+    float AX2NQSum = 2*AX2QSum/a_MS;//*2
     float AX2Ave = (a_MX2a+a_MX2b)/2;
     float AX2NAve = 2*AX2Ave/a_MS;//*2 sch tath 0-1
     float AX2GMean = std::sqrt(a_MX2a*a_MX2b);
@@ -1232,10 +1233,10 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     selRjrVars.fillBranch( "rjrAX2bMass", a_MX2b );
     selRjrVars.fillBranch( "rjrASMass", a_MS );
 
-    selRjrVars.fillBranch( "rjrAX2NVSum", AX2NVSum );
+    selRjrVars.fillBranch( "rjrAX2NQSum", AX2NQSum );
     selRjrVars.fillBranch( "rjrAX2NAve", AX2NAve );
     selRjrVars.fillBranch( "rjrAX2NGMean", AX2NGMean );
-    selRjrVars.fillBranch( "rjrAX2VSum", AX2VSum );
+    selRjrVars.fillBranch( "rjrAX2QSum", AX2QSum );
     selRjrVars.fillBranch( "rjrAX2Ave", AX2Ave );
     selRjrVars.fillBranch( "rjrAX2GMean", AX2GMean );
     selRjrVars.fillBranch( "rjrAX2Diff", AX2Diff );
@@ -1259,6 +1260,12 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     float m_MVa = Ja->GetMass();
   	//float m_MVb = X2b->GetListVisibleFrames().GetMass();
     float m_MVb = Jb->GetMass();
+
+    float m_MVDiff = (m_MVa-m_MVb)/(m_MVa+m_MVb);
+    float m_MVSum = std::sqrt((sq2(m_MVa)+sq2(m_MVb))/2);
+
+    selRjrVars.fillBranch( "rjrMVDiff", m_MVDiff );
+    selRjrVars.fillBranch( "rjrMVSum", m_MVSum );
 
   	float m_PV_lab    = S->GetListVisibleFrames().GetFourVector().P();
   	float m_dphiMET_V = S->GetListVisibleFrames().GetFourVector().Vect().DeltaPhi(ETMiss);
@@ -1635,10 +1642,10 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     selRjrVars.makeBranch( "rjrPVlab", VFLOAT );
     selRjrVars.makeBranch( "rjrDphiMETV", VFLOAT );
 
-    selRjrVars.makeBranch( "rjrX2NVSum", VFLOAT );
+    selRjrVars.makeBranch( "rjrX2NQSum", VFLOAT );
     selRjrVars.makeBranch( "rjrX2NAve", VFLOAT );
     selRjrVars.makeBranch( "rjrX2NGMean", VFLOAT );
-    selRjrVars.makeBranch( "rjrX2VSum", VFLOAT );
+    selRjrVars.makeBranch( "rjrX2QSum", VFLOAT );
     selRjrVars.makeBranch( "rjrX2Ave", VFLOAT );
     selRjrVars.makeBranch( "rjrX2GMean", VFLOAT );
     selRjrVars.makeBranch( "rjrX2Diff", VFLOAT );
@@ -1659,13 +1666,16 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     selRjrVars.makeBranch( "rjrAX2bMass", VFLOAT );
     selRjrVars.makeBranch( "rjrASMass", VFLOAT );
 
-    selRjrVars.makeBranch( "rjrAX2NVSum", VFLOAT );
+    selRjrVars.makeBranch( "rjrAX2NQSum", VFLOAT );
     selRjrVars.makeBranch( "rjrAX2NAve", VFLOAT );
     selRjrVars.makeBranch( "rjrAX2NGMean", VFLOAT );
-    selRjrVars.makeBranch( "rjrAX2VSum", VFLOAT );
+    selRjrVars.makeBranch( "rjrAX2QSum", VFLOAT );
     selRjrVars.makeBranch( "rjrAX2Ave", VFLOAT );
     selRjrVars.makeBranch( "rjrAX2GMean", VFLOAT );
     selRjrVars.makeBranch( "rjrAX2Diff", VFLOAT );
+
+    selRjrVars.makeBranch( "rjrMVDiff", VFLOAT );
+    selRjrVars.makeBranch( "rjrMVSum", VFLOAT );
 
     selRjrVars.attachBranches( fOutTree );
 

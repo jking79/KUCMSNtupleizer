@@ -16,23 +16,23 @@
 ##KUCMSNtuple/kucmsntuple_ZJETS_AOD_v5/ kuntuple_ZJetsToNuNu_HT-600To800_v5.txt ZJets3 2.559 0.0 0.0 1 0
 ##KUCMSNtuple/kucmsntuple_ZJETS_AOD_v5/ kuntuple_ZJetsToNuNu_HT-800To1200_v5.txt ZJets4 1.1796 0.0 0.0 1 0
 
-KUCMSNtuple/kucmsntuple_QCD_R17_v19_MET0/ kuntuple_QCD_HT50to100_Met0_R17_v19.txt QCD0 187700000.0 0.0 0.0 1 0
-KUCMSNtuple/kucmsntuple_QCD_R17_v19_MET0/ kuntuple_QCD_HT100to200_Met0_R17_v19.txt QCD1 23670000.0 0.0 0.0 1 0
-KUCMSNtuple/kucmsntuple_QCD_R17_v19_MET0/ kuntuple_QCD_HT200to300_Met0_R17_v19.txt QCD2 1554000.0 0.0 0.0 1 0
-KUCMSNtuple/kucmsntuple_QCD_R17_v19_MET0/ kuntuple_QCD_HT300to500_Met0_R17_v19.txt QCD3 323800.0 0.0 0.0 1 0
-KUCMSNtuple/kucmsntuple_QCD_R17_v19_MET0/ kuntuple_QCD_HT500to700_Met0_R17_v19.txt QCD4 30010.0 0.0 0.0 1 0
-KUCMSNtuple/kucmsntuple_QCD_R17_v19_MET0/ kuntuple_QCD_HT700to1000_Met0_R17_v19.txt QCD5 6352.0 0.0 0.0 1 0
-KUCMSNtuple/kucmsntuple_QCD_R17_v19_MET0/ kuntuple_QCD_HT1000to1500_Met0_R17_v19.txt QCD6 1096.0 0.0 0.0 1 0
-KUCMSNtuple/kucmsntuple_QCD_R17_v19_MET0/ kuntuple_QCD_HT1500to2000_Met0_R17_v19.txt QCD7 99.12 0.0 0.0 1 0
-KUCMSNtuple/kucmsntuple_QCD_R17_v19_MET0/ kuntuple_QCD_HT2000toInf_Met0_R17_v19.txt QCD8 20.20 0.0 0.0 1 0
+#KUCMSNtuple/kucmsntuple_QCD_R17_v19_MET75/ kuntuple_QCD_HT50to100_Met75_R17_v19.txt QCD0 187700000.0 0.0 0.0 1 0
+#KUCMSNtuple/kucmsntuple_QCD_R17_v19_MET75/ kuntuple_QCD_HT100to200_Met75_R17_v19.txt QCD1 23670000.0 0.0 0.0 1 0
+#KUCMSNtuple/kucmsntuple_QCD_R17_v19_MET75/ kuntuple_QCD_HT200to300_Met75_R17_v19.txt QCD2 1554000.0 0.0 0.0 1 0
+#KUCMSNtuple/kucmsntuple_QCD_R17_v19_MET75/ kuntuple_QCD_HT300to500_Met75_R17_v19.txt QCD3 323800.0 0.0 0.0 1 0
+#KUCMSNtuple/kucmsntuple_QCD_R17_v19_MET75/ kuntuple_QCD_HT500to700_Met75_R17_v19.txt QCD4 30010.0 0.0 0.0 1 0
+#KUCMSNtuple/kucmsntuple_QCD_R17_v19_MET75/ kuntuple_QCD_HT700to1000_Met75_R17_v19.txt QCD5 6352.0 0.0 0.0 1 0
+#KUCMSNtuple/kucmsntuple_QCD_R17_v19_MET75/ kuntuple_QCD_HT1000to1500_Met75_R17_v19.txt QCD6 1096.0 0.0 0.0 1 0
+#KUCMSNtuple/kucmsntuple_QCD_R17_v19_MET75/ kuntuple_QCD_HT1500to2000_Met75_R17_v19.txt QCD7 99.12 0.0 0.0 1 0
+KUCMSNtuple/kucmsntuple_QCD_R17_v19_MET75/ kuntuple_QCD_HT2000toInf_Met75_R17_v19.txt QCD8 20.20 0.0 0.0 1 0
 
 ##KUCMSNtuple/kucmsntuple_DYTT_AOD_v5/ kuntuple_DYJetsToLL_M-50_v5.txt DYJets 5343 0.0 0.0 1 0
 
-#KUCMSNtuple/kucmsntuple_GJETS_R17_v19_Met0/ kuntuple_GJets_HT-40To100_Met0_R17_v19.txt GJets0 18620 0.0 0.0 1 0
-#KUCMSNtuple/kucmsntuple_GJETS_R17_v19_Met0/ kuntuple_GJets_HT-100To200_Met0_R17_v19.txt GJets1 8625 0.0 0.0 1 0
-#KUCMSNtuple/kucmsntuple_GJETS_R17_v19_Met0/ kuntuple_GJets_HT-200To400_Met0_R17_v19.txt GJets2 2196 0.0 0.0 1 0
-#KUCMSNtuple/kucmsntuple_GJETS_R17_v19_Met0/ kuntuple_GJets_HT-400To600_Met0_R17_v19.txt GJets3 258 0.0 0.0 1 0
-#KUCMSNtuple/kucmsntuple_GJETS_R17_v19_Met0/ kuntuple_GJets_HT-600ToInf_Met0_R17_v19.txt GJets4 85.18 0.0 0.0 1 0
+#KUCMSNtuple/kucmsntuple_GJETS_R17_v19_Met75/ kuntuple_GJets_HT-40To100_Met75_R17_v19.txt GJets0 18620 0.0 0.0 1 0
+#KUCMSNtuple/kucmsntuple_GJETS_R17_v19_Met75/ kuntuple_GJets_HT-100To200_Met75_R17_v19.txt GJets1 8625 0.0 0.0 1 0
+#KUCMSNtuple/kucmsntuple_GJETS_R17_v19_Met75/ kuntuple_GJets_HT-200To400_Met75_R17_v19.txt GJets2 2196 0.0 0.0 1 0
+#KUCMSNtuple/kucmsntuple_GJETS_R17_v19_Met75/ kuntuple_GJets_HT-400To600_Met75_R17_v19.txt GJets3 258 0.0 0.0 1 0
+#KUCMSNtuple/kucmsntuple_GJETS_R17_v19_Met75/ kuntuple_GJets_HT-600ToInf_Met75_R17_v19.txt GJets4 85.18 0.0 0.0 1 0
 
 ##KUCMSNtuple/kucmsntuple_DiPhoBox_AOD_v14/ kuntuple_DiPhotonJetsBox_MGG-1000to2000_13TeV-sherpav14.txt DiPhoBox1 
 ##KUCMSNtuple/kucmsntuple_DiPhoBox_AOD_v14/ kuntuple_DiPhotonJetsBox_MGG-2000to4000_13TeV-sherpav14.txt

@@ -164,6 +164,7 @@ class KUCMSEcalRecHitObject : public KUCMSObjectBase {
     std::vector<float> getFractionList( const scGroup superClusterGroup, rhGroup recHits );
     std::vector<float> getMissFractionList( const scGroup superClusterGroup );
 	std::tuple<uInt,float> getHFList( const scGroup superClusterGroup );
+	float getRecHitEnergy( const uInt id );
 
     float getRhTOF( EcalRecHit rechit, double vtxX, double vtxY, double vtxZ );
     float getLeadTofTime( rhGroup recHits, double vtxX, double vtxY, double vtxZ );
@@ -469,8 +470,10 @@ void KUCMSEcalRecHitObject::LoadEvent( const edm::Event& iEvent, const edm::Even
 	//std::cout << "Collecting ECAL RecHits w " << cfPrm("minRHEi") << std::endl;
     frechits.clear();
     frhused.clear();
-    for( const auto &recHit : *recHitsEB_ ){ if(recHit.energy() > cfPrm("minRHEi")){ frechits.push_back(recHit); frhused.push_back(false);}}
-    for( const auto &recHit : *recHitsEE_ ){ if(recHit.energy() > cfPrm("minRHEi")){ frechits.push_back(recHit); frhused.push_back(false);}}
+    //for( const auto &recHit : *recHitsEB_ ){ if(recHit.energy() > cfPrm("minRHEi")){ frechits.push_back(recHit); frhused.push_back(false);}}
+    //for( const auto &recHit : *recHitsEE_ ){ if(recHit.energy() > cfPrm("minRHEi")){ frechits.push_back(recHit); frhused.push_back(false);}}
+    for( const auto &recHit : *recHitsEB_ ){ frechits.push_back(recHit); frhused.push_back(false);}
+    for( const auto &recHit : *recHitsEE_ ){ frechits.push_back(recHit); frhused.push_back(false);}
 
     if( ERHODEBUG ) std::cout << "Collecting SuperClusters" << std::endl;
     fsupclstrs.clear();
@@ -663,6 +666,7 @@ void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
 		if( used ) nUsed++;
 		//if( recHit.energy() < 1.0 ) std::cout << " -- checking rh " << getRawID(recHit) << " w/ " << recHit.energy() << " - " << used << std::endl;
 		//if( not ( not used && recHit.energy() < cfPrm("minRHEf") ) ) if( recHit.energy() < 1.0 ) std::cout << " --- cut passed old " << std::endl;
+		if( recHit.energy() < cfPrm("minRHEi") ) continue;
         if( ( not used ) &&  ( recHit.energy() < cfPrm("minRHEf") ) ) continue;
         //if( recHit.energy() < 1.0 ) std::cout << " --- cut passed  rh " << getRawID(recHit) << " w/ " << recHit.energy() << std::endl;
 
@@ -1338,6 +1342,17 @@ rhGroup KUCMSEcalRecHitObject::getRHGroup( uInt detid ){
 
     return result;
 }//>>>>rhGroup KUCMSEcalRecHitObject::getRHGroup( uInt detid )
+
+float KUCMSEcalRecHitObject::getRecHitEnergy( const uInt id ){
+
+    if ( id != 0 ){
+		for( auto rh : frechits ){
+			if( getRawID(rh) == id ) return rh.energy();
+    	}//<<>> for( auto rh : frechits )
+	}//if ( id != 0 )
+    return 0;
+
+}//<<>>float EcalTools::recHitE( const DetId id, const EcalRecHitCollection &recHits )
 
 rhGroup KUCMSEcalRecHitObject::getRHGroup(){
 

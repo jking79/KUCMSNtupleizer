@@ -22,6 +22,7 @@ p7=stackSkimHistMaker
 p8=calibration_averhtime_isoot_filter_pho
 p9=calibration_averhtime_isoot_filter_pho_ew
 p10=skimRJRMultiHistMaker
+p11=skimRJRMultiHistMaker2
 
 all: $(p1) 
 
@@ -54,3 +55,6 @@ $(p9): $(p9).cpp
 
 $(p10): $(p10).cpp
 	$(CC) -o $(p10).obj $(p10).cpp $(RTCFLAGS) $(RTGLIBS)
+
+$(p11): $(p11).cpp
+	$(CC) -o $(p11).obj $(p11).cpp $(RTCFLAGS) $(RTGLIBS)

@@ -83,6 +83,7 @@ class KUCMSElectronObject : public KUCMSObjectBase {
     // void answerCrossTalk(); // define functions that will be called in another object - this is an example
     // ect ...
     bool getElectronVeto( const edm::Ref<std::vector<reco::SuperCluster>> phosc ); 
+	float getEleTrackZMatch( const reco::Photon & photon ); 
     int getIndex( float kideta, float kidphi );
 
     private:
@@ -284,6 +285,18 @@ void KUCMSElectronObject::ProcessEvent( ItemManager<float>& geVar ){
 }//<<>>void KUCMSElectron::ProcessEvent()
 
 void KUCMSElectronObject::EndJobs(){}
+
+float KUCMSElectronObject::getEleTrackZMatch( const reco::Photon & photon ){
+
+	float bestmatch(0.1);
+	float elTrackZ(1000.0);
+	for (const auto & electron : felectrons){
+		auto match = reco::deltaR(electron,photon);
+		if ( match < bestmatch ){ elTrackZ = electron.trackPositionAtVtx().Z(); bestmatch = match; }
+	}//<<>>for (const auto electron : felectrons)
+	return elTrackZ;
+
+}//<<>>float KUCMSElectronObject::getEleTrackZMatch( const reco::Photon & photon )
 
 bool KUCMSElectronObject::getElectronVeto( const edm::Ref<std::vector<reco::SuperCluster>> phosc ){
 
