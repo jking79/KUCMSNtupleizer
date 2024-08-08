@@ -89,7 +89,14 @@ class KUCMSGenObject : public KUCMSObjectBase {
     // ect ...
 
     string bigKidChase( std::vector<reco::CandidatePtr> kids, float vx );
-    void motherChase( const reco::Candidate* kid, string & depth );
+    //void motherChase( const reco::Candidate* kid, string & depth );
+
+    void motherChase( const reco::Candidate* kid, string depth );
+    void motherChase( const reco::GenParticle kid, string  depth );
+    int typeChase( const reco::Candidate* kid );
+    int typeChase( const reco::GenParticle kid );
+	int getEvtType( int genPdgId );
+
     int llpGenChase( const reco::Candidate* kid );
     int llpGenChase( const reco::GenParticle kid );
     int llpGenChaseP( const reco::Candidate* kid, int depth );
@@ -99,8 +106,8 @@ class KUCMSGenObject : public KUCMSObjectBase {
     std::vector<float> kidTOFChain( std::vector<reco::CandidatePtr> kids, float cx, float cy, float cz  );
     // old single reco part gen matching
     std::vector<float> getGenPartMatch( const reco::SuperCluster* scptr, float pt );
-  //std::map<std::string, float> getGenPartMatch( const reco::SuperCluster &scptr, float pt ) const; 
-  //std::map<std::string, bool> MotherID(const int genIndex) const;
+  	//std::map<std::string, float> getGenPartMatch( const reco::SuperCluster &scptr, float pt ) const; 
+  	//std::map<std::string, bool> MotherID(const int genIndex) const;
     std::vector<float> getGenJetInfo( float jetEta, float jetPhi, float jetPt );
     GlobalPoint GenVertex() {return GlobalPoint(genxyz0_->x(), genxyz0_->y(), genxyz0_->z()); };
 
@@ -119,11 +126,11 @@ class KUCMSGenObject : public KUCMSObjectBase {
     std::vector<reco::GenParticle> GetGenParticles() const {return fgenparts;}
     LepType ClassifyGenElectron(const reco::GenParticle &genElectron) const;
     std::vector<int> MomIDs(const reco::GenParticle &genElectron) const; 
- //template <typename T>
+ 	//template <typename T>
     //GenClassifiedElectrons<T> GetGenClassifiedElectrons(const std::vector<T> &candidateTracks) const;
-  //std::map<std::string, float> GenMatchElectrons(const Lorentz4Vec &electronTrack, const int charge) const;
-  //std::map<std::string, float> getGenPartMatch( const reco::SuperCluster &scptr, float pt ) const;
-  //std::map<std::string, bool> MotherID(const int genIndex) const;
+  	//std::map<std::string, float> GenMatchElectrons(const Lorentz4Vec &electronTrack, const int charge) const;
+  	//std::map<std::string, float> getGenPartMatch( const reco::SuperCluster &scptr, float pt ) const;
+  	//std::map<std::string, bool> MotherID(const int genIndex) const;
     bool IsMotherZ(const reco::GenParticle &genElectron) const;
 
     private:
@@ -131,6 +138,8 @@ class KUCMSGenObject : public KUCMSObjectBase {
     std::vector<reco::GenParticle> fgenparts;
     std::vector<int> fgenpartllp;
     std::vector<reco::GenJet> fgenjets;
+    std::vector<int> nueEvntId;
+    std::vector<int> chrEvntId;
     //std::vector<reco::GenParticle> fgjquarks;
     //std::vector<int> fgjquarksllp;
     //std::vector<reco::GenParticle> fgenallpho;
@@ -170,12 +179,12 @@ class KUCMSGenObject : public KUCMSObjectBase {
     edm::EDGetTokenT<std::vector<reco::GenJet>> genJetsToken_;
     edm::Handle<std::vector<reco::GenJet>> genJets_;
 
-  //std::vector<int> MomIDs(const reco::GenParticle &genElectron) const;
-  LepType AssignLeptonMomType(const int motherID) const;
-  //LepType ClassifyGenElectron(const std::vector<int> &motherIDs) const;
-  //LepType ClassifyGenElectron(const reco::GenParticle &genElectron) const;
-  bool isSignalGenElectron(const reco::GenParticle &genElectron) const;
-  void PrintMother(const LepType &momType) const;
+	//std::vector<int> MomIDs(const reco::GenParticle &genElectron) const;
+  	LepType AssignLeptonMomType(const int motherID) const;
+  	//LepType ClassifyGenElectron(const std::vector<int> &motherIDs) const;
+  	//LepType ClassifyGenElectron(const reco::GenParticle &genElectron) const;
+  	bool isSignalGenElectron(const reco::GenParticle &genElectron) const;
+  	void PrintMother(const LepType &momType) const;
 
     // Other object(s) need by this object - BASE CLASS USED HERE FOR REFRENCE ONLY -
     // exampleObject* otherObjectPtr;
@@ -206,10 +215,11 @@ void KUCMSGenObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("genVz","Gen_vz",VFLOAT);
     Branches.makeBranch("genPdgId","Gen_pdgId",VUINT);
     Branches.makeBranch("genWgt","Evt_genWgt",FLOAT);
-    Branches.makeBranch("genSusId","Gen_susId",VINT);
+    Branches.makeBranch("genSusId","Gen_susId",VINT,"22=SignalPhoton");
     Branches.makeBranch("genStatus","Gen_status",VBOOL);
     Branches.makeBranch("genCharge","Gen_charge",VINT);
     Branches.makeBranch("genMass","Gen_mass",VFLOAT);
+    Branches.makeBranch("genSusEvtType","Gen_susEvtType",VINT,"1=squark, 2=gluino, 3=xino, 4=slepton" );
 
     Branches.attachBranches(fOutTree);
 
@@ -238,42 +248,67 @@ void KUCMSGenObject::LoadEvent( const edm::Event& iEvent, const edm::EventSetup&
     int nGenPart(0);
 
     if( GenDEBUG ) std::cout << "Collecting Gen Particles" << std::endl;
+	//std::cout << "Collecting Gen Particles for New Event --------------------------------------------------------------------------" << std::endl;
+	nueEvntId.clear();
+ 	chrEvntId.clear();
     for( const auto &genPart : *genParticles_ ){
 
         if( genPart.energy() < cfPrm("minGenE") ) continue;
         auto genPartSUSID = llpGenChaseP(genPart,0);
         nGenPart++;
         if( genPart.status() == 1 ){
+			//std::cout << "Stable Gen Particle : " << std::endl;
+			//if( genPart.pdgId() == 22 && genPartSUSID == 22 ){ std::cout << "Stable Gen Photon : " << std::endl; motherChase( genPart, "" ); }
             fgenparts.push_back(genPart);
             fgenpartllp.push_back(genPartSUSID);
-	    // Gen electron collections
-	    if(abs(genPart.pdgId()) == 11) {
-	      genElectrons_.push_back(genPart);
-	      //std::cout << "\nmatched as electron!" << std::endl;
-	      //for(const auto &id : MomIDs(genPart))
-	      //std::cout << "  id = " << id << std::endl;
-	      if(isSignalGenElectron(genPart))
-		genSignalElectrons_.push_back(genPart);
-	    }
+	    	// Gen electron collections
+	    	if(abs(genPart.pdgId()) == 11) {
+	      		genElectrons_.push_back(genPart);
+	      		//std::cout << "\nmatched as electron!" << std::endl;
+	      		//for(const auto &id : MomIDs(genPart))
+	      		//std::cout << "  id = " << id << std::endl;
+	      		if( isSignalGenElectron(genPart) ) genSignalElectrons_.push_back(genPart);
+	    	}//if(abs(genPart.pdgId()) == 11)
             if( GenDEBUG && genPartSUSID == 22 ) std::cout << "Found genParton signal photon" << std::endl;
         } else {
-			//bool isPhoton( genPart.pdgId() == 22 );
-			bool isZW( genPart.pdgId() == 23 || genPart.pdgId() == 24 );
-            bool isQuark( genPart.pdgId() < 9 );
-            bool isSQuark( genPart.pdgId() > 1000000 && genPart.pdgId() < 1000007 );
-            bool isGlino( genPart.pdgId() == 1000021 );
-            bool isNtlino( genPart.pdgId() == 1000022 || genPart.pdgId() == 1000023 || genPart.pdgId() == 1000025 || genPart.pdgId() == 1000035 );
-            bool isChrino( genPart.pdgId() == 1000024 || genPart.pdgId() == 1000037 );
-            bool isGrvtino( genPart.pdgId() == 1000039 );
+			int gen_pdgId = std::abs( genPart.pdgId() );
+			//bool isPhoton( gen_pdgId == 22 );
+			//bool isZW( gen_pdgId == 23 || gen_pdgId == 24 );
+            //bool isQuark( gen_pdgId < 9 );
+            //bool isSQuark( gen_pdgId > 1000000 && gen_pdgId < 1000007 );
+            //bool isGlino( gen_pdgId == 1000021 );
+            bool isNtlino( gen_pdgId == 1000022 ); //|| gen_pdgId == 1000023 || gen_pdgId == 1000025 || gen_pdgId == 1000035 );
+            bool isChrino( gen_pdgId == 1000024 ); //|| gen_pdgId == 1000037 );
+            bool isGrvtino( gen_pdgId == 1000039 );
 			//if( GenDEBUG && isNtlino ) std::cout << "Found genParton isNtlino" << std::endl;
 			//bool keep( isPhoton || isQuark );
-        	if( isQuark || isZW || isNtlino || isChrino || isGrvtino || isSQuark || isGlino ){
-            	fgenparts.push_back(genPart);
-            	fgenpartllp.push_back(genPartSUSID);
-        	}//<<>>if( genPart.pdgId() == 22 )
+        	if( isNtlino || isChrino || isGrvtino ){
+				int kPdgId = genPart.pdgId();
+				int mPdgId = (genPart.mother(0))->pdgId();
+				if( kPdgId != mPdgId ){
+            		fgenparts.push_back(genPart);
+            		fgenpartllp.push_back(genPartSUSID);
+				}//<<>>if( kPdgId != mPdgId )
+        	}//<<>>if( gen_pdgId == 22 )
+			//if( ( isSQuark || isGlino ) ){
+            //if( ( isSQuark ) ){
+            if( isNtlino || isChrino ){
+            //if( isNtlino ){
+            //if( isZW ){
+            	int kPdgId = genPart.pdgId();
+            	int mPdgId = (genPart.mother(0))->pdgId();
+				bool lastInChian = ( kPdgId == mPdgId ) ? 0 : 1;
+				//if( lastInChian ){ isNtlino ? nNuet++ : nChar++; }
+				if( lastInChian ) isNtlino ? nueEvntId.push_back(typeChase( genPart )) : chrEvntId.push_back(typeChase( genPart ));  
+				//std::string type = ( isNtlino ) ? "Neutrlino :" : "Chargino :";
+				//if( lastInChian ){ std::cout << "Gen Susy Particle : " << type << std::endl; motherChase( genPart, "" );} 
+                //std::cout << "Gen Susy Particle : " << std::endl; motherChase( genPart.mother(0), "" );
+			}//<<>>if( ( isSQuark || isGlino ) ) 
 		}//<<>> else if( genPart.status() == 1 )
 
     }//<<>>for(const auto& genPart : *genParticles_ )
+
+	//std::cout << " -- # Nuetral - # Charge : " << nNuet << " - " << nChar << std::endl;
 
     if( GenDEBUG ) std::cout << "Collecting GenJets" << std::endl;
     for(const auto &genjet : *genJets_ ){ fgenjets.push_back(genjet); }
@@ -312,7 +347,7 @@ void KUCMSGenObject::ProcessEvent( ItemManager<float>& geVar ){
         const float genMass = genpart.mass();		
 
 		//if( GenDEBUG ) std::cout << "GenPart : genSusId = " << genSusId << std::endl;
-	Branches.fillBranch("genNtotal", unsigned(fgenparts.size()) );
+		Branches.fillBranch("genNtotal", unsigned(fgenparts.size()) );
         Branches.fillBranch("genPt",genPt);
         Branches.fillBranch("genEnergy",genEnergy);
         Branches.fillBranch("genPhi",genPhi);
@@ -332,6 +367,29 @@ void KUCMSGenObject::ProcessEvent( ItemManager<float>& geVar ){
 		nGenParts++;
     }//<<>> for (const auto genpart : fgenparts )
 
+	//"1=squark, 2=gluino, 3=Xino" 
+	int nNue = nueEvntId.size();
+	int nChr = chrEvntId.size();
+	int first = 8;
+	int second = 8;
+	if( nNue == 2 ){
+		first  = getEvtType( nueEvntId[0] );
+		second = getEvtType( nueEvntId[1] );
+	} else if( nNue == 0 ){
+		if( nChr > 0 ) first  = getEvtType( chrEvntId[0] );
+		else { first = 5; second = 5; }
+		if( nChr > 1 ) second = getEvtType( chrEvntId[1] );
+		else { second = 5; }
+	} else if( nNue == 1 ){
+		first  = getEvtType( nueEvntId[0] );
+		if( nChr > 0 ){
+			for( auto cType : chrEvntId ){ if( cType != nueEvntId[0] ){ second = getEvtType( cType ); break; } }
+			if( second == 8 ) { second = 7; }
+		} else { second = 6; } 
+	} else if( nNue > 2 ){ first = 6; second = 6; } 
+	
+	int genEvtType = ( first < second ) ? 10*first+second : 10*second+first;
+    Branches.fillBranch("genSusEvtType",genEvtType);
     //if( GenDEBUG ) std::cout << "GenPart : LOADING GEN WT " << std::endl;
     float wgt = genEvtInfo_->weight();
     Branches.fillBranch("genWgt",wgt);
@@ -877,6 +935,22 @@ int KUCMSGenObject::llpGenChaseP( const reco::GenParticle & kid, int depth ){
 
 }//<<>> void llpChase( Candidate* kid )
 
+int KUCMSGenObject::getEvtType( int genPdgId ){
+
+	int type = 9;
+	genPdgId = std::abs( genPdgId );
+	//"1=squark, 2=gluino, 3=Xino, 4=slepton"
+	if( genPdgId == 1000021 ) type = 2;
+	else if( genPdgId > 1000000 && genPdgId < 1000007 ) type = 1;
+	else if( genPdgId > 2000000 && genPdgId < 2000007 ) type = 1;
+    else if( genPdgId > 1000021 && genPdgId < 1000038 ) type = 3;
+    else if( genPdgId > 1000010 && genPdgId < 1000017 ) type = 4;
+    else if( genPdgId > 2000010 && genPdgId < 2000017 ) type = 4;
+	//if( type == 9 ) std::cout << " -- found a : " << genPdgId << std::endl;
+	return type;
+
+}//<<>>int KUCMSGenObject::getEvtType( int genPdgId )
+
 const reco::Candidate* KUCMSGenObject::llpGenSearch( const reco::Candidate* kid, int target ){
 
 	int depth = 0;
@@ -1008,6 +1082,7 @@ int KUCMSGenObject::llpGenChaseP( const reco::Candidate* kid, int depth ){
 
 }//<<>> void llpChase( const reco::Candidate* kid, int wzFlag ){)
 
+/*
 void KUCMSGenObject::motherChase( const reco::Candidate* kid, string & depth ){
 
     depth += "-";
@@ -1017,6 +1092,67 @@ void KUCMSGenObject::motherChase( const reco::Candidate* kid, string & depth ){
         std::cout << " nGMothers " << kid->mother(gmit)->numberOfMothers() << std::endl;
     }//<<>>for( long unsigned int gmit(0); gmit < nKMother; gmit++ )
     if( not depth.empty() ) depth = depth.substr (0,depth.length()-1);
+
+}//<<>> void MotherChase( Candidate* kid, string depth  )
+*/
+
+void KUCMSGenObject::motherChase( const reco::Candidate* kid, string  depth ){
+
+    if( ( kid->numberOfMothers() == 1 ) && ( kid->pdgId() == (kid->mother(0))->pdgId() ) ){ motherChase( kid->mother(0), depth ); }
+    else{
+    	std::cout <<  depth  << " kidID : " << kid->pdgId() << " pt : " << kid->pt();
+    	std::cout << " Vertix (" << kid->vx() << "," << kid->vy() << "," << kid->vz() << ")";
+    	std::cout << " nMothers " << kid->numberOfMothers() << std::endl;
+    	depth += "-";
+    	for( long unsigned int gmit(0); gmit < kid->numberOfMothers(); gmit++ ){
+        	auto mother = kid->mother(gmit);
+        	;//std::cout <<  depth  << " gMomID : " << kid->mother(gmit)->pdgId() << " pt : " << kid->mother(gmit)->pt();
+        	;//std::cout << " Vertix (" << kid->mother(gmit)->vx() << "," << kid->mother(gmit)->vy() << "," << kid->mother(gmit)->vz() << ")";
+        	;//std::cout << " nGMothers " << kid->mother(gmit)->numberOfMothers() << std::endl;
+        	motherChase( mother, depth );
+    	}//<<>>for( long unsigned int gmit(0); gmit < nKMother; gmit++ )
+	}//<<>>else
+    ;//if( not depth.empty() ) depth = depth.substr (0,depth.length()-1);
+
+}//<<>> void MotherChase( Candidate* kid, string depth  )
+
+int KUCMSGenObject::typeChase( const reco::Candidate* kid ){
+
+	int type = -9999;
+	if( kid->numberOfMothers() == 2 ){ type = kid->pdgId(); } //std::cout << " kidID : " << kid->pdgId() << " pt : " << kid->pt() << std::endl; }
+	else if( kid->numberOfMothers() == 1 ){ type = typeChase( kid->mother(0) ); }
+	else { type = 0; } //std::cout << " nMothers " << kid->numberOfMothers() << std::endl; }
+	return std::abs(type);
+
+}//<<>> void MotherChase( Candidate* kid, string depth  )
+
+void KUCMSGenObject::motherChase( const reco::GenParticle kid, string  depth ){
+ 
+	if( ( kid.numberOfMothers() == 1 ) && ( kid.pdgId() == (kid.mother(0))->pdgId() ) ){ motherChase( kid.mother(0), depth ); }
+	else{
+    	std::cout <<  depth  << " kidID : " << kid.pdgId() << " pt : " << kid.pt();
+    	std::cout << " Vertix (" << kid.vx() << "," << kid.vy() << "," << kid.vz() << ")";
+    	std::cout << " nMothers " << kid.numberOfMothers() << std::endl;
+    	depth += "-";
+    	for( long unsigned int gmit(0); gmit < kid.numberOfMothers(); gmit++ ){
+        	auto mother = kid.mother(gmit);
+        	;//std::cout <<  depth  << " gMomID : " << kid->mother(gmit)->pdgId() << " pt : " << kid->mother(gmit)->pt();
+        	;//std::cout << " Vertix (" << kid->mother(gmit)->vx() << "," << kid->mother(gmit)->vy() << "," << kid->mother(gmit)->vz() << ")";
+        	;//std::cout << " nGMothers " << kid->mother(gmit)->numberOfMothers() << std::endl;
+        	motherChase( mother, depth );
+   		}//<<>>for( long unsigned int gmit(0); gmit < nKMother; gmit++ )
+	}//else
+    ;//if( not depth.empty() ) depth = depth.substr (0,depth.length()-1);
+
+}//<<>> void MotherChase( Candidate* kid, string depth  )
+
+int KUCMSGenObject::typeChase( const reco::GenParticle kid ){
+
+	int type = -9999;
+    if( kid.numberOfMothers() == 2 ){ type = kid.pdgId(); }//std::cout << " kidID : " << kid.pdgId() << " pt : " << kid.pt() << std::endl; }
+    else if( kid.numberOfMothers() == 1 ){ type = typeChase( kid.mother(0) ); }
+    else { type = 0; }//std::cout << " nMothers " << kid.numberOfMothers() << std::endl; }
+    return std::abs(type);
 
 }//<<>> void MotherChase( Candidate* kid, string depth  )
 

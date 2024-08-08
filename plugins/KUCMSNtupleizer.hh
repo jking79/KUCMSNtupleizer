@@ -39,6 +39,7 @@
 #include "FWCore/Common/interface/TriggerNames.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "DataFormats/HLTReco/interface/TriggerObject.h"
+#include "DataFormats/HLTReco/interface/TriggerEvent.h"
 
 // Gen Info
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"

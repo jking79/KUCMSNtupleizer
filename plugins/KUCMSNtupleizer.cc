@@ -72,18 +72,17 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     //if( DEBUG ) std::cout << "In constructor for KUCMSNtupilizer - tag and tokens" << std::endl;
 
     // Triggers
-    //triggerResultsToken_ = consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("triggerResults"));
-    //triggerObjectsToken_ = consumes<std::vector<pat::TriggerObjectStandAlone>>(iConfig.getParameter<edm::InputTag>("triggerObjects"));
-    // tracks 
-    //tracksToken_ = consumes<std::vector<reco::Track>>(iConfig.getParameter<edm::InputTag>("tracks"));
-    // rho
-    //rhoToken_ = consumes<double>(iConfig.getParameter<edm::InputTag>("rho"));
+    //auto triggerObjectsToken = consumes<std::vector<pat::TriggerObjectStandAlone>>(iConfig.getParameter<edm::InputTag>("triggerObjects"));
 
 	if( DEBUG ) std::cout << "Create Object Classes" << std::endl;
 
     auto eventInfoObj = new KUCMSEventInfoObject(  iConfig ); 
     auto vertexToken = consumes<std::vector<reco::Vertex>>(iConfig.getParameter<edm::InputTag>("vertices"));
+    auto triggerResultsToken = consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("triggerResults"));
+    auto triggerEventToken = consumes<trigger::TriggerEvent>(iConfig.getParameter<edm::InputTag>("triggerEvent"));
+    //auto rhoToken_ = consumes<double>(iConfig.getParameter<edm::InputTag>("rho"));
     eventInfoObj->LoadVertexTokens( vertexToken );
+    eventInfoObj->LoadTriggerTokens( triggerResultsToken, triggerEventToken );
 
     auto recHitsObj = new KUCMSEcalRecHitObject( iConfig );
     auto rhEBtoken = consumes<recHitCol>(iConfig.getParameter<edm::InputTag>("recHitsEB"));
@@ -195,9 +194,9 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
         genObjs->LoadGenJetsTokens( genJetsToken );
 
         // Load gen object into other collections
-	ecalTracksObj->LoadGenObject( genObjs );
-	electronsObj->LoadGenObject( genObjs );
-	displacedElectronObj->LoadGenObject( genObjs );
+	    ecalTracksObj->LoadGenObject( genObjs );
+	    electronsObj->LoadGenObject( genObjs );
+	    displacedElectronObj->LoadGenObject( genObjs );
         photonsObj->LoadGenObject( genObjs );
         ak4jetObj->LoadGenObject( genObjs );
 

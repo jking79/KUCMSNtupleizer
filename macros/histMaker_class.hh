@@ -36,7 +36,7 @@ class HistMaker : root_rebase {
 
 	void histMaker( std::string indir, std::string infilelist, std::string outfilename, int pct );	
 	void initHists();
-	void getBranches( Long64_t entry );
+	//void getBranches( Long64_t entry );
 	void eventLoop( Long64_t entry );
  	void endJobs();	
 

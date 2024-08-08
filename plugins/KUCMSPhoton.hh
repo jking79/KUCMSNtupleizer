@@ -48,6 +48,9 @@
 #include "KUCMSElectron.hh"
 #include "KUCMSGenObjects.hh"
 
+#include <TLorentzVector.h>
+#include "TMathBase.h"  
+
 #ifndef KUCMSPhotonObjectHeader
 #define KUCMSPhotonObjectHeader
 
@@ -218,6 +221,9 @@ void KUCMSPhotonObject::InitObject( TTree* fOutTree ){
     //Branches.makeBranch("esEnergyOverRawE","Photon_esEnergyOverRawE",VFLOAT,"ratio of preshower energy to raw supercluster energy");
     //Branches.makeBranch("haloTaggerMVAVal","Photon_haloTaggerMVAVal",VFLOAT,"Value of MVA based beam halo tagger in the Ecal endcap (valid for pT > 200 GeV)");//
 
+    Branches.makeBranch("gloResRHs","Photon_gloResRhId",VVUINT);
+    Branches.makeBranch("locResRHs","Photon_locResRhId",VVUINT);
+
     Branches.makeBranch("GenIdx","Photon_genIdx",VINT);
     //Branches.makeBranch("GenDr","Photon_genDr",VFLOAT);
     //Branches.makeBranch("GenDp","Photon_genDp",VFLOAT);
@@ -248,6 +254,8 @@ void KUCMSPhotonObject::InitObject( TTree* fOutTree ){
     //Branches.makeBranch("CovEtaEta","Photon_covEtaEta",VFLOAT);
     //Branches.makeBranch("CovEtaPhi","Photon_covEtaPhi",VFLOAT);
     //Branches.makeBranch("CovPhiPhi","Photon_covPhiPhi",VFLOAT);
+
+
 
     Branches.attachBranches(fOutTree);
 
@@ -403,6 +411,15 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
 	scGroup scptrs;
 	std::vector<float> scptres;
 	//std::vector<int> scmatched;
+    std::vector<uInt> locRHCands;
+    std::vector<pat::Photon> gloPhotons;
+    //std::vector<pat::Photon> locPhotons;
+    //std::vector<pat::Photon> selPhotons;
+    //std::vector<int> selPhoType;
+    //std::vector<uInt> locSeedRHs{0,0};
+    //std::vector<uInt> gloSeedRHs{0,0};
+    //std::vector<uInt> gloAllSeedRHs;
+    //float gloDiMass(-1), gloDiAngle(-1), gloDiDr(-1), gloDiPhi(-1), gloDiEta(-1);
     for( const auto &photon : fphotons ){
 
         Branches.fillBranch("IsOotPho",phoIsOotPho[phoIdx]);
@@ -594,6 +611,51 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
 			scptres.push_back(phoEnergy);
         }//<<>>if( hasGenInfo )
 
+        // get time resolution information
+
+        // select global photons
+        if ( photon.hasPixelSeed() ){
+			float elTrackZ = electronObj->getEleTrackZMatch( photon );
+            auto eleMatch = elTrackZ < 1000.0;
+            auto dz = abs( elTrackZ - geVar("vtxZ") );
+            auto trackMatch = dz < 1.0;
+            if( eleMatch && trackMatch ){
+                gloPhotons.push_back(photon);
+                if( PhotonDEBUG ) std::cout << " Electron track match for Glo photon with " << dz << " dz" << std::endl;
+            }//<<<>>if( eleMatch && trackMatch )
+        }//<<>>if (not inpho.hasPixSeed)
+
+        // select local photons rechit+neighbor crystals 
+        const auto &seedDetId = scptr->seed()->seed();// seed detid
+        const auto isEB = (seedDetId.subdetId() == EcalBarrel);// which subdet
+        const auto & ph2ndMoments = rhObj->getCluster2ndMoments( scptr );
+        const auto smaj  = ph2ndMoments.sMaj;
+        const auto smin  = ph2ndMoments.sMin;
+        if ( smin < 0.3 && smaj < 0.5){
+			const scGroup phoSCGroup{*scptr};
+            auto phoRhGroup = rhObj->getRHGroup( phoSCGroup, 0.0 );
+            if( PhotonDEBUG ) std::cout << " Examining Photon with " << phoRhGroup.size() << " rechits." << std::endl;
+            for( auto & rechit : phoRhGroup ){
+                const auto rhDetId = rechit.detid();
+                const auto lrhEnergy = rechit.energy(); ///ecHitE( rhDetId, phoRecHits );
+				const std::vector<std::vector<int>> offsets{{1,0},{-1,0},{0,1},{0,-1},{1,1},{1,-1},{-1,1},{-1,-1}};
+                for( auto & offset : offsets ){
+                    const auto nbDetId = ( isEB ) ? EBDetId::offsetBy( rhDetId, offset[0], offset[1] ) : EEDetId::offsetBy( rhDetId, offset[0], offset[1] );
+                    auto neighborEnergy = rhObj->getRecHitEnergy( nbDetId.rawId() );
+                    auto ordered = lrhEnergy > neighborEnergy;
+                    auto close = lrhEnergy < 1.20*neighborEnergy;
+                    if( ordered && close ){  // need to be within 20% of energy
+                        if( PhotonDEBUG ) std::cout << " Matching loc rechit pair with e: " << lrhEnergy << " : " << neighborEnergy;
+                        if( PhotonDEBUG ) std::cout << " (" << lrhEnergy/neighborEnergy << ")"<< " for lead rh id: " << rhDetId.rawId() <<std::endl;
+                        //locPhotons.push_back( photon );
+                        locRHCands.push_back( rhDetId.rawId() );
+                        locRHCands.push_back( nbDetId.rawId() );
+                    }//<<>>if( high < 1.20*low )
+                }//<<>>for( auto offset : offsets )
+            }//<<>>for( rechit : phoRhGroup )
+
+        }//<<>>if ( smin < 0.3 && smaj < 0.5)
+
         phoIdx++;
     }//<<>>for( const auto &photon : fPhotons 
 	Branches.fillBranch("nPho",phoIdx);
@@ -616,6 +678,80 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
 		}//<<>>for( auto genidx : genInfo )
 		//std::cout << " Photon Gen Match Finished ------------------------- " << std::endl;
 	}//<<>>if( cfFlag("hasGenInfo") )
+
+    // Process time resolution rechits/photons
+    // select rhs for global
+    //gloAllSeedRHs.clear();
+    std::vector<uInt> gloAllSeedRHs;
+    int nGloPhos = gloPhotons.size();
+    std::vector<float> zMassDiff;
+	std::vector<int> phoIndx1;
+    std::vector<int> phoIndx2;
+    if( nGloPhos > 1 ){
+        float zMassMatch(35.00);
+        float zMass(91.1876);
+        vector<int> phoIndx;
+        for( int first(0); first < nGloPhos; first++ ){
+            auto pho1Eta = gloPhotons[first].eta();
+            auto pho1Phi = gloPhotons[first].phi();
+            auto pho1Pt = gloPhotons[first].pt();
+            auto pho1E = gloPhotons[first].energy();
+            TLorentzVector pho1vec;
+            pho1vec.SetPtEtaPhiE(pho1Pt, pho1Eta, pho1Phi, pho1E);
+            for( int second(first+1); second < nGloPhos; second++ ){
+                auto pho2Eta = gloPhotons[second].eta();
+                auto pho2Phi = gloPhotons[second].phi();
+                auto pho2Pt = gloPhotons[second].pt();
+                auto pho2E = gloPhotons[second].energy();
+                TLorentzVector pho2vec;
+                TVector3 pho2vec3(pho2Pt, pho2Eta, pho2Phi);
+                pho2vec.SetPtEtaPhiE(pho2Pt, pho2Eta, pho2Phi, pho2E);
+                //const auto dr12 = pho1vec.DeltaR(pho2vec);
+                //const auto ang12 = pho1vec.Angle(pho2vec3);
+                //const auto dphi12 = pho1vec.DeltaPhi(pho2vec);
+                //const auto deta12 = std::abs(pho1Eta - pho2Eta);
+                pho1vec += pho2vec;
+                auto pairMass = pho1vec.M();
+                if( pairMass > 60.0 && pairMass < 120.0 ){
+                    auto diff = std::abs(pairMass-zMass);
+					zMassDiff.push_back(diff);
+					phoIndx1.push_back(first);
+					phoIndx2.push_back(second);
+                    //if( zMassDiff < zMassMatch ){
+                    //    phoIndx[0] = first; phoIndx[1] = second; zMassMatch = zMassDiff;
+                    //    //gloDiMass = pairMass; gloDiAngle = ang12; gloDiDr = dr12; gloDiPhi = dphi12; gloDiEta = deta12;
+                    //    if( PhotonDEBUG ) std::cout << " Matching glo pho pair with " << zMassDiff << " mass diff" << std::endl;
+                    //}//<<>>if( zMassDiff < zMassMatch )}
+                }//<<>>if( pairMass > 60.0 && pairMass < 120.0 )
+            }//<<>>for( int second(first+1); second < nGloPhos; second++ )
+        }//<<>>for( int first(0); first < nGloPhos; first++ )
+		int nMassMatches = zMassDiff.size();
+		for( int idx = 0; idx < nMassMatches; idx++ ){
+        	if( zMassDiff[idx] < zMassMatch ){
+
+            	//selPhoIndx[1] = phoIndx[0];
+            	auto pho0 = gloPhotons[phoIndx1[idx]];
+            	//selPhotons.push_back(pho0);
+            	//selPhoType.push_back(1);
+            	//selPhoIndx[2] = phoIndx[1];
+            	auto pho1 = gloPhotons[phoIndx2[idx]];
+            	//selPhotons.push_back(pho1);
+            	//selPhoType.push_back(2);
+            	const auto &phosc0 = pho0.superCluster().isNonnull() ? pho0.superCluster() : pho0.parentSuperCluster();
+            	const auto &phosc1 = pho1.superCluster().isNonnull() ? pho1.superCluster() : pho1.parentSuperCluster();
+            	const uInt id1 = ((phosc0.get())->seed()->seed()).rawId();
+            	gloAllSeedRHs.push_back(id1);
+            	const uInt id2 = ((phosc1.get())->seed()->seed()).rawId();
+            	gloAllSeedRHs.push_back(id2);
+            	//if( PhotonDEBUG ) std::cout << " Selecting matching glo photon pair with : " << id1  << " & " << id2;
+            	//if( PhotonDEBUG ) std::cout << " and dZmass : " << zMassDiff[idx] << std::endl;
+
+        	}//<<>>if( zMassMatch < 35.00 )
+		}//<<>>for( int idx = 0; idx < nMassMatches; idx++ )
+    }//<<>>if( gloPhotons.size() > 1 )
+
+    Branches.fillBranch("gloResRHs",gloAllSeedRHs);
+    Branches.fillBranch("locResRHs",locRHCands);
 
 }//<<>>void KUCMSPhoton::ProcessEvent()
 
