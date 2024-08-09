@@ -41,7 +41,6 @@ class DeltaRMatchContainer {
   double pt_, eta_, phi_;
 };
 
-
 typedef ROOT::Math::PtEtaPhiMVector LorentzVec;
 
 int GenMatchIndex(const LorentzVec &trackVec, const std::vector<LorentzVec> &genVecs, float &deltaR);
@@ -77,6 +76,10 @@ void vertexQuality() {
   double xmin = 0.;
   double xmax = 10;
 
+  // Gen Particle
+  TH1D genParticle_sigPt("genParticle_sigPt", "genParticle_sigPt", 100, 0., 500);
+
+  
   // General Tracks
   TH1D generalTracks_ip2D("generalTracks_ip2D", "generalTracks_ip2D", 120, -60, 60);
   TH1D generalTracksSig_ip2D("generalTracksSig_ip2D", "generalTracksSig_ip2D", 120, -60, 60); 
@@ -88,24 +91,29 @@ void vertexQuality() {
 
   // General Vertices
   TH1D generalVertices_ecalness("generalVertices_ecalness", "generalVertices_ecalness", 100, 0, 1);
-  TH1D generalVerticesSig_ecalness("generalVerticesSig_ecalness", "generalVerticesSig_ecalness", 100, 0, 1);
+  TH1D generalVerticesSig_ecalness("generalVerticesSig_ecalness", "generalVerticesSig_ecalness", 101, 0, 1.01);
   TH1D generalVertices_trackOverlapPV("generalVertices_trackOverlapPV", "generalVertices_trackOverlapPV", 100, 0, 1);
   TH1D generalVerticesSig_nTracks("generalVerticesSig_nTracks", "generalVerticesSig_nTracks", 100, 0, 100);
   TH1D generalVerticesSig_dxyPVnoSig("generalVerticesSig_dxyPVnoSig", "generalVerticesSig_dxyPVnoSig", 100, 0, 1);
   TH1D generalVerticesSig_dxyPVSig("generalVerticesSig_dxyPVSig", "generalVerticesSig_dxyPVSig", 100, 0, 1);
 
-  TH2D generalVertices_nTracksVsEcalness("generalVertices_nTracksVsEcalness", "generalVertices_nTracksVsEcalness", 100, 0, 1, 100, 0, 200);
-  TH2D generalVerticesSig_nTracksVsEcalness("generalVerticesSig_nTracksVsEcalness", "generalVerticesSig_nTracksVsEcalness", 100, 0, 1, 100, 0, 200);
-  TH2D generalVerticesSig_nTracksVsDxy("generalVerticesSig_nTracksVsDxy", "generalVerticesSig_nTracksVsDxy", 70, 0, 70, 100, 0, 200);
+  TH2D generalVertices_nTracksVsEcalness("generalVertices_nTracksVsEcalness", "generalVertices_nTracksVsEcalness", 101, 0, 1.01, 100, 0, 10);
+  TH2D generalVerticesSig_nTracksVsEcalness("generalVerticesSig_nTracksVsEcalness", "generalVerticesSig_nTracksVsEcalness", 101, 0, 1.01, 100, 0, 10);
+  TH2D generalVertices_weightRatioVsEcalness("generalVertices_weightRatioVsEcalness", "generalVertices_weightRatioVsEcalness", 101, 0, 1.01, 100, 0, 1.01);
+  TH2D generalVerticesSig_weightRatioVsEcalness("generalVerticesSig_weightRatioVsEcalness", "generalVerticesSig_weightRatioVsEcalness", 101, 0, 1.01, 101, 0, 1.01);
+  TH2D generalVerticesSig_nTracksVsDxy("generalVerticesSig_nTracksVsDxy", "generalVerticesSig_nTracksVsDxy", 70, 0, 6, 100, 0, 20);
+  TH2D generalVerticesSig_nTracksVsd3D("generalVerticesSig_nTracksVsd3D", "generalVerticesSig_nTracksVsd3D", 60, 0, 15, 100, 0, 20);
   TH2D generalVertices_signalCountPVvsAVR("generalVertices_signalCountPVvsAVR", "generalVertices_signalCountPVvsAVR", 20, 0, 5, 20, 0 ,5);
 
   // Signal Vertices
-  TH1D signalVertices_nTotal("signalVertices_nTotal", "signalVertices_nTotal", 3, 2, 5);
+  TH1D signalVertices_nTotal("signalVertices_nTotal", "signalVertices_nTotal", 3, 0, 3);
   TH1D signalVertices_nTracks("signalVertices_nTracks", "signalVertices_nTracks", 3, 2, 5);
   TH1D signalVertices_dxy("signalVertices_dxy", "signalVertices_dxy", 280, 0 , 70);
   TH1D signalVertices_genPtRelDiff("signalVertices_genPtRelDiff", "signalVertices_genPtRelDiff", 100, 0., 10.);
   TH1D signalVertices_trackPtBadMatches("signalVertices_trackPtBadMatches", "signalVertices_trackPtBadMatches", 100, 0., 200.);
   TH1D signalVertices_trackPtGoodMatches("signalVertices_trackPtGoodMatches", "signalVertices_trackPtGoodMatches", 100, 0., 200.);
+  TH1D signalVertices_absDxyDiff("signalVertices_absDxyDiff", "signalVertices_absDxyDiff", 100, 0., 10);
+  TH1D signalVertices_abs3DDiff("signalVertices_abs3DDiff", "signalVertices_abs3DDiff", 100, 0., 10);
 
   TH2D signalVertices_nTracksVsDxy("signalVertices_nTracksVsDxy", "signalVertices_nTracksVsDxy", 350, 0, 70, 3, 2, 5);
   TH2D signalVertices_nTracksVsDxyZoom("signalVertices_nTracksVsDxyZoom", "signalVertices_nTracksVsDxyZoom", 100, 0, 0.1, 3, 2, 5);
@@ -113,9 +121,12 @@ void vertexQuality() {
   TH2D signal_ptDiffVsDeltaR("signal_ptDiffVsDeltaR", "signal_ptDiffVsDeltaR", 60, 0, 0.1, 200, -20, 100);
 
   TH2D signal_genDxyVsSVdxy("signal_genDxyVsSVdxy", "signal_genDxyVsSVdxy", 100, 0, 100, 100, 0, 100);
-  TH2D signal_dxyDiffVsNormChi2("signal_dxyDiffVsNormChi2", "signal_dxyDiffVsNormChi2", 100, 0, 5, 100, 0, 30);
-  TH2D signal_dxyDiffVsGenPtRelDiff("signal_dxyDiffVsGenPtRelDiff", "signal_dxyDiffVsGenPtRelDiff", 100, -10., 10., 100, 0., 30.);
-  TH2D signal_dxyDiffVsWeightRatio("signal_dxyDiffVsWeightRatio", "signal_dxyDiffVsWeightRatio", 100, 0., 1.,  100, 0., 30.);
+  TH2D signal_dxyDiffVsNormChi2("signal_dxyDiffVsNormChi2", "signal_dxyDiffVsNormChi2", 100, 0, 5, 100, 0, 1);
+  TH2D signal_dxyDiffVsGenPtRelDiff("signal_dxyDiffVsGenPtRelDiff", "signal_dxyDiffVsGenPtRelDiff", 100, -0.5, 1., 100, 0., 10.);
+  TH2D signal_dxyDiffVsWeightRatio("signal_dxyDiffVsWeightRatio", "signal_dxyDiffVsWeightRatio", 100, 0.3, 0.9,  100, 0., 0.5);
+
+  TH2D pvCollection_dxyVsMaxWeight("pvCollection_dxyVsMaxWeight", "pvCollection_dxyVsMaxWeight", 100, 0, 1, 100, 0, 100);
+  TH2D pvCollection_d3DvsMaxWeight("pvCollection_d3DvsMaxWeight", "pvCollection_d3DvsMaxWeight", 100, 0, 1, 100, 0, 100);
   
   TH2D testHist("testHist", "testHist", 60, 0., 120., 40, 0., 200.);
 
@@ -149,12 +160,16 @@ void vertexQuality() {
     const int nTracks(handle.Track_nTotal);
     const int nGen(handle.GenParticle_nMatches);
     const int nVtx(handle.Vertex_nTotal);
+    const double bsx(handle.Beamspot_x), bsy(handle.Beamspot_y), bsz(handle.Beamspot_z);
     const double beamspotDxy(sqrt(handle.Beamspot_x*handle.Beamspot_x + handle.Beamspot_y*handle.Beamspot_y));
-    //std::cout << nTracks << std::endl;
-    
-    std::vector<int> signalIndex;
 
+    //std::cout << nTracks << std::endl;
+    //std::cout << "here" << std::endl;
+    std::vector<int> signalIndex;
+    
     for(int g = 0; g < nGen; g++) {
+
+      //cout << "This index: " << g << ", matched track size: " << handle.GenParticle_matchedTrackIndex->size() << endl;
 
       const bool isSignal(handle.GenParticle_isSignal->at(g));
       const int trackIndex(handle.GenParticle_matchedTrackIndex->at(g));
@@ -166,6 +181,7 @@ void vertexQuality() {
 	generalTracksSig_ip2D.Fill(ip2D);
 	generalTracksSig_sip2D.Fill(sip2D);
 	generalTracksSig_ip2DVsSip2D.Fill(sip2D, ip2D);
+	genParticle_sigPt.Fill(handle.GenParticle_pt->at(g));
       }
       else {
 	generalTracks_ip2D.Fill(handle.Track_ip2D->at(trackIndex));
@@ -174,9 +190,12 @@ void vertexQuality() {
       }
     }
 
-    generalVertices_trackOverlapPV.Fill(handle.Vertex_trackRatioWithPV->at(0));
+    //cout << "trackRatioWithPV size: " << handle.Vertex_trackRatioWithPV->size() << endl;
+    if(!handle.Vertex_trackRatioWithPV->empty())
+      generalVertices_trackOverlapPV.Fill(handle.Vertex_trackRatioWithPV->at(0));
+    
     //generalVertices_signalCountPVvsAVR.Fill(handle.Vertex_signalCount->at(0), handle.PV_signalCount);
-
+    
     double pvWeightedNtracks(0);
     for(int t = 0; t < handle.PV_trackIndex->size(); t++) {
       const int trackIndex(handle.PV_trackIndex->at(t));
@@ -188,16 +207,18 @@ void vertexQuality() {
 
     double avrPVWeightedNtracks(0);
     for(int v = 0; v < nVtx; v++) {
-      
+
       bool hasSignal(false);
 
-      int nTrk = 0;//(handle.Vertex_nTracks->at(v));
+      double nTrk = 0;//(handle.Vertex_nTracks->at(v));
       
       for(int t = 0; t < handle.Vertex_nTracks->size(); t++) {
 	const int vertexIndex(handle.Vertex_vertexIndex->at(t));
 	const int trackIndex(handle.Vertex_trackIndex->at(t));
 	const double weight(handle.Vertex_trackWeight->at(t));
-	nTrk += weight;
+	
+	if(vertexIndex == v)
+	  nTrk += weight;
 	
 	for(const auto &idx : signalIndex) {
 	  if(vertexIndex == v && trackIndex == idx)
@@ -208,13 +229,17 @@ void vertexQuality() {
 	}
       }
 
-      const double vertexDxy(fabs(handle.Vertex_dxy->at(v)-beamspotDxy));
+      const double vx(handle.Vertex_x->at(v)), vy(handle.Vertex_y->at(v)), vz(handle.Vertex_z->at(v));
+      const double vertexDxy(sqrt((vx-bsx)*(vx-bsx)+(vy-bsy)*(vy-bsy)));
+      const double vertexDiff3D(sqrt((vx-bsx)*(vx-bsx)+(vy-bsy)*(vy-bsy)+(vz-bsz)*(vz-bsz)));
       const double ecalness(handle.Vertex_ecalness->at(v));
 
       if(hasSignal) {
 	generalVerticesSig_ecalness.Fill(ecalness);
 	generalVerticesSig_nTracksVsEcalness.Fill(ecalness, nTrk);
+	generalVerticesSig_weightRatioVsEcalness.Fill(ecalness, nTrk/handle.Vertex_nTracks->at(v));
 	generalVerticesSig_nTracksVsDxy.Fill(vertexDxy, nTrk);
+	generalVerticesSig_nTracksVsd3D.Fill(vertexDiff3D, nTrk);
 	generalVerticesSig_nTracks.Fill(handle.Vertex_signalCount->at(v));
 	if(!handle.PV_hasSignal && v != 0)
 	  generalVerticesSig_dxyPVnoSig.Fill(vertexDxy);
@@ -224,17 +249,17 @@ void vertexQuality() {
       else {
 	generalVertices_ecalness.Fill(ecalness);
 	generalVertices_nTracksVsEcalness.Fill(ecalness, nTrk);
+	generalVertices_weightRatioVsEcalness.Fill(ecalness, nTrk/handle.Vertex_nTracks->at(v));
       }
     }
     if(avrPVWeightedNtracks > 0 || pvWeightedNtracks > 0)
       generalVertices_signalCountPVvsAVR.Fill(avrPVWeightedNtracks, pvWeightedNtracks);
-    
-    
+
     signalVertices_nTotal.Fill(handle.SignalSV_nTotal);
     for(int v = 0; v < handle.SignalSV_nTotal; v++) {
       
       const int nTracks(handle.SignalSV_nTracks->at(v));
-      const double dxy(fabs(handle.SignalSV_dxy->at(v)-beamspotDxy));
+      const double dxy(fabs(handle.SignalSV_dxy->at(v)));
       
       signalVertices_nTracks.Fill(nTracks);
       signalVertices_dxy.Fill(dxy);
@@ -243,6 +268,7 @@ void vertexQuality() {
 
       double totalWeight(0.);
       double genDxy(0.);
+      
       for(int t = 0; t < handle.SignalSV_trackIndex->size(); t++) {
 	const int vertexIndex(handle.SignalSV_vertexIndex->at(t));
 	const int trackIndex(handle.SignalSV_trackIndex->at(t));
@@ -253,7 +279,7 @@ void vertexQuality() {
 
 	const double trackPt(handle.Track_pt->at(trackIndex));
 	const double genPt(handle.GenParticle_pt->at(genIndex));
-	const double genPtRelDiff((trackPt-genPt)/genPt);
+	const double genPtRelDiff((genPt - trackPt)/genPt);
 
 	if(genPtRelDiff < -0.5)
 	  signalVertices_trackPtBadMatches.Fill(trackPt);
@@ -261,16 +287,59 @@ void vertexQuality() {
 	  signalVertices_trackPtGoodMatches.Fill(trackPt);
 	
 	if(vertexIndex == v) {
+	  const double gx(handle.GenParticle_x->at(genIndex)), gy(handle.GenParticle_y->at(genIndex)), gz(handle.GenParticle_z->at(genIndex));
+	  const double vx(handle.SignalSV_x->at(vertexIndex)), vy(handle.SignalSV_y->at(vertexIndex)), vz(handle.SignalSV_z->at(vertexIndex));
+	  const double absDxyDiff(sqrt((gx-vx)*(gx-vx) + (gy-vy)*(gy-vy)));
+	  const	double abs3DDiff(sqrt((gx-vx)*(gx-vx) + (gy-vy)*(gy-vy) + (gz-vz)*(gz-vz)));
 	  totalWeight += handle.SignalSV_trackWeight->at(t);
 	  signal_genDxyVsSVdxy.Fill(dxy, genDxy);
 	  signalVertices_genPtRelDiff.Fill(genPtRelDiff);
 	  signal_dxyDiffVsNormChi2.Fill(handle.SignalSV_normalizedChi2->at(v), fabs(genDxy-dxy));
 	  signal_dxyDiffVsGenPtRelDiff.Fill(genPtRelDiff, fabs(genDxy-dxy));
+	  signalVertices_absDxyDiff.Fill(absDxyDiff);
+	  signalVertices_abs3DDiff.Fill(abs3DDiff);
 	}
       }
       signal_dxyDiffVsWeightRatio.Fill(totalWeight/nTracks, fabs(genDxy-dxy));
     }
 
+    for(int t = 0; t < (handle.PVCollection_trackIndex)->size(); t++) {
+      const int trackIndex(handle.PVCollection_trackIndex->at(t));
+      const int genIndex(handle.PVCollection_genIndex->at(t));
+      const double trackWeight(handle.PVCollection_signalWeight->at(t));
+      //const double x(handle.PVCollection_x->at(t)), y(handle.PVCollection_y->at(t)), z(handle.PVCollection_z->at(t));
+      const double x(handle.GenParticle_x->at(genIndex)), y(handle.GenParticle_y->at(genIndex)), z(handle.GenParticle_z->at(genIndex));
+      const double dxy(sqrt((x-bsx)*(x-bsx)+(y-bsy)*(y-bsy)));
+      const double d3D(sqrt((x-bsx)*(x-bsx)+(y-bsy)*(y-bsy)+(z-bsz)*(z-bsz)));
+      double maxWeight(0);
+      bool indexFound(false);
+      for(const auto &index : *(handle.PVCollection_trackIndex)) {
+	if(trackIndex == index && trackWeight > maxWeight) {
+	  maxWeight = trackWeight;
+	  indexFound = true;
+	}
+      }
+      
+      if(indexFound) {
+	pvCollection_dxyVsMaxWeight.Fill(maxWeight, dxy);
+	pvCollection_d3DvsMaxWeight.Fill(maxWeight, d3D);
+      }
+      else {
+	for(int v = 0; v < handle.SignalSV_nTotal; v++) {
+	  for(int t = 0; t < handle.SignalSV_trackIndex->size(); t++) {
+	    const int vertexIndex(handle.SignalSV_vertexIndex->at(t));
+	    const int tidx(handle.SignalSV_trackIndex->at(t));
+	    if(tidx == trackIndex) {
+	      const double vx(handle.SignalSV_x->at(v)), vy(handle.SignalSV_y->at(v)), vz(handle.SignalSV_z->at(v));
+	      const double sigDxy(vx*vx + vy*vy);
+	      const double sigd3D(vx*vx + vy*vy + vz*vz);
+	      pvCollection_dxyVsMaxWeight.Fill(0., dxy);
+	      pvCollection_d3DvsMaxWeight.Fill(0., d3D);
+	    }
+	  }
+	}
+      }
+    }
     /*
     for(int t = 0; t < nTracks; t++) {
 
@@ -291,7 +360,10 @@ void vertexQuality() {
   plotHistograms(generalVerticesSig_ecalness, generalVertices_ecalness, "generalVertices_ecalness", "ecalness")->Write();
   plotHistogram(generalVerticesSig_nTracksVsEcalness, "ecalness", "nTracks")->Write();
   plotHistogram(generalVertices_nTracksVsEcalness, "ecalness", "nTracks")->Write();
+  plotHistogram(generalVerticesSig_weightRatioVsEcalness, "ecalness", "weight-to-track ratios")->Write();
+  plotHistogram(generalVertices_weightRatioVsEcalness, "ecalness", "weight-to-track ratio")->Write();
   plotHistogram(generalVerticesSig_nTracksVsDxy, "dxy", "nTracks")->Write();
+  plotHistogram(generalVerticesSig_nTracksVsd3D, "d3D", "nTracks")->Write();
   plotHistogram(generalVerticesSig_nTracks, "nTracks")->Write();
   plotHistogram(generalVertices_trackOverlapPV, "overlap")->Write();
   plotHistogram(generalVertices_signalCountPVvsAVR, "nSignal AVR", "nSignal PV")->Write();
@@ -305,10 +377,15 @@ void vertexQuality() {
   plotHistogram(signalVertices_genPtRelDiff, "(genPt - trackPt) / genPt")->Write();
   plotHistogram(signalVertices_nTracksVsDxy, "dxy", "nTracks")->Write();
   plotHistogram(signalVertices_nTracksVsDxyZoom, "dxy", "nTracks")->Write();
+  plotHistogram(signalVertices_absDxyDiff, "|gendxy - vertexdxy|")->Write();
+  plotHistogram(signalVertices_abs3DDiff, "|gend3D - vertexd3D|")->Write();
   plotHistogram(signal_genDxyVsSVdxy, "vertex dxy", "gen dxy")->Write();
   plotHistogram(signal_dxyDiffVsNormChi2, "norm Chi2", "|gen dxy - vertex dxy|")->Write();
   plotHistogram(signal_dxyDiffVsGenPtRelDiff, "(genPt - trackPt) / genPt", "|gen dxy - vertex dxy|")->Write();
-  plotHistogram(signal_dxyDiffVsWeightRatio, "totalWeight/nTracks", "dxy")->Write();
+  plotHistogram(signal_dxyDiffVsWeightRatio, "totalWeight/nTracks", "|gen dxy - vertex dxy|")->Write();
+
+  plotHistogram(pvCollection_dxyVsMaxWeight, "maxWeight", "gen dxy")->Write();
+  plotHistogram(pvCollection_d3DvsMaxWeight, "maxWeight", "gen d3D")->Write();
   
   //plotHistogram(signal_ptDiffVsDeltaR, "deltaR", "p_T^{Gsf}-p_T^{General}")->Write();
  

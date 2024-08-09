@@ -15,6 +15,8 @@ class TrackHelper {
   static int FindTrackIndex(const reco::Track &track, const reco::TrackCollection &trackCollection);
   template <typename T>
     static int FindIndex(const T &object, const std::vector<T> &objectCollection);
+  static bool SameTrack(const reco::Track &track1, const reco::Track &track2);
+
 };
 
 template <typename T> double TrackHelper::GetDXY(const T &object) {
@@ -64,6 +66,10 @@ inline int TrackHelper::FindIndex(const T &object, const std::vector<T> &objectC
     }
   }
   return index;
+}
+
+inline bool TrackHelper::SameTrack(const reco::Track &track1, const reco::Track &track2) {
+  return track1.pt() == track2.pt() && track1.eta() == track2.eta() && track1.phi() == track2.phi();
 }
 
 #endif

@@ -114,7 +114,8 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     auto transientTrackBuilderToken = esConsumes<TransientTrackBuilder, TransientTrackRecord>(edm::ESInputTag("", "TransientTrackBuilder"));
     auto magneticFieldToken = esConsumes<MagneticField, IdealMagneticFieldRecord>();
     auto parameters = iConfig.getParameter<edm::ParameterSet>("TrackAssociatorParameters");
-
+    auto mergedSCToken = consumes<reco::SuperClusterCollection>(iConfig.getParameter<edm::InputTag>("displacedSCs"));
+    
     // Setup the track associator
     TrackAssociatorParameters trackAssocParameters;
     edm::ConsumesCollector iC = consumesCollector();
@@ -136,6 +137,7 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     vtxObject->LoadGsfTracksToken(ogGsfTracksToken);
     vtxObject->LoadECALTracksToken(ecalTracksToken);
     vtxObject->LoadDisplacedElectrons(displacedElectronsToken);
+    vtxObject->LoadMergedSCs(mergedSCToken);
     vtxObject->LoadPrimaryVertex(vertexToken);
     vtxObject->LoadPFCandidatesToken(pfCandidatesToken);
     vtxObject->LoadBeamSpot(beamLineToken);
@@ -164,7 +166,7 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     electronsObj->LoadConversionTokens( conversionsToken );
 
     //auto beamLineToken = consumes<reco::BeamSpot>(iConfig.getParameter<edm::InputTag>("beamSpot"));
-    //electronsObj->LoadBeamSpotTokens( beamLineToken );
+    electronsObj->LoadBeamSpotTokens( beamLineToken );
     //electronsObj->LoadRecHitObject( recHitsObj );
 
     //muons
@@ -234,26 +236,24 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     */
     
     if( DEBUG ) std::cout << "Loading Object Manager" << std::endl;
-    /*
-    ObjMan.Load( "EventInfo", eventInfoObj );
-    ObjMan.Load( "Electrons", electronsObj );
-    ObjMan.Load( "Muons", muonsObj );
-    */
+    
+    //ObjMan.Load( "EventInfo", eventInfoObj );
+    //ObjMan.Load( "Electrons", electronsObj );
+    //ObjMan.Load( "Muons", muonsObj );
     ObjMan.Load( "DiplacedGeneralVertices", vtxObject );
     //ObjMan.Load( "DiplacedElectronIsolation", isoObject );
-    //ObjMan.Load( "ECALTracks", ecalTracksObj );  
+    ObjMan.Load( "ECALTracks", ecalTracksObj );  
     //ObjMan.Load( "DisplacedElectrons", displacedElectronObj );
-    /*
-    ObjMan.Load( "Photons", photonsObj );
-    ObjMan.Load( "JetsAK4", ak4jetObj );
-    ObjMan.Load( "SVs", svsObj );
-    */
+    //ObjMan.Load( "Photons", photonsObj );
+    //ObjMan.Load( "JetsAK4", ak4jetObj );
+    //ObjMan.Load( "SVs", svsObj );
+
     //ObjMan.Load( "TimedSVs", timedSVsObj);
     //ObjMan.Load( "Conversions", conversionsObj );
-    /*
-    ObjMan.Load( "PFMet", pfmetObj );
-    ObjMan.Load( "ECALRecHits", recHitsObj );
-    */
+
+    //ObjMan.Load( "PFMet", pfmetObj );
+    //ObjMan.Load( "ECALRecHits", recHitsObj );
+
 
     //ObjMan.Load( "ECALRecHits", recHitsObj );// loaded last to process feedback from other objects
 
@@ -287,7 +287,7 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
 	//timedSVsObj->LoadGenObject( genObjs );
 
         // Load gen object into objman last, should be no dependence with other objects
-        //ObjMan.Load( "GenObjects", genObjs );
+        ObjMan.Load( "GenObjects", genObjs );
 
     }//<<>>if( hasGenInfo )
 

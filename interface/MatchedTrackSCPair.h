@@ -89,6 +89,13 @@ template <class T> class MatchedTrackSCPairs : public std::vector<MatchedTrackSC
     return superClusters;
   }
 
+  reco::TrackCollection GetTracks() const {
+    reco::TrackCollection tracks;
+    for(const auto &pair : *this)
+      tracks.emplace_back(pair.GetTrack());
+    return tracks;
+  }
+  
  private:
 
   double cost_;

@@ -273,10 +273,15 @@ void KUCMSECALTracks::PostProcessEvent( ItemManager<float>& geVar ){
 template <typename T>
 void KUCMSECALTracks::FillTrackBranches(PropagatedTracks<T> &propagatedTracks) {
 
+  //std::cout << "starting KUCMSECALTracks::FillTrackBranches" << std::endl;
+
+  int dbgcnt(0);
   for(const auto &trackDet : propagatedTracks) {
     const T track = trackDet.GetTrack();
     const TrackDetMatchInfo detInfo = trackDet.GetDetInfo();
 
+    //cout << "propagated tracks loop " << dbgcnt << endl;
+    
     Branches.fillBranch("ECALTrack_charge", int(track.charge()) );
     Branches.fillBranch("ECALTrack_p", float(track.p()) );
     Branches.fillBranch("ECALTrack_px", float(track.px()) );
@@ -304,6 +309,8 @@ void KUCMSECALTracks::FillTrackBranches(PropagatedTracks<T> &propagatedTracks) {
     Branches.fillBranch("ECALTrack_isGeneral", bool(typeid(T) == typeid(reco::Track)) );
     Branches.fillBranch("ECALTrack_isGsf", bool(typeid(T) == typeid(reco::GsfTrack)) );
 
+    //cout << "Made it to the gen stuff" << endl; 
+    
     if(cfFlag("hasGenInfo")) {
       if(typeid(T) == typeid(reco::Track)) {
 	Branches.fillBranch("ECALTrack_pdgId", int(genObjs_->GetGenParticles()[generalTrackGenInfo_[trackDet.GetIndex()].first].pdgId()) );
@@ -320,6 +327,8 @@ void KUCMSECALTracks::FillTrackBranches(PropagatedTracks<T> &propagatedTracks) {
     FillDetIdBranches<T>(detInfo.crossedEcalIds, trackDet, true);
     FillDetIdBranches<T>(detInfo.crossedHcalIds, trackDet, false);
     //Branches.fillBranch("",);
+
+    dbgcnt++;
   }
 }
 

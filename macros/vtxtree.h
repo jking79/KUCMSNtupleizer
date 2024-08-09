@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Thu May 16 14:56:40 2024 by ROOT version 6.26/11
+// Wed May 22 15:06:55 2024 by ROOT version 6.26/11
 // from TTree llpgtree/KUCMSNtuple
 // found on file: root/GMSB_L-150TeV_Ctau-0_1cm_Fall17.root
 //////////////////////////////////////////////////////////
@@ -27,6 +27,7 @@ public :
    Float_t         Beamspot_y;
    Float_t         Beamspot_z;
    vector<int>     *GenParticle_charge;
+   vector<float>   *GenParticle_deltaR;
    vector<float>   *GenParticle_dxy;
    vector<float>   *GenParticle_eta;
    vector<bool>    *GenParticle_isSignal;
@@ -40,6 +41,13 @@ public :
    vector<float>   *GenParticle_x;
    vector<float>   *GenParticle_y;
    vector<float>   *GenParticle_z;
+   vector<unsigned int> *PVCollection_genIndex;
+   vector<unsigned int> *PVCollection_pvIndex;
+   vector<float>   *PVCollection_signalWeight;
+   vector<unsigned int> *PVCollection_trackIndex;
+   vector<float>   *PVCollection_x;
+   vector<float>   *PVCollection_y;
+   vector<float>   *PVCollection_z;
    Float_t         PV_chi2;
    Float_t         PV_ecalness;
    Bool_t          PV_hasSignal;
@@ -120,6 +128,7 @@ public :
    TBranch        *b_Beamspot_y;   //!
    TBranch        *b_Beamspot_z;   //!
    TBranch        *b_GenParticle_charge;   //!
+   TBranch        *b_GenParticle_deltaR;   //!
    TBranch        *b_GenParticle_dxy;   //!
    TBranch        *b_GenParticle_eta;   //!
    TBranch        *b_GenParticle_isSignal;   //!
@@ -133,6 +142,13 @@ public :
    TBranch        *b_GenParticle_x;   //!
    TBranch        *b_GenParticle_y;   //!
    TBranch        *b_GenParticle_z;   //!
+   TBranch        *b_PVCollection_genIndex;   //!
+   TBranch        *b_PVCollection_pvIndex;   //!
+   TBranch        *b_PVCollection_signalWeight;   //!
+   TBranch        *b_PVCollection_trackIndex;   //!
+   TBranch        *b_PVCollection_x;   //!
+   TBranch        *b_PVCollection_y;   //!
+   TBranch        *b_PVCollection_z;   //!
    TBranch        *b_PV_chi2;   //!
    TBranch        *b_PV_ecalness;   //!
    TBranch        *b_PV_hasSignal;   //!
@@ -248,6 +264,7 @@ void llpgtree::Init(TTree *tree)
 
    // Set object pointer
    GenParticle_charge = 0;
+   GenParticle_deltaR = 0;
    GenParticle_dxy = 0;
    GenParticle_eta = 0;
    GenParticle_isSignal = 0;
@@ -259,6 +276,13 @@ void llpgtree::Init(TTree *tree)
    GenParticle_x = 0;
    GenParticle_y = 0;
    GenParticle_z = 0;
+   PVCollection_genIndex = 0;
+   PVCollection_pvIndex = 0;
+   PVCollection_signalWeight = 0;
+   PVCollection_trackIndex = 0;
+   PVCollection_x = 0;
+   PVCollection_y = 0;
+   PVCollection_z = 0;
    PV_trackIndex = 0;
    PV_trackWeight = 0;
    SignalSV_chi2 = 0;
@@ -327,6 +351,7 @@ void llpgtree::Init(TTree *tree)
    fChain->SetBranchAddress("Beamspot_y", &Beamspot_y, &b_Beamspot_y);
    fChain->SetBranchAddress("Beamspot_z", &Beamspot_z, &b_Beamspot_z);
    fChain->SetBranchAddress("GenParticle_charge", &GenParticle_charge, &b_GenParticle_charge);
+   fChain->SetBranchAddress("GenParticle_deltaR", &GenParticle_deltaR, &b_GenParticle_deltaR);
    fChain->SetBranchAddress("GenParticle_dxy", &GenParticle_dxy, &b_GenParticle_dxy);
    fChain->SetBranchAddress("GenParticle_eta", &GenParticle_eta, &b_GenParticle_eta);
    fChain->SetBranchAddress("GenParticle_isSignal", &GenParticle_isSignal, &b_GenParticle_isSignal);
@@ -340,6 +365,13 @@ void llpgtree::Init(TTree *tree)
    fChain->SetBranchAddress("GenParticle_x", &GenParticle_x, &b_GenParticle_x);
    fChain->SetBranchAddress("GenParticle_y", &GenParticle_y, &b_GenParticle_y);
    fChain->SetBranchAddress("GenParticle_z", &GenParticle_z, &b_GenParticle_z);
+   fChain->SetBranchAddress("PVCollection_genIndex", &PVCollection_genIndex, &b_PVCollection_genIndex);
+   fChain->SetBranchAddress("PVCollection_pvIndex", &PVCollection_pvIndex, &b_PVCollection_pvIndex);
+   fChain->SetBranchAddress("PVCollection_signalWeight", &PVCollection_signalWeight, &b_PVCollection_signalWeight);
+   fChain->SetBranchAddress("PVCollection_trackIndex", &PVCollection_trackIndex, &b_PVCollection_trackIndex);
+   fChain->SetBranchAddress("PVCollection_x", &PVCollection_x, &b_PVCollection_x);
+   fChain->SetBranchAddress("PVCollection_y", &PVCollection_y, &b_PVCollection_y);
+   fChain->SetBranchAddress("PVCollection_z", &PVCollection_z, &b_PVCollection_z);
    fChain->SetBranchAddress("PV_chi2", &PV_chi2, &b_PV_chi2);
    fChain->SetBranchAddress("PV_ecalness", &PV_ecalness, &b_PV_ecalness);
    fChain->SetBranchAddress("PV_hasSignal", &PV_hasSignal, &b_PV_hasSignal);
@@ -414,7 +446,6 @@ void llpgtree::Init(TTree *tree)
    fChain->SetBranchAddress("Vertex_x", &Vertex_x, &b_Vertex_x);
    fChain->SetBranchAddress("Vertex_y", &Vertex_y, &b_Vertex_y);
    fChain->SetBranchAddress("Vertex_z", &Vertex_z, &b_Vertex_z);
-
 }
 
-#endif
+#endif // #ifdef llpgtree_cxx

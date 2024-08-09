@@ -103,7 +103,7 @@ gmsbaodsim2 = '_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v2/
 process.source = cms.Source("PoolSource",
                             #eventsToProcess = cms.untracked.VEventRange("1:54095-1:55195"),
                             fileNames = cms.untracked.vstring(
-                                #'file:root/GMSB_L-150TeV_Ctau-10cm_Fall17_AODSIM.root',
+                                'file:root/GMSB_L-150TeV_Ctau-10cm_Fall17_AODSIM.root',
                                 'file:root/GMSB_L-150TeV_Ctau-0p001cm_Fall17_AODSIM.root',
                                 #'file:root/GMSB_L-150TeV_Ctau-10cm_Fall17_AODSIM.root',
                             ),##<<>>fileNames = cms.untracked.vstring
