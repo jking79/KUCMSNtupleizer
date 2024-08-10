@@ -1,5 +1,5 @@
-#ifndef TrackTools_h
-#define TrackTools_h
+#ifndef KUCMSNtupleizer_KUCMSNtupleizer_TrackPropagator_h
+#define KUCMSNtupleizer_KUCMSNtupleizer_TrackPropagator_h
 
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "MagneticField/Engine/interface/MagneticField.h"
@@ -11,37 +11,8 @@
 #include "TrackingTools/TrackAssociator/interface/TrackDetectorAssociator.h"
 #include "TrackingTools/TrackAssociator/interface/TrackAssociatorParameters.h"
 #include "TrackingTools/TrajectoryState/interface/TrajectoryStateTransform.h"
-
-//===============================================================================================//
-//                                      class: PropagatedTrack                                   //
-//-----------------------------------------------------------------------------------------------//
-// Class for storing a track that was succesfully propagated to the ECAL with its index and its  //
-// associated TrackDetInfo.                                                                      //
-//-----------------------------------------------------------------------------------------------//
-//===============================================================================================// 
-template <class T>
-class PropagatedTrack {
-  
- public:
-  
- PropagatedTrack(const unsigned int index, const T &track, const TrackDetMatchInfo &detInfo) 
-   : index_(index), track_(track), detInfo_(detInfo) {}
-
-  virtual ~PropagatedTrack() = default;
-
-  unsigned int GetIndex() const { return index_; }
-  T GetTrack() const { return track_; }
-  TrackDetMatchInfo GetDetInfo() const { return detInfo_; }
-
- private:
-  
-  const unsigned int index_;
-  const T track_;
-  const TrackDetMatchInfo detInfo_;
-};
-
-// Define alias for a vector of ProgagatedTrack objects 
-template <typename T> using PropagatedTracks = std::vector<PropagatedTrack<T> >;
+#include "TrackPropagation/SteppingHelixPropagator/interface/SteppingHelixPropagator.h"
+#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/PropagatedTrack.h"
 
 //===============================================================================================//
 //                                      class: TrackPropagator                                   //
@@ -94,7 +65,7 @@ TrackPropagator<T>::TrackPropagator(const edm::Event &iEvent,
   for(const auto &track : tracks) {
 
     TrackDetMatchInfo detInfo(GetTrackDetMatchInfo(iEvent, iSetup, magneticField, parameters, track));
-    if(detInfo.crossedEcalIds.size() != 0 && track.pt() > 0.95 && track.qualityMask() < 7) 
+    if(detInfo.crossedEcalIds.size() != 0)// && track.pt() > 0.95 && track.qualityMask() < 7) 
       ecalTracks_.emplace_back(PropagatedTrack(trackIndex++, track, detInfo));
 
   }
@@ -123,14 +94,6 @@ TrackDetMatchInfo TrackPropagator<T>::GetTrackDetMatchInfo(const edm::Event &iEv
 
   return detInfo;
 
-}
-
-template <typename T>
-double GetDXY(T &object) {
-  const double objectDx = object.vx();
-  const double objectDy = object.vy();
-  const double objectDxy = sqrt(objectDx*objectDx + objectDy*objectDy);
-  return objectDxy;
 }
 
 #endif

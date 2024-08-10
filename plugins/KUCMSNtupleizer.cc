@@ -100,6 +100,7 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
 
     //ECAL Tracks
     KUCMSECALTracks* ecalTracksObj = new KUCMSECALTracks(iConfig);
+    auto ecalTracksToken = consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("ecalTracks"));
     auto generalTracksToken = consumes<edm::View<reco::Track>>(iConfig.getParameter<edm::InputTag>("tracks"));
     auto gsfTracksToken = consumes<edm::View<reco::GsfTrack>>(iConfig.getParameter<edm::InputTag>("gsfTracksSrc"));
     auto parameters = iConfig.getParameter<edm::ParameterSet>("TrackAssociatorParameters");
@@ -110,12 +111,14 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     TrackAssociatorParameters trackAssocParameters;
     edm::ConsumesCollector iC = consumesCollector();
     trackAssocParameters.loadParameters(parameters, iC);
-    
+
+    ecalTracksObj->LoadECALTracksToken(ecalTracksToken);
     ecalTracksObj->LoadGeneralTrackTokens(generalTracksToken);
     ecalTracksObj->LoadGsfTrackTokens(gsfTracksToken);
     ecalTracksObj->LoadAssociationParameters(trackAssocParameters);
     ecalTracksObj->LoadMagneticField(magneticFieldToken);
-
+    ecalTracksObj->LoadBeamSpot(beamLineToken);
+    
     auto electronsObj = new KUCMSElectronObject( iConfig );
     auto electronToken = consumes<edm::View<reco::GsfElectron>>(iConfig.getParameter<edm::InputTag>("electrons"));
     electronsObj->LoadElectronTokens( electronToken );
@@ -134,14 +137,17 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     //auto magneticFieldToken = esConsumes<MagneticField, IdealMagneticFieldRecord>();
     auto displacedSCToken = consumes<edm::View<reco::SuperCluster>>(iConfig.getParameter<edm::InputTag>("displacedSCs"));
     //auto transientTrackBuilderToken = esConsumes<TransientTrackBuilder, TransientTrackRecord>(edm::ESInputTag("", "TransientTrackBuilder"));
-
+    auto displacedElectronToken = consumes<reco::ElectronCollection>(iConfig.getParameter<edm::InputTag>("displacedElectrons"));
+    
+    displacedElectronObj->LoadECALTracksToken(ecalTracksToken);
     displacedElectronObj->LoadGeneralTrackTokens(generalTracksToken);
     displacedElectronObj->LoadGsfTrackTokens(gsfTracksToken);
     displacedElectronObj->LoadSuperClusterTokens(displacedSCToken);
     displacedElectronObj->LoadOotSuperClusterTokens(ootSuperClusterToken);
+    displacedElectronObj->LoadDisplacedElectrons(displacedElectronToken);
     displacedElectronObj->LoadAssociationParameters(trackAssocParameters);
     displacedElectronObj->LoadMagneticField(magneticFieldToken);
-    displacedElectronObj->LoadTTrackBuilder(transientTrackBuilderToken);    
+    displacedElectronObj->LoadTTrackBuilder(transientTrackBuilderToken);
 
     auto photonsObj = new KUCMSPhotonObject( iConfig );
     auto photonToken = consumes<edm::View<reco::Photon>>(iConfig.getParameter<edm::InputTag>("gedPhotons"));

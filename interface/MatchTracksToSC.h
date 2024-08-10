@@ -49,8 +49,9 @@
 #include "TrackingTools/Records/interface/TransientTrackRecord.h"
 
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/Hungarian.h"
-#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/DeltaRMatch.h"
-#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/MatchingTools.h"
+#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/MatchedTrackSCPair.h"
+
+typedef std::vector<std::vector<GlobalPoint> > TrackRecHitLocations;
 
 //===============================================================================================//
 //                                     class: MatchTrackToSC                                     //
