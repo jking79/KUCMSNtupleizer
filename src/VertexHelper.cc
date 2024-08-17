@@ -115,6 +115,23 @@ reco::Vertex VertexHelper::TimeStampVertex(const reco::Vertex &vertex, const dou
   return outputVertex;
 }
 
+LorentzVec VertexHelper::GetVertex4Vector(const reco::Vertex &vertex) {
+
+  LorentzVec vertex4Vec;
+
+  for(const auto &trackRef : vertex.tracks()) {
+    const double pt(trackRef->pt());
+    const double eta(trackRef->eta());
+    const double phi(trackRef->phi());
+    const double mass(0.);
+
+    LorentzVec track4Vec(pt, eta, phi, mass);
+    vertex4Vec += track4Vec;
+  }
+
+  return vertex4Vec;
+}
+
 double VertexHelper::GetDxyDiff(const reco::Vertex &vertex, const reco::GenParticle &genParticle) {
   const double diffDx(vertex.x()-genParticle.vx());
   const double diffDy(vertex.y()-genParticle.vy());

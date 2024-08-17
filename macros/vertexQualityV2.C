@@ -152,6 +152,8 @@ void vertexQualityV2() {
   
   TH1D track_sip3DSig("track_sip3DSig", "track_sip3DSig", 100, -20., 20.);
   TH1D track_sip3DBkg("track_sip3DBkg", "track_sip3DBkg", 100, -20., 20.);
+
+  TH1D trackSC_deltaR("trackSC_deltaR", "trackSC_deltaR", 100, 0., 5.);
   
   TH2D genSignal_DxyVsTrackWeight("genSignal_DxyVsTrackWeight", "genSignal_DxyVsTrackWeight", 100, -1., 1., 100, 0., 1.);
 
@@ -169,6 +171,9 @@ void vertexQualityV2() {
   TH2D track_pvDelta3DzoomVsTrackWeightSig("track_pvDelta3DzoomVsTrackWeightSig", "track_pvDelta3DzoomVsTrackWeightSig", 100, -1., 1., 100, 0., 0.1);
   TH2D track_pvDelta3DVsTrackWeightBkg("track_pvDelta3DVsTrackWeightBkg", "track_pvDelta3DVsTrackWeightBkg", 100, -1., 1., 100, 0.,10.);
   TH2D track_pvDelta3DzoomVsTrackWeightBkg("track_pvDelta3DzoomVsTrackWeightBkg", "track_pvDelta3DzoomVsTrackWeightBkg", 100, -1., 1., 100, 0., 0.1);
+
+  TH2D track_scDeltaRVsTrackWeightSig("track_scDeltaRVsTrackWeightSig", "track_scDeltaRVsTrackWeightSig", 100, -1., 1., 100, 0., 0.05);
+  TH2D track_scDeltaRVsTrackWeightBkg("track_scDeltaRVsTrackWeightBkg", "track_scDeltaRVsTrackWeightBkg", 100, -1., 1., 100, 0., 1.);
   
   TH2D electron_DxyVsTrackWeight("electron_DxyVsTrackWeight", "electron_DxyVsTrackWeight", 100, -1., 1., 100, 0., 1.);
   TH2D electron_PtVsDxy("electron_PtVsDxy", "electron_PtVsDxy", 150, 0., 15, 300, 0., 300.);
@@ -192,10 +197,8 @@ void vertexQualityV2() {
   
   // Tracks
   TH1D tracks_nTotal("tracks_nTotal", "tracks_nTotal", 110, 0., 110.);
-  
-  
+    
   TH2D testHist("testHist", "testHist", 60, 0., 120., 40, 0., 200.);
-
 
   vector<string> labelsAll = {"signal out PV", "signal in PV", "background out PV", "background in PV"};
   vector<string> labelsOutPV = {"above", "below"};
@@ -249,6 +252,7 @@ void vertexQualityV2() {
       const bool isSignal(handle.GenParticle_isSignal->at(g));
       const int trackIndex(handle.GenParticle_matchedTrackIndex->at(g));
       const int trackCharge(handle.Track_charge->at(trackIndex));
+      const double trackSCDR(handle.Track_SCDR->at(trackIndex));
       const double trackPt(handle.Track_pt->at(trackIndex));
       const double trackEta(handle.Track_eta->at(trackIndex));
       const double trackPhi(handle.Track_phi->at(trackIndex));
@@ -309,6 +313,7 @@ void vertexQualityV2() {
 	genSignal_DxyVsTrackWeight.Fill(trackWeight, dxyFromBS);
 	track_pvDelta3DVsTrackWeightSig.Fill(trackWeight, pvDelta3D);
 	track_pvDelta3DzoomVsTrackWeightSig.Fill(trackWeight, pvDelta3D);
+	track_scDeltaRVsTrackWeightSig.Fill(trackWeight, trackSCDR);
 	
 	int madeItToECAL = -1;
 	if(isECAL) madeItToECAL = 1;
@@ -424,6 +429,7 @@ void vertexQualityV2() {
 	genParticle_normChi2VsTrackWeight.Fill(trackWeight, trackNormChi2);
 	track_pvDelta3DVsTrackWeightBkg.Fill(trackWeight, pvDelta3D);
 	track_pvDelta3DzoomVsTrackWeightBkg.Fill(trackWeight, pvDelta3D);
+	track_scDeltaRVsTrackWeightBkg.Fill(trackWeight, trackSCDR);
 
 	if(abs(pdgId) == 11) {
 	  electron_DxyVsTrackWeight.Fill(trackWeight, dxyFromBS);
@@ -477,6 +483,12 @@ void vertexQualityV2() {
       vertex_TrackWeightVsSigWeight.Fill(signalWeight, totalWeight);
       vertex_TrackRatioVsSigWeight.Fill(signalWeight, totalWeight/nTracksInVertex);
     }
+
+    for(int t = 0; t < nTracks; t++) {
+      double trackSCDR(handle.Track_SCDR->at(t));
+      trackSC_deltaR.Fill(trackSCDR);
+    }
+    
   }// End event loop
   cout << endl;
 
@@ -505,6 +517,9 @@ void vertexQualityV2() {
   plotHistogram(track_pvDelta3DzoomVsTrackWeightSig, "weight", "pvDelta3D")->Write();
   plotHistogram(track_pvDelta3DVsTrackWeightBkg, "weight", "pvDelta3D")->Write();
   plotHistogram(track_pvDelta3DzoomVsTrackWeightBkg, "weight", "pvDelta3D")->Write();
+  plotHistogram(track_scDeltaRVsTrackWeightSig, "weight", "track-SC deltaR")->Write();
+  plotHistogram(track_scDeltaRVsTrackWeightBkg, "weight", "track-SC deltaR")->Write();
+  plotHistogram(trackSC_deltaR, "track-SC deltaR")->Write();
   //plotHistogram(electron_PtVsTrackWeight, "weight", "pt")->Write();
   //plotHistogram(electron_EtaVsTrackWeight, "weight", "eta")->Write();
   //plotHistogram(electron_normChi2VsTrackWeight, "weight", "norm Chi2")->Write();
@@ -645,7 +660,6 @@ TCanvas* plotHistogram(TH1D& hist1D, const std::string& xlabel, const std::strin
     std::string pdfName = name + ".pdf";
     canvas->SetGridx();
     canvas->SetGridy();
-    //canvas->SaveAs(pdfName.c_str());
 
     return canvas;
 }
@@ -697,7 +711,6 @@ TCanvas* plotEfficiency(std::vector<TEfficiency*> &efficiencies, std::vector<str
     mg->Add(efficiencies[i]->CreateGraph());
   }
 
-  //efficiencies[0]->Draw();
   mg->Draw("ap");
   mg->SetMinimum(0.); 
   mg->SetMaximum(1.); 
@@ -707,15 +720,11 @@ TCanvas* plotEfficiency(std::vector<TEfficiency*> &efficiencies, std::vector<str
   legend->AddEntry(efficiencies[0], labels[0].c_str(), "lep");
 
   for(int i = 1; i < efficiencies.size(); i++) {
-    //efficiencies[i]->Draw("same");
     legend->AddEntry(efficiencies[i], labels[i].c_str(), "lep");
   }
 
   legend->Draw("same");
 
-  //gPad->Update(); 
-  //efficiencies[0]->GetPaintedGraph()->GetHistogram()->GetYaxis()->SetRangeUser(0.,1.);
-  //efficiencies[0]->GetPaintedGraph()->SetMaximum(1);
   gPad->Update(); 
 
   return canvas;

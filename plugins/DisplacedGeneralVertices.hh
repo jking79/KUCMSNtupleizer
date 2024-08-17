@@ -170,6 +170,7 @@ void DisplacedGeneralVertices::InitObject( TTree* fOutTree ) {
   Branches.makeBranch("Beamspot_z", "Beamspot_z", FLOAT);
   
   // Track variables
+  Branches.makeBranch("GeneralTrack_nTotal","GeneralTrack_nTotal", UINT);
   Branches.makeBranch("Track_nTotal","Track_nTotal", UINT);
   Branches.makeBranch("Track_nECALTracks","Track_nECALTracks", UINT);
   Branches.makeBranch("Track_ecalTrackIndex","Track_ecalTrackIndex", VINT);
@@ -202,7 +203,9 @@ void DisplacedGeneralVertices::InitObject( TTree* fOutTree ) {
   Branches.makeBranch("Track_isECAL", "Track_isECAL", VBOOL);
   Branches.makeBranch("Track_isSCmatch", "Track_isSCmatch", VBOOL);
   Branches.makeBranch("Track_SCDR", "Track_SCDR", VFLOAT);
-
+  Branches.makeBranch("Track_energySC", "Track_energySC", VFLOAT);
+  Branches.makeBranch("Track_ratioPtToEnergySC", "Track_ratioPtToEnergySC", VFLOAT);
+  
   // Gen Particle Variables
   Branches.makeBranch("GenParticle_nMatches","GenParticle_nMatches", UINT);
   Branches.makeBranch("GenParticle_nSignal","GenParticle_nSignal", UINT);
@@ -236,6 +239,7 @@ void DisplacedGeneralVertices::InitObject( TTree* fOutTree ) {
   Branches.makeBranch("PV_trackIndex","PV_trackIndex", VUINT);
   Branches.makeBranch("PV_trackWeight","PV_trackWeight", VFLOAT);
   Branches.makeBranch("PVCollection_nTotal", "PVCollection_nTotal", UINT);
+  Branches.makeBranch("PVCollection_nTracks", "PVCollection_nTracks", UINT, "Total unique tracks in PV");
   Branches.makeBranch("PVCollection_signalWeight", "PVCollection_signalWeight", VFLOAT, "weight of matched signal track in vertex");
   Branches.makeBranch("PVCollection_pvIndex", "PVCollection_pvIndex", VUINT);
   Branches.makeBranch("PVCollection_trackIndex", "PVCollection_trackIndex", VUINT);
@@ -249,9 +253,17 @@ void DisplacedGeneralVertices::InitObject( TTree* fOutTree ) {
   Branches.makeBranch("Vertex_signalCount","Vertex_signalCount", VUINT);
   Branches.makeBranch("Vertex_hasSignal","Vertex_hasSignal", VBOOL);
   Branches.makeBranch("Vertex_nTracks","Vertex_nTracks", VUINT);
+  Branches.makeBranch("Vertex_mass","Vertex_mass", VFLOAT, "assigned to zero");
   Branches.makeBranch("Vertex_x","Vertex_x", VFLOAT);
   Branches.makeBranch("Vertex_y","Vertex_y", VFLOAT);
   Branches.makeBranch("Vertex_z","Vertex_z", VFLOAT);
+  Branches.makeBranch("Vertex_p","Vertex_p", VFLOAT);
+  Branches.makeBranch("Vertex_px", "Vertex_px", VFLOAT);
+  Branches.makeBranch("Vertex_py", "Vertex_py", VFLOAT);
+  Branches.makeBranch("Vertex_pz", "Vertex_pz", VFLOAT);
+  Branches.makeBranch("Vertex_pt","Vertex_pt", VFLOAT);
+  Branches.makeBranch("Vertex_eta","Vertex_eta", VFLOAT);
+  Branches.makeBranch("Vertex_phi","Vertex_phi", VFLOAT);
   Branches.makeBranch("Vertex_dxy","Vertex_dxy", VFLOAT);
   Branches.makeBranch("Vertex_chi2","Vertex_chi2", VFLOAT);
   Branches.makeBranch("Vertex_normalizedChi2","Vertex_normalizedChi2", VFLOAT);
@@ -261,6 +273,7 @@ void DisplacedGeneralVertices::InitObject( TTree* fOutTree ) {
   Branches.makeBranch("Vertex_vertexIndex","Vertex_vertexIndex", VUINT);
   Branches.makeBranch("Vertex_trackIndex","Vertex_trackIndex", VUINT);
   Branches.makeBranch("Vertex_trackWeight","Vertex_trackWeight", VFLOAT);
+  Branches.makeBranch("Vertex_totalTrackWeight","Vertex_totalTrackWeight", VFLOAT);
   Branches.makeBranch("Vertex_trackRatioWithPV","Vertex_trackRatioWithPV", VFLOAT);
 
   //SignalSV
@@ -376,15 +389,26 @@ void DisplacedGeneralVertices::PostProcessEvent( ItemManager<float>& geVar ) {
   // Fill track branches
   Branches.fillBranch("Track_nTotal", unsigned(ttracks_.size()) );
   Branches.fillBranch("Track_nECALTracks", unsigned(ecalTracks_.size()) );
+  Branches.fillBranch("GeneralTrack_nTotal", unsigned(generalTracksHandle_->size()) );
   for(const auto &ttrack : ttracks_) {
     
     reco::Track track(ttrack.track());
     GlobalVector direction(track.px(), track.py(), track.pz());
     const int ecalTrackIndex(TrackHelper::FindTrackIndex(track, ecalTracks_));
     const int scTrackIndex(TrackHelper::FindTrackIndex(track, matchedTracksToSCs_.GetTracks()));
+    //const double scDeltaR(matchedTracksToSCs_[scTrackIndex].GetDeltaR());
+    //reco::SuperCluster superCluster(matchedTracksToSCs_[scTrackIndex].GetSuperCluster());
     std::pair<bool, Measurement1D> ip3D = IPTools::signedImpactParameter3D(ttrack, direction, primaryVertex_);
     std::pair<bool, Measurement1D> ip2D = IPTools::signedTransverseImpactParameter(ttrack, direction, primaryVertex_);
 
+    double scDeltaR(-999.);
+    double scEnergy(-999.);
+    if(scTrackIndex >= 0) {
+      const reco::SuperCluster superCluster(matchedTracksToSCs_[scTrackIndex].GetSuperCluster());
+      scDeltaR = matchedTracksToSCs_[scTrackIndex].GetDeltaR();
+      scEnergy = superCluster.energy();
+    }
+    
     Branches.fillBranch("Track_charge", int(track.charge()) );
     Branches.fillBranch("Track_p", float(track.p()) );
     Branches.fillBranch("Track_px", float(track.px()) );
@@ -413,8 +437,10 @@ void DisplacedGeneralVertices::PostProcessEvent( ItemManager<float>& geVar ) {
     Branches.fillBranch("Track_nLostHits", int(track.numberOfLostHits()) );
     Branches.fillBranch("Track_ecalTrackIndex", int(ecalTrackIndex));
     Branches.fillBranch("Track_isECAL", bool(ecalTrackIndex >= 0));
-    Branches.fillBranch("Track_isSCmatch", bool(scTrackIndex >= 0 && matchedTracksToSCs_[scTrackIndex].GetDeltaR() < 0.1));
-    Branches.fillBranch("Track_SCDR", float(scTrackIndex >= 0 ? matchedTracksToSCs_[scTrackIndex].GetDeltaR() : -999.) );
+    Branches.fillBranch("Track_isSCmatch", bool(scTrackIndex >= 0 && scDeltaR < 0.1));
+    Branches.fillBranch("Track_SCDR", float(scDeltaR) );
+    Branches.fillBranch("Track_energySC", float(scEnergy) );
+    Branches.fillBranch("Track_ratioPtToEnergySC", float( fabs(scEnergy - track.p())/ scEnergy) );
   }
 
   // Fill PV branches
@@ -436,6 +462,21 @@ void DisplacedGeneralVertices::PostProcessEvent( ItemManager<float>& geVar ) {
     Branches.fillBranch("PV_trackWeight", float(trackWeight) );
   }
 
+  int uniqueTrackCnt(0);
+  std::vector<double> ptVec({-1.});
+  for(const auto &pv : *pvHandle_) {
+    for(const auto &track : VertexHelper::GetTracks(pv)) {
+      for(const auto &pt : ptVec)
+	if(pt != track.pt()) {
+	  ptVec.push_back(track.pt());
+	  uniqueTrackCnt++;
+	  break;
+	}
+	else break;
+    }
+  }
+  Branches.fillBranch("PVCollection_nTracks", unsigned(uniqueTrackCnt));
+  
   int sigCounter(0);
   if(cfFlag("hasGenInfo")) {
 
@@ -468,12 +509,23 @@ void DisplacedGeneralVertices::PostProcessEvent( ItemManager<float>& geVar ) {
   Branches.fillBranch("Vertex_nTotal", unsigned(generalVertices_.size()) );
   int vtxIndex(0);
   for(const auto &vertex : generalVertices_) {
+    LorentzVec vertex4Vec(VertexHelper::GetVertex4Vector(vertex));
+    
     Branches.fillBranch("Vertex_nTracks", unsigned(vertex.tracksSize()) );
     Branches.fillBranch("Vertex_hasSignal", VertexHasSignal(vertex, sigCounter));
     Branches.fillBranch("Vertex_signalCount", unsigned(sigCounter));
     Branches.fillBranch("Vertex_x", float(vertex.x()) );
     Branches.fillBranch("Vertex_y", float(vertex.y()) );
     Branches.fillBranch("Vertex_z", float(vertex.z()) );
+    Branches.fillBranch("Vertex_p", float(vertex4Vec.P()) );
+    Branches.fillBranch("Vertex_px", float(vertex4Vec.px()) );
+    Branches.fillBranch("Vertex_py", float(vertex4Vec.py()) );
+    Branches.fillBranch("Vertex_pz", float(vertex4Vec.pz()) );
+    Branches.fillBranch("Vertex_pt", float(vertex4Vec.pt()) );
+    Branches.fillBranch("Vertex_eta", float(vertex4Vec.eta()) );
+    Branches.fillBranch("Vertex_phi", float(vertex4Vec.phi()) );
+    Branches.fillBranch("Vertex_p", float(vertex4Vec.P()) );    
+    Branches.fillBranch("Vertex_mass", float(vertex4Vec.M()) );
     Branches.fillBranch("Vertex_chi2", float(vertex.chi2()) );
     Branches.fillBranch("Vertex_normalizedChi2", float(vertex.normalizedChi2()) );
     Branches.fillBranch("Vertex_ndof", float(vertex.ndof()) );
@@ -481,9 +533,7 @@ void DisplacedGeneralVertices::PostProcessEvent( ItemManager<float>& geVar ) {
     Branches.fillBranch("Vertex_ecalness", float(VertexHelper::CalculateEcalness(vertex, ecalTracks_)) );
     Branches.fillBranch("Vertex_sumPt", float(VertexHelper::CalculateTotalPt(vertex)) );
     Branches.fillBranch("Vertex_trackRatioWithPV", float(VertexHelper::CalculateTrackOverlap(vertex, primaryVertex_)) );
-
-    if(VertexHelper::CalculateEcalness(vertex, ecalTracks_) > 1)
-      cout << "fuck" << endl;
+    Branches.fillBranch("Vertex_totalTrackWeight", float(VertexHelper::CalculateTotalTrackWeight(vertex)));
     
     for(const auto &trackRef : vertex.tracks()) {
       const reco::Track track(*trackRef);

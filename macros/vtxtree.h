@@ -105,7 +105,8 @@ public :
    vector<float>   *Track_vx;
    vector<float>   *Track_vy;
    vector<float>   *Track_vz;
-   vector<float>   *Vertex_chi2;
+  vector<float>   *Track_SCDR;
+  vector<float>   *Vertex_chi2;
    vector<float>   *Vertex_dxy;
    vector<float>   *Vertex_ecalness;
    vector<bool>    *Vertex_hasSignal;
@@ -206,6 +207,7 @@ public :
    TBranch        *b_Track_vx;   //!
    TBranch        *b_Track_vy;   //!
    TBranch        *b_Track_vz;   //!
+   TBranch        *b_Track_SCDR;   //!  
    TBranch        *b_Vertex_chi2;   //!
    TBranch        *b_Vertex_dxy;   //!
    TBranch        *b_Vertex_ecalness;   //!
@@ -325,6 +327,7 @@ void llpgtree::Init(TTree *tree)
    Track_vx = 0;
    Track_vy = 0;
    Track_vz = 0;
+   Track_SCDR = 0;
    Vertex_chi2 = 0;
    Vertex_dxy = 0;
    Vertex_ecalness = 0;
@@ -429,6 +432,7 @@ void llpgtree::Init(TTree *tree)
    fChain->SetBranchAddress("Track_vx", &Track_vx, &b_Track_vx);
    fChain->SetBranchAddress("Track_vy", &Track_vy, &b_Track_vy);
    fChain->SetBranchAddress("Track_vz", &Track_vz, &b_Track_vz);
+   fChain->SetBranchAddress("Track_SCDR", &Track_SCDR, &b_Track_SCDR);
    fChain->SetBranchAddress("Vertex_chi2", &Vertex_chi2, &b_Vertex_chi2);
    fChain->SetBranchAddress("Vertex_dxy", &Vertex_dxy, &b_Vertex_dxy);
    fChain->SetBranchAddress("Vertex_ecalness", &Vertex_ecalness, &b_Vertex_ecalness);

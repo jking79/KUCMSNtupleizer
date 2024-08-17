@@ -80,9 +80,9 @@ def docrab( dataset ):
         #config.Data.unitsPerJob   = 25000 # data
         config.Data.splitting    = 'EventAwareLumiBased' # MC
         #config.Data.splitting = 'Automatic'
-        #config.Data.unitsPerJob  =  1500 # MC GMSB
+        config.Data.unitsPerJob  =  1500 # MC GMSB
         #config.Data.unitsPerJob  =  10000 # MC GJet
-        config.Data.unitsPerJob  =  50000 # MC TTJet
+        #config.Data.unitsPerJob  =  50000 # MC TTJet
 
         config.JobType.allowUndistributedCMSSW = True
         #config.JobType.inputFiles  = [ inptCfgEB, inptCfgEE ]
@@ -435,9 +435,10 @@ def run_multi():
 
         dsGMSB150TeVtest = [
             ['/GMSB_L-150TeV_Ctau-0_1cm_TuneCP5_13TeV-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v1/AODSIM'],
+            ['/GMSB_L-150TeV_Ctau-10cm_TuneCP5_13TeV-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v1/AODSIM'],
             ['/GMSB_L-150TeV_Ctau-200cm_TuneCP5_13TeV-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v1/AODSIM'],
-            ['/ggH_HToSSTo4l_MH-1000_MS-150_ctauS-1_TuneCP5_13TeV-powheg-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v1/AODSIM'],
-            ['/ggH_HToSSTo4l_MH-1000_MS-150_ctauS-1000_TuneCP5_13TeV-powheg-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v1/AODSIM'],
+            #['/ggH_HToSSTo4l_MH-1000_MS-150_ctauS-1_TuneCP5_13TeV-powheg-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v1/AODSIM'],
+            #['/ggH_HToSSTo4l_MH-1000_MS-150_ctauS-1000_TuneCP5_13TeV-powheg-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v1/AODSIM'],
         ]
         
         ggH_HToSSTo4lMH1000_MS150 = [
@@ -668,9 +669,9 @@ def run_multi():
         #runDataset = dsWJET
         #runDataset = dsZJET
         #runDataset = dsQCD
-        runDataset = dsDYTT
+        #runDataset = dsDYTT
         #runDataset = ggH_HToSSTo4lMH1000_MS150#dsGMSB150TeV
-        #runDataset = dsGMSB150TeVtest
+        runDataset = dsGMSB150TeVtest
         for dataset in runDataset :
             docrab( dataset )
 
