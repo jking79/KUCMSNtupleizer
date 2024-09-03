@@ -115,7 +115,7 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
 
     ecalTracksObj->LoadECALTracksToken(ecalTracksToken);
     ecalTracksObj->LoadGeneralTrackTokens(generalTracksToken);
-    ecalTracksObj->LoadGsfTrackTokens(gsfTracksToken);
+    //ecalTracksObj->LoadGsfTrackTokens(gsfTracksToken);
     ecalTracksObj->LoadMergedSCs(mergedSCToken);
     ecalTracksObj->LoadAssociationParameters(trackAssocParameters);
     ecalTracksObj->LoadMagneticField(magneticFieldToken);

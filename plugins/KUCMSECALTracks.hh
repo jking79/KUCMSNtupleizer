@@ -193,7 +193,6 @@ void KUCMSECALTracks::LoadEvent( const edm::Event& iEvent, const edm::EventSetup
   
   if( DEBUG ) std::cout << "Collecting Tracks" << std::endl;
 
-  generalTrackGenInfo_.clear();
   ecalTracks_.clear();
   
   // Get event track and super cluster information from AOD
