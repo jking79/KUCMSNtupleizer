@@ -85,10 +85,9 @@ public:
   // load tokens for eventt based collections
   void LoadECALTracksToken( edm::EDGetTokenT<reco::TrackCollection> token ){ ecalTracksToken_ = token; }
   void LoadGeneralTrackTokens( edm::EDGetTokenT<edm::View<reco::Track>> token ){ generalTracksToken_ = token; }
-  void LoadGsfTrackTokens( edm::EDGetTokenT<edm::View<reco::GsfTrack>> token ){ gsfTracksToken_ = token; }
+  void LoadMergedSCs( edm::EDGetTokenT<reco::SuperClusterCollection> token ) {mergedSCsToken_ = token;}
   void LoadAssociationParameters(  TrackAssociatorParameters parameters){ trackAssocParameters_ = parameters;}
   void LoadMagneticField( edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> token){magneticFieldToken_ = token; }
-  //void LoadIsolation(DisplacedElectronIsolation* isoTool) { isoTool_ = isoTool; }
   void LoadGenObject(KUCMSGenObject* genObjs){ genObjs_ = genObjs; };
   void LoadBeamSpot(edm::EDGetTokenT<reco::BeamSpot> token) { beamspotToken_ = token; }
  
@@ -109,13 +108,10 @@ private:
 
   typedef std::vector<std::vector<GlobalPoint> > TrackRecHitLocations;
 
-  std::vector<std::pair<int, double> > generalTrackGenInfo_;
-  std::vector<std::pair<int, double> > gsfTrackGenInfo_; 
   reco::TrackCollection generalTracks_;
-  reco::TrackCollection mergedTracks_;
-  TrackInfoCollection mergedTrackInfo_;
+  reco::TrackCollection ecalTracks_;
   PropagatedTracks<reco::Track> generalECALTracks_;
-  PropagatedTracks<reco::GsfTrack> gsfECALTracks_;
+  PairedObjectCollection<reco::Track, reco::GenParticle> genMatches_;
 
   //ECAL tracks 
   edm::EDGetTokenT<reco::TrackCollection> ecalTracksToken_;
@@ -125,10 +121,10 @@ private:
   edm::EDGetTokenT<edm::View<reco::Track>> generalTracksToken_;
   edm::Handle<edm::View<reco::Track> > generalTracksHandle_;
 
-  // Gsf Tracks
-  edm::EDGetTokenT<edm::View<reco::GsfTrack>> gsfTracksToken_;
-  edm::Handle<edm::View<reco::GsfTrack> > gsfTracksHandle_;
-
+  // Merged SCs
+  edm::EDGetTokenT<reco::SuperClusterCollection> mergedSCsToken_;
+  edm::Handle<reco::SuperClusterCollection> mergedSCsHandle_;
+  
   KUCMSGenObject* genObjs_;
 
   edm::ESGetToken<CaloGeometry, CaloGeometryRecord> caloGeometryToken_;
@@ -182,8 +178,6 @@ void KUCMSECALTracks::InitObject( TTree* fOutTree ){
   Branches.makeBranch("ECALTrack_qualityMask", "ECALTrack_qualityMask", VINT);
   Branches.makeBranch("ECALTrack_nValidHits", "ECALTrack_nValidHits", VINT);
   Branches.makeBranch("ECALTrack_nLostHits", "ECALTrack_nLostHits", VINT);
-  Branches.makeBranch("ECALTrack_isGeneral", "ECALTrack_isGeneral", VBOOL);
-  Branches.makeBranch("ECALTrack_isGsf", "ECALTrack_isGsf", VBOOL);
   Branches.makeBranch("ECALTrack_genDeltaR", "ECALTrack_genDeltaR", VFLOAT);
   Branches.makeBranch("ECALTrackDetID_detId", "ECALTrackDetID_detId", VUINT);
   Branches.makeBranch("ECALTrackDetID_trackIndex", "ECALTrackDetID_trackIndex", VUINT);
@@ -199,47 +193,27 @@ void KUCMSECALTracks::LoadEvent( const edm::Event& iEvent, const edm::EventSetup
   
   if( DEBUG ) std::cout << "Collecting Tracks" << std::endl;
 
-  mergedTracks_.clear();
-  mergedTrackInfo_.clear();
-  generalTrackGenInfo_.clear();
-  gsfTrackGenInfo_.clear();
+  ecalTracks_.clear();
   
   // Get event track and super cluster information from AOD
   iEvent.getByToken( ecalTracksToken_, ecalTracksHandle_ );
   iEvent.getByToken( generalTracksToken_, generalTracksHandle_ );
-  iEvent.getByToken( gsfTracksToken_, gsfTracksHandle_ );
+  iEvent.getByToken( mergedSCsToken_, mergedSCsHandle_);
   beamSpot_ = iEvent.get(beamspotToken_);
 
   reco::TrackCollection generalTracks;
-  reco::GsfTrackCollection gsfTracks;
   
   const edm::ESTransientHandle<MagneticField> magfield = iSetup.getTransientHandle(magneticFieldToken_);
   const CaloGeometry ecalGeometry = iSetup.getData(caloGeometryToken_);
   
   // Collect general tracks
-  for(const auto &track : *generalTracksHandle_) {
+  for(const auto &track : *generalTracksHandle_) 
     generalTracks.emplace_back(track);
-    generalTrackGenInfo_.push_back(std::make_pair(-1, -1.));
-  }
-
-  // Collect Gsf tracks
-  for(const auto &track : *gsfTracksHandle_) {
-    gsfTracks.emplace_back(track);
-    gsfTrackGenInfo_.push_back(std::make_pair(-1, -1.));
-  }
 
   // Repropagate gsf and general tracks (ideally this would be done in the producer once but it is not straightforward)
   TrackPropagator<reco::Track> generalTrackPropagator(iEvent, iSetup, magfield, trackAssocParameters_, generalTracks);
   generalECALTracks_ = generalTrackPropagator.GetPropagatedTracks();
-
-  TrackPropagator<reco::GsfTrack> gsfTrackPropagator(iEvent, iSetup, magfield, trackAssocParameters_, gsfTracks);
-  gsfECALTracks_ = gsfTrackPropagator.GetPropagatedTracks();
-
-  // Combine collections using the TrackInfo class
-  TrackInfoCollection generalTrackInfo(GetTrackInfo<reco::Track>(generalTracks));
-  TrackInfoCollection gsfTrackInfo(GetTrackInfo<reco::GsfTrack>(gsfTracks));
-  mergedTrackInfo_.insert(mergedTrackInfo_.end(), generalTrackInfo.begin(), generalTrackInfo.end());
-  mergedTrackInfo_.insert(mergedTrackInfo_.end(), gsfTrackInfo.begin(), gsfTrackInfo.end());
+  for(const auto &propTrack : generalECALTracks_) ecalTracks_.emplace_back(propTrack.GetTrack());
 
 }//<<>>void KUCMSECALTracks::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
@@ -248,40 +222,21 @@ void KUCMSECALTracks::PostProcessEvent( ItemManager<float>& geVar ){
   if( DEBUG ) std::cout << "Processing Tracks" << std::endl;
   
   Branches.clearBranches();
-
-  if(cfFlag("hasGenInfo")) {
-    DeltaRGenMatchHungarian<TrackInfo> genToTrackAssigner(mergedTrackInfo_, genObjs_->GetGenParticles());
-    for(auto const &pair : genToTrackAssigner.GetPairedObjects()) {
-      if(pair.GetObjectA().isGeneral()) 
-	generalTrackGenInfo_[pair.GetObjectA().GetIndex()] = std::make_pair(pair.GetIndexB(), pair.GetDeltaR());  
-      if(pair.GetObjectA().isGsf()) 
-	gsfTrackGenInfo_[pair.GetObjectA().GetIndex()] = std::make_pair(pair.GetIndexB(), pair.GetDeltaR());
-    }
-  }
-  
   if( DEBUG ) std::cout << " - Entering Track loop" << std::endl;
-  
-  Branches.fillBranch("ECALTrack_nGeneral", int(generalECALTracks_.size()) );
-  Branches.fillBranch("ECALTrack_nGsf", int(gsfECALTracks_.size()) );
-  Branches.fillBranch("ECALTrack_nTracks", int(generalECALTracks_.size() + gsfECALTracks_.size()) );
+
+  Branches.fillBranch("ECALTrack_nTracks", int(ecalTracks_.size()) );
   
   FillTrackBranches<reco::Track>(generalECALTracks_);
-  FillTrackBranches<reco::GsfTrack>(gsfECALTracks_);
-  
 }//<<>>void KUCMSECALTracks::PostProcessEvent()
 
 template <typename T>
 void KUCMSECALTracks::FillTrackBranches(PropagatedTracks<T> &propagatedTracks) {
-
-  //std::cout << "starting KUCMSECALTracks::FillTrackBranches" << std::endl;
 
   int dbgcnt(0);
   for(const auto &trackDet : propagatedTracks) {
     const T track = trackDet.GetTrack();
     const TrackDetMatchInfo detInfo = trackDet.GetDetInfo();
 
-    //cout << "propagated tracks loop " << dbgcnt << endl;
-    
     Branches.fillBranch("ECALTrack_charge", int(track.charge()) );
     Branches.fillBranch("ECALTrack_p", float(track.p()) );
     Branches.fillBranch("ECALTrack_px", float(track.px()) );
@@ -306,23 +261,6 @@ void KUCMSECALTracks::FillTrackBranches(PropagatedTracks<T> &propagatedTracks) {
     Branches.fillBranch("ECALTrack_qualityMask", int(track.qualityMask()) );
     Branches.fillBranch("ECALTrack_nValidHits", int(track.numberOfValidHits()) );
     Branches.fillBranch("ECALTrack_nLostHits", int(track.numberOfLostHits()) );
-    Branches.fillBranch("ECALTrack_isGeneral", bool(typeid(T) == typeid(reco::Track)) );
-    Branches.fillBranch("ECALTrack_isGsf", bool(typeid(T) == typeid(reco::GsfTrack)) );
-
-    //cout << "Made it to the gen stuff" << endl; 
-    
-    if(cfFlag("hasGenInfo")) {
-      if(typeid(T) == typeid(reco::Track)) {
-	Branches.fillBranch("ECALTrack_pdgId", int(genObjs_->GetGenParticles()[generalTrackGenInfo_[trackDet.GetIndex()].first].pdgId()) );
-	Branches.fillBranch("ECALTrack_genIndex", int(generalTrackGenInfo_[trackDet.GetIndex()].first) );
-	Branches.fillBranch("ECALTrack_genDeltaR", float(generalTrackGenInfo_[trackDet.GetIndex()].second) );
-      }
-      else {
-	Branches.fillBranch("ECALTrack_pdgId", int(genObjs_->GetGenParticles()[gsfTrackGenInfo_[trackDet.GetIndex()].first].pdgId()) );
-	Branches.fillBranch("ECALTrack_genIndex", int(gsfTrackGenInfo_[trackDet.GetIndex()].first) );
-	Branches.fillBranch("ECALTrack_genDeltaR", float(gsfTrackGenInfo_[trackDet.GetIndex()].second) );
-      }
-    }
     
     FillDetIdBranches<T>(detInfo.crossedEcalIds, trackDet, true);
     FillDetIdBranches<T>(detInfo.crossedHcalIds, trackDet, false);

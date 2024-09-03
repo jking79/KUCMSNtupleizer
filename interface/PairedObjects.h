@@ -58,6 +58,8 @@ public:
 
   int FindIndexA(const int indexB) const ;
   int FindIndexB(const A &objectA) const ;
+  double FindDeltaR(const A &objectA) const;
+
   B FindObjectB(const A &objectA) const;
   
   std::vector<A> GetObjectAList() const;
@@ -97,6 +99,16 @@ int PairedObjectCollection<A,B>::FindIndexB(const A &objectA) const {
   }
    
   return index;
+}
+
+template <class A, class B>
+double PairedObjectCollection<A,B>::FindDeltaR(const A &objectA) const {
+  double deltaR = -999.;
+  for(const auto &pair : *this)
+    if(pair.GetObjectA().pt() == objectA.pt() && pair.GetObjectA().eta() == objectA.eta())
+      deltaR = pair.GetDeltaR();
+
+  return deltaR;
 }
 
 template <class A, class B>
