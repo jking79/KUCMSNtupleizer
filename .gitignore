@@ -17,6 +17,7 @@ test/myQcdSpace/
 test/mySmallWorkSpace/
 test/oldWorkingSpace/
 test/myOldWorkSpaces/
+test/myGMSBWorkingSpace/
 macros/*.obj
 .nfs*
 *.txt

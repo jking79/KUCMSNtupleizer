@@ -50,6 +50,27 @@ void fillTH1( float val, TH1D* hist ){
 
 }//<<>>void fillTH1( float val, TH1D* hist )
 
+void fillRatioHist(TH1D* numi, TH1D* denom, TH1D* result ){
+
+    const auto nbins = numi->GetNbinsX();
+    for (auto ibin = 0; ibin <= nbins; ibin++){
+        auto nc = numi->GetBinContent(ibin);
+        auto ncer = numi->GetBinError(ibin);
+        auto dc = denom->GetBinContent(ibin);
+        auto dcer = denom->GetBinError(ibin);
+        auto ratio(0.0);
+        auto rerr(0.0);
+        if( dc > 20 ){
+            ratio = nc/dc;
+            rerr = std::sqrt( sq2(ncer/dc)-(sq2(ratio)/dc) );
+            //rerr = std::sqrt((sq2(ncer/dc)+sq2((nc/sq2(dc))*dcer))/dc);
+        }//<<>>if( dc > 0 )
+        result->SetBinContent(ibin,ratio);
+        result->SetBinError(ibin,rerr);
+    }//<<>>for (auto ibinX = 1; ibinX <= nXbins; ibinX++)
+
+}//<<>>fillRatioHist(TH1F* numi, TH1F* denom, TH1F* result )
+
 void normTH2D(TH2D* hist){
 
     std::cout << "Normilizing " << " hist: " << hist->GetName() << std::endl;
@@ -76,6 +97,33 @@ void normTH2D(TH2D* hist){
     }//<<>>for (auto ibinX = 1; ibinX <+ nYbins; ibinX++){
 
 }//<<>>void NormTH2D(TH2D* hist){
+
+void normTH2F(TH2F* hist){
+
+    std::cout << "Normilizing " << " hist: " << hist->GetName() << std::endl;
+
+    const auto nXbins = hist->GetNbinsX();
+    const auto nYbins = hist->GetNbinsY();
+
+    for (auto ibinX = 1; ibinX <= nXbins; ibinX++){
+
+        const auto norm = hist->Integral(ibinX,ibinX,1,nYbins);
+        if( norm == 0.0 ) continue;
+        for (auto ibinY = 1; ibinY <= nYbins; ibinY++){
+
+            // get content/error
+            auto content = hist->GetBinContent(ibinX,ibinY);
+            auto error   = hist->GetBinError  (ibinX,ibinY);
+            // set new contents
+            content /= norm;
+            error /= norm;
+            hist->SetBinContent(ibinX,ibinY,content);
+            hist->SetBinError  (ibinX,ibinY,error);
+
+        }//<<>>for (auto ibinY = 1; ibinY <= nXbins; ibinY++){
+    }//<<>>for (auto ibinX = 1; ibinX <+ nYbins; ibinX++){
+
+}//<<>>void NormTH2F(TH2F* hist){
 
 void normTH1D(TH1D* hist){
 
@@ -140,6 +188,34 @@ void profileTH2D(TH2D* nhist, TH1D* prof, TH1D* fithist, float range = 0.2 ){
     }//<<>>for (auto ibinX = 1; ibinX <= nBins; ibinX++)
 
 }//<<>>void profileTH2D(TH2D* hist, TH1D* prof)
+
+void scaleHist(TH2F *& hist, const Bool_t isUp, const Bool_t varBinsX, const Bool_t varBinsY){
+
+    std::cout << "Scaling " << (isUp?"up":"down") << " hist: " << hist->GetName() << std::endl;
+
+    const auto nXbins = hist->GetNbinsX();
+    const auto nYbins = hist->GetNbinsY();
+    for (auto ibinX = 1; ibinX <= nXbins; ibinX++){
+        const auto binwidthX = hist->GetXaxis()->GetBinWidth(ibinX);
+        for (auto ibinY = 1; ibinY <= nYbins; ibinY++){
+
+            const auto binwidthY = hist->GetYaxis()->GetBinWidth(ibinY);
+            // get multiplier/divisor
+            auto multiplier = 1.f;
+            if( varBinsX ) multiplier *= binwidthX;
+            if( varBinsY ) multiplier *= binwidthY;
+            auto scale = ( not isUp ) ? multiplier : 1/multiplier;
+            // get content/error
+            auto content = hist->GetBinContent(ibinX,ibinY)*scale;
+            auto error = hist->GetBinError(ibinX,ibinY)*scale;
+            // set new contents
+            hist->SetBinContent(ibinX,ibinY,content);
+            hist->SetBinError  (ibinX,ibinY,error);
+
+        }//<<>>for (auto ibinY = 1; ibinY <= hist->GetYaxis()->GetNbins(); ibinY++)
+    }//<<>>for (auto ibinX = 1; ibinX <= hist->GetXaxis()->GetNbins(); ibinX++)
+
+}//<<>>void scaleHist(TH2D *& hist, const Bool_t isUp, const Bool_t varBinsX, const Bool_t varBinsY)
 
 void thresDivTH2D(TH2D* numi, TH2D* denom, float thres){
 

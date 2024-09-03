@@ -221,8 +221,8 @@ void KUCMSPhotonObject::InitObject( TTree* fOutTree ){
     //Branches.makeBranch("esEnergyOverRawE","Photon_esEnergyOverRawE",VFLOAT,"ratio of preshower energy to raw supercluster energy");
     //Branches.makeBranch("haloTaggerMVAVal","Photon_haloTaggerMVAVal",VFLOAT,"Value of MVA based beam halo tagger in the Ecal endcap (valid for pT > 200 GeV)");//
 
-    Branches.makeBranch("gloResRHs","Photon_gloResRhId",VVUINT);
-    Branches.makeBranch("locResRHs","Photon_locResRhId",VVUINT);
+    Branches.makeBranch("gloResRHs","Photon_gloResRhId",VUINT);
+    Branches.makeBranch("locResRHs","Photon_locResRhId",VUINT);
 
     Branches.makeBranch("GenIdx","Photon_genIdx",VINT);
     //Branches.makeBranch("GenDr","Photon_genDr",VFLOAT);
@@ -412,9 +412,9 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
 	std::vector<float> scptres;
 	//std::vector<int> scmatched;
     std::vector<uInt> locRHCands;
-    std::vector<pat::Photon> gloPhotons;
-    //std::vector<pat::Photon> locPhotons;
-    //std::vector<pat::Photon> selPhotons;
+    std::vector<reco::Photon> gloPhotons;
+    //std::vector<reco::Photon> locPhotons;
+    //std::vector<reco::Photon> selPhotons;
     //std::vector<int> selPhoType;
     //std::vector<uInt> locSeedRHs{0,0};
     //std::vector<uInt> gloSeedRHs{0,0};
@@ -591,7 +591,7 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
 		const auto scIndex = rhObj->getSuperClusterIndex(scptr,22,phoIdx);
 		Branches.fillBranch("scIndex",scIndex);
 		//scmatched.push_back(scIndex);
-		//if( scIndex == -1 ) std::cout << " - phoSC: " << scIndex << " - " << phoEnergyRaw << " - " << " - " << seedDetId.rawId() << std::endl;   
+//if( scIndex == -1 ) std::cout << " - phoSC: " << scIndex << " - " << phoEnergyRaw << " - " << " - " << seedDetId.rawId() << std::endl;   
         //const scGroup phoSCGroup{*scptr};
         //const auto phoRhGroup = rhObj->getRHGroup( phoSCGroup, 0.2 );
         //const auto phoRhIdsGroup = rhObj->getRhGrpIDs( phoRhGroup );
@@ -614,7 +614,10 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
         // get time resolution information
 
         // select global photons
-        if ( photon.hasPixelSeed() ){
+        bool hasPixSeed = photon.hasPixelSeed();
+		bool hasMinSelEnergy = phoEnergy > 5.0;
+		bool isSelPho = not ( phoIsOotPho[phoIdx] or phoExcluded[phoIdx] );
+        if ( hasPixSeed && hasMinSelEnergy && isSelPho ){
 			float elTrackZ = electronObj->getEleTrackZMatch( photon );
             auto eleMatch = elTrackZ < 1000.0;
             auto dz = abs( elTrackZ - geVar("vtxZ") );
@@ -631,7 +634,8 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
         const auto & ph2ndMoments = rhObj->getCluster2ndMoments( scptr );
         const auto smaj  = ph2ndMoments.sMaj;
         const auto smin  = ph2ndMoments.sMin;
-        if ( smin < 0.3 && smaj < 0.5){
+		bool passSMajMin = ( smin < 0.3 ) && ( smaj < 0.5 );
+        if(  passSMajMin && hasMinSelEnergy && isSelPho){
 			const scGroup phoSCGroup{*scptr};
             auto phoRhGroup = rhObj->getRHGroup( phoSCGroup, 0.0 );
             if( PhotonDEBUG ) std::cout << " Examining Photon with " << phoRhGroup.size() << " rechits." << std::endl;
@@ -640,13 +644,16 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
                 const auto lrhEnergy = rechit.energy(); ///ecHitE( rhDetId, phoRecHits );
 				const std::vector<std::vector<int>> offsets{{1,0},{-1,0},{0,1},{0,-1},{1,1},{1,-1},{-1,1},{-1,-1}};
                 for( auto & offset : offsets ){
-                    const auto nbDetId = ( isEB ) ? EBDetId::offsetBy( rhDetId, offset[0], offset[1] ) : EEDetId::offsetBy( rhDetId, offset[0], offset[1] );
+                    const auto nbDetId = ( isEB ) ? EBDetId::offsetBy( rhDetId, offset[0], offset[1] ) 
+												  : EEDetId::offsetBy( rhDetId, offset[0], offset[1] );
                     auto neighborEnergy = rhObj->getRecHitEnergy( nbDetId.rawId() );
                     auto ordered = lrhEnergy > neighborEnergy;
-                    auto close = lrhEnergy < 1.20*neighborEnergy;
-                    if( ordered && close ){  // need to be within 20% of energy
+                    auto close = lrhEnergy < 1.20 * neighborEnergy;
+					bool minRhE = ( lrhEnergy > 0.5 ) && ( neighborEnergy > 0.5 );
+                    if( ordered && close && minRhE ){  // need to be within 20% of energy
                         if( PhotonDEBUG ) std::cout << " Matching loc rechit pair with e: " << lrhEnergy << " : " << neighborEnergy;
-                        if( PhotonDEBUG ) std::cout << " (" << lrhEnergy/neighborEnergy << ")"<< " for lead rh id: " << rhDetId.rawId() <<std::endl;
+                        if( PhotonDEBUG ) std::cout << " (" << lrhEnergy/neighborEnergy << ")";
+                        if( PhotonDEBUG ) std::cout << " for lead rh id: " << rhDetId.rawId() <<std::endl;
                         //locPhotons.push_back( photon );
                         locRHCands.push_back( rhDetId.rawId() );
                         locRHCands.push_back( nbDetId.rawId() );
@@ -690,7 +697,7 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
     if( nGloPhos > 1 ){
         float zMassMatch(35.00);
         float zMass(91.1876);
-        vector<int> phoIndx;
+        //vector<int> phoIndx;
         for( int first(0); first < nGloPhos; first++ ){
             auto pho1Eta = gloPhotons[first].eta();
             auto pho1Phi = gloPhotons[first].phi();
@@ -757,19 +764,19 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
 
 void KUCMSPhotonObject::EndJobs(){}
 
-float KUCMSPhotonObject::getPhotonSeedTime( pat::Photon photon ){
-
-    const auto & phosc = photon.superCluster().isNonnull() ? photon.superCluster() : photon.parentSuperCluster();
-    return rhObj->getSuperClusterSeedTime( phosc );
-
-}//<<>>float KUCMSPhotonObject::getPhotonSeedTime( pat::Photon photon )
-
 float KUCMSPhotonObject::getPhotonSeedTime( reco::Photon photon ){
 
     const auto & phosc = photon.superCluster().isNonnull() ? photon.superCluster() : photon.parentSuperCluster();
     return rhObj->getSuperClusterSeedTime( phosc );
 
 }//<<>>float KUCMSPhotonObject::getPhotonSeedTime( reco::Photon photon )
+
+float KUCMSPhotonObject::getPhotonSeedTime( pat::Photon photon ){
+
+    const auto & phosc = photon.superCluster().isNonnull() ? photon.superCluster() : photon.parentSuperCluster();
+    return rhObj->getSuperClusterSeedTime( phosc );
+
+}//<<>>float KUCMSPhotonObject::getPhotonSeedTime( pat::Photon photon )
 
 int KUCMSPhotonObject::getIndex( float kideta, float kidphi ){
 

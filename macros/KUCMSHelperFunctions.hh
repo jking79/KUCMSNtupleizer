@@ -63,7 +63,9 @@ struct DetIDStruct {
 
 void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap ){
 
-    const std::string detIDConfigEB("../test/fullinfo_detids_EB.txt");
+    //const std::string detIDConfigEB("../test/fullinfo_detids_EB.txt");
+    const std::string detIDConfigEB("ecal_config/fullinfo_detids_EB.txt");
+
     std::ifstream infile( detIDConfigEB, std::ios::in);
 
     UInt_t cmsswId, dbID;
@@ -81,7 +83,9 @@ void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap ){
 
 void SetupDetIDsEE( std::map<UInt_t,DetIDStruct> &DetIDMap ){
 
-    const std::string detIDConfigEE("../test/fullinfo_detids_EE.txt");
+    //const std::string detIDConfigEE("../test/fullinfo_detids_EE.txt");
+    const std::string detIDConfigEE("ecal_config/fullinfo_detids_EE.txt");
+
     std::ifstream infile( detIDConfigEE, std::ios::in);
 
     UInt_t cmsswId, dbID;
@@ -295,6 +299,9 @@ const auto wsincos  (CVFlt x, CVFlt wv){
 
 //-----------  misc helper functions -------------------------------------------
 
+std::string addstr( std::string current, std::string input ){ return (current+input); }
+
+/*
 std::string mkht( std::string cat, std::string title){ 
 
     //std::cout << "Input: " << cat << " & " << title << std::endl;
@@ -303,6 +310,7 @@ std::string mkht( std::string cat, std::string title){
 	return ret;
 
 }//>><<const auto mkht( std::string cat, std::string title)
+*/
 
 const auto splitString( std::string str, const char* separator ) {
 
@@ -322,6 +330,14 @@ const auto splitString( std::string str, const char* separator ) {
 	return strings;
 
 }//<<>>const auto  splitString(string str, char separator)
+
+template <typename T> std::string toString(T value){
+
+   std::ostringstream os ;
+   os << value ;
+   return os.str() ;
+
+}//<<>>template <typename T> std::string to_string(T value)
 
 #endif
 //-------------------------------------------------------------------------------------------------------------------

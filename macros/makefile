@@ -17,12 +17,13 @@ p2=phoSelSkimHistMaker
 p3=skimMultiHistMaker
 p4=crStyleSkimHistMaker
 p5=skimSVHistMaker
-p6=calibration_averhtime_isoot_filter
+p6=wc_ku_InterCali_aveRecHit_isoot_kucc_fliter_red
 p7=stackSkimHistMaker
 p8=calibration_averhtime_isoot_filter_pho
 p9=calibration_averhtime_isoot_filter_pho_ew
 p10=skimRJRMultiHistMaker
 p11=skimRJRMultiHistMaker2
+p12=wc_ku_plot2dResolution_wGausErr_mf
 
 all: $(p1) 
 
@@ -58,3 +59,7 @@ $(p10): $(p10).cpp
 
 $(p11): $(p11).cpp
 	$(CC) -o $(p11).obj $(p11).cpp $(RTCFLAGS) $(RTGLIBS)
+
+$(p12): $(p12).cpp
+	$(CC) -o $(p12).obj $(p12).cpp $(RTCFLAGS) $(RTGLIBS)
+
