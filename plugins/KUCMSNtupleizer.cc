@@ -106,7 +106,8 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     auto parameters = iConfig.getParameter<edm::ParameterSet>("TrackAssociatorParameters");
     auto magneticFieldToken = esConsumes<MagneticField, IdealMagneticFieldRecord>();
     auto transientTrackBuilderToken = esConsumes<TransientTrackBuilder, TransientTrackRecord>(edm::ESInputTag("", "TransientTrackBuilder"));
-
+    auto mergedSCToken = consumes<reco::SuperClusterCollection>(iConfig.getParameter<edm::InputTag>("displacedSCs"));
+    
     // Setup the track associator
     TrackAssociatorParameters trackAssocParameters;
     edm::ConsumesCollector iC = consumesCollector();
@@ -115,6 +116,7 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     ecalTracksObj->LoadECALTracksToken(ecalTracksToken);
     ecalTracksObj->LoadGeneralTrackTokens(generalTracksToken);
     ecalTracksObj->LoadGsfTrackTokens(gsfTracksToken);
+    ecalTracksObj->LoadMergedSCs(mergedSCToken);
     ecalTracksObj->LoadAssociationParameters(trackAssocParameters);
     ecalTracksObj->LoadMagneticField(magneticFieldToken);
     ecalTracksObj->LoadBeamSpot(beamLineToken);
