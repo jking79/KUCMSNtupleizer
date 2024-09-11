@@ -206,6 +206,7 @@ class KUCMSEcalRecHitObject : public KUCMSObjectBase {
     std::vector<int> fscOType;
     std::vector<int> fscPhoIndx;
     std::vector<int> fscEleIndx;
+    std::vector<bool> fscOriginal;
 
     //const edm::InputTag recHitsEBTag;
     edm::EDGetTokenT<recHitCol> recHitsEBToken_;
@@ -359,6 +360,7 @@ void KUCMSEcalRecHitObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("zscnSC","SuperCluster_nSuperCluster",INT);
     Branches.makeBranch("zscOOT","SuperCluster_isOot",VBOOL);
     Branches.makeBranch("zscExcluded","SuperCluster_excluded",VBOOL);
+    Branches.makeBranch("zscOriginal","SuperCluster_original",VBOOL,"This SC is only found in the orignal propmt or oot collection");
     Branches.makeBranch("zscsid","SuperCluster_XtalSeedID",VUINT);
     Branches.makeBranch("zscotype","SuperCluster_ObjectPdgId",VINT);
     Branches.makeBranch("zscphoindx","SuperCluster_PhotonIndx",VINT);
@@ -397,24 +399,24 @@ void KUCMSEcalRecHitObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("zscCovEtaPhi","SuperCluster_covEtaPhi",VFLOAT);
     Branches.makeBranch("zscCovPhiPhi","SuperCluster_covPhiPhi",VFLOAT);
 
-    Branches.makeBranch("zscnOther","OSuperCluster_nOther",INT);
-    Branches.makeBranch("zscnOtherEx","OSuperCluster_nOtherEx",INT);
-    Branches.makeBranch("zscnOtherIn","OSuperCluster_nOtherIn",INT);
+    //Branches.makeBranch("zscnOther","OSuperCluster_nOther",INT);
+    //Branches.makeBranch("zscnOtherEx","OSuperCluster_nOtherEx",INT);
+    //Branches.makeBranch("zscnOtherIn","OSuperCluster_nOtherIn",INT);
 
-    Branches.makeBranch("zscnOExDr","OSuperCluster_dR",VFLOAT);
-    Branches.makeBranch("zscnOExDiffE","OSuperCluster_diffEnergy",VFLOAT);
-    Branches.makeBranch("zscnOExPerDiffE","OSuperCluster_perDiffEnergy",VFLOAT);
-    Branches.makeBranch("zscnOver","OSuperCluster_nXtalOverlap",VINT);
-    Branches.makeBranch("zscnOtherSID","OSuperCluster_otherSeedID",VUINT);
-    Branches.makeBranch("zscnOMatchSID","OSuperCluster_otherMatchSeedID",VUINT);
-    Branches.makeBranch("zscpOver","OSuperCluster_precentXtalOverlap",VFLOAT);
+    //Branches.makeBranch("zscnOExDr","OSuperCluster_dR",VFLOAT);
+    //Branches.makeBranch("zscnOExDiffE","OSuperCluster_diffEnergy",VFLOAT);
+    //Branches.makeBranch("zscnOExPerDiffE","OSuperCluster_perDiffEnergy",VFLOAT);
+    //Branches.makeBranch("zscnOver","OSuperCluster_nXtalOverlap",VINT);
+    //Branches.makeBranch("zscnOtherSID","OSuperCluster_otherSeedID",VUINT);
+    //Branches.makeBranch("zscnOMatchSID","OSuperCluster_otherMatchSeedID",VUINT);
+    //Branches.makeBranch("zscpOver","OSuperCluster_precentXtalOverlap",VFLOAT);
 
-    Branches.makeBranch("zscnOExDrX","OSuperCluster_XdR",VFLOAT);
-    Branches.makeBranch("zscnOExDiffEX","OSuperCluster_XdiffEnergy",VFLOAT);
-    Branches.makeBranch("zscnOExPerDiffEX","OSuperCluster_XPerDiffEnergy",VFLOAT);
-    Branches.makeBranch("zscnOverX","OSuperCluster_XnXtalOverlap",VINT);
-    Branches.makeBranch("zscnOMatchSIDX","OSuperCluster_XotherMatchSeedID",VUINT);
-    Branches.makeBranch("zscpOverX","OSuperCluster_XprecentXtalOverlap",VFLOAT);
+    //Branches.makeBranch("zscnOExDrX","OSuperCluster_XdR",VFLOAT);
+    //Branches.makeBranch("zscnOExDiffEX","OSuperCluster_XdiffEnergy",VFLOAT);
+    //Branches.makeBranch("zscnOExPerDiffEX","OSuperCluster_XPerDiffEnergy",VFLOAT);
+    //Branches.makeBranch("zscnOverX","OSuperCluster_XnXtalOverlap",VINT);
+    //Branches.makeBranch("zscnOMatchSIDX","OSuperCluster_XotherMatchSeedID",VUINT);
+    //Branches.makeBranch("zscpOverX","OSuperCluster_XprecentXtalOverlap",VFLOAT);
 
 
     Branches.attachBranches(fOutTree);	
@@ -482,7 +484,8 @@ void KUCMSEcalRecHitObject::LoadEvent( const edm::Event& iEvent, const edm::Even
     fscOType.clear();
 	fscPhoIndx.clear();
 	fscEleIndx.clear();
-    for( const auto &supclstr : *ootSuperCluster_ ){ 
+    fscOriginal.clear();
+    for( const auto &supclstr : *superCluster_ ){ 
 		if(supclstr.energy() < cfPrm("minSCE"))  continue;
 		fsupclstrs.push_back(supclstr);
 		fscExclude.push_back(false);
@@ -490,59 +493,67 @@ void KUCMSEcalRecHitObject::LoadEvent( const edm::Event& iEvent, const edm::Even
 		fscOType.push_back(0);
     	fscPhoIndx.push_back(-1);
     	fscEleIndx.push_back(-1);
+		fscOriginal.push_back(false);
 	}//<<>>for( const auto &supclstr : *ootSuperCluster_ )
-    for( const auto &supclstr : *superCluster_ ){
-		if(supclstr.energy() < cfPrm("minSCE")) continue;
-        fsupclstrs.push_back(supclstr);
-        fscIsOOT.push_back(false);
-        fscOType.push_back(0);
-		fscPhoIndx.push_back(-1);
-		fscEleIndx.push_back(-1);
+    for( const auto &oSupclstr : *otherSuperCluster_ ){
+        if(oSupclstr.energy() < cfPrm("minSCE")) continue;
+        bool skip = false;
+        const auto & pSeedDetId = oSupclstr.seed()->seed(); // get seed detid 
+        const auto pSeedRawID = pSeedDetId.rawId();
+        for( const auto &fsc : fsupclstrs ){
+            const auto & fSeedDetId = fsc.seed()->seed(); // get seed detid 
+            const auto fSeedRawID = fSeedDetId.rawId();
+            if( pSeedRawID == fSeedRawID ){ skip = true;  continue; }
+            //if( cfFlag("onlyEB") && ootPho.isEE() ) continue;
+        }//<<>>for( int ip; ip < nPhotons; ip++ )
+        if( not skip ){
+            fsupclstrs.push_back(oSupclstr);
+            fscIsOOT.push_back(false);
+            fscOType.push_back(0);
+            fscPhoIndx.push_back(-1);
+            fscEleIndx.push_back(-1);
+            fscExclude.push_back(false);
+        	fscOriginal.push_back(true);
+        }//<<>>if( not skip )
+    }//<<>>for( const auto &supclstr : *superCluster_ )
+    for( const auto &ootSupclstr : *ootSuperCluster_ ){
+        if(ootSupclstr.energy() < cfPrm("minSCE")) continue;
+        int found = -1;
+		int matched = -1;
+		int icnt = 0;
         double minDr(10.0);
         double dRmatch(10.0);
         //float matchpt(0);
-        auto pEta = supclstr.eta();
-        auto pPhi = supclstr.phi();
-        for( const auto &ootsc : *ootSuperCluster_ ){
+        auto pEta = ootSupclstr.eta();
+        auto pPhi = ootSupclstr.phi();
+        const auto & pSeedDetId = ootSupclstr.seed()->seed(); // get seed detid 
+        const auto pSeedRawID = pSeedDetId.rawId();
+        for( const auto &fsc : fsupclstrs ){
+            const auto & fSeedDetId = fsc.seed()->seed(); // get seed detid 
+            const auto fSeedRawID = fSeedDetId.rawId();
+            if( pSeedRawID == fSeedRawID ){ found = icnt; }
             //if( cfFlag("onlyEB") && ootPho.isEE() ) continue;
-            auto oEta = ootsc.eta();
-            auto oPhi = ootsc.phi();
-            dRmatch = std::sqrt(reco::deltaR2( pEta, pPhi, oEta, oPhi ));
-            if( dRmatch < minDr ){ minDr = dRmatch; }
+            auto fEta = fsc.eta();
+            auto fPhi = fsc.phi();
+            dRmatch = std::sqrt(reco::deltaR2( pEta, pPhi, fEta, fPhi ));
+            if( dRmatch < minDr && found != icnt ){ minDr = dRmatch; matched = icnt; }
+			icnt++;
         }//<<>>for( int ip; ip < nPhotons; ip++ )
-        if( minDr < 0.05 ) fscExclude.push_back(true);
-        else fscExclude.push_back(false);
-	}//<<>>for( const auto &supclstr : *superCluster_ )
-
-/*
-    for( const auto &osupclstr : *otherSuperCluster_ ){
-        if(osupclstr.energy() < cfPrm("minSCE")) continue;
-        //fsupclstrs.push_back(osupclstr);
-        //fscIsOOT.push_back(false);
-        //const auto & oscSeedDetId = osupclstr.seed()->seed(); // get seed detid 
-        //const auto oscSeedRawID = oscSeedDetId.rawId();
-		//bool matched = false;
-        double minDr(10.0);
-        double dRmatch(10.0);
-        //float matchpt(0);
-        auto pEta = osupclstr.eta();
-        auto pPhi = osupclstr.phi();
-        for( const auto &fsupclstr : fsupclstrs ){
-            //if( cfFlag("onlyEB") && ootPho.isEE() ) continue;
-            auto oEta = fsupclstr.eta();
-            auto oPhi = fsupclstr.phi();
-            dRmatch = std::sqrt(reco::deltaR2( pEta, pPhi, oEta, oPhi ));
-            if( dRmatch < minDr ){ minDr = dRmatch; }
-            //const auto & fscSeedDetId = fsupclstr.seed()->seed(); // get seed detid 
-			//const auto fscSeedRawID = fscSeedDetId.rawId();
-			//if( oscSeedRawID == fscSeedRawID ){ matched = true; break; }
-        }//<<>>for( int ip; ip < nPhotons; ip++ )
-        if( minDr < 0.03 ){ fscExclude.push_back(true); } //std::cout << " -- OtherSC is EX cluded !!!!! " << std::endl; }
-		//if( matched ){ fscExclude.push_back(true); } //std::cout << " -- OtherSC is EX cluded !!!!! " << std::endl; }
-        else { fscExclude.push_back(false); } //std::cout << " -- OtherSC is IN cluded !!!!! " << std::endl; }
+        if( found == -1 ){
+            fsupclstrs.push_back(ootSupclstr);
+            fscIsOOT.push_back(true);
+            fscOType.push_back(0);
+            fscPhoIndx.push_back(-1);
+            fscEleIndx.push_back(-1);
+			fscOriginal.push_back(true);
+            if( minDr < 0.05 ) fscExclude[matched] = true;
+        }//<<>>if( found == -1 )
+        else { 
+			fscIsOOT[found] = true;
+			if( minDr < 0.05 ) fscExclude[matched] = true;
+		}//<<>>if( found == -1 ) else
     }//<<>>for( const auto &supclstr : *superCluster_ )
 	//std::cout << " -- OtherSC is IN cluded : " << nOtherSC << std::endl;
-*/
 
 }//<<>>void KUCMSEcalRecHit::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
@@ -561,6 +572,7 @@ void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
 
         auto supclstr = fsupclstrs[it];
         bool excluded = fscExclude[it];
+        bool original = fscOriginal[it];
         bool isOOT = fscIsOOT[it];
         DetId xsDetId = supclstr.seed()->seed();
         uInt xseed = xsDetId.rawId();
@@ -577,6 +589,7 @@ void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
 
         Branches.fillBranch("zscOOT",isOOT);
         Branches.fillBranch("zscExcluded",excluded);
+        Branches.fillBranch("zscOriginal",original);
         Branches.fillBranch("zscsid",xseed);
         Branches.fillBranch("zscotype",scOType);
         Branches.fillBranch("zscphoindx",scPhoIdx);
@@ -747,7 +760,7 @@ void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
     Branches.fillBranch("pused",pUsed);
 	//std::cout << " -- % rechits used : " << pUsed << std::endl;
 
-
+/*
     nOtherSC = ootSuperCluster_->size();
     nOtherSCEx = 0;
 	int nOtherSCIn = 0;
@@ -831,7 +844,7 @@ void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
     Branches.fillBranch("zscnOther",nOtherSC);
     Branches.fillBranch("zscnOtherEx",nOtherSCEx);
     Branches.fillBranch("zscnOtherIn",nOtherSCIn);
-
+*/
 
 }//<<>>void KUCMSEcalRecHit::ProcessEvent()
 

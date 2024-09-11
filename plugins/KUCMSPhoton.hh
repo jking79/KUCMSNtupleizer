@@ -221,8 +221,8 @@ void KUCMSPhotonObject::InitObject( TTree* fOutTree ){
     //Branches.makeBranch("esEnergyOverRawE","Photon_esEnergyOverRawE",VFLOAT,"ratio of preshower energy to raw supercluster energy");
     //Branches.makeBranch("haloTaggerMVAVal","Photon_haloTaggerMVAVal",VFLOAT,"Value of MVA based beam halo tagger in the Ecal endcap (valid for pT > 200 GeV)");//
 
-    Branches.makeBranch("gloResRHs","Photon_gloResRhId",VUINT);
-    Branches.makeBranch("locResRHs","Photon_locResRhId",VUINT);
+    Branches.makeBranch("gloResRHs","Photon_gloResRhId",VVUINT);
+    Branches.makeBranch("locResRHs","Photon_locResRhId",VVUINT);
 
     Branches.makeBranch("GenIdx","Photon_genIdx",VINT);
     //Branches.makeBranch("GenDr","Photon_genDr",VFLOAT);
