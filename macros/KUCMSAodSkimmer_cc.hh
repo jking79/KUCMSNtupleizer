@@ -1060,6 +1060,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 	float unCorMet = hypo(phoRMetCPx,phoRMetCPy);
 
 	int n_selphos = 1;
+	std::vector<RFKey> leadPhoJetKey;
 	if( DEBUG ) std::cout << " - Loading Lead/SubLead Pho" << std::endl;
 	std::vector<RFKey> jetID;
 	if( type == 0 ){
@@ -1069,7 +1070,8 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 	else if( type == 1 ){
 		TLorentzVector phojet;
 		phojet.SetPtEtaPhiM( leadPhoPt, leadPhoEta, leadPhoPhi, 0 );
-    	jetID.push_back(COMB_J->AddLabFrameFourVector(phojet));
+		leadPhoJetKey.push_back( COMB_J->AddLabFrameFourVector(phojet) );
+    	jetID.push_back(leadPhoJetKey[0]);
 	}//<<>>if( type == 1 )
 	else {  std::cout << " !!!!!!!!!!!!!!! Valid RJR Photon Processing Option Not Specified !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl; }
     if( nSelPhotons > 1 ){ 
@@ -1100,6 +1102,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     auto selJetEta = geVects( "selJetEta");
     auto selJetPhi = geVects( "selJetPhi");
     auto selJetMass = geVects( "selJetMass");
+    std::vector<RFKey> leadJetKey;
 	if( DEBUG ) std::cout << " - Loading Jets." << std::endl;
   	for( uInt it = 0; it < nSelJets; it++ ){
 		auto sjetPt = selJetPt[it]; //selJets.getFLBranchValue( "selJetPt", it );
@@ -1110,7 +1113,8 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 		jet.SetPtEtaPhiM( sjetPt, sjetEta, sjetPhi, sjetMass );
 		if( verbose ) std::cout << " - Loading Jet Pt: " << sjetPt << " Eta: " << sjetEta;
 		if( verbose ) std::cout << " Phi: " << sjetPhi << " M: " << sjetMass << std::endl;
-		jetID.push_back(COMB_J->AddLabFrameFourVector(jet)); 
+		if( it == 0 ){ leadJetKey.push_back( COMB_J->AddLabFrameFourVector(jet) ); jetID.push_back(leadJetKey[0]); } 
+		else jetID.push_back(COMB_J->AddLabFrameFourVector(jet)); 
 	}//<<>>for( int i = 0; i < nSelJets; i++ )
 
   	if( !LAB->AnalyzeEvent() ) std::cout << "Something went wrong with tree event analysis" << std::endl;
@@ -1120,11 +1124,13 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 
 	int nJetsJa = 0;
 	int nJetsJb = 0;
-
+	bool sideAisA = true;	
+	if( type == 1 ){ if( COMB_J->GetFrame(leadPhoJetKey[0]) == *Jb ) sideAisA = false; }
+	else if( COMB_J->GetFrame(leadJetKey[0]) == *Jb ) sideAisA = false;
     for( uInt it = 0; it < nSelJets; it++ ){	
 
-        if( COMB_J->GetFrame(jetID[it]) == *Ja ){ nJetsJa++; } // one for each frame 
-        if( COMB_J->GetFrame(jetID[it]) == *Jb ){ nJetsJb++; } // one for each frame 
+        if( COMB_J->GetFrame(jetID[it]) == *Ja ){ sideAisA ? nJetsJa++ : nJetsJb++; } // one for each frame 
+        if( COMB_J->GetFrame(jetID[it]) == *Jb ){ sideAisA ? nJetsJb++ : nJetsJa++; } // one for each frame 
 
 	}//<<>>for( int i = 0; i < nSelJets; i++ )
 

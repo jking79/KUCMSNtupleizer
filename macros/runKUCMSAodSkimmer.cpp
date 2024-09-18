@@ -40,7 +40,7 @@ int main ( int argc, char *argv[] ){
 
                 //const std::string outfilename = "_Ntuple_v19_LLPgama_10pSkim_v19_rawmet_rjrcombo.root";
                 //const std::string outfilename = "_Ntuple_v19_LLPgama_Skim_v19_ootmet_rjrcombo.root";
-                const std::string outfilename = "_Ntuple_v19_LLPgama_Skim_v19_gsp_ootmet_rjrvars.root";
+                const std::string outfilename = "_Ntuple_v21_LLPgama_Skim_v20_rjrvars.root";
 
 				bool hasGenInfo = true;
                 //bool hasGenInfo = false;

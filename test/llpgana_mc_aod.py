@@ -68,9 +68,9 @@ process.load("FWCore.MessageService.MessageLogger_cfi")
 #process.MessageLogger.destinations = ['cout', 'cerr']
 #process.MessageLogger.cerr.FwkReport.reportEvery = 1
 #process.MessageLogger.cerr.FwkReport.reportEvery = 10
-process.MessageLogger.cerr.FwkReport.reportEvery = 100
+#process.MessageLogger.cerr.FwkReport.reportEvery = 100
 #process.MessageLogger.cerr.FwkReport.reportEvery = 1000
-#process.MessageLogger.cerr.FwkReport.reportEvery = 10000
+process.MessageLogger.cerr.FwkReport.reportEvery = 100000
 
 from KUCMSNtupleizer.KUCMSNtupleizer.TrackAssociator_cfi import tkAssocParamBlock
 
@@ -93,39 +93,40 @@ gmsbaodsim2 = '_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v2/
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        #'/store/mc/RunIIFall17DRPremix/GMSB_L-100TeV_Ctau-0p001cm_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/100000/009A3F2E-C7B9-E811-9FCA-441EA171A998.root',
 
-		#'root://cmsxrootd-site.fnal.gov//store/mc/RunIIFall17DRPremix/GMSB_L-100TeV_Ctau-200cm_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/80000/58DCC006-3FB2-E811-94AE-AC1F6B0DE454.root',	
+        '/store/mc/RunIIFall17DRPremix/GMSB_L-100TeV_Ctau-0p001cm_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/100000/009A3F2E-C7B9-E811-9FCA-441EA171A998.root',
+
+	#'root://cmsxrootd-site.fnal.gov//store/mc/RunIIFall17DRPremix/GMSB_L-100TeV_Ctau-200cm_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/80000/58DCC006-3FB2-E811-94AE-AC1F6B0DE454.root',	
 
         #'root://cmsxrootd-site.fnal.gov//store/data/Run2022C/JetHT/AOD/27Jun2023-v2/25310000/161a4ef3-6d8f-4026-bc32-12473677119e.root',
         #'root://cmsxrootd-site.fnal.gov//store/data/Run2018A/JetHT/MINIAOD/12Nov2019_UL2018-v2/100000/07082E78-7805-EB44-BB4D-1D3AB8892FB7.root',
 
-		#'/store/mc/RunIISummer20UL18RECO/GJets_HT-40To100_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/2550000/06CC60F3-D74E-174E-8AD7-DCDAB14FB26F.root',
-		#'/store/data/Run2018C/JetHT/AOD/15Feb2022_UL2018-v1/2530001/B2C0793B-3D7B-104F-B34B-87D010EFDEF4.root',	
+	#'/store/mc/RunIISummer20UL18RECO/GJets_HT-40To100_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/2550000/06CC60F3-D74E-174E-8AD7-DCDAB14FB26F.root',
+	#'/store/data/Run2018C/JetHT/AOD/15Feb2022_UL2018-v1/2530001/B2C0793B-3D7B-104F-B34B-87D010EFDEF4.root',	
 
-		  #'file:jwk_reco_data_DIGI2RAW.root'),
 
-'root://cmsxrootd-site.fnal.gov//store/mc/RunIIFall17DRPremix/QCD_HT200to300_TuneCP5_13TeV-madgraph-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/110000/1E29BF8B-5F60-E811-AD1D-0663CE00010C.root',
+        #'root://cmsxrootd-site.fnal.gov//store/mc/RunIIFall17DRPremix/QCD_HT200to300_TuneCP5_13TeV-madgraph-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/110000/1E29BF8B-5F60-E811-AD1D-0663CE00010C.root',
 
-         ## HTo2LongLivedTo4b
+        ## HTo2LongLivedTo4b
 
         #'/store/mc/Run3Winter21DRMiniAOD/HTo2LongLivedTo4b_MH-1000_MFF-450_CTau-100000mm_TuneCP5_14TeV-pythia8/MINIAODSIM/FlatPU30to80FEVT_112X_mcRun3_2021_realistic_v16-v2/280000/17bd2d71-8a76-46c5-947a-7ea2b1df44b6.root'
 
-		# AOD
+	# AOD
 
-		 #'file:/eos/uscms/store/mc/RunIIFall17DRPremix/GMSB_L-100TeV_Ctau-0_1cm_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/100000/2C55A98D-E4D7-E811-AC40-002590491B1E.root'
-		 #lpcpath_350_600+'120000/80762156-99D6-E811-8942-34E6D7E3879B.root',
-         #lpcpath_350_600+'120000/322875DC-DDD6-E811-8C5F-001E675A68C4.root',
-         #lpcpath_350_600+'120000/603C58F0-A9D6-E811-8907-E0071B74AC00.root',
-         #lpcpath_350_600+'120000/66DB15F0-DDD6-E811-A7A3-90E2BACBAD58.root',
-         #lpcpath_350_600+'120000/8A9DEBDE-DDD6-E811-838E-D4AE526DF2E1.root',
-         #lpcpath_350_600+'120000/A8DE3FA7-99D6-E811-92C5-34E6D7BEAF0E.root'
+	#'file:/eos/uscms/store/mc/RunIIFall17DRPremix/GMSB_L-100TeV_Ctau-0_1cm_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/100000/2C55A98D-E4D7-E811-AC40-002590491B1E.root'
+
+	#lpcpath_350_600+'120000/80762156-99D6-E811-8942-34E6D7E3879B.root',
+        #lpcpath_350_600+'120000/322875DC-DDD6-E811-8C5F-001E675A68C4.root',
+        #lpcpath_350_600+'120000/603C58F0-A9D6-E811-8907-E0071B74AC00.root',
+        #lpcpath_350_600+'120000/66DB15F0-DDD6-E811-A7A3-90E2BACBAD58.root',
+        #lpcpath_350_600+'120000/8A9DEBDE-DDD6-E811-838E-D4AE526DF2E1.root',
+        #lpcpath_350_600+'120000/A8DE3FA7-99D6-E811-92C5-34E6D7BEAF0E.root'
 
          # AODSIM DPJB model
 
          #'/store/mc/RunIISummer20UL18RECO/DiPhotonJetsBox_MGG-1000to2000_13TeV-sherpa/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/2550000/0B4130F1-3785-8043-957B-E0C2F86E1A50.root',
 
-		 # AODSIM GMSB model		
+	# AODSIM GMSB model		
 
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-10000cm'+gmsbaodsim2+'10000/162DBEEE-DC29-E911-843B-0CC47A745294.root',
 
@@ -215,13 +216,13 @@ process.source = cms.Source("PoolSource",
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#LT
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#LT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500))#US
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(12500))#VS
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(25000))#SM
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100000))#MS
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250000))#MD
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500000))#LG
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500000))#LG
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
 
 # Set the global tag depending on the sample type
@@ -239,7 +240,7 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
                               hasGenInfo = cms.bool(options.hasGenInfo),
                               #hasGenInfo = cms.bool(False),
                               #minEvtMet = cms.double(150.0),
-                              minEvtMet = cms.double(75.0),
+                              minEvtMet = cms.double(100.0),
                               minRHEi = cms.double(0.0),
                               minRHEf = cms.double(0.2),
                               ## additional collections
@@ -306,9 +307,10 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
                               recHitsEB = cms.InputTag("reducedEcalRecHitsEB"),
                               recHitsEE = cms.InputTag("reducedEcalRecHitsEE"),
                               ## superclusters
-                              #superClusters = cms.InputTag("reducedEgamma", "reducedSuperClusters"),
-                              superClusters = cms.InputTag("particleFlowEGamma"),
-                              otherSuperClusters = cms.InputTag("particleFlowSuperClusterECAL", "particleFlowSuperClusterECALBarrel"),
+                              superClusters = cms.InputTag("ecalTracks", "displacedElectronSCs"),
+                              #superClusters = cms.InputTag("particleFlowEGamma"),
+                              otherSuperClusters = cms.InputTag("particleFlowEGamma"),
+                              #otherSuperClusters = cms.InputTag("particleFlowSuperClusterECAL", "particleFlowSuperClusterECALBarrel"),
                               ##otherSuperClusters = cms.InputTag("hybridSuperClusters", "uncleanOnlyHybridSuperClusters"),#51/1000
                               #otherSuperClusters = cms.InputTag("correctedHybridSuperClusters"),
                               #ootSuperClusters = cms.InputTag("reducedEgamma", "reducedOOTSuperClusters"),

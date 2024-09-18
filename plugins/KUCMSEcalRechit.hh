@@ -358,13 +358,13 @@ void KUCMSEcalRecHitObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("pused","ECALRecHit_precentUsed",VFLOAT);
 
     Branches.makeBranch("zscnSC","SuperCluster_nSuperCluster",INT);
-    Branches.makeBranch("zscOOT","SuperCluster_isOot",VBOOL);
-    Branches.makeBranch("zscExcluded","SuperCluster_excluded",VBOOL);
+    Branches.makeBranch("zscOOT","SuperCluster_isOot",VBOOL,"This SC is from the out of time SC collection");
+    Branches.makeBranch("zscExcluded","SuperCluster_excluded",VBOOL,"This SC is superseeded by an overlapping OOT SC");
     Branches.makeBranch("zscOriginal","SuperCluster_original",VBOOL,"This SC is only found in the orignal propmt or oot collection");
     Branches.makeBranch("zscsid","SuperCluster_XtalSeedID",VUINT);
-    Branches.makeBranch("zscotype","SuperCluster_ObjectPdgId",VINT);
-    Branches.makeBranch("zscphoindx","SuperCluster_PhotonIndx",VINT);
-    Branches.makeBranch("zsceleindx","SuperCluster_ElectronIndx",VINT);
+    Branches.makeBranch("zscotype","SuperCluster_ObjectPdgId",VINT,"Currently is 0( no match ), 11, 22, or 33( matches an ele & pho )");
+    Branches.makeBranch("zscphoindx","SuperCluster_PhotonIndx",VINT,"Index of matching photon");
+    Branches.makeBranch("zsceleindx","SuperCluster_ElectronIndx",VINT,"index of matching electron");
     Branches.makeBranch("zsclcx","SuperCluster_clcx",VFLOAT,"x coordinate of cluster centroid");
     Branches.makeBranch("zsclcy","SuperCluster_clcy",VFLOAT,"y coordinate of cluster centroid");
     Branches.makeBranch("zsclcz","SuperCluster_clcz",VFLOAT,"z coordinate of cluster centroid");
@@ -489,7 +489,7 @@ void KUCMSEcalRecHitObject::LoadEvent( const edm::Event& iEvent, const edm::Even
 		if(supclstr.energy() < cfPrm("minSCE"))  continue;
 		fsupclstrs.push_back(supclstr);
 		fscExclude.push_back(false);
-		fscIsOOT.push_back(true);
+		fscIsOOT.push_back(false);
 		fscOType.push_back(0);
     	fscPhoIndx.push_back(-1);
     	fscEleIndx.push_back(-1);
@@ -539,19 +539,17 @@ void KUCMSEcalRecHitObject::LoadEvent( const edm::Event& iEvent, const edm::Even
             if( dRmatch < minDr && found != icnt ){ minDr = dRmatch; matched = icnt; }
 			icnt++;
         }//<<>>for( int ip; ip < nPhotons; ip++ )
+		if( minDr < 0.05 ) fscExclude[matched] = true;
         if( found == -1 ){
             fsupclstrs.push_back(ootSupclstr);
             fscIsOOT.push_back(true);
             fscOType.push_back(0);
             fscPhoIndx.push_back(-1);
             fscEleIndx.push_back(-1);
+            fscExclude.push_back(false);
 			fscOriginal.push_back(true);
-            if( minDr < 0.05 ) fscExclude[matched] = true;
         }//<<>>if( found == -1 )
-        else { 
-			fscIsOOT[found] = true;
-			if( minDr < 0.05 ) fscExclude[matched] = true;
-		}//<<>>if( found == -1 ) else
+        else fscIsOOT[found] = true;
     }//<<>>for( const auto &supclstr : *superCluster_ )
 	//std::cout << " -- OtherSC is IN cluded : " << nOtherSC << std::endl;
 

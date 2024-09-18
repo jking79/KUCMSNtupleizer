@@ -9,7 +9,7 @@ import time
 
 from jwk_tdr_style_py import *
 
-def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
+def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t, norm ):
 
     first = True
     paramn = []
@@ -64,9 +64,11 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
         orighist = f1[n].Get(hist)
         #htitle = 'hist' + str(n)
         #lenmybins = int(orighist.GetNbinsX())
+        scale = orighist.Integral()
+        if scale == 0 : scale == 1
+        if norm : orighist.Scale(1/scale)
         h1.append(orighist)
         #h1.append(orighist.Rebin(2))
-        #norm = orighist.Integral()
         #norm = 1;
         #if norm == 0 : norm = 1
 
@@ -166,9 +168,9 @@ islogy = True
 
 #---------------------------------------------------------------
 
-#model = "GluGlu"
+model = "GluGlu"
 #model = "SqkSqk"
-model = "SqkGlu"
+#model = "SqkGlu"
 #model = "XinoXino"
 
 sig100 = "rjr_multihist_files/KUCMS_GMSB_L100_"+model+"_v20_genSigPerfect_nSigPho1_wt2_RjrSkim_v24_ootmet_phomet_multiHists.root"
@@ -184,9 +186,11 @@ bgGJets = "rjr_multihist_files/KUCMS_GJets_v19_BG_nSigPho0_wt2_RjrSkim_v24_ootme
 
 #y = [ 0.0001, 1000000000000.0 ]
 #y = [ 0.0000001, 10000000.0 ] # vdiff, QNSum
-y = [ 0.0001, 100000000.0 ]
+#y = [ 0.0001, 100000000.0 ]
 #y = [ 0.0000001, 10000.0 ] # vsum, asmass, QSum 
-#x = [ 0.0, 1.0 ]
+#y = [ 0.00000001, 10.0 ] # normizlized to 1 for shape comparision
+#y = [ 0.00001, 1.0 ] # normizlized to 1 for shape comparision
+y = [ 0.0001, 1.0 ] # normizlized to 1 for shape comparision
 
 #l = [ 0.7,0.6,0.925,0.875 ] # legend position top right
 l = [ 0.7,0.675,0.925,0.875 ] # legend position top right short
@@ -194,21 +198,24 @@ l = [ 0.7,0.675,0.925,0.875 ] # legend position top right short
 #l = [ 0.2,0.65,0.425,0.9 ] # legend position top left
 t = [0.2,0.825,0.0,0.175,0.225] # titles position
 
-rhname = "rjrVSum"
-#rhname = "rjrVDiff"
+#rhname = "rjrVSum"
+rhname = "rjrVDiff"
 #rhname = "ASMass"
 #rhname = "rjrAX2QSum"
 #rhname = "rjrAX2NQSum"
+#rhname = "rjrNJetsJa"
+#rhname = "rjrNJetsJb"
 
-x = [ 0.0, 12000 ]
+#x = [ 0.0, 12000 ]
 #x = [ 0.0, 2600 ]
-#x = [ -1.0, 1.0 ]
+x = [ -1.0, 1.0 ]
 #x = [ 0, 1.0 ]
+#x = [ 0.0, 20 ]
 
 fhname = rhname
 xtitle = fhname
-#outname = 'llpa_rjr_sig_' + fhname
-outname = 'llpa_rjr_op_' + fhname
+outname = 'llpa_rjr_sig_' + model + '_' + fhname
+#outname = 'llpa_rjr_op_' + fhname
 layout = { 'xtitle' : xtitle, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'legtitle' : legtitle }
 #ptitle=[' 2017 GMSB ' + model,'137 fb','']
 ptitle=[' 2017','137 fb','']
@@ -217,33 +224,39 @@ ptitle=[' 2017','137 fb','']
 #leg200 = "M_{\Chi_{1}} = 285 GeV"
 #leg300 = "M_{\Chi_{1}} = 430 GeV"
 #leg400 = "M_{\Chi_{1}} = 576 GeV"
-#leg100 = "M_{Gluino} = 838 GeV"
-#leg200 = "M_{Gluino} = 1565 GeV"
-#leg300 = "M_{Gluino} = 2260 GeV"
-#leg400 = "M_{Gluino} = 2935 GeV"
+leg100 = "M_{Gluino} = 838 GeV"
+leg150 = "M_{Gluino} = 1207 GeV"
+leg200 = "M_{Gluino} = 1565 GeV"
+leg250 = "M_{Gluino} = 1915 GeV"
+leg300 = "M_{Gluino} = 2260 GeV"
+leg350 = "M_{Gluino} = 2599 GeV"
+leg400 = "M_{Gluino} = 2935 GeV"
 #leg100 = "M_{SQuark} = 1119 GeV"
 #leg200 = "M_{SQuark} = 2122 GeV"
 #leg300 = "M_{SQuark} = 3084 GeV"
 #leg400 = "M_{SQuark} = 4025 GeV"
-leg100 = "M_{Gluino} = 838 GeV, M_{SQuark} = 1119 GeV"
-leg200 = "M_{Gluino} = 1565 GeV, M_{SQuark} = 2122 GeV"
-leg300 = "M_{Gluino} = 2260 GeV, M_{SQuark} = 3084 GeV"
-leg400 = "M_{Gluino} = 2935 GeV, M_{SQuark} = 4025 GeV"
+#leg100 = "M_{Gluino} = 838 GeV, M_{SQuark} = 1119 GeV"
+#leg200 = "M_{Gluino} = 1565 GeV, M_{SQuark} = 2122 GeV"
+#leg300 = "M_{Gluino} = 2260 GeV, M_{SQuark} = 3084 GeV"
+#leg400 = "M_{Gluino} = 2935 GeV, M_{SQuark} = 4025 GeV"
 
 inhistlist = [
 
-            #[rhname,'',sig100,leg100],
-            #[rhname,'',sig200,leg200],
-            #[rhname,'',sig300,leg300],
-            #[rhname,'',sig400,leg400],
+            [rhname,'',sig100,leg100],
+            [rhname,'',sig150,leg150],
+            [rhname,'',sig200,leg200],
+            [rhname,'',sig250,leg250],
+            ##[rhname,'',sig300,leg300],
 
-            [rhname,'',bgGJets,"GJets"],
-            [rhname,'',bgQCD,"QCD"],
+            #[rhname,'',bgGJets,"GJets"],
+            #[rhname,'',bgQCD,"QCD"],
 
             ]
 
+#norm = False
+norm = True
 
-dostack(inhistlist, outname, date, layout, ptitle,  y, x, l, t)
+dostack(inhistlist, outname, date, layout, ptitle,  y, x, l, t, norm)
 
 #ptitle=[' 2022 IOV5 359421-360089','','#splitline{EBEB}{CC Ave RH Time by Channel}'] #{GT 106X_dataRun2_v28}'
 #y = [ 4.5, 0.5 ]

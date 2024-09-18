@@ -394,7 +394,7 @@ void HistMaker::initHists( std::string ht ){
     //std::vector<int>     *selJetQuality;
     //std::vector<float>   *selJetTime;
 
-    std::cout << " title test : " << mkht(ht,"jetPt") << std::endl;
+    std::cout << " title test : " << addstr(ht,"jetPt") << std::endl;
 
 	//----- photons 100 - 249
     //UInt_t          leadSelPho;
@@ -444,107 +444,107 @@ void HistMaker::initHists( std::string ht ){
 //genSigType
 //
 
-    hist1d[0] = new TH1D("genSigSGluinoMass", mkht(ht,"genSigSGluinoMass").c_str(), 1200, 0, 6000);
-    hist1d[1] = new TH1D("genSigSQuarkMass", mkht(ht,"genSigSQuarkMass").c_str(), 1200, 0, 6000);
-    hist1d[2] = new TH1D("cutflow", mkht(ht,"cutFlow").c_str(), 10, 0, 10);
+    hist1d[0] = new TH1D("genSigSGluinoMass", addstr(ht,"genSigSGluinoMass").c_str(), 1200, 0, 6000);
+    hist1d[1] = new TH1D("genSigSQuarkMass", addstr(ht,"genSigSQuarkMass").c_str(), 1200, 0, 6000);
+    hist1d[2] = new TH1D("cutflow", addstr(ht,"cutFlow").c_str(), 10, 0, 10);
 
-    hist1d[250] = new TH1D("SCosA", mkht(ht,"SCosA").c_str(), 70, -3.5, 3.5);
-    hist1d[251] = new TH1D("SMass", mkht(ht,"SMass").c_str(), 150, 0, 15000);
-    hist1d[252] = new TH1D("X2aMass", mkht(ht,"X2aMass").c_str(), 90, 0, 3600);
-    hist1d[253] = new TH1D("X2bMass", mkht(ht,"X2bMass").c_str(), 90, 0, 3600);
+    hist1d[250] = new TH1D("SCosA", addstr(ht,"SCosA").c_str(), 70, -3.5, 3.5);
+    hist1d[251] = new TH1D("SMass", addstr(ht,"SMass").c_str(), 150, 0, 15000);
+    hist1d[252] = new TH1D("X2aMass", addstr(ht,"X2aMass").c_str(), 90, 0, 3600);
+    hist1d[253] = new TH1D("X2bMass", addstr(ht,"X2bMass").c_str(), 90, 0, 3600);
 
-    hist1d[254] = new TH1D("rjrDphiMETV", mkht(ht,"rjrDphiMETV").c_str(), 70, -3.5, 3.5);
-    hist1d[255] = new TH1D("rjrNJetsJa", mkht(ht,"rjrNJetsJa").c_str(), 20, 0, 20);
-    hist1d[256] = new TH1D("rjrNJetsJb", mkht(ht,"rjrNJetsJb").c_str(), 20, 0, 20);
-    hist1d[257] = new TH1D("rjrSdphiBV", mkht(ht,"rjrSdphiBV").c_str(), 35, 0, 3.5);
-    hist1d[258] = new TH1D("rjrSdphiDA", mkht(ht,"rjrSdphiDA").c_str(), 35, 0, 3.5);
-    hist1d[259] = new TH1D("rjrX2aPtS", mkht(ht,"rjrX2aPtS").c_str(), 100, 0, 6000);
-    hist1d[260] = new TH1D("rjrX2bPtS", mkht(ht,"rjrX2bPtS").c_str(), 100, 0, 6000);
+    hist1d[254] = new TH1D("rjrDphiMETV", addstr(ht,"rjrDphiMETV").c_str(), 70, -3.5, 3.5);
+    hist1d[255] = new TH1D("rjrNJetsJa", addstr(ht,"rjrNJetsJa").c_str(), 20, 0, 20);
+    hist1d[256] = new TH1D("rjrNJetsJb", addstr(ht,"rjrNJetsJb").c_str(), 20, 0, 20);
+    hist1d[257] = new TH1D("rjrSdphiBV", addstr(ht,"rjrSdphiBV").c_str(), 35, 0, 3.5);
+    hist1d[258] = new TH1D("rjrSdphiDA", addstr(ht,"rjrSdphiDA").c_str(), 35, 0, 3.5);
+    hist1d[259] = new TH1D("rjrX2aPtS", addstr(ht,"rjrX2aPtS").c_str(), 100, 0, 6000);
+    hist1d[260] = new TH1D("rjrX2bPtS", addstr(ht,"rjrX2bPtS").c_str(), 100, 0, 6000);
 
-    hist1d[261] = new TH1D("rjrX2Ave", mkht(ht,"rjrX2Ave").c_str(), 90, 0, 3600);
-    hist1d[262] = new TH1D("rjrX2Diff", mkht(ht,"rjrX2Diff").c_str(), 100, -1, 1);
-    hist1d[263] = new TH1D("rjrX2GMean", mkht(ht,"rjrX2GMean").c_str(), 90, 0, 3600);
-    hist1d[264] = new TH1D("rjrX2NAve", mkht(ht,"rjrX2NAve").c_str(), 50, 0, 1.0);
-    hist1d[265] = new TH1D("rjrX2NGMean", mkht(ht,"rjrX2NGMean").c_str(), 50, 0, 1.0);
-    hist1d[266] = new TH1D("rjrX2NQSum", mkht(ht,"rjrX2NQSum").c_str(), 50, 0, 1.0);
-    hist1d[267] = new TH1D("rjrX2QSum", mkht(ht,"rjrX2QSum").c_str(), 90, 0, 3600);
+    hist1d[261] = new TH1D("rjrX2Ave", addstr(ht,"rjrX2Ave").c_str(), 90, 0, 3600);
+    hist1d[262] = new TH1D("rjrX2Diff", addstr(ht,"rjrX2Diff").c_str(), 100, -1, 1);
+    hist1d[263] = new TH1D("rjrX2GMean", addstr(ht,"rjrX2GMean").c_str(), 90, 0, 3600);
+    hist1d[264] = new TH1D("rjrX2NAve", addstr(ht,"rjrX2NAve").c_str(), 50, 0, 1.0);
+    hist1d[265] = new TH1D("rjrX2NGMean", addstr(ht,"rjrX2NGMean").c_str(), 50, 0, 1.0);
+    hist1d[266] = new TH1D("rjrX2NQSum", addstr(ht,"rjrX2NQSum").c_str(), 50, 0, 1.0);
+    hist1d[267] = new TH1D("rjrX2QSum", addstr(ht,"rjrX2QSum").c_str(), 90, 0, 3600);
 
-    hist1d[268] = new TH1D("selPhoMBetaEql", mkht(ht,"BetaMass").c_str(), 60, 0, 1200);//----------- BetaMass
-    hist1d[269] = new TH1D("selPhoMBetaPmt", mkht(ht,"selPhoMBetaPmt").c_str(), 60, 0, 1200);
+    hist1d[268] = new TH1D("selPhoMBetaEql", addstr(ht,"BetaMass").c_str(), 60, 0, 1200);//----------- BetaMass
+    hist1d[269] = new TH1D("selPhoMBetaPmt", addstr(ht,"selPhoMBetaPmt").c_str(), 60, 0, 1200);
 
-    hist1d[270] = new TH1D("rjrMVa", mkht(ht,"rjrMVa").c_str(), 90, 0, 3600);
-    hist1d[271] = new TH1D("rjrMVb", mkht(ht,"rjrMVb").c_str(), 90, 0, 3600);
-    hist1d[272] = new TH1D("rjrVDiff", mkht(ht,"VisMassDiff").c_str(), 25, -1, 1);//---------------VisMassDiff !!!!!!!!!!
-    hist1d[273] = new TH1D("rjrVSum", mkht(ht,"VisMass").c_str(), 26, 0, 2600);//--------------VisMassSum !!!!!!!!!!
+    hist1d[270] = new TH1D("rjrMVa", addstr(ht,"rjrMVa").c_str(), 90, 0, 3600);
+    hist1d[271] = new TH1D("rjrMVb", addstr(ht,"rjrMVb").c_str(), 90, 0, 3600);
+    hist1d[272] = new TH1D("rjrVDiff", addstr(ht,"VisMassDiff").c_str(), 25, -1, 1);//---------------VisMassDiff !!!!!!!!!!
+    hist1d[273] = new TH1D("rjrVSum", addstr(ht,"VisMass").c_str(), 26, 0, 2600);//--------------VisMassSum !!!!!!!!!!
 
-    hist1d[274] = new TH1D("selPhoNMBetaEql", mkht(ht,"selPhoNMBetaEql").c_str(), 100, 0, 2);
-    hist1d[275] = new TH1D("selPhoNMBetaPmt", mkht(ht,"selPhoNMBetaPmt").c_str(), 100, 0, 2);
+    hist1d[274] = new TH1D("selPhoNMBetaEql", addstr(ht,"selPhoNMBetaEql").c_str(), 100, 0, 2);
+    hist1d[275] = new TH1D("selPhoNMBetaPmt", addstr(ht,"selPhoNMBetaPmt").c_str(), 100, 0, 2);
 
     // Alternative approach
-    //hist1d[350] = new TH1D("ASCosAc", mkht(ht,"ASCosA").c_str(), 70, -3.5, 3.5);
-    hist1d[351] = new TH1D("ASMass", mkht(ht,"SMass").c_str(), 48, 0, 12000); //----------------------ASMass !!!!!!!!!!!!!!!!!!1
-    //hist1d[351] = new TH1D("ASMass", mkht(ht,"SMass").c_str(), 150, 0, 15000);
-    hist1d[352] = new TH1D("AX2aMass", mkht(ht,"AX2aMass").c_str(), 90, 0, 3600);
-    hist1d[353] = new TH1D("AX2bMass", mkht(ht,"AX2bMass").c_str(), 90, 0, 3600);
+    //hist1d[350] = new TH1D("ASCosAc", addstr(ht,"ASCosA").c_str(), 70, -3.5, 3.5);
+    hist1d[351] = new TH1D("ASMass", addstr(ht,"SMass").c_str(), 48, 0, 12000); //----------------------ASMass !!!!!!!!!!!!!!!!!!1
+    //hist1d[351] = new TH1D("ASMass", addstr(ht,"SMass").c_str(), 150, 0, 15000);
+    hist1d[352] = new TH1D("AX2aMass", addstr(ht,"AX2aMass").c_str(), 90, 0, 3600);
+    hist1d[353] = new TH1D("AX2bMass", addstr(ht,"AX2bMass").c_str(), 90, 0, 3600);
 
-    //hist1d[354] = new TH1D("rjrDphiMETVcA", mkht(ht,"rjrDphiMETV A").c_str(), 70, -3.5, 3.5);
-    //hist1d[355] = new TH1D("rjrNJetsJacA", mkht(ht,"rjrNJetsJa A").c_str(), 20, 0, 20);
-    //hist1d[356] = new TH1D("rjrNJetsJbcA", mkht(ht,"rjrNJetsJb A").c_str(), 20, 0, 20);
-    //hist1d[357] = new TH1D("rjrSdphiBVcA", mkht(ht,"rjrSdphiBV A").c_str(), 35, 0, 3.5);
-    //hist1d[358] = new TH1D("rjrSdphiDAcA", mkht(ht,"rjrSdphiDA A").c_str(), 35, 0, 3.5);
-    //hist1d[359] = new TH1D("rjrX2aPtScA", mkht(ht,"rjrX2aPtS A").c_str(), 100, 0, 6000);
-    //hist1d[360] = new TH1D("rjrX2bPtScA", mkht(ht,"rjrX2bPtS A").c_str(), 100, 0, 6000);
+    //hist1d[354] = new TH1D("rjrDphiMETVcA", addstr(ht,"rjrDphiMETV A").c_str(), 70, -3.5, 3.5);
+    //hist1d[355] = new TH1D("rjrNJetsJacA", addstr(ht,"rjrNJetsJa A").c_str(), 20, 0, 20);
+    //hist1d[356] = new TH1D("rjrNJetsJbcA", addstr(ht,"rjrNJetsJb A").c_str(), 20, 0, 20);
+    //hist1d[357] = new TH1D("rjrSdphiBVcA", addstr(ht,"rjrSdphiBV A").c_str(), 35, 0, 3.5);
+    //hist1d[358] = new TH1D("rjrSdphiDAcA", addstr(ht,"rjrSdphiDA A").c_str(), 35, 0, 3.5);
+    //hist1d[359] = new TH1D("rjrX2aPtScA", addstr(ht,"rjrX2aPtS A").c_str(), 100, 0, 6000);
+    //hist1d[360] = new TH1D("rjrX2bPtScA", addstr(ht,"rjrX2bPtS A").c_str(), 100, 0, 6000);
 
-    hist1d[361] = new TH1D("rjrAX2Ave", mkht(ht,"rjrAX2Ave").c_str(), 90, 0, 3600);
-    hist1d[362] = new TH1D("rjrAX2Diff", mkht(ht,"X2MassDiff").c_str(), 100, -1, 1);//----------------X2MassDiff
-    //hist1d[362] = new TH1D("rjrAX2Diff", mkht(ht,"X2MassDiff").c_str(), 100, -1, 1);
-    hist1d[363] = new TH1D("rjrAX2GMean", mkht(ht,"rjrAX2GMean").c_str(), 90, 0, 3600);
-    hist1d[364] = new TH1D("rjrAX2NAve", mkht(ht,"rjrAX2NAve").c_str(), 50, 0, 1.0);
-    hist1d[365] = new TH1D("rjrAX2NGMean", mkht(ht,"rjrAX2NGMean").c_str(), 50, 0, 1.0);
-    hist1d[366] = new TH1D("rjrAX2NQSum", mkht(ht,"X2MassRatio").c_str(), 25, 0, 1.0);//----------X2MassRatio !!!!!!!!!!!!!!!!!
-    //hist1d[366] = new TH1D("rjrAX2NQSum", mkht(ht,"X2MassRatio").c_str(), 50, 0, 1.0)
-    //hist1d[367] = new TH1D("rjrAX2QSum", mkht(ht,"X2Mass").c_str(), 90, 0, 3600);//-----------X2Mass  !!!!!!!!!!!!!!!!!!!1
-    hist1d[367] = new TH1D("rjrAX2QSum", mkht(ht,"X2Mass").c_str(), 26, 0, 2600);
+    hist1d[361] = new TH1D("rjrAX2Ave", addstr(ht,"rjrAX2Ave").c_str(), 90, 0, 3600);
+    hist1d[362] = new TH1D("rjrAX2Diff", addstr(ht,"X2MassDiff").c_str(), 100, -1, 1);//----------------X2MassDiff
+    //hist1d[362] = new TH1D("rjrAX2Diff", addstr(ht,"X2MassDiff").c_str(), 100, -1, 1);
+    hist1d[363] = new TH1D("rjrAX2GMean", addstr(ht,"rjrAX2GMean").c_str(), 90, 0, 3600);
+    hist1d[364] = new TH1D("rjrAX2NAve", addstr(ht,"rjrAX2NAve").c_str(), 50, 0, 1.0);
+    hist1d[365] = new TH1D("rjrAX2NGMean", addstr(ht,"rjrAX2NGMean").c_str(), 50, 0, 1.0);
+    hist1d[366] = new TH1D("rjrAX2NQSum", addstr(ht,"X2MassRatio").c_str(), 25, 0, 1.0);//----------X2MassRatio !!!!!!!!!!!!!!!!!
+    //hist1d[366] = new TH1D("rjrAX2NQSum", addstr(ht,"X2MassRatio").c_str(), 50, 0, 1.0)
+    //hist1d[367] = new TH1D("rjrAX2QSum", addstr(ht,"X2Mass").c_str(), 90, 0, 3600);//-----------X2Mass  !!!!!!!!!!!!!!!!!!!1
+    hist1d[367] = new TH1D("rjrAX2QSum", addstr(ht,"X2Mass").c_str(), 26, 0, 2600);
 
-    //hist1d[368] = new TH1D("selPhoMBetaEqlcA", mkht(ht,"selPhoMBetaEql A").c_str(), 60, 0, 1200);
-    //hist1d[369] = new TH1D("selPhoMBetaPmtcA", mkht(ht,"selPhoMBetaPmt A").c_str(), 60, 0, 1200);
+    //hist1d[368] = new TH1D("selPhoMBetaEqlcA", addstr(ht,"selPhoMBetaEql A").c_str(), 60, 0, 1200);
+    //hist1d[369] = new TH1D("selPhoMBetaPmtcA", addstr(ht,"selPhoMBetaPmt A").c_str(), 60, 0, 1200);
 
-    //hist1d[370] = new TH1D("rjrMVacA", mkht(ht,"rjrMVa A").c_str(), 90, 0, 3600);
-    //hist1d[371] = new TH1D("rjrMVbcA", mkht(ht,"rjrMVb A").c_str(), 90, 0, 3600);
-    //hist1d[372] = new TH1D("rjrVDiffcA", mkht(ht,"rjrVDiff A").c_str(), 100, -1, 1);
-    //hist1d[373] = new TH1D("rjrVSumcA", mkht(ht,"rjrVSum Ac").c_str(), 90, 0, 3600);
-    //hist1d[374] = new TH1D("selPhoNMBetaEqlcA", mkht(ht,"selPhoNMBetaEql A").c_str(), 100, 0, 2);
-    //hist1d[375] = new TH1D("selPhoNMBetaPmtcA", mkht(ht,"selPhoNMBetaPmt A").c_str(), 100, 0, 2);
+    //hist1d[370] = new TH1D("rjrMVacA", addstr(ht,"rjrMVa A").c_str(), 90, 0, 3600);
+    //hist1d[371] = new TH1D("rjrMVbcA", addstr(ht,"rjrMVb A").c_str(), 90, 0, 3600);
+    //hist1d[372] = new TH1D("rjrVDiffcA", addstr(ht,"rjrVDiff A").c_str(), 100, -1, 1);
+    //hist1d[373] = new TH1D("rjrVSumcA", addstr(ht,"rjrVSum Ac").c_str(), 90, 0, 3600);
+    //hist1d[374] = new TH1D("selPhoNMBetaEqlcA", addstr(ht,"selPhoNMBetaEql A").c_str(), 100, 0, 2);
+    //hist1d[375] = new TH1D("selPhoNMBetaPmtcA", addstr(ht,"selPhoNMBetaPmt A").c_str(), 100, 0, 2);
 
     //------ ecal rechits 300 - 349
 
     //------  electrons 350 - 400
 
 	//-------- event vars 400 - 450
-    hist1d[400] = new TH1D("evtMetE", mkht(ht,"evtMetE").c_str(), 150, 0, 1500 );
-    hist1d[401] = new TH1D("evtMetPt", mkht(ht,"evtMetPt ").c_str(), 150, 0, 1500 );	
-    hist1d[402] = new TH1D("evtRjrMetPt", mkht(ht,"evtRjrMetPt ").c_str(), 100, 0, 1500 );
-    hist1d[403] = new TH1D("evtRawMetPt", mkht(ht,"evtRawMetPt ").c_str(), 100, 0, 1500 );
+    hist1d[400] = new TH1D("evtMetE", addstr(ht,"evtMetE").c_str(), 150, 0, 1500 );
+    hist1d[401] = new TH1D("evtMetPt", addstr(ht,"evtMetPt ").c_str(), 150, 0, 1500 );	
+    hist1d[402] = new TH1D("evtRjrMetPt", addstr(ht,"evtRjrMetPt ").c_str(), 100, 0, 1500 );
+    hist1d[403] = new TH1D("evtRawMetPt", addstr(ht,"evtRawMetPt ").c_str(), 100, 0, 1500 );
 
     for( int it = 0; it < n1dHists; it++ ){ if(hist1d[it]) hist1d[it]->Sumw2();}
 
 	//------------------------------------------------------------------------------------------
     //------ 2D Hists --------------------------------------------------------------------------
 
-    hist2d[0] = new TH2D("ASMvAX2NQSum", mkht(ht,"ASMvAX2NQSum;rjrASMass;rjrX2ANQSum").c_str(), 48, 0, 12000, 25, 0, 1.0 );
-    hist2d[1] = new TH2D("ASMvAX2QSum", mkht(ht,"ASMvAX2QSum;rjrASMass;rjrAX2QSum").c_str(), 48, 0, 12000, 26, 0, 2600 );
-    hist2d[2] = new TH2D("ASMvVMass", mkht(ht,"ASMvVSum;rjrASMass;rjrVSum").c_str(), 48, 0, 12000, 26, 0, 2600 );
-    hist2d[3] = new TH2D("ASMvVDiff", mkht(ht,"ASMvVDiff;rjrASMass;rjrVDiff").c_str(), 48, 0, 12000, 25, -1.0, 1.0 );
+    hist2d[0] = new TH2D("ASMvAX2NQSum", addstr(ht,"ASMvAX2NQSum;rjrASMass;rjrX2ANQSum").c_str(), 48, 0, 12000, 25, 0, 1.0 );
+    hist2d[1] = new TH2D("ASMvAX2QSum", addstr(ht,"ASMvAX2QSum;rjrASMass;rjrAX2QSum").c_str(), 48, 0, 12000, 26, 0, 2600 );
+    hist2d[2] = new TH2D("ASMvVMass", addstr(ht,"ASMvVSum;rjrASMass;rjrVSum").c_str(), 48, 0, 12000, 26, 0, 2600 );
+    hist2d[3] = new TH2D("ASMvVDiff", addstr(ht,"ASMvVDiff;rjrASMass;rjrVDiff").c_str(), 48, 0, 12000, 25, -1.0, 1.0 );
 
 
-    hist2d[4] = new TH2D("AX2NQSumvVMass", mkht(ht,"AX2NQSumvVSum;rjrAX2NQSum;rjrVSum").c_str(), 25, 0, 1.0, 52, 0, 2600 );
-    hist2d[5] = new TH2D("AX2NQSumvVDiff", mkht(ht,"AX2NQSumvVDiff;rjrAX2NQSum;rjrVDiff").c_str(), 25, 0, 1.0, 25, -1.0, 1.0 );
-    hist2d[6] = new TH2D("AX2NQSumvAX2QSum", mkht(ht,"AX2NQSumvAX2QSum;rjrAX2NQSum;rjrX2AQSum").c_str(), 25, 0, 1.0, 26, 0, 2600 );
+    hist2d[4] = new TH2D("AX2NQSumvVMass", addstr(ht,"AX2NQSumvVSum;rjrAX2NQSum;rjrVSum").c_str(), 25, 0, 1.0, 52, 0, 2600 );
+    hist2d[5] = new TH2D("AX2NQSumvVDiff", addstr(ht,"AX2NQSumvVDiff;rjrAX2NQSum;rjrVDiff").c_str(), 25, 0, 1.0, 25, -1.0, 1.0 );
+    hist2d[6] = new TH2D("AX2NQSumvAX2QSum", addstr(ht,"AX2NQSumvAX2QSum;rjrAX2NQSum;rjrX2AQSum").c_str(), 25, 0, 1.0, 26, 0, 2600 );
 
-    hist2d[7] = new TH2D("AX2QSumvVMass", mkht(ht,"AX2QSumvVSum;rjrAX2QSum;rjrVSum").c_str(), 26, 0, 2600, 26, 0, 2600 );
-    hist2d[8] = new TH2D("AX2QSumvVDiff", mkht(ht,"AX2QSumvVDiff;rjrAX2QSum;rjrVDiff").c_str(), 26, 0, 2600, 25, -1.0, 1.0 );
+    hist2d[7] = new TH2D("AX2QSumvVMass", addstr(ht,"AX2QSumvVSum;rjrAX2QSum;rjrVSum").c_str(), 26, 0, 2600, 26, 0, 2600 );
+    hist2d[8] = new TH2D("AX2QSumvVDiff", addstr(ht,"AX2QSumvVDiff;rjrAX2QSum;rjrVDiff").c_str(), 26, 0, 2600, 25, -1.0, 1.0 );
 
-    hist2d[9] = new TH2D("VMassvVDiff", mkht(ht,"VSumvVDiff;rjrVSum;rjrVDiff").c_str(), 26, 0, 2600, 25, -1.0, 1.0 );
+    hist2d[9] = new TH2D("VMassvVDiff", addstr(ht,"VSumvVDiff;rjrVSum;rjrVDiff").c_str(), 26, 0, 2600, 25, -1.0, 1.0 );
 
 
 	//------- jets ( time ) 0-49 ------------------------------
@@ -610,8 +610,8 @@ int main ( int argc, char *argv[] ){
 			 	//std::string sigtype = "SqkSqk"; modtype = 11; //11
                 //std::string sigtype = "GluGlu"; modtype = 22; //22
                 //std::string sigtype = "SqkGlu"; modtype = 12; //12
-                std::string sigtype = "XinoXino"; modtype = 33; //33
-                //std::string sigtype = "SleptSlept"; modtype = 44; //44
+                //std::string sigtype = "XinoXino"; modtype = 33; //33
+                std::string sigtype = "SleptSlept"; modtype = 44; //44
                 //std::string sigtype = "BkGrd"; //0
 				std::string version = "_v21_";
 
