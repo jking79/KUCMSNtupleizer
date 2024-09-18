@@ -40,68 +40,12 @@ typedef const double CDbl;
 typedef const std::vector<float> CVFlt;
 typedef const std::vector<double> CVDbl;
 
-typedef int Int_t;
-typedef unsigned int UInt_t;
-
 #define SOL 29.9792458 // speed of light in cm/ns
 #define PI 3.14159265358979323846 // pie ...  
 
 //
 // Helper functions ( single line function defs, mostly )
 //
-
-enum ECAL {EB, EM, EP, NONE};
-
-struct DetIDStruct {
-    DetIDStruct() {}
-    DetIDStruct(const Int_t ni1, const Int_t ni2, const Int_t nTT, const Int_t & necal) : i1(ni1), i2(ni2), TT(nTT), ecal(necal){}
-    Int_t i1; // EB: iphi, EE: ix
-    Int_t i2; // EB: ieta, EE: iy
-    Int_t TT; // trigger tower
-    Int_t ecal; // EB, EM, EP
-};//<<>>struct DetIDStruct
-
-void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap ){
-
-    //const std::string detIDConfigEB("../test/fullinfo_detids_EB.txt");
-    const std::string detIDConfigEB("ecal_config/fullinfo_detids_EB.txt");
-
-    std::ifstream infile( detIDConfigEB, std::ios::in);
-
-    UInt_t cmsswId, dbID;
-    Int_t hashedId, iphi, ieta, absieta, FED, SM, TT25, iTT, strip5, Xtal, phiSM, etaSM;
-    std::string pos;
-
-    while (infile >> cmsswId >> dbID >> hashedId >> iphi >> ieta >> absieta >> pos >> FED >> SM >> TT25 >> iTT >> strip5 >> Xtal >> phiSM >> etaSM){
-        //std::cout << "DetID Input Line: " << cmsswId << " " << iphi << " "  << ieta << " " << 0 << std::endl;
-        DetIDMap[cmsswId] = {iphi,ieta,TT25,0};
-        //auto idinfo = DetIDMap[cmsswId];
-        //std::cout << "DetID set to : " << idinfo.i1 << " " << idinfo.i2 << " " << idinfo.ecal << std::endl;
-    }//while (infile >>
-
-}//<<>>void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap )
-
-void SetupDetIDsEE( std::map<UInt_t,DetIDStruct> &DetIDMap ){
-
-    //const std::string detIDConfigEE("../test/fullinfo_detids_EE.txt");
-    const std::string detIDConfigEE("ecal_config/fullinfo_detids_EE.txt");
-
-    std::ifstream infile( detIDConfigEE, std::ios::in);
-
-    UInt_t cmsswId, dbID;
-    Int_t hashedId, side, ix, iy, SC, iSC, Fed, TTCCU, strip, Xtal, quadrant;
-    std::string EE;
-
-    while (infile >> cmsswId >> dbID >> hashedId >> side >> ix >> iy >> SC >> iSC >> Fed >> EE >> TTCCU >> strip >> Xtal >> quadrant){
-        int ec = 1;
-        if( side > 0 ) ec = 2;
-        //std::cout << "DetID Input Line: " << cmsswId << " " << ix << " "  << iy << " " << ec << std::endl; 
-        DetIDMap[cmsswId] = {ix,iy,TTCCU,ec};
-        //auto idinfo = DetIDMap[cmsswId];
-        //std::cout << "DetID set to : " << idinfo.i1 << " " << idinfo.i2 << " " << idinfo.ecal << std::endl;
-    }//<<>>while (infile >>
-
-}//<<>>void SetupDetIDsEE( std::map<UInt_t,DetIDStruct> &DetIDMap )
 
 const auto sortByPt = [](auto & obj1, auto & obj2) {return obj1.pt() > obj2.pt();};
 
@@ -207,6 +151,8 @@ const float getATan2 ( const float x, const float y){
 }//<<>> const float getAngle (CFlt x, CFlt y) with atan2
 
 // math functions
+const auto pow      (CFlt x, int p){ float r = x; for( int i = 1; i < p; i++ ){ r *= x; } return (p>0)?r:0; }
+const auto pow      (CDbl x, int p){ double r = x; for( int i = 1; i < p; i++ ){ r *= x; } return (p>0)?r:0; }
 const auto accum    (CVFlt x){return std::accumulate(x.begin(),x.end(),0.0f);}
 const auto sq2      (CFlt x){return x*x;}
 const auto sq2      (CDbl x){return x*x;}
@@ -301,16 +247,7 @@ const auto wsincos  (CVFlt x, CVFlt wv){
 
 std::string addstr( std::string current, std::string input ){ return (current+input); }
 
-/*
-std::string mkht( std::string cat, std::string title){ 
-
-    //std::cout << "Input: " << cat << " & " << title << std::endl;
-	auto ret = cat+title;
-    //std::cout << "Output: " << ret << std::endl;
-	return ret;
-
-}//>><<const auto mkht( std::string cat, std::string title)
-*/
+std::string RemoveDelim(std::string tmp, const std::string & delim){return tmp.erase(tmp.find(delim),delim.length());}
 
 const auto splitString( std::string str, const char* separator ) {
 
@@ -338,6 +275,55 @@ template <typename T> std::string toString(T value){
    return os.str() ;
 
 }//<<>>template <typename T> std::string to_string(T value)
+
+void setBins(std::string & str, std::vector<double> & bins, bool & var_bins){
+
+    if(str.find("CONSTANT") != std::string::npos){
+
+        var_bins = false;
+        str = RemoveDelim(str,"CONSTANT");
+        int nbins = 0; double low = 0.f, high = 0.f;
+        std::stringstream ss(str);
+        ss >> nbins >> low >> high;
+        double bin_width = (high-low)/nbins;
+        for (Int_t ibin = 0; ibin <= nbins; ibin++){ bins.push_back(low+ibin*bin_width); }
+
+    } else if(str.find("VARIABLE") != std::string::npos) {
+
+        var_bins = true;
+        str = RemoveDelim(str,"VARIABLE");
+        double bin_edge;
+        std::stringstream ss(str);
+        std::cout << "Setting Var bins : ";
+        while(ss >> bin_edge){
+            std::cout << bin_edge << " ";
+            bins.push_back(bin_edge);
+        }//<<>>while (ss >> bin_edge)
+        std::cout << std::endl;
+
+    } else {
+
+        std::cerr << "Aye... bins are either VARIABLE or CONSTANT! Exiting..." << std::endl;
+        exit(1);
+
+    }//<<>>if      (str.find("CONSTANT") != std::string::npos)
+
+}//<<>>void setBins(std::string & str, std::vector<Double_t> & bins, Bool_t & var_bins)
+
+std::vector<double> setBins( std::string str ){
+
+	    double bin_edge;
+		std::vector<double> bins;
+        std::stringstream ss(str);
+        //std::cout << "Setting Var bins : ";
+        while(ss >> bin_edge){
+            //std::cout << bin_edge << " ";
+            bins.push_back(bin_edge);
+        }//<<>>while (ss >> bin_edge)
+        //std::cout << std::endl;
+		return bins;
+
+}//<<>>std::vector<double> setBins(std::string str )
 
 #endif
 //-------------------------------------------------------------------------------------------------------------------

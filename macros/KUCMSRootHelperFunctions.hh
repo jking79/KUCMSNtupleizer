@@ -60,9 +60,9 @@ void fillRatioHist(TH1D* numi, TH1D* denom, TH1D* result ){
         auto dcer = denom->GetBinError(ibin);
         auto ratio(0.0);
         auto rerr(0.0);
-        if( dc > 20 ){
+        if( dc > 0 ){
             ratio = nc/dc;
-            rerr = std::sqrt( sq2(ncer/dc)-(sq2(ratio)/dc) );
+            rerr = std::sqrt( sq2(ncer/dc) - (sq2(ratio)/dc) );
             //rerr = std::sqrt((sq2(ncer/dc)+sq2((nc/sq2(dc))*dcer))/dc);
         }//<<>>if( dc > 0 )
         result->SetBinContent(ibin,ratio);

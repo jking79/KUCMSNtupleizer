@@ -476,7 +476,35 @@ void KUCMSEcalRecHitObject::LoadEvent( const edm::Event& iEvent, const edm::Even
     //for( const auto &recHit : *recHitsEE_ ){ if(recHit.energy() > cfPrm("minRHEi")){ frechits.push_back(recHit); frhused.push_back(false);}}
     for( const auto &recHit : *recHitsEB_ ){ frechits.push_back(recHit); frhused.push_back(false);}
     for( const auto &recHit : *recHitsEE_ ){ frechits.push_back(recHit); frhused.push_back(false);}
+/*
+	std::string ConfigEB("/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/macros/ecal_config/fullinfo_detids_EE.txt");
+	std::string newConfigEB("/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/macros/ecal_config/fullinfo_v2_detids_EE.txt");
+	std::ifstream infile( ConfigEB, std::ios::in);
+    std::ofstream outfile( newConfigEB, std::ios::out);	
 
+    //UInt_t cmsswId, dbID;
+    //Int_t hashedId, iphi, ieta, absieta, FED, SM, TT25, iTT, strip5, Xtal, phiSM, etaSM;
+    //std::string pos;
+    UInt_t cmsswId, dbID;
+    Int_t hashedId, side, ix, iy, SC, iSC, Fed, TTCCU, strip, Xtal, quadrant;
+    std::string EE;
+	//for( uInt i = 838904321; i <= 838970216; i++ ){ 
+	//while (infile >> cmsswId >> dbID >> hashedId >> iphi >> ieta >> absieta >> pos >> FED >> SM >> TT25 >> iTT >> strip5 >> Xtal >> phiSM >> etaSM){
+    while (infile >> cmsswId >> dbID >> hashedId >> side >> ix >> iy >> SC >> iSC >> Fed >> EE >> TTCCU >> strip >> Xtal >> quadrant){
+
+		DetId thedetid(cmsswId);
+		//auto geometry( isEB ? barrelGeometry : endcapGeometry );
+        auto recHitPos = endcapGeometry->getGeometry(thedetid)->getPosition();
+        const float eta = recHitPos.eta();
+        const float phi = recHitPos.phi();
+		outfile << cmsswId << " " << dbID << " " << hashedId << " " << side << " " << ix << " " << iy << " " << SC;
+        outfile << " " << iSC << " " << Fed << " " << EE << " " << TTCCU << " " << strip << " " << Xtal << " " << quadrant;
+        outfile << " " << phi << " " << eta << std::endl;
+
+	}//<<>>for( uInt i = 838904321; i <= 838970216; i++ )
+	infile.close();
+	outfile.close();
+*/
     if( ERHODEBUG ) std::cout << "Collecting SuperClusters" << std::endl;
     fsupclstrs.clear();
     fscExclude.clear();

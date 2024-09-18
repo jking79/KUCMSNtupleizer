@@ -16,6 +16,7 @@
 #include "RestFrames/RestFrames.hh"
 #include "KUCMSHelperFunctions.hh"
 #include "KUCMSRootHelperFunctions.hh"
+#include "ecal_config/KUCMSEcalDetIDFunctions.hh"
 
 //#include "kucmsntuple_root_rebase_v3.hh"
 //#include "kucmsntuple_root_rebase_v15.hh"
