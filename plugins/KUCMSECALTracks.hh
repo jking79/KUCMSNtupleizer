@@ -73,6 +73,22 @@
 
 using namespace edm; 
 
+class trackSCMatch {
+
+public:
+  trackSCMatch(const reco::Track &track, const reco::SuperCluster &sc, double deltaR) :
+    track_(track), sc_(sc), deltaR_(deltaR) {}
+
+  reco::Track GetTrack() const {return track_;}
+  reco::SuperCluster GetSC() const {return sc_;}
+  double GetDeltaR() const {return deltaR_;}
+private:
+
+  reco::Track track_;
+  reco::SuperCluster sc_;
+  double deltaR_;  
+};
+
 class KUCMSECALTracks : public KUCMSObjectBase {
 
 public:
@@ -135,6 +151,8 @@ private:
   TrackDetectorAssociator trackAssociator_;
   TrackAssociatorParameters trackAssocParameters_;
 
+  std::vector<trackSCMatch> trackSCMatches_;
+
   template <typename T>
   void FillTrackBranches(PropagatedTracks<T> &propagatedTracks);
 
@@ -185,6 +203,9 @@ void KUCMSECALTracks::InitObject( TTree* fOutTree ){
   Branches.makeBranch("ECALTrackDetID_isHCAL", "ECALTrackDetID_isHCAL", VBOOL);
   Branches.makeBranch("ECALTrack_genIndex", "ECALTrack_genIndex", VINT);
   Branches.makeBranch("ECALTrack_pdgId", "ECALTrack_pdgId", VINT);
+
+  Branches.makeBranch("TrackSCMatch_scEnergyToTrackPRatio", "TrackSCMatch_scEnergyToTrackPRatio", VFLOAT);
+  Branches.makeBranch("TrackSCMatch_deltaR", "TrackSCMatch_deltaR", VFLOAT);
   Branches.attachBranches(fOutTree);
   
 }//<<>>void KUCMSECALTracks::InitObject( TTree* fOutTree )
@@ -215,6 +236,40 @@ void KUCMSECALTracks::LoadEvent( const edm::Event& iEvent, const edm::EventSetup
   generalECALTracks_ = generalTrackPropagator.GetPropagatedTracks();
   for(const auto &propTrack : generalECALTracks_) ecalTracks_.emplace_back(propTrack.GetTrack());
 
+  std::cout << "\nThis event: " << std::endl;
+  for(const auto &sc : *mergedSCsHandle_) {
+    const double scEta(sc.eta());
+    const double scPhi(sc.phi());
+    double minDeltaR(999.);
+
+    std::cout << "  SuperCluster Info: eta = " << scEta << ", phi = " << scPhi << ", energy = " << sc.correctedEnergy() << std::endl;
+
+    reco::Track matchedTrack;
+    int matchedID(-999);
+    for(const auto &propTrack : generalECALTracks_) {
+
+      const TrackDetMatchInfo detInfo(propTrack.GetDetInfo());
+      
+      for(const auto & detID : detInfo.crossedEcalIds) {
+	const GlobalPoint trackHitAtEcal(ecalGeometry.getGeometry(detID)->getPosition());
+
+	const double ecalEta(trackHitAtEcal.eta());
+	const double ecalPhi(trackHitAtEcal.phi());
+	const double deltaR(sqrt(reco::deltaR2(scEta, scPhi, ecalEta, ecalPhi)));
+
+	if(deltaR < minDeltaR) {
+	  minDeltaR = deltaR;
+	  matchedTrack = propTrack.GetTrack();
+	  matchedID = int(detID);
+	}
+      }
+    }
+    std::cout << "  Matched track: eta " << matchedTrack.eta() << ", phi = " << matchedTrack.phi() << ", p = " << matchedTrack.p() << std::endl;
+    std::cout << "    Match details: deltaR = " << minDeltaR << ", matched detID = " << matchedID << std::endl;
+    trackSCMatches_.emplace_back(trackSCMatch(matchedTrack, sc, minDeltaR));
+  }
+  
+  
 }//<<>>void KUCMSECALTracks::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
 void KUCMSECALTracks::PostProcessEvent( ItemManager<float>& geVar ){
@@ -227,6 +282,11 @@ void KUCMSECALTracks::PostProcessEvent( ItemManager<float>& geVar ){
   Branches.fillBranch("ECALTrack_nTracks", int(ecalTracks_.size()) );
   
   FillTrackBranches<reco::Track>(generalECALTracks_);
+
+  for(const auto &match : trackSCMatches_) {
+    Branches.fillBranch("TrackSCMatch_scEnergyToTrackPRatio", float(match.GetSC().correctedEnergy()/match.GetTrack().p()));
+    Branches.fillBranch("TrackSCMatch_deltaR", float(match.GetDeltaR()));
+  }
 }//<<>>void KUCMSECALTracks::PostProcessEvent()
 
 template <typename T>
