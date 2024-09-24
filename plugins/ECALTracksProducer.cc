@@ -198,7 +198,8 @@ void ECALTracksProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSet
 
   superClusters = RemoveOverlap<reco::SuperCluster, reco::SuperCluster>(superClusters, ootSuperClusters, 0.1);
   displacedElectronSCs->insert(displacedElectronSCs->end(), superClusters.begin(), superClusters.end());
-
+  displacedElectronSCs->insert(displacedElectronSCs->end(), ootSuperClusters.begin(), ootSuperClusters.end());
+  
   iEvent.put(std::move(ecalGeneralTracks), "ecalGeneralTracks");
   iEvent.put(std::move(ecalGsfTracks), "ecalGsfTracks");
   iEvent.put(std::move(ecalTracks), "ecalTracks");
