@@ -84,13 +84,13 @@ def docrab( dataset ):
 
         config.Data.partialDataset = True
         config.Data.inputDataset   = None
-        #config.Data.lumiMask       = inputJSON    # Comment out for MC only set for data !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        config.Data.lumiMask       = inputJSON    # Comment out for MC only set for data !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         #config.Data.splitting     = 'Automatic' # data
-        #config.Data.unitsPerJob   = 25000 # data  !!!!!! lumimask ?
+        config.Data.unitsPerJob   = 25000 # data  !!!!!! lumimask ?
         config.Data.splitting    = 'EventAwareLumiBased' # MC   Set unitsperjob correctly for dataset !!!!!!!!!!!!!!!!!!!!!!!!!!
         #config.Data.unitsPerJob  =  1500 # MC GMSB
         #config.Data.unitsPerJob  =  10000 # MC GJet
-        config.Data.unitsPerJob  =  15000 # MC QCD
+        #config.Data.unitsPerJob  =  15000 # MC QCD
         #config.Data.unitsPerJob  =  50000 # MC TTJet
         #config.Data.unitsPerJob  =  750 # MC DiPhoBox (DPB)
 
@@ -113,8 +113,8 @@ def docrab( dataset ):
             #primaryDataset = (inDO[0].split('/')[1]).split('_13T')[0]
             primaryDataset = (inDO[0].split('/')[1]).split('_Tune')[0]
             print( primaryDataset )
-            #runEra         = ((inDO[0].split('/')[2]).split('-')[0]+'_'+(inDO[0].split('/')[2]).split('-')[1]) # data
-            runEra         = ((inDO[0].split('/')[2]).split('_')[0]+'_'+(inDO[0].split('/')[2]).split('_')[1]).split('-PU')[0] # MC
+            runEra         = ((inDO[0].split('/')[2]).split('-')[0]+'_'+(inDO[0].split('/')[2]).split('-')[1]) # data
+            #runEra         = ((inDO[0].split('/')[2]).split('_')[0]+'_'+(inDO[0].split('/')[2]).split('_')[1]).split('-PU')[0] # MC
             #runEra         = ((inDO[0].split('/')[2]).split('-')[0]+'_'+(inDO[0].split('/')[2]).split('-')[1]).split('106')[0]
             print( runEra )
             dataset        = inDO[0].split('/')[3]
@@ -130,10 +130,11 @@ def docrab( dataset ):
 
             ##trial          = "kucmsntuple_JetHT_AOD_v144" #
             ##trial          = "kucmsntuple_JetHT_rhe1k_v14" #
-            #trial          = "kucmsntuple_MET_R17E_MET75_v20" #
-            #trial          = "kucmsntuple_DEG_R17_MET75_v20" #
-            #trial          = "kucmsntuple_JetHT_R17_v18" #
+            #trial          = "kucmsntuple_MET_R17_MET100_v21" #
+            #trial          = "kucmsntuple_DEG_R17_MET100_v21" #
+            trial          = "kucmsntuple_JetHT_R17_MET100_v21" #
             #trial          = "kucmsntuple_GMSB_R17_MET100_v21" # 
+            #trial          = "kucmsntuple_GMSB_R17_MET100_v23" # 
             ##trial          = "kucmsntuple_GMSB_rhe1k_v14" #
             #trial          = "kucmsntuple_GJETS_R17_v19" 
             #trial          = "kucmsntuple_GJETS_R17_MET100_v21"
@@ -144,7 +145,8 @@ def docrab( dataset ):
             ##trial          = "kucmsntuple_ZJETS_AOD_v5" #
             ##trial          = "kucmsntuple_QCD_AOD_v14B" #
             #trial          = "kucmsntuple_QCD_R17_v19" #
-            trial          = "kucmsntuple_QCD_R17_MET100_v21" #
+            #trial          = "kucmsntuple_QCD_R17_MET100_v21" #
+            #trial          = "kucmsntuple_DY_R17_MET100_v21" #
             ##trial          = "kucmsntuple_DYTT_AOD_v5" # 
             ##trial          = "kucmsntuple_DiPhoBox_AOD_v14"
 
@@ -156,7 +158,7 @@ def docrab( dataset ):
 
 #-----------------------------------------------------------------------------------------------------------------------------
 #>>>>>>>>>>>>>>>>>>>     #JetHT/Run2017B-17Nov2017-v1/AOD good for #globalTag=94X_dataRun2_ReReco_EOY17_v2
-            #config.JobType.pyCfgParams   = ['globalTag=94X_dataRun2_ReReco_EOY17_v2','outputFileName=output.root','hasGenInfo=False']
+            config.JobType.pyCfgParams   = ['globalTag=94X_dataRun2_ReReco_EOY17_v2','outputFileName=output.root','hasGenInfo=False']
 #>>>>>>>>>>>>>>>>>>>     #DoubleEG/Run2017*-09Aug2019_UL2017-v1/AOD good for #globalTag=106X_dataRun2_v20
             #config.JobType.pyCfgParams   = ['globalTag=106X_dataRun2_v20','outputFileName=output.root','hasGenInfo=False']
 #>>>>>>>>>>>>>>>>>>>     #DoubleEG/Run2017*-17Nov2017-v1/AOD good for #globalTag=94X_dataRun2_ReReco_EOY17_v2
@@ -187,11 +189,12 @@ def docrab( dataset ):
 #>>>>>>>>>>>>>>>>>>>     #MC GJets RunIIFall17DRPremix && RunIISummer20UL18RECO  !!!!! CHANGE UNITS PER JOB !!!!!!!
             ##config.JobType.pyCfgParams   = ['globalTag=106X_upgrade2018_realistic_v11_L1v1','outputFileName=output.root','hasGenInfo=True']
             #config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v11','outputFileName=output.root','hasGenInfo=True']
-#>>>>>>>>>>>>>>>>>>>     #MC QCD RunIIAutumn18DRPremix 102X_upgrade2018_realistic_v15  
+#>>>>>>>>>>>>>>>>>>>     #MC DY + QCD RunIIAutumn18DRPremix 102X_upgrade2018_realistic_v15  
             ##config.JobType.pyCfgParams   = ['globalTag=102X_upgrade2018_realistic_v15','outputFileName=output.root','hasGenInfo=True']
-            config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v11','outputFileName=output.root','hasGenInfo=True']
+            #config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v11','outputFileName=output.root','hasGenInfo=True']
 #>>>>>>>>>>>>>>>>>>>     #MC DiPhotonBox
             #config.JobType.pyCfgParams   = ['globalTag=106X_upgrade2018_realistic_v16_L1v1','outputFileName=output.root','hasGenInfo=True'] 
+
 
 #-----------------------------------------------------------------------------------------------------------------------------
             config.Data.inputDataset     = inDO[0]
@@ -260,7 +263,7 @@ def run_multi():
             #['/JetHT/Run2017C-17Nov2017-v1/AOD',''],
             #['/JetHT/Run2017D-17Nov2017-v1/AOD',''],
             #['/JetHT/Run2017E-17Nov2017-v1/AOD',''],
-            #['/JetHT/Run2017F-17Nov2017-v1/AOD',''],
+            ['/JetHT/Run2017F-17Nov2017-v1/AOD',''],
 
 
 			# Dataset : MET
@@ -310,14 +313,14 @@ def run_multi():
 
 			# PD: /DoubleEG/Run2017*-17Nov2017-v1/AOD
 
-            #['/DoubleEG/Run2017B-17Nov2017-v1/AOD',''],
-            #['/DoubleEG/Run2017D-17Nov2017-v1/AOD',''],
-            ['/DoubleEG/Run2017E-17Nov2017-v1/AOD',''],
-            #['/DoubleEG/Run2017F-17Nov2017-v1/AOD',''],
+            #['/DoubleEG/Run2017B-17Nov2017-v1/AOD',''],#15.2
+            #['/DoubleEG/Run2017D-17Nov2017-v1/AOD',''],#6.7
+            #['/DoubleEG/Run2017E-17Nov2017-v1/AOD',''],#17.9
+            #['/DoubleEG/Run2017F-17Nov2017-v1/AOD',''],#24.3
 
             # PD: /DoubleEG/Run2017*-09Aug2019_UL2017-v1/AOD
 
-            ['/DoubleEG/Run2017F-09Aug2019_UL2017-v1/AOD',''],
+            #['/DoubleEG/Run2017F-09Aug2019_UL2017-v1/AOD',''],
 
 			# Dataset: /SingleElectron/Run2017-09Aug2019_UL2017-/MINIAOD
 
@@ -414,7 +417,7 @@ def run_multi():
        #['/GMSB_L-150TeV_Ctau-1200cm_TuneCP5_13TeV-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v1/AODSIM'],
        #['/GMSB_L-150TeV_Ctau-200cm_TuneCP5_13TeV-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v1/AODSIM'],
        #['/GMSB_L-150TeV_Ctau-400cm_TuneCP5_13TeV-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v1/AODSIM'],
-       ['/GMSB_L-150TeV_Ctau-600cm_TuneCP5_13TeV-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v1/AODSIM'],
+       #['/GMSB_L-150TeV_Ctau-600cm_TuneCP5_13TeV-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v1/AODSIM'],
        #['/GMSB_L-150TeV_Ctau-800cm_TuneCP5_13TeV-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v1/AODSIM'],
 
        #['/GMSB_L-200TeV_Ctau-0_1cm_TuneCP5_13TeV-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v1/AODSIM'],
@@ -432,7 +435,7 @@ def run_multi():
        ##['/GMSB_L-250TeV_Ctau-0p001cm_TuneCP5_13TeV-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v1/AODSIM'],
        #['/GMSB_L-250TeV_Ctau-10000cm_TuneCP5_13TeV-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v1/AODSIM'],
        #['/GMSB_L-250TeV_Ctau-1000cm_TuneCP5_13TeV-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v1/AODSIM'],
-       #['/GMSB_L-250TeV_Ctau-10cm_TuneCP5_13TeV-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v1/AODSIM'],
+       ['/GMSB_L-250TeV_Ctau-10cm_TuneCP5_13TeV-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v1/AODSIM'],
        #['/GMSB_L-250TeV_Ctau-1200cm_TuneCP5_13TeV-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v1/AODSIM'],
        #['/GMSB_L-250TeV_Ctau-200cm_TuneCP5_13TeV-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v1/AODSIM'],
        #['/GMSB_L-250TeV_Ctau-400cm_TuneCP5_13TeV-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v1/AODSIM'],
@@ -506,11 +509,11 @@ def run_multi():
             #['/GJets_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM'],#258
             #['/GJets_HT-600ToInf_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM'],#85.18
 
+            ['/GJets_HT-40To100_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v2/AODSIM'],
+            ['/GJets_HT-100To200_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17DRPremix-94X_mc2017_realistic_v10-v2/AODSIM'],
             ['/GJets_HT-200To400_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v1/AODSIM'],
             ['/GJets_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v1/AODSIM'],
-            ['/GJets_HT-40To100_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v2/AODSIM'],
             ['/GJets_HT-600ToInf_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v1/AODSIM'],
-            ['/GJets_HT-100To200_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17DRPremix-PU2017_4cores5k_94X_mc2017_realistic_v11-v3/AODSIM'],
 
         ]
 
@@ -593,13 +596,9 @@ def run_multi():
 
         dsDYTT = [
 
-            ##['/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15-v1/AODSIM'],
-            ##['/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15_ext2-v1/AODSIM'],
-            ['/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v1/AODSIM'],
-            #['/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17DRPremix-RECOSIMstep_94X_mc2017_realistic_v10-v1/AODSIM'],#5349
-            ##['/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17DRPremix-RECOSIMstep_94X_mc2017_realistic_v10_ext1-v1/AODSIM'],
+            ['/DY1JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v1/AODSIM']
             ##['/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15_ext1-v2/AODSIM'],
-            ['/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v1/AODSIM'],#726.5
+            ##['/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v1/AODSIM'],#726.5
         ]  
 
         diPhoBox = [
@@ -618,13 +617,13 @@ def run_multi():
 
    
         #runDataset = doRedo
-        #runDataset = dsData
+        runDataset = dsData
         #runDataset = dsGMSB # !!!!  CHANGE UNITS PER JOB AND GT USED !!!!!!!
         #runDataset = dsGMSBMini
         #runDataset = dsGJET # !!!!  CHANGE UNITS PER JOB AND GT USED !!!!!!!
         #runDataset = dsWJET
         #runDataset = dsZJET
-        runDataset = dsQCD # !!!!  CHANGE UNITS PER JOB AND GT USED !!!!!!!
+        #runDataset = dsQCD # !!!!  CHANGE UNITS PER JOB AND GT USED !!!!!!!
         #runDataset = dsDYTT
         #runDataset = diPhoBox
 

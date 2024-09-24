@@ -287,7 +287,7 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
 	// select events to process and store
 	//--------------------------------------
 	auto saveToTree = eventSelection();	
-	if( saveToTree ){ processRJR(0,true); processRJR(1,false); }
+	if( saveToTree ){ processRJR(1,true); } // processRJR(1,false); }
 	return saveToTree;
 
 }//<<>>void KUCMSAodSkimmer::eventLoop( Long64_t entry )
@@ -375,6 +375,28 @@ void KUCMSAodSkimmer::processRechits(){
 
 	}//<<>>for( int it = 0; it < nRecHits; it++ )
 
+	auto nSCs = SuperCluster_nSuperCluster;
+	for( int it = 0; it < nSCs; it++ ){
+
+		bool oot = (*SuperCluster_isOot)[it];
+		bool exc = (*SuperCluster_excluded)[it];
+		bool orig = (*SuperCluster_original)[it];
+    	//hist1d[3] = new TH1D("sctype","SC !Orig, Orig, OOT, Excl",4,0,4);
+    	//hist1d[4] = new TH1D("scorigtype","Orig+OOT, Orig+!OOT, Orig+Exc, !Orig+OOT, !Orig+Exc, !Orig+!OOT",6,0,6);
+		if( orig ) hist1d[3]->Fill(1); else hist1d[3]->Fill(0);
+        if( oot ) hist1d[3]->Fill(2);
+        if( exc ) hist1d[3]->Fill(3);
+		if( orig && oot ) hist1d[4]->Fill(0);
+        if( orig && not oot ) hist1d[4]->Fill(1);
+        if( orig && exc ) hist1d[4]->Fill(2);
+        if( not orig && oot ) hist1d[4]->Fill(3);
+        if( not orig && not oot ) hist1d[4]->Fill(5);
+        if( not orig && exc ) hist1d[4]->Fill(4);
+		int xfill = orig ? 1 : 0;
+		int yfill = oot ? 1 : exc ? 2 : 0;
+		hist2d[1]->Fill(xfill,yfill);
+
+	}//<<>>for( int it = 0; it < nSCs; it++ )
 	// fill
 
 
@@ -932,7 +954,8 @@ void KUCMSAodSkimmer::processJets(){
         auto neHEF = (*Jet_neHEF)[it];
         auto neHM = (*Jet_neHM)[it];
 
-        float susId = 0; //*Jet_genLlpId)[it];
+        int qrkllpId = 0; //*Jet_genLlpId)[it];
+        int gjllpId = 0; //*Jet_genLlpId)[it];
         float jgdpt = 0; //*Jet_genDptMatch)[it];
         float jgdr = 0; //*Jet_genDrMatch)[it];
         float jge = 0; //*Jet_genEnergy)[it];
@@ -945,14 +968,15 @@ void KUCMSAodSkimmer::processJets(){
         float jgt = 0; //(*Jet_genTime)[it];
         float jgllpt = 0; //*Jet_genTimeLLP)[it];
         if( doGenInfo ){
-        	susId = (*Jet_genLlpId)[it];
+        	//qrkllpId = int((*Jet_genQrkLlpId)[it]);
+            gjllpId = int((*Jet_genLlpId)[it]);
         	jgdpt = (*Jet_genDptMatch)[it];
         	jgdr = (*Jet_genDrMatch)[it];
         	jge = (*Jet_genEnergy)[it];
         	jgeta = (*Jet_genEta)[it];
         	jgimpang = (*Jet_genImpactAngle)[it];
-        	llpdp = (*Jet_genLlpDp)[it];
-        	llpdr = (*Jet_genLlpDr)[it];
+        	//llpdp = (*Jet_genQrkLlpDp)[it];
+        	//llpdr = (*Jet_genQrkLlpDr)[it];
         	jgpt = (*Jet_genPt)[it];
         	jgtof = (*Jet_genTOF)[it];
         	jgt = (*Jet_genTime)[it];
@@ -982,7 +1006,8 @@ void KUCMSAodSkimmer::processJets(){
         seljetmass.push_back(mass);
 
 		// fill vectors
-		selJets.fillBranch( "selJetSusyId", susId );
+		selJets.fillBranch( "selJetGenLlpId", gjllpId );
+        selJets.fillBranch( "selJetQrkLlpId", qrkllpId );
 		selJets.fillBranch( "selJetQuality", quality );
         selJets.fillBranch( "selJetPt", pt);
         selJets.fillBranch( "selJetMass", mass);
@@ -1059,8 +1084,8 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     auto phoRMetCPy = geVars("metPy"); //selMet.getFLBranchValue("metPy");
 	float unCorMet = hypo(phoRMetCPx,phoRMetCPy);
 
-	int n_selphos = 1;
-	std::vector<RFKey> leadPhoJetKey;
+	int nSelPhos = 1;
+	//std::vector<RFKey> phoJetKey;
 	if( DEBUG ) std::cout << " - Loading Lead/SubLead Pho" << std::endl;
 	std::vector<RFKey> jetID;
 	if( type == 0 ){
@@ -1070,12 +1095,13 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 	else if( type == 1 ){
 		TLorentzVector phojet;
 		phojet.SetPtEtaPhiM( leadPhoPt, leadPhoEta, leadPhoPhi, 0 );
-		leadPhoJetKey.push_back( COMB_J->AddLabFrameFourVector(phojet) );
-    	jetID.push_back(leadPhoJetKey[0]);
+		//phoJetKey.push_back( COMB_J->AddLabFrameFourVector(phojet) );
+        jetID.push_back( COMB_J->AddLabFrameFourVector(phojet) );
+    	//jetID.push_back(phoJetKey[0]);
 	}//<<>>if( type == 1 )
 	else {  std::cout << " !!!!!!!!!!!!!!! Valid RJR Photon Processing Option Not Specified !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl; }
     if( nSelPhotons > 1 ){ 
-		n_selphos = 2;
+		nSelPhos = 2;
 		if( type == 0 ){
         	phoRMetCPx += subLeadPhoPt*std::cos(subLeadPhoPhi);
         	phoRMetCPy += subLeadPhoPt*std::sin(subLeadPhoPhi);
@@ -1083,7 +1109,9 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 		else if( type == 1 ){
 			TLorentzVector sphojet;
         	sphojet.SetPtEtaPhiM( subLeadPhoPt, subLeadPhoEta, subLeadPhoPhi, 0 );
-			jetID.push_back(COMB_J->AddLabFrameFourVector(sphojet));
+			//phoJetKey.push_back( COMB_J->AddLabFrameFourVector(sphojet) );
+            jetID.push_back( COMB_J->AddLabFrameFourVector(sphojet) );
+			//jetID.push_back(phoJetKey[1]);
 		}//<<>>if( type == 1 )
 	}//<<>>if( nSelPhotons > 1 )
 
@@ -1122,22 +1150,43 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 	if( DEBUG ) std::cout << " - Getting RJR varibles." << std::endl;
 	// ---------  Finished Processing RJR varibles --------------------------------------------------------------------
 
+	uInt firstObject = 0;
+	if( type == 1 ) firstObject = ( nSelPhos == 2 ) ? 2 : 1 ;
 	int nJetsJa = 0;
 	int nJetsJb = 0;
 	bool sideAisA = true;	
-	if( type == 1 ){ if( COMB_J->GetFrame(leadPhoJetKey[0]) == *Jb ) sideAisA = false; }
-	else if( COMB_J->GetFrame(leadJetKey[0]) == *Jb ) sideAisA = false;
-    for( uInt it = 0; it < nSelJets; it++ ){	
+	int subPhoLocation = 0;
+	int nVisObjects = jetID.size();
+	//if( type == 1 ){ if( COMB_J->GetFrame(jetID[it]) == *Jb ) sideAisA = false; } //else 
+	if( COMB_J->GetFrame(jetID[0]) == *Jb ) sideAisA = false;
+    for( uInt it = firstObject; it < nVisObjects; it++ ){	
 
         if( COMB_J->GetFrame(jetID[it]) == *Ja ){ sideAisA ? nJetsJa++ : nJetsJb++; } // one for each frame 
-        if( COMB_J->GetFrame(jetID[it]) == *Jb ){ sideAisA ? nJetsJb++ : nJetsJa++; } // one for each frame 
+		else { sideAisA ? nJetsJb++ : nJetsJa++; }
+        //if( COMB_J->GetFrame(jetID[it]) == *Jb ){ sideAisA ? nJetsJb++ : nJetsJa++; } // one for each frame 
 
 	}//<<>>for( int i = 0; i < nSelJets; i++ )
+	float abDiffSide = sideAisA ? 1 : -1;
+	if( type == 1 && nSelPhos == 2 ) subPhoLocation = ( COMB_J->GetFrame(jetID[1]) == *Ja ) ? 1 : 2;
 
+/*  complicated bs that is not need with good logic
+	if( type == 1 ){
+		if( sideAisA ) nJetsJa -= 1; else nJetsJb -= 1;
+		if( nSelPhos == 2 ){ 
+			if( COMB_J->GetFrame(phoJetKey[1]) == *Ja ){ nJetsJa -= 1; subPhoLocation = 1; } 
+			else { nJetsJb -= 1; subPhoLocation = 2; }
+			//else if( COMB_J->GetFrame(leadPhoJetKey[1]) == *Jb ){ nJetsJb -= 1; subPhoLocation = 2; } 
+		}//<<>>if( nSelPhotons > 1 )
+	}//<<>>if( type == 1 )
+*//////////////////////////////////////////////////////
+
+    selRjrVars.fillBranch( "rjrABSide", sideAisA );
     selRjrVars.fillBranch( "rjrNJetsJa", nJetsJa );
     selRjrVars.fillBranch( "rjrNJetsJb", nJetsJb );
-    selRjrVars.fillBranch( "rjrNRjrJets", int(nSelJets) );
-    selRjrVars.fillBranch( "rjrNRjrPhotons", n_selphos );
+    selRjrVars.fillBranch( "rjrNJets", int(nSelJets) );
+    selRjrVars.fillBranch( "rjrNPhotons", nSelPhos );
+    selRjrVars.fillBranch( "rjrNVisObjects", nVisObjects );
+    selRjrVars.fillBranch( "rjrSubPhoLocation", subPhoLocation );
 
   	float m_MS = S->GetMass();
   	//float m_PS = S->GetMomentum(*CM);
@@ -1172,7 +1221,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 	float X2NAve = X2Ave/m_MS;
     float X2GMean = std::sqrt(m_MX2a*m_MX2b);
     float X2NGMean = X2GMean/m_MS;
-    float X2Diff = (m_MX2a-m_MX2b)/(m_MX2a+m_MX2b);
+    float X2Diff = abDiffSide*(m_MX2a-m_MX2b)/(m_MX2a+m_MX2b);
 
     selRjrVars.fillBranch( "rjrX2NQSum", X2NQSum );
     selRjrVars.fillBranch( "rjrX2NAve", X2NAve );
@@ -1221,7 +1270,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     float AX2NAve = 2*AX2Ave/a_MS;//*2 sch tath 0-1
     float AX2GMean = std::sqrt(a_MX2a*a_MX2b);
     float AX2NGMean = 2*AX2GMean/a_MS;
-    float AX2Diff = (a_MX2a-a_MX2b)/(a_MX2a+a_MX2b);
+    float AX2Diff = abDiffSide*(a_MX2a-a_MX2b)/(a_MX2a+a_MX2b);
 
     float pf_ptX2a = X2a->GetMomentum(*S);
     float pf_ptX2b = X2b->GetMomentum(*S);
@@ -1267,7 +1316,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
   	//float m_MVb = X2b->GetListVisibleFrames().GetMass();
     float m_MVb = Jb->GetMass();
 
-    float m_MVDiff = (m_MVa-m_MVb)/(m_MVa+m_MVb);
+    float m_MVDiff = abDiffSide*(m_MVa-m_MVb)/(m_MVa+m_MVb);
     float m_MVSum = std::sqrt((sq2(m_MVa)+sq2(m_MVb))/2);
 
     selRjrVars.fillBranch( "rjrMVDiff", m_MVDiff );
@@ -1580,7 +1629,8 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     //selJets.makeBranch( "JetHt", &JetHt );
     selJets.makeBranch( "nJets", UINT );
     selJets.makeBranch( "nSelJets", UINT );
-    selJets.makeBranch( "selJetSusyId", VFLOAT ); 
+    selJets.makeBranch( "selJetGenLlpId", VINT ); 
+    selJets.makeBranch( "selJetQrkLlpId", VINT );
     selJets.makeBranch( "selJetQuality", VINT ); 
     selJets.makeBranch( "selJetPt", VFLOAT ); 
     selJets.makeBranch( "selJetEnergy", VFLOAT );
@@ -1641,9 +1691,12 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     selRjrVars.makeBranch( "rjrMVa", VFLOAT );
     selRjrVars.makeBranch( "rjrMVb", VFLOAT );
 
-    selRjrVars.makeBranch( "rjrNRjrPhotons", VINT );
+    selRjrVars.makeBranch( "rjrNPhotons", VINT );
     selRjrVars.makeBranch( "rjrMET", VFLOAT );
-    selRjrVars.makeBranch( "rjrNRjrJets", VINT );
+    selRjrVars.makeBranch( "rjrNJets", VINT );
+    selRjrVars.makeBranch( "rjrSubPhoLocation", VINT);
+    selRjrVars.makeBranch( "rjrNVisObjects", VINT );
+    selRjrVars.makeBranch( "rjrABSide", VBOOL );
 
     selRjrVars.makeBranch( "rjrPVlab", VFLOAT );
     selRjrVars.makeBranch( "rjrDphiMETV", VFLOAT );
@@ -1731,6 +1784,9 @@ void KUCMSAodSkimmer::initHists(){
 	hist1d[0] = new TH1D("ecalrhenergy0", "RecHit Energy;rechit E [GeV]",1000,0,1000);
     hist1d[1] = new TH1D("ecalrhenergy1", "RecHit Energy;rechit E [GeV]",200,0,20);
     hist1d[2] = new TH1D("ecalrhenergy2", "RecHit Energy;rechit E [GeV]",200,0,2);
+    hist1d[3] = new TH1D("sctype","SC !Orig, Orig, OOT, Excl",4,0,4);
+    hist1d[4] = new TH1D("scorigtype","Orig+OOT, Orig+!OOT, Orig+Exc, !Orig+OOT, !Orig+Exc, !Orig+!OOT",6,0,6);
+
 
     ////hist1d[100] = new TH1D("genPhoPt", "genPhoPt;Pt [GeV]",500,0,1000);
 
@@ -1740,7 +1796,8 @@ void KUCMSAodSkimmer::initHists(){
     //------ 2D Hists --------------------------------------------------------------------------
 
     ////hist2d[1] = new TH2D("jetDrMuTime_pt", "jetDrMuTime_pt", jtdiv, -1*jtran, jtran, 500, 0, 500);
- 
+	hist2d[1] = new TH2D("scorigcross", "SC Types;Mian-Orig;Std-OOT-Excluded", 2, 0, 2, 3, 0, 3); 
+
 	//------------------------------------------------------------------------------------------
     //------ 3D Hists --------------------------------------------------------------------------
 

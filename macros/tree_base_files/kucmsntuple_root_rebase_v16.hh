@@ -54,6 +54,7 @@ public :
    std::vector<float>   *SuperCluster_energyRaw;
    std::vector<float>   *SuperCluster_etaWidth;
    std::vector<bool>    *SuperCluster_excluded;
+   std::vector<bool>    *SuperCluster_original;
    std::vector<bool>    *SuperCluster_seedIsEB;
    std::vector<bool>    *SuperCluster_isScEtaEB;
    std::vector<bool>    *SuperCluster_isScEtaEE;
@@ -136,9 +137,12 @@ public :
    std::vector<float>   *Jet_genEnergy;
    std::vector<float>   *Jet_genEta;
    std::vector<float>   *Jet_genImpactAngle;
-   std::vector<float>   *Jet_genLlpDp;
-   std::vector<float>   *Jet_genLlpDr;
-   std::vector<float>   *Jet_genLlpId;
+
+   std::vector<float>   *Jet_genQrkLlpDp;
+   std::vector<float>   *Jet_genQrkLlpDr;
+   std::vector<int>   *Jet_genQrkLlpId;
+   std::vector<int>   *Jet_genLlpId;
+
    std::vector<float>   *Jet_genPhi;
    std::vector<float>   *Jet_genPt;
    std::vector<float>   *Jet_genTOF;
@@ -236,6 +240,7 @@ public :
    TBranch        *b_SuperCluster_energyRaw;   //!
    TBranch        *b_SuperCluster_etaWidth;   //!
    TBranch        *b_SuperCluster_excluded;   //!
+   TBranch        *b_SuperCluster_original;   //!
    TBranch        *b_SuperCluster_seedIsEB;   //!
    TBranch        *b_SuperCluster_isScEtaEB;   //!
    TBranch        *b_SuperCluster_isScEtaEE;   //!
@@ -313,19 +318,24 @@ public :
    TBranch        *b_Jet_drRhIds;   //!
    TBranch        *b_Jet_energy;   //!
    TBranch        *b_Jet_eta;   //!
+
    TBranch        *b_Jet_genDptMatch;   //!
    TBranch        *b_Jet_genDrMatch;   //!
    TBranch        *b_Jet_genEnergy;   //!
    TBranch        *b_Jet_genEta;   //!
    TBranch        *b_Jet_genImpactAngle;   //!
-   TBranch        *b_Jet_genLlpDp;   //!
-   TBranch        *b_Jet_genLlpDr;   //!
+
+   TBranch        *b_Jet_genQrkLlpDp;   //!
+   TBranch        *b_Jet_genQrkLlpDr;   //!
+   TBranch        *b_Jet_genQrkLlpId;   //!
    TBranch        *b_Jet_genLlpId;   //!
+
    TBranch        *b_Jet_genPhi;   //!
    TBranch        *b_Jet_genPt;   //!
    TBranch        *b_Jet_genTOF;   //!
    TBranch        *b_Jet_genTime;   //!
    TBranch        *b_Jet_genTimeLLP;   //!
+
    TBranch        *b_Jet_mass;   //!
    TBranch        *b_Jet_muEF;   //!
    TBranch        *b_Jet_neEmEF;   //!
@@ -489,6 +499,7 @@ void root_base::Init(TTree *tree, bool doGenInfo )
    SuperCluster_energyRaw = 0;
    SuperCluster_etaWidth = 0;
    SuperCluster_excluded = 0;
+   SuperCluster_original = 0;
    SuperCluster_seedIsEB = 0;
    SuperCluster_isScEtaEB = 0;
    SuperCluster_isScEtaEE = 0;
@@ -560,8 +571,9 @@ void root_base::Init(TTree *tree, bool doGenInfo )
    Jet_genEnergy = 0;
    Jet_genEta = 0;
    Jet_genImpactAngle = 0;
-   Jet_genLlpDp = 0;
-   Jet_genLlpDr = 0;
+   Jet_genQrkLlpDp = 0;
+   Jet_genQrkLlpDr = 0;
+   Jet_genQrkLlpId = 0;
    Jet_genLlpId = 0;
    Jet_genPhi = 0;
    Jet_genPt = 0;
@@ -654,6 +666,7 @@ void root_base::Init(TTree *tree, bool doGenInfo )
    fChain->SetBranchAddress("SuperCluster_energyRaw", &SuperCluster_energyRaw, &b_SuperCluster_energyRaw);
    fChain->SetBranchAddress("SuperCluster_etaWidth", &SuperCluster_etaWidth, &b_SuperCluster_etaWidth);
    fChain->SetBranchAddress("SuperCluster_excluded", &SuperCluster_excluded, &b_SuperCluster_excluded);
+   fChain->SetBranchAddress("SuperCluster_original", &SuperCluster_original, &b_SuperCluster_original);
    fChain->SetBranchAddress("SuperCluster_seedIsEB", &SuperCluster_seedIsEB, &b_SuperCluster_seedIsEB);
    fChain->SetBranchAddress("SuperCluster_isScEtaEB", &SuperCluster_isScEtaEB, &b_SuperCluster_isScEtaEB);
    fChain->SetBranchAddress("SuperCluster_isScEtaEE", &SuperCluster_isScEtaEE, &b_SuperCluster_isScEtaEE);
@@ -744,8 +757,9 @@ void root_base::Init(TTree *tree, bool doGenInfo )
    fChain->SetBranchAddress("Jet_genEnergy", &Jet_genEnergy, &b_Jet_genEnergy);
    fChain->SetBranchAddress("Jet_genEta", &Jet_genEta, &b_Jet_genEta);
    fChain->SetBranchAddress("Jet_genImpactAngle", &Jet_genImpactAngle, &b_Jet_genImpactAngle);
-   fChain->SetBranchAddress("Jet_genLlpDp", &Jet_genLlpDp, &b_Jet_genLlpDp);
-   fChain->SetBranchAddress("Jet_genLlpDr", &Jet_genLlpDr, &b_Jet_genLlpDr);
+   //fChain->SetBranchAddress("Jet_genQrkLlpDp", &Jet_genQrkLlpDp, &b_Jet_genQrkLlpDp);
+   //fChain->SetBranchAddress("Jet_genQrkLlpDr", &Jet_genQrkLlpDr, &b_Jet_genQrkLlpDr);
+   //fChain->SetBranchAddress("Jet_genQrkLlpId", &Jet_genQrkLlpId, &b_Jet_genQrkLlpId);
    fChain->SetBranchAddress("Jet_genLlpId", &Jet_genLlpId, &b_Jet_genLlpId);
    fChain->SetBranchAddress("Jet_genPhi", &Jet_genPhi, &b_Jet_genPhi);
    fChain->SetBranchAddress("Jet_genPt", &Jet_genPt, &b_Jet_genPt);
@@ -856,6 +870,7 @@ void root_base::getBranches( Long64_t entry, bool doGenInfo ){
    b_SuperCluster_energyRaw->GetEntry(entry);   //!
    b_SuperCluster_etaWidth->GetEntry(entry);   //!
    b_SuperCluster_excluded->GetEntry(entry);   //!
+   b_SuperCluster_original->GetEntry(entry);   //!
    b_SuperCluster_seedIsEB->GetEntry(entry);   //!
    b_SuperCluster_isScEtaEB->GetEntry(entry);   //!
    b_SuperCluster_isScEtaEE->GetEntry(entry);   //!
@@ -948,8 +963,9 @@ void root_base::getBranches( Long64_t entry, bool doGenInfo ){
    b_Jet_genEnergy->GetEntry(entry);   //!
    b_Jet_genEta->GetEntry(entry);   //!
    b_Jet_genImpactAngle->GetEntry(entry);   //!
-   b_Jet_genLlpDp->GetEntry(entry);   //!
-   b_Jet_genLlpDr->GetEntry(entry);   //!
+   //b_Jet_genQrkLlpDp->GetEntry(entry);   //!
+   //b_Jet_genQrkLlpDr->GetEntry(entry);   //!
+   //b_Jet_genQrkLlpId->GetEntry(entry);   //!
    b_Jet_genLlpId->GetEntry(entry);   //!
    b_Jet_genPhi->GetEntry(entry);   //!
    b_Jet_genPt->GetEntry(entry);   //!

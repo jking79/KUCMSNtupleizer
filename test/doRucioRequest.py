@@ -158,15 +158,20 @@ met_list = [
 
 ]
 
-deg_list = [ 'cms:/DoubleEG/Run2017D-17Nov2017-v1/AOD', ]
+deg_list = [
+
+    'cms:/DoubleEG/Run2017D-17Nov2017-v1/AOD',
+    #'cms:/DoubleEG/Run2017E-17Nov2017-v1/AOD', 
+    #'cms:/DoubleEG/Run2017F-17Nov2017-v1/AOD',
+]
 
 dy_list = [ 'cms:/DY1JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v1/AODSIM' ]
 
 #runlist = dy_list
-#runlist = deg_list
+runlist = deg_list
 #runlist = qcd_list
 #runlist = gjets_list
-runlist = gmsb_list
+#runlist = gmsb_list
 #runlist = met_list
 for thefile in runlist :
 

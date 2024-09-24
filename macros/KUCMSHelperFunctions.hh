@@ -286,7 +286,7 @@ void setBins(std::string & str, std::vector<double> & bins, bool & var_bins){
         std::stringstream ss(str);
         ss >> nbins >> low >> high;
         double bin_width = (high-low)/nbins;
-        for (Int_t ibin = 0; ibin <= nbins; ibin++){ bins.push_back(low+ibin*bin_width); }
+        for (int ibin = 0; ibin <= nbins; ibin++){ bins.push_back(low+ibin*bin_width); }
 
     } else if(str.find("VARIABLE") != std::string::npos) {
 

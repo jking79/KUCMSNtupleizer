@@ -28,7 +28,7 @@ eosll = 'eos root://cmseos.fnal.gov ls '
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_QCD_R17_MET75_v20/'
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_DEG_R17_v18/'
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_MET_R17E_MET75_v20/'
-command = eosll+mdis+'KUCMSNtuple/kucmsntuple_GMSB_R17_MET100_v21/'
+command = eosll+mdis+'KUCMSNtuple/kucmsntuple_GMSB_R17_MET100_v23/'
 
 #version = 'Run2018D'
 #version = 'GJets'
@@ -135,7 +135,7 @@ for line2 in targdirs :
     		if rootfile in lline : filelist.append(subdir2+lline)
    
     select =  line2.split("Tune")
-    outfile = 'kuntuple_' + select[0] + '_Met100_R17_v21.txt'
+    outfile = 'kuntuple_' + select[0] + '_Met100_R17_v22.txt'
     #print( outfile )
     outf = open( outfile, 'w' )
     for thefile in filelist:

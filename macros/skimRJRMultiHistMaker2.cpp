@@ -635,9 +635,9 @@ int main ( int argc, char *argv[] ){
                 //std::string ofnending = "wt2_RjrSkim_v21_phomet_c1a_multiHists.root"; float jrjtype = 0; // 1 = phojet, 0 = phomet
 
                 //std::string ofnending = "wt2_RjrSkim_v22_rawmet_phojet_ztc2_multiHists.root"; float jrjtype = 1; // 1 = phojet, 0 = phomet
-                //std::string ofnending = "wt2_RjrSkim_v22_ootmet_phojet_ztc4_multiHists.root"; float jrjtype = 1; // 1 = phojet, 0 = phomet
+                std::string ofnending = "wt2_RjrSkim_v24_ootmet_phojet_multiHists.root"; float jrjtype = 1; // 1 = phojet, 0 = phomet
                 //std::string ofnending = "wt2_RjrSkim_v22_rawmet_phomet_ztc2_multiHists.root"; float jrjtype = 0; // 1 = phojet, 0 = phomet
-                std::string ofnending = "wt2_RjrSkim_v24_ootmet_phomet_multiHists.root"; float jrjtype = 0; // 1 = phojet, 0 = phomet
+                //std::string ofnending = "wt2_RjrSkim_v24_ootmet_phomet_multiHists.root"; float jrjtype = 0; // 1 = phojet, 0 = phomet
 
 
                 std::string htitled = "DEG_v19_";
@@ -688,13 +688,13 @@ int main ( int argc, char *argv[] ){
                 std::string htitle5s =  htitle5 + isoline;
                 std::string htitle6s =  htitle6 + isoline;
 
-                base.histMaker( listdir, infilename0, outfilenames0, htitle0s, 0, modtype, nphos, rjrcut, rjrcut2 );
-                base.histMaker( listdir, infilename1, outfilenames1, htitle1s, 0, modtype, nphos, rjrcut, rjrcut2 );
-                base.histMaker( listdir, infilename2, outfilenames2, htitle2s, 0, modtype, nphos, rjrcut, rjrcut2 );
-                base.histMaker( listdir, infilename3, outfilenames3, htitle3s, 0, modtype, nphos, rjrcut, rjrcut2 );
-                base.histMaker( listdir, infilename4, outfilenames4, htitle4s, 0, modtype, nphos, rjrcut, rjrcut2 );
-                base.histMaker( listdir, infilename5, outfilenames5, htitle5s, 0, modtype, nphos, rjrcut, rjrcut2 );
-                base.histMaker( listdir, infilename6, outfilenames6, htitle6s, 0, modtype, nphos, rjrcut, rjrcut2 );
+                base.histMaker( listdir, infilename0, outfilenames0, htitle0s, jrjtype, modtype, nphos, rjrcut, rjrcut2 );
+                base.histMaker( listdir, infilename1, outfilenames1, htitle1s, jrjtype, modtype, nphos, rjrcut, rjrcut2 );
+                base.histMaker( listdir, infilename2, outfilenames2, htitle2s, jrjtype, modtype, nphos, rjrcut, rjrcut2 );
+                base.histMaker( listdir, infilename3, outfilenames3, htitle3s, jrjtype, modtype, nphos, rjrcut, rjrcut2 );
+                base.histMaker( listdir, infilename4, outfilenames4, htitle4s, jrjtype, modtype, nphos, rjrcut, rjrcut2 );
+                base.histMaker( listdir, infilename5, outfilenames5, htitle5s, jrjtype, modtype, nphos, rjrcut, rjrcut2 );
+                base.histMaker( listdir, infilename6, outfilenames6, htitle6s, jrjtype, modtype, nphos, rjrcut, rjrcut2 );
 
                 ////base.histMaker( listdir, infilename1, outfilenames100, htitles100, jrjtype, 30, nphos, rjrcut, rjrcut2 );
                 ////base.histMaker( listdir, infilename3, outfilenames300, htitles300, jrjtype, 30, nphos, rjrcut, rjrcut2 );

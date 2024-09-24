@@ -178,9 +178,11 @@ void KUCMSAK4JetObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("GenTimeLLP","Jet_genTimeLLP",VFLOAT);
     Branches.makeBranch("GenTOF","Jet_genTOF",VFLOAT);
 
-    Branches.makeBranch("GenLlpId","Jet_genLlpId",VFLOAT);
-    Branches.makeBranch("GenLlpDr","Jet_genLlpDr",VFLOAT);
-    Branches.makeBranch("GenLlpDp","Jet_genLlpDp",VFLOAT);
+    Branches.makeBranch("GenQrkLlpId","Jet_genQrkLlpId",VINT);
+    Branches.makeBranch("GenQrkLlpDr","Jet_genQrkLlpDr",VFLOAT);
+    Branches.makeBranch("GenQrkLlpDp","Jet_genQrkLlpDp",VFLOAT);
+
+    Branches.makeBranch("GenLlpId","Jet_genLlpId",VINT);
 
     Branches.attachBranches(fOutTree);
 
@@ -326,9 +328,10 @@ void KUCMSAK4JetObject::ProcessEvent( ItemManager<float>& geVar ){
             Branches.fillBranch("GenTOF",genJetInfo[10]);
             //Branches.fillBranch("goodDr",genJetInfo[11]);
             //Branches.fillBranch("goodDpt",genJetInfo[12]);
-            Branches.fillBranch("GenLlpId",genJetInfo[13]);
-            Branches.fillBranch("GenLlpDr",genJetInfo[14]);
-            Branches.fillBranch("GenLlpDp",genJetInfo[15]);
+            Branches.fillBranch("GenQrkLlpId",int(genJetInfo[13]));
+            Branches.fillBranch("GenQrkLlpDr",genJetInfo[14]);
+            Branches.fillBranch("GenQrkLlpDp",genJetInfo[15]);
+            Branches.fillBranch("GenLlpId",int(genJetInfo[16]));
 
         }//<<>>if( hasGenInfo )
         if(AK4JetDEBUG ) std::cout << "Next Jet .......................... " << std::endl;

@@ -540,20 +540,20 @@ void KUCMSEcalRecHitObject::LoadEvent( const edm::Event& iEvent, const edm::Even
             fscOType.push_back(0);
             fscPhoIndx.push_back(-1);
             fscEleIndx.push_back(-1);
-            fscExclude.push_back(false);
+            fscExclude.push_back(true);
         	fscOriginal.push_back(true);
         }//<<>>if( not skip )
     }//<<>>for( const auto &supclstr : *superCluster_ )
     for( const auto &ootSupclstr : *ootSuperCluster_ ){
         if(ootSupclstr.energy() < cfPrm("minSCE")) continue;
         int found = -1;
-		int matched = -1;
+		//int matched = -1;
 		int icnt = 0;
-        double minDr(10.0);
-        double dRmatch(10.0);
+        //double minDr(10.0);
+        //double dRmatch(10.0);
         //float matchpt(0);
-        auto pEta = ootSupclstr.eta();
-        auto pPhi = ootSupclstr.phi();
+        //auto pEta = ootSupclstr.eta();
+        //auto pPhi = ootSupclstr.phi();
         const auto & pSeedDetId = ootSupclstr.seed()->seed(); // get seed detid 
         const auto pSeedRawID = pSeedDetId.rawId();
         for( const auto &fsc : fsupclstrs ){
@@ -561,13 +561,13 @@ void KUCMSEcalRecHitObject::LoadEvent( const edm::Event& iEvent, const edm::Even
             const auto fSeedRawID = fSeedDetId.rawId();
             if( pSeedRawID == fSeedRawID ){ found = icnt; }
             //if( cfFlag("onlyEB") && ootPho.isEE() ) continue;
-            auto fEta = fsc.eta();
-            auto fPhi = fsc.phi();
-            dRmatch = std::sqrt(reco::deltaR2( pEta, pPhi, fEta, fPhi ));
-            if( dRmatch < minDr && found != icnt ){ minDr = dRmatch; matched = icnt; }
+            //auto fEta = fsc.eta();
+            //auto fPhi = fsc.phi();
+            //dRmatch = std::sqrt(reco::deltaR2( pEta, pPhi, fEta, fPhi ));
+            //if( dRmatch < minDr && found != icnt ){ minDr = dRmatch; matched = icnt; }
 			icnt++;
         }//<<>>for( int ip; ip < nPhotons; ip++ )
-		if( minDr < 0.05 ) fscExclude[matched] = true;
+		//if( minDr < 0.05 ) fscExclude[matched] = true;
         if( found == -1 ){
             fsupclstrs.push_back(ootSupclstr);
             fscIsOOT.push_back(true);

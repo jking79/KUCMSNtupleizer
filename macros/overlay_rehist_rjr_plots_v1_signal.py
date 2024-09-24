@@ -168,21 +168,27 @@ islogy = True
 
 #---------------------------------------------------------------
 
-model = "GluGlu"
+#model = "GluGlu"
 #model = "SqkSqk"
 #model = "SqkGlu"
 #model = "XinoXino"
+model = "Bkgrd"
 
-sig100 = "rjr_multihist_files/KUCMS_GMSB_L100_"+model+"_v20_genSigPerfect_nSigPho1_wt2_RjrSkim_v24_ootmet_phomet_multiHists.root"
-sig150 = "rjr_multihist_files/KUCMS_GMSB_L150_"+model+"_v20_genSigPerfect_nSigPho1_wt2_RjrSkim_v24_ootmet_phomet_multiHists.root"
-sig200 = "rjr_multihist_files/KUCMS_GMSB_L200_"+model+"_v20_genSigPerfect_nSigPho1_wt2_RjrSkim_v24_ootmet_phomet_multiHists.root"
-sig250 = "rjr_multihist_files/KUCMS_GMSB_L250_"+model+"_v20_genSigPerfect_nSigPho1_wt2_RjrSkim_v24_ootmet_phomet_multiHists.root"
-sig300 = "rjr_multihist_files/KUCMS_GMSB_L300_"+model+"_v20_genSigPerfect_nSigPho1_wt2_RjrSkim_v24_ootmet_phomet_multiHists.root"
-sig350 = "rjr_multihist_files/KUCMS_GMSB_L350_"+model+"_v20_genSigPerfect_nSigPho1_wt2_RjrSkim_v24_ootmet_phomet_multiHists.root"
-sig400 = "rjr_multihist_files/KUCMS_GMSB_L400_"+model+"_v20_genSigPerfect_nSigPho1_wt2_RjrSkim_v24_ootmet_phomet_multiHists.root"
+#rjrtype = "ootmet_phomet"
+rjrtype = "ootmet_phojet"
 
-bgQCD = "rjr_multihist_files/KUCMS_QCD_v19_BG_nSigPho0_wt2_RjrSkim_v24_ootmet_phomet_multiHists.root"
-bgGJets = "rjr_multihist_files/KUCMS_GJets_v19_BG_nSigPho0_wt2_RjrSkim_v24_ootmet_phomet_multiHists.root"
+sig100 = "rjr_multihist_files/KUCMS_GMSB_L100_"+model+"_v21_genSigPerfect_nSigPho1_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
+sig150 = "rjr_multihist_files/KUCMS_GMSB_L150_"+model+"_v21_genSigPerfect_nSigPho1_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
+sig200 = "rjr_multihist_files/KUCMS_GMSB_L200_"+model+"_v21_genSigPerfect_nSigPho1_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
+sig250 = "rjr_multihist_files/KUCMS_GMSB_L250_"+model+"_v21_genSigPerfect_nSigPho1_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
+sig300 = "rjr_multihist_files/KUCMS_GMSB_L300_"+model+"_v21_genSigPerfect_nSigPho1_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
+sig350 = "rjr_multihist_files/KUCMS_GMSB_L350_"+model+"_v21_genSigPerfect_nSigPho1_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
+sig400 = "rjr_multihist_files/KUCMS_GMSB_L400_"+model+"_v21_genSigPerfect_nSigPho1_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
+
+#bgQCD = "rjr_multihist_files/KUCMS_QCD_v19_BG_nSigPho0_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
+#bgGJets = "rjr_multihist_files/KUCMS_GJets_v19_BG_nSigPho0_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
+bgQCD = "rjr_multihist_files/KUCMS_QCD_v19_wt2_RjrSkim_v22_"+rjrtype+"_multiHists.root"
+bgGJets = "rjr_multihist_files/KUCMS_GJets_v19_wt2_RjrSkim_v22_"+rjrtype+"_multiHists.root"
 
 #y = [ 0.0001, 1000000000000.0 ]
 #y = [ 0.0000001, 10000000.0 ] # vdiff, QNSum
@@ -190,13 +196,13 @@ bgGJets = "rjr_multihist_files/KUCMS_GJets_v19_BG_nSigPho0_wt2_RjrSkim_v24_ootme
 #y = [ 0.0000001, 10000.0 ] # vsum, asmass, QSum 
 #y = [ 0.00000001, 10.0 ] # normizlized to 1 for shape comparision
 #y = [ 0.00001, 1.0 ] # normizlized to 1 for shape comparision
-y = [ 0.0001, 1.0 ] # normizlized to 1 for shape comparision
+y = [ 0.0001, 5 ] # normizlized to 1 for shape comparision
 
 #l = [ 0.7,0.6,0.925,0.875 ] # legend position top right
-l = [ 0.7,0.675,0.925,0.875 ] # legend position top right short
+l = [ 0.6,0.65,0.94,0.875 ] # legend position top right short
 #l = [ 0.475,0.6,0.925,0.875 ] # legend position top middle
 #l = [ 0.2,0.65,0.425,0.9 ] # legend position top left
-t = [0.2,0.825,0.0,0.175,0.225] # titles position
+t = [0.2,0.85,0.0,0.175,0.225] # titles position
 
 #rhname = "rjrVSum"
 rhname = "rjrVDiff"
@@ -206,50 +212,51 @@ rhname = "rjrVDiff"
 #rhname = "rjrNJetsJa"
 #rhname = "rjrNJetsJb"
 
-#x = [ 0.0, 12000 ]
 #x = [ 0.0, 2600 ]
 x = [ -1.0, 1.0 ]
+#x = [ 0.0, 12000 ]
+#x = [ 0.0, 2600 ]
 #x = [ 0, 1.0 ]
 #x = [ 0.0, 20 ]
 
 fhname = rhname
 xtitle = fhname
-outname = 'llpa_rjr_sig_' + model + '_' + fhname
+outname = 'llpa_rjr_' + model + '_' + rjrtype + '_' + fhname
 #outname = 'llpa_rjr_op_' + fhname
 layout = { 'xtitle' : xtitle, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'legtitle' : legtitle }
-#ptitle=[' 2017 GMSB ' + model,'137 fb','']
-ptitle=[' 2017','137 fb','']
+ptitle=[' 2017', '137 fb', model + ' ' + rjrtype ]
+#ptitle=[' 2017','137 fb','']
 
 #leg100 = "M_{\Chi_{1}} = 139 GeV"
 #leg200 = "M_{\Chi_{1}} = 285 GeV"
 #leg300 = "M_{\Chi_{1}} = 430 GeV"
 #leg400 = "M_{\Chi_{1}} = 576 GeV"
-leg100 = "M_{Gluino} = 838 GeV"
-leg150 = "M_{Gluino} = 1207 GeV"
-leg200 = "M_{Gluino} = 1565 GeV"
-leg250 = "M_{Gluino} = 1915 GeV"
-leg300 = "M_{Gluino} = 2260 GeV"
-leg350 = "M_{Gluino} = 2599 GeV"
-leg400 = "M_{Gluino} = 2935 GeV"
-#leg100 = "M_{SQuark} = 1119 GeV"
-#leg200 = "M_{SQuark} = 2122 GeV"
-#leg300 = "M_{SQuark} = 3084 GeV"
-#leg400 = "M_{SQuark} = 4025 GeV"
-#leg100 = "M_{Gluino} = 838 GeV, M_{SQuark} = 1119 GeV"
-#leg200 = "M_{Gluino} = 1565 GeV, M_{SQuark} = 2122 GeV"
-#leg300 = "M_{Gluino} = 2260 GeV, M_{SQuark} = 3084 GeV"
-#leg400 = "M_{Gluino} = 2935 GeV, M_{SQuark} = 4025 GeV"
+leg100 = "M_{glu},M_{\Chi_{1}} = 838, 139  GeV"
+leg150 = "M_{glu},M_{\Chi_{1}} = 1207, 212  GeV"
+leg200 = "M_{glu},M_{\Chi_{1}} = 1565, 285  GeV"
+leg250 = "M_{glu},M_{\Chi_{1}} = 1915, 358  GeV"
+leg300 = "M_{glu},M_{\Chi_{1}} = 2260, 430  GeV"
+leg350 = "M_{glu},M_{\Chi_{1}} = 2599, 503  GeV"
+leg400 = "M_{glu},M_{\Chi_{1}} = 2935, 576  GeV"
+#leg100 = "M_{sqk, \Chi_{1}} = 1119, 139 GeV"
+#leg200 = "M_{sqk, \Chi_{1}} = 2122, 285 GeV"
+#leg300 = "M_{sqk, \Chi_{1}} = 3084, 430 GeV"
+#leg400 = "M_{sqk, \Chi_{1}} = 4025, 576 GeV"
+#leg100 = "M_{glu, sqk, \Chi_{1}} = 838, 1119, 139 GeV"
+#leg200 = "M_{glu, sqk, \Chi_{1}} = 1565, 2122, 285 GeV"
+#leg300 = "M_{glu, sqk, \Chi_{1}} = 2260, 3084, 430 GeV"
+#leg400 = "M_{glu, sqk, \Chi_{1}} = 2935, 4025, 576 GeV"
 
 inhistlist = [
 
-            [rhname,'',sig100,leg100],
-            [rhname,'',sig150,leg150],
-            [rhname,'',sig200,leg200],
-            [rhname,'',sig250,leg250],
+            #[rhname,'',sig100,leg100],
+            #[rhname,'',sig150,leg150],
+            #[rhname,'',sig200,leg200],
+            #[rhname,'',sig250,leg250],
             ##[rhname,'',sig300,leg300],
 
-            #[rhname,'',bgGJets,"GJets"],
-            #[rhname,'',bgQCD,"QCD"],
+            [rhname,'',bgGJets,"GJets"],
+            [rhname,'',bgQCD,"QCD"],
 
             ]
 
