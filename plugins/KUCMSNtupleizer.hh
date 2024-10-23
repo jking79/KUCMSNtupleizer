@@ -103,6 +103,7 @@
 #include "KUCMSItemManager.hh"
 #include "KUCMSBranchManager.hh"
 #include "KUCMSObjectBase.hh"
+#include "KUCMSEventSelection.hh"
 
 #ifndef KUCMSNtupilizerHeader
 #define KUCMSNtupilizerHeader
@@ -170,7 +171,9 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
         virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
         virtual void endJob() override;
 
-        bool selectedEvent();
+        //bool selectedEvent();
+		//ntple event selection
+		KUCMSEventSelection ntupleSkim;
 
         ////////////////////////////////////////////////////
         // ----------member data ---------------------------

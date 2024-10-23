@@ -78,25 +78,28 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 	 
 	if(!LAB->InitializeAnalysis()) std::cout << "Problem initializing analysis tree" << std::endl;
 
-	/*
-	  TreePlot tree_plot("TreePlot","TreePlot");
+	if( false ){
+	
+		TreePlot tree_plot("TreePlot","TreePlot");
 
-	  for(int t = 0; t < 2; t++){
-	  tree_plot.SetTree(*LAB);
-	  tree_plot.Draw("ANA_tree", "Reconstruction Tree");
+	  	for(int t = 0; t < 2; t++){
+	  		tree_plot.SetTree(*LAB);
+	  		tree_plot.Draw("ANA_tree", "Reconstruction Tree");
 
-	  tree_plot.SetTree(*COMB_J);
-	  tree_plot.Draw("ANA_comb", "Combinatoric Jigsaws for jets");
+	  		tree_plot.SetTree(*COMB_J);
+	  		tree_plot.Draw("ANA_comb", "Combinatoric Jigsaws for jets/sig photons");
 
-	  tree_plot.SetTree(*COMB_L);
-	  tree_plot.Draw("ANA_comb_L", "Combinatoric Jigsaws for leps");
+	  		//tree_plot.SetTree(*COMB_L);
+	  		//tree_plot.Draw("ANA_comb_L", "Combinatoric Jigsaws for leps");
 
-	  tree_plot.SetTree(*INV);
-	  tree_plot.Draw("ANA_inv", "Invisible Jigsaws");
+	  		tree_plot.SetTree(*INV);
+	  		tree_plot.Draw("ANA_inv", "Invisible Jigsaws");
  
-	  }
-	  tree_plot.WriteOutput("trees.root");
-	*/
+	  	}//<<>>for(int t = 0; t < 2; t++)
+
+		tree_plot.WriteOutput("trees.root");
+
+	}//<<>>treeplot on off
 
 }//<<>>KUCMSAodSkimmer::KUCMSAodSkimmer()
 
@@ -287,7 +290,7 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
 	// select events to process and store
 	//--------------------------------------
 	auto saveToTree = eventSelection();	
-	if( saveToTree ){ processRJR(1,true); } // processRJR(1,false); }
+	if( saveToTree ){ processRJR(0,true); processRJR(1,false); }
 	return saveToTree;
 
 }//<<>>void KUCMSAodSkimmer::eventLoop( Long64_t entry )
@@ -1249,7 +1252,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 	for( int i = 0; i < 4; i++ ){
 
 		float px = p4[i].Px();
-		float py = p4[i].Px();
+		float py = p4[i].Py();  // ?  float py = p4[i].Px(); ? check with Py
 		float pz = p4[i].Pz(); 
 		float e = sqrt( px*px + py*py + pz*pz );
 		p4[i].SetPxPyPzE(px,py,pz,e);	
@@ -1271,6 +1274,8 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     float AX2GMean = std::sqrt(a_MX2a*a_MX2b);
     float AX2NGMean = 2*AX2GMean/a_MS;
     float AX2Diff = abDiffSide*(a_MX2a-a_MX2b)/(a_MX2a+a_MX2b);
+	//float AX2DiffTest = (a_MX2a-a_MX2b)/(a_MX2a+a_MX2b);
+	//std::cout << " - AX2Diff : " << abDiffSide << " " << AX2Diff << " " << AX2DiffTest << std::endl;
 
     float pf_ptX2a = X2a->GetMomentum(*S);
     float pf_ptX2b = X2b->GetMomentum(*S);

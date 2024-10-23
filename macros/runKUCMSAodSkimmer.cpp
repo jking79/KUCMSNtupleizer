@@ -20,13 +20,14 @@ int main ( int argc, char *argv[] ){
                 const std::string eosdir = "root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/";
 				//const std::string eosdir = "";				
 
-                //const std::string infilename = "KUCMS_Ntuple_Master_BG_Files_List.txt";
-                //const std::string infilename = "KUCMS_Ntuple_Master_BG_Met0_Files_List.txt";
-                const std::string infilename = "KUCMS_Ntuple_Master_GMSB_Files_List.txt";
-                //const std::string infilename = "KUCMS_Ntuple_Test_GMSB_Files_List.txt";
-                //const std::string infilename = "KUCMS_Ntuple_Master_JetHT_Files_List.txt";
-                //const std::string infilename = "KUCMS_Ntuple_Test_Files_List.txt";
-                //const std::string infilename = "KUCMS_Ntuple_Master_DEG_Files_List.txt";
+				bool genSigPerfect = false;
+                bool hasGenInfo = true;
+                ////const std::string infilename = "KUCMS_Ntuple_Master_BG_Files_List.txt";
+                const std::string infilename = "KUCMS_Ntuple_Master_BG_Met0_Files_List.txt";
+                //const std::string infilename = "KUCMS_Ntuple_Master_GMSB_Files_List.txt"; genSigPerfect = true; // genSigPerfect ?
+                //const std::string infilename = "KUCMS_Ntuple_Test_GMSB_Files_List.txt"; genSigPerfect = true;
+                //const std::string infilename = "KUCMS_Ntuple_Master_JetHT_Files_List.txt"; hasGenInfo = false;
+                //const std::string infilename = "KUCMS_Ntuple_Master_DEG_Files_List.txt"; hasGenInfo = false;
 
 				//const std::string outfilename = "_Ntuple_v14_LLPgama_Skim_v15.root";
 				//const std::string outfilename = "_LLPgama_Skim_v15b_rhe1k.root";
@@ -40,13 +41,8 @@ int main ( int argc, char *argv[] ){
 
                 //const std::string outfilename = "_Ntuple_v19_LLPgama_10pSkim_v19_rawmet_rjrcombo.root";
                 //const std::string outfilename = "_Ntuple_v19_LLPgama_Skim_v19_ootmet_rjrcombo.root";
-                const std::string outfilename = "_Ntuple_v21_LLPgama_Skim_v22_rjrvars.root";
-                //const std::string outfilename = "_Ntuple_v23_LLPgama_Skim_v22_rjrvars.root";
+                const std::string outfilename = "_Ntuple_v21_LLPgama_Skim_v23_rjrvars.root";
 
-				bool hasGenInfo = true;
-                //bool hasGenInfo = false;
-				bool genSigPerfect = true;
-                //bool genSigPerfect = false;
                 int skipCnt = 0;// Normal
 				//int skipCnt = 10;// Met0 GMSB
                 //int skipCnt = 100;// Met0 QCD

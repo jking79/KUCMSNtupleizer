@@ -62,10 +62,13 @@ class KUCMSExampleObject : public KUCMSObjectBase {
     // void LoadObject( exampleObject* otherObject ){ otherObjectPtr = otherObject; }; // define with specific KUCMS object(s) needed 
 
     // object processing : 1) LoadEvent prior to event loop 2) ProcessEvent during event loop via objectManager
-    // get collections, do initial processing
+    // get collections, do initial processing -- only do things here that do not require information from other objects
     void LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar );
-    // do cross talk jobs with other objects, do event processing, and load branches
+    // do cross talk jobs with other objects, do event processing, and load branches : only requires information from other objects
+    // that was processed in LoadEvent - ProccessEvent is ran after all objects run LoadEvent
     void ProcessEvent( ItemManager<float>& geVar );
+	// This is run after all classed run ProcessEvent - if you require infomration from other classes that is created 
+	// during the ProcessEvent step do that information processing here - this is the last thing ran in the event loop
     void PostProcessEvent( ItemManager<float>& geVar );
 
     // if there are any final tasks be to done after the event loop via objectManager

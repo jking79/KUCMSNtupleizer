@@ -147,7 +147,7 @@ void KUCMSElectronObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("Pz","Electron_pz",VFLOAT);
     Branches.makeBranch("TrackZ","Electron_trackz",VFLOAT);
     Branches.makeBranch("GenIdx","Electron_genIdx",VINT);
-    Branches.makeBranch("GenMomIdx","Electron_genSigMomId",VINT);
+    Branches.makeBranch("GenXMomIdx","Electron_genSigXMomId",VINT);
     Branches.makeBranch("GenWZIdx","Electron_genSigWZId",VINT);
     //Branches.makeBranch("GenDr","Electron_genDr",VFLOAT);
     //Branches.makeBranch("GenDp","Electron_genDp",VFLOAT);
@@ -267,16 +267,16 @@ void KUCMSElectronObject::ProcessEvent( ItemManager<float>& geVar ){
 			//std::cout << " -- Filling genindex : " << genidx << std::endl;
             Branches.fillBranch("GenIdx",genidx);
             if( genidx > -1 ){
-                int genMomIndx = genObjs->getGenSigEleInfo( genidx );
+                int genWZMomIndx = genObjs->getGenSigEleXMother( genidx );
                 //std::cout << " -- Electron Match : level 1 : genidx: " << genidx << " mom: " << genMomIndx  << std::endl;
-                Branches.fillBranch("GenWZIdx",genMomIndx);
-				if( genMomIndx > -1 ){
+                Branches.fillBranch("GenWZIdx",genWZMomIndx);
+				if( genWZMomIndx > -1 ){
 					//uInt wzIndx = genMomIndx;
-                	int genGMomIndx = genObjs->getGenSigEleInfo( genMomIndx );
+                	int genGMomIndx = genObjs->getGenSigEleXMother( genWZMomIndx );
                     //std::cout << "  -- Electron Match : level 2 : mom: " << genMomIndx << " gmom: " << genGMomIndx  << std::endl;
-					Branches.fillBranch("GenMomIdx",genGMomIndx);
-				} else { Branches.fillBranch("GenMomIdx",-5); }//<<>>if( genMomIndx > -1 )
-            } else { Branches.fillBranch("GenWZIdx",-5); Branches.fillBranch("GenMomIdx",-5); }//<<>>if( genidx > -1 )
+					Branches.fillBranch("GenXMomIdx",genGMomIndx);
+				} else { Branches.fillBranch("GenXMomIdx",-5); }//<<>>if( genMomIndx > -1 )
+            } else { Branches.fillBranch("GenWZIdx",-5); Branches.fillBranch("GenXMomIdx",-5); }//<<>>if( genidx > -1 )
 			//std::cout << " --- next electron -------------------------- " << std::endl;
         }//<<>>for( auto genidx : genInfo )
 		//std::cout << " Electron Gen Match Finished ------------------------- " << std::endl;

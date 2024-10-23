@@ -42,7 +42,7 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t, norm ):
     c1.Draw()
 
     legend = TLegend(l[0],l[1],l[2],l[3]);
-#    legend.SetHeader(layout['legtitle'], '')
+    #legend.SetHeader(layout['legtitle'], '')
     legend.SetName('legend')
     gStyle.SetLegendFont(42)
     gStyle.SetLegendTextSize(0.03)
@@ -168,102 +168,143 @@ islogy = True
 
 #---------------------------------------------------------------
 
-#model = "GluGlu"
-#model = "SqkSqk"
-#model = "SqkGlu"
-#model = "XinoXino"
-model = "Bkgrd"
+for model in ["Bkgrd"] :
+#for model in ["GluGlu"] :
+#for model in ["GluGlu","SqkSqk"] :
+#for model in ["GluGlu","SqkSqk","SqkGlu","XinoXino"] :
+#for model in ["GluGlu","SqkSqk","SqkGlu","XinoXino","SleptSlept"] :
 
-#rjrtype = "ootmet_phomet"
-rjrtype = "ootmet_phojet"
+    #model = "GluGlu"
+    #model = "SqkSqk"
+    #model = "SqkGlu"
+    #model = "XinoXino"
+    #model = "Bkgrd"
+    
+    #rjrtype = "ootmet_phomet"
+    rjrtype = "ootmet_phojet"
 
-sig100 = "rjr_multihist_files/KUCMS_GMSB_L100_"+model+"_v21_genSigPerfect_nSigPho1_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
-sig150 = "rjr_multihist_files/KUCMS_GMSB_L150_"+model+"_v21_genSigPerfect_nSigPho1_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
-sig200 = "rjr_multihist_files/KUCMS_GMSB_L200_"+model+"_v21_genSigPerfect_nSigPho1_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
-sig250 = "rjr_multihist_files/KUCMS_GMSB_L250_"+model+"_v21_genSigPerfect_nSigPho1_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
-sig300 = "rjr_multihist_files/KUCMS_GMSB_L300_"+model+"_v21_genSigPerfect_nSigPho1_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
-sig350 = "rjr_multihist_files/KUCMS_GMSB_L350_"+model+"_v21_genSigPerfect_nSigPho1_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
-sig400 = "rjr_multihist_files/KUCMS_GMSB_L400_"+model+"_v21_genSigPerfect_nSigPho1_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
+    #nsigpho = "nSigPho0"
+    #nsigpho = "nSigPho1"
+    nsigpho = "nSigPho2"   
 
-#bgQCD = "rjr_multihist_files/KUCMS_QCD_v19_BG_nSigPho0_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
-#bgGJets = "rjr_multihist_files/KUCMS_GJets_v19_BG_nSigPho0_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
-bgQCD = "rjr_multihist_files/KUCMS_QCD_v19_wt2_RjrSkim_v22_"+rjrtype+"_multiHists.root"
-bgGJets = "rjr_multihist_files/KUCMS_GJets_v19_wt2_RjrSkim_v22_"+rjrtype+"_multiHists.root"
+ 
+    sig100 = "rjr_multihist_files/KUCMS_GMSB_L100_"+model+"_v23_genSigPerfect_"+nsigpho+"_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
+    sig150 = "rjr_multihist_files/KUCMS_GMSB_L150_"+model+"_v23_genSigPerfect_"+nsigpho+"_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
+    sig200 = "rjr_multihist_files/KUCMS_GMSB_L200_"+model+"_v23_genSigPerfect_"+nsigpho+"_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
+    sig250 = "rjr_multihist_files/KUCMS_GMSB_L250_"+model+"_v23_genSigPerfect_"+nsigpho+"_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
+    #sig300 = "rjr_multihist_files/KUCMS_GMSB_L300_"+model+"_v21_genSigPerfect_"+nsigpho+"_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
+    #sig350 = "rjr_multihist_files/KUCMS_GMSB_L350_"+model+"_v21_genSigPerfect_"+nsigpho+"_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
+    #sig400 = "rjr_multihist_files/KUCMS_GMSB_L400_"+model+"_v21_genSigPerfect_"+nsigpho+"_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
 
-#y = [ 0.0001, 1000000000000.0 ]
-#y = [ 0.0000001, 10000000.0 ] # vdiff, QNSum
-#y = [ 0.0001, 100000000.0 ]
-#y = [ 0.0000001, 10000.0 ] # vsum, asmass, QSum 
-#y = [ 0.00000001, 10.0 ] # normizlized to 1 for shape comparision
-#y = [ 0.00001, 1.0 ] # normizlized to 1 for shape comparision
-y = [ 0.0001, 5 ] # normizlized to 1 for shape comparision
+    sigct01 = "rjr_multihist_files/KUCMS_GMSB_ct0p1cm_"+model+"_v23_genSigPerfect_"+nsigpho+"_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
+    sigct10 = "rjr_multihist_files/KUCMS_GMSB_ct10cm_"+model+"_v23_genSigPerfect_"+nsigpho+"_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
+    sigct200 = "rjr_multihist_files/KUCMS_GMSB_ct200cm_"+model+"_v23_genSigPerfect_"+nsigpho+"_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
+    sigct1k = "rjr_multihist_files/KUCMS_GMSB_ct1000cm_"+model+"_v23_genSigPerfect_"+nsigpho+"_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
+    sigct10k = "rjr_multihist_files/KUCMS_GMSB_ct10000cm_"+model+"_v23_genSigPerfect_"+nsigpho+"_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"    
 
-#l = [ 0.7,0.6,0.925,0.875 ] # legend position top right
-l = [ 0.6,0.65,0.94,0.875 ] # legend position top right short
-#l = [ 0.475,0.6,0.925,0.875 ] # legend position top middle
-#l = [ 0.2,0.65,0.425,0.9 ] # legend position top left
-t = [0.2,0.85,0.0,0.175,0.225] # titles position
+    #bgQCD = "rjr_multihist_files/KUCMS_QCD_v19_BG_nSigPho0_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
+    #bgGJets = "rjr_multihist_files/KUCMS_GJets_v19_BG_nSigPho0_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
+    bgQCD = "rjr_multihist_files/KUCMS_QCD_BkGrd_M100_v23_"+nsigpho+"_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
+    bgGJets = "rjr_multihist_files/KUCMS_GJets_BkGrd_M100_v23_"+nsigpho+"_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
 
-#rhname = "rjrVSum"
-rhname = "rjrVDiff"
-#rhname = "ASMass"
-#rhname = "rjrAX2QSum"
-#rhname = "rjrAX2NQSum"
-#rhname = "rjrNJetsJa"
-#rhname = "rjrNJetsJb"
+    #y = [ 0.0001, 1000000000000.0 ]
+    #y = [ 0.0000001, 10000000.0 ] # vdiff, QNSum
+    #y = [ 0.0001, 100000000.0 ]
+    #y = [ 0.0000001, 10000.0 ] # vsum, asmass, QSum 
+    #y = [ 0.00000001, 10.0 ] # normizlized to 1 for shape comparision
+    #y = [ 0.00001, 1.0 ] # normizlized to 1 for shape comparision
+    y = [ 0.0001, 10 ] # normizlized to 1 for shape comparision
+    
+    #l = [ 0.7,0.6,0.925,0.875 ] # legend position top right
+    l = [ 0.6,0.65,0.94,0.875 ] # legend position top right short
+    #l = [ 0.475,0.6,0.925,0.875 ] # legend position top middle
+    #l = [ 0.2,0.65,0.425,0.9 ] # legend position top left
+    t = [0.2,0.85,0.0,0.175,0.225] # titles position
+    
+    #for rhname in ["rjrVSum"] :
+    #for rhname in ["rjrVSum","rjrVDiff","ASMass","rjrAX2QSum","rjrAX2NQSum","rjrNJetsJa","rjrNJetsJb"] :
+    for rhname in ["rjrVSum","rjrVDiff","ASMass","rjrAX2NQSum","rjrNJetsJa","rjrNJetsJb"] :
 
-#x = [ 0.0, 2600 ]
-x = [ -1.0, 1.0 ]
-#x = [ 0.0, 12000 ]
-#x = [ 0.0, 2600 ]
-#x = [ 0, 1.0 ]
-#x = [ 0.0, 20 ]
+        #rhname = "rjrVSum"
+        #rhname = "rjrVDiff"
+        #rhname = "ASMass"
+        #rhname = "rjrAX2QSum"
+        #rhname = "rjrAX2NQSum"
+        #rhname = "rjrNJetsJa"
+        #rhname = "rjrNJetsJb"
 
-fhname = rhname
-xtitle = fhname
-outname = 'llpa_rjr_' + model + '_' + rjrtype + '_' + fhname
-#outname = 'llpa_rjr_op_' + fhname
-layout = { 'xtitle' : xtitle, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'legtitle' : legtitle }
-ptitle=[' 2017', '137 fb', model + ' ' + rjrtype ]
-#ptitle=[' 2017','137 fb','']
-
-#leg100 = "M_{\Chi_{1}} = 139 GeV"
-#leg200 = "M_{\Chi_{1}} = 285 GeV"
-#leg300 = "M_{\Chi_{1}} = 430 GeV"
-#leg400 = "M_{\Chi_{1}} = 576 GeV"
-leg100 = "M_{glu},M_{\Chi_{1}} = 838, 139  GeV"
-leg150 = "M_{glu},M_{\Chi_{1}} = 1207, 212  GeV"
-leg200 = "M_{glu},M_{\Chi_{1}} = 1565, 285  GeV"
-leg250 = "M_{glu},M_{\Chi_{1}} = 1915, 358  GeV"
-leg300 = "M_{glu},M_{\Chi_{1}} = 2260, 430  GeV"
-leg350 = "M_{glu},M_{\Chi_{1}} = 2599, 503  GeV"
-leg400 = "M_{glu},M_{\Chi_{1}} = 2935, 576  GeV"
-#leg100 = "M_{sqk, \Chi_{1}} = 1119, 139 GeV"
-#leg200 = "M_{sqk, \Chi_{1}} = 2122, 285 GeV"
-#leg300 = "M_{sqk, \Chi_{1}} = 3084, 430 GeV"
-#leg400 = "M_{sqk, \Chi_{1}} = 4025, 576 GeV"
-#leg100 = "M_{glu, sqk, \Chi_{1}} = 838, 1119, 139 GeV"
-#leg200 = "M_{glu, sqk, \Chi_{1}} = 1565, 2122, 285 GeV"
-#leg300 = "M_{glu, sqk, \Chi_{1}} = 2260, 3084, 430 GeV"
-#leg400 = "M_{glu, sqk, \Chi_{1}} = 2935, 4025, 576 GeV"
-
-inhistlist = [
-
-            #[rhname,'',sig100,leg100],
-            #[rhname,'',sig150,leg150],
-            #[rhname,'',sig200,leg200],
-            #[rhname,'',sig250,leg250],
+        x = []        
+        if "rjrVSum" in rhname : 
+            x = [ 0.0, 1.0 ]
+            xtitle = "VSum"
+        if "rjrVDiff" in rhname : 
+            x = [ -1.0, 1.0 ]
+            xtitle = "VDiff"
+        if "ASMass" in rhname : 
+            x = [ 0.0, 12000 ]
+            xtitle = "SMass [GeV]"
+        if "rjrAX2QSum" in rhname : 
+            x = [ 0.0, 2600 ]
+            xtitle = "rjrAX2QSum"
+        if "rjrAX2NQSum" in rhname : 
+            x = [ 0, 1.0 ]
+            xtitle = "XQSum"
+        if "rjrNJetsJ" in rhname : 
+            x = [ 0.0, 20 ]
+            if "rjrNJetsJa" in rhname : xtitle = "nJetsVa"
+            if "rjrNJetsJb" in rhname : xtitle = "nJetsVb"
+        
+        fhname = rhname
+        #xtitle = fhname
+        outname = 'llpa_rjr_' + model + '_' + rjrtype + '_' + nsigpho + '_' + fhname
+        #outname = 'llpa_rjr_op_' + fhname
+        layout = { 'xtitle' : xtitle, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'legtitle' : legtitle }
+        ptitle=[' 2017', '137 fb', model + ' ' + nsigpho ]
+        #ptitle=[' 2017','137 fb','']
+        
+        #leg100 = "M_{\Chi_{1}} = 139 GeV"
+        #leg200 = "M_{\Chi_{1}} = 285 GeV"
+        #leg300 = "M_{\Chi_{1}} = 430 GeV"
+        #leg400 = "M_{\Chi_{1}} = 576 GeV"
+        leg100 = "M_{glu},M_{\Chi_{1}} = 838, 139  GeV"
+        leg150 = "M_{glu},M_{\Chi_{1}} = 1207, 212  GeV"
+        leg200 = "M_{glu},M_{\Chi_{1}} = 1565, 285  GeV"
+        leg250 = "M_{glu},M_{\Chi_{1}} = 1915, 358  GeV"
+        leg300 = "M_{glu},M_{\Chi_{1}} = 2260, 430  GeV"
+        leg350 = "M_{glu},M_{\Chi_{1}} = 2599, 503  GeV"
+        leg400 = "M_{glu},M_{\Chi_{1}} = 2935, 576  GeV"
+        #leg100 = "M_{sqk, \Chi_{1}} = 1119, 139 GeV"
+        #leg200 = "M_{sqk, \Chi_{1}} = 2122, 285 GeV"
+        #leg300 = "M_{sqk, \Chi_{1}} = 3084, 430 GeV"
+        #leg400 = "M_{sqk, \Chi_{1}} = 4025, 576 GeV"
+        #leg100 = "M_{glu, sqk, \Chi_{1}} = 838, 1119, 139 GeV"
+        #leg200 = "M_{glu, sqk, \Chi_{1}} = 1565, 2122, 285 GeV"
+        #leg300 = "M_{glu, sqk, \Chi_{1}} = 2260, 3084, 430 GeV"
+        #leg400 = "M_{glu, sqk, \Chi_{1}} = 2935, 4025, 576 GeV"
+        
+        inhistlist = [
+            [rhname,'',sig100,leg100],
+            [rhname,'',sig150,leg150],
+            [rhname,'',sig200,leg200],
+            [rhname,'',sig250,leg250],
             ##[rhname,'',sig300,leg300],
-
-            [rhname,'',bgGJets,"GJets"],
-            [rhname,'',bgQCD,"QCD"],
-
+            #[rhname,'',sigct01,"ct0p1"],
+            #[rhname,'',sigct10,"ct10"],
+            #[rhname,'',sigct200,"ct200"],
+            #[rhname,'',sigct1k,"ct1k"],
+            #[rhname,'',sigct10k,"ct10k"],
+        ]
+        
+        if "Bkgrd" in model : 
+            inhistlist = [
+                [rhname,'',bgGJets,"GJets"],
+                [rhname,'',bgQCD,"QCD"],
             ]
 
-#norm = False
-norm = True
-
-dostack(inhistlist, outname, date, layout, ptitle,  y, x, l, t, norm)
+        #norm = False
+        norm = True
+    
+        dostack(inhistlist, outname, date, layout, ptitle,  y, x, l, t, norm)
 
 #ptitle=[' 2022 IOV5 359421-360089','','#splitline{EBEB}{CC Ave RH Time by Channel}'] #{GT 106X_dataRun2_v28}'
 #y = [ 4.5, 0.5 ]
