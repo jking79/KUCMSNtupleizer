@@ -24,10 +24,18 @@ options.register('hasGenInfo',True,VarParsing.multiplicity.singleton,VarParsing.
 #options.register('muhighpTmin',50.0,VarParsing.multiplicity.singleton,VarParsing.varType.float,'muon high pT minimum cut');
 
 ## GT to be used
-options.register('globalTag','94X_mc2017_realistic_v11',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
-#options.register('globalTag','94X_mc2017_realistic_v14',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for GMSB MC');
-##options.register('globalTag','106X_dataRun2_v28',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
+##------------------ mc gt
+#options.register('globalTag','106X_mc2017_realistic_v6',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
+#options.register('globalTag','94X_mc2017_realistic_v11',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
+#options.register('globalTag','124X_mcRun3_2022_realistic_v12',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
+#options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
+#options.register('globalTag','130X_mcRun3_2023_realistic_v14',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
+#options.register('globalTag','133X_mcRun3_2024_realistic_v10',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
+options.register('globalTag','94X_mc2017_realistic_v14',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for GMSB MC');
 ##options.register('globalTag','112X_mcRun3_2021_realistic_v16',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
+
+##------------------ data gt  
+##options.register('globalTag','106X_dataRun2_v28',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 ##options.register('globalTag','124X_dataRun3_v15',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2022');
 ##options.register('globalTag','106X_dataRun2_v24',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2018UL');
 #112X_mcRun3_2021_realistic_v16
@@ -36,7 +44,8 @@ options.register('globalTag','94X_mc2017_realistic_v11',VarParsing.multiplicity.
 options.register('processName','TREE',VarParsing.multiplicity.singleton,VarParsing.varType.string,'process name to be considered');
 
 #outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_Objectified_v14.root' # ntuplizer test
-outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_Objectified_v20_oottrue.root' # ntuplizer test
+outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_Objectified_v23_skimtest_AL1IsoPho_fullgen_oottrue.root' # ntuplizer test
+#outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_justin_test_fullgen_oottrue.root' # ntuplizer test
 
 options.register('outputFileName',outfilename,VarParsing.multiplicity.singleton,VarParsing.varType.string,'output file name created by cmsRun');
 
@@ -68,9 +77,9 @@ process.load("FWCore.MessageService.MessageLogger_cfi")
 #process.MessageLogger.destinations = ['cout', 'cerr']
 #process.MessageLogger.cerr.FwkReport.reportEvery = 1
 #process.MessageLogger.cerr.FwkReport.reportEvery = 10
-#process.MessageLogger.cerr.FwkReport.reportEvery = 100
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
 #process.MessageLogger.cerr.FwkReport.reportEvery = 1000
-process.MessageLogger.cerr.FwkReport.reportEvery = 100000
+#process.MessageLogger.cerr.FwkReport.reportEvery = 100000
 
 from KUCMSNtupleizer.KUCMSNtupleizer.TrackAssociator_cfi import tkAssocParamBlock
 
@@ -94,9 +103,14 @@ gmsbaodsim2 = '_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v2/
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
 
-        '/store/mc/RunIIFall17DRPremix/GMSB_L-100TeV_Ctau-0p001cm_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/100000/009A3F2E-C7B9-E811-9FCA-441EA171A998.root',
+        #'/store/mc/RunIIFall17DRPremix/GMSB_L-100TeV_Ctau-0p001cm_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/100000/009A3F2E-C7B9-E811-9FCA-441EA171A998.root',
 
-	#'root://cmsxrootd-site.fnal.gov//store/mc/RunIIFall17DRPremix/GMSB_L-100TeV_Ctau-200cm_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/80000/58DCC006-3FB2-E811-94AE-AC1F6B0DE454.root',	
+        #'file:/uscms/home/janguian/nobackup/CMSSW_12_4_14_patch3/src/old/PPD-Run3Summer22DRPremix-00019.root',
+        #'file:/uscms/home/janguian/nobackup/CMSSW_12_4_14_patch3/src/SlepSnuCascade_3.root',
+        #'file:/uscms/home/janguian/nobackup/CMSSW_12_4_14_patch3/src/Gluino_N2N1_LLPN2_TuneCP5_13p6TeV-madgraphMLM_AOD.root',
+        #'file:/uscms/home/janguian/nobackup/CMSSW_13_0_13/src/PPD-Run3Summer22wmLHEGS-00014_AOD.root',
+
+	#'root://cms-xrd-global.cern.ch//store/mc/RunIIFall17DRPremix/GMSB_L-100TeV_Ctau-200cm_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/80000/58DCC006-3FB2-E811-94AE-AC1F6B0DE454.root',	
 
         #'root://cmsxrootd-site.fnal.gov//store/data/Run2022C/JetHT/AOD/27Jun2023-v2/25310000/161a4ef3-6d8f-4026-bc32-12473677119e.root',
         #'root://cmsxrootd-site.fnal.gov//store/data/Run2018A/JetHT/MINIAOD/12Nov2019_UL2018-v2/100000/07082E78-7805-EB44-BB4D-1D3AB8892FB7.root',
@@ -113,7 +127,7 @@ process.source = cms.Source("PoolSource",
 
 	# AOD
 
-	#'file:/eos/uscms/store/mc/RunIIFall17DRPremix/GMSB_L-100TeV_Ctau-0_1cm_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/100000/2C55A98D-E4D7-E811-AC40-002590491B1E.root'
+	'file:/eos/uscms/store/mc/RunIIFall17DRPremix/GMSB_L-100TeV_Ctau-0_1cm_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/100000/2C55A98D-E4D7-E811-AC40-002590491B1E.root'
 
 	#lpcpath_350_600+'120000/80762156-99D6-E811-8942-34E6D7E3879B.root',
         #lpcpath_350_600+'120000/322875DC-DDD6-E811-8C5F-001E675A68C4.root',
@@ -209,6 +223,7 @@ process.source = cms.Source("PoolSource",
         #'/store/data/Run2018A/JetHT/MINIAOD/UL2018_MiniAODv2-v1/260000/054042A4-058C-194E-9756-038004285B82.root',
 		
         ),##<<>>fileNames = cms.untracked.vstring
+        #skipEvents=cms.untracked.uint32(300),
 )##<<>>process.source = cms.Source("PoolSource",
 
 
@@ -216,8 +231,10 @@ process.source = cms.Source("PoolSource",
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#LT
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500))#US
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500))#QT
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(5000))#BT
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10000))#LT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(12500))#VS
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(25000))#SM
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100000))#MS
@@ -235,14 +252,25 @@ process.TFileService = cms.Service("TFileService", fileName = cms.string(options
 				   
 # Make the tree 
 process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
+
+                              ## default ?  paramter
                               tkAssocParamBlock,
+
                               ## flags
                               hasGenInfo = cms.bool(options.hasGenInfo),
                               #hasGenInfo = cms.bool(False),
-                              #minEvtMet = cms.double(150.0),
-                              minEvtMet = cms.double(100.0),
+                              #doGenMotherChase = cms.bool(True),
+                              doGenMotherChase = cms.bool(False),
+
+                              ##skim type selectuon  
+                              #skimSelection = cms.string("None"),
+                              skimSelection = cms.string("AL1IsoPho"),
+                              #skimSelection = cms.string("MET100"),
+
+                              ## set rechit energy limits
                               minRHEi = cms.double(0.0),
                               minRHEf = cms.double(0.2),
+
                               ## additional collections
                               ## tracks
                               ogGeneralTracks = cms.InputTag("generalTracks"),

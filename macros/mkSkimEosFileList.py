@@ -24,19 +24,19 @@ mdis = '/store/user/lpcsusylep/jaking/'
 eosll = 'eos root://cmseos.fnal.gov ls '
 
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_GMSB_R17_MET75_v20/'
-#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_GJETS_R17_MET75_v20/'
-#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_QCD_R17_MET75_v20/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_GJETS_R17_MET100_v21/'
+command = eosll+mdis+'KUCMSNtuple/kucmsntuple_QCD_R17_MET100_v21/'
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_DEG_R17_v18/'
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_MET_R17E_MET75_v20/'
-command = eosll+mdis+'KUCMSNtuple/kucmsntuple_GMSB_R17_MET100_v23/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_GMSB_R17_MET100_v23/'
 
 #version = 'Run2018D'
 #version = 'GJets'
-#version = 'QCD'
+version = 'QCD'
 #version = '_Ctau-0p'
 #version = '_noOOTAmp_'
 #version = '_wthOOTAmp_'
-version = 'GMSB'
+#version = 'GMSB'
 #version = 'JetHT' 
 #version = 'DiPhotonJetsBox'
 #version = 'MET'
@@ -54,11 +54,11 @@ rootfile = '.root'
 #dirselect = '22eraC_CCstc0_EGamma_MINIAOD_Run2022C-PromptReco-v1_357328-357331'
 #dirselect = 'noOOTCC_kustc0_EGamma_MINIAOD_Run2022C-PromptReco-v1_357101-357268'
 #dirselect = 'CCstc0_EGamma_MINIAOD_Run2022C-PromptReco-v1_357101-357268'
-dirselect = 'GMSB'
+#dirselect = 'GMSB'
 #dirselect = 'GMSB_L-250'
 #dirselect = 'AOD'
 #dirselect = 'WJetsToLNu_HT-800'
-#dirselect = 'QCD'
+dirselect = 'QCD'
 #dirselect = 'GMSB_L-300TeV'
 #dirselect = 'DYJetsToLL_M-50'
 #dirselect = 'TTJets'
@@ -135,7 +135,7 @@ for line2 in targdirs :
     		if rootfile in lline : filelist.append(subdir2+lline)
    
     select =  line2.split("Tune")
-    outfile = 'kuntuple_' + select[0] + '_Met100_R17_v22.txt'
+    outfile = 'kuntuple_' + select[0] + '_Met100_R17_v21.txt'
     #print( outfile )
     outf = open( outfile, 'w' )
     for thefile in filelist:

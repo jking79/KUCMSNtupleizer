@@ -62,14 +62,19 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     // accuire input values form python config master file ( the one we use cmsRun with interactivilly )
 
     cfFlag.set( "hasGenInfo", iConfig.existsAs<bool>("hasGenInfo") ? iConfig.getParameter<bool>("hasGenInfo") : true );
-    cfFlag.set( "onlyEB", iConfig.existsAs<bool>("onlyEB") ? iConfig.getParameter<bool>("onlyEB") : false );
-    cfPrm.set( "ebMaxEta",iConfig.existsAs<double>("ebMaxEta")? iConfig.getParameter<double>("ebMaxEta") : 1.479 );
-    cfPrm.set( "minEvtMet", iConfig.existsAs<double>("minEvtMet") ? iConfig.getParameter<double>("minEvtMet") : 150.0 );
+    //cfFlag.set( "onlyEB", iConfig.existsAs<bool>("onlyEB") ? iConfig.getParameter<bool>("onlyEB") : false );
+    //cfFlag.set( "motherChase", iConfig.existsAs<bool>("doGenMotherChase") ? iConfig.getParameter<bool>("doGenMotherChase") : false );
+    //cfPrm.set( "ebMaxEta",iConfig.existsAs<double>("ebMaxEta")? iConfig.getParameter<double>("ebMaxEta") : 1.479 );
 
     // -- consume tags ------------------------------------------------------------
     // creats "token" for all collections that we wish to process
     
-    //if( DEBUG ) std::cout << "In constructor for KUCMSNtupilizer - tag and tokens" << std::endl;
+    //if( DEBUG ) 
+    std::cout << "In constructor for KUCMSNtupilizer - tag and tokens" << std::endl;
+
+	// -----  set event skim selection ----------------------------------------------------------------
+	std::string skimSelect( iConfig.existsAs<std::string>("skimSelection") ? iConfig.getParameter<std::string>("skimSelection") : "None" );
+	ntupleSkim.setEventSelectionTag( skimSelect );
 
     // Triggers
     //auto triggerObjectsToken = consumes<std::vector<pat::TriggerObjectStandAlone>>(iConfig.getParameter<edm::InputTag>("triggerObjects"));
@@ -217,19 +222,6 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
 }//>>>>KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ------------ Event Selection   -----------------------------
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-bool KUCMSNtupilizer::selectedEvent(){
-
-    bool hasMinMet = geVar("evtMET") > cfPrm("minEvtMet");
-
-    bool selected = hasMinMet;
-    return selected;
-
-}//<<>>bool KUCMSNtupilizer::selectedEvent()
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //   -------------------  Normally nothing needs to be modified below this point  --------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -275,7 +267,7 @@ void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
     // ** for example only -- convert to nano?, use ewkino varibles for output, find rechit information ** 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    if( DEBUG ) std::cout << "***********************************************************************************************" << std::endl;
+    //if( DEBUG ) std::cout << "***********************************************************************************************" << std::endl;
 
     // clear global event varibles 
     geVar.clear(); // floats
@@ -305,8 +297,8 @@ void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 
     // -- Fill output trees ------------------------------------------
 
-    if( DEBUG ) std::cout << "Select Event and Fill Tree" << std::endl;
-    if( selectedEvent() ) outTree->Fill();
+    //if( DEBUG ) std::cout << "Select Event and Fill Tree" << std::endl;
+	if( ntupleSkim.selectEvent( geVar ) ) outTree->Fill();
 
     // -- EOFun ------------------------------------------------------
     //     #ifdef THIS_IS_AN_EVENTSETUP_EXAMPLE

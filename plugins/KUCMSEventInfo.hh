@@ -56,8 +56,7 @@ class KUCMSEventInfoObject : public KUCMSObjectBase {
     // object setup : 1) construct object 2) InitObject 3) CrossLoad 4) load into Object Manager
     // load tokens for eventt based collections
     void LoadVertexTokens( edm::EDGetTokenT<std::vector<reco::Vertex>> verticesToken_ ){ verticesToken = verticesToken_; }; 
-    void LoadTriggerTokens( edm::EDGetTokenT<edm::TriggerResults> triggerResultsToken_ , edm::EDGetTokenT<trigger::TriggerEvent> triggerEventToken_ )
-			{ triggerResultsToken = triggerResultsToken_; triggerEventToken = triggerEventToken_; }; 
+    void LoadTriggerTokens( edm::EDGetTokenT<edm::TriggerResults> triggerResultsToken_ , edm::EDGetTokenT<trigger::TriggerEvent> triggerEventToken_ ){ triggerResultsToken = triggerResultsToken_; triggerEventToken = triggerEventToken_; }; 
     // sets up branches, do preloop jobs 
     void InitObject( TTree* fOutTree ); 
     // new function needed for crosstalk - EXAMPLE CLASS USED HERE FOR REFRENCE ONLY -
@@ -209,18 +208,23 @@ void KUCMSEventInfoObject::ProcessEvent( ItemManager<float>& geVar ){
     fillFlagBranch("Flag_eeBadScFilter");
     fillFlagBranch("Flag_ecalBadCalibFilter");
 
-	//std::cout << " ---- Trigger Event :" << std::endl;
-	//const unsigned sizeFilters(triggerEvent->sizeFilters());
-    //for (size_t iF = 0; iF < sizeFilters; ++iF){
-    //
-	//	const std::string nameFilter( triggerEvent->filterLabel(iF) );
-	//	const trigger::Keys& keys = triggerEvent->filterKeys(iF);
-	//	const trigger::Vids& types = triggerEvent->filterIds(iF);
-	//	std::cout << " " << nameFilter << std::endl;
-    //
-	//}//<<>>for (size_t iF = 0; iF < sizeFilters; ++iF)
+/*
+//	std::cout << " ---- Trigger Event :" << std::endl;
+	const unsigned sizeFilters(triggerEvent->sizeFilters());
+    for (size_t iF = 0; iF < sizeFilters; ++iF){
+    
+		const std::string nameFilter( triggerEvent->filterLabel(iF) );
+		const trigger::Keys& keys = triggerEvent->filterKeys(iF);
+		const trigger::Vids& types = triggerEvent->filterIds(iF);
+		const unsigned nTriggers = vids.size();
+		for (unsigned iTrig = 0; iTrig < nTriggers; ++iTrig){
+			trigger::TriggerObject trigObj = trigObjs[keys[iTrig]];
+			//std::cout << " " << nameFilter << std::endl;
+		}//<<>>for (unsigned iTrig = 0; iTrig < nTriggers; ++iTrig)
+    
+	}//<<>>for (size_t iF = 0; iF < sizeFilters; ++iF)
 	// this section access the actual trigger flags - move to load event section simular to flags with triggerResults
-
+*/
 
 }//<<>>void KUCMSEventInfo::ProcessEvent()
 

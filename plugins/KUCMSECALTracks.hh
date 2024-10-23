@@ -236,16 +236,16 @@ void KUCMSECALTracks::LoadEvent( const edm::Event& iEvent, const edm::EventSetup
   generalECALTracks_ = generalTrackPropagator.GetPropagatedTracks();
   for(const auto &propTrack : generalECALTracks_) ecalTracks_.emplace_back(propTrack.GetTrack());
 
-  std::cout << "\nThis event: " << std::endl;
+  //std::cout << "\nThis event: " << std::endl;
   for(const auto &sc : *mergedSCsHandle_) {
     const double scEta(sc.eta());
     const double scPhi(sc.phi());
     double minDeltaR(999.);
 
-    std::cout << "  SuperCluster Info: eta = " << scEta << ", phi = " << scPhi << ", energy = " << sc.correctedEnergy() << std::endl;
+    //std::cout << "  SuperCluster Info: eta = " << scEta << ", phi = " << scPhi << ", energy = " << sc.correctedEnergy() << std::endl;
 
     reco::Track matchedTrack;
-    int matchedID(-999);
+    //int matchedID(-999);
     for(const auto &propTrack : generalECALTracks_) {
 
       const TrackDetMatchInfo detInfo(propTrack.GetDetInfo());
@@ -260,12 +260,12 @@ void KUCMSECALTracks::LoadEvent( const edm::Event& iEvent, const edm::EventSetup
 	if(deltaR < minDeltaR) {
 	  minDeltaR = deltaR;
 	  matchedTrack = propTrack.GetTrack();
-	  matchedID = int(detID);
+	  //matchedID = int(detID);
 	}
       }
     }
-    std::cout << "  Matched track: eta " << matchedTrack.eta() << ", phi = " << matchedTrack.phi() << ", p = " << matchedTrack.p() << std::endl;
-    std::cout << "    Match details: deltaR = " << minDeltaR << ", matched detID = " << matchedID << std::endl;
+    //std::cout << "  Matched track: eta " << matchedTrack.eta() << ", phi = " << matchedTrack.phi() << ", p = " << matchedTrack.p() << std::endl;
+    //std::cout << "    Match details: deltaR = " << minDeltaR << ", matched detID = " << matchedID << std::endl;
     trackSCMatches_.emplace_back(trackSCMatch(matchedTrack, sc, minDeltaR));
   }
   

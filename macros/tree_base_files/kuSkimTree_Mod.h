@@ -180,6 +180,9 @@ public :
    std::vector<float>   *rjrMV;
    std::vector<float>   *rjrMVa;
    std::vector<float>   *rjrMVb;
+   std::vector<float>   *rjrMVDiff;
+   std::vector<float>   *rjrMVSum;
+
    vector<int>     *rjrNJetsJa;
    vector<int>     *rjrNJetsJb;
    //Int_t           rjrNJetsJa;
@@ -379,6 +382,9 @@ public :
    TBranch        *b_rjrMV;   //!
    TBranch        *b_rjrMVa;   //!
    TBranch        *b_rjrMVb;   //!
+   TBranch        *b_rjrMVDiff;   //!
+   TBranch        *b_rjrMVSum;   //!
+
    TBranch        *b_rjrNJetsJa;   //!
    TBranch        *b_rjrNJetsJb;   //!
    TBranch        *b_rjrNRjrJets;   //!
@@ -615,6 +621,9 @@ void kuSkimTree::Init(TTree *tree)
    rjrMV = 0;
    rjrMVa = 0;
    rjrMVb = 0;
+   rjrMVDiff = 0;
+   rjrMVSum = 0;
+
    rjrNJetsJa = 0;
    rjrNJetsJb = 0;
    rjrNRjrJets = 0;
@@ -788,7 +797,7 @@ void kuSkimTree::Init(TTree *tree)
    fChain->SetBranchAddress("selJetPhi", &selJetPhi, &b_selJetPhi);
    fChain->SetBranchAddress("selJetPt", &selJetPt, &b_selJetPt);
    fChain->SetBranchAddress("selJetQuality", &selJetQuality, &b_selJetQuality);
-   fChain->SetBranchAddress("selJetSusyId", &selJetSusyId, &b_selJetSusyId);
+   fChain->SetBranchAddress("selJetQrkLlpId", &selJetSusyId, &b_selJetSusyId);
    fChain->SetBranchAddress("selJetTime", &selJetTime, &b_selJetTime);
    fChain->SetBranchAddress("selJetchHEF", &selJetchHEF, &b_selJetchHEF);
 
@@ -812,13 +821,17 @@ void kuSkimTree::Init(TTree *tree)
    fChain->SetBranchAddress("rjrEVa", &rjrEVa, &b_rjrEVa);
    fChain->SetBranchAddress("rjrEVb", &rjrEVb, &b_rjrEVb);
    fChain->SetBranchAddress("rjrMET", &rjrMET, &b_rjrMET);
+
    fChain->SetBranchAddress("rjrMV", &rjrMV, &b_rjrMV);
    fChain->SetBranchAddress("rjrMVa", &rjrMVa, &b_rjrMVa);
    fChain->SetBranchAddress("rjrMVb", &rjrMVb, &b_rjrMVb);
+   fChain->SetBranchAddress("rjrMVDiff", &rjrMVDiff, &b_rjrMVDiff);
+   fChain->SetBranchAddress("rjrMVSum", &rjrMVSum, &b_rjrMVSum);
+
    fChain->SetBranchAddress("rjrNJetsJa", &rjrNJetsJa, &b_rjrNJetsJa);
    fChain->SetBranchAddress("rjrNJetsJb", &rjrNJetsJb, &b_rjrNJetsJb);
-   fChain->SetBranchAddress("rjrNRjrJets", &rjrNRjrJets, &b_rjrNRjrJets);
-   fChain->SetBranchAddress("rjrNRjrPhotons", &rjrNRjrPhotons, &b_rjrNRjrPhotons);
+   fChain->SetBranchAddress("rjrNJets", &rjrNRjrJets, &b_rjrNRjrJets);
+   fChain->SetBranchAddress("rjrNPhotons", &rjrNRjrPhotons, &b_rjrNRjrPhotons);
    fChain->SetBranchAddress("rjrPJX2a", &rjrPJX2a, &b_rjrPJX2a);
    fChain->SetBranchAddress("rjrPJX2b", &rjrPJX2b, &b_rjrPJX2b);
    fChain->SetBranchAddress("rjrPTS", &rjrPTS, &b_rjrPTS);
@@ -1026,6 +1039,9 @@ void kuSkimTree::getBranches(Long64_t entry){
    b_rjrMV->GetEntry(entry);   //!
    b_rjrMVa->GetEntry(entry);   //!
    b_rjrMVb->GetEntry(entry);   //!
+   b_rjrMVDiff->GetEntry(entry);   //!
+   b_rjrMVSum->GetEntry(entry);   //!
+
    b_rjrNJetsJa->GetEntry(entry);   //!
    b_rjrNJetsJb->GetEntry(entry);   //!
    b_rjrNRjrJets->GetEntry(entry);   //!

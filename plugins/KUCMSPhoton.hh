@@ -93,6 +93,7 @@ class KUCMSPhotonObject : public KUCMSObjectBase {
     // void answerCrossTalk(); // define functions that will be called in another object - this is an example
     // ect ...
     int getIndex( float kideta, float kidphi );
+	bool passPhoQuality( const reco::Photon & photon );
     float getPhotonSeedTime( pat::Photon photon );
     float getPhotonSeedTime( reco::Photon photon );
 	void correctMet( float & CSumEt, float & CPx, float & CPy );
@@ -232,7 +233,7 @@ void KUCMSPhotonObject::InitObject( TTree* fOutTree ){
     //Branches.makeBranch("GenSDp","Photon_genSDp",VFLOAT);
     //Branches.makeBranch("GenLlpId","Photon_genLlpId",VFLOAT);
     //Branches.makeBranch("GenSLlpId","Photon_genSLlpId",VFLOAT);
-    Branches.makeBranch("GenMomIdx","Photon_genSigMomId",VINT);
+    Branches.makeBranch("GenXMomIdx","Photon_genSigXMomId",VINT);
     //Branches.makeBranch("ninovx","Photon_genSigMomVx",VFLOAT);
     //Branches.makeBranch("ninovy","Photon_genSigMomVy",VFLOAT);
     //Branches.makeBranch("ninovz","Photon_genSigMomVz",VFLOAT);
@@ -407,6 +408,7 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
 
     if( PhotonDEBUG ) std::cout << " - enetering Photon loop" << std::endl;
 
+	float nIsoPhotons = 0;
     int phoIdx = 0;
 	scGroup scptrs;
 	std::vector<float> scptres;
@@ -611,6 +613,8 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
 			scptres.push_back(phoEnergy);
         }//<<>>if( hasGenInfo )
 
+		if( passPhoQuality( photon ) ) nIsoPhotons++;
+
         // get time resolution information
 
         // select global photons
@@ -677,10 +681,18 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
 			//std::cout << " -- Filling genindex : " << genidx << std::endl;  
 			Branches.fillBranch("GenIdx",genidx);
 			if( genidx > -1 ){ 
-			 	int genMomIndx = genObj->getGenSigPhoInfo( genidx );
-				//std::cout << " -- Photon Match : level 1 : genidx: " << genidx << " mom: " << genMomIndx  << std::endl;		
-				Branches.fillBranch("GenMomIdx",genMomIndx);
-			} else { Branches.fillBranch("GenMomIdx",-5); }//<<>>if( genidx > -1 )
+			 	int genXMomIndx = genObj->getGenSigPhoXMother( genidx );
+                Branches.fillBranch("GenXMomIdx",genXMomIndx);
+
+				//int genLlpId = genObj->getGenLlpId( genidx );
+				//int genMotherIndx = genObj->getGenMomIdx( genidx );
+                //int momPdgId = genObj->getGenPdgId( genMotherIndx );
+                //if( genLlpId == 22 ){ 
+				//	std::cout << " -- Photon Match : level 1 : genidx: " << genidx << " Mom: " << genMotherIndx;
+				//	std::cout << " llpId: " << genLlpId << " XMomIdx: " << genXMomIndx << " mom pdg : "<< momPdgId << std::endl;	
+				//}//<<>>if( genMotherIndx < 0 )	
+
+			} else { Branches.fillBranch("GenXMomIdx",-5); }//<<>>if( genidx > -1 )
 			//std::cout << " --- next photon -------------------------- " << std::endl;
 		}//<<>>for( auto genidx : genInfo )
 		//std::cout << " Photon Gen Match Finished ------------------------- " << std::endl;
@@ -757,6 +769,8 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
 		}//<<>>for( int idx = 0; idx < nMassMatches; idx++ )
     }//<<>>if( gloPhotons.size() > 1 )
 
+	geVar.set("nIsoPhos",nIsoPhotons);
+	
     Branches.fillBranch("gloResRHs",gloAllSeedRHs);
     Branches.fillBranch("locResRHs",locRHCands);
 
@@ -815,5 +829,25 @@ void KUCMSPhotonObject::correctMet( float & CSumEt, float & CPx, float & CPy ){
     }//<<>>for( auto phidx = 0; phidx < fphotons.size(); phidx++ )
 
 }//<<>>void KUCMSPhotonObject::correctMet( float & CSumEt, float & CPx, float & CPy )
+
+bool KUCMSPhotonObject::passPhoQuality( const reco::Photon & photon ){
+
+    // determine pog quality class
+    // -----------------------------------------------------
+
+    bool rhIso = photon.ecalRecHitSumEtConeDR04() < 10.0;
+    bool hcTrkIso = photon.trkSumPtSolidConeDR04() < 6.0;
+    bool hadOverE = photon.hadTowOverEm()  < 0.02;
+    bool passPhoIso = rhIso && hcTrkIso && hadOverE;
+
+    bool noPixSeed = not photon.hasPixelSeed();
+    bool overMinPt = photon.pt() > 30;
+    auto underMaxEta = std::abs(photon.eta()) < 1.479;
+
+    bool passPhoQuality = noPixSeed && underMaxEta && overMinPt && passPhoIso;
+
+    return passPhoQuality;
+
+}//<<>>int KUCMSAodSkimmer::getPhoQuality( int iter )
 
 #endif
