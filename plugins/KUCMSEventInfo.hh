@@ -88,6 +88,10 @@ class KUCMSEventInfoObject : public KUCMSObjectBase {
     edm::EDGetTokenT<std::vector<reco::Vertex>> verticesToken;
     edm::Handle<std::vector<reco::Vertex>> vertices_;   
 
+	std::map<std::string,bool> trigFlags;
+	std::vector<std::string> triggerList;
+	std::vector<std::string> fullTriggerList;
+
     std::map<std::string,bool> flags;
 	void fillFlagBranch( std::string flag ){ if( flags.find(flag) != flags.end() ) Branches.fillBranch( flag, flags[flag] ); }
 	// for fillFlagBranch to work the branch reffrence name and the cms process path name for the flag must be the same !!!!!!
@@ -102,7 +106,14 @@ KUCMSEventInfoObject::KUCMSEventInfoObject( const edm::ParameterSet& iConfig ){
 // ---- end constructor initilizations  --------------------------
 
     cfFlag.set( "hasGenInfo", iConfig.existsAs<bool>("hasGenInfo") ? iConfig.getParameter<bool>("hasGenInfo") : true );
-    cfFlag.set( "onlyEB", iConfig.existsAs<bool>("onlyEB") ? iConfig.getParameter<bool>("onlyEB") : true );
+	cfFlag.set( "onlyEB", iConfig.existsAs<bool>("onlyEB") ? iConfig.getParameter<bool>("onlyEB") : true );
+	cfFlag.set( "makeTriggerList", iConfig.existsAs<bool>("makeTriggerList") ? iConfig.getParameter<bool>("makeTriggerList") : false );
+
+	if( iConfig.existsAs<std::vector<std::string>>("triggerList") ){ 
+		triggerList = iConfig.getParameter<std::vector<std::string>>("triggerList");
+	}//<<>>if( iConfig.existsAs<std::vector<std::string>>("triggerList") )
+
+	fullTriggerList.clear();
 
 }//<<>>KUCMSEventInfo::KUCMSEventInfo( const edm::ParameterSet& iConfig, const ItemManager<bool>& cfFlag )
 
@@ -128,6 +139,16 @@ void KUCMSEventInfoObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("Flag_eeBadScFilter","Flag_eeBadScFilter",BOOL);
     Branches.makeBranch("Flag_ecalBadCalibFilter","Flag_ecalBadCalibFilter",BOOL);
 
+	for( auto trigName : triggerList ){
+
+		std::string branchName = "Trigger_" + trigName;
+		Branches.makeBranch( trigName, branchName, BOOL );
+		//trigFlags[trigName] = false;
+
+	}//<<>>for( auto trigName : triggerList )
+
+    //Branches.makeBranch("triggerList","Evt_triggerList",VSTR,"Name of all triggers the event passed");
+
     Branches.attachBranches(fOutTree);
 
 }//<<>>void KUCMSEventInfo::InitObject( TTree* fOutTree )
@@ -150,6 +171,9 @@ void KUCMSEventInfoObject::LoadEvent( const edm::Event& iEvent, const edm::Event
 		//std::cout << " " << name << " = " << result << std::endl; 
 	}//for (auto itrig = 0U; itrig < nTriggerNames; itrig++)
 	
+	trigFlags.clear();
+	for( auto trigName : triggerList ){ trigFlags[trigName] = false; }
+
     //if( EventInfoDEBUG ) std::cout << "Collecting EventInfos" << std::endl;
 
 	//edm::Hadndle<bool> goodVerticesFilter;
@@ -208,28 +232,53 @@ void KUCMSEventInfoObject::ProcessEvent( ItemManager<float>& geVar ){
     fillFlagBranch("Flag_eeBadScFilter");
     fillFlagBranch("Flag_ecalBadCalibFilter");
 
-/*
-//	std::cout << " ---- Trigger Event :" << std::endl;
+
+	//std::cout << " -------------------------- Trigger Event :" << std::endl;
+	std::vector<std::string> triggetList;
 	const unsigned sizeFilters(triggerEvent->sizeFilters());
     for (size_t iF = 0; iF < sizeFilters; ++iF){
     
 		const std::string nameFilter( triggerEvent->filterLabel(iF) );
-		const trigger::Keys& keys = triggerEvent->filterKeys(iF);
-		const trigger::Vids& types = triggerEvent->filterIds(iF);
-		const unsigned nTriggers = vids.size();
-		for (unsigned iTrig = 0; iTrig < nTriggers; ++iTrig){
-			trigger::TriggerObject trigObj = trigObjs[keys[iTrig]];
-			//std::cout << " " << nameFilter << std::endl;
-		}//<<>>for (unsigned iTrig = 0; iTrig < nTriggers; ++iTrig)
+		//triggetList.push_back(nameFilter);
+		//Branches.fillBranch("triggerList",nameFilter);
+		if( cfFlag("makeTriggerList") ){
+			if( std::find( fullTriggerList.begin(), fullTriggerList.end(), nameFilter ) == fullTriggerList.end() ){
+				fullTriggerList.push_back(nameFilter);
+			}//<<>>if( std::find( fullTriggerList.begin(), fullTriggerList.end(), nameFilter ) == fullTriggerList.end() )
+		}//<<>>if( cfFlag("makeTriggerList") )
+
+		if( std::find( triggerList.begin(), triggerList.end(), nameFilter ) != triggerList.end() ){
+			trigFlags[nameFilter] = true;
+		}//<<>>if( std::find( triggerList.begin(), triggerList.end(), nameFilter ) == triggerList.end() )
+		//std::cout << " : " << nameFilter << std::endl;
+
+		//const trigger::Keys& keys = triggerEvent->filterKeys(iF);
+		//const trigger::Vids& types = triggerEvent->filterIds(iF);
+		//const unsigned nTriggers = types.size();
+		//for (unsigned iTrig = 0; iTrig < nTriggers; ++iTrig){
+		//	trigger::TriggerObject trigObj = trigObjs[keys[iTrig]];
+		//	std::cout << " " << nameFilter << std::endl;
+		//}//<<>>for (unsigned iTrig = 0; iTrig < nTriggers; ++iTrig)
     
 	}//<<>>for (size_t iF = 0; iF < sizeFilters; ++iF)
 	// this section access the actual trigger flags - move to load event section simular to flags with triggerResults
-*/
+
+	for( auto trigName : triggerList ){ Branches.fillBranch( trigName, trigFlags[trigName] ); }
+	//Branches.fillBranch("triggerList",triggetList);
 
 }//<<>>void KUCMSEventInfo::ProcessEvent()
 
 void KUCMSEventInfoObject::PostProcessEvent( ItemManager<float>& geVar ){}
 
-void KUCMSEventInfoObject::EndJobs(){}
+void KUCMSEventInfoObject::EndJobs(){
+
+	if( cfFlag("makeTriggerList") ){
+		
+		std::cout << "List of Triggers appearing in the events processed in this dataset : " << std::endl;
+		for( auto trigName : fullTriggerList ) std::cout << trigName << std::endl;
+
+	}//<<>>if( cfFlag("makeTriggerList") )
+
+}//<<>>void KUCMSEventInfoObject::EndJobs()
 
 #endif
