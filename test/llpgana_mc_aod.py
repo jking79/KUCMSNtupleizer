@@ -46,7 +46,8 @@ options.register('processName','TREE',VarParsing.multiplicity.singleton,VarParsi
 
 #outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_Objectified_v14.root' # ntuplizer test
 #outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_Objectified_v23_triggertest3_fullgen_oottrue.root' # ntuplizer test
-outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_justin_test_fullgen_oottrue.root' # ntuplizer test
+#outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_JustinAOD_llp_ct10_fullgen_oottrue.root' # ntuplizer test
+outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_100tev0p1ct_v16.root' # ntuplizer test
 
 options.register('outputFileName',outfilename,VarParsing.multiplicity.singleton,VarParsing.varType.string,'output file name created by cmsRun');
 
@@ -112,6 +113,16 @@ process.source = cms.Source("PoolSource",
         #'file:/uscms/home/janguian/nobackup/CMSSW_12_4_14_patch3/src/Gluino_N2N1_LLPN2_TuneCP5_13p6TeV-madgraphMLM_AOD.root',
         #'file:/uscms/home/janguian/nobackup/CMSSW_13_0_13/src/PPD-Run3Summer22wmLHEGS-00014_AOD.root',
         #'file:/uscms/home/janguian/nobackup/CMSSW_12_4_14_patch3/src/gotest4_AOD.root', 
+        #'file:/uscms/home/janguian/nobackup/CMSSW_12_4_14_patch3/src/SMS-GlGl_mGl-1p0_mN2-250_ct0_AOD.root',
+        #'file:/uscms/home/janguian/nobackup/CMSSW_12_4_14_patch3/src/GlGl10k_testing/SMS-GlGl_mGl-1p0_mN2-250_ct0_AOD.root',
+        #'file:/uscms/home/janguian/nobackup/CMSSW_12_4_14_patch3/src/SMS-GlGl_mGl-1p0_mN2-250_ct5_AOD.root',
+        #'file:SMS-GlGl_mGl-1p0_mN2-250_ct0_AOD_1.root',
+        #'file:SMS-GlGl_mGl-1p0_mN2-250_ct0_AOD_2.root',
+        #'file:SMS-GlGl_mGl-1p0_mN2-250_ct0_AOD_3.root',
+        #'file:SMS-GlGl_mGl-1p0_mN2-250_ct0_AOD_4.root',
+        #'file:SMS-GlGl_mGl-1p0_mN2-250_ct0_AOD_5.root',
+        #'file:/uscms/home/janguian/nobackup/CMSSW_12_4_14_patch3/src/SMS-GlGl_mGl-1p0_mN2-250_Zll_ct10_AOD.root',
+
 
 	#'root://cms-xrd-global.cern.ch//store/mc/RunIIFall17DRPremix/GMSB_L-100TeV_Ctau-200cm_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/80000/58DCC006-3FB2-E811-94AE-AC1F6B0DE454.root',	
 
@@ -135,7 +146,7 @@ process.source = cms.Source("PoolSource",
 
         # AOD Data MET
         
-        'file:/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/test/MetPD_003A2484-A2DC-E711-9D0A-02163E019C46.root'
+        #'file:/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/test/MetPD_003A2484-A2DC-E711-9D0A-02163E019C46.root'
 
 	#lpcpath_350_600+'120000/80762156-99D6-E811-8942-34E6D7E3879B.root',
         #lpcpath_350_600+'120000/322875DC-DDD6-E811-8C5F-001E675A68C4.root',
@@ -162,6 +173,7 @@ process.source = cms.Source("PoolSource",
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-1000cm'+gmsbaodsim+'270000/A89ECEA5-C5DA-E811-AB4B-D4AE526DDB3F.root',
 #         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-10cm'+gmsbaodsim+'80000/08A3D920-E5B2-E811-85C5-0CC47A4DEEE4.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-10cm'+gmsbaodsim+'80000/0C51F68D-E5B2-E811-8703-002590E39F2E.root',
+         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-0_1cm'+gmsbaodsim+'100000/2C55A98D-E4D7-E811-AC40-002590491B1E.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-10cm'+gmsbaodsim+'80000/2097D13F-30B3-E811-9FB3-0025905C96EA.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-1200cm'+gmsbaodsim+'60000/605B95ED-8AD8-E811-B640-001E67A3F70E.root',
 #         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-1200cm'+gmsbaodsim+'60000/68C5DD84-EAD6-E811-9028-44A842CFD60C.root',
@@ -238,7 +250,7 @@ process.source = cms.Source("PoolSource",
 ## How many events to process
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2))#ONE
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500))#QT
@@ -249,7 +261,7 @@ process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100000))#MS
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250000))#MD
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500000))#LG
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
 
 # Set the global tag depending on the sample type
 from Configuration.AlCa.GlobalTag import GlobalTag
@@ -268,10 +280,14 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
                               ## flags
                               hasGenInfo = cms.bool(options.hasGenInfo),
                               #hasGenInfo = cms.bool(False),
-                              doGenMotherChase = cms.bool(True),
-                              #doGenMotherChase = cms.bool(False),
+                              #doGenMotherChase = cms.bool(True),
                               #makeTriggerList =  cms.bool(True),
-                              makeTriggerList =  cms.bool(False),   
+                              #makeTriggerList =  cms.bool(False),   
+
+                              ##skim type selectuon  
+                              #skimSelection = cms.string('None')
+                              #skimSelection = cms.string('MET100')
+                              skimSelection = cms.string('AL1IsoPho'),
                             
                               #Triggers
                               triggerList = cms.vstring( #"hltPFMET100", "hltMETClean100", "hltHIPhoton20Eta3p1" ),   
@@ -359,11 +375,6 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
                                   "hltPFMETNoMu130",
                                   "hltPFMETNoMu140",
                               ),#triggerList = cms.vstring(
-
-                              ##skim type selectuon  
-                              #skimSelection = cms.string("None"),
-                              skimSelection = cms.string("AL1IsoPho"),
-                              #skimSelection = cms.string("MET100"),
 
                               ## set rechit energy limits
                               minRHEi = cms.double(0.5),

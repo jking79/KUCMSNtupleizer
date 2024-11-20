@@ -3,7 +3,9 @@
 # -------------------------------------
 
 #KUCMSNtuple/kucmsntuple_GMSB_R17_MET100_v22/ kuntuple_GMSB_L-250TeV_Ctau-10cm__Met100_R17_v22.txt Ct10_GMSBL250 0.0126 1914.9 357.5 1 0
-KUCMSNtuple/kucmsntuple_GMSB_R17_MET100_v23/ kuntuple_GMSB_L-250TeV_Ctau-10cm_Test_Met100_R17_v23.txt Ct10_GMSBL250 0.0126 1914.9 357.5 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_MET100_v23/ kuntuple_GMSB_L-250TeV_Ctau-10cm_Test_Met100_R17_v23.txt Ct10_GMSBL250 0.0126 1914.9 357.5 1 0
+
+test/ kuntuple_JustinAOD_fullgen_oottrue.txt justin 1 1 1 1 0 
 
 #KUCMSNtuple/kucmsntuple_GMSB_R17_v19/ kuntuple_GMSB_L-300TeV_Ctau-0_1cm_R17_v19.txt Ct010_GMSBL100 2.16 837.9 139.4 1 0
 #KUCMSNtuple/kucmsntuple_GMSB_R17_v19/ kuntuple_GMSB_L-300TeV_Ctau-10000cm_R17_v19.txt Ct10k_GMSBL100 2.16 837.9 139.4 1 0

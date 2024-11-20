@@ -20,7 +20,8 @@
 
 //#include "kucmsntuple_root_rebase_v3.hh"
 //#include "kucmsntuple_root_rebase_v15.hh"
-#include "tree_base_files/kucmsntuple_root_rebase_v16.hh"
+//#include "tree_base_files/kucmsntuple_root_rebase_v16.hh"
+#include "tree_base_files/KUCMSNtuple_base_v23.h"
 
 #ifndef KUCMSAodSkimmer_header
 #define KUCMSAodSkimmer_header
@@ -35,8 +36,17 @@ using namespace RestFrames;
 #define n3dHists 16
 #define nEBEEMaps 36
 
+struct globalEventVars {
+
+    ItemManager<std::vector<float>> fvects;
+    ItemManager<uInt> cnts;
+    ItemManager<float> fvars;
+
+};
+
 //class KUCMSAodSkimmer : public root_base_v16 {
-class KUCMSAodSkimmer : public root_base {
+class KUCMSAodSkimmer : public llpgtree {
+
     public:
 
     KUCMSAodSkimmer();
@@ -126,6 +136,7 @@ class KUCMSAodSkimmer : public root_base {
 	// event varibles
 
     bool doGenInfo;
+	globalEventVars gEvtVar;
     ItemManager<std::vector<float>> geVects;	
     ItemManager<uInt> geCnts;
 	ItemManager<float> geVars;	
