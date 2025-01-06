@@ -31,7 +31,8 @@ eosll = 'eos root://cmseos.fnal.gov ls '
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_DEG_R17_v18/'
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_MET_R17E_MET75_v20/'
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_GMSB_R17_MET100_v23/'
-command = eosll+mdis+'KUCMSNtuple/kucmsntuple_MET_R17_AL1IsoPho_v22/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_MET_R17_AL1IsoPho_v22/'
+command = eosll+mdis+'KUCMSNtuple/kucmsntuple_SMS_GlGl_v23/'
 
 #version = 'Run2018D'
 #version = 'GJets'
@@ -42,9 +43,10 @@ command = eosll+mdis+'KUCMSNtuple/kucmsntuple_MET_R17_AL1IsoPho_v22/'
 #version = 'GMSB'
 #version = 'JetHT' 
 #version = 'DiPhotonJetsBox'
-version = 'MET'
+#version = 'MET'
 #version = 'DoubleEG'
 #version = 'MINIAOD'
+version = ''
 
 rootfile = '.root'
 
@@ -61,11 +63,12 @@ rootfile = '.root'
 #dirselect = 'GJets_HT-100To200'
 #dirselect = 'DiPhotonJetsBox'
 #dirselect = 'Run2018C'
-dirselect = 'MET'
+#dirselect = 'MET'
 #dirselect = 'DoubleEG'
 #dirselect = 'MET_R17E_MET75'
 #dirselect = 'AOD_Run2017E-17Nov2017-v1'
 #dirselect = 'MINIAOD'
+dirselect = ''
 
 #dirselect = ''
 
@@ -129,7 +132,8 @@ for line2 in targdirs :
     		if rootfile in lline : filelist.append(subdir2+lline)
    
     select =  line2.split("Tune")
-    outfile = 'kuntuple_' + select[0] + '_AL1IsoPho_R17_v22.txt'
+    outfile = 'kuntuple_' + select[0] + '_Full_JustinMC_SMS_GlGl_v23.txt'
+    #outfile = 'kuntuple_' + select[0] + '_AL1IsoPho_R17_v24.txt'
     #print( outfile )
     outf = open( outfile, 'w' )
     for thefile in filelist:

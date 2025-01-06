@@ -24,10 +24,10 @@ int main ( int argc, char *argv[] ){
                 bool hasGenInfo = true;
                 ////const std::string infilename = "KUCMS_Ntuple_Master_BG_Files_List.txt"; genSigPerfect = false;
                 //const std::string infilename = "KUCMS_Ntuple_Master_IsoPho_GMSB_Files_List.txt"; genSigPerfect = true;
-				const std::string infilename = "KUCMS_Ntuple_Master_DataPD_Files_List.txt"; hasGenInfo = false;
+				//const std::string infilename = "KUCMS_Ntuple_Master_DataPD_Files_List.txt"; hasGenInfo = false;
                 //const std::string infilename = "KUCMS_Ntuple_Master_BG_Met0_Files_List.txt"; genSigPerfect = false;
                 //const std::string infilename = "KUCMS_Ntuple_Master_GMSB_Files_List.txt"; genSigPerfect = true
-                //const std::string infilename = "KUCMS_Ntuple_Test_GMSB_Files_List.txt"; genSigPerfect = false;
+                const std::string infilename = "KUCMS_Ntuple_Test_GMSB_Files_List.txt"; genSigPerfect = true;
                 //const std::string infilename = "KUCMS_Ntuple_Master_JetHT_Files_List.txt"; hasGenInfo = false;
                 //const std::string infilename = "KUCMS_Ntuple_Master_DEG_Files_List.txt"; hasGenInfo = false;
 
@@ -43,7 +43,7 @@ int main ( int argc, char *argv[] ){
 
                 //const std::string outfilename = "_Ntuple_v19_LLPgama_10pSkim_v19_rawmet_rjrcombo.root";
                 //const std::string outfilename = "_Ntuple_v19_LLPgama_Skim_v19_ootmet_rjrcombo.root";
-                const std::string outfilename = "_Ntuple_v22_Skim_v24_rjrvars.root";
+                const std::string outfilename = "_Ntuple_v23_JSkim_v24_rjrvars.root";
 
                 int skipCnt = 0;// Normal
 				//int skipCnt = 10;// Met0 GMSB

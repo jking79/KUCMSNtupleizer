@@ -291,6 +291,7 @@ public :
    std::vector<float>   *Gen_energy;
    std::vector<float>   *Gen_eta;
    std::vector<float>   *Gen_mass;
+   std::vector<float>   *Gen_momDisplacment;
    std::vector<int>     *Gen_motherIdx;
    UInt_t          Gen_nTotal;
    std::vector<unsigned int> *Gen_pdgId;
@@ -658,6 +659,7 @@ public :
    TBranch        *b_Gen_energy;   //!
    TBranch        *b_Gen_eta;   //!
    TBranch        *b_Gen_mass;   //!
+   TBranch        *b_Gen_momDisplacment;
    TBranch        *b_Gen_motherIdx;   //!
    TBranch        *b_Gen_nTotal;   //!
    TBranch        *b_Gen_pdgId;   //!
@@ -982,6 +984,7 @@ void llpgtree::Init( TChain *tree, bool doGenInfo ){
    Gen_energy = 0;
    Gen_eta = 0;
    Gen_mass = 0;
+   Gen_momDisplacment = 0;
    Gen_motherIdx = 0;
    Gen_pdgId = 0;
    Gen_phi = 0;
@@ -1360,6 +1363,7 @@ void llpgtree::Init( TChain *tree, bool doGenInfo ){
    fChain->SetBranchAddress("Gen_energy", &Gen_energy, &b_Gen_energy);
    fChain->SetBranchAddress("Gen_eta", &Gen_eta, &b_Gen_eta);
    fChain->SetBranchAddress("Gen_mass", &Gen_mass, &b_Gen_mass);
+   fChain->SetBranchAddress("Gen_momDisplacment", &Gen_momDisplacment, &b_Gen_momDisplacment);
    fChain->SetBranchAddress("Gen_motherIdx", &Gen_motherIdx, &b_Gen_motherIdx);
    fChain->SetBranchAddress("Gen_nTotal", &Gen_nTotal, &b_Gen_nTotal);
    fChain->SetBranchAddress("Gen_pdgId", &Gen_pdgId, &b_Gen_pdgId);
@@ -1777,6 +1781,7 @@ void llpgtree::getBranches( Long64_t entry, bool doGenInfo ){
    b_Gen_energy->GetEntry(entry);     //!
    b_Gen_eta->GetEntry(entry);     //!
    b_Gen_mass->GetEntry(entry);     //!
+   b_Gen_momDisplacment->GetEntry(entry);     //!
    b_Gen_motherIdx->GetEntry(entry);     //!
    b_Gen_nTotal->GetEntry(entry);     //!
    b_Gen_pdgId->GetEntry(entry);     //!

@@ -6,8 +6,9 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('python')
 
 ## Flags
-options.register('hasGenInfo',True,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to get pcalo in mc');
-#options.register('hasGenInfo',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to get pcalo in mc');
+options.register('multicrab',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'swtich to use muticrab paramters');
+options.register('hasGenInfo',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to get pcalo in mc');
+options.register('eventSkim','MET100',VarParsing.multiplicity.singleton,VarParsing.varType.string,'filter to use in event processing');
 
 ## object prep cuts
 #options.register('jetpTmin',15.0,VarParsing.multiplicity.singleton,VarParsing.varType.float,'jet pT minimum cut');
@@ -44,10 +45,11 @@ options.register('globalTag','94X_mc2017_realistic_v11',VarParsing.multiplicity.
 ## processName
 options.register('processName','TREE',VarParsing.multiplicity.singleton,VarParsing.varType.string,'process name to be considered');
 
-#outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_Objectified_v14.root' # ntuplizer test
+#outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_Objectified_Test_v24.root' # ntuplizer test
 #outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_Objectified_v23_triggertest3_fullgen_oottrue.root' # ntuplizer test
-#outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_JustinAOD_llp_ct10_fullgen_oottrue.root' # ntuplizer test
+#outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_JustinAOD_Zll_ct10_fullgen_oottrue.root' # ntuplizer test
 outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_100tev0p1ct_v16.root' # ntuplizer test
+if options.multicrab : outfilename = 'kucmsntuple.root'
 
 options.register('outputFileName',outfilename,VarParsing.multiplicity.singleton,VarParsing.varType.string,'output file name created by cmsRun');
 
@@ -122,7 +124,7 @@ process.source = cms.Source("PoolSource",
         #'file:SMS-GlGl_mGl-1p0_mN2-250_ct0_AOD_4.root',
         #'file:SMS-GlGl_mGl-1p0_mN2-250_ct0_AOD_5.root',
         #'file:/uscms/home/janguian/nobackup/CMSSW_12_4_14_patch3/src/SMS-GlGl_mGl-1p0_mN2-250_Zll_ct10_AOD.root',
-
+        #'root://cmseos.fnal.gov//store/user/janguian/gogo/SMS-GlGl_mGl-1p0_mN2-250_Zll_ct10_AOD/241120_224153/0000/SMS-GlGl_mGl-1p0_mN2-250_Zll_ct10_AOD_80.root',
 
 	#'root://cms-xrd-global.cern.ch//store/mc/RunIIFall17DRPremix/GMSB_L-100TeV_Ctau-200cm_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/80000/58DCC006-3FB2-E811-94AE-AC1F6B0DE454.root',	
 
@@ -133,7 +135,7 @@ process.source = cms.Source("PoolSource",
 	#'/store/data/Run2018C/JetHT/AOD/15Feb2022_UL2018-v1/2530001/B2C0793B-3D7B-104F-B34B-87D010EFDEF4.root',	
 
 
-        #'root://cmsxrootd-site.fnal.gov//store/mc/RunIIFall17DRPremix/QCD_HT200to300_TuneCP5_13TeV-madgraph-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/110000/1E29BF8B-5F60-E811-AD1D-0663CE00010C.root',
+        'root://cmsxrootd-site.fnal.gov//store/mc/RunIIFall17DRPremix/QCD_HT200to300_TuneCP5_13TeV-madgraph-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/110000/1E29BF8B-5F60-E811-AD1D-0663CE00010C.root',
 
         ## HTo2LongLivedTo4b
 
@@ -141,7 +143,7 @@ process.source = cms.Source("PoolSource",
 
 	# AOD MC GMSB
 
-        #'file:/eos/uscms/store/mc/RunIIFall17DRPremix/GMSB_L-100TeV_Ctau-0_1cm_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/100000/2C55A98D-E4D7-E811-AC40-002590491B1E.root',
+        #'root://cmsxrootd-site.fnal.gov//store/mc/RunIIFall17DRPremix/GMSB_L-100TeV_Ctau-0_1cm_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/100000/2C55A98D-E4D7-E811-AC40-002590491B1E.root',
 
 
         # AOD Data MET
@@ -173,7 +175,7 @@ process.source = cms.Source("PoolSource",
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-1000cm'+gmsbaodsim+'270000/A89ECEA5-C5DA-E811-AB4B-D4AE526DDB3F.root',
 #         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-10cm'+gmsbaodsim+'80000/08A3D920-E5B2-E811-85C5-0CC47A4DEEE4.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-10cm'+gmsbaodsim+'80000/0C51F68D-E5B2-E811-8703-002590E39F2E.root',
-         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-0_1cm'+gmsbaodsim+'100000/2C55A98D-E4D7-E811-AC40-002590491B1E.root',
+         #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-0_1cm'+gmsbaodsim+'100000/2C55A98D-E4D7-E811-AC40-002590491B1E.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-10cm'+gmsbaodsim+'80000/2097D13F-30B3-E811-9FB3-0025905C96EA.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-1200cm'+gmsbaodsim+'60000/605B95ED-8AD8-E811-B640-001E67A3F70E.root',
 #         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-1200cm'+gmsbaodsim+'60000/68C5DD84-EAD6-E811-9028-44A842CFD60C.root',
@@ -251,7 +253,7 @@ process.source = cms.Source("PoolSource",
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500))#QT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(5000))#BT
@@ -261,7 +263,7 @@ process.source = cms.Source("PoolSource",
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100000))#MS
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250000))#MD
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500000))#LG
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
 
 # Set the global tag depending on the sample type
 from Configuration.AlCa.GlobalTag import GlobalTag
@@ -270,7 +272,28 @@ process.GlobalTag.globaltag = options.globalTag
 ## Create output file
 ## Setup the service to make a ROOT TTree
 process.TFileService = cms.Service("TFileService", fileName = cms.string(options.outputFileName))
-				   
+		
+genInfo = True
+#genInfo = False
+if options.multicrab == True : genInfo = options.hasGenInfo		   
+
+skimselect = 'None'
+#skimselect = 'MET100'
+#skimselect = 'AL1IsoPho'
+if options.multicrab == True : skimselect = options.eventSkim
+
+genMomChase = True
+#genMomChase = False
+if options.multicrab == True : genMomChase = False
+#makeTrigList = True
+makeTrigList = False
+if options.multicrab == True : makeTrigList = False
+
+print( "Using options : mutlicrab = ",options.multicrab," geninfo = ",genInfo," skim = ",skimselect )
+print( "Using options : momChase = ",genMomChase," trgiList = ",makeTrigList ) 
+print( "Using options : globalTag = ",options.globalTag )
+print( "With output file name : ",options.outputFileName )
+
 # Make the tree 
 process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
 
@@ -278,16 +301,12 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
                               tkAssocParamBlock,
 
                               ## flags
-                              hasGenInfo = cms.bool(options.hasGenInfo),
-                              #hasGenInfo = cms.bool(False),
-                              #doGenMotherChase = cms.bool(True),
-                              #makeTriggerList =  cms.bool(True),
-                              #makeTriggerList =  cms.bool(False),   
+                              hasGenInfo = cms.bool(genInfo),
+                              doGenMotherChase = cms.bool(genMomChase),
+                              makeTriggerList =  cms.bool(makeTrigList),
 
-                              ##skim type selectuon  
-                              #skimSelection = cms.string('None')
-                              #skimSelection = cms.string('MET100')
-                              skimSelection = cms.string('AL1IsoPho'),
+                              ##skim type selectuon 
+                              skimSelection = cms.string(skimselect),
                             
                               #Triggers
                               triggerList = cms.vstring( #"hltPFMET100", "hltMETClean100", "hltHIPhoton20Eta3p1" ),   
