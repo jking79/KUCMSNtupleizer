@@ -101,11 +101,12 @@ def dostack( hist_list, outname, date, layout, ptitle, z, y, x, l, t ):
     c1.Update()
     c1.Draw()
 
-    lat_cms = '#bf{CMS} #it{Preliminary}' + ptitle[0]
-    #lat_cms = '#bf{CMS} #it{Work in Progress}' + ptitle[0]
+    #lat_cms = '#bf{CMS} #it{Preliminary}' + ptitle[0]
+    lat_cms = '#bf{CMS} #it{Work in Progress}' + ptitle[0]
     #lat_title = 'Run2018D 3206730-320824' #   7 fb^{-1} (#sqrt{s} = 13 TeV)'
     #lat_title = 'Run2018D 1Tier miniAOD'
-    lat_title = ptitle[1]+' (13 TeV)'
+    #lat_title = ptitle[1]+' (13 TeV)'
+    lat_title = ptitle[1]
     #lat_form = '#sigma^{2}_{i}=(#frac{N}{A_{eff}/#sigma_{n}})^{2}+2C^{2}'
     lat_form = '#sigma^{2}_{i}=(N/ETeff)^{2}+2C^{2}'
     #lat.SetTextSize(0.045);
@@ -146,7 +147,8 @@ islogz = True
 
 
 #for model in ["Bkgrd"] :
-for model in ["GluGlu"] :
+#for model in ["GluGlu"] :
+for model in ["Justin"] :
 #for model in ["GluGlu","SqkSqk"] :
 #for model in ["GluGlu","SqkSqk","SqkGlu","XinoXino"] :
 #for model in ["GluGlu","SqkSqk","SqkGlu","XinoXino","SleptSlept"] :
@@ -172,16 +174,30 @@ for model in ["GluGlu"] :
     #sig400 = "rjr_multihist_files/KUCMS_GMSB_L400_"+model+"_v21_genSigPerfect_"+nsigpho+"_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
 
     #bgQCD = "rjr_multihist_files/KUCMS_QCD_v19_BG_nSigPho0_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
-    #bgGJets = "rjr_multihist_files/KUCMS_GJets_v19_BG_nSigPho0_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
-    bgQCD = "rjr_multihist_files/KUCMS_QCD_BkGrd_v23_"+nsigphob+"_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
-    bgGJets = "rjr_multihist_files/KUCMS_GJets_BkGrd_v23_"+nsigphob+"_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
+    #bgQCD = "rjr_multihist_files/KUCMS_QCD_BkGrd_v23_"+nsigphob+"_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
 
-    z = [0.001, 10]
+    #bgGJets = "rjr_multihist_files/KUCMS_GJets_v19_BG_nSigPho0_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
+    #bgGJets = "rjr_multihist_files/KUCMS_GJets_BkGrd_v23_"+nsigphob+"_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
+    #bgGJets = "rjr_multihist_files/KUCMS_GJets_BkGrd_v23_nSigPho2_wt2_RjrSkim_v24_ootmet_phojet_multiHists.root"
+    #bgGJets = "rjr_multihist_files/KUCMS_GJets_BkGrd_M100_v23_nSigPho1_wt2_RjrSkim_v24_ootmet_phojet_multiHists.root"
+    bgGJets = "rjr_multihist_files/KUCMS_GJets_BkGrd_v23_nSigPho1_wt2_RjrSkim_v24_ootmet_phojet_multiHists.root"
+
+    justin1 = "rjr_multihist_files/KUCMS_JustinV1_GIGI_v23_genSigPerfect_nSigPho1_wt2_RjrSkim_v24_ootmet_phojet_multiHists.root"
+    pdMET = "rjr_multihist_files/KUCMS_MET_BkGrd_v23_nSigPho1_wt2_RjrSkim_v24_ootmet_phojet_multiHists.root"
+
+    #z = [0.001, 10]
+    #z = [1, 1000000]
+    z = [1, 100]
 
     l = [ 0.6,0.65,0.94,0.875 ] # legend position top right short
-    t = [0.55,0.85,0.0,0.175,0.225] # titles position
+    #l = [ 0.75,0.65,0.9,0.875 ] # legend position top right short
+    t = [0.7,0.85,0.0,0.175,0.225] # titles position
 
-    for rhname in ["ASMvAX2NQSum","ASMvAX2QSum","ASMvVMass","ASMvVDiff","AX2NQSumvVMass","AX2NQSumvVDiff","AX2NQSumvAX2QSum","AX2QSumvVMass","AX2QSumvVDiff","VMassvVDiff","NJetsJavNJetsJb"] :
+    #plotlist = ["ASMvAX2NQSum","ASMvAX2QSum","ASMvVMass","ASMvVDiff","AX2NQSumvVMass","AX2NQSumvVDiff","AX2NQSumvAX2QSum","AX2QSumvVMass","AX2QSumvVDiff","VMassvVDiff","NJetsJavNJetsJb"]
+
+    plotlist = ["ASMvAX2NQSum","ASMvVMass","ASMvVDiff","AX2NQSumvVMass","AX2NQSumvVDiff","VMassvVDiff"]
+
+    for rhname in plotlist :
 
         x = []
         y = []
@@ -189,33 +205,33 @@ for model in ["GluGlu"] :
         if "ASMvAX2NQSum" in rhname : 
             x = [ 0.0, 12000 ]
             y = [ 0.0, 1.0 ]
-            xtitle = "ASMass [GeV]"
-            ytitle = "AX2NQSum"
+            xtitle = "m_{S_{0}} [GeV]"
+            ytitle = "m_{S_{ab}}/m_{S_{0}}"
         if "ASMvAX2QSum" in rhname :
             x = [ 0.0, 12000 ]
             y = [ 0.0, 2600 ]
-            xtitle = "ASMass [GeV]"
+            xtitle = "m_{S_{0}} [GeV]"
             ytitle = "AX2QSum [GeV]"
         if "ASMvVMass" in rhname :
             x = [ 0.0, 12000 ]
             y = [ 0.0, 2600 ]
-            xtitle = "ASMass [GeV]"
-            ytitle = "NVSum"
+            xtitle = "m_{S_{0}} [GeV]"
+            ytitle = "m_{V_{a}+V_{b}}/m_{S_{0}}"
         if "ASMvVDiff" in rhname :
             x = [ 0.0, 12000 ]
             y = [ -1.0, 1.0 ]
-            xtitle = "ASMass [GeV]"
-            ytitle = "VDiff"
+            xtitle = "m_{S_{0}} [GeV]"
+            ytitle = "m_{V_{a}-V_{b}}/m_{V_{a}+V_{b}}"
         if "AX2NQSumvVMass" in rhname :
             x = [ 0, 1.0 ]
             y = [ 0.0, 2600 ]
-            xtitle = "AX2NQSum"
-            ytitle = "NVSum"
+            xtitle = "m_{S_{ab}}/m_{S_{0}}"
+            ytitle = "m_{V_{a}+V_{b}}/m_{S_{0}}"
         if "AX2NQSumvVDiff" in rhname :
             x = [ 0, 1.0 ]
             y = [ -1.0, 1.0 ]
-            xtitle = "AX2NQSum"
-            ytitle = "VDiff"
+            xtitle = "m_{S_{ab}}/m_{S_{0}}"
+            ytitle = "m_{V_{a}-V_{b}}/m_{V_{a}+V_{b}}"
         if "AX2NQSumvAX2QSum" in rhname :
             x = [ 0, 1.0 ]
             y = [ 0, 2600 ]
@@ -234,8 +250,8 @@ for model in ["GluGlu"] :
         if "VMassvVDiff" in rhname :
             x = [ 0, 2600 ]
             y = [ -1.0, 1.0 ]
-            xtitle = "NVSum"
-            ytitle = "VDiff"
+            xtitle = "m_{V_{a}+V_{b}}/m_{S_{0}}"
+            ytitle = "m_{V_{a}-V_{b}}/m_{V_{a}+V_{b}}"
         if "NJetsJavNJetsJb" in rhname :
             x = [ 0, 20 ]
             y = [ 0, 20 ]
@@ -261,20 +277,24 @@ for model in ["GluGlu"] :
         legGJets = 'L400'
 
         legtitle = ""
-        sig = sig200
-        leg = leg200
+        sig = justin1
+        leg = "T5qqqq"
+        #leg = "#splitline{ pp\rightarrow \tilde{g}\tilde{g} }{ #splitline{ \tilde{g} \rightarrow qq\tilde{\chi}_2^0 }{ \tilde{\chi}_2^0\rightarrow \gamma\tilde{\chi}_1^0 } }"
+        ltit = "T5qqqq"
         if "Bkgrd" in model : 
             sig = bgGJets
-            leg = 'GJets'
+            leg = 'GJets 2017'
+            ltit = 'GJets2017'
 
         fhname = rhname
         htitle = fhname
         #xtitle = fhname
         #ytitle = fhname
-        outname = 'llpa_rjr_' + model + '_' + leg + '_' + rjrtype + '_' + nsigpho + '_' + fhname
+        outname = 'llpa_rjr_' + model + '_' + ltit + '_' + rjrtype + '_' + nsigpho + '_' + fhname
         #outname = 'llpa_rjr_op_' + fhname
         layout = { 'xtitle' : xtitle, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'logz' : islogz,'legtitle' : legtitle }
-        ptitle=[' 2017', '137 fb', model + ' ' + leg + ' ' + rjrtype ]
+        #ptitle=[' 2017', '137 fb', model + ' ' + leg + ' ' + rjrtype ]
+        ptitle=['','',leg]
         #ptitle=[' 2017','137 fb','']
 
         inhistlist = [
