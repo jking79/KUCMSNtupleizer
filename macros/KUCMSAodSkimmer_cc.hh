@@ -1432,9 +1432,11 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 
     float m_MVDiff = abDiffSide*(m_MVa-m_MVb)/(m_MVa+m_MVb);
     float m_MVSum = std::sqrt((sq2(m_MVa)+sq2(m_MVb))/2);
+	float m_MVNSum = 2*m_MVSum/a_MS;
 
     selRjrVars.fillBranch( "rjrMVDiff", m_MVDiff );
     selRjrVars.fillBranch( "rjrMVSum", m_MVSum );
+    selRjrVars.fillBranch( "rjrMVNSum", m_MVNSum );
 
   	float m_PV_lab    = S->GetListVisibleFrames().GetFourVector().P();
   	float m_dphiMET_V = S->GetListVisibleFrames().GetFourVector().Vect().DeltaPhi(ETMiss);
@@ -1860,6 +1862,7 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
 
     selRjrVars.makeBranch( "rjrMVDiff", VFLOAT );
     selRjrVars.makeBranch( "rjrMVSum", VFLOAT );
+    selRjrVars.makeBranch( "rjrMVNSum", VFLOAT );
 
     selRjrVars.attachBranches( fOutTree );
 

@@ -579,6 +579,7 @@ void KUCMSGenObject::ProcessEvent( ItemManager<float>& geVar ){
     //if( GenDEBUG ) std::cout << "GenPart : LOADING GEN WT " << std::endl;
     float wgt = genEvtInfo_->weight();
     Branches.fillBranch("genWgt",wgt);
+	geVar.fill("genWgt",wgt);
     //if( GenDEBUG ) std::cout << "GenPart : Done " << std::endl;
 
 }//<<>>void KUCMSGen::ProcessEvent()

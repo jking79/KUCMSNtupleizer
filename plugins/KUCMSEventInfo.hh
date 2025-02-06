@@ -59,6 +59,7 @@ class KUCMSEventInfoObject : public KUCMSObjectBase {
     void LoadTriggerTokens( edm::EDGetTokenT<edm::TriggerResults> triggerResultsToken_ , edm::EDGetTokenT<trigger::TriggerEvent> triggerEventToken_ ){ triggerResultsToken = triggerResultsToken_; triggerEventToken = triggerEventToken_; }; 
     // sets up branches, do preloop jobs 
     void InitObject( TTree* fOutTree ); 
+    void InitConfigTree( TTree* fConfigTree );
     // new function needed for crosstalk - EXAMPLE CLASS USED HERE FOR REFRENCE ONLY -
     // void LoadObject( exampleObject* otherObject ){ otherObjectPtr = otherObject; }; // define with specific KUCMS object(s) needed 
 
@@ -271,6 +272,8 @@ void KUCMSEventInfoObject::ProcessEvent( ItemManager<float>& geVar ){
 void KUCMSEventInfoObject::PostProcessEvent( ItemManager<float>& geVar ){}
 
 void KUCMSEventInfoObject::EndJobs(){
+
+	
 
 	if( cfFlag("makeTriggerList") ){
 		

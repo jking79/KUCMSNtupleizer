@@ -84,12 +84,12 @@ def docrab( dataset ):
 
         config.Data.partialDataset = True
         config.Data.inputDataset   = None
-        #config.Data.lumiMask       = inputJSON    # Comment out for MC only set for data !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        config.Data.lumiMask       = inputJSON    # Comment out for MC only set for data !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         #config.Data.splitting     = 'Automatic' # data
-        config.Data.splitting = 'FileBased' # Justin
-        config.Data.unitsPerJob  =  10
-        #config.Data.splitting    = 'EventAwareLumiBased' # MC&Data Set unitsperjob correctly for dataset !!!!!!!!!!!!!!!!!!!!!!!!!!
-        #config.Data.unitsPerJob   = 15000 # data  !!!!!! lumimask ?
+        #config.Data.splitting = 'FileBased' # Justin
+        #config.Data.unitsPerJob  =  10
+        config.Data.splitting    = 'EventAwareLumiBased' # MC&Data Set unitsperjob correctly for dataset !!!!!!!!!!!!!!!!!!!!!!!!!!
+        config.Data.unitsPerJob   = 15000 # data  !!!!!! lumimask ?
         #config.Data.unitsPerJob  =  1500 # MC GMSB
         #config.Data.unitsPerJob  =  10000 # MC GJet
         #config.Data.unitsPerJob  =  15000 # MC QCD
@@ -109,8 +109,8 @@ def docrab( dataset ):
 
         for inDO in inputDataAndOpts:
 
-            #config.Data.inputDataset     = inDO[0]
-            config.Data.userInputFiles = open("justin_gogoG_filelist.txt").readlines()
+            config.Data.inputDataset     = inDO[0]
+            #config.Data.userInputFiles = open("justin_gogoG_filelist.txt").readlines()
 
             print( '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>' )
             print( 'Input dataset for Crab Job : ' )
@@ -119,8 +119,8 @@ def docrab( dataset ):
             #primaryDataset = (inDO[0].split('/')[1]).split('_13T')[0]
             primaryDataset = (inDO[0].split('/')[1]).split('_Tune')[0]
             print( primaryDataset )
-            runEra         = (inDO[0].split('/')[2]) # justin
-            #runEra         = ((inDO[0].split('/')[2]).split('-')[0]+'_'+(inDO[0].split('/')[2]).split('-')[1]) # data
+            #runEra         = (inDO[0].split('/')[2]) # justin
+            runEra         = ((inDO[0].split('/')[2]).split('-')[0]+'_'+(inDO[0].split('/')[2]).split('-')[1]) # data
             #runEra         = ((inDO[0].split('/')[2]).split('_')[0]+'_'+(inDO[0].split('/')[2]).split('_')[1]).split('-PU')[0] # MC
             #runEra         = ((inDO[0].split('/')[2]).split('-')[0]+'_'+(inDO[0].split('/')[2]).split('-')[1]).split('106')[0]
             print( runEra )
@@ -139,7 +139,7 @@ def docrab( dataset ):
             ##trial          = "kucmsntuple_MET_R17_AL1IsoPho_v24_test" #
             ##trial          = "kucmsntuple_DEG_R17_MET100_v21" #
             #trial          = "kucmsntuple_DEG_R17_AL1IsoPho_v24" #
-            ##trial          = "kucmsntuple_JetHT_R17_MET100_v21" #
+            trial          = "kucmsntuple_JetHT_R17_MET100_v24" #
             ##trial          = "kucmsntuple_JetHT_R17_AL1IsoPho_v22" #
             ##trial          = "kucmsntuple_JetHT_R18_AL1IsoPho_v22" #
             ##trial          = "kucmsntuple_JetHT_R18_MET100_v22" #
@@ -155,7 +155,7 @@ def docrab( dataset ):
             ##trial          = "kucmsntuple_DiPhoBox_AOD_v14"
             #trial          = "kucmsntuple_gogo_Zll_ct10_v3_Justin_None_v22" # 
             ##trial          = "kucmsntuple_crab_test"
-            trial          = "kucmsntuple_gogoG_Justin_None_v22" #
+            #trial          = "kucmsntuple_gogoG_Justin_None_v22" #
 
             print( 'processing for : ',trial )
 
@@ -168,7 +168,7 @@ def docrab( dataset ):
 #  -------  selsect PD/MC dependent paramters
 #-----------------------------------------------------------------------------------------------------------------------------
 #>>>>>>>>>>>>>>>>>>>     #JetHT/Run2017B-17Nov2017-v1/AOD good for #globalTag=94X_dataRun2_ReReco_EOY17_v2
-            #config.JobType.pyCfgParams   = ['globalTag=94X_dataRun2_ReReco_EOY17_v2','multicrab=True']
+            config.JobType.pyCfgParams   = ['globalTag=94X_dataRun2_ReReco_EOY17_v2','multicrab=True']
 #>>>>>>>>>>>>>>>>>>>     #DoubleEG/Run2017*-09Aug2019_UL2017-v1/AOD good for #globalTag=106X_dataRun2_v20
             #config.JobType.pyCfgParams   = ['globalTag=106X_dataRun2_v20','multicrab=True']
             #config.JobType.pyCfgParams   = ['globalTag=106X_dataRun2_v36','multicrab=True','eventSkim=AL1IsoPho']
@@ -197,7 +197,7 @@ def docrab( dataset ):
 
 #-----------------------------------------------------------------------------------------------------------------------------
 #>>>>>      #MC GMSB RunIIFall17DRPremix  #globalTag=94X_mc2017_realistic_v14  #  <<< comment/uncomment lumi mask when using/!using MC
-            config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v14','multicrab=True','hasGenInfo=True']
+            #config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v14','multicrab=True','hasGenInfo=True']
             #config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v14','multicrab=True','hasGenInfo=True','eventSkim=AL1IsoPho']
 #>>>>>>>>>>>>>>>>>>>     #MC GJets RunIIFall17DRPremix && RunIISummer20UL18RECO  !!!!! CHANGE UNITS PER JOB !!!!!!!
             #config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v11','multicrab=True','hasGenInfo=True']
@@ -272,11 +272,11 @@ def run_multi():
 
             # Dataset: JetHT 2017
 
-            #['/JetHT/Run2017B-17Nov2017-v1/AOD',''],
-            #['/JetHT/Run2017C-17Nov2017-v1/AOD',''],
-            #['/JetHT/Run2017D-17Nov2017-v1/AOD',''],
-            #['/JetHT/Run2017E-17Nov2017-v1/AOD',''],
-            #['/JetHT/Run2017F-17Nov2017-v1/AOD',''],
+            ['/JetHT/Run2017B-17Nov2017-v1/AOD',''],
+            ['/JetHT/Run2017C-17Nov2017-v1/AOD',''],
+            ['/JetHT/Run2017D-17Nov2017-v1/AOD',''],
+            ['/JetHT/Run2017E-17Nov2017-v1/AOD',''],
+            ['/JetHT/Run2017F-17Nov2017-v1/AOD',''],
 
 
 			# Dataset : MET
@@ -335,7 +335,7 @@ def run_multi():
 
             # PD: /DoubleEG/Run2017*-09Aug2019_UL2017-v1/AOD
 
-            ['/DoubleEG/Run2017F-09Aug2019_UL2017-v1/AOD',''],
+            #['/DoubleEG/Run2017F-09Aug2019_UL2017-v1/AOD',''],
 
 			# Dataset: /SingleElectron/Run2017-09Aug2019_UL2017-/MINIAOD
 
@@ -632,9 +632,9 @@ def run_multi():
 
         dsUpload = [ ['/justin_mc_noFilter/private/AODSIM'], ]
    
-        runDataset = dsUpload
+        #runDataset = dsUpload
         #runDataset = doRedo
-        #runDataset = dsData
+        runDataset = dsData
         #runDataset = dsGMSB # !!!!  CHANGE UNITS PER JOB AND GT USED !!!!!!!
         #runDataset = dsGMSBMini
         #runDataset = dsGJET # !!!!  CHANGE UNITS PER JOB AND GT USED !!!!!!!

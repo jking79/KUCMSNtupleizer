@@ -253,8 +253,8 @@ process.source = cms.Source("PoolSource",
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500))#QT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(5000))#BT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10000))#LT
@@ -277,13 +277,13 @@ genInfo = True
 #genInfo = False
 if options.multicrab == True : genInfo = options.hasGenInfo		   
 
-skimselect = 'None'
+#skimselect = 'None'
 #skimselect = 'MET100'
-#skimselect = 'AL1IsoPho'
+skimselect = 'AL1IsoPho'
 if options.multicrab == True : skimselect = options.eventSkim
 
-genMomChase = True
-#genMomChase = False
+#genMomChase = True
+genMomChase = False
 if options.multicrab == True : genMomChase = False
 #makeTrigList = True
 makeTrigList = False

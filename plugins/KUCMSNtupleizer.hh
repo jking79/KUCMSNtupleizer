@@ -174,6 +174,9 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
         virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
         virtual void endJob() override;
 
+		// setup config tree
+		void InitConfigTree( TTree* fConfigTree );
+
         //bool selectedEvent();
 		//ntple event selection
 		KUCMSEventSelection ntupleSkim;
@@ -195,8 +198,14 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
         // global event varibles
         ItemManager<float> geVar;
 
+		// config - event count and wgt info
+		KUCMSBranchManager ConfigBranches;
+    	int nTotEvts, nSkimEvts;
+    	float sumEvtWgt, sumSkimEvtWgt;
+
         // oputput tree
         TTree *outTree;
+        TTree *configTree;
 
         // histograms
         TH1D *hist1d[nHists];
@@ -338,10 +347,15 @@ void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
     // ** for example only -- convert to nano?, use ewkino varibles for output, find rechit information ** 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    //if( DEBUG ) std::cout << "***********************************************************************************************" << std::endl;
+    //if( DEBUG ) std::cout << "********************************************************************************************" << std::endl;
 
     // clear global event varibles 
     geVar.clear(); // floats
+
+	// increment event counts and wgts
+	int single = 1;
+	geVar.set("genWgt",single);
+    nTotEvts++;;
 
     // -------------------------------------------------------------------------------------------------
     // ---  Collecting objects ( preprocessing object pruning & fill global object vectors )------------
@@ -370,7 +384,13 @@ void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
     // -- Fill output trees ------------------------------------------
 
     //if( DEBUG ) std::cout << "Select Event and Fill Tree" << std::endl;
-    if( ntupleSkim.selectEvent( geVar ) ) outTree->Fill();
+    if( ntupleSkim.selectEvent( geVar ) ){ 
+		outTree->Fill();
+		nSkimEvts++;
+		sumSkimEvtWgt += geVar("genWgt");
+	}//<<>>if( ntupleSkim.selectEvent( geVar ) )
+
+	sumEvtWgt += geVar("genWgt");
 
     // -- EOFun ------------------------------------------------------
     //     #ifdef THIS_IS_AN_EVENTSETUP_EXAMPLE
@@ -392,22 +412,47 @@ void KUCMSNtupilizer::beginJob(){
     // Book output files and trees
     edm::Service<TFileService> fs;
     outTree = fs->make<TTree>("llpgtree","KUCMSNtuple");
+    configTree = fs->make<TTree>("configtree","KUCMSNtuple");
  
+	InitConfigTree( configTree );
+
     // Book //histograms ( if any )
  
     std::cout << "Services Booked" << std::endl;
  
     if( DEBUG ) std::cout << "Init ObjMan" << std::endl;
     ObjMan.Init( outTree );
+
+    nTotEvts = 0; 
+	nSkimEvts = 0;
+	sumEvtWgt = 0;
+    sumSkimEvtWgt = 0;
  
 }//>>>>void KUCMSNtupilizer::beginJob()
 
+void KUCMSNtupilizer::InitConfigTree( TTree* fConfigTree ){
+
+    ConfigBranches.makeBranch("nTotEvts","nTotEvts",INT);
+    ConfigBranches.makeBranch("nSkimEvts","nSkimEvts",INT);
+    ConfigBranches.makeBranch("sumEvtWgt","sumEvtWgt",FLOAT);
+    ConfigBranches.makeBranch("sumSkimEvtWgt","sumSkimEvtWgt",FLOAT);
+
+    ConfigBranches.attachBranches(fConfigTree);
+
+}//<<>>void KUCMSNtupilizer::InitConfigTree( TTree* fConfigTree )
 
 // ------------ method called once each job just after ending the event loop    ------------
 void KUCMSNtupilizer::endJob(){
  
     if( DEBUG ) std::cout << "ObjMan EndJobs" << std::endl;
     ObjMan.EndJobs();
+
+	ConfigBranches.clearBranches();
+	ConfigBranches.fillBranch("nTotEvts",nTotEvts);
+	ConfigBranches.fillBranch("nSkimEvts",nSkimEvts);
+	ConfigBranches.fillBranch("sumEvtWgt",sumEvtWgt);
+    ConfigBranches.fillBranch("sumSkimEvtWgt",sumSkimEvtWgt);
+	configTree->Fill();
  
 }//>>>>void KUCMSNtupilizer::endJob()
 
