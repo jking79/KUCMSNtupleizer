@@ -49,11 +49,14 @@ const bool KUCMSEventSelection::selectEvent( ItemManager<float>& geVar ){
 
 	bool hasAL1IsoPhoton = geVar("nIsoPhos") > 0;
 
+	bool hasAl1IsoPhoPlusMinMet100 = hasAL1IsoPhoton && hasMinMet100;
+
 	selectionMap["None"] = true;
 	selectionMap["MET150"] = hasMinMet150;
     selectionMap["MET100"] = hasMinMet100;
     selectionMap["MET75"] = hasMinMet75;
     selectionMap["AL1IsoPho"] = hasAL1IsoPhoton;
+    selectionMap["IsoPhoMet100"] = hasAl1IsoPhoPlusMinMet100;
 
 	//std::cout << "Event select for ntuple with " << eventSelectionTag << " w/ result " << selectionMap[eventSelectionTag] << std::endl;
 	return selectionMap[eventSelectionTag];

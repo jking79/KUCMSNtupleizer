@@ -59,7 +59,7 @@ public :
    std::vector<float>   *genSGMass;
    std::vector<float>   *genSQMass;
    Int_t           genSigType;
-   Bool_t          genStatus;
+   vector<int>     *genStatus;
    std::vector<float>   *genVx;
    std::vector<float>   *genVy;
    std::vector<float>   *genVz;
@@ -506,6 +506,7 @@ void kuSkimTree::Init(TTree *tree)
    genPz = 0;
    genSGMass = 0;
    genSQMass = 0;
+   genStatus = 0;
    genVx = 0;
    genVy = 0;
    genVz = 0;

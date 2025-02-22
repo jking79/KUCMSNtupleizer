@@ -1,0 +1,85 @@
+## ------------------------------------ 
+## Master Filelist : GMSB
+## -------------------------------------
+#
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-100TeV_Ctau-10000cm_AL1IsoPho_R17_v22.txt Ct10kL100 2.16 837.9 139.4 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-100TeV_Ctau-1000cm_AL1IsoPho_R17_v22.txt Ct1kL100 2.16 837.9 139.4 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-100TeV_Ctau-10cm_AL1IsoPho_R17_v22.txt Ct10L100 2.16 837.9 139.4 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-100TeV_Ctau-1200cm_AL1IsoPho_R17_v22.txt Ct1p2kL100 2.16 837.9 139.4 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-100TeV_Ctau-200cm_AL1IsoPho_R17_v22.txt Ct200L100 2.16 837.9 139.4 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-100TeV_Ctau-400cm_AL1IsoPho_R17_v22.txt Ct400L100 2.16 837.9 139.4 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-100TeV_Ctau-0p001cm_AL1IsoPho_R17_v22.txt Ctp001L100 2.16 837.9 139.4 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-100TeV_Ctau-0_1cm_AL1IsoPho_R17_v22.txt Ctp1L100 2.16 837.9 139.4 1 0
+#
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-150TeV_Ctau-10000cm_AL1IsoPho_R17_v22.txt Ct10kL150 0.228 1206.7 212.1 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-150TeV_Ctau-1000cm_AL1IsoPho_R17_v22.txt Ct1kL150 0.228 1206.7 212.1 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-150TeV_Ctau-10cm_AL1IsoPho_R17_v22.txt Ct10L150 0.228 1206.7 212.1 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-150TeV_Ctau-1200cm_AL1IsoPho_R17_v22.txt Ct1p2kL150 0.228 1206.7 212.1 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-150TeV_Ctau-200cm_AL1IsoPho_R17_v22.txt Ct200L150 0.228 1206.7 212.1 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-150TeV_Ctau-400cm_AL1IsoPho_R17_v22.txt Ct400L150 0.228 1206.7 212.1 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-150TeV_Ctau-0p001cm_AL1IsoPho_R17_v22.txt Ctp001L150 0.228 1206.7 212.1 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-150TeV_Ctau-0_1cm_AL1IsoPho_R17_v22.txt Ctp1L150 0.228 1206.7 212.1 1 0
+#
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-200TeV_Ctau-10000cm_AL1IsoPho_R17_v22.txt Ct10kL200 0.0445 1564.5 284.8 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-200TeV_Ctau-1000cm_AL1IsoPho_R17_v22.txt Ct1kL200 0.0445 1564.5 284.8 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-200TeV_Ctau-10cm_AL1IsoPho_R17_v22.txt Ct10L200 0.0445 1564.5 284.8 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-200TeV_Ctau-1200cm_AL1IsoPho_R17_v22.txt Ct1p2kL200 0.0445 1564.5 284.8 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-200TeV_Ctau-200cm_AL1IsoPho_R17_v22.txt Ct200L200 0.0445 1564.5 284.8 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-200TeV_Ctau-400cm_AL1IsoPho_R17_v22.txt Ct400L200 0.0445 1564.5 284.8 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-200TeV_Ctau-0p001cm_AL1IsoPho_R17_v22.txt Ctp001L200 0.0445 1564.5 284.8 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-200TeV_Ctau-0_1cm_AL1IsoPho_R17_v22.txt Ctp1L200 0.0445 1564.5 284.8 1 0
+#
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-250TeV_Ctau-10000cm_AL1IsoPho_R17_v22.txt Ct10kL250 0.0126 1914.9 357.5 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-250TeV_Ctau-1000cm_AL1IsoPho_R17_v22.txt Ct1kL250 0.0126 1914.9 357.5 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-250TeV_Ctau-10cm_AL1IsoPho_R17_v22.txt Ct10L250 0.0126 1914.9 357.5 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-250TeV_Ctau-1200cm_AL1IsoPho_R17_v22.txt Ct1p2kL250 0.0126 1914.9 357.5 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-250TeV_Ctau-200cm_AL1IsoPho_R17_v22.txt Ct200L250 0.0126 1914.9 357.5 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-250TeV_Ctau-400cm_AL1IsoPho_R17_v22.txt Ct400L250 0.0126 1914.9 357.5 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-250TeV_Ctau-0p001cm_AL1IsoPho_R17_v22.txt Ctp001L250 0.0126 1914.9 357.5 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-250TeV_Ctau-0_1cm_AL1IsoPho_R17_v22.txt Ctp1L250 0.0126 1914.9 357.5 1 0
+#
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-300TeV_Ctau-10000cm_AL1IsoPho_R17_v22.txt Ct10kL300 0.00445 2259.6 430.4 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-300TeV_Ctau-1000cm_AL1IsoPho_R17_v22.txt Ct1kL300 0.00445 2259.6 430.4 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-300TeV_Ctau-10cm_AL1IsoPho_R17_v22.txt Ct10L300 0.00445 2259.6 430.4 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-300TeV_Ctau-1200cm_AL1IsoPho_R17_v22.txt Ct1p2kL300 0.00445 2259.6 430.4 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-300TeV_Ctau-200cm_AL1IsoPho_R17_v22.txt Ct200L300 0.00445 2259.6 430.4 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-300TeV_Ctau-400cm_AL1IsoPho_R17_v22.txt Ct400L300 0.00445 2259.6 430.4 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-300TeV_Ctau-0p001cm_AL1IsoPho_R17_v22.txt Ctp001L300 0.00445 2259.6 430.4 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-300TeV_Ctau-0_1cm_AL1IsoPho_R17_v22.txt Ctp1L300 0.00445 2259.6 430.4 1 0
+#
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-350TeV_Ctau-10000cm_AL1IsoPho_R17_v22.txt Ct10kL350 0.00178 2598.9 503.4 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-350TeV_Ctau-1000cm_AL1IsoPho_R17_v22.txt Ct1kL350 0.00178 2598.9 503.4 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-350TeV_Ctau-10cm_AL1IsoPho_R17_v22.txt Ct10L350 0.00178 2598.9 503.4 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-350TeV_Ctau-1200cm_AL1IsoPho_R17_v22.txt Ct1p2kL350 0.00178 2598.9 503.4 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-350TeV_Ctau-200cm_AL1IsoPho_R17_v22.txt Ct200L350 0.00178 2598.9 503.4 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-350TeV_Ctau-400cm_AL1IsoPho_R17_v22.txt Ct400L350 0.00178 2598.9 503.4 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-350TeV_Ctau-0p001cm_AL1IsoPho_R17_v22.txt Ctp001L350 0.00178 2598.9 503.4 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-350TeV_Ctau-0_1cm_AL1IsoPho_R17_v22.txt Ctp1L350 0.00178 2598.9 503.4 1 0
+#
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-400TeV_Ctau-10000cm_AL1IsoPho_R17_v22.txt Ct10kL400 0.000778 2934.5 576.4 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-400TeV_Ctau-1000cm_AL1IsoPho_R17_v22.txt Ct1kL400 0.000778 2934.5 576.4 1 0
+KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-400TeV_Ctau-10cm_AL1IsoPho_R17_v22.txt Ct10L400 0.000778 2934.5 576.4 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-400TeV_Ctau-1200cm_AL1IsoPho_R17_v22.txt Ct1p2kL400 0.000778 2934.5 576.4 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-400TeV_Ctau-200cm_AL1IsoPho_R17_v22.txt Ct200L400 0.000778 2934.5 576.4 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-400TeV_Ctau-400cm_AL1IsoPho_R17_v22.txt Ct400L400 0.000778 2934.5 576.4 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-400TeV_Ctau-0p001cm_AL1IsoPho_R17_v22.txt Ctp001L400 0.000778 2934.5 576.4 1 0
+#KUCMSNtuple/kucmsntuple_GMSB_R17_AL1IsoPho_v22/ kuntuple_GMSB_L-400TeV_Ctau-0_1cm_AL1IsoPho_R17_v22.txt Ctp1L400 0.000778 2934.5 576.4 1 0
+#
+##KUCMSNtuple/kucmsntuple_GMSB_R17_v19/ kuntuple_GMSB_L-500TeV_Ctau-10000cm_R17_v19.txt Ct10kL500 0.000165 3595.0 723.0 1 0
+##KUCMSNtuple/kucmsntuple_GMSB_R17_v19/ kuntuple_GMSB_L-500TeV_Ctau-1000cm_R17_v19.txt Ct1kL500 0.000165 3595.0 723.0 1 0
+##KUCMSNtuple/kucmsntuple_GMSB_R17_v19/ kuntuple_GMSB_L-500TeV_Ctau-10cm_R17_v19.txt Ct10L500 0.000165 3595.0 723.0 1 0
+##KUCMSNtuple/kucmsntuple_GMSB_R17_v19/ kuntuple_GMSB_L-500TeV_Ctau-1200cm_R17_v19.txt Ct1p2kL500 0.000165 3595.0 723.0 1 0
+##KUCMSNtuple/kucmsntuple_GMSB_R17_v19/ kuntuple_GMSB_L-500TeV_Ctau-200cm_R17_v19.txt Ct200L500 0.000165 3595.0 723.0 1 0
+##KUCMSNtuple/kucmsntuple_GMSB_R17_v19/ kuntuple_GMSB_L-500TeV_Ctau-400cm_R17_v19.txt Ct400L500 0.000165 3595.0 723.0 1 0
+##KUCMSNtuple/kucmsntuple_GMSB_R17_v19/ kuntuple_GMSB_L-500TeV_Ctau-0p001cm_R17_v19.txt Ctp001L500 0.000165 3595.0 723.0 1 0
+##KUCMSNtuple/kucmsntuple_GMSB_R17_v19/ kuntuple_GMSB_L-500TeV_Ctau-0p1cm_R17_v19.txt Ctp1L500 0.000165 3595.0 723.0 1 0
+#
+##KUCMSNtuple/kucmsntuple_GMSB_AOD-v?/ kuntuple_GMSB_L-600TeV_Ctau-10000cm-v?.txt GMSBL600 0.0 0.0 0.0 1 0
+##KUCMSNtuple/kucmsntuple_GMSB_AOD-v?/ kuntuple_GMSB_L-600TeV_Ctau-1000cm-v?.txt GMSBL600 0.0 0.0 0.0 1 0
+##KUCMSNtuple/kucmsntuple_GMSB_AOD-v?/ kuntuple_GMSB_L-600TeV_Ctau-10cm-v?.txt GMSBL600 0.0 0.0 0.0 1 0
+##KUCMSNtuple/kucmsntuple_GMSB_AOD-v?/ kuntuple_GMSB_L-600TeV_Ctau-1200cm-v?.txt GMSBL600 0.0 0.0 0.0 1 0
+##KUCMSNtuple/kucmsntuple_GMSB_AOD-v?/ kuntuple_GMSB_L-600TeV_Ctau-200cm-v?.txt GMSBL600 0.0 0.0 0.0 1 0
+##KUCMSNtuple/kucmsntuple_GMSB_AOD-v?/ kuntuple_GMSB_L-600TeV_Ctau-400cm-v?.txt GMSBL600 0.0 0.0 0.0 1 0
+##KUCMSNtuple/kucmsntuple_GMSB_AOD_v13/
+##KUCMSNtuple/kucmsntuple_GMSB_AOD_v13/
+#

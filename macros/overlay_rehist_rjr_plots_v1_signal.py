@@ -88,10 +88,12 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t, norm ):
         #k = [kBlack]
         #k = [kGray+1,kGray+2,kGray+3,kBlack]
         h1[n].SetLineColor(k[n])
-        h1[n].SetLineWidth(2)
+        h1[n].SetLineWidth(4)
         h1[n].SetFillColor(k[n])
         #h1[n].SetFillColorAlpha(k[n],0.2)
-        h1[n]. SetFillStyle(3002)
+        style = 0
+        if n == 1 : style = 3003
+        h1[n]. SetFillStyle(style)
         #msz = 0.8
         #if( n == 1 ) : h1[n].SetMarkerSize(msz+0.3)
         #elif( n == 2 ) : h1[n].SetMarkerSize(msz+0.5)
@@ -120,7 +122,8 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t, norm ):
     gPad.Modified()
 
     #lat_cms = '#bf{CMS} #it{Preliminary}' + ptitle[0]
-    lat_cms = '#bf{CMS} #it{WkInPgrs}' + ptitle[0]
+    #lat_cms = '#bf{CMS} #it{WkInPgrs}' + ptitle[0]
+    lat_cms = '#bf{CMS} #it{Work in Progress}' + ptitle[0]
     lat_title = ptitle[1]
     lat.SetTextSize(0.045);
     lat.SetTextFont(42);
@@ -168,7 +171,8 @@ islogy = True
 
 #---------------------------------------------------------------
 
-for model in ["Bkgrd"] :
+for model in ["Justin"] :
+#for model in ["Bkgrd"] :
 #for model in ["GluGlu"] :
 #for model in ["GluGlu","SqkSqk"] :
 #for model in ["GluGlu","SqkSqk","SqkGlu","XinoXino"] :
@@ -184,8 +188,8 @@ for model in ["Bkgrd"] :
     rjrtype = "ootmet_phojet"
 
     #nsigpho = "nSigPho0"
-    #nsigpho = "nSigPho1"
-    nsigpho = "nSigPho2"   
+    nsigpho = "nSigPho1"
+    #nsigpho = "nSigPho2"   
 
  
     sig100 = "rjr_multihist_files/KUCMS_GMSB_L100_"+model+"_v23_genSigPerfect_"+nsigpho+"_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
@@ -207,6 +211,9 @@ for model in ["Bkgrd"] :
     bgQCD = "rjr_multihist_files/KUCMS_QCD_BkGrd_M100_v23_"+nsigpho+"_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
     bgGJets = "rjr_multihist_files/KUCMS_GJets_BkGrd_M100_v23_"+nsigpho+"_wt2_RjrSkim_v24_"+rjrtype+"_multiHists.root"
 
+    justin1 = "rjr_multihist_files/KUCMS_JustinV1_GIGI_v23_genSigPerfect_nSigPho1_wt2_RjrSkim_v24_ootmet_phojet_multiHists.root"
+    pdMET = "rjr_multihist_files/KUCMS_MET_BkGrd_v23_nSigPho1_wt2_RjrSkim_v24_ootmet_phojet_multiHists.root"
+
     #y = [ 0.0001, 1000000000000.0 ]
     #y = [ 0.0000001, 10000000.0 ] # vdiff, QNSum
     #y = [ 0.0001, 100000000.0 ]
@@ -216,14 +223,15 @@ for model in ["Bkgrd"] :
     y = [ 0.0001, 10 ] # normizlized to 1 for shape comparision
     
     #l = [ 0.7,0.6,0.925,0.875 ] # legend position top right
-    l = [ 0.6,0.65,0.94,0.875 ] # legend position top right short
+    l = [ 0.7,0.65,0.9,0.875 ] # legend position top right short
     #l = [ 0.475,0.6,0.925,0.875 ] # legend position top middle
     #l = [ 0.2,0.65,0.425,0.9 ] # legend position top left
     t = [0.2,0.85,0.0,0.175,0.225] # titles position
     
     #for rhname in ["rjrVSum"] :
     #for rhname in ["rjrVSum","rjrVDiff","ASMass","rjrAX2QSum","rjrAX2NQSum","rjrNJetsJa","rjrNJetsJb"] :
-    for rhname in ["rjrVSum","rjrVDiff","ASMass","rjrAX2NQSum","rjrNJetsJa","rjrNJetsJb"] :
+    #for rhname in ["rjrVSum","rjrVDiff","ASMass","rjrAX2NQSum","rjrNJetsJa","rjrNJetsJb"] :
+    for rhname in ["rjrVSum","rjrVDiff","ASMass","rjrAX2NQSum"]:
 
         #rhname = "rjrVSum"
         #rhname = "rjrVDiff"
@@ -236,19 +244,24 @@ for model in ["Bkgrd"] :
         x = []        
         if "rjrVSum" in rhname : 
             x = [ 0.0, 1.0 ]
-            xtitle = "VSum"
+            #xtitle = "VSum"
+            xtitle = "m_{V_{a}+V_{b}}/m_{S_{0}}"
         if "rjrVDiff" in rhname : 
             x = [ -1.0, 1.0 ]
-            xtitle = "VDiff"
+            #xtitle = "VDiff"
+            xtitle = "m_{V_{a}-V_{b}}/m_{V_{a}+V_{b}}"
         if "ASMass" in rhname : 
-            x = [ 0.0, 12000 ]
-            xtitle = "SMass [GeV]"
+            x = [ 0.0, 7000 ]
+            #xtitle = "SMass [GeV]"
+            xtitle = "m_{S_{0}} [GeV]"
         if "rjrAX2QSum" in rhname : 
             x = [ 0.0, 2600 ]
-            xtitle = "rjrAX2QSum"
+            #xtitle = "rjrAX2QSum"
+            xtitle = "m_{S_{ab}}/m_{S_{0}}"
         if "rjrAX2NQSum" in rhname : 
             x = [ 0, 1.0 ]
-            xtitle = "XQSum"
+            #xtitle = "XQSum"
+            xtitle = "m_{S_{ab}}/m_{S_{0}}"
         if "rjrNJetsJ" in rhname : 
             x = [ 0.0, 20 ]
             if "rjrNJetsJa" in rhname : xtitle = "nJetsVa"
@@ -259,13 +272,17 @@ for model in ["Bkgrd"] :
         outname = 'llpa_rjr_' + model + '_' + rjrtype + '_' + nsigpho + '_' + fhname
         #outname = 'llpa_rjr_op_' + fhname
         layout = { 'xtitle' : xtitle, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'legtitle' : legtitle }
-        ptitle=[' 2017', '137 fb', model + ' ' + nsigpho ]
+        #ptitle=[' 2017', '137 fb', model + ' ' + nsigpho ]
+        #ptitle=['', '', model + ' ' + nsigpho ]
+        ptitle=['', '', '' ]
         #ptitle=[' 2017','137 fb','']
         
         #leg100 = "M_{\Chi_{1}} = 139 GeV"
         #leg200 = "M_{\Chi_{1}} = 285 GeV"
         #leg300 = "M_{\Chi_{1}} = 430 GeV"
         #leg400 = "M_{\Chi_{1}} = 576 GeV"
+        legpd = "R17 MET"
+        legj1 = "M_{glu},M_{\Chi_{1}} = 250, 1  GeV"
         leg100 = "M_{glu},M_{\Chi_{1}} = 838, 139  GeV"
         leg150 = "M_{glu},M_{\Chi_{1}} = 1207, 212  GeV"
         leg200 = "M_{glu},M_{\Chi_{1}} = 1565, 285  GeV"
@@ -299,6 +316,15 @@ for model in ["Bkgrd"] :
             inhistlist = [
                 [rhname,'',bgGJets,"GJets"],
                 [rhname,'',bgQCD,"QCD"],
+            ]
+
+        if "Justin" in model : 
+            inhistlist = [
+
+                #[rhname,'',pdMET,"MET PD 2017"],
+                [rhname,'',bgGJets,"GJets 2017"],
+                #[rhname,'',bgQCD,"QCD 2017"],
+                [rhname,'',justin1,"T5qqqq 2022"],
             ]
 
         #norm = False

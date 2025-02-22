@@ -6,8 +6,9 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('python')
 
 ## Flags
-options.register('hasGenInfo',True,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to get pcalo in mc');
-#options.register('hasGenInfo',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to get pcalo in mc');
+options.register('multicrab',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'swtich to use muticrab paramters');
+options.register('hasGenInfo',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to get pcalo in mc');
+options.register('eventSkim','MET100',VarParsing.multiplicity.singleton,VarParsing.varType.string,'filter to use in event processing');
 
 ## object prep cuts
 #options.register('jetpTmin',15.0,VarParsing.multiplicity.singleton,VarParsing.varType.float,'jet pT minimum cut');
@@ -26,15 +27,16 @@ options.register('hasGenInfo',True,VarParsing.multiplicity.singleton,VarParsing.
 ## GT to be used
 ##------------------ mc gt
 #options.register('globalTag','106X_mc2017_realistic_v6',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
-#options.register('globalTag','94X_mc2017_realistic_v11',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
+options.register('globalTag','94X_mc2017_realistic_v11',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','124X_mcRun3_2022_realistic_v12',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','130X_mcRun3_2023_realistic_v14',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','133X_mcRun3_2024_realistic_v10',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
-options.register('globalTag','94X_mc2017_realistic_v14',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for GMSB MC');
+#options.register('globalTag','94X_mc2017_realistic_v14',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for GMSB MC');
 ##options.register('globalTag','112X_mcRun3_2021_realistic_v16',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 
 ##------------------ data gt  
+#options.register('globalTag','106X_dataRun2_v20',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 ##options.register('globalTag','106X_dataRun2_v28',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 ##options.register('globalTag','124X_dataRun3_v15',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2022');
 ##options.register('globalTag','106X_dataRun2_v24',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2018UL');
@@ -43,9 +45,11 @@ options.register('globalTag','94X_mc2017_realistic_v14',VarParsing.multiplicity.
 ## processName
 options.register('processName','TREE',VarParsing.multiplicity.singleton,VarParsing.varType.string,'process name to be considered');
 
-#outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_Objectified_v14.root' # ntuplizer test
-outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_Objectified_v23_skimtest_AL1IsoPho_fullgen_oottrue.root' # ntuplizer test
-#outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_justin_test_fullgen_oottrue.root' # ntuplizer test
+#outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_Objectified_Test_v24.root' # ntuplizer test
+#outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_Objectified_v23_triggertest3_fullgen_oottrue.root' # ntuplizer test
+#outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_JustinAOD_Zll_ct10_fullgen_oottrue.root' # ntuplizer test
+outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_100tev0p1ct_v16.root' # ntuplizer test
+if options.multicrab : outfilename = 'kucmsntuple.root'
 
 options.register('outputFileName',outfilename,VarParsing.multiplicity.singleton,VarParsing.varType.string,'output file name created by cmsRun');
 
@@ -76,6 +80,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load("FWCore.MessageService.MessageLogger_cfi")
 #process.MessageLogger.destinations = ['cout', 'cerr']
 #process.MessageLogger.cerr.FwkReport.reportEvery = 1
+#process.MessageLogger.cerr.FwkReport.reportEvery = 2
 #process.MessageLogger.cerr.FwkReport.reportEvery = 10
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
 #process.MessageLogger.cerr.FwkReport.reportEvery = 1000
@@ -109,6 +114,17 @@ process.source = cms.Source("PoolSource",
         #'file:/uscms/home/janguian/nobackup/CMSSW_12_4_14_patch3/src/SlepSnuCascade_3.root',
         #'file:/uscms/home/janguian/nobackup/CMSSW_12_4_14_patch3/src/Gluino_N2N1_LLPN2_TuneCP5_13p6TeV-madgraphMLM_AOD.root',
         #'file:/uscms/home/janguian/nobackup/CMSSW_13_0_13/src/PPD-Run3Summer22wmLHEGS-00014_AOD.root',
+        #'file:/uscms/home/janguian/nobackup/CMSSW_12_4_14_patch3/src/gotest4_AOD.root', 
+        #'file:/uscms/home/janguian/nobackup/CMSSW_12_4_14_patch3/src/SMS-GlGl_mGl-1p0_mN2-250_ct0_AOD.root',
+        #'file:/uscms/home/janguian/nobackup/CMSSW_12_4_14_patch3/src/GlGl10k_testing/SMS-GlGl_mGl-1p0_mN2-250_ct0_AOD.root',
+        #'file:/uscms/home/janguian/nobackup/CMSSW_12_4_14_patch3/src/SMS-GlGl_mGl-1p0_mN2-250_ct5_AOD.root',
+        #'file:SMS-GlGl_mGl-1p0_mN2-250_ct0_AOD_1.root',
+        #'file:SMS-GlGl_mGl-1p0_mN2-250_ct0_AOD_2.root',
+        #'file:SMS-GlGl_mGl-1p0_mN2-250_ct0_AOD_3.root',
+        #'file:SMS-GlGl_mGl-1p0_mN2-250_ct0_AOD_4.root',
+        #'file:SMS-GlGl_mGl-1p0_mN2-250_ct0_AOD_5.root',
+        #'file:/uscms/home/janguian/nobackup/CMSSW_12_4_14_patch3/src/SMS-GlGl_mGl-1p0_mN2-250_Zll_ct10_AOD.root',
+        #'root://cmseos.fnal.gov//store/user/janguian/gogo/SMS-GlGl_mGl-1p0_mN2-250_Zll_ct10_AOD/241120_224153/0000/SMS-GlGl_mGl-1p0_mN2-250_Zll_ct10_AOD_80.root',
 
 	#'root://cms-xrd-global.cern.ch//store/mc/RunIIFall17DRPremix/GMSB_L-100TeV_Ctau-200cm_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/80000/58DCC006-3FB2-E811-94AE-AC1F6B0DE454.root',	
 
@@ -119,15 +135,20 @@ process.source = cms.Source("PoolSource",
 	#'/store/data/Run2018C/JetHT/AOD/15Feb2022_UL2018-v1/2530001/B2C0793B-3D7B-104F-B34B-87D010EFDEF4.root',	
 
 
-        #'root://cmsxrootd-site.fnal.gov//store/mc/RunIIFall17DRPremix/QCD_HT200to300_TuneCP5_13TeV-madgraph-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/110000/1E29BF8B-5F60-E811-AD1D-0663CE00010C.root',
+        'root://cmsxrootd-site.fnal.gov//store/mc/RunIIFall17DRPremix/QCD_HT200to300_TuneCP5_13TeV-madgraph-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/110000/1E29BF8B-5F60-E811-AD1D-0663CE00010C.root',
 
         ## HTo2LongLivedTo4b
 
         #'/store/mc/Run3Winter21DRMiniAOD/HTo2LongLivedTo4b_MH-1000_MFF-450_CTau-100000mm_TuneCP5_14TeV-pythia8/MINIAODSIM/FlatPU30to80FEVT_112X_mcRun3_2021_realistic_v16-v2/280000/17bd2d71-8a76-46c5-947a-7ea2b1df44b6.root'
 
-	# AOD
+	# AOD MC GMSB
 
-	'file:/eos/uscms/store/mc/RunIIFall17DRPremix/GMSB_L-100TeV_Ctau-0_1cm_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/100000/2C55A98D-E4D7-E811-AC40-002590491B1E.root'
+        #'root://cmsxrootd-site.fnal.gov//store/mc/RunIIFall17DRPremix/GMSB_L-100TeV_Ctau-0_1cm_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/100000/2C55A98D-E4D7-E811-AC40-002590491B1E.root',
+
+
+        # AOD Data MET
+        
+        #'file:/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/test/MetPD_003A2484-A2DC-E711-9D0A-02163E019C46.root'
 
 	#lpcpath_350_600+'120000/80762156-99D6-E811-8942-34E6D7E3879B.root',
         #lpcpath_350_600+'120000/322875DC-DDD6-E811-8C5F-001E675A68C4.root',
@@ -154,6 +175,7 @@ process.source = cms.Source("PoolSource",
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-1000cm'+gmsbaodsim+'270000/A89ECEA5-C5DA-E811-AB4B-D4AE526DDB3F.root',
 #         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-10cm'+gmsbaodsim+'80000/08A3D920-E5B2-E811-85C5-0CC47A4DEEE4.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-10cm'+gmsbaodsim+'80000/0C51F68D-E5B2-E811-8703-002590E39F2E.root',
+         #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-0_1cm'+gmsbaodsim+'100000/2C55A98D-E4D7-E811-AC40-002590491B1E.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-10cm'+gmsbaodsim+'80000/2097D13F-30B3-E811-9FB3-0025905C96EA.root',
          #lpcpath_GMSB+'GMSB_L-100TeV_Ctau-1200cm'+gmsbaodsim+'60000/605B95ED-8AD8-E811-B640-001E67A3F70E.root',
 #         lpcpath_GMSB+'GMSB_L-100TeV_Ctau-1200cm'+gmsbaodsim+'60000/68C5DD84-EAD6-E811-9028-44A842CFD60C.root',
@@ -229,11 +251,12 @@ process.source = cms.Source("PoolSource",
 
 ## How many events to process
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))#ONE
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500))#QT
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(5000))#BT
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(5000))#BT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10000))#LT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(12500))#VS
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(25000))#SM
@@ -249,7 +272,30 @@ process.GlobalTag.globaltag = options.globalTag
 ## Create output file
 ## Setup the service to make a ROOT TTree
 process.TFileService = cms.Service("TFileService", fileName = cms.string(options.outputFileName))
-				   
+		
+genInfo = True
+#genInfo = False
+if options.multicrab == True : genInfo = options.hasGenInfo		   
+
+#skimselect = 'None'
+#skimselect = 'MET100'
+#skimselect = 'AL1IsoPho'
+skimselect = 'IsoPhoMet100'
+
+if options.multicrab == True : skimselect = options.eventSkim
+
+#genMomChase = True
+genMomChase = False
+if options.multicrab == True : genMomChase = False
+#makeTrigList = True
+makeTrigList = False
+if options.multicrab == True : makeTrigList = False
+
+print( "Using options : mutlicrab = ",options.multicrab," geninfo = ",genInfo," skim = ",skimselect )
+print( "Using options : momChase = ",genMomChase," trgiList = ",makeTrigList ) 
+print( "Using options : globalTag = ",options.globalTag )
+print( "With output file name : ",options.outputFileName )
+
 # Make the tree 
 process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
 
@@ -257,19 +303,103 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
                               tkAssocParamBlock,
 
                               ## flags
-                              hasGenInfo = cms.bool(options.hasGenInfo),
-                              #hasGenInfo = cms.bool(False),
-                              #doGenMotherChase = cms.bool(True),
-                              doGenMotherChase = cms.bool(False),
+                              hasGenInfo = cms.bool(genInfo),
+                              doGenMotherChase = cms.bool(genMomChase),
+                              makeTriggerList =  cms.bool(makeTrigList),
 
-                              ##skim type selectuon  
-                              #skimSelection = cms.string("None"),
-                              skimSelection = cms.string("AL1IsoPho"),
-                              #skimSelection = cms.string("MET100"),
+                              ##skim type selectuon 
+                              skimSelection = cms.string(skimselect),
+                            
+                              #Triggers
+                              triggerList = cms.vstring( #"hltPFMET100", "hltMETClean100", "hltHIPhoton20Eta3p1" ),   
+                                  "hltL1sSingleEGNonIsoOrWithJetAndTauNoPS",
+                                  "hltEGL1SingleEGNonIsoOrWithJetAndTauNoPSFilter",
+                                  "hltEG60EtFilter",
+                                  "hltEG60HEFilter",
+                                  "hltEG60R9Id90CaloIdLIsoLR9IdFilter",
+                                  "hltEG60R9Id90CaloIdLIsoLClusterShapeFilter",
+                                  "hltEG60R9Id90CaloIdLIsoLEcalPFClusterIsoFilter",
+                                  "hltEG60R9Id90CaloIdLIsoLHcalPFClusterIsoFilter",
+                                  "hltEG60R9Id90CaloIdLIsoLHollowTrackIsoFilter",
+                                  "hltEG60R9Id90CaloIdLIsoLDisplacedIdFilter",
+                                  "hltHT175Jet10",
+                                  "hltPFHT350Jet15",
+                                  "hltL1sSingleAndDoubleEG",
+                                  "hltL1sSingleAndDoubleEGNonIsoOr",
+                                  "hltL1sSingleAndDoubleEGor",
+                                  "hltL1sSingleEG15",
+                                  "hltL1sSingleEG18",
+                                  "hltL1sSingleEG24",
+                                  "hltL1sSingleEG26",
+                                  "hltL1sSingleEG34to45",
+                                  "hltL1sSingleEG34to50",
+                                  "hltL1sSingleEG40to50",
+                                  "hltL1sSingleEGor",
+                                  "hltL1sTripleEGOrDoubleEGOrSingleEG",
+                                  "hltEG20EtFilterLooseHoverE",
+                                  "hltEG20EtL1TripleEGFilter",
+                                  "hltEG20HEFilterLooseHoverE",
+                                  "hltEG20HEL1TripleEGFilter",
+                                  "hltEG20L1SingleEGLowETOrEtFilter",
+                                  "hltEG20L1SingleEGLowETOrEtaREtFilter",
+                                  "hltEG30EBHE10R9Id50b80eHEFilter",
+                                  "hltEG30EBL1SingleAndDoubleEGOrEtFilter",
+                                  "hltEG30EBR9Id50b80eR9IdFilter",
+                                  "hltEG30EIso15HE30EcalIsoLastFilter",
+                                  "hltEG30EtFilterLooseHoverE",
+                                  "hltEG30EtL1TripleEGFilter",
+                                  "hltEG30HE30HEFilter",
+                                  "hltEG30HEFilterLooseHoverE",
+                                  "hltEG30HEL1TripleEGFilter",
+                                  "hltEG30L1IsoEGerJetC34drMin0p3EtFilter",
+                                  "hltEG30L1SingleAndDoubleEGOrEtFilter",
+                                  "hltEG30L1SingleAndDoubleEGWithTauWithJetEtFilter",
+                                  "hltEG30LHE12R9Id50b80eHEFilter",
+                                  "hltEG30LR9Id50b80eR9IdFilter",
+                                  "hltEG30PVHE10R9Id50b80eHEFilter",
+                                  "hltEG30PVR9Id50b80eR9IdFilter",
+                                  "hltEG30PVrealANDHE10R9Id50b80eHEFilter",
+                                  "hltEG30PVrealANDR9Id50b80eR9IdFilter",
+                                  "hltHT130Jet30",
+                                  "hltHT200Jet30",
+                                  "hltPFHT180Jet30",
+                                  "hltPFHT250Jet30",
+                                  "hltPFMET50",
+                                  "hltPFMET70",
+                                  "hltPFMET90",
+                                  "hltPFMET100",
+                                  "hltPFMET110",
+                                  "hltPFMET120",
+                                  "hltPFMET130",
+                                  "hltPFMET140",
+                                  "hltPFMET200",
+                                  "hltPFMET250",
+                                  "hltPFMET300",
+                                  "hltPFMHTNoMuTightID70",
+                                  "hltPFMHTNoMuTightID90",
+                                  "hltPFMHTNoMuTightID100",
+                                  "hltPFMHTNoMuTightID110",
+                                  "hltPFMHTTightID120",
+                                  "hltPFMHTNoMuTightID120",
+                                  "hltPFMHTNoMuTightID130",
+                                  "hltPFMHTNoMuTightID140",
+                                  "hltPFMHTTightID120",
+                                  "hltPFMHTTightID130",
+                                  "hltPFMHTTightID140",
+                                  "hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilter",
+                                  "hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilterLowPt",
+                                  "hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilterMidPt",
+                                  "hltPFMETNoMu60",
+                                  "hltPFMETNoMu100",
+                                  "hltPFMETNoMu110",
+                                  "hltPFMETNoMu120",
+                                  "hltPFMETNoMu130",
+                                  "hltPFMETNoMu140",
+                              ),#triggerList = cms.vstring(
 
                               ## set rechit energy limits
-                              minRHEi = cms.double(0.0),
-                              minRHEf = cms.double(0.2),
+                              minRHEi = cms.double(0.5),
+                              minRHEf = cms.double(0.5),
 
                               ## additional collections
                               ## tracks

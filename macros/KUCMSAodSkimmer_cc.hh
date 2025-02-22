@@ -157,7 +157,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir,
 
 		std::cout << "Processing Events for : " << infiles << std::endl;
 	    std::ifstream infile(listdir+infiles);
-	    auto fInTree = new TChain(disphotreename.c_str());
+	    TChain* fInTree = new TChain(disphotreename.c_str());
 	    std::cout << "Adding files to TChain." << std::endl;
 	    std::cout << " - With : " << infiles << " >> " << fInTree << std::endl;
 	    std::string str;
@@ -184,7 +184,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir,
         mcwgt = mcw; // default 1
         mctype = mct; // 0 = fullsim
 	
-		KUCMSAodSkimmer::Init( fInTree, doGenInfo );
+		Init( fInTree, doGenInfo );
 		initHists();
 	    setOutputBranches(fOutTree);	
 	
@@ -414,20 +414,34 @@ void KUCMSAodSkimmer::processGenParticles(){
     if( DEBUG ) std::cout << "Finding genParticles" << std::endl;
     //------------  genparts ------------------------
 
+	int nLSPfXfSg = 0;
+	int nQfSg = 0;
+    int nQfSqk = 0;
+	int nPHOfX = 0;
+	int nZfX = 0;
 	int nSGlue = 0;
 	int nSQuark = 0;
+	int nX234 = 0;
+	int nLZX = 0;
+	int nQfZ = 0;
+	int nN0fsqk = 0;
+    int nN0fsg = 0;
+
+	//std::cout << "New Event ----------------------------------" << std::endl;
 	int nGenParts = Gen_pdgId->size();
     for( int it = 0; it < nGenParts; it++ ){
 
+		float displacment = (*Gen_momDisplacment)[it];
         float energy = (*Gen_energy)[it];
         float eta = (*Gen_eta)[it];
         float phi = (*Gen_phi)[it];
         float pt = (*Gen_pt)[it];
         uInt  pdgId = (*Gen_pdgId)[it];
+		int momIndx = (*Gen_motherIdx)[it];
         int   susId = (*Gen_susId)[it];
         float charge = (*Gen_charge)[it];
         float mass = (*Gen_mass)[it];
-        bool status = (*Gen_status)[it];
+        int status = (*Gen_status)[it];
         float vx = (*Gen_vx)[it];
         float vy = (*Gen_vy)[it];
         float vz = (*Gen_vz)[it];
@@ -435,15 +449,67 @@ void KUCMSAodSkimmer::processGenParticles(){
         float py = (*Gen_py)[it];
         float pz = (*Gen_pz)[it];
 
-		//if( susId == 21 || susId == 20 ) std::cout << " -- Sus pdgId " << pdgId  << " susId " << susId << std::endl;
-        //if( pdgId == 1000021 ) std::cout << " -- Sus pdgId " << pdgId  << " susId " << susId << std::endl;
-		//if( pdgId > 1000000 && pdgId < 1000007 ) std::cout << " -- Sus pdgId " << pdgId  << " susId " << susId << std::endl;
-        //if( susId < 97 && ( pdgId > 1000000 && pdgId < 1000007 ) ){ nSQuark++; selGenPart.fillBranch( "genSQMass", mass ); }
-        //if( susId == 97 && pdgId == 1000021 ){ nSGlue++; selGenPart.fillBranch( "genSGMass", mass ); }
+		float mommass = ( momIndx > -1 ) ? (*Gen_mass)[momIndx] : -1;
+		uInt mompdg = ( momIndx > -1 ) ? (*Gen_pdgId)[momIndx] : 0;
+		float mompx = ( momIndx > -1 ) ? (*Gen_px)[momIndx] : -1;
+        float mompy = ( momIndx > -1 ) ? (*Gen_py)[momIndx] : -1;
+        float mompz = ( momIndx > -1 ) ? (*Gen_pz)[momIndx] : -1;
+		float genmomp = hypo( mompx, mompy, mompz );
+		//float beta = ( mommass > 0 ) ? genmomp/mommass : -1;
+		//float gama = ( beta >= 0 ) ? 1/std::sqrt( 1 - beta*beta ) : -1; 
+		float gbeta = ( mommass > 0 ) ? genmomp/mommass : -1;
+        //float gbeta = ( gama >= 0 && beta >= 0 ) ? gama*beta : -1;
+		float ctau = ( gbeta >= 0 && displacment >= 0 ) ? displacment/gbeta : -1;
+		if( mompdg == 1000023 ){ selGenPart.fillBranch( "genXMomCTau", ctau ); }
+		//if( mompdg != 0 ){
+        if( false ){
+			std::cout << " ctau for : " << pdgId << " mother: " << mompdg << " with mommass " << mommass;
+			std::cout << " genp: " << genmomp << " gbeta: " << gbeta << " dis: " << displacment;
+        	std::cout << " ctau: " << ctau << std::endl; 
+		}//<<>>if( mompdg != 0 )
+
 		if( pdgId > 1000000 && pdgId < 1000007 ){ nSQuark++; selGenPart.fillBranch( "genSQMass", mass ); }
         if( pdgId == 1000021 ){ nSGlue++; selGenPart.fillBranch( "genSGMass", mass ); }
+        if( pdgId == 1000023 ){ selGenPart.fillBranch( "genLLPMass", mass ); }
+        if( pdgId == 1000022 ){ selGenPart.fillBranch( "genLSPMass", mass ); }
+        if( pdgId == 1000039 ){ selGenPart.fillBranch( "genGrvtinoMass", mass ); }
 
 		//if( pdgId < 7 ) continue;
+		bool hasMom( momIndx < nGenParts && momIndx > -1 );
+		int gMomIndx = hasMom ? Gen_motherIdx->at(momIndx) : -1;
+		bool hasGrandMom( gMomIndx > -1 );
+        bool lsp( pdgId == 1000039 || ( pdgId == 1000022 && status == 1 ) );
+		bool hasX234( pdgId > 1000022 && pdgId < 1000038 );
+		bool fromX( hasMom && ( Gen_pdgId->at(momIndx) == 1000022 || Gen_pdgId->at(momIndx) == 1000023 ) );
+		bool fromSg( hasMom && Gen_pdgId->at(momIndx) == 1000021 );
+        bool fromSqkL( hasMom && Gen_pdgId->at(momIndx) > 1000000 && Gen_pdgId->at(momIndx) < 1000009 );
+        bool fromSqkR( hasMom && Gen_pdgId->at(momIndx) > 2000000 && Gen_pdgId->at(momIndx) < 2000009 );
+		bool fromSqk( fromSqkL || fromSqkR );
+		bool fromZ( hasMom && Gen_pdgId->at(momIndx) == 23 );
+		bool momFromX( hasGrandMom && ( Gen_pdgId->at(gMomIndx) == 1000022 || Gen_pdgId->at(gMomIndx) == 1000023 ) );
+		bool momFromSg( hasGrandMom && Gen_pdgId->at(gMomIndx) == 1000021 );
+        bool momFromSqkL( hasGrandMom && Gen_pdgId->at(gMomIndx) > 1000000 && Gen_pdgId->at(gMomIndx) < 1000009 );
+        bool momFromSqkR( hasGrandMom && Gen_pdgId->at(gMomIndx) > 2000000 && Gen_pdgId->at(gMomIndx) < 2000009 );
+        bool momFromSqk( momFromSqkL || momFromSqkR );
+		bool quark( pdgId < 9 );
+		bool photon( pdgId == 22 ); 
+        bool zee( pdgId == 23 );
+		bool lept( pdgId > 10 && pdgId < 19 );
+		bool N0( pdgId == 1000022 );
+
+    	//if( lsp && fromX && momFromSg ) nLSPfXfSg++;
+        //if( lsp && fromX ) nLSPfXfSg++;
+        if( lsp ) nLSPfXfSg++;
+    	if( quark && fromSg ) nQfSg++;
+        if( quark && fromSqk ) nQfSqk++;
+    	if( photon && fromX ) nPHOfX++;
+    	if( zee && fromX ) nZfX++;
+		if( hasX234 ) nX234++;
+		if( lept && fromZ && momFromX ) nLZX++;
+		if( quark && fromSqk ) nQfSqk++;
+		if( quark && fromZ && momFromX ) nQfZ++;
+        if( N0 && fromSqk ) nN0fsqk++;
+        if( N0 && fromSg ) nN0fsg++;
 
 		selGenPart.fillBranch( "genPartEnergy", energy );
         selGenPart.fillBranch( "genPartEta", eta );
@@ -451,6 +517,8 @@ void KUCMSAodSkimmer::processGenParticles(){
         selGenPart.fillBranch( "genPartPt", pt );
         selGenPart.fillBranch( "genPartPdgId", pdgId );
         selGenPart.fillBranch( "genPartSusId", susId );
+        selGenPart.fillBranch( "genPartMomIdx", momIndx );
+		selGenPart.fillBranch( "genMomCTau", ctau );
         selGenPart.fillBranch( "genCharge", charge );
         selGenPart.fillBranch( "genMass", mass );
         selGenPart.fillBranch( "genStatus", status );
@@ -464,14 +532,56 @@ void KUCMSAodSkimmer::processGenParticles(){
 
     }//<<>>for( int it = 0; it < nGenParts; it++ )
 
-	//if( nSQuark > 9 ) nSQuark = 9;
-    //if( nSGlue > 9 ) nSGlue = 9;
-	//int genSigType = ( nSGlue * 10 ) + nSQuark;
-	selGenPart.fillBranch( "genSigType", (*Gen_susEvtType)[0] );
-	// fill
-	//std::cout << " ---- Counts nSQuark " << nSQuark << " nSGlue " << nSGlue << std::endl;
-	//geVars.set( "nSQuark", Gen_susEvtType );
-	//geVars.set( "nSGlue", Gen_susEvtType );
+	//bool hasLSP( nLSPfXfSg > 0 );
+	bool hasLSP( true );
+	bool noX234( nX234 == 0 );
+
+    bool has2Nfsqk( nN0fsqk == 2 );
+    bool has2Nfsg( nN0fsg == 2 );
+	bool has4QfSg( nQfSg > 3 );
+    bool has2QfSqk( nQfSqk > 1 );
+
+	bool has2PfN( nPHOfX == 2 );
+	bool has2ZfN( nZfX == 2 );
+
+    bool hasLLfz( nLZX == 4 );
+    bool hasLfz( nLZX == 2 );
+    bool hasNoLfz( nLZX == 0 );
+
+	//if( nZfX > 1 && nLZX > 0 && nX234 == 0 ){
+    //if( nX234 == 0 ){
+    //if( nQfSg || nQfSqk ){ 
+	if( false ){
+    	std::cout << "GenEventType::";
+		std::cout << " nPHOfX: " << nPHOfX << " nZfX: " << nZfX;
+		std::cout << " nX234: " << nX234 << " nN0fsqk: " << nN0fsqk << " nN0fsg: " << nN0fsg;
+		std::cout << " nLZX: " << nLZX  << " nQfZ: " << nQfZ; 
+		std::cout << " nQfSg: " << nQfSg << " nQfSqk: " << nQfSqk;
+		std::cout << std::endl;
+	}//<<>>if(
+
+    bool isSTqp( has2Nfsqk && has2QfSqk && has2PfN && noX234 );
+	bool isSTqqp( has2Nfsg && has4QfSg && has2PfN && noX234 );
+	bool isSTqqzll( has2Nfsg && has4QfSg && has2ZfN && hasLLfz && noX234 ); 
+    bool isSTqqzl( has2Nfsg && has4QfSg && has2ZfN && hasLfz && noX234 );
+    bool isSTqqz( has2Nfsg && has4QfSg && has2ZfN && hasNoLfz && noX234 );	
+
+    //if( nZfX > 1 && nLZX > 0 && nX234 == 0 ){
+    //if( nX234 == 0 ){ 
+    //if( isSTqp || isSTqqp || isSTqqzll || isSTqqzl || isSTqqz ){
+    //  std::cout << "GenSTFlag:";
+	//  std::cout << " isSTqqp: " << isSTqqp << " isSTqqzll: " << isSTqqzll << " isSTqqzl: " << isSTqqzl;
+	//  std::cout << " isSTqqz: " << isSTqqz << " isSTqp: " << isSTqp;
+    //  std::cout << std::endl;
+    //}//<<>>if(
+
+	
+    selGenPart.fillBranch( "genSTFlagQQP", isSTqqp );
+	selGenPart.fillBranch( "genSTFlagQQZLL", isSTqqzll );
+    selGenPart.fillBranch( "genSTFlagQQZL", isSTqqzl );
+    selGenPart.fillBranch( "genSTFlagQQZ", isSTqqz );
+    selGenPart.fillBranch( "genSTFlagQP", isSTqp );
+	selGenPart.fillBranch( "genSigType", Gen_susEvtType->at(0) );
 
 }//<<>>void KUCMSAodSkimmer::processGenParticles()
 
@@ -595,28 +705,27 @@ void KUCMSAodSkimmer::processPhotons(){
         int genIdx = -1;
         int momIdx = -1;
         float susId = -1;
-		float genpt = -1;
-        float momEnergy = -1;   //!
-        float momEta = -1;   //!
-        float momMass = -1;   //!
-        float momPhi = -1;   //!
-        float momPt = -1;   //!
-        float momPx = -1;   //!
-        float momPy = -1;   //!
-        float momPz = -1;   //!
+		float genpt = -10;
+        float momEnergy = -10;   //!
+        float momEta = -4;   //!
+        float momMass = -10;   //!
+        float momPhi = -4;   //!
+        float momPt = -10;   //!
+        float momPx = -10;   //!
+        float momPy = -10;   //!
+        float momPz = -10;   //!
         float momVx = -1;   //!
         float momVy = -1;   //!
-        float momVz = -1;   //!
+        float momVz = -100;   //!
+
+		float ctau = -10;
 
 		if( doGenInfo ){
 			genIdx = (*Photon_genIdx)[it];
-			momIdx = (*Photon_genSigMomId)[it];
+			momIdx = (*Gen_motherIdx)[genIdx];
+			//momIdx = (*Photon_genSigXMomId)[it];
         	susId = (*Gen_susId)[genIdx];
 
-			if( genIdx > -1.0 ){ 
-				genpt = (*Gen_pt)[genIdx]; 
-			}//if( genIdx > -1.0 )
-			
 			if( momIdx > -1.0 ){
                 momEnergy = (*Gen_energy)[momIdx];   //!
                 momEta = (*Gen_eta)[momIdx];   //!
@@ -972,7 +1081,7 @@ void KUCMSAodSkimmer::processJets(){
         float jgllpt = 0; //*Jet_genTimeLLP)[it];
         if( doGenInfo ){
         	//qrkllpId = int((*Jet_genQrkLlpId)[it]);
-            gjllpId = int((*Jet_genLlpId)[it]);
+            gjllpId = int((*Jet_genJetLlpId)[it]);
         	jgdpt = (*Jet_genDptMatch)[it];
         	jgdr = (*Jet_genDrMatch)[it];
         	jge = (*Jet_genEnergy)[it];
@@ -1323,9 +1432,11 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 
     float m_MVDiff = abDiffSide*(m_MVa-m_MVb)/(m_MVa+m_MVb);
     float m_MVSum = std::sqrt((sq2(m_MVa)+sq2(m_MVb))/2);
+	float m_MVNSum = 2*m_MVSum/a_MS;
 
     selRjrVars.fillBranch( "rjrMVDiff", m_MVDiff );
     selRjrVars.fillBranch( "rjrMVSum", m_MVSum );
+    selRjrVars.fillBranch( "rjrMVNSum", m_MVNSum );
 
   	float m_PV_lab    = S->GetListVisibleFrames().GetFourVector().P();
   	float m_dphiMET_V = S->GetListVisibleFrames().GetFourVector().Vect().DeltaPhi(ETMiss);
@@ -1530,9 +1641,12 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     selGenPart.makeBranch( "genPartPt", VFLOAT );
     selGenPart.makeBranch( "genPartPdgId", VUINT );
     selGenPart.makeBranch( "genPartSusId", VINT );
+    selGenPart.makeBranch( "genPartMomIdx", VINT );
+    selGenPart.makeBranch( "genXMomCTau", VFLOAT );
+    selGenPart.makeBranch( "genMomCTau", VFLOAT );
     selGenPart.makeBranch( "genCharge", VINT );   //!
     selGenPart.makeBranch( "genMass", VFLOAT );   //!   
-    selGenPart.makeBranch( "genStatus", BOOL );   //!
+    selGenPart.makeBranch( "genStatus", VINT );   //!
     selGenPart.makeBranch( "genVx", VFLOAT );   //!
     selGenPart.makeBranch( "genVy", VFLOAT );   //!
     selGenPart.makeBranch( "genVz", VFLOAT );   //!
@@ -1540,8 +1654,16 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     selGenPart.makeBranch( "genPy", VFLOAT );   //!
     selGenPart.makeBranch( "genPz", VFLOAT );   //!
     selGenPart.makeBranch( "genSigType", INT );   //!
+    selGenPart.makeBranch( "genSTFlagQQP", BOOL );   //!
+    selGenPart.makeBranch( "genSTFlagQQZLL", BOOL );   //!
+    selGenPart.makeBranch( "genSTFlagQQZL", BOOL );   //!
+    selGenPart.makeBranch( "genSTFlagQQZ", BOOL );   //!
+    selGenPart.makeBranch( "genSTFlagQP", BOOL );   //!
     selGenPart.makeBranch( "genSQMass", VFLOAT );   //! 
     selGenPart.makeBranch( "genSGMass", VFLOAT );   //! 
+    selGenPart.makeBranch( "genLLPMass", VFLOAT );   //! 
+    selGenPart.makeBranch( "genLSPMass", VFLOAT );   //! 
+    selGenPart.makeBranch( "genGrvtinoMass", VFLOAT );   //! 
 
 	selGenPart.attachBranches( fOutTree );
 
@@ -1740,6 +1862,7 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
 
     selRjrVars.makeBranch( "rjrMVDiff", VFLOAT );
     selRjrVars.makeBranch( "rjrMVSum", VFLOAT );
+    selRjrVars.makeBranch( "rjrMVNSum", VFLOAT );
 
     selRjrVars.attachBranches( fOutTree );
 

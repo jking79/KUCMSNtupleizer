@@ -477,7 +477,7 @@ void HistMaker::initHists( std::string ht ){
     hist1d[266] = new TH1D("rjrX2NQSum", addstr(ht,"rjrX2NQSum").c_str(), 50, 0, 1.0);
     hist1d[267] = new TH1D("rjrX2QSum", addstr(ht,"rjrX2QSum").c_str(), 90, 0, 3600);
 
-    hist1d[268] = new TH1D("selPhoMBetaEql", addstr(ht,"BetaMass").c_str(), 60, 0, 1200);//----------- BetaMass
+    hist1d[268] = new TH1D("selPhoMBetaEql", addstr(ht,"selPhoBetaMass").c_str(), 60, 0, 1200);//----------- BetaMass
     hist1d[269] = new TH1D("selPhoMBetaPmt", addstr(ht,"selPhoMBetaPmt").c_str(), 60, 0, 1200);
 
     hist1d[270] = new TH1D("rjrMVa", addstr(ht,"rjrMVa").c_str(), 90, 0, 3600);
@@ -485,8 +485,8 @@ void HistMaker::initHists( std::string ht ){
     hist1d[272] = new TH1D("rjrVDiff", addstr(ht,"NVisMassDiff").c_str(), 25, -1, 1);//---------------VisMassDiff !!!!!!!!!!
     hist1d[273] = new TH1D("rjrVSum", addstr(ht,"NVisMass").c_str(), 25, 0, 1.0);//--------------VisMassSum !!!!!!!!!!
 
-    hist1d[274] = new TH1D("selPhoNMBetaEql", addstr(ht,"selPhoNMBetaEql").c_str(), 100, 0, 2);
-    hist1d[275] = new TH1D("selPhoNMBetaPmt", addstr(ht,"selPhoNMBetaPmt").c_str(), 100, 0, 2);
+    hist1d[274] = new TH1D("rjrPhoNMBetaEql", addstr(ht,"rjrPhoNBetaEql").c_str(), 100, 0, 2);//----------- BetaMass
+    hist1d[275] = new TH1D("rjrPhoNMBetaPmt", addstr(ht,"rjrPhoNMBetaPmt").c_str(), 100, 0, 2);
 
     // Alternative approach
     //hist1d[350] = new TH1D("ASCosAc", addstr(ht,"ASCosA").c_str(), 70, -3.5, 3.5);
@@ -607,6 +607,7 @@ int main ( int argc, char *argv[] ){
                 auto infilename14 = "KUCMS_RJR_GMSB_ct10000_ootmet_Skim_List.txt";
                 ////auto infilename5 = "KUCMS_RJR_GMSB350_ootmet_Skim_List.txt";
                 ////auto infilename6 = "KUCMS_RJR_GMSB400_ootmet_Skim_List.txt";
+				auto infilenameJ = "KUCMS_RJR_GIGI_ootmet_Skim_List.txt";
 
                 //auto infilenameG = "KUCMS_RJR_GJETS_rawmet_Skim_List.txt";
                 //auto infilenameQ = "KUCMS_RJR_QCD_rawmet_Skim_List.txt";
@@ -615,7 +616,9 @@ int main ( int argc, char *argv[] ){
                 //auto infilename3 = "KUCMS_RJR_GMSB350_ootmet_Skim_List.txt";
                 auto infilenameG = "KUCMS_RJR_GJETS_ootmet_Skim_List.txt";
                 auto infilenameQ = "KUCMS_RJR_QCD_ootmet_Skim_List.txt";
-                auto infilenameD = "KUCMS_RJR_DEG_ootmet_Skim_List.txt";
+                //auto infilenameD = "KUCMS_RJR_DEG_ootmet_Skim_List.txt";
+                auto infilenameD = "KUCMS_RJR_MET_ootmet_Skim_List.txt";
+                //auto infilenameD = "KUCMS_RJR_JetHT_ootmet_Skim_List.txt";
 
                 //std::list<float> cuts = { 10000000 }; 
 
@@ -625,11 +628,14 @@ int main ( int argc, char *argv[] ){
                 //std::string sigtype = "SqkGlu"; modtype = 12; //12
                 //std::string sigtype = "XinoXino"; modtype = 33; //33
                 //std::string sigtype = "SleptSlept"; modtype = 44; //44
-                std::string sigtype = "BkGrd"; // modtype 0 - no modtype applied
+                //std::string sigtype = "BkGrd"; // modtype 0 - no modtype applied
+				std::string sigtype = "GIGI";
 
 				std::string version = "_v23_";
 
-                std::string outfilenamed = "KUCMS_DEG_"+sigtype+version; //iso0_Skim_BaseHists.root"; //7
+                std::string outfilenamed = "KUCMS_MET_"+sigtype+version; //iso0_Skim_BaseHists.root"; //7
+                //std::string outfilenamed = "KUCMS_JetHT_"+sigtype+version; //iso0_Skim_BaseHists.root"; //7
+                //std::string outfilenamed = "KUCMS_DEG_"+sigtype+version; //iso0_Skim_BaseHists.root"; //7
                 std::string outfilenamegj = "KUCMS_GJets_"+sigtype+version; //iso0_Skim_BaseHists.root"; //7
                 std::string outfilenameqcd = "KUCMS_QCD_"+sigtype+version; //iso0_Skim_BaseHists.root"; //7
                 //std::string outfilename100 = "KUCMS_GMSB_L100_T30_v19_"; //iso0_Skim_BaseHists.root"; //7
@@ -645,6 +651,7 @@ int main ( int argc, char *argv[] ){
                 std::string outfilename12 = "KUCMS_GMSB_ct200cm_"+sigtype+version;
                 std::string outfilename13 = "KUCMS_GMSB_ct1000cm_"+sigtype+version;
                 std::string outfilename14 = "KUCMS_GMSB_ct10000cm_"+sigtype+version;
+				std::string outfilenameJ = "KUCMS_JustinV1_"+sigtype+version;
 
                 //std::string outfilename5 = "KUCMS_GMSB_L350_"+sigtype+version; //iso0_Skim_BaseHists.root"; //7
                 //std::string outfilename6 = "KUCMS_GMSB_L400_"+sigtype+version; //iso0_Skim_BaseHists.root"; //7
@@ -680,12 +687,13 @@ int main ( int argc, char *argv[] ){
                 std::string htitle14 = "GMSB_ct10000cm_"+sigtype+version;
                 //std::string htitle5 = "GMSB_L350_"+sigtype+version;
                 //std::string htitle6 = "GMSB_L400_"+sigtype+version;
+				std::string htitleJ = "GIGI_"+sigtype+version;
 
                 HistMaker base;
 
 				float rjrcut = 0; // var cut - unused
-                //float rjrcut2 = 150;  // cmet > 150
-                float rjrcut2 = 100;  // cmet > 150 BG only
+                float rjrcut2 = 150;  // cmet > 150
+                //float rjrcut2 = 0;  // cmet > 150 BG only
 
 				//float nphos = 2;
                 //std::string isoline = "genSigPerfect_nSigPho2_";
@@ -720,6 +728,8 @@ int main ( int argc, char *argv[] ){
                 //std::string outfilenames5 = outfilename5 + isoline + ofnending;
                 //std::string outfilenames6 = outfilename6 + isoline + ofnending;
 
+				std::string outfilenamesJ = outfilenameJ + isoline + ofnending;
+
                 std::string htitlesd =  htitled + isolinebg;
                 std::string htitlesgj =  htitlegj + isolinebg;
                 std::string htitlesqcd =  htitleqcd + isolinebg;
@@ -739,7 +749,13 @@ int main ( int argc, char *argv[] ){
                 //std::string htitle5s =  htitle5 + isoline;
                 //std::string htitle6s =  htitle6 + isoline;
 
-				if( sigtype != "BkGrd" ){
+				std::string htitleJs =  htitleJ + isoline;
+
+				if( sigtype == "GIGI" ){
+
+					base.histMaker( listdir, infilenameJ, outfilenamesJ, htitleJs, jrjtype, modtype, nphos, rjrcut, rjrcut2 );
+
+				} else if( sigtype != "BkGrd" ){
             		base.histMaker( listdir, infilename0, outfilenames0, htitle0s, jrjtype, modtype, nphos, rjrcut, rjrcut2 );
                 	base.histMaker( listdir, infilename1, outfilenames1, htitle1s, jrjtype, modtype, nphos, rjrcut, rjrcut2 );
                 	base.histMaker( listdir, infilename2, outfilenames2, htitle2s, jrjtype, modtype, nphos, rjrcut, rjrcut2 );
@@ -758,7 +774,7 @@ int main ( int argc, char *argv[] ){
                 	////base.histMaker( listdir, infilename3, outfilenames300, htitles300, jrjtype, 30, nphos, rjrcut, rjrcut2 );
 					base.histMaker( listdir, infilenameG, outfilenamesgj, htitlesgj, jrjtype, modtype, nphos, rjrcut, rjrcut2 );
                 	base.histMaker( listdir, infilenameQ, outfilenamesqcd, htitlesqcd, jrjtype, modtype, nphos, rjrcut, rjrcut2 );
-                	//base.histMaker( listdir, infilenameD, outfilenamesd, htitlesd, 0, 0, nphos, rjrcut, rjrcut2 );
+                	base.histMaker( listdir, infilenameD, outfilenamesd, htitlesd, 0, 0, nphos, rjrcut, rjrcut2 );
 				}                
 
 				//base.histMaker( listdir, infilename, outfilenames, htitles, fillwt?, gensigtype?, #phos?, rjrcut, n/a );
