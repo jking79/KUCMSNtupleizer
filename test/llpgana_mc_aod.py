@@ -279,7 +279,9 @@ if options.multicrab == True : genInfo = options.hasGenInfo
 
 #skimselect = 'None'
 #skimselect = 'MET100'
-skimselect = 'AL1IsoPho'
+#skimselect = 'AL1IsoPho'
+skimselect = 'IsoPhoMet100'
+
 if options.multicrab == True : skimselect = options.eventSkim
 
 #genMomChase = True

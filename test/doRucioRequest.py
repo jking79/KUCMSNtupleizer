@@ -160,6 +160,16 @@ met_list = [
 
 ]
 
+met18UL = [
+
+    #'cms:/MET/Run2018A-15Feb2022_UL2018-v1/AOD', #17
+    'cms:/MET/Run2018B-15Feb2022_UL2018-v1/AOD', #9
+    #'cms:/MET/Run2018C-15Feb2022_UL2018-v1/AOD', #10
+    #'cms:/MET/Run2018D-15Feb2022_UL2018-v1/AOD', #52
+
+]
+
+
 deg_list = [
 
     'cms:/DoubleEG/Run2017D-17Nov2017-v1/AOD',
@@ -176,11 +186,13 @@ dy_list = [ 'cms:/DY1JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17
 #runlist = qcd_list
 #runlist = gjets_list
 #runlist = gmsb_list
-runlist = met_list
+#runlist = met_list
 #runlist = jetht18
+runlist = met18UL
+
 for thefile in runlist :
 
-	#thecommand = 'rucio add-rule --ask-approval --lifetime 5184000 ' + thefile + ' 1 T3_US_FNALLPC'
+    #thecommand = 'rucio add-rule --ask-approval --lifetime 5184000 ' + thefile + ' 1 T3_US_FNALLPC'
     thecommand = 'rucio add-rule --ask-approval --lifetime 2592000 ' + thefile + ' 1 T3_US_FNALLPC'
     print( '---------------------------------------------------' )
     print( thecommand )

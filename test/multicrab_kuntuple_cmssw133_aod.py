@@ -115,7 +115,8 @@ def docrab( dataset ):
             primaryDataset = (inDO[0].split('/')[1]).split('_Tune')[0]
             print( primaryDataset )
             #runEra         = (inDO[0].split('/')[2]) # justin
-            runEra         = ((inDO[0].split('/')[2]).split('-')[0]+'_'+(inDO[0].split('/')[2]).split('-')[1]) # data
+            #runEra         = ((inDO[0].split('/')[2]).split('-')[0]+'_'+(inDO[0].split('/')[2]).split('-')[1]) # data
+            runEra         = (inDO[0].split('/')[2]).split('RECO')[0]
             #runEra         = ((inDO[0].split('/')[2]).split('_')[0]+'_'+(inDO[0].split('/')[2]).split('_')[1]).split('-PU')[0] # MC
             #runEra         = ((inDO[0].split('/')[2]).split('-')[0]+'_'+(inDO[0].split('/')[2]).split('-')[1]).split('106')[0]
             print( runEra )
@@ -134,7 +135,7 @@ def docrab( dataset ):
             #trial          = "kucmsntuple_gogoG_Justin_None_v22" #
 
             # set trial name - used in output path ?
-            trial          = "kucmsntuple_MC_v24" #
+            trial          = "kucmsntuple_WJetsToLNu_IPM100_v24" #
 
             print( 'processing for : ',trial )
 
@@ -142,6 +143,14 @@ def docrab( dataset ):
             config.Data.outLFNDirBase  = "/store/group/lpcsusylep/jaking/KUCMSNtuple/"+trial+"/"
             config.General.requestName   = trial+"_"+primaryDataset+"_"+dataset+"_"+runEra+"_request"
             config.Data.outputDatasetTag = trial+"_"+primaryDataset+"_"+dataset+"_"+runEra
+
+            skimM100 = 'eventSkim=MET100'
+            skimAL1P = 'eventSkim=AL1IsoPho'
+            skimIPM100 = 'eventSkim=IsoPhoMet100'
+
+            geninfo = 'hasGenInfo=True'
+            mcrab = 'multicrab=True'
+
 
 #  -------  selsect PD/MC dependent paramters
 #-----------------------------------------------------------------------------------------------------------------------------
@@ -155,21 +164,17 @@ def docrab( dataset ):
 
 #-----------------------------------------------------------------------------------------------------------------------------
 #>>>>>      #MC RunIISummer20UL18RECO
-            config.JobType.pyCfgParams   = ['globalTag=106X_upgrade2018_realistic_v11_L1v1','multicrab=True','hasGenInfo=True']
+            gt = 'globalTag=106X_upgrade2018_realistic_v11_L1v1'
+            #config.JobType.pyCfgParams   = ['globalTag=106X_upgrade2018_realistic_v11_L1v1','multicrab=True','hasGenInfo=True']
+            config.JobType.pyCfgParams   = [gt,mcrab,geninfo,skimIPM100]
             #config.JobType.pyCfgParams   = ['globalTag=106X_upgrade2018_realistic_v11_L1v1','multicrab=True','hasGenInfo=True','eventSkim=AL1IsoPho']
 #>>>>>      #MC GMSB RunIIFall17DRPremix  #globalTag=94X_mc2017_realistic_v14  #  <<< comment/uncomment lumi mask when using/!using MC
             #config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v14','multicrab=True','hasGenInfo=True']
             #config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v14','multicrab=True','hasGenInfo=True','eventSkim=AL1IsoPho']
-#>>>>>>>>>>>>>>>>>>>     #MC GJets RunIIFall17DRPremix && RunIISummer20UL18RECO  !!!!! CHANGE UNITS PER JOB !!!!!!!
+#>>>>>>>>>>>>>>>>>>>     #MC RunIIAutumn18DRPremix 102X_upgrade2018_realistic_v15  
             #config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v11','multicrab=True','hasGenInfo=True']
             #config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v11','multicrab=True','hasGenInfo=True','eventSkim=AL1IsoPho']
-#>>>>>>>>>>>>>>>>>>>     #MC DY + QCD RunIIAutumn18DRPremix 102X_upgrade2018_realistic_v15  
-            #config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v11','multicrab=True','hasGenInfo=True']
-            #config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v11','multicrab=True','hasGenInfo=True','eventSkim=AL1IsoPho']
-#>>>>>>>>>>>>>>>>>>>     #MC DiPhotonBox
-            #config.JobType.pyCfgParams   = ['globalTag=106X_upgrade2018_realistic_v16_L1v1','multicrab=True','hasGenInfo=True'] 
 
-#124X_mcRun3_2022_realistic_v12
 #-----------------------------------------------------------------------------------------------------------------------------
 
             # Submit.
@@ -206,13 +211,23 @@ def docrab( dataset ):
 
 def run_multi():
 
+    Tune = 'TuneCP5_13TeV-madgraphMLM-pythia8'
+
     runDataset = [
 
-        ['/GJets_HT-100To200_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18RECO-4cores5k_106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM'],
-        ['/GJets_HT-200To400_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM'],
-        ['/GJets_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM'],
-        ['/GJets_HT-40To100_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM'],
-        ['/GJets_HT-600ToInf_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM'],
+        ##['/MET/Run2018A-15Feb2022_UL2018-v1/AOD'],
+
+
+        #['/WJetsToLNu_HT-100To200_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v3/AODSIM'],
+        #['/WJetsToLNu_HT-1200To2500_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM'],
+        ['/WJetsToLNu_HT-2500ToInf_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM'],
+
+        #['/WJetsToLNu_HT-200To400_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v3/AODSIM'],
+        #['/WJetsToLNu_HT-400To600_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM'],
+        #['/WJetsToLNu_HT-600To800_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM'],
+
+        #['/WJetsToLNu_HT-70To100_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v3/AODSIM'],
+        #['/WJetsToLNu_HT-800To1200_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM'],
 
     ] 
 

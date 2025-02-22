@@ -23,6 +23,7 @@ macros/*.obj
 *.txt
 !*List.txt
 !macros/ecal_config/*.txt
+!*readme.txt
 test/*WorkSpace/
 *.root
 *.pyc
