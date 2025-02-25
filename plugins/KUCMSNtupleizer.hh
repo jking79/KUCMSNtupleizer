@@ -179,7 +179,7 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
 
         //bool selectedEvent();
 		//ntple event selection
-		KUCMSEventSelection ntupleSkim;
+		KUCMSEventSelection ntupleFilter;
 
         ////////////////////////////////////////////////////
         // ----------member data ---------------------------
@@ -200,8 +200,8 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
 
 		// config - event count and wgt info
 		KUCMSBranchManager ConfigBranches;
-    	int nTotEvts, nSkimEvts;
-    	float sumEvtWgt, sumSkimEvtWgt;
+    	int nTotEvts, nFltrdEvts, metFltrdEvts, phoFltrdEvts;
+    	float sumEvtWgt, sumFltrdEvtWgt;
 
         // oputput tree
         TTree *outTree;
@@ -384,12 +384,16 @@ void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
     // -- Fill output trees ------------------------------------------
 
     //if( DEBUG ) std::cout << "Select Event and Fill Tree" << std::endl;
-    if( ntupleSkim.selectEvent( geVar ) ){ 
+    if( ntupleFilter.selectEvent( geVar ) ){
+ 
 		outTree->Fill();
-		nSkimEvts++;
-		sumSkimEvtWgt += geVar("genWgt");
+		nFltrdEvts++;
+		sumFltrdEvtWgt += geVar("genWgt");
+
 	}//<<>>if( ntupleSkim.selectEvent( geVar ) )
 
+	metFltrdEvts += ntupleFilter.trackMetFilter() ? 1 : 0;
+	phoFltrdEvts += ntupleFilter.trackPhoFilter() ? 1 : 0;
 	sumEvtWgt += geVar("genWgt");
 
     // -- EOFun ------------------------------------------------------
@@ -424,18 +428,22 @@ void KUCMSNtupilizer::beginJob(){
     ObjMan.Init( outTree );
 
     nTotEvts = 0; 
-	nSkimEvts = 0;
+	nFltrdEvts = 0;
 	sumEvtWgt = 0;
-    sumSkimEvtWgt = 0;
+    sumFltrdEvtWgt = 0;
+	metFltrdEvts = 0;
+	phoFltrdEvts = 0;
  
 }//>>>>void KUCMSNtupilizer::beginJob()
 
 void KUCMSNtupilizer::InitConfigTree( TTree* fConfigTree ){
 
     ConfigBranches.makeBranch("nTotEvts","nTotEvts",INT);
-    ConfigBranches.makeBranch("nSkimEvts","nSkimEvts",INT);
+    ConfigBranches.makeBranch("nFltrdEvts","nFltrdEvts",INT);
     ConfigBranches.makeBranch("sumEvtWgt","sumEvtWgt",FLOAT);
-    ConfigBranches.makeBranch("sumSkimEvtWgt","sumSkimEvtWgt",FLOAT);
+    ConfigBranches.makeBranch("sumFltrdEvtWgt","sumFltrdEvtWgt",FLOAT);
+    ConfigBranches.makeBranch("nMetFltrdEvts","nMetFltrdEvts",INT);
+    ConfigBranches.makeBranch("nPhoFltrdEvts","nPhoFltrdEvts",INT);
 
     ConfigBranches.attachBranches(fConfigTree);
 
@@ -449,9 +457,11 @@ void KUCMSNtupilizer::endJob(){
 
 	ConfigBranches.clearBranches();
 	ConfigBranches.fillBranch("nTotEvts",nTotEvts);
-	ConfigBranches.fillBranch("nSkimEvts",nSkimEvts);
+	ConfigBranches.fillBranch("nFltrdEvts",nFltrdEvts);
 	ConfigBranches.fillBranch("sumEvtWgt",sumEvtWgt);
-    ConfigBranches.fillBranch("sumSkimEvtWgt",sumSkimEvtWgt);
+    ConfigBranches.fillBranch("sumFltrdEvtWgt",sumFltrdEvtWgt);
+    ConfigBranches.fillBranch("nMetFltrdEvts",metFltrdEvts);
+    ConfigBranches.fillBranch("nPhoFltrdEvts",phoFltrdEvts);
 	configTree->Fill();
  
 }//>>>>void KUCMSNtupilizer::endJob()

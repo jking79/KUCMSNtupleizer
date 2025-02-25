@@ -8,7 +8,7 @@ options = VarParsing('python')
 ## Flags
 options.register('multicrab',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'swtich to use muticrab paramters');
 options.register('hasGenInfo',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to get pcalo in mc');
-options.register('eventSkim','MET100',VarParsing.multiplicity.singleton,VarParsing.varType.string,'filter to use in event processing');
+options.register('eventFilter','MET100',VarParsing.multiplicity.singleton,VarParsing.varType.string,'filter to use in event processing');
 
 ## object prep cuts
 #options.register('jetpTmin',15.0,VarParsing.multiplicity.singleton,VarParsing.varType.float,'jet pT minimum cut');
@@ -254,7 +254,8 @@ process.source = cms.Source("PoolSource",
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250))#KT
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500))#QT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(5000))#BT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10000))#LT
@@ -277,12 +278,12 @@ genInfo = True
 #genInfo = False
 if options.multicrab == True : genInfo = options.hasGenInfo		   
 
-#skimselect = 'None'
-#skimselect = 'MET100'
-#skimselect = 'AL1IsoPho'
-skimselect = 'IsoPhoMet100'
+filterselect = 'None'
+#filterselect = 'MET100'
+#filterselect = 'AL1IsoPho'
+#filterselect = 'IsoPhoMet100'
 
-if options.multicrab == True : skimselect = options.eventSkim
+if options.multicrab == True : filterselect = options.eventFilter
 
 #genMomChase = True
 genMomChase = False
@@ -291,7 +292,7 @@ if options.multicrab == True : genMomChase = False
 makeTrigList = False
 if options.multicrab == True : makeTrigList = False
 
-print( "Using options : mutlicrab = ",options.multicrab," geninfo = ",genInfo," skim = ",skimselect )
+print( "Using options : mutlicrab = ",options.multicrab," geninfo = ",genInfo," filter = ",filterselect )
 print( "Using options : momChase = ",genMomChase," trgiList = ",makeTrigList ) 
 print( "Using options : globalTag = ",options.globalTag )
 print( "With output file name : ",options.outputFileName )
@@ -308,7 +309,7 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
                               makeTriggerList =  cms.bool(makeTrigList),
 
                               ##skim type selectuon 
-                              skimSelection = cms.string(skimselect),
+                              fltrSelection = cms.string(filterselect),
                             
                               #Triggers
                               triggerList = cms.vstring( #"hltPFMET100", "hltMETClean100", "hltHIPhoton20Eta3p1" ),   

@@ -61,10 +61,10 @@ def docrab( dataset ):
         ##inputJSON    = 'golden2016.json'
         ##inputJSON    = 'golden2017.json'
         ##inputJSON    = 'Cert_294927-306462_13TeV_PromptReco_Collisions17_JSON.txt'
-        inputJSON    = 'Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt'
+        #inputJSON    = 'Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt'
         #inputJSON    = 'Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON.txt'
         #inputJSON    = 'Cert_314472-325175_13TeV_PromptReco_Collisions18_JSON.txt'
-        #inputJSON    = 'Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt'
+        inputJSON    = 'Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt'
         #inputJSON    = 'Cert_Collisions2022_355100_362760_Golden.json'	
 
         #--------------------------------------------------------
@@ -90,7 +90,7 @@ def docrab( dataset ):
         #config.Data.unitsPerJob   = 15000 # data  !!!!!! lumimask ?
         #config.Data.unitsPerJob  =  1500 # MC GMSB
         #config.Data.unitsPerJob  =  10000 # MC GJet
-        config.Data.unitsPerJob  =  15000 # MC QCD
+        config.Data.unitsPerJob  =  15000 # MC QCD - WJetsToLNu
         #config.Data.unitsPerJob  =  50000 # MC TTJet
         #config.Data.unitsPerJob  =  750 # MC DiPhoBox (DPB)
 
@@ -111,14 +111,13 @@ def docrab( dataset ):
             print( 'Input dataset for Crab Job : ' )
             #print( inDO )
             # inDO[0] is of the form /A/B/C. Since A+B is unique for each inDS, use this in the CRAB request name.
+            #primaryDataset = (inDO[0].split('/')[1])
             #primaryDataset = (inDO[0].split('/')[1]).split('_13T')[0]
             primaryDataset = (inDO[0].split('/')[1]).split('_Tune')[0]
             print( primaryDataset )
             #runEra         = (inDO[0].split('/')[2]) # justin
-            #runEra         = ((inDO[0].split('/')[2]).split('-')[0]+'_'+(inDO[0].split('/')[2]).split('-')[1]) # data
+            #runEra         = (inDO[0].split('/')[2]).split('-')[0]
             runEra         = (inDO[0].split('/')[2]).split('RECO')[0]
-            #runEra         = ((inDO[0].split('/')[2]).split('_')[0]+'_'+(inDO[0].split('/')[2]).split('_')[1]).split('-PU')[0] # MC
-            #runEra         = ((inDO[0].split('/')[2]).split('-')[0]+'_'+(inDO[0].split('/')[2]).split('-')[1]).split('106')[0]
             print( runEra )
             dataset        = inDO[0].split('/')[3]
             print( dataset )
@@ -135,7 +134,8 @@ def docrab( dataset ):
             #trial          = "kucmsntuple_gogoG_Justin_None_v22" #
 
             # set trial name - used in output path ?
-            trial          = "kucmsntuple_WJetsToLNu_IPM100_v24" #
+            trial          = "kucmsntuple_WJetsToLNu_R18_IPM100_v24" #
+            #trial          = "kucmsntuple_MET_R18_AL1IPHO_v24"
 
             print( 'processing for : ',trial )
 
@@ -144,9 +144,9 @@ def docrab( dataset ):
             config.General.requestName   = trial+"_"+primaryDataset+"_"+dataset+"_"+runEra+"_request"
             config.Data.outputDatasetTag = trial+"_"+primaryDataset+"_"+dataset+"_"+runEra
 
-            skimM100 = 'eventSkim=MET100'
-            skimAL1P = 'eventSkim=AL1IsoPho'
-            skimIPM100 = 'eventSkim=IsoPhoMet100'
+            skimM100 = 'eventFilter=MET100'
+            skimAL1P = 'eventFilter=AL1IsoPho'
+            skimIPM100 = 'eventFilter=IsoPhoMet100'
 
             geninfo = 'hasGenInfo=True'
             mcrab = 'multicrab=True'
@@ -158,7 +158,8 @@ def docrab( dataset ):
 #>>>>>>>>>>>>>>>>>>>     #2017UL #globalTag=106X_dataRun2_v20
             #config.JobType.pyCfgParams   = ['globalTag=106X_dataRun2_v20','multicrab=True']
 #>>>>>>>>>>>>>>>>>>>     #2018UL #globalTag=106X_dataRun2_v36
-            #config.JobType.pyCfgParams   = ['globalTag=106X_dataRun2_v36','multicrab=True']
+            #gt = 'globalTag=106X_dataRun2_v36'
+            #config.JobType.pyCfgParams   = [gt,mcrab,skimAL1P]
 #>>>>>>>>>>>>>>>>>>>        #2022 #globalTag=124X_dataRun3_v15
             #config.JobType.pyCfgParams   = ['globalTag=124X_dataRun3_v15','multicrab=True']
 
@@ -219,8 +220,10 @@ def run_multi():
 
 
         #['/WJetsToLNu_HT-100To200_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v3/AODSIM'],
+
         #['/WJetsToLNu_HT-1200To2500_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM'],
         ['/WJetsToLNu_HT-2500ToInf_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM'],
+        ['/WJetsToLNu_HT-400To600_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM'],
 
         #['/WJetsToLNu_HT-200To400_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v3/AODSIM'],
         #['/WJetsToLNu_HT-400To600_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM'],
@@ -228,6 +231,8 @@ def run_multi():
 
         #['/WJetsToLNu_HT-70To100_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v3/AODSIM'],
         #['/WJetsToLNu_HT-800To1200_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM'],
+
+        #['/MET/Run2018B-15Feb2022_UL2018-v1/AOD'],
 
     ] 
 
