@@ -70,8 +70,8 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     std::cout << "In constructor for KUCMSNtupilizer - tag and tokens" << std::endl;
 
 	// -----  set event skim selection ----------------------------------------------------------------
-	std::string skimSelect( iConfig.existsAs<std::string>("skimSelection") ? iConfig.getParameter<std::string>("skimSelection") : "None" );
-	ntupleSkim.setEventSelectionTag( skimSelect );
+	std::string filterSelect( iConfig.existsAs<std::string>("fltrSelection") ? iConfig.getParameter<std::string>("fltrSelection") : "None" );
+	ntupleFilter.setEventSelectionTag( filterSelect );
 
     // Triggers
     //auto triggerObjectsToken = consumes<std::vector<pat::TriggerObjectStandAlone>>(iConfig.getParameter<edm::InputTag>("triggerObjects"));

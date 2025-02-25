@@ -28,11 +28,15 @@ class KUCMSEventSelection {
 
 	std::string eventSelectionTag;
 	std::map< std::string, bool > selectionMap;  
+	bool metFilter;
+	bool phoFilter;
 
 	public:
 
 	void setEventSelectionTag( std::string estag ){ eventSelectionTag = estag; };	
 	const bool selectEvent( ItemManager<float>& geVar );
+	const bool trackMetFilter(){ return metFilter; };
+    const bool trackPhoFilter(){ return phoFilter; };
 
 
 };//<<>>class KUCMSEventSelection : KUCMSRootHelperBaseClass
@@ -57,6 +61,9 @@ const bool KUCMSEventSelection::selectEvent( ItemManager<float>& geVar ){
     selectionMap["MET75"] = hasMinMet75;
     selectionMap["AL1IsoPho"] = hasAL1IsoPhoton;
     selectionMap["IsoPhoMet100"] = hasAl1IsoPhoPlusMinMet100;
+
+	metFilter = hasMinMet100;
+	phoFilter = hasAL1IsoPhoton;
 
 	//std::cout << "Event select for ntuple with " << eventSelectionTag << " w/ result " << selectionMap[eventSelectionTag] << std::endl;
 	return selectionMap[eventSelectionTag];
