@@ -18,18 +18,22 @@ int main ( int argc, char *argv[] ){
                 const std::string listdir = "ntuple_master_lists/";
                 //const string KUCMSAodSkimmer::eosdir = "root://cmseos.fnal.gov//store/user/jaking/";
                 const std::string eosdir = "root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/";
+                //const std::string eosdir = "root://cmseos.fnal.gov//store/user/janguian/";
 				//const std::string eosdir = "../";				
 
 				bool genSigPerfect = false;
+                //bool genSigPerfect = true;
                 bool hasGenInfo = true;
                 ////const std::string infilename = "KUCMS_Ntuple_Master_BG_Files_List.txt"; genSigPerfect = false;
                 //const std::string infilename = "KUCMS_Ntuple_Master_IsoPho_GMSB_Files_List.txt"; genSigPerfect = true;
 				//const std::string infilename = "KUCMS_Ntuple_Master_DataPD_Files_List.txt"; hasGenInfo = false;
                 //const std::string infilename = "KUCMS_Ntuple_Master_BG_Met0_Files_List.txt"; genSigPerfect = false;
                 //const std::string infilename = "KUCMS_Ntuple_Master_GMSB_Files_List.txt"; genSigPerfect = true
-                const std::string infilename = "KUCMS_Ntuple_Test_GMSB_Files_List.txt"; genSigPerfect = true;
+                //const std::string infilename = "KUCMS_Ntuple_Test_GMSB_Files_List.txt"; genSigPerfect = true;
                 //const std::string infilename = "KUCMS_Ntuple_Master_JetHT_Files_List.txt"; hasGenInfo = false;
                 //const std::string infilename = "KUCMS_Ntuple_Master_DEG_Files_List.txt"; hasGenInfo = false;
+                //const std::string infilename = "KUCMS_Ntuple_Jusin_Signal_Files_List.txt";
+                const std::string infilename = "KUCMS_Ntuple_Master_BG_IPM100_Files_List.txt";
 
 				//const std::string outfilename = "_Ntuple_v14_LLPgama_Skim_v15.root";
 				//const std::string outfilename = "_LLPgama_Skim_v15b_rhe1k.root";
@@ -43,7 +47,9 @@ int main ( int argc, char *argv[] ){
 
                 //const std::string outfilename = "_Ntuple_v19_LLPgama_10pSkim_v19_rawmet_rjrcombo.root";
                 //const std::string outfilename = "_Ntuple_v19_LLPgama_Skim_v19_ootmet_rjrcombo.root";
-                const std::string outfilename = "_Ntuple_v23_JSkim_gogoG_v24_rjrvars.root";
+                //const std::string outfilename = "_Ntuple_v23_JSkim_gogoG_v24_rjrvars.root";
+                //const std::string outfilename = "_Ntuple_v23_JSkim_1900_gensigperfect_v24_rjrvars.root";
+                const std::string outfilename = "_Ntuple_v23_WJetsToLNu_HT-400To600_IPM100_R18_v24_rjrvars.root";
 
                 int skipCnt = 0;// Normal
 				//int skipCnt = 10;// Met0 GMSB

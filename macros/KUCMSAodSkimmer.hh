@@ -139,8 +139,10 @@ class KUCMSAodSkimmer : public llpgtree {
 	globalEventVars gEvtVar;
     ItemManager<std::vector<float>> geVects;	
     ItemManager<uInt> geCnts;
-	ItemManager<float> geVars;	
+	ItemManager<float> geVars;
 	std::map<std::string,int> cutflow;
+    std::map<std::string,int> configCnts
+    std::map<std::string,float> configWgts
 	uInt nEvents, nSelectedEvents;
     float sumEvtGenWgt;
 	std::vector<bool> rhused;

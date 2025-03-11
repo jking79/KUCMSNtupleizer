@@ -1,0 +1,3 @@
+KUCMSNtuple/kucmsntuple_SMS-GlGl_1000/ kuntuple_SMS-GlGl_1000_files.txt mGL10 1 1 1 1 0
+KUCMSNtuple/kucmsntuple_SMS-GlGl_1500/ kuntuple_SMS-GlGl_1500_files.txt mGL15 1 1 1 1 0
+KUCMSNtuple/kucmsntuple_SMS-GlGl_1900/ kuntuple_SMS-GlGl_1900_files.txt mGL19 1 1 1 1 0

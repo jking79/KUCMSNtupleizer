@@ -1,0 +1,3 @@
+/KUCMSNtuple/kucmsntuple_WJetsToLNu_R18_IPM100_v24/ kuntuple_WJetsToLNu_HT-400To600_IPM100_R18_v24.txt Wjets4 0 0.0 0.0 1 0
+#/KUCMSNtuple/kucmsntuple_WJetsToLNu_R18_IPM100_v24/ kuntuple_WJetsToLNu_HT-1200To2500_IPM100_R18_v24.txt Wjets12 0 0.0 0.0 1 0
+#/KUCMSNtuple/kucmsntuple_WJetsToLNu_R18_IPM100_v24/ kuntuple_WJetsToLNu_HT-2500ToInf_IPM100_R18_v24.txt Wjets25 0 0.0 0.0 1 0
