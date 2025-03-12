@@ -50,7 +50,7 @@ const bool KUCMSEventSelection::selectEvent( ItemManager<float>& geVar ){
     bool hasMinMet150 = geVar("evtMET") > 150;
     bool hasMinMet100 = geVar("evtMET") > 100;	
     bool hasMinMet75 = geVar("evtMET") > 50;
-
+	bool hasAL1SelElectron = geVar("nSelEle") > 0;
 	bool hasAL1IsoPhoton = geVar("nIsoPhos") > 0;
 
 	bool hasAl1IsoPhoPlusMinMet100 = hasAL1IsoPhoton && hasMinMet100;
@@ -61,6 +61,7 @@ const bool KUCMSEventSelection::selectEvent( ItemManager<float>& geVar ){
     selectionMap["MET75"] = hasMinMet75;
     selectionMap["AL1IsoPho"] = hasAL1IsoPhoton;
     selectionMap["IsoPhoMet100"] = hasAl1IsoPhoPlusMinMet100;
+    selectionMap["AL1SelEle"] = hasAL1SelElectron;
 
 	metFilter = hasMinMet100;
 	phoFilter = hasAL1IsoPhoton;
