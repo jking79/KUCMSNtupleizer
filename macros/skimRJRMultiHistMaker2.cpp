@@ -119,6 +119,7 @@ void HistMaker::histMaker( std::string indir, std::string infilelist, std::strin
 
 		if( not configInfo.count(configKey) ){
         	if(debug) std::cout << " - Filling configValues. " << std::endl;
+        	fConfigTree->Add(tfilename.c_str());			
 			std::map< std::string, float > configValues;
         	configValues["nEvents"] = nEvents;
         	configValues["nSelectedEvents"] = nSelectedEvents;

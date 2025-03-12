@@ -116,21 +116,21 @@ for line2 in targdirs :
     	for subsubdir in subdir3 : 
     		subdirlist2.append(thesubdir+'/'+subdir+'/'+subsubdir)
    
-    if debug : print( subdirlist2 ) 
-    for thesubdir2 in subdirlist2 :
-        command4 = command+thesubdir2+'/'
-        subdir4 = bashout( command4 ).rstrip().splitlines()
-        #print( thesubdir+subdir2+'/0000/' )
-        for subdir in subdir4 :
-            subdirlist3.append(thesubdir2+'/'+subdir+'/')
+    #if debug : print( subdirlist2 ) 
+    #for thesubdir2 in subdirlist2 :
+    #    command4 = command+thesubdir2+'/'
+    #    subdir4 = bashout( command4 ).rstrip().splitlines()
+    #    #print( thesubdir+subdir2+'/0000/' )
+    #    for subdir in subdir4 :
+    #        subdirlist3.append(thesubdir2+'/'+subdir+'/')
             #command5 = command+thesubdir+subdir+'/'
             #subdir5 = bashout( command5 ).rstrip().splitlines()
             #for subsubdir in subdir5 :
                 #subdirlist3.append(thesubdir+subdir+'/'+subsubdir+'/')
     
     
-    if debug : print( subdirlist3 )
-    for subdir2 in subdirlist3:
+    if debug : print( subdirlist2 )
+    for subdir2 in subdirlist2:
     	lists = bashout( command+subdir2 ).rstrip().splitlines()
     	for lline in lists :
     		if rootfile in lline : filelist.append(subdir2+lline)

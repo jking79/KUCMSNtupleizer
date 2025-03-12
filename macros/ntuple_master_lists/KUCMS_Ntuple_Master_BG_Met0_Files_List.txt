@@ -44,10 +44,10 @@
 #KUCMSNtuple/kucmsntuple_GJETS_R17_MET100_v21/ kuntuple_GJets_HT-400To600_Met100_R17_v21.txt GJets3 258 0.0 0.0 1 0
 #KUCMSNtuple/kucmsntuple_GJETS_R17_MET100_v21/ kuntuple_GJets_HT-600ToInf_Met100_R17_v21.txt GJets4 85.18 0.0 0.0 1 0
 
-KUCMSNtuple/kucmsntuple_GJETS_R17_AL1IsoPho_v22/ kuntuple_GJets_HT-200To400_AL1IsoPho_R17_v22.txt
-KUCMSNtuple/kucmsntuple_GJETS_R17_AL1IsoPho_v22/ kuntuple_GJets_HT-400To600_AL1IsoPho_R17_v22.txt
-KUCMSNtuple/kucmsntuple_GJETS_R17_AL1IsoPho_v22/ kuntuple_GJets_HT-40To100_AL1IsoPho_R17_v22.txt
-KUCMSNtuple/kucmsntuple_GJETS_R17_AL1IsoPho_v22/ kuntuple_GJets_HT-600ToInf_AL1IsoPho_R17_v22.txt
+#KUCMSNtuple/kucmsntuple_GJETS_R17_AL1IsoPho_v22/ kuntuple_GJets_HT-200To400_AL1IsoPho_R17_v22.txt
+#KUCMSNtuple/kucmsntuple_GJETS_R17_AL1IsoPho_v22/ kuntuple_GJets_HT-400To600_AL1IsoPho_R17_v22.txt
+#KUCMSNtuple/kucmsntuple_GJETS_R17_AL1IsoPho_v22/ kuntuple_GJets_HT-40To100_AL1IsoPho_R17_v22.txt
+#KUCMSNtuple/kucmsntuple_GJETS_R17_AL1IsoPho_v22/ kuntuple_GJets_HT-600ToInf_AL1IsoPho_R17_v22.txt
 
 ##KUCMSNtuple/kucmsntuple_DiPhoBox_AOD_v14/ kuntuple_DiPhotonJetsBox_MGG-1000to2000_13TeV-sherpav14.txt DiPhoBox1 
 ##KUCMSNtuple/kucmsntuple_DiPhoBox_AOD_v14/ kuntuple_DiPhotonJetsBox_MGG-2000to4000_13TeV-sherpav14.txt

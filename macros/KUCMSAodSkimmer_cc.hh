@@ -129,6 +129,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir,
 
     doGenInfo = hasGenInfo;
     const std::string disphotreename = "tree/llpgtree";
+    const std::string configtreename = "tree/configtree";
     //std::string inpath, infiles, key, 
 	std::string masterstr; 
     //int mct;
@@ -137,13 +138,14 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir,
 	std::ifstream masterInfile(listdir+infilelist);
 	//while( masterInfile >> inpath >> infiles >> key >> crossSection >> gmsblam >> gmsbct >> mcwgt >> mctype ){
     sumEvtGenWgt = 0.0;
+	cutflow.clear();
     while( std::getline( masterInfile, masterstr ) ){
 
 		if( DEBUG ) std:: cout << masterstr << std::endl;
         if( masterstr[0] == '#' ) continue;
 		if( masterstr == " " ) continue;
 		auto instrs = splitString( masterstr, " " );
-		if( DEBUG ) std:: cout << instrs.size() << std::endl;
+		//if( DEBUG ) std:: cout << instrs.size() << std::endl;
         if( instrs.size() < 8 ) continue;
 
         auto inpath = instrs[0];
@@ -154,12 +156,21 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir,
         auto gmsbxm = std::stof( instrs[5] );
         auto mcw = std::stof( instrs[6] );
         auto mct = std::stoi( instrs[7] );		
+		if( DEBUG ) std:: cout << "InPath: " << inpath << std::endl;
+        if( DEBUG ) std:: cout << "InFile: " << infiles << std::endl;
+        if( DEBUG ) std:: cout << "Key: " << key << std::endl;
+        if( DEBUG ) std:: cout << "XSec: " << crossSection << std::endl;
+        if( DEBUG ) std:: cout << "GM: " << gmsbgm << std::endl;
+        if( DEBUG ) std:: cout << "XM: " << gmsbxm << std::endl;
+        if( DEBUG ) std:: cout << "MCw: " << mcw << std::endl;
+        if( DEBUG ) std:: cout << "MCt: " << mct << std::endl;
 
 		std::cout << "Processing Events for : " << infiles << std::endl;
 	    std::ifstream infile(listdir+infiles);
 	    TChain* fInTree = new TChain(disphotreename.c_str());
+        TChain* fConfigTree = new TChain(configtreename.c_str());
 	    std::cout << "Adding files to TChain." << std::endl;
-	    std::cout << " - With : " << infiles << " >> " << fInTree << std::endl;
+	    std::cout << " - With : " << listdir+infiles << " >> " << fInTree << std::endl;
 	    std::string str;
 		if( not DEBUG ) std::cout << "--  adding files";
 	
@@ -169,10 +180,12 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir,
 			if( skipCnt != 0 && nfiles%skipCnt != 0 ) continue;
 	        auto tfilename = eosdir + inpath + str;
 			fInTree->Add(tfilename.c_str());
+			fConfigTree->Add(tfilename.c_str());
 	        if(DEBUG) std::cout << "--  adding file: " << tfilename << std::endl; else std::cout << ".";
 			//if(DEBUG) break;
 	    }//<<>>while (std::getline(infile,str))
 		if( not DEBUG ) std::cout << std::endl;
+		if( nfiles == 0 ){ std::cout << " !!!!! no input files !!!!! " << std::endl; return; }
 	
 		auto fOutTree = new TTree("kuSkimTree","output root file for kUCMSSkimmer");
 	    auto fConfigTree = new TTree("kuSkimConfigTree","config root file for kUCMSSkimmer");
@@ -183,7 +196,58 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir,
         xmass = gmsbxm; // = 0 if not gmsb
         mcwgt = mcw; // default 1
         mctype = mct; // 0 = fullsim
-	
+
+		//ntuple event counts and waits
+
+		int nTotEvts;
+		int nFltrdEvts;
+		float sumEvtWgt;
+		float sumFltrdEvtWgt;
+		int nMetFltrdEvts;
+		int nPhoFltrdEvts;
+
+        TBranch *b_nTotEvts;
+        TBranch *b_nFltrdEvts;
+        TBranch *b_sumEvtWgt;
+        TBranch *b_sumFltrdEvtWgt;
+        TBranch *b_nMetFltrdEvts;
+        TBranch *b_nPhoFltrdEvts;
+
+    	fConfigTree->SetBranchAddress("nTotEvts", &nTotEvts, &b_nTotEvts);
+        fConfigTree->SetBranchAddress("nFltrdEvts", &nFltrdEvts, &b_nFltrdEvts);
+        fConfigTree->SetBranchAddress("sumEvtWgt", &sumEvtWgt, &b_sumEvtWgt);
+		fConfigTree->SetBranchAddress("sumFltrdEvtWgt", &sumFltrdEvtWgt, &b_sumFltrdEvtWgt);
+        fConfigTree->SetBranchAddress("nMetFltrdEvts", &nMetFltrdEvts, &b_nMetFltrdEvts);
+        fConfigTree->SetBranchAddress("nPhoFltrdEvts", &nPhoFltrdEvts, &b_nPhoFltrdEvts);
+
+    	auto nConfigEntries = fConfigTree->GetEntries();
+    	std::cout << "Proccessing " << nConfigEntries << " config entries." << std::endl;
+    	configCnts.clear();
+		configWgts.clear();
+    	for (Long64_t centry = 0; centry < nConfigEntries; centry++){
+
+        	auto entry = fConfigTree->LoadTree(centry);
+
+        	if(debug) std::cout << " - Getting Branches. " << std::endl;
+        	b_nTotEvts->GetEntry(entry);   //!
+        	b_nFltrdEvts->GetEntry(entry);   //!
+        	b_sumEvtWgt->GetEntry(entry);   //!  
+        	b_sumFltrdEvtWgt->GetEntry(entry);   //!
+        	b_nMetFltrdEvts->GetEntry(entry);   //!
+        	b_nPhoFltrdEvts->GetEntry(entry);   //!
+		
+			
+
+    	}//<<>>for (Long64_t centry = 0; centry < nConfigEntries; centry++)
+
+    	for( auto item : configInfo ){
+        	std::cout << item.first << " ( ";
+        	for( auto line : item.second ){
+         	   	std::cout << line.first <<  " " << line.second << " ";
+        	}//<<>>for( auto line : item.second )
+        	std::cout << ")" << std::endl;
+    	}//<<>>for( auto item : configInfo )
+
 		Init( fInTree, doGenInfo );
 		initHists();
 	    setOutputBranches(fOutTree);	
