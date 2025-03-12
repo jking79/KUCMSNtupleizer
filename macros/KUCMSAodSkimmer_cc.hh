@@ -124,8 +124,7 @@ KUCMSAodSkimmer::~KUCMSAodSkimmer(){
       
 }//<<>>KUCMSAodSkimmer::~KUCMSAodSkimmer()
 
-void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
-													std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, int skipCnt ){
+void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, int skipCnt ){
 
     doGenInfo = hasGenInfo;
     const std::string disphotreename = "tree/llpgtree";
@@ -138,7 +137,21 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir,
 	std::ifstream masterInfile(listdir+infilelist);
 	//while( masterInfile >> inpath >> infiles >> key >> crossSection >> gmsblam >> gmsbct >> mcwgt >> mctype ){
     sumEvtGenWgt = 0.0;
+
+	configCnts.clear();
+	configWgts.clear();
 	cutflow.clear();
+	cutflow["nTotEvts"] = 0;
+    cutflow["nFltrdEvts"] = 0;
+    cutflow["met150"] = 0;
+    cutflow["m_gt2jets"] = 0;
+    cutflow["mj_gt1phos"] = 0;
+    cutflow["mjp_leadPhoPt30"] = 0;
+	cutflow["sel_m"] = 0;
+    cutflow["sel_j"] = 0;
+    cutflow["sel_p"] = 0;
+    cutflow["sel_ppt"] = 0;
+
     while( std::getline( masterInfile, masterstr ) ){
 
 		if( DEBUG ) std:: cout << masterstr << std::endl;
@@ -168,7 +181,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir,
 		std::cout << "Processing Events for : " << infiles << std::endl;
 	    std::ifstream infile(listdir+infiles);
 	    TChain* fInTree = new TChain(disphotreename.c_str());
-        TChain* fConfigTree = new TChain(configtreename.c_str());
+        TChain* fInConfigTree = new TChain(configtreename.c_str());
 	    std::cout << "Adding files to TChain." << std::endl;
 	    std::cout << " - With : " << listdir+infiles << " >> " << fInTree << std::endl;
 	    std::string str;
@@ -180,7 +193,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir,
 			if( skipCnt != 0 && nfiles%skipCnt != 0 ) continue;
 	        auto tfilename = eosdir + inpath + str;
 			fInTree->Add(tfilename.c_str());
-			fConfigTree->Add(tfilename.c_str());
+			fInConfigTree->Add(tfilename.c_str());
 	        if(DEBUG) std::cout << "--  adding file: " << tfilename << std::endl; else std::cout << ".";
 			//if(DEBUG) break;
 	    }//<<>>while (std::getline(infile,str))
@@ -213,40 +226,58 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir,
         TBranch *b_nMetFltrdEvts;
         TBranch *b_nPhoFltrdEvts;
 
-    	fConfigTree->SetBranchAddress("nTotEvts", &nTotEvts, &b_nTotEvts);
-        fConfigTree->SetBranchAddress("nFltrdEvts", &nFltrdEvts, &b_nFltrdEvts);
-        fConfigTree->SetBranchAddress("sumEvtWgt", &sumEvtWgt, &b_sumEvtWgt);
-		fConfigTree->SetBranchAddress("sumFltrdEvtWgt", &sumFltrdEvtWgt, &b_sumFltrdEvtWgt);
-        fConfigTree->SetBranchAddress("nMetFltrdEvts", &nMetFltrdEvts, &b_nMetFltrdEvts);
-        fConfigTree->SetBranchAddress("nPhoFltrdEvts", &nPhoFltrdEvts, &b_nPhoFltrdEvts);
+    	fInConfigTree->SetBranchAddress("nTotEvts", &nTotEvts, &b_nTotEvts);
+        fInConfigTree->SetBranchAddress("nFltrdEvts", &nFltrdEvts, &b_nFltrdEvts);
+        fInConfigTree->SetBranchAddress("sumEvtWgt", &sumEvtWgt, &b_sumEvtWgt);
+		fInConfigTree->SetBranchAddress("sumFltrdEvtWgt", &sumFltrdEvtWgt, &b_sumFltrdEvtWgt);
+        fInConfigTree->SetBranchAddress("nMetFltrdEvts", &nMetFltrdEvts, &b_nMetFltrdEvts);
+        fInConfigTree->SetBranchAddress("nPhoFltrdEvts", &nPhoFltrdEvts, &b_nPhoFltrdEvts);
 
-    	auto nConfigEntries = fConfigTree->GetEntries();
+    	auto nConfigEntries = fInConfigTree->GetEntries();
     	std::cout << "Proccessing " << nConfigEntries << " config entries." << std::endl;
     	configCnts.clear();
 		configWgts.clear();
     	for (Long64_t centry = 0; centry < nConfigEntries; centry++){
 
-        	auto entry = fConfigTree->LoadTree(centry);
+        	auto entry = fInConfigTree->LoadTree(centry);
 
-        	if(debug) std::cout << " - Getting Branches. " << std::endl;
         	b_nTotEvts->GetEntry(entry);   //!
         	b_nFltrdEvts->GetEntry(entry);   //!
         	b_sumEvtWgt->GetEntry(entry);   //!  
         	b_sumFltrdEvtWgt->GetEntry(entry);   //!
         	b_nMetFltrdEvts->GetEntry(entry);   //!
         	b_nPhoFltrdEvts->GetEntry(entry);   //!
-		
-			
+
+			cutflow["nTotEvts"] += nTotEvts;
+			cutflow["nFltrdEvts"] += nFltrdEvts;
+
+			if( configCnts.find("nTotEvts") == configCnts.end() ){  configCnts["nTotEvts"] = nTotEvts; }
+			else{ configCnts["nTotEvts"] += nTotEvts; }
+            if( configCnts.find("nFltrdEvts") == configCnts.end() ){  configCnts["nFltrdEvts"] = nFltrdEvts; }
+            else{ configCnts["nFltrdEvts"] += nFltrdEvts; }
+            if( configWgts.find("sumEvtWgt") == configWgts.end() ){  configWgts["sumEvtWgt"] = sumEvtWgt; }
+            else{ configWgts["sumEvtWgt"] += sumEvtWgt; }
+            if( configWgts.find("sumFltrdEvtWgt") == configWgts.end() ){  configWgts["sumFltrdEvtWgt"] = sumFltrdEvtWgt; }
+            else{ configWgts["sumFltrdEvtWgt"] += sumFltrdEvtWgt; }
+            if( configCnts.find("nMetFltrdEvts") == configCnts.end() ){  configCnts["nMetFltrdEvts"] = nMetFltrdEvts; }
+            else{ configCnts["nMetFltrdEvts"] += nMetFltrdEvts; }
+            if( configCnts.find("nPhoFltrdEvts") == configCnts.end() ){  configCnts["nPhoFltrdEvts"] = nPhoFltrdEvts; }
+            else{ configCnts["nPhoFltrdEvts"] += nPhoFltrdEvts; }
+
 
     	}//<<>>for (Long64_t centry = 0; centry < nConfigEntries; centry++)
 
-    	for( auto item : configInfo ){
-        	std::cout << item.first << " ( ";
-        	for( auto line : item.second ){
-         	   	std::cout << line.first <<  " " << line.second << " ";
-        	}//<<>>for( auto line : item.second )
-        	std::cout << ")" << std::endl;
+        std::cout << "configCnts ( ";
+    	for( auto item : configCnts ){
+         	std::cout << item.first <<  " " << item.second << " ";
     	}//<<>>for( auto item : configInfo )
+        std::cout << ")" << std::endl;
+
+		std::cout << "configWgts ( ";
+        for( auto item : configWgts ){
+            std::cout << item.first <<  " " << item.second << " ";
+        }//<<>>for( auto item : configInfo )
+        std::cout << ")" << std::endl;
 
 		Init( fInTree, doGenInfo );
 		initHists();
@@ -404,6 +435,7 @@ void KUCMSAodSkimmer::processMet(){
 
     geVars.set("metPx", Met_Cpx );
     geVars.set("metPy", Met_Cpy );
+	geVars.set("cmet", Met_CPt );
 
 	//fill
 	selMet.fillBranch( "cmet", Met_CPt );
@@ -1539,9 +1571,7 @@ bool KUCMSAodSkimmer::eventSelection(){
 	if( DEBUG ) std::cout << "Event selection." << std::endl;
 	// determine if we want to save event
 
-	//float selmet; selMet.getBranch( "Met", selmet );
-	//std::cout << " Event Met : " << selmet << std::endl;
-
+    float evtMet = geVars("cmet");
 	int nSelJets = geCnts("nSelJets"); //selJets.getUIBranchValue("nSelJets");
     float nSelPhotons = geCnts("nSelPhotons"); //selPhotons.getUIBranchValue("nSelPhotons");
 	float leadSelPho = geCnts("leadPho"); //selPhotons.getUIBranchValue("leadSelPho");
@@ -1550,20 +1580,25 @@ bool KUCMSAodSkimmer::eventSelection(){
     float subLeadPhoPt = ( nSelPhotons > 1 ) ? geVars("subLeadPhoPt") : 0;
 	if( DEBUG ) std::cout << " - Lead/Sublead Photons: " << leadSelPho << " - " << subLeadSelPho << std::endl;
 
+	bool met150 = evtMet >= 150;
     bool gt1phos = nSelPhotons >= 1;
-
     bool gt2jets = nSelJets >= 2;
     bool gt2phos = nSelPhotons >= 2;
 	bool leadPhoPt70 = leadPhoPt >= 70;
     bool leadPhoPt30 = leadPhoPt >= 30;
 	bool subLeadPhoPt40 = subLeadPhoPt >= 40; 
 	
-    bool evtSelected = gt2jets && gt1phos && leadPhoPt30;
+    bool evtSelected = met150 && gt2jets && gt1phos && leadPhoPt30;
 	//auto evtSelected = leadPhoPt70 && subLeadPhoPt40 && gt2jets && gt2phos;
-	//if( geVars( "genSigPerfect" ) == 1 ) std::cout << "  -- Event sel nSGlue : " << geVars( "nSGlue" ) << std::endl;
-	//if( ( geVars( "genSigPerfect" ) == 1 ) && ( geVars( "nSQuark" ) < 1 ) ) evtSelected = false;
-    //if( ( geVars( "genSigPerfect" ) == 1 ) && ( geVars( "nSGlue" ) < 1 ) ) evtSelected = false;
-    //if( ( geVars( "genSigPerfect" ) == 1 ) && ( ( geVars( "nSQuark" ) < 1 ) && ( geVars( "nSGlue" ) < 1 ) ) ) evtSelected = false;
+
+    if( met150 ) cutflow["met150"]++;
+    if( met150 && gt2jets ) cutflow["m_gt2jets"]++;
+    if( met150 && gt2jets && gt1phos ){ cutflow["mj_gt1phos"]++; cutflow["sel_ppt"]++; }
+    if( evtSelected ) cutflow["mjp_leadPhoPt30"]++;
+
+	if( met150 && gt2jets && leadPhoPt30 ) cutflow["sel_p"]++;
+    if( met150 && gt1phos && leadPhoPt30 ) cutflow["sel_j"]++;
+    if( gt2jets && gt1phos && leadPhoPt30 ) cutflow["sel_m"]++;
 
 	if( DEBUG ){ 
 		if( evtSelected ) std::cout << " ---------------- Event Passed !!!!!!!" << std::endl; 
@@ -1959,6 +1994,24 @@ void KUCMSAodSkimmer::fillConfigTree( TTree* fConfigTree ){
     sMCTypeBranch->Fill();
     TBranch *sumEvtGenWgtBranch = fConfigTree->Branch( "sumEvtGenWgt", &sumEvtGenWgt );
     sumEvtGenWgtBranch->Fill();
+
+    for( auto item : cutflow ){
+		std::string bname = "cf_" + item.first;
+		TBranch *cfBranch = fConfigTree->Branch( bname.c_str(), &item.second );
+		cfBranch->Fill();
+    }//<<>>for( auto item : configInfo )
+
+    for( auto item : configCnts ){
+        std::string bname = item.first;
+        TBranch *cfBranch = fConfigTree->Branch( bname.c_str(), &item.second );
+        cfBranch->Fill();
+    }//<<>>for( auto item : configInfo )
+
+    for( auto item : configWgts ){
+        std::string bname = item.first;
+        TBranch *cfBranch = fConfigTree->Branch( bname.c_str(), &item.second );
+        cfBranch->Fill();
+    }//<<>>for( auto item : configInfo )
 
 	fConfigTree->Fill();
 

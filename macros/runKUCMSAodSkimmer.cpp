@@ -49,7 +49,7 @@ int main ( int argc, char *argv[] ){
                 //const std::string outfilename = "_Ntuple_v19_LLPgama_Skim_v19_ootmet_rjrcombo.root";
                 //const std::string outfilename = "_Ntuple_v23_JSkim_gogoG_v24_rjrvars.root";
                 //const std::string outfilename = "_Ntuple_v23_JSkim_1900_gensigperfect_v24_rjrvars.root";
-                const std::string outfilename = "_Ntuple_v23_WJetsToLNu_HT-400To600_IPM100_R18_v24_rjrvars.root";
+                const std::string outfilename = "_LLPGskim_v20_rjrvars.root";
 
                 int skipCnt = 0;// Normal
 				//int skipCnt = 10;// Met0 GMSB

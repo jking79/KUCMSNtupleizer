@@ -135,7 +135,9 @@ def docrab( dataset ):
 
             # set trial name - used in output path ?
             #trial          = "kucmsntuple_WJetsToLNu_R18_IPM100_v24" #
-            trial          = "kucmsntuple_MET_R18_IPM100_v24"
+            #trial          = "kucmsntuple_MET_R18_IPM100_v24"
+            #trial          = "kucmsntuple_MET_R18_MRL_MET100_v24"
+            trial          = "kucmsntuple_MET_R18_MRL_AL1IsoPho_v24"
             #trial          = "kucmsntuple_SMS-GlGl_1000"
 
             print( 'processing for : ',trial )
@@ -161,8 +163,9 @@ def docrab( dataset ):
             #config.JobType.pyCfgParams   = ['globalTag=106X_dataRun2_v20','multicrab=True']
 #>>>>>>>>>>>>>>>>>>>     #2018UL #globalTag=106X_dataRun2_v36
             gt = 'globalTag=106X_dataRun2_v36'
-            config.JobType.pyCfgParams   = [gt,mcrab,skimIPM100]
-            #config.JobType.pyCfgParams   = [gt,mcrab,skimAL1P]
+            #config.JobType.pyCfgParams   = [gt,mcrab,skimIPM100]
+            #config.JobType.pyCfgParams   = [gt,mcrab,skimM100]
+            config.JobType.pyCfgParams   = [gt,mcrab,skimAL1P]
 #>>>>>>>>>>>>>>>>>>>        #2022 #globalTag=124X_dataRun3_v15
             #config.JobType.pyCfgParams   = ['globalTag=124X_dataRun3_v15','multicrab=True']
 
@@ -237,8 +240,8 @@ def run_multi():
         #['/WJetsToLNu_HT-70To100_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v3/AODSIM'],
         #['/WJetsToLNu_HT-800To1200_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM'],
 
-        ['/MET/Run2018A-15Feb2022_UL2018-v1/AOD'],
-        #['/MET/Run2018B-15Feb2022_UL2018-v1/AOD'],
+        #['/MET/Run2018A-15Feb2022_UL2018-v1/AOD'],
+        ['/MET/Run2018B-15Feb2022_UL2018-v1/AOD'],
         #['/MET/Run2018C-15Feb2022_UL2018-v1/AOD'],
         #['/MET/Run2018D-15Feb2022_UL2018-v1/AOD'],
 

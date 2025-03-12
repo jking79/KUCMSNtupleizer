@@ -208,6 +208,7 @@ void KUCMSElectronObject::ProcessEvent( ItemManager<float>& geVar ){
     if( ElectronDEBUG ) std::cout << " - enetering Electron loop" << std::endl;
 
 	int eleIndx = 0;
+	int nSelEle = 0;
     scGroup scptrs;
     std::vector<float> scptres;
     if( ElectronDEBUG ) std::cout << "Processing Electrons" << std::endl;
@@ -247,6 +248,13 @@ void KUCMSElectronObject::ProcessEvent( ItemManager<float>& geVar ){
         //auto timeStats = getTimeDistStats( tofTimes, eleRhGroup );
         const float seedTOFTime = rhObj->getSeedTofTime( *scptr, geVar("vtxX"), geVar("vtxY"), geVar("vtxZ") );
 
+        bool sieiec = electron.full5x5_sigmaIetaIeta() < 0.0112;
+        bool descvc = electron.deltaEtaSuperClusterTrackAtVtx() < 0.00377;
+        bool dpscvc = electron.deltaPhiSuperClusterTrackAtVtx() < 0.0884;
+        bool hoec = electron.hadronicOverEm() < 0.05 + 1.16/eleEnergy + 0.0324/eleEnergy;
+        bool eptc = elePt >= 20;
+		if( sieiec && descvc && dpscvc && hoec && eptc ) nSelEle++;
+
         Branches.fillBranch("SeedTOFTime",seedTOFTime);
 
 	    eleIndx++;
@@ -258,6 +266,7 @@ void KUCMSElectronObject::ProcessEvent( ItemManager<float>& geVar ){
 
     }//<<>>for( const auto electron : *electrons_ )
 	Branches.fillBranch("nEle",eleIndx);
+	geVar.set("nSelEle",nSelEle);
 
     if( cfFlag("hasGenInfo") ){
         auto genInfo = genObjs->getGenEleMatch( scptrs, scptres );
