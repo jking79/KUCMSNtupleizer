@@ -35,22 +35,11 @@ eosll = 'eos root://cmseos.fnal.gov ls '
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_MET_R17_AL1IsoPho_v22/'
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_SMS_GlGl_v23/'
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_gogoG_Justin_None_v22/'
-command = eosll+justin
-#+'SMS-GlGl_mGl-2000_mN2-1950_mN1-1900_gam_N2ctau-0p1_AOD/'
-
-#version = 'Run2018D'
-#version = 'GJets'
-#version = 'QCD'
-#version = '_Ctau-0p'
-#version = '_noOOTAmp_'
-#version = '_wthOOTAmp_'
-#version = 'GMSB'
-#version = 'JetHT' 
-#version = 'DiPhotonJetsBox'
-#version = 'MET'
-#version = 'DoubleEG'
-#version = 'MINIAOD'
-version = 'SMS-GlGl'
+#command = eosll+justin+'SMS-GlGl_mGl-2000_mN2-1950_mN1-1900_gam_N2ctau-0p1_AOD/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_gogoG_Sig_IPM100_v24/CRAB_UserFiles/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_WZ_R18_IPM100_v24/WZ_TuneCP5_13TeV-pythia8/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_TTJets_R18_IPM100_v24/'
+command = eosll+mdis+'KUCMSNtuple/kucmsntuple_WJetsToLNu_R18_IPM100_v24/'
 
 rootfile = '.root'
 
@@ -72,7 +61,7 @@ rootfile = '.root'
 #dirselect = 'MET_R17E_MET75'
 #dirselect = 'AOD_Run2017E-17Nov2017-v1'
 #dirselect = 'MINIAOD'
-dirselect = ''
+dirselect = 'TT'
 
 #dirselect = ''
 
@@ -81,68 +70,32 @@ debug = True
 
 targdirs = []
 
-dirls = bashout( command ).splitlines()
+def readNextDir( inputdir ) :
+
+    subdirlist = []
+    dirls = bashout( inputdir ).splitlines()
+    for subdir in dirls :    
+        subdirlist.append( inputdir + '/' + subdir )
+    return subdirlist
+
+
+dirls = readNextDir( command )
 print( dirls )
-print( '************************************************')
 for line in dirls:
-	#print( line )
-	if dirselect in line : targdirs.append( line )
-    #targdirs.append( line )
+    if dirselect in line :
+        while rootfile not in dirselect :
+            nextline 
+ 
+        targdirs.append( line )
 print( targdirs )
-
-for line2 in targdirs :
-
-    subdirlist1 = []
-    subdirlist2 = []
-    subdirlist3 = []
-    filelist = []
-    theFileList = ''
-
-    #for mydir in targdirs:
-    print( '-------------------------------------------------')
-    print( line2 )
-    print( '-------------------------------------------------')
-    #subdirlist1.append( line+'/' )
-    
-    #if debug : print( subdirlist1 )
-    #for thesubdir in subdirlist1 :
-    thesubdir = line2
-    command2 = command+thesubdir+'/'
-    if debug : print( command2 )
-    subdir2 = bashout( command2 ).rstrip().splitlines()
-    for subdir in subdir2 : 
-    	command3 = command+thesubdir+'/'+subdir+'/'
-    	subdir3 = bashout( command3 ).rstrip().splitlines()
-    	for subsubdir in subdir3 : 
-    		subdirlist2.append(thesubdir+'/'+subdir+'/'+subsubdir)
-   
-    if debug : print( subdirlist2 ) 
-    for thesubdir2 in subdirlist2 :
-        command4 = command+thesubdir2+'/'
-        subdir4 = bashout( command4 ).rstrip().splitlines()
-        #print( thesubdir+subdir2+'/0000/' )
-        for subdir in subdir4 :
-            subdirlist3.append(thesubdir2+'/'+subdir+'/')
-            #command5 = command+thesubdir+subdir+'/'
-            #subdir5 = bashout( command5 ).rstrip().splitlines()
-            #for subsubdir in subdir5 :
-                #subdirlist3.append(thesubdir+subdir+'/'+subsubdir+'/')
-    
-    
-    if debug : print( subdirlist3 )
-    for subdir2 in subdirlist3:
-    	lists = bashout( command+subdir2 ).rstrip().splitlines()
-    	for lline in lists :
-    		if rootfile in lline : filelist.append(subdir2+lline)
+while  
    
     select =  line2.split("Tune")
-    outfile = 'kuntuple_' + select[0] + '_v23.txt'
+    #outfile = select[0] + '_filelist.txt'
+    outfile = 'kuntuple_' + select[0] + 'v24.txt'
     #outfile = 'kuntuple_' + select[0] + '_AL1IsoPho_R17_v24.txt'
     #print( outfile )
     outf = open( outfile, 'w' )
     for thefile in filelist:
     	outf.write( thefile + '\n' )
     outf.close()
-
-
-

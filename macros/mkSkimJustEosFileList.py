@@ -50,7 +50,7 @@ command = eosll+justin
 #version = 'MET'
 #version = 'DoubleEG'
 #version = 'MINIAOD'
-version = 'SMS-GlGl'
+version = 'gam_N2ctau-0p1_AOD'
 
 rootfile = '.root'
 

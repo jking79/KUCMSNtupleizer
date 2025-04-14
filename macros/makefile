@@ -24,6 +24,7 @@ p9=calibration_averhtime_isoot_filter_pho_ew
 p10=skimRJRMultiHistMaker
 p11=skimRJRMultiHistMaker2
 p12=wc_ku_plot2dResolution_wGausErr_mf
+p13=skimRJRMultiHistMaker3
 
 all: $(p1) 
 
@@ -62,4 +63,7 @@ $(p11): $(p11).cpp
 
 $(p12): $(p12).cpp
 	$(CC) -o $(p12).obj $(p12).cpp $(RTCFLAGS) $(RTGLIBS)
+
+$(p13): $(p13).cpp
+	$(CC) -o $(p13).obj $(p13).cpp $(RTCFLAGS) $(RTGLIBS)
 

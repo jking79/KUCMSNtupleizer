@@ -34,6 +34,7 @@ int main ( int argc, char *argv[] ){
                 //const std::string infilename = "KUCMS_Ntuple_Master_DEG_Files_List.txt"; hasGenInfo = false;
                 //const std::string infilename = "KUCMS_Ntuple_Jusin_Signal_Files_List.txt";
                 const std::string infilename = "KUCMS_Ntuple_Master_BG_IPM100_Files_List.txt";
+                //const std::string infilename = "KUCMS_Ntuple_Master_GoGoG_Files_List.txt";
 
 				//const std::string outfilename = "_Ntuple_v14_LLPgama_Skim_v15.root";
 				//const std::string outfilename = "_LLPgama_Skim_v15b_rhe1k.root";
@@ -47,9 +48,7 @@ int main ( int argc, char *argv[] ){
 
                 //const std::string outfilename = "_Ntuple_v19_LLPgama_10pSkim_v19_rawmet_rjrcombo.root";
                 //const std::string outfilename = "_Ntuple_v19_LLPgama_Skim_v19_ootmet_rjrcombo.root";
-                //const std::string outfilename = "_Ntuple_v23_JSkim_gogoG_v24_rjrvars.root";
-                //const std::string outfilename = "_Ntuple_v23_JSkim_1900_gensigperfect_v24_rjrvars.root";
-                const std::string outfilename = "_LLPGskim_v20_rjrvars.root";
+                const std::string outfilename = "_LLPGskim_v21_rjrvars.root"; // skim v21 use new process_name tags 
 
                 int skipCnt = 0;// Normal
 				//int skipCnt = 10;// Met0 GMSB

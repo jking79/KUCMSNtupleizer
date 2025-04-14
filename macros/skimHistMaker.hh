@@ -32,7 +32,7 @@ class HistMaker : public kuSkimTree {
 	//~HistMaker();
 
     void histMaker( std::string indir, std::string infilelist, std::string outfilename, std::string htitle );
-	void histMaker( std::string indir, std::string infilelist, std::string outfilename, std::string htitle,int cut,float va,float vb,float vc,float vd );
+	void histMaker( std::string indir, std::string infilelist, std::string outfilename, std::string htitle,int cut,float va,float vb,float vc,float vd, float ve, float vf );
 	void histMaker( std::string indir, std::vector<std::string> infilelists, std::string outfilename, std::string htitle );
     void histMaker( std::string indir, std::string infilelist, std::string outfilename, std::vector<std::vector<std::string>> deflist, std::vector<float> params );
 
@@ -50,13 +50,16 @@ class HistMaker : public kuSkimTree {
     TH1D *bkgHist[n1dHists];
     TH1D *dataHist[n1dHists];
 
-    int cutselection;
+	float scale;
+    int cutselection, cutv;
 	int preCutNPhotons, preCut30NPhotons, preCut100NPhotons; 
     int postCutNPhotons, postCut30NPhotons, postCut100NPhotons;
-    float cutva, cutvb, cutvc, cutvd;
+    float cutva, cutvb, cutvc, cutvd, cutve, cutvf;
     float sumEvtGenWgt;
 
     std::map< std::string, std::map< std::string, float > > configInfo;
+    std::map< std::string, int > cutflowInfo;
+	int cfbin;
 
 	std::vector<std::string> bkglist, siglist, datalist, bkgleg, sigleg, dataleg, title, varsel;
 	float lumi, maxy, miny, maxr;

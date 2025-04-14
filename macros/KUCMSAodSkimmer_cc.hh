@@ -136,21 +136,6 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
 	std::cout << "Processing Input Lists for : " << infilelist << std::endl;
 	std::ifstream masterInfile(listdir+infilelist);
 	//while( masterInfile >> inpath >> infiles >> key >> crossSection >> gmsblam >> gmsbct >> mcwgt >> mctype ){
-    sumEvtGenWgt = 0.0;
-
-	configCnts.clear();
-	configWgts.clear();
-	cutflow.clear();
-	cutflow["nTotEvts"] = 0;
-    cutflow["nFltrdEvts"] = 0;
-    cutflow["met150"] = 0;
-    cutflow["m_gt2jets"] = 0;
-    cutflow["mj_gt1phos"] = 0;
-    cutflow["mjp_leadPhoPt30"] = 0;
-	cutflow["sel_m"] = 0;
-    cutflow["sel_j"] = 0;
-    cutflow["sel_p"] = 0;
-    cutflow["sel_ppt"] = 0;
 
     while( std::getline( masterInfile, masterstr ) ){
 
@@ -158,7 +143,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
         if( masterstr[0] == '#' ) continue;
 		if( masterstr == " " ) continue;
 		auto instrs = splitString( masterstr, " " );
-		//if( DEBUG ) std:: cout << instrs.size() << std::endl;
+		if( DEBUG ) std:: cout << instrs.size() << std::endl;
         if( instrs.size() < 8 ) continue;
 
         auto inpath = instrs[0];
@@ -177,6 +162,13 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
         if( DEBUG ) std:: cout << "XM: " << gmsbxm << std::endl;
         if( DEBUG ) std:: cout << "MCw: " << mcw << std::endl;
         if( DEBUG ) std:: cout << "MCt: " << mct << std::endl;
+
+        dataSetKey = key;
+        xsctn = crossSection;
+        gmass = gmsbgm; // = 0 if not gmsb
+        xmass = gmsbxm; // = 0 if not gmsb
+        mcwgt = mcw; // default 1
+        mctype = mct; // 0 = fullsim
 
 		std::cout << "Processing Events for : " << infiles << std::endl;
 	    std::ifstream infile(listdir+infiles);
@@ -203,14 +195,17 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
 		auto fOutTree = new TTree("kuSkimTree","output root file for kUCMSSkimmer");
 	    auto fConfigTree = new TTree("kuSkimConfigTree","config root file for kUCMSSkimmer");
 
-        dataSetKey = key;
-        xsctn = crossSection;
-        gmass = gmsbgm; // = 0 if not gmsb
-        xmass = gmsbxm; // = 0 if not gmsb
-        mcwgt = mcw; // default 1
-        mctype = mct; // 0 = fullsim
+        Init( fInTree, doGenInfo );
+        initHists();
+        setOutputBranches(fOutTree);
 
-		//ntuple event counts and waits
+        SetupDetIDsEB(DetIDMap);
+        SetupDetIDsEE(DetIDMap);
+
+        startJobs(); // clear && init count varibles
+
+		// ntuple event counts and weights
+		// setup config tree inputs
 
 		int nTotEvts;
 		int nFltrdEvts;
@@ -251,18 +246,12 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
 			cutflow["nTotEvts"] += nTotEvts;
 			cutflow["nFltrdEvts"] += nFltrdEvts;
 
-			if( configCnts.find("nTotEvts") == configCnts.end() ){  configCnts["nTotEvts"] = nTotEvts; }
-			else{ configCnts["nTotEvts"] += nTotEvts; }
-            if( configCnts.find("nFltrdEvts") == configCnts.end() ){  configCnts["nFltrdEvts"] = nFltrdEvts; }
-            else{ configCnts["nFltrdEvts"] += nFltrdEvts; }
-            if( configWgts.find("sumEvtWgt") == configWgts.end() ){  configWgts["sumEvtWgt"] = sumEvtWgt; }
-            else{ configWgts["sumEvtWgt"] += sumEvtWgt; }
-            if( configWgts.find("sumFltrdEvtWgt") == configWgts.end() ){  configWgts["sumFltrdEvtWgt"] = sumFltrdEvtWgt; }
-            else{ configWgts["sumFltrdEvtWgt"] += sumFltrdEvtWgt; }
-            if( configCnts.find("nMetFltrdEvts") == configCnts.end() ){  configCnts["nMetFltrdEvts"] = nMetFltrdEvts; }
-            else{ configCnts["nMetFltrdEvts"] += nMetFltrdEvts; }
-            if( configCnts.find("nPhoFltrdEvts") == configCnts.end() ){  configCnts["nPhoFltrdEvts"] = nPhoFltrdEvts; }
-            else{ configCnts["nPhoFltrdEvts"] += nPhoFltrdEvts; }
+			configCnts["nTotEvts"] += nTotEvts;
+            configCnts["nFltrdEvts"] += nFltrdEvts;
+            configWgts["sumEvtWgt"] += sumEvtWgt;
+            configWgts["sumFltrdEvtWgt"] += sumFltrdEvtWgt;
+            configCnts["nMetFltrdEvts"] += nMetFltrdEvts;
+            configCnts["nPhoFltrdEvts"] += nPhoFltrdEvts;
 
 
     	}//<<>>for (Long64_t centry = 0; centry < nConfigEntries; centry++)
@@ -279,22 +268,12 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
         }//<<>>for( auto item : configInfo )
         std::cout << ")" << std::endl;
 
-		Init( fInTree, doGenInfo );
-		initHists();
-	    setOutputBranches(fOutTree);	
-	
-		SetupDetIDsEB(DetIDMap);
-		SetupDetIDsEE(DetIDMap);
-	
-		startJobs();
-	
 	    std::cout << "Setting up For Main Loop." << std::endl;
 		int loopCounter(100000);
 	    auto nEntries = fInTree->GetEntries();
 	    if(DEBUG){ nEntries = 1000; loopCounter = 100; }
 	    std::cout << "Proccessing " << nEntries << " entries." << std::endl;
         nEvents = nEntries;
-        int nSelEvts(0);
 	    for (Long64_t centry = 0; centry < nEntries; centry++){
 
 	        if( centry%loopCounter == 0 ) std::cout << "Proccessed " << centry << " of " << nEntries << " entries." << std::endl;
@@ -307,10 +286,9 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
 			if( genSigPerfect ) geVars.set( "genSigPerfect", 1 ); else geVars.set( "genSigPerfect", 0 );
 			if(DEBUG) std::cout << " -- Event Loop " << std::endl;
 			auto saveToTree = eventLoop(entry);
-			if( saveToTree ){ nSelEvts++; fOutTree->Fill(); }
+            if( saveToTree ){ fOutTree->Fill(); }
 
 	    }//<<>>for (Long64_t centry = 0; centry < nEntries; centry++)  end entry loop
-        nSelectedEvents = nSelEvts;
 		fillConfigTree( fConfigTree ); 
 
 		endJobs();
@@ -367,6 +345,29 @@ void KUCMSAodSkimmer::startJobs(){
 	nEvents = 0;
 	nSelectedEvents = 0;
 
+    sumEvtGenWgt = 0.0;
+
+    configCnts.clear();
+    configWgts.clear();
+    configCnts["nTotEvts"] = 0;
+    configCnts["nFltrdEvts"] = 0;
+    configWgts["sumEvtWgt"] = 0;
+    configWgts["sumFltrdEvtWgt"] = 0;
+    configCnts["nMetFltrdEvts"] = 0;
+    configCnts["nPhoFltrdEvts"] = 0;
+
+    cutflow.clear();
+    cutflow["nTotEvts"] = 0;
+    cutflow["nFltrdEvts"] = 0;
+    cutflow["met150"] = 0;
+    cutflow["m_gt2jets"] = 0;
+    cutflow["mj_gt1phos"] = 0;
+    cutflow["mjp_leadPhoPt30"] = 0;
+    cutflow["sel_m"] = 0;
+    cutflow["sel_j"] = 0;
+    cutflow["sel_p"] = 0;
+    cutflow["sel_ppt"] = 0;
+
 };//<<>>void KUCMSAodSkimmer::startJobs()
 
 bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
@@ -411,7 +412,6 @@ void KUCMSAodSkimmer::processEvntVars(){
     selEvtVars.clearBranches(); // <<<<<<<   must do
 
 	// calc
-    nEvents++;
     selEvtVars.fillBranch( "PVx", PV_x );
     selEvtVars.fillBranch( "PVy", PV_y );
     selEvtVars.fillBranch( "PVz", PV_z ); 
@@ -735,11 +735,26 @@ void KUCMSAodSkimmer::processPhotons(){
 		auto overMaxEta = std::abs(eta) > 1.479;
         auto phi = (*Photon_phi)[it];
 
+        if( DEBUG ) std::cout << " -- looping photons : getting pho iso " << std::endl;
+        auto htsecdr4 = (*Photon_hcalTowerSumEtConeDR04)[it];   //!
+        bool passHcalSum = true;
+        auto tspscdr4 = (*Photon_trkSumPtSolidConeDR04)[it];
+        bool passTrkSum = tspscdr4 < 6.0; //(*selPhoTrkSumPtSolidConeDR04)[it] < cutvalue;
+        auto erhsecdr4 = (*Photon_ecalRHSumEtConeDR04)[it];
+        bool passsEcalRhSum = erhsecdr4 < 10.0;
+        auto htoem = (*Photon_hadTowOverEM)[it];
+        bool passHOE = htoem < 0.02;
+		bool isoPho = passHOE && passsEcalRhSum && passTrkSum && passHcalSum;
+        bool failPhoIso = not isoPho;
+
+
         if( DEBUG ) std::cout << " -- looping photons : getting phojet iso " << std::endl;
         bool isJetPhoton = false;
+		phoJetVeto.clear();
+		for( int jit = 0; jit < Jet_energy->size(); jit++ ){ phoJetVeto.push_back(false); }
         for( int jit = 0; jit < Jet_energy->size(); jit++ ){
 
-            bool underMinJPt = (*Jet_pt)[jit] < 75.0;
+            bool underMinJPt = (*Jet_pt)[jit] < 30.0;
             bool underMinJQual = getJetQuality(it)  < 2;
 			auto jeta = (*Jet_eta)[jit];
             auto jphi = (*Jet_phi)[jit];
@@ -749,22 +764,14 @@ void KUCMSAodSkimmer::processPhotons(){
             float dpjeta = jeta - eta;
             float dpjphi = dPhi( jphi, phi );
             float dr = hypo( dpjeta, dpjphi );
-            if( dr < 0.4 ) isJetPhoton = true;
+			bool minDr = dr < 0.4;
+            if( minDr ) isJetPhoton = true; 
+			if( minDr && isoPho ) phoJetVeto[jit] = true;
 
         } // for( int jit = 0; jit < nSelJets; jit++ )
 
-        if( DEBUG ) std::cout << " -- looping photons : getting pho iso " << std::endl;
-        auto htsecdr4 = (*Photon_hcalTowerSumEtConeDR04)[it];   //!
-        bool passHcalSum = true;
-        auto tspscdr4 = (*Photon_trkSumPtSolidConeDR04)[it];
-        bool passTrkSum = tspscdr4 < 6.0; //(*selPhoTrkSumPtSolidConeDR04)[it] < cutvalue;
-		auto erhsecdr4 = (*Photon_ecalRHSumEtConeDR04)[it];
-        bool passsEcalRhSum = erhsecdr4 < 10.0;
-		auto htoem = (*Photon_hadTowOverEM)[it];
-        bool passHOE = htoem < 0.02;
-        bool failPhoIso = not ( passHOE && passsEcalRhSum && passTrkSum && passHcalSum );
-
-		bool phoskip = isExcluded || hasPixSeed || overMaxEta || underMinPt || isJetPhoton || failPhoIso;
+		//  change to skip jets and keep all photons regardless of photon iso with jet
+		bool phoskip = isExcluded || hasPixSeed || overMaxEta || underMinPt || failPhoIso;
 		//if( geVars("genSigPerfect") == 1 && isGenSig ) std::cout << " -- pho sel: phoskip " << phoskip <<  " isGenSig " << isGenSig << std::endl;  
 		//if( geVars("genSigPerfect") == 1 &&  phoskip && isGenSig  ){ 
 		//		std::cout << "   -- xsepji: " << isExcluded  << hasPixSeed << overMaxEta << underMinPt << isJetPhoton << failPhoIso << std::endl; }
@@ -1204,7 +1211,9 @@ void KUCMSAodSkimmer::processJets(){
 		auto underMaxEta = std::abs(eta) <= 2.4;
 		auto isMinQuality = quality > 1; // 2 = "tight" 3 = "tighter"
 
-		auto jetSelected = underMaxEta && isMinQuality && overMinPt;
+		bool isNotPhoJet = not phoJetVeto[it];
+
+		auto jetSelected = underMaxEta && isMinQuality && overMinPt && isNotPhoJet;
 		if( not jetSelected ) continue;
 		nSelJets++;
 
@@ -1457,7 +1466,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 	for( int i = 0; i < 4; i++ ){
 
 		float px = p4[i].Px();
-		float py = p4[i].Py();  // ?  float py = p4[i].Px(); ? check with Py
+		float py = p4[i].Py(); 
 		float pz = p4[i].Pz(); 
 		float e = sqrt( px*px + py*py + pz*pz );
 		p4[i].SetPxPyPzE(px,py,pz,e);	

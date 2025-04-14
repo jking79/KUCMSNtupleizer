@@ -1,3 +1,35 @@
-/KUCMSNtuple/kucmsntuple_WJetsToLNu_R18_IPM100_v24/ kuntuple_WJetsToLNu_HT-400To600_IPM100_R18_v24.txt Wjets4 45.25 0.0 0.0 1 0
-/KUCMSNtuple/kucmsntuple_WJetsToLNu_R18_IPM100_v24/ kuntuple_WJetsToLNu_HT-1200To2500_IPM100_R18_v24.txt Wjets12 1.16 0.0 0.0 1 0
-/KUCMSNtuple/kucmsntuple_WJetsToLNu_R18_IPM100_v24/ kuntuple_WJetsToLNu_HT-2500ToInf_IPM100_R18_v24.txt Wjets25 0.026 0.0 0.0 1 0
+###################
+# Skim input BG MC
+###################
+
+#KUCMSNtuple/kucmsntuple_WZ_R18_IPM100_v24/WZ_TuneCP5_13TeV-pythia8/ kuntuple_kucmsntuple_WZ_R18_IPM100_v24_WZ_v24.txt WZ_TuneCP5_13TeV-pythia8 23.4 0 0 1 0 
+
+#KUCMSNtuple/kucmsntuple_TTJets_R18_IPM100_v24/ kuntuple_kucmsntuple_TTJets_R18_IPM100_v24_WZ_v24.txt TTJets_TuneCP5_13TeV-madgraphMLM-pythia8 471.7 0 0 1 0
+
+#KUCMSNtuple/ZNu_IPM100/ kucmsntuple_ZJetsToNuNu_HT-400To600_R18_IPM100_v24_WZ_v24.txt ZJetsToNuNu_HT-400To600_13TeV-madgraph 13.18 0 0 1 0
+#KUCMSNtuple/ZNu_IPM100/ kucmsntuple_ZJetsToNuNu_HT-600To800_R18_IPM100_v24_WZ_v24.txt ZJetsToNuNu_HT-600To800_13TeV-madgraph 3.257 0 0 1 0
+#KUCMSNtuple/ZNu_IPM100/ kucmsntuple_ZJetsToNuNu_HT-800To1200_R18_IPM100_v24_WZ_v24.txt ZJetsToNuNu_HT-800To1200_TuneCP5_13TeV-madgraphMLM-pythia8 1.076 0 0 1 0
+#KUCMSNtuple/ZNu_IPM100/ kucmsntuple_ZJetsToNuNu_HT-1200To2500_R18_IPM100_v24_WZ_v24.txt ZJetsToNuNu_HT-1200To2500_13TeV-madgraph 0.3419 0 0 1 0
+#KUCMSNtuple/ZNu_IPM100/ kucmsntuple_ZJetsToNuNu_HT-2500ToInf_R18_IPM100_v24_WZ_v24.txt ZJetsToNuNu_HT-2500ToInf_13TeV-madgraph 0.005146 0 0 1 0
+
+#KUCMSNtuple/kucmsntuple_WJetsToLNu_R18_IPM100_v24/ kuntuple_WJetsToLNu_HT-100To200_TuneCP5_13TeV-madgraphMLM-pythia8_v24.txt WJetsToLNu_HT-100To200_TuneCP5_13TeV-madgraphMLM-pythia8 1244 0 0 1 0
+#KUCMSNtuple/kucmsntuple_WJetsToLNu_R18_IPM100_v24/ kuntuple_WJetsToLNu_HT-200To400_TuneCP5_13TeV-madgraphMLM-pythia8_v24.txt WJetsToLNu_HT-200To400_TuneCP5_13TeV-madgraphMLM-pythia8 337.8 0 0 1 0
+#KUCMSNtuple/kucmsntuple_WJetsToLNu_R18_IPM100_v24/ kuntuple_WJetsToLNu_HT-400To600_IPM100_R18_v24.txt WJetsToLNu_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8 45.25 0 0 1 0
+#KUCMSNtuple/kucmsntuple_WJetsToLNu_R18_IPM100_v24/ kucmsntuple_WJetsToLNu_HT-600To800_R18_IPM100_v24_WZ_v24.txt WJetsToLNu_HT-600To800_TuneCP5_13TeV-madgraphMLM-pythia8 11.19 0 0 1 0
+#KUCMSNtuple/kucmsntuple_WJetsToLNu_R18_IPM100_v24/ kucmsntuple_WJetsToLNu_HT-800To1200_R18_IPM100_v24_WZ_v24.txt WJetsToLNu_HT-800To1200_TuneCP5_13TeV-madgraphMLM-pythia8 4.926 0 0 1 0
+#KUCMSNtuple/kucmsntuple_WJetsToLNu_R18_IPM100_v24/ kuntuple_WJetsToLNu_HT-1200To250_IPM100_R18_v24.txt WJetsToLNu_HT-1200To2500_TuneCP5_13TeV-madgraphMLM-pythia8 1.16 0 0 1 0
+#KUCMSNtuple/kucmsntuple_WJetsToLNu_R18_IPM100_v24/ kuntuple_WJetsToLNu_HT-2500ToInf_IPM100_R18_v24.txt WJetsToLNu_HT-2500ToInf_TuneCP5_13TeV-madgraphMLM-pythia8 0.026 0 0 1 0
+KUCMSNtuple/kucmsntuple_WJetsToLNu_R18_IPM100_v24/ WJetsToLNu_HT-100To200_TuneCP5_13TeV-madgraphMLM-pythia8_v24.txt WJetsToLNu_HT-100To200_TuneCP5_13TeV-madgraphMLM-pythia8 1244 0 0 1 0
+KUCMSNtuple/kucmsntuple_WJetsToLNu_R18_IPM100_v24/ WJetsToLNu_HT-200To400_TuneCP5_13TeV-madgraphMLM-pythia8_v24.txt WJetsToLNu_HT-200To400_TuneCP5_13TeV-madgraphMLM-pythia8 337.8 0 0 1 0
+
+#KUCMSNtuple/ZNu_IPM100/ ZJetsToNuNu_HT-1200To2500_IPM100_R18_v24.txt ZJetsToNuNu_HT-1200To2500_TuneCP5_13TeV-madgraphMLM-pythia8 
+#KUCMSNtuple/ZNu_IPM100/ ZJetsToNuNu_HT-200To400_IPM100_R18_v24.txt
+#KUCMSNtuple/ZNu_IPM100/ ZJetsToNuNu_HT-2500ToInf_IPM100_R18_v24.txt
+#KUCMSNtuple/ZNu_IPM100/ ZJetsToNuNu_HT-400To600_IPM100_R18_v24.txt
+#KUCMSNtuple/ZNu_IPM100/ ZJetsToNuNu_HT-600To800_IPM100_R18_v24.txt
+#KUCMSNtuple/ZNu_IPM100/ ZJetsToNuNu_HT-800To1200_IPM100_R18_v24.txt
+
+#KUCMSNtuple/kucmsntuple_WZ_R18_IPM100_v24/ kucmsntuple_WZ_R18_IPM100_v24.txt WZ_TuneCP5_13TeV-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2 23.4 0 0 1 0
+
+#KUCMSNtuple/kucmsntuple_TTJets_R18_IPM100_v24/ kucmsntuple_TTJets_R18_IPM100_v24.txt TTJets_TuneCP5_13TeV-madgraphMLM-pythia8 471.7 0 0 1 0
+

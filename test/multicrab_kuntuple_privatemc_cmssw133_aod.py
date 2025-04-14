@@ -84,66 +84,51 @@ def docrab( dataset ):
         config.Data.inputDataset   = None
         #config.Data.lumiMask       = inputJSON    # Comment out for MC only set for data !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         #config.Data.splitting     = 'Automatic' # data
-        #config.Data.splitting = 'FileBased' # Justin
-        #config.Data.unitsPerJob  =  10
-        config.Data.splitting    = 'EventAwareLumiBased' # MC&Data Set unitsperjob correctly for dataset !!!!!!!!!!!!!!!!!!!!!!!!!!
+        config.Data.splitting = 'FileBased' # Justin
+        config.Data.unitsPerJob  =  10
+        #config.Data.splitting    = 'EventAwareLumiBased' # MC&Data Set unitsperjob correctly for dataset !!!!!!!!!!!!!!!!!!!!!!!!!!
         #config.Data.unitsPerJob   = 45000 # data  !!!!!! lumimask ?
         #config.Data.unitsPerJob  =  1500 # MC GMSB
         #config.Data.unitsPerJob  =  10000 # MC GJet
         #config.Data.unitsPerJob  =  15000 # MC QCD - WJetsToLNu
-        config.Data.unitsPerJob  =  20000 # MC QCD - WJetsToLNu large
         #config.Data.unitsPerJob  =  50000 # MC TTJet
         #config.Data.unitsPerJob  =  750 # MC DiPhoBox (DPB)
 
         config.JobType.allowUndistributedCMSSW = True
-        config.JobType.maxJobRuntimeMin = 2750
         config.Data.publication    = False
         config.Site.storageSite    = 'T3_US_FNALLPC'
         #--------------------------------------------------------
 
         # Will submit one task for each of these input datasets.
-        inputDataAndOpts = [[dataset[0]]]
+        inputDataAndOpts = [dataset]
+        print( '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>' )
+        print( inputDataAndOpts )
+       
+        for inDO in inputDataAndOpts : 
 
-        for inDO in inputDataAndOpts:
-
-            config.Data.inputDataset     = inDO[0]
-            #config.Data.userInputFiles = open("kuntuple_SMS-GlGl_mGl-2000_mN2-1950_mN1-1000_gam_N2ctau-0p1_AOD_v23.txt").readlines()
+            config.Data.userInputFiles = open(inDO[1]).readlines()
 
             print( '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>' )
             print( 'Input dataset for Crab Job : ' )
             #print( inDO )
             # inDO[0] is of the form /A/B/C. Since A+B is unique for each inDS, use this in the CRAB request name.
-            #primaryDataset = (inDO[0].split('/')[1])
+            primaryDataset = (inDO[0].split('/')[1])
             #primaryDataset = (inDO[0].split('/')[1]).split('_13T')[0]
-            primaryDataset = (inDO[0].split('/')[1]).split('_Tune')[0]
+            #primaryDataset = (inDO[0].split('/')[1]).split('_Tune')[0]
             print( primaryDataset )
-            #runEra         = (inDO[0].split('/')[2]) # justin
+            runEra         = (inDO[0].split('/')[2]) # justin
             #runEra         = (inDO[0].split('/')[2]).split('-')[0]
-            runEra         = (inDO[0].split('/')[2]).split('RECO')[0]
+            #runEra         = (inDO[0].split('/')[2]).split('RECO')[0]
             print( runEra )
             dataset        = inDO[0].split('/')[3]
             print( dataset )
 
+            print( 'with : ',inDO[1] )
             print( 'current KUCMSNtuple version : 24' )            
 
-            #trial          = "kucmsntuple_DEG_R17_AL1IsoPho_v24" #
-            #trial          = "kucmsntuple_JetHT_R17_MET100_v24" #
-            #trial          = "kucmsntuple_GMSB_R17_MET100_v24" #
-            #trial          = "kucmsntuple_GMSB_R17_AL1IsoPho_v24" # 
-            #trial          = "kucmsntuple_GJETS_R17_MET100_v24"
-            #trial          = "kucmsntuple_GJETS_R17_AL1IsoPho_v24" # 
-            #trial          = "kucmsntuple_QCD_R17_MET100_v24" #
-            #trial          = "kucmsntuple_gogoG_Justin_None_v22" #
+            trial          = "kucmsntuple_gogoG_Sig2_IPM100_v24" #
 
             # set trial name - used in output path ?
-            trial          = "kucmsntuple_WJetsToLNu_R18_IPM100_v24" #
-            #trial          = "kucmsntuple_TTJets_R18_IPM100_v24" #
-            #trial          = "kucmsntuple_MET_R18_IPM100_v24"
-            #trial          = "kucmsntuple_MET_R18_MRL_MET100_v24"
-            #trial          = "kucmsntuple_MET_R18_MRL_AL1IsoPho_v24"
-            #trial          = "kucmsntuple_MET_R18_MRL_None_v24"
-            #trial          = "kucmsntuple_DEG_R17_MRL_AL1SelEle_v24"
-            #trial          = "kucmsntuple_SMS-GlGl_1000"
 
             print( 'processing for : ',trial )
 
@@ -179,9 +164,9 @@ def docrab( dataset ):
 
 #-----------------------------------------------------------------------------------------------------------------------------
 #>>>>>      #MC RunIISummer20UL18RECO
-            gt = 'globalTag=106X_upgrade2018_realistic_v11_L1v1'
+            #gt = 'globalTag=106X_upgrade2018_realistic_v11_L1v1'
             #config.JobType.pyCfgParams   = ['globalTag=106X_upgrade2018_realistic_v11_L1v1','multicrab=True','hasGenInfo=True']
-            config.JobType.pyCfgParams   = [gt,mcrab,geninfo,skimIPM100]
+            #config.JobType.pyCfgParams   = [gt,mcrab,geninfo,skimIPM100]
             #config.JobType.pyCfgParams   = ['globalTag=106X_upgrade2018_realistic_v11_L1v1','multicrab=True','hasGenInfo=True','eventSkim=AL1IsoPho']
 #>>>>>      #MC GMSB RunIIFall17DRPremix  #globalTag=94X_mc2017_realistic_v14  #  <<< comment/uncomment lumi mask when using/!using MC
             #config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v14','multicrab=True','hasGenInfo=True']
@@ -190,8 +175,10 @@ def docrab( dataset ):
             #config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v11','multicrab=True','hasGenInfo=True']
             #config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v11','multicrab=True','hasGenInfo=True','eventSkim=AL1IsoPho']
 #>>>>>      #MC Justin
+            #gt = 'globalTag=124X_mcRun3_2022_realistic_v12'
+            gt = 'globalTag=106X_upgrade2018_realistic_v11_L1v1'
             #gt = 'globalTag=94X_mc2017_realistic_v14'
-            #config.JobType.pyCfgParams   = [gt,mcrab,geninfo,skimNone]
+            config.JobType.pyCfgParams   = [gt,mcrab,geninfo,skimIPM100]
 #-----------------------------------------------------------------------------------------------------------------------------
 
             # Submit.
@@ -228,25 +215,26 @@ def docrab( dataset ):
 
 def run_multi():
 
-    Tune = 'TuneCP5_13TeV-madgraphMLM-pythia8'
 
     runDataset = [
 
-        #['/MET/Run2018A-15Feb2022_UL2018-v1/AOD'],
-        #['/MET/Run2018B-15Feb2022_UL2018-v1/AOD'],
-        #['/MET/Run2018C-15Feb2022_UL2018-v1/AOD'],
-        #['/MET/Run2018D-15Feb2022_UL2018-v1/AOD'],
 
-        #['/WJetsToLNu_HT-70To100_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v3/AODSIM'],
-        #['/WJetsToLNu_HT-100To200_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v3/AODSIM'],
-        ['/WJetsToLNu_HT-200To400_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v3/AODSIM'],
-        #['/WJetsToLNu_HT-400To600_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM'],
-        #['/WJetsToLNu_HT-600To800_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM'],
-        #['/WJetsToLNu_HT-800To1200_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM'],
-        #['/WJetsToLNu_HT-1200To2500_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM'],
-        #['/WJetsToLNu_HT-2500ToInf_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM'],
-
-        #['/TTJets_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM'],
+        #['/SMS-GlGl/mGl-1500_mN2-500_mN1-100/AODSIM','filelist_SMS-GlGl_mGl-1500_mN2-500_mN1-100_gam_N2ctau-0p1_AOD_v23.txt'],
+        #['/SMS-GlGl/mGl-2000_mN2-1900_mN1-1000/AODSIM','filelist_SMS-GlGl_mGl-2000_mN2-1900_mN1-1000_gam_N2ctau-0p1_AOD_v23.txt'],
+        #['/SMS-GlGl/mGl-2000_mN2-1900_mN1-1500/AODSIM','filelist_SMS-GlGl_mGl-2000_mN2-1900_mN1-1500_gam_N2ctau-0p1_AOD_v23.txt'],
+        #['/SMS-GlGl/mGl-2000_mN2-1900_mN1-1/AODSIM','filelist_SMS-GlGl_mGl-2000_mN2-1900_mN1-1_gam_N2ctau-0p1_AOD_v23.txt'],
+        #['/SMS-GlGl/mGl-2000_mN2-1900_mN1-250/AODSIM','filelist_SMS-GlGl_mGl-2000_mN2-1900_mN1-250_gam_N2ctau-0p1_AOD_v23.txt'],
+        #['/SMS-GlGl/mGl-2000_mN2-1900_mN1-500/AODSIM','filelist_SMS-GlGl_mGl-2000_mN2-1900_mN1-500_gam_N2ctau-0p1_AOD_v23.txt'],
+        #['/SMS-GlGl/mGl-2000_mN2-1950_mN1-1000/AODSIM','filelist_SMS-GlGl_mGl-2000_mN2-1950_mN1-1000_gam_N2ctau-0p1_AOD_v23.txt'],
+        #['/SMS-GlGl/mGl-2000_mN2-1950_mN1-1500/AODSIM','filelist_SMS-GlGl_mGl-2000_mN2-1950_mN1-1500_gam_N2ctau-0p1_AOD_v23.txt'],
+        #['/SMS-GlGl/mGl-2000_mN2-1950_mN1-1900/AODSIM','filelist_SMS-GlGl_mGl-2000_mN2-1950_mN1-1900_gam_N2ctau-0p1_AOD_v23.txt'],
+        #['/SMS-GlGl/mGl-2000_mN2-1950_mN1-1/AODSIM','filelist_SMS-GlGl_mGl-2000_mN2-1950_mN1-1_gam_N2ctau-0p1_AOD_v23.txt'],
+        #['/SMS-GlGl/mGl-2000_mN2-1950_mN1-250/AODSIM','filelist_SMS-GlGl_mGl-2000_mN2-1950_mN1-250_gam_N2ctau-0p1_AOD_v23.txt'],
+        #['/SMS-GlGl/mGl-2000_mN2-1950_mN1-500/AODSIM','filelist_SMS-GlGl_mGl-2000_mN2-1950_mN1-500_gam_N2ctau-0p1_AOD_v23.txt'],
+        #['/SMS-GlGl/mGl-2000_mN2-1500_mN1-1000/AODSIM','filelist_SMS-GlGl_mGl-2000_mN2-1500_mN1-1000_gam_N2ctau-0p1_AOD_v24.txt'],
+        ['/SMS-GlGl/mGl-2000_mN2-1500_mN1-1/AODSIM','filelist_SMS-GlGl_mGl-2000_mN2-1500_mN1-1_gam_N2ctau-0p1_AOD_v24.txt'],
+        #['/SMS-GlGl/mGl-2000_mN2-1500_mN1-250/AODSIM','filelist_SMS-GlGl_mGl-2000_mN2-1500_mN1-250_gam_N2ctau-0p1_AOD_v24.txt'],
+        #['/SMS-GlGl/mGl-2000_mN2-1500_mN1-500/AODSIM','filelist_SMS-GlGl_mGl-2000_mN2-1500_mN1-500_gam_N2ctau-0p1_AOD_v24.txt'],
 
     ] 
 

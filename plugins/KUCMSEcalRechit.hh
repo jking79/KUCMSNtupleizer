@@ -347,6 +347,8 @@ void KUCMSEcalRecHitObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("isPoor","ECALRecHit_isPoor",VBOOL);
     Branches.makeBranch("isDead","ECALRecHit_isDead",VBOOL);
     Branches.makeBranch("isOther","ECALRecHit_isOther",VBOOL);
+    Branches.makeBranch("hasGS1","ECALRecHit_hasGS1",VBOOL);
+    Branches.makeBranch("hasGS6","ECALRecHit_hasGS6",VBOOL);
     Branches.makeBranch("SwCross","ECALRecHit_swCross",VFLOAT);
     Branches.makeBranch("eta","ECALRecHit_eta",VFLOAT);
     Branches.makeBranch("phi","ECALRecHit_phi",VFLOAT);
@@ -746,7 +748,8 @@ void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
 		const float amplitude = ( adcToGeV != 0 ) ? recHit.energy()/adcToGeV : 0;
         const float ampres = ( pedrms12 != 0 ) ? amplitude/pedrms12 : 0;
 
-
+		const bool hasGS1 = recHit.checkFlag(EcalRecHit::kHasSwitchToGain1);
+        const bool hasGS6 = recHit.checkFlag(EcalRecHit::kHasSwitchToGain6);
         const float rhTime = recHit.time();
         const bool rhIsOOT = recHit.checkFlag(EcalRecHit::kOutOfTime);
         const bool rhIsWrd = recHit.checkFlag(EcalRecHit::kWeird);
@@ -760,6 +763,11 @@ void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
 
         const float rhEnergy = recHit.energy();
 
+		float rhJErr = recHit.timeError();
+        float rhChi2 = recHit.chi2();
+
+		if( hasGS1 || hasGS6 ) std::cout << "GS1 " << hasGS1 << "GS6 " << hasGS6 << " err " << rhJErr << " chi2 " << rhChi2 << std::endl;
+
         Branches.fillBranch("ID",recHitID);
         Branches.fillBranch("TOFpv",d_pv);
         Branches.fillBranch("TOF0",d_rh);
@@ -771,6 +779,8 @@ void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
         Branches.fillBranch("isPoor",rhIsPoor);
         Branches.fillBranch("isDead",rhIsDead);
         Branches.fillBranch("isOther",rhIsOther);
+        Branches.fillBranch("hasGS1",hasGS1);
+        Branches.fillBranch("hasGS6",hasGS6);
         Branches.fillBranch("Energy",rhEnergy);
         Branches.fillBranch("SwCross",swisscross);
         Branches.fillBranch("eta",eta);
