@@ -81,6 +81,9 @@ public :
    std::vector<float>   *DisplacedElectron_z;
    std::vector<float>   *DisplacedElectron_zECAL;
    std::vector<float>   *ECALRecHit_energy;
+   std::vector<float>   *ECALRecHit_timeError;
+   std::vector<bool>    *ECALRecHit_hasGS1;
+   std::vector<bool>    *ECALRecHit_hasGS6;
    std::vector<unsigned int> *ECALRecHit_ID;
    std::vector<float>   *ECALRecHit_swCross;
    std::vector<float>   *ECALRecHit_0TOF;
@@ -449,6 +452,9 @@ public :
    TBranch        *b_DisplacedElectron_z;   //!
    TBranch        *b_DisplacedElectron_zECAL;   //!
    TBranch        *b_ECALRecHit_energy;   //!
+   TBranch        *b_ECALRecHit_timeError;
+   TBranch        *b_ECALRecHit_hasGS1;
+   TBranch        *b_ECALRecHit_hasGS6;
    TBranch        *b_ECALRecHit_ID;   //!
    TBranch        *b_ECALRecHit_swCross;   //!
    TBranch        *b_ECALRecHit_0TOF;   //!
@@ -879,6 +885,9 @@ void llpgtree::Init( TChain *tree, bool doGenInfo ){
    DisplacedElectron_z = 0;
    DisplacedElectron_zECAL = 0;
    ECALRecHit_energy = 0;
+   ECALRecHit_timeError = 0;
+   ECALRecHit_hasGS1 = 0;
+   ECALRecHit_hasGS6 = 0;
    ECALRecHit_ID = 0;
    ECALRecHit_swCross = 0;
    ECALRecHit_0TOF = 0;
@@ -1139,6 +1148,9 @@ void llpgtree::Init( TChain *tree, bool doGenInfo ){
 */
 
    fChain->SetBranchAddress("ECALRecHit_energy", &ECALRecHit_energy, &b_ECALRecHit_energy);
+   fChain->SetBranchAddress("ECALRecHit_timeError", &ECALRecHit_timeError, &b_ECALRecHit_timeError);
+   fChain->SetBranchAddress("ECALRecHit_hasGS1", &ECALRecHit_hasGS1, &b_ECALRecHit_hasGS1);
+   fChain->SetBranchAddress("ECALRecHit_hasGS6", &ECALRecHit_hasGS6, &b_ECALRecHit_hasGS6);
    fChain->SetBranchAddress("ECALRecHit_ID", &ECALRecHit_ID, &b_ECALRecHit_ID);
    fChain->SetBranchAddress("ECALRecHit_swCross", &ECALRecHit_swCross, &b_ECALRecHit_swCross);
    fChain->SetBranchAddress("ECALRecHit_0TOF", &ECALRecHit_0TOF, &b_ECALRecHit_0TOF);
@@ -1542,6 +1554,9 @@ void llpgtree::getBranches( Long64_t entry, bool doGenInfo ){
 
    if( sbDEBUG ) std::cout << "Getting Branches RH" << std::endl;
    b_ECALRecHit_energy->GetEntry(entry);     //!
+   b_ECALRecHit_timeError->GetEntry(entry);     //!
+   b_ECALRecHit_hasGS1->GetEntry(entry);     //!
+   b_ECALRecHit_hasGS6->GetEntry(entry);     //!
    b_ECALRecHit_ID->GetEntry(entry);     //!
    b_ECALRecHit_swCross->GetEntry(entry);     //!
    b_ECALRecHit_0TOF->GetEntry(entry);     //!

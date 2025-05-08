@@ -30,6 +30,7 @@ void HistMaker::histMaker( std::string indir, std::string infilelist, std::strin
     const std::string configtreename("kuSkimConfigTree");
     const std::string eosdir("");
     const std::string listdir("");
+	const std::string ofnending = "_wt2_RjrSkim_v24_ootjet_rjrbin_multiHists.root";
 
     cutselection = 1; // jrj type -> pho visible
 
@@ -50,31 +51,45 @@ void HistMaker::histMaker( std::string indir, std::string infilelist, std::strin
 
 	scale = 400;
 
-	std::cout << "Producing Histograms for : " << outfilename << std::endl;
-    //std::ifstream infile(indir+infilelist);
     std::ifstream infile(infilelist);
-    auto fInTree = new TChain(disphotreename.c_str());
-    auto fConfigTree = new TChain(configtreename.c_str());
-    std::cout << "Adding files to TChain." << std::endl;
-    std::cout << " - With : " << infilelist << " >> " << fInTree << std::endl;
     std::string str;
-	int cnt = 1;
     while (std::getline(infile,str)){
-		//std::cout << "--  adding from: " << str << std::endl;
+        //std::cout << "--  adding from: " << str << std::endl;
         if( str[0] == '#' ) continue;
         if( str == " " ) continue;
-		if( str == "" ) continue;
-        auto tfilename = eosdir + indir + str;
+        if( str == "" ) continue;
+        auto instrs = splitString( str, " " );
+        auto inpath = instrs[0];
+        auto intitle = instrs[1];
+        auto tfilename = eosdir + indir + inpath;
         std::cout << "--  adding file: " << tfilename << std::endl;
+
+
+	std::cout << "Producing Histograms for : " << outfilename << std::endl;
+    //std::ifstream infile(indir+infilelist);
+    //std::ifstream infile(infilelist);
+    auto fInTree = new TChain(disphotreename.c_str());
+    auto fConfigTree = new TChain(configtreename.c_str());
+    //std::cout << "Adding files to TChain." << std::endl;
+    //std::cout << " - With : " << infilelist << " >> " << fInTree << std::endl;
+    //std::string str;
+	int cnt = 1;
+    //while (std::getline(infile,str)){
+	//	//std::cout << "--  adding from: " << str << std::endl;
+    //    if( str[0] == '#' ) continue;
+    //    if( str == " " ) continue;
+	//	if( str == "" ) continue;
+    //    auto tfilename = eosdir + indir + str;
+    //    std::cout << "--  adding file: " << tfilename << std::endl;
         fInTree->Add(tfilename.c_str());
         fConfigTree->Add(tfilename.c_str());
 		cnt++;
-    }//<<>>while (std::getline(infile,str))
+    //}//<<>>while (std::getline(infile,str))
 
     std::cout << "Setting up For Main Loop." << std::endl;
 
 	Init(fInTree);
-	initHists(htitle);
+	initHists(htitle+"_"+intitle);
 
     std::cout << "Filling Config Map." << std::endl;
 
@@ -217,7 +232,8 @@ void HistMaker::histMaker( std::string indir, std::string infilelist, std::strin
             configValues["sumEvtWgt"] += sumEvtWgt;
 		}//<<>>if( not configInfo.count(configKey) )
 
-		float fillwt = scale * ( sCrossSection * 1000 ) * ( 1 / sumEvtWgt );
+		//float fillwt = scale * ( sCrossSection * 1000 ) * ( 1 / sumEvtWgt );
+        float fillwt = scale * ( sCrossSection * 1000 ) * ( 1 / nTotEvts );
         if( not cutflowInfo.count("nTotEvts") ){
             if(debug) std::cout << " - Filling Cutflow/Wieghts. " << std::endl;
             cutflowInfo["cf_m_gt2jets"] = cf_m_gt2jets*fillwt;
@@ -278,7 +294,8 @@ void HistMaker::histMaker( std::string indir, std::string infilelist, std::strin
     }//<<>>for (Long64_t centry = 0; centry < nEntries; centry++)  end entry loop
    
     if(debug) std::cout << " - Creating output file " << std::endl;
-    TFile* fOutFile = new TFile( outfilename.c_str(), "RECREATE" );
+	std::string fulloutfilename =  outfilename + intitle + ofnending;
+    TFile* fOutFile = new TFile( fulloutfilename.c_str(), "RECREATE" );
     fOutFile->cd();
 
     std::cout << "<<<<<<<< Write Output Maps and Hists <<<<<<<<<<<<<< " << std::endl;
@@ -296,6 +313,9 @@ void HistMaker::histMaker( std::string indir, std::string infilelist, std::strin
 	}}//<<>>for( int it = 0; it < nEBEEMaps; it++ )
 
     fOutFile->Close();
+
+	}//<<>>while (std::getline(infile,str))
+
     std::cout << "histMaker : Thats all Folks!!" << std::endl;
 }//<<>>void kucmsSkimmer
 //------------------------------------------------------------------------------------------------------------------------------------
@@ -318,7 +338,8 @@ void HistMaker::eventLoop( Long64_t entry ){
     float evtgwt = 1;
     std::string configKey(*DataSetKey);
     float xsec = (configInfo[configKey])["sCrossSection"];
-    float segwt = (configInfo[configKey])["sumEvtWgt"];
+    float segwt = (configInfo[configKey])["nTotEvts"];
+    //float segwt = (configInfo[configKey])["sumEvtWgt"];
     float fillwt = scale * ( xsec * 1000 ) * ( evtgwt / segwt );
     if( DEBUG ) std::cout << " evtfillwt :( " << xsec << " * 1000 ) * ( " << evtgwt << " / " << segwt << " ) = " << fillwt << std::endl;
 
@@ -461,10 +482,10 @@ void HistMaker::endJobs(){
     hist1d[2]->SetBinError(3,std::sqrt(cutflowInfo["cf_met150"]));
     hist1d[2]->SetBinContent(4,cutflowInfo["cf_m_gt2jets"]);
     hist1d[2]->SetBinError(4,std::sqrt(cutflowInfo["cf_m_gt2jets"]));
-    hist1d[2]->SetBinContent(5,cutflowInfo["cf_mj_gt1phos"]);
-    hist1d[2]->SetBinError(5,std::sqrt(cutflowInfo["cf_mj_gt1phos"]));
-    hist1d[2]->SetBinContent(6,cutflowInfo["cf_mjp_leadPhoPt30"]);
-    hist1d[2]->SetBinError(6,std::sqrt(cutflowInfo["cf_mjp_leadPhoPt30"]));
+    //hist1d[2]->SetBinContent(5,cutflowInfo["cf_mj_gt1phos"]);
+    //hist1d[2]->SetBinError(5,std::sqrt(cutflowInfo["cf_mj_gt1phos"]));
+    //hist1d[2]->SetBinContent(6,cutflowInfo["cf_mjp_leadPhoPt30"]);
+    //hist1d[2]->SetBinError(6,std::sqrt(cutflowInfo["cf_mjp_leadPhoPt30"]));
 
 }//<<>>void HistMaker::endJobs()
 
@@ -565,7 +586,7 @@ int main ( int argc, char *argv[] ){
 				std::string sigtype = "llpana";
 				std::string ofnstart = "KUCMS_";
 
-                std::string ofnending = "RjrSkim_v24_cf_mHists.root"; //float jrjtype = 1; // 1 = phojet, 0 = phomet
+                //std::string ofnending = "wt2_RjrSkim_v24_ootjet_rjrbin_multiHists.root"; //float jrjtype = 1; // 1 = phojet, 0 = phomet
 
                 ////std::string ofnending = "wt2_RjrSkim_v24_ootmet_phojet_multiHists.root"; float jrjtype = 0; // 0 = phojet, no phomet
 
@@ -577,11 +598,8 @@ int main ( int argc, char *argv[] ){
                 std::string htitlewz = "WZ_"+sigtype+version;
                 std::string htitlett = "TT_"+sigtype+version;
 				std::string htitletg = "TG_"+sigtype+version;
-                std::string htitlettg = "TTG_"+sigtype+version;
-                std::string htitlettw = "ttWJets_"+sigtype+version;
-                std::string htitlettz = "ttZJets_"+sigtype+version;
 
-				std::string htitleJ = "Sgg10_"+sigtype+version;
+				std::string htitleJ = "ct10_GoGo_"+sigtype+version;
                 std::string htitleJ1 = "ct10_mGl15d_m2N5d_m1N1d_"+sigtype+version;
 				std::string htitleJ2 = "ct10_mGl2k_m2N19d_m1N15d_"+sigtype+version;
                 std::string htitleJ3 = "ct10_mGl2k_m2N19d_m1N5d_"+sigtype+version;//
@@ -597,14 +615,14 @@ int main ( int argc, char *argv[] ){
     			// ve   asmass
     			// vf vdiff
     
-				//std::string infilename = infilenameJ;
-				//std::string htitles = htitleJ;
+				std::string infilename = infilenameJ;
+				std::string htitles = htitleJ;
 
                 //std::string infilename = infilenameZNuNu;
 				//std::string htitles = htitleznunu;
 
-                std::string infilename = infilenameBG;
-                std::string htitles = htitlettz;
+                //std::string infilename = infilenameBG;
+                //std::string htitles = htitletg;
 
                 int minSelPhos = 1;
 				for( int nj = 1; nj < 3; nj++ ){
@@ -612,7 +630,7 @@ int main ( int argc, char *argv[] ){
 				int minJetsPer = nj;
                 int nRjrPhos = np;
 
-				for( int ax = 0; ax < 3; ax++ ){
+				for( int ax = 1; ax < 3; ax++ ){
 				//int ax = 2;
 				//for( int nv = 0; nv < 3; nv++ ){
 				int nv = ax;
@@ -626,14 +644,15 @@ int main ( int argc, char *argv[] ){
 					float cute = ( as == 0 ) ? 100 : as * 1000;
 					float cutf = ( vd == 0 ) ? 0.6 : 0.4;
 
-					std::string isoline = "msp" + std::to_string( minSelPhos ) + "_"; 
-					isoline += "mj" + std::to_string( minJetsPer ) + "_";
-					isoline += "nrp" + std::to_string( nRjrPhos ) + "_" ;
+					std::string isoline = "minSigPho" + std::to_string( minSelPhos ) + "_"; 
+					isoline += "minJets" + std::to_string( minJetsPer ) + "_";
+					isoline += "nRjrPhos" + std::to_string( nRjrPhos ) + "_" ;
 					isoline += "ax" + std::to_string( ax ) + "_";
 					isoline += "nv" + std::to_string( nv ) + "_";
 					isoline += "as" + std::to_string( as ) + "_";
                     isoline += "vd" + std::to_string( vd ) + "_";
-					std::string outfilename = ofnstart + htitles + isoline + ofnending;
+					//std::string outfilename = ofnstart + htitles + isoline + ofnending;
+                    std::string outfilename = ofnstart + htitles + isoline;
 					std::string htitlefull =  htitles + isoline;
 
 					base.histMaker( listdir, infilename, outfilename, htitlefull, minJetsPer, nRjrPhos, minSelPhos, cutc, cutd, cute, cutf );

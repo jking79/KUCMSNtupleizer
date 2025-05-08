@@ -303,7 +303,7 @@ KUCMSEcalRecHitObject::KUCMSEcalRecHitObject( const edm::ParameterSet& iConfig )
     cfPrm.set( "minSCE", iConfig.existsAs<double>("minSCE") ? iConfig.getParameter<double>("minSCE") : 0.0 );
     cfFlag.set( "onlyEB", iConfig.existsAs<bool>("onlyEB") ? iConfig.getParameter<bool>("onlyEB") : false );
     cfPrm.set( "ebMaxEta",iConfig.existsAs<double>("ebMaxEta")? iConfig.getParameter<double>("ebMaxEta") : 1.479 );
-
+	cfFlag.set( "doProbeOut", iConfig.existsAs<bool>("doProbeOut") ? iConfig.getParameter<bool>("doProbeOut") : false );
 
 }//<<>>KUCMSEcalRecHit::KUCMSEcalRecHit( const edm::ParameterSet& iConfig, const ItemManager<bool>& cfFlag )
 
@@ -337,6 +337,8 @@ void KUCMSEcalRecHitObject::InitObject( TTree* fOutTree ){
 
     Branches.makeBranch("Energy","ECALRecHit_energy",VFLOAT);
     Branches.makeBranch("Time","ECALRecHit_time",VFLOAT);
+    Branches.makeBranch("TimeError","ECALRecHit_timeError",VFLOAT);
+    Branches.makeBranch("isTimeValid","ECALRecHit_isTimeValid",VBOOL);
     Branches.makeBranch("TOFpv","ECALRecHit_pvTOF",VFLOAT);
     Branches.makeBranch("TOF0","ECALRecHit_0TOF",VFLOAT);
     Branches.makeBranch("ID","ECALRecHit_ID",VUINT);
@@ -754,24 +756,42 @@ void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
         const bool rhIsOOT = recHit.checkFlag(EcalRecHit::kOutOfTime);
         const bool rhIsWrd = recHit.checkFlag(EcalRecHit::kWeird);
         const bool rhIsDiWrd = recHit.checkFlag(EcalRecHit::kDiWeird);
-        const bool rhIsRecov = recHit.checkFlag(EcalRecHit::kLeadingEdgeRecovered) || recHit.checkFlag(EcalRecHit::kNeighboursRecovered) || 
-					recHit.checkFlag(EcalRecHit::kTowerRecovered);
-        const bool rhIsPoor = recHit.checkFlag(EcalRecHit::kPoorReco) || recHit.checkFlag(EcalRecHit::kFaultyHardware) || 
-					recHit.checkFlag(EcalRecHit::kNoisy) || recHit.checkFlag(EcalRecHit::kPoorCalib) || recHit.checkFlag(EcalRecHit::kSaturated);
+        const bool rhIsRecov = recHit.checkFlag(EcalRecHit::kLeadingEdgeRecovered) || recHit.checkFlag(EcalRecHit::kNeighboursRecovered) || recHit.checkFlag(EcalRecHit::kTowerRecovered);
+        const bool rhIsPoor = recHit.checkFlag(EcalRecHit::kPoorReco) || recHit.checkFlag(EcalRecHit::kFaultyHardware) || recHit.checkFlag(EcalRecHit::kNoisy) || recHit.checkFlag(EcalRecHit::kPoorCalib) || recHit.checkFlag(EcalRecHit::kSaturated);
         const bool rhIsDead = recHit.checkFlag(EcalRecHit::kDead) || recHit.checkFlag(EcalRecHit::kKilled);
         const bool rhIsOther = recHit.checkFlag(EcalRecHit::kTPSaturated) || recHit.checkFlag(EcalRecHit::kL1SpikeFlag);
+        const bool rhIsNotGood = not recHit.checkFlag(EcalRecHit::kGood);
 
         const float rhEnergy = recHit.energy();
-
 		float rhJErr = recHit.timeError();
         float rhChi2 = recHit.chi2();
+		bool isTimeValid = rhJErr > 0.61;
 
-		if( hasGS1 || hasGS6 ) std::cout << "GS1 " << hasGS1 << "GS6 " << hasGS6 << " err " << rhJErr << " chi2 " << rhChi2 << std::endl;
+		if( cfFlag("doProbeOut") ){
+			//bool flagged = rhIsRecov || rhIsPoor || rhIsDead || rhIsOther;
+			if( rhIsRecov ) 
+			std::cout << "Recovered " << " time " << rhTime << " err " << rhJErr << " chi2 " << rhChi2 << " e " << rhEnergy << std::endl;
+        	//if( rhIsPoor ) 
+        	//std::cout << "RecHitIsPoorCali : " << " time " << rhTime << " err " << rhJErr << " chi2 " << rhChi2 << std::endl;
+			//if( flagged ) 
+			//std::cout << "Rec " << rhIsRecov << " Poor " << rhIsPoor << " Dead " << rhIsDead << " Other " << rhIsOther;
+			//if( rhIsNotGood ) 
+			//std::cout << "RecHitIsNotGood : " << " time " << rhTime << " err " << rhJErr << " chi2 " << rhChi2 << std::endl;
+			//if( hasGS1 || hasGS6 ) 
+			//std::cout << "GS1 " << hasGS1 << " GS6 " << hasGS6 << " err " << rhJErr << " chi2 " << rhChi2 << std::endl;
+			//if( rhJErr == 10000 || rhJErr == 0 ) 
+			//if( rhJErr == 0 || rhJErr == 10000 )
+			//	std::cout << "JerrS " << " time " << rhTime << " err " << rhJErr << " chi2 " << rhChi2 << std::endl;
+            //if( rhJErr < 1 )
+            //    std::cout << "JerrC " << " time " << rhTime << " err " << rhJErr << " chi2 " << rhChi2 << std::endl;
+		}//<<>>if( cfFlag("doProbeOut")
 
         Branches.fillBranch("ID",recHitID);
         Branches.fillBranch("TOFpv",d_pv);
         Branches.fillBranch("TOF0",d_rh);
         Branches.fillBranch("Time",rhTime);
+        Branches.fillBranch("TimeError",rhJErr);
+        Branches.fillBranch("isTimeValid",isTimeValid);
         Branches.fillBranch("isOOT",rhIsOOT);
         Branches.fillBranch("isWrd",rhIsWrd);
         Branches.fillBranch("isDiWrd",rhIsDiWrd);
@@ -1206,7 +1226,8 @@ rhGroup KUCMSEcalRecHitObject::getRHGroup( const scGroup superClusterGroup, floa
                 for( uInt iHAF2 = 0; iHAF2 < nHAF; iHAF2++ ){
                     const auto detId2 = hitsAndFractions[iHAF2].first;
                     if( detId2 == rawId ){ prevFrac = hitsAndFractions[iHAF2].second; break; }}
-				if( ERHODEBUG ) std::cout << " -- Found Duplicate : " << rawId << " frac " << frac << " prevFrac " << prevFrac; onlist = false; }
+				if( ERHODEBUG ) 
+				std::cout << " -- Found Duplicate : " << rawId << " frac " << frac << " prevFrac " << prevFrac; onlist = false; }
 */
             for (const auto &recHit : frechits ){
                 const auto recHitId = recHit.detid();
@@ -1218,13 +1239,16 @@ rhGroup KUCMSEcalRecHitObject::getRHGroup( const scGroup superClusterGroup, floa
 						const float e = recHit.energy();
         				const bool rhIsOOT = recHit.checkFlag(EcalRecHit::kOutOfTime);
         				const bool rhIsWrd = recHit.checkFlag(EcalRecHit::kWeird) || recHit.checkFlag(EcalRecHit::kDiWeird);
-        				const bool rhIsRecov = recHit.checkFlag(EcalRecHit::kLeadingEdgeRecovered) || recHit.checkFlag(EcalRecHit::kNeighboursRecovered) ||
-                    			recHit.checkFlag(EcalRecHit::kTowerRecovered);
+        				const bool rhIsRecov = recHit.checkFlag(EcalRecHit::kLeadingEdgeRecovered) || 
+												recHit.checkFlag(EcalRecHit::kNeighboursRecovered) ||
+                    							recHit.checkFlag(EcalRecHit::kTowerRecovered);
         				const bool rhIsPoor = recHit.checkFlag(EcalRecHit::kPoorReco) || recHit.checkFlag(EcalRecHit::kFaultyHardware) ||
-                    			recHit.checkFlag(EcalRecHit::kNoisy) || recHit.checkFlag(EcalRecHit::kPoorCalib) || recHit.checkFlag(EcalRecHit::kSaturated);
+                    			recHit.checkFlag(EcalRecHit::kNoisy) || 
+								recHit.checkFlag(EcalRecHit::kPoorCalib) || recHit.checkFlag(EcalRecHit::kSaturated);
         				const bool rhIsDead = recHit.checkFlag(EcalRecHit::kDead) || recHit.checkFlag(EcalRecHit::kKilled);
         				const bool rhIsOther = recHit.checkFlag(EcalRecHit::kTPSaturated) || recHit.checkFlag(EcalRecHit::kL1SpikeFlag);
-						std::cout << " e: " << e << " OWDRPXT: " << rhIsOOT << rhIsWrd << rhIsRecov << rhIsPoor << rhIsDead << rhIsOther <<  std::endl; }
+						std::cout << " e: " << e << " OWDRPXT: " << rhIsOOT 
+									<< rhIsWrd << rhIsRecov << rhIsPoor << rhIsDead << rhIsOther <<  std::endl; }
 */
 					break; } //std::cout << " ---- Found " <<  std::endl; break; }
             }//<<>>for (const auto &recHit : recHits ){
@@ -1302,7 +1326,8 @@ std::vector<float> KUCMSEcalRecHitObject::getMissFractionList( const scGroup sup
 				fracs.push_back( frac );} 
 				//fracs.push_back(frac);
                 //fracs.push_back(prevFrac);}
-                //if( ERHODEBUG ) std::cout << " -- Found Duplicate : " << rawId << " frac " << frac << " prevFrac " << prevFrac; onlist = false; }
+                //if( ERHODEBUG ) 
+                //std::cout << " -- Found Duplicate : " << rawId << " frac " << frac << " prevFrac " << prevFrac; onlist = false; }
 
             for (const auto &recHit : frechits ){
                 const auto recHitId = recHit.detid();
@@ -1313,13 +1338,16 @@ std::vector<float> KUCMSEcalRecHitObject::getMissFractionList( const scGroup sup
                         const float e = recHit.energy();
                         const bool rhIsOOT = recHit.checkFlag(EcalRecHit::kOutOfTime);
                         const bool rhIsWrd = recHit.checkFlag(EcalRecHit::kWeird) || recHit.checkFlag(EcalRecHit::kDiWeird);
-                        const bool rhIsRecov = recHit.checkFlag(EcalRecHit::kLeadingEdgeRecovered) || recHit.checkFlag(EcalRecHit::kNeighboursRecovered) ||
+                        const bool rhIsRecov = recHit.checkFlag(EcalRecHit::kLeadingEdgeRecovered) || 
+								recHit.checkFlag(EcalRecHit::kNeighboursRecovered) ||
                                 recHit.checkFlag(EcalRecHit::kTowerRecovered);
                         const bool rhIsPoor = recHit.checkFlag(EcalRecHit::kPoorReco) || recHit.checkFlag(EcalRecHit::kFaultyHardware) ||
-                                recHit.checkFlag(EcalRecHit::kNoisy) || recHit.checkFlag(EcalRecHit::kPoorCalib) || recHit.checkFlag(EcalRecHit::kSaturated);
+                                recHit.checkFlag(EcalRecHit::kNoisy) || recHit.checkFlag(EcalRecHit::kPoorCalib) || 
+								recHit.checkFlag(EcalRecHit::kSaturated);
                         const bool rhIsDead = recHit.checkFlag(EcalRecHit::kDead) || recHit.checkFlag(EcalRecHit::kKilled);
                         const bool rhIsOther = recHit.checkFlag(EcalRecHit::kTPSaturated) || recHit.checkFlag(EcalRecHit::kL1SpikeFlag);
-                        std::cout << " e: " << e << " OWDRPXT: " << rhIsOOT << rhIsWrd << rhIsRecov << rhIsPoor << rhIsDead << rhIsOther <<  std::endl; }
+                        std::cout << " e: " << e << " OWDRPXT: " << rhIsOOT << rhIsWrd << rhIsRecov 
+									<< rhIsPoor << rhIsDead << rhIsOther <<  std::endl; }
                     break; } //std::cout << " ---- Found " <<  std::endl; break; }
             }//<<>>for (const auto &recHit : recHits ){
   

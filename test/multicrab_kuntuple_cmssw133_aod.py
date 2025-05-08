@@ -89,14 +89,14 @@ def docrab( dataset ):
         config.Data.splitting    = 'EventAwareLumiBased' # MC&Data Set unitsperjob correctly for dataset !!!!!!!!!!!!!!!!!!!!!!!!!!
         #config.Data.unitsPerJob   = 45000 # data  !!!!!! lumimask ?
         #config.Data.unitsPerJob  =  1500 # MC GMSB
-        #config.Data.unitsPerJob  =  10000 # MC GJet
+        config.Data.unitsPerJob  =  20000 # MC GJet
         #config.Data.unitsPerJob  =  15000 # MC QCD - WJetsToLNu
-        config.Data.unitsPerJob  =  20000 # MC QCD - WJetsToLNu large
+        #config.Data.unitsPerJob  =  20000 # MC QCD - WJetsToLNu large
         #config.Data.unitsPerJob  =  50000 # MC TTJet
         #config.Data.unitsPerJob  =  750 # MC DiPhoBox (DPB)
 
         config.JobType.allowUndistributedCMSSW = True
-        config.JobType.maxJobRuntimeMin = 2750
+        config.JobType.maxJobRuntimeMin = 1800
         config.Data.publication    = False
         config.Site.storageSite    = 'T3_US_FNALLPC'
         #--------------------------------------------------------
@@ -128,22 +128,27 @@ def docrab( dataset ):
 
             #trial          = "kucmsntuple_DEG_R17_AL1IsoPho_v24" #
             #trial          = "kucmsntuple_JetHT_R17_MET100_v24" #
+
             #trial          = "kucmsntuple_GMSB_R17_MET100_v24" #
             #trial          = "kucmsntuple_GMSB_R17_AL1IsoPho_v24" # 
+
             #trial          = "kucmsntuple_GJETS_R17_MET100_v24"
             #trial          = "kucmsntuple_GJETS_R17_AL1IsoPho_v24" # 
             #trial          = "kucmsntuple_QCD_R17_MET100_v24" #
-            #trial          = "kucmsntuple_gogoG_Justin_None_v22" #
 
             # set trial name - used in output path ?
-            trial          = "kucmsntuple_WJetsToLNu_R18_IPM100_v24" #
-            #trial          = "kucmsntuple_TTJets_R18_IPM100_v24" #
             #trial          = "kucmsntuple_MET_R18_IPM100_v24"
             #trial          = "kucmsntuple_MET_R18_MRL_MET100_v24"
             #trial          = "kucmsntuple_MET_R18_MRL_AL1IsoPho_v24"
             #trial          = "kucmsntuple_MET_R18_MRL_None_v24"
             #trial          = "kucmsntuple_DEG_R17_MRL_AL1SelEle_v24"
+
             #trial          = "kucmsntuple_SMS-GlGl_1000"
+            #trial          = "kucmsntuple_gogoG_Justin_None_v22" #
+
+            #trial          = "kucmsntuple_WJetsToLNu_R18_IPM100_v24" #
+            #trial          = "kucmsntuple_TTXJets_R18_IPM100_v24" #
+            trial          = "kucmsntuple_GJETS_R18_IPM100_v24"
 
             print( 'processing for : ',trial )
 
@@ -228,7 +233,7 @@ def docrab( dataset ):
 
 def run_multi():
 
-    Tune = 'TuneCP5_13TeV-madgraphMLM-pythia8'
+    TuneCP5MP = 'TuneCP5_13TeV-madgraphMLM-pythia8'
 
     runDataset = [
 
@@ -237,16 +242,26 @@ def run_multi():
         #['/MET/Run2018C-15Feb2022_UL2018-v1/AOD'],
         #['/MET/Run2018D-15Feb2022_UL2018-v1/AOD'],
 
-        #['/WJetsToLNu_HT-70To100_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v3/AODSIM'],
-        #['/WJetsToLNu_HT-100To200_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v3/AODSIM'],
-        ['/WJetsToLNu_HT-200To400_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v3/AODSIM'],
-        #['/WJetsToLNu_HT-400To600_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM'],
-        #['/WJetsToLNu_HT-600To800_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM'],
-        #['/WJetsToLNu_HT-800To1200_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM'],
-        #['/WJetsToLNu_HT-1200To2500_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM'],
-        #['/WJetsToLNu_HT-2500ToInf_'+Tune+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM'],
+        #['/WJetsToLNu_HT-70To100_'+TuneCP5MP+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v3/AODSIM'],
+        #['/WJetsToLNu_HT-100To200_'+TuneCP5MP+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v3/AODSIM'],
+        #['/WJetsToLNu_HT-200To400_'+TuneCP5MP+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v3/AODSIM'],
+        #['/WJetsToLNu_HT-400To600_'+TuneCP5MP+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM'],
+        #['/WJetsToLNu_HT-600To800_'+TuneCP5MP+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM'],
+        #['/WJetsToLNu_HT-800To1200_'+TuneCP5MP+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM'],
+        #['/WJetsToLNu_HT-1200To2500_'+TuneCP5MP+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM'],
+        #['/WJetsToLNu_HT-2500ToInf_'+TuneCP5MP+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM'],
 
-        #['/TTJets_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM'],
+        #['/TTJets_'+TuneCP5MP+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM'],
+        #['/ttWJets_'+TuneCP5MP+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v1/AODSIM'],
+        #['/ttZJets_+TuneCP5MP+/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v1/AODSIM'],
+        #['/TGJets_TuneCP5_13TeV-amcatnlo-madspin-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v1/AODSIM'],
+        #['/TTGJets_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v1/AODSIM'],
+
+        ['/GJets_HT-40To100_'+TuneCP5MP+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM'],
+        #['/GJets_HT-100To200_'+TuneCP5MP+'/RunIISummer20UL18RECO-4cores5k_106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM'],
+        #['/GJets_HT-200To400_'+TuneCP5MP+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM'],
+        ['/GJets_HT-400To600_'+TuneCP5MP+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM'],
+        ['/GJets_HT-600ToInf_'+TuneCP5MP+'/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM'],
 
     ] 
 

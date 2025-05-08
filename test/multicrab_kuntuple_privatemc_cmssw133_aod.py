@@ -126,7 +126,7 @@ def docrab( dataset ):
             print( 'with : ',inDO[1] )
             print( 'current KUCMSNtuple version : 24' )            
 
-            trial          = "kucmsntuple_gogoG_Sig2_IPM100_v24" #
+            trial          = "kucmsntuple_gogoG_Sig_IPM100_v24" #
 
             # set trial name - used in output path ?
 
@@ -232,9 +232,15 @@ def run_multi():
         #['/SMS-GlGl/mGl-2000_mN2-1950_mN1-250/AODSIM','filelist_SMS-GlGl_mGl-2000_mN2-1950_mN1-250_gam_N2ctau-0p1_AOD_v23.txt'],
         #['/SMS-GlGl/mGl-2000_mN2-1950_mN1-500/AODSIM','filelist_SMS-GlGl_mGl-2000_mN2-1950_mN1-500_gam_N2ctau-0p1_AOD_v23.txt'],
         #['/SMS-GlGl/mGl-2000_mN2-1500_mN1-1000/AODSIM','filelist_SMS-GlGl_mGl-2000_mN2-1500_mN1-1000_gam_N2ctau-0p1_AOD_v24.txt'],
-        ['/SMS-GlGl/mGl-2000_mN2-1500_mN1-1/AODSIM','filelist_SMS-GlGl_mGl-2000_mN2-1500_mN1-1_gam_N2ctau-0p1_AOD_v24.txt'],
+        #['/SMS-GlGl/mGl-2000_mN2-1500_mN1-1/AODSIM','filelist_SMS-GlGl_mGl-2000_mN2-1500_mN1-1_gam_N2ctau-0p1_AOD_v24.txt'],
         #['/SMS-GlGl/mGl-2000_mN2-1500_mN1-250/AODSIM','filelist_SMS-GlGl_mGl-2000_mN2-1500_mN1-250_gam_N2ctau-0p1_AOD_v24.txt'],
         #['/SMS-GlGl/mGl-2000_mN2-1500_mN1-500/AODSIM','filelist_SMS-GlGl_mGl-2000_mN2-1500_mN1-500_gam_N2ctau-0p1_AOD_v24.txt'],
+        ['/SMS-GlGl/mGl-2000_mN2-1000_mN1-1/AODSIM','filelist_SMS-GlGl_mGl-2000_mN2-1000_mN1-1_v24.txt'],
+        ['/SMS-GlGl/mGl-2000_mN2-1000_mN1-250/AODSIM','filelist_SMS-GlGl_mGl-2000_mN2-1000_mN1-250_v24.txt'],
+        ['/SMS-GlGl/mGl-2000_mN2-1000_mN1-500/AODSIM','filelist_SMS-GlGl_mGl-2000_mN2-1000_mN1-500_v24.txt'],
+        ['/SMS-GlGl/mGl-2000_mN2-500_mN1-1/AODSIM','filelist_SMS-GlGl_mGl-2000_mN2-500_mN1-1_v24.txt'],
+        ['/SMS-GlGl/mGl-2000_mN2-500_mN1-250/AODSIM','filelist_SMS-GlGl_mGl-2000_mN2-500_mN1-250_v24.txt'],
+        ['/SMS-GlGl/mGl-2500_mN2-1500_mN1-1000/AODSIM','filelist_SMS-GlGl_mGl-2500_mN2-1500_mN1-1000_v24.txt'],
 
     ] 
 
