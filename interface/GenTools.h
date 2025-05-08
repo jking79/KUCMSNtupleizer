@@ -9,6 +9,9 @@ inline std::vector<int> MomIDs(const reco::GenParticle &genLepton) {
 
   auto mother = genLepton.mother();
 
+  if(!mother)
+    return std::vector<int>();
+  
   std::vector<int> motherIDs;
   while(mother->pt() > 0) {
     const int motherID = mother->pdgId();
@@ -53,22 +56,44 @@ inline LepMomType AssignGenLeptonMomType(const int motherID) {
   return type;
 }
 
-inline LepMomType ClassifyGenLeptonMomType(const reco::GenParticle &genLepton) {
+inline int GenParticleMomPdgID(const reco::GenParticle &genLepton) {
 
+  int pdgID = -1;
+  //std::cout << "here" << std::endl;
   std::vector<int> motherIDs(MomIDs(genLepton));
 
   LepMomType momType = kUnmatched;
   for(auto const& id : motherIDs) {
     momType = AssignGenLeptonMomType(id);
 
-    if(momType != kUnmatched)
+    if(momType != kUnmatched) {
+      pdgID = id;
       break;
+     }
   }
-  return momType;
+  return pdgID;
 }
 
-inline bool isSignalGenElectron(const reco::GenParticle &genLepton) {
-  LepMomType momType = ClassifyGenLeptonMomType(genLepton);
+inline LepMomType ClassifyGenLeptonMomType(const reco::GenParticle &genLepton) {
+  int momID(GenParticleMomPdgID(genLepton));
+  return AssignGenLeptonMomType(momID);
+}
+
+inline bool isSignalGenElectron(const reco::GenParticle &gen) {
+  if(abs(gen.pdgId()) != 11 || gen.status() != 1) return false;
+  LepMomType momType = ClassifyGenLeptonMomType(gen);
+  return (momType == kZ || momType == kSusy);
+}
+
+inline bool isSignalGenMuon(const reco::GenParticle &gen) {
+  if(abs(gen.pdgId()) != 13 || gen.status() != 1) return false;
+  LepMomType momType = ClassifyGenLeptonMomType(gen);
+  return (momType == kZ || momType == kSusy);
+}
+
+inline bool isSignalGenJet(const reco::GenParticle &gen) {
+  if(abs(gen.pdgId()) > 6 || gen.status() != 23) return false;
+  LepMomType momType = ClassifyGenLeptonMomType(gen);
   return (momType == kZ || momType == kSusy);
 }
 

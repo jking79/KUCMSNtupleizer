@@ -8,6 +8,8 @@
 #include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
 #include "DataFormats/EgammaCandidates/interface/Electron.h"
 #include "DataFormats/EgammaCandidates/interface/ElectronFwd.h"
+#include "DataFormats/VertexReco/interface/Vertex.h"
+#include "DataFormats/VertexReco/interface/VertexFwd.h"
 
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/Hungarian.h"
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/MatchingTools.h"
@@ -137,10 +139,9 @@ template <class A, class B> class DeltaRMatchHungarian {
     {return matchedIndexes_;}
 
   double GetCost() const {return cost_;}
-  std::vector<A> GetMatchedObjectsA() const {matchedObjectsA_;}
-  std::vector<B> GetMatchedObjectsB() const {matchedObjectsB_;}  
+  std::vector<A> GetMatchedObjectsA() const {return matchedObjectsA_;}
+  std::vector<B> GetMatchedObjectsB() const {return matchedObjectsB_;}  
   std::vector<MatchedPair> GetMatchedPairs() const {return matchedPairs_;}
-  //std::vector<PairedObjects<A,B> > GetPairedObjects() const {return pairedObjects_;}
   PairedObjectCollection<A,B> GetPairedObjects() const {return pairedObjects_;}
   std::vector<double> GetDeltaRs() const {
     std::vector<double> deltaRs;
@@ -156,14 +157,14 @@ template <class A, class B> class DeltaRMatchHungarian {
   std::vector<A> matchedObjectsA_;
   std::vector<B> matchedObjectsB_;
   std::vector<MatchedPair> matchedPairs_;
-  //std::vector<PairedObjects<A,B> > pairedObjects_;
   PairedObjectCollection<A,B> pairedObjects_;
-
+  //reco::Vertex primaryVertex_;
+  
   std::vector<MatchedPair> ConstructMatchedPairs(const Matrix<double> &costMatrix, 
 						 const std::vector<A> &objectsA, 
 						 const std::vector<B> &objectsB);
 
-  Matrix<double> CalculateCostMatrix(const std::vector<A> &objectsA, const std::vector<B> &objectsB) const;
+  virtual Matrix<double> CalculateCostMatrix(const std::vector<A> &objectsA, const std::vector<B> &objectsB) const;
 
   void Solve(const std::vector<A> &objectsA, const std::vector<B> &objectsB);
 
@@ -189,8 +190,10 @@ template <typename A, typename B>
 //===============================================================================================// 
 template <typename A, typename B>
   void DeltaRMatchHungarian<A,B>::Solve(const std::vector<A> &objectsA, const std::vector<B> &objectsB) {
-  
+
+  //std::cout << "Calculating cost matrix" << std::endl;
   Matrix<double> costMatrix = CalculateCostMatrix(objectsA, objectsB);
+  //std::cout << "Finished cost matrix" << std::endl;
   HungarianAlgorithm assigner;
   cost_ = assigner.Solve(costMatrix, matchedIndexes_);
   matchedPairs_ = ConstructMatchedPairs(costMatrix, objectsA, objectsB);
@@ -206,7 +209,7 @@ template <typename A, typename B>
 
   // If either collection is empty, assignment is not possible (obviously)
   // Initialize members to default values and empty vectors
-  if(objectsA.size() == 0 || objectsB.size() == 0)// || typeid(B) == typeid(reco::GenParticle)) {
+  if(objectsA.size() == 0 || objectsB.size() == 0)
     *this = DeltaRMatchHungarian();
   
   else this->Solve(objectsA, objectsB);
@@ -273,12 +276,16 @@ template <typename A, typename B>
 
   const int dimensionA = objectsA.size();
   const int dimensionB = objectsB.size();
+  //std::cout << "dimension A: " << dimensionA << ", dimension B: " << dimensionB << std::endl;
   Matrix<double> costMatrix(dimensionA, std::vector<double>(dimensionB) );
 
-  for(int ai = 0; ai < dimensionA; ai++)
-    for(int bi = 0; bi < dimensionB; bi++)
-      costMatrix[ai][bi] = sqrt(reco::deltaR2(objectsA[ai], objectsB[bi]) );
-
+  for(int ai = 0; ai < dimensionA; ai++) {
+    //std::cout << "object a address = " << &objectsA[ai] << std::endl;
+    for(int bi = 0; bi < dimensionB; bi++) {
+      //std::cout	<< "deltaR = " << sqrt(DeltaR2(objectsA[ai], objectsB[bi])) << std::endl;
+      costMatrix[ai][bi] = sqrt(DeltaR2(objectsA[ai], objectsB[bi]) );
+    }
+  }
   return costMatrix;
 }
 
@@ -326,19 +333,43 @@ class DeltaRGenMatchHungarian : public DeltaRMatchHungarian<A, reco::GenParticle
 
  private:
   
-  void Solve(const std::vector<A> &objectsA, const reco::GenParticleCollection &objectsB) {
-    std::map<int, int> indexMap;
-    reco::GenParticleCollection statusOne = CleanGenParticles(objectsB, indexMap);
+  void Solve(const std::vector<A> &objectsA, const reco::GenParticleCollection &objectsB);
 
-    Matrix<double> costMatrix = this->CalculateCostMatrix(objectsA, statusOne);
-    HungarianAlgorithm assigner;
-    this->cost_ = assigner.Solve(costMatrix, this->matchedIndexes_);
-
-    for(auto &idx : this->matchedIndexes_) 
-      if(idx >= 0) idx = indexMap[idx];
-    
-    this->matchedPairs_ = this->ConstructMatchedPairs(costMatrix, objectsA, objectsB);
+  virtual Matrix<double> CalculateCostMatrix(const std::vector<A> &objectsA, 
+					     const reco::GenParticleCollection &objectsB) const override {
+    return DeltaRMatchHungarian<A, reco::GenParticle>::CalculateCostMatrix(objectsA, objectsB);
   }
+    
 };
+
+template <class A>
+void DeltaRGenMatchHungarian<A>::Solve(const std::vector<A> &objectsA, const reco::GenParticleCollection &objectsB) {
+  std::map<int, int> indexMap;
+  reco::GenParticleCollection statusOne = CleanGenParticles(objectsB, indexMap);
+  
+  Matrix<double> costMatrix = this->CalculateCostMatrix(objectsA, statusOne);
+  HungarianAlgorithm assigner;
+  this->cost_ = assigner.Solve(costMatrix, this->matchedIndexes_);
+  
+  for(auto &idx : this->matchedIndexes_)
+    if(idx >= 0) idx = indexMap[idx];
+  
+  this->matchedPairs_ = this->ConstructMatchedPairs(costMatrix, objectsA, objectsB);
+}
+
+template <>
+inline Matrix<double> DeltaRGenMatchHungarian<reco::TransientTrack>::CalculateCostMatrix(const std::vector<reco::TransientTrack> &objectsA,
+											 const reco::GenParticleCollection &objectsB) const {
+
+  const int dimensionA = objectsA.size();
+  const int dimensionB = objectsB.size();
+  Matrix<double> costMatrix(dimensionA, std::vector<double>(dimensionB) );
+
+  for(int ai = 0; ai < dimensionA; ai++)
+    for(int bi = 0; bi < dimensionB; bi++)
+      costMatrix[ai][bi] = sqrt(GenDeltaR2(objectsA[ai], objectsB[bi]) );
+
+  return costMatrix;
+}
 
 #endif

@@ -160,25 +160,26 @@ MatchTracksToSC<T>::MatchTracksToSC(const edm::Event &iEvent,
 				    const std::vector<T> &tracks,
 				    const reco::SuperClusterCollection &superClusters) {
 
-  trackAssociator_.useDefaultPropagator();
+  if(tracks.size() > 0 && superClusters.size() > 0) {
+    trackAssociator_.useDefaultPropagator();
 
-  const TrackRecHitLocations propagatedTrackLocationsAtECAL = GetPropagatedTrackAtECAL(iEvent, iSetup, magneticField, caloGeometry, parameters, tracks);
+    const TrackRecHitLocations propagatedTrackLocationsAtECAL = GetPropagatedTrackAtECAL(iEvent, iSetup, magneticField, caloGeometry, parameters, tracks);
+    
+    Matrix<double> costMatrix = TrackToSuperClusterCostMatrix(propagatedTrackLocationsAtECAL, superClusters);
+    HungarianAlgorithm assigner;
+    
+    assigner.Solve(costMatrix, matchedIndexes_);
+    
+    matchedPairs_ = ConstructMatchedPairs(costMatrix);
 
-  Matrix<double> costMatrix = TrackToSuperClusterCostMatrix(propagatedTrackLocationsAtECAL, superClusters);
-  HungarianAlgorithm assigner;
-
-  assigner.Solve(costMatrix, matchedIndexes_);
-
-  matchedPairs_ = ConstructMatchedPairs(costMatrix);
-
-  // Cost returned from Hungarian Algorithm can be incorrect due to big default values when track 
-  // cannot be propagated. Here we recalculate total cost from the actual matched pairs found.
-  cost_ = 0;
-  for(auto const pair : matchedPairs_)
-    cost_ += pair.GetMatchCriteria();
-
-  FillMatchContainers(tracks, superClusters, propagatedTrackLocationsAtECAL);
-
+    // Cost returned from Hungarian Algorithm can be incorrect due to big default values when track 
+    // cannot be propagated. Here we recalculate total cost from the actual matched pairs found.
+    cost_ = 0;
+    for(auto const pair : matchedPairs_)
+      cost_ += pair.GetMatchCriteria();
+    
+    FillMatchContainers(tracks, superClusters, propagatedTrackLocationsAtECAL);
+  }
 }
 
 //===============================================================================================//

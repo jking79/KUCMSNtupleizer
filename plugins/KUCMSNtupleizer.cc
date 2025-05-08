@@ -33,6 +33,7 @@
 #include "KUCMSElectron.hh"
 #include "KUCMSDisplacedElectron.hh"
 #include "KUCMSGenObjects.hh"
+#include "KUCMSDisplacedVertex.hh"
 
 using namespace std;
 
@@ -153,6 +154,19 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     displacedElectronObj->LoadMagneticField(magneticFieldToken);
     displacedElectronObj->LoadTTrackBuilder(transientTrackBuilderToken);
 
+    // Displaced Vertices
+    auto combinedMuonTracks = consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("combinedMuonTracks"));
+    auto muonEnhancedTracks = consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("muonEnhancedTracks"));
+    
+    KUCMSDisplacedVertex* displacedVertexObj(new KUCMSDisplacedVertex(iConfig));
+    displacedVertexObj->LoadMuonTracks(combinedMuonTracks);
+    displacedVertexObj->LoadMuonEnhancedTracksToken(muonEnhancedTracks);
+    displacedVertexObj->LoadPrimaryVertex(vertexToken);
+    displacedVertexObj->LoadTTrackBuilder(transientTrackBuilderToken);
+    displacedVertexObj->LoadMagneticField(magneticFieldToken);
+    displacedVertexObj->LoadAssociationParameters(trackAssocParameters);
+    displacedVertexObj->LoadMergedSCs(mergedSCToken);
+    
     auto photonsObj = new KUCMSPhotonObject( iConfig );
     auto photonToken = consumes<edm::View<reco::Photon>>(iConfig.getParameter<edm::InputTag>("gedPhotons"));
     auto ootPhotonToken = consumes<edm::View<reco::Photon>>(iConfig.getParameter<edm::InputTag>("ootPhotons"));
