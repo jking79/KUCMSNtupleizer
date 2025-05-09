@@ -773,8 +773,9 @@ TrackVertexSetCollection TrackVertexSetHelper::hadronicVertexCuts(const TrackVer
     const double pOverE(p/sqrt(p*p + mass*mass));
     const double cosTheta(vertex.cosTheta(primaryVertex));
     const double normChi2(vertex.vertex().normalizedChi2());
+    const double decayAngle(vertex.decayAngle());
 
-    if(vertex.size() < 5 || mass < 2 || pOverE < 0.6 || cosTheta < 0. || normChi2 > 5)
+    if(vertex.size() < 5 || mass < 2 || pOverE < 0.6 || cosTheta < 0. || fabs(decayAngle) > 0.9 || normChi2 > 5)
       continue;
 
     outputCollection.insert(vertex);
