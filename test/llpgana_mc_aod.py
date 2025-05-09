@@ -97,6 +97,9 @@ from KUCMSNtupleizer.KUCMSNtupleizer.ECALTracks_cfi import *
 process.load('KUCMSNtupleizer.KUCMSNtupleizer.DisplacedElectrons_cfi')
 from KUCMSNtupleizer.KUCMSNtupleizer.DisplacedElectrons_cfi import *
 
+process.load('KUCMSNtupleizer.KUCMSNtupleizer.MuonEnhancedTracks_cfi')
+from KUCMSNtupleizer.KUCMSNtupleizer.MuonEnhancedTracks_cfi import *
+
 ## Define the input source
 aodpath_1k_450_100k = '/store/mc/Run3Winter20DRPremixMiniAOD/HTo2LongLivedTo4b_MH-1000_MFF-450_CTau-100000mm_TuneCP5_14TeV_pythia8/AODSIM/110X_mcRun3_2021_realistic_v6-v2/'
 aodpath_1k_450_10k = '/store/mc/Run3Winter20DRPremixMiniAOD/HTo2LongLivedTo4b_MH-1000_MFF-450_CTau-10000mm_TuneCP5_14TeV_pythia8/AODSIM/110X_mcRun3_2021_realistic_v6-v2/'
@@ -397,6 +400,8 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
                               gsfTracksSrc = cms.InputTag("ecalTracks", "ecalGsfTracks"),
                               displacedSCs = cms.InputTag("ecalTracks", "displacedElectronSCs"),
                               displacedTracks = cms.InputTag("displacedElectrons", "displacedCandidateTracks"),
+                              muonEnhancedTracks = cms.InputTag("muonEnhancedTracks", "muonEnhancedTracks"),
+                              combinedMuonTracks = cms.InputTag("muonEnhancedTracks", "combinedMuonTracks"),
                               ## vertices
                               #vertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
                               vertices = cms.InputTag("offlinePrimaryVertices"),
@@ -492,11 +497,13 @@ process.Flag_ecalBadCalibFilter = cms.Path( process.ecalBadCalibFilter )
 # Set up the path
 process.ecalTracks_path = cms.Path(ecalTracks)
 process.displacedElectrons_path = cms.Path(displacedElectrons)
+process.muonEnhancedTracks_path = cms.Path(muonEnhancedTracks)
 process.tree_step = cms.EndPath(process.tree)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 
 process.schedule = cms.Schedule( process.ecalTracks_path,
                                  process.displacedElectrons_path,
+                                 process.muonEnhancedTracks_path,
                                  process.Flag_goodVertices,
                                  process.Flag_globalSuperTightHalo2016Filter,
                                  process.Flag_HBHENoiseFilter,
