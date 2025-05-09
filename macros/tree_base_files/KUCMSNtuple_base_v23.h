@@ -1148,9 +1148,9 @@ void llpgtree::Init( TChain *tree, bool doGenInfo ){
 */
 
    fChain->SetBranchAddress("ECALRecHit_energy", &ECALRecHit_energy, &b_ECALRecHit_energy);
-   fChain->SetBranchAddress("ECALRecHit_timeError", &ECALRecHit_timeError, &b_ECALRecHit_timeError);
-   fChain->SetBranchAddress("ECALRecHit_hasGS1", &ECALRecHit_hasGS1, &b_ECALRecHit_hasGS1);
-   fChain->SetBranchAddress("ECALRecHit_hasGS6", &ECALRecHit_hasGS6, &b_ECALRecHit_hasGS6);
+   //fChain->SetBranchAddress("ECALRecHit_timeError", &ECALRecHit_timeError, &b_ECALRecHit_timeError);
+   //fChain->SetBranchAddress("ECALRecHit_hasGS1", &ECALRecHit_hasGS1, &b_ECALRecHit_hasGS1);
+   //fChain->SetBranchAddress("ECALRecHit_hasGS6", &ECALRecHit_hasGS6, &b_ECALRecHit_hasGS6);
    fChain->SetBranchAddress("ECALRecHit_ID", &ECALRecHit_ID, &b_ECALRecHit_ID);
    fChain->SetBranchAddress("ECALRecHit_swCross", &ECALRecHit_swCross, &b_ECALRecHit_swCross);
    fChain->SetBranchAddress("ECALRecHit_0TOF", &ECALRecHit_0TOF, &b_ECALRecHit_0TOF);
@@ -1554,9 +1554,9 @@ void llpgtree::getBranches( Long64_t entry, bool doGenInfo ){
 
    if( sbDEBUG ) std::cout << "Getting Branches RH" << std::endl;
    b_ECALRecHit_energy->GetEntry(entry);     //!
-   b_ECALRecHit_timeError->GetEntry(entry);     //!
-   b_ECALRecHit_hasGS1->GetEntry(entry);     //!
-   b_ECALRecHit_hasGS6->GetEntry(entry);     //!
+   //b_ECALRecHit_timeError->GetEntry(entry);     //!
+   //b_ECALRecHit_hasGS1->GetEntry(entry);     //!
+   //b_ECALRecHit_hasGS6->GetEntry(entry);     //!
    b_ECALRecHit_ID->GetEntry(entry);     //!
    b_ECALRecHit_swCross->GetEntry(entry);     //!
    b_ECALRecHit_0TOF->GetEntry(entry);     //!
