@@ -16,7 +16,7 @@ double TimingHelper::Beta(const reco::Track &track, const double mass) {
 }
 
 double TimingHelper::Time(const reco::Track &track, const double mass, const double pathLength) {
-  return pathLength/( Beta(track, mass) * 30);
+  return pathLength/( Beta(track, mass) * 30);// In ns
 }
 
 reco::Track TimingHelper::TimeStampTrack(const reco::Track &track, const double pathLength) { 

@@ -73,15 +73,15 @@ inline std::vector<T> GetSignalMatches(const std::vector<T> &toMatch, const reco
 
   for(const auto &pair : genAssigner.GetPairedObjects()) {
     const reco::GenParticle genParticle(pair.GetObjectB());
-    if(abs(pair.GetObjectB().pdgId()) == 11) {
-      if(isSignalGenElectron(pair.GetObjectB())) {
+    //if(abs(genParticle.pdgId()) == 11) {
+      if(isSignalGenElectron(genParticle)) {
 	signalMatches.emplace_back(pair.GetObjectA());
 	//std::cout << "Found a signal match in the function with deltaR: "<< pair.GetDeltaR() << std::endl;
 	//std::cout << "gen pt: " << pair.GetObjectB().pt() << std::endl;
 	//std::cout << "track pt: "<< pair.GetObjectA().pt() <<std::endl;
 	//std::cout << "track quality: "<< pair.GetObjectA().qualityMask() <<std::endl;
       }
-    }
+      //}
   }
   return signalMatches;
 } 

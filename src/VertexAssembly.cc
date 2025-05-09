@@ -38,15 +38,20 @@ std::vector<reco::TransientTrack> VertexAssembly::BuildTransientTracks(const rec
 
 reco::Vertex VertexAssembly::ConvertFitVertex(const TransientVertex &vertex) const {
 
+  //std::cout << "\nStarting ConvertFitVertex" << std::endl;
   // Parameters needed for initializing new vertex object
   const math::XYZPoint vertexPosition = math::XYZPoint(vertex.position().x(), vertex.position().y(), vertex.position().z());
+  //std::cout << "vertex position: (" << vertexPosition.x() << ", " << vertexPosition.y() << ", " << vertexPosition.z() << ") " <<  std::endl;
   const double vertexChi2 = vertex.totalChiSquared();
+  //std::cout << "Chi2: " << vertexChi2 << std::endl;
   const double vertexNdof = vertex.degreesOfFreedom();
+  //std::cout << "ndof: " << vertexNdof << std::endl;
   const size_t nTracks = vertex.originalTracks().size();
+  //std::cout << "Total tracks: " << nTracks << std::endl;
   const GlobalError error = vertex.positionError();
   const math::Error<3>::type vertexError(ROOT::Math::SVector<double, 6>(error.cxx(), error.cyx(), error.cyy(),
                                                                         error.czx(), error.czy(), error.czz()));
-
+  
   // Save the new fitted vertex to a reco::Vertex and reserve space for the tracks
   reco::Vertex outputVertex(vertexPosition, vertexError, vertexChi2, vertexNdof, nTracks);
   outputVertex.reserve(nTracks);

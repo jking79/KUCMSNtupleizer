@@ -32,7 +32,11 @@ class TrackInfo {
     return pt_ < 0 && eta_ < 0 && phi_ < 0;
   }
 
-  bool operator == (const TrackInfo& other) const {
+  bool operator<(const TrackInfo& other) const {
+    return this->pt() < other.pt();
+  }
+  
+  bool operator==(const TrackInfo& other) const {
     return pt_ == other.pt_ && eta_ == other.eta_ && phi_ == other.phi_;
   }
 

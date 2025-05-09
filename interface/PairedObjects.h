@@ -1,7 +1,13 @@
 #ifndef KUCMSNtupleizer_KUCMSNtupleizer_PairedObjects_h
 #define KUCMSNtupleizer_KUCMSNtupleizer_PairedObjects_h
 
+#include <functional>
+#include <optional>
+#include <type_traits>
+
+#include "DataFormats/Math/interface/deltaR.h"
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/MatchedPair.h"
+#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/MatchingTools.h"
 
 //===============================================================================================//
 //                                      class: PairedObjects                                     //
@@ -18,10 +24,7 @@ template <class A, class B> class PairedObjects {
  PairedObjects() : objectA_(A()), objectB_(B()), matchedPair_(MatchedPair()), deltaR_(-999.) {}
 
  PairedObjects(const A &objectA, const B &objectB, const MatchedPair &matchedPair)
-   : objectA_(objectA), objectB_(objectB), matchedPair_(matchedPair) {
-
-    deltaR_ = sqrt(reco::deltaR2(objectA, objectB) );
-  }
+   : objectA_(objectA), objectB_(objectB), matchedPair_(matchedPair), deltaR_(matchedPair.GetMatchCriteria()) {}
 
   A GetObjectA() const { return objectA_;}
   B GetObjectB() const { return objectB_;}
@@ -58,12 +61,27 @@ public:
 
   int FindIndexA(const int indexB) const ;
   int FindIndexB(const A &objectA) const ;
-  double FindDeltaR(const A &objectA) const;
-
   B FindObjectB(const A &objectA) const;
   
   std::vector<A> GetObjectAList() const;
   std::vector<B> GetObjectBList() const;
+
+  PairedObjectCollection<reco::Track, reco::GenParticle> ConvertFromTTracks() const {
+    return this->Convert<reco::Track, reco::GenParticle>(
+        [] (const reco::TransientTrack &ttrack) {
+          return ttrack.track();
+        },
+	[] (const reco::GenParticle &gen) {
+	  return gen;
+	});
+  }
+  
+private:
+  
+  template <class C = A, class D = B>
+  PairedObjectCollection<C, D> Convert(
+    std::optional<std::function<C(const A &)>> convertA = std::nullopt,
+    std::optional<std::function<D(const B &)>> convertB = std::nullopt) const;
   
 };
 
@@ -102,16 +120,6 @@ int PairedObjectCollection<A,B>::FindIndexB(const A &objectA) const {
 }
 
 template <class A, class B>
-double PairedObjectCollection<A,B>::FindDeltaR(const A &objectA) const {
-  double deltaR = -999.;
-  for(const auto &pair : *this)
-    if(pair.GetObjectA().pt() == objectA.pt() && pair.GetObjectA().eta() == objectA.eta())
-      deltaR = pair.GetDeltaR();
-
-  return deltaR;
-}
-
-template <class A, class B>
 B PairedObjectCollection<A,B>::FindObjectB(const A &objectA) const {
 
   B objectB;
@@ -140,6 +148,30 @@ std::vector<B> PairedObjectCollection<A,B>::GetObjectBList() const {
     listB.emplace_back(pair.GetObjectB());
 
   return listB;
+}
+
+template <class A, class B>
+template <class C, class D>
+PairedObjectCollection<C, D> PairedObjectCollection<A, B>::Convert(
+    std::optional<std::function<C(const A &)>> convertA,
+    std::optional<std::function<D(const B &)>> convertB) const {
+
+  if constexpr (std::is_same_v<A, C> && std::is_same_v<B, D>) {
+    return *this; 
+  }
+  
+  PairedObjectCollection<C, D> newCollection;
+
+  for (const auto &pair : *this) {
+    C newA = convertA ? (*convertA)(pair.GetObjectA()) : C();
+    D newB = convertB ? (*convertB)(pair.GetObjectB()) : D();
+
+    MatchedPair newMatchedPair(pair.GetIndexA(), pair.GetIndexB(), pair.GetDeltaR()); 
+
+    newCollection.emplace_back(PairedObjects<C, D>(newA, newB, newMatchedPair));
+  }
+
+  return newCollection;
 }
 
 #endif
