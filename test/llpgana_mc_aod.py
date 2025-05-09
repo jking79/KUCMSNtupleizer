@@ -27,7 +27,8 @@ options.register('eventFilter','MET100',VarParsing.multiplicity.singleton,VarPar
 ## GT to be used
 ##------------------ mc gt
 #options.register('globalTag','106X_mc2017_realistic_v6',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
-options.register('globalTag','94X_mc2017_realistic_v11',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
+#options.register('globalTag','106X_upgrade2018_realistic_v11_L1v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
+#options.register('globalTag','94X_mc2017_realistic_v11',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','124X_mcRun3_2022_realistic_v12',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','130X_mcRun3_2023_realistic_v14',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
@@ -36,7 +37,7 @@ options.register('globalTag','94X_mc2017_realistic_v11',VarParsing.multiplicity.
 ##options.register('globalTag','112X_mcRun3_2021_realistic_v16',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 
 ##------------------ data gt  
-#options.register('globalTag','106X_dataRun2_v20',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
+options.register('globalTag','106X_dataRun2_v20',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 ##options.register('globalTag','106X_dataRun2_v28',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 ##options.register('globalTag','124X_dataRun3_v15',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2022');
 ##options.register('globalTag','106X_dataRun2_v24',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2018UL');
@@ -48,8 +49,10 @@ options.register('processName','TREE',VarParsing.multiplicity.singleton,VarParsi
 #outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_Objectified_Test_v24.root' # ntuplizer test
 #outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_Objectified_v23_triggertest3_fullgen_oottrue.root' # ntuplizer test
 #outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_JustinAOD_Zll_ct10_fullgen_oottrue.root' # ntuplizer test
-outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_100tev0p1ct_v16.root' # ntuplizer test
-if options.multicrab : outfilename = 'kucmsntuple.root'
+#outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_gogol_test_v16.root' # ntuplizer test
+outfilename = 'kucmsntuple.root'
+if options.multicrab == True : 
+    outfilename = 'kucmsntuple.root'
 
 options.register('outputFileName',outfilename,VarParsing.multiplicity.singleton,VarParsing.varType.string,'output file name created by cmsRun');
 
@@ -81,8 +84,8 @@ process.load("FWCore.MessageService.MessageLogger_cfi")
 #process.MessageLogger.destinations = ['cout', 'cerr']
 #process.MessageLogger.cerr.FwkReport.reportEvery = 1
 #process.MessageLogger.cerr.FwkReport.reportEvery = 2
-#process.MessageLogger.cerr.FwkReport.reportEvery = 10
-process.MessageLogger.cerr.FwkReport.reportEvery = 100
+process.MessageLogger.cerr.FwkReport.reportEvery = 10
+#process.MessageLogger.cerr.FwkReport.reportEvery = 100
 #process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 #process.MessageLogger.cerr.FwkReport.reportEvery = 100000
 
@@ -148,7 +151,8 @@ process.source = cms.Source("PoolSource",
 
         # AOD Data MET
         
-        'file:/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/test/MetPD_003A2484-A2DC-E711-9D0A-02163E019C46.root'
+        #'file:/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/test/MetPD_003A2484-A2DC-E711-9D0A-02163E019C46.root'
+        #'root://cmseos.fnal.gov//store/user/janguian/gogoG/SMS-GlGl_mGl-1500_mN2-500_mN1-100_gam_N2ctau-0p1_AOD/250123_145920/0000/SMS-GlGl_mGl-1500_mN2-500_mN1-100_gam_N2ctau-0p1_AOD_99.root'
 
 	#lpcpath_350_600+'120000/80762156-99D6-E811-8942-34E6D7E3879B.root',
         #lpcpath_350_600+'120000/322875DC-DDD6-E811-8C5F-001E675A68C4.root',
@@ -218,32 +222,8 @@ process.source = cms.Source("PoolSource",
         #'/store/data/Run2023E/EGamma/AOD/PromptReco-v1/000/372/597/00000/c97d22a6-fc8d-416f-92b4-01e27f9776c4.root'
         #'/store/data/Run2017E/MET/AOD/17Nov2017-v1/50000/00864810-19DD-E711-A884-02163E01A63A.root'
 
-        #'/store/data/Run2018D/EGamma/MINIAOD/22Jan2019-v2/70001/F0FE59FC-F29E-904B-A1BC-817C1CB09A7E.root'
+        '/store/data/Run2018B/MET/AOD/15Feb2022_UL2018-v1/2530000/C9433911-6C3B-7740-B758-B01EF63573DA.root'
 
-        #'/store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/100000/062A29F3-416F-6A43-8E0A-90BE80607677.root',
-        #'/store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/100000/0632DF20-D859-EE4B-8FC4-3ECC56B2987D.root',
-        #'/store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/100000/0685BE81-54CF-3A4C-8D66-8E0E059D263F.root',
-        #'/store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/100000/06CBEAC6-F3C1-BE48-96D9-A7EF3CF42048.root',
-        #'/store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/100000/06CC5637-77D3-8145-B3BD-0AF5F16410AB.root',
-        #'/store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/100000/06DE38F0-4330-C546-8D1A-0865C50FAA14.root',
-        #'/store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/100000/071F2728-A0CA-9446-A1E3-38B4FB08D6AE.root',
-        #'/store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/100000/077E7C54-C588-F642-BBA8-0960D5FD7A96.root',
-        #'/store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/100000/07971C26-63F0-D943-BA77-88D6F636F780.root',
-        #'/store/data/Run2018A/EGamma/MINIAOD/12Nov2019_UL2018-v2/100000/07A40762-F4E1-9E4D-8750-7DD65EA01B8A.root',
-
-		  ## JetHT
-
-        #'/store/data/Run2018A/JetHT/MINIAOD/UL2018_MiniAODv2-v1/260000/00B87525-94D1-C741-9B03-00528106D15A.root',
-        #'/store/data/Run2018A/JetHT/MINIAOD/UL2018_MiniAODv2-v1/260000/00F0369F-B9FA-5643-B0F4-F286B80B30B5.root',
-        #'/store/data/Run2018A/JetHT/MINIAOD/UL2018_MiniAODv2-v1/260000/0173DB9C-3E46-4741-B80B-9671E9E917CA.root',
-        #'/store/data/Run2018A/JetHT/MINIAOD/UL2018_MiniAODv2-v1/260000/017C1808-933C-0D48-95B5-A8B9A0B16601.root',
-        #'/store/data/Run2018A/JetHT/MINIAOD/UL2018_MiniAODv2-v1/260000/01C71814-B84D-1D4A-8696-61E404084059.root',
-        #'/store/data/Run2018A/JetHT/MINIAOD/UL2018_MiniAODv2-v1/260000/020C4D59-9FF4-BA4C-B24C-6B77F9F0CC20.root',
-        #'/store/data/Run2018A/JetHT/MINIAOD/UL2018_MiniAODv2-v1/260000/027298C8-F7C2-7848-B241-DD6F07F41C2F.root',
-        #'/store/data/Run2018A/JetHT/MINIAOD/UL2018_MiniAODv2-v1/260000/0388A30D-E3A0-2947-8F6A-52B8B3F4C381.root',
-        #'/store/data/Run2018A/JetHT/MINIAOD/UL2018_MiniAODv2-v1/260000/04939F8B-6606-3F4C-92BF-6D7D950376DC.root',
-        #'/store/data/Run2018A/JetHT/MINIAOD/UL2018_MiniAODv2-v1/260000/054042A4-058C-194E-9756-038004285B82.root',
-		
         ),##<<>>fileNames = cms.untracked.vstring
         #skipEvents=cms.untracked.uint32(300),
 )##<<>>process.source = cms.Source("PoolSource",
@@ -255,7 +235,7 @@ process.source = cms.Source("PoolSource",
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250))#KT
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500))#QT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(5000))#BT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10000))#LT
@@ -264,7 +244,7 @@ process.source = cms.Source("PoolSource",
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100000))#MS
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250000))#MD
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500000))#LG
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
 
 # Set the global tag depending on the sample type
 from Configuration.AlCa.GlobalTag import GlobalTag
@@ -278,11 +258,15 @@ process.TFileService = cms.Service("TFileService", fileName = cms.string(options
 genInfo = False
 if options.multicrab == True : genInfo = options.hasGenInfo		   
 
-#filterselect = 'None'
+filterselect = 'None'
 #filterselect = 'MET100'
 #filterselect = 'AL1IsoPho'
 #filterselect = 'IsoPhoMet100'
-filterselect = 'AL1SelEle'
+#filterselect = 'AL1SelEle'
+
+probeout = True
+#probeout = False
+if options.multicrab == True : probeout = False
 
 if options.multicrab == True : filterselect = options.eventFilter
 
@@ -294,7 +278,7 @@ makeTrigList = False
 if options.multicrab == True : makeTrigList = False
 
 print( "Using options : mutlicrab = ",options.multicrab," geninfo = ",genInfo," filter = ",filterselect )
-print( "Using options : momChase = ",genMomChase," trgiList = ",makeTrigList ) 
+print( "Using options : momChase = ",genMomChase," trgiList = ",makeTrigList," probeout = ",probeout ) 
 print( "Using options : globalTag = ",options.globalTag )
 print( "With output file name : ",options.outputFileName )
 
@@ -308,6 +292,7 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
                               hasGenInfo = cms.bool(genInfo),
                               doGenMotherChase = cms.bool(genMomChase),
                               makeTriggerList =  cms.bool(makeTrigList),
+                              doProbeOut = cms.bool(probeout),
 
                               ##skim type selectuon 
                               fltrSelection = cms.string(filterselect),

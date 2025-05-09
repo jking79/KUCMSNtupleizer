@@ -41,6 +41,8 @@ void HistMaker::histMaker( std::string indir, std::string infilelist, std::strin
     postCut30NPhotons = 0;
     postCut100NPhotons = 0;
 
+	scale = 137;
+
 	std::cout << "Producing Histograms for : " << outfilename << std::endl;
     std::ifstream infile(indir+infilelist);
     auto fInTree = new TChain(disphotreename.c_str());
@@ -76,6 +78,22 @@ void HistMaker::histMaker( std::string indir, std::string infilelist, std::strin
     Float_t         sGMSBChi1Mass;
     Float_t         sMCWgt;
     Int_t           sMCType;
+    Float_t         sumEvtGenWgt;
+
+    Int_t           cf_m_gt2jets;
+    Int_t           cf_met150;
+    Int_t           cf_mj_gt1phos;
+    Int_t           cf_mjp_leadPhoPt30;
+    Int_t           cf_nFltrdEvts;
+    Int_t           cf_nTotEvts;	
+	Int_t           cf_sel_j;
+   	Int_t           cf_sel_m;
+   	Int_t           cf_sel_p;
+   	Int_t           cf_sel_ppt;
+   	Int_t           nFltrdEvts;
+   	Int_t           nTotEvts;
+   	Float_t         sumEvtWgt;
+   	Float_t         sumFltrdEvtWgt;
 
     TBranch        *b_nEvents;   //!
     TBranch        *b_nSelectedEvents;   //!
@@ -86,6 +104,22 @@ void HistMaker::histMaker( std::string indir, std::string infilelist, std::strin
     TBranch        *b_sMCWgt;   //!
     TBranch        *b_sMCType;   //!
     TBranch        *b_sumEvtGenWgt;
+
+   	TBranch        *b_cf_m_gt2jets;   //!
+   	TBranch        *b_cf_met150;   //!
+   	TBranch        *b_cf_mj_gt1phos;   //!
+   	TBranch        *b_cf_mjp_leadPhoPt30;   //!
+   	TBranch        *b_cf_nFltrdEvts;   //!
+   	TBranch        *b_cf_nTotEvts;   //!
+   	TBranch        *b_cf_sel_j;   //!
+   	TBranch        *b_cf_sel_m;   //!
+   	TBranch        *b_cf_sel_p;   //!
+   	TBranch        *b_cf_sel_ppt;   //!
+   	TBranch        *b_nFltrdEvts;   //!
+   	TBranch        *b_nTotEvts;   //!
+   	TBranch        *b_sumEvtWgt;   //!
+   	TBranch        *b_sumFltrdEvtWgt;   //!
+
 
     sKey = 0;
 
@@ -98,6 +132,21 @@ void HistMaker::histMaker( std::string indir, std::string infilelist, std::strin
     fConfigTree->SetBranchAddress("sMCWgt", &sMCWgt, &b_sMCWgt);
     fConfigTree->SetBranchAddress("sMCType", &sMCType, &b_sMCType);
     fConfigTree->SetBranchAddress("sumEvtGenWgt", &sumEvtGenWgt, &b_sumEvtGenWgt);
+
+    fConfigTree->SetBranchAddress("cf_m_gt2jets", &cf_m_gt2jets, &b_cf_m_gt2jets);
+    fConfigTree->SetBranchAddress("cf_met150", &cf_met150, &b_cf_met150);
+    fConfigTree->SetBranchAddress("cf_mj_gt1phos", &cf_mj_gt1phos, &b_cf_mj_gt1phos);
+    fConfigTree->SetBranchAddress("cf_mjp_leadPhoPt30", &cf_mjp_leadPhoPt30, &b_cf_mjp_leadPhoPt30);
+    fConfigTree->SetBranchAddress("cf_nFltrdEvts", &cf_nFltrdEvts, &b_cf_nFltrdEvts);
+    fConfigTree->SetBranchAddress("cf_nTotEvts", &cf_nTotEvts, &b_cf_nTotEvts);
+    fConfigTree->SetBranchAddress("cf_sel_j", &cf_sel_j, &b_cf_sel_j);
+    fConfigTree->SetBranchAddress("cf_sel_m", &cf_sel_m, &b_cf_sel_m);
+    fConfigTree->SetBranchAddress("cf_sel_p", &cf_sel_p, &b_cf_sel_p);
+    fConfigTree->SetBranchAddress("cf_sel_ppt", &cf_sel_ppt, &b_cf_sel_ppt);
+    fConfigTree->SetBranchAddress("nFltrdEvts", &nFltrdEvts, &b_nFltrdEvts);
+    fConfigTree->SetBranchAddress("nTotEvts", &nTotEvts, &b_nTotEvts);
+    fConfigTree->SetBranchAddress("sumEvtWgt", &sumEvtWgt, &b_sumEvtWgt);
+    fConfigTree->SetBranchAddress("sumFltrdEvtWgt", &sumFltrdEvtWgt, &b_sumFltrdEvtWgt);
 
     auto nConfigEntries = fConfigTree->GetEntries();
     std::cout << "Proccessing " << nConfigEntries << " config entries." << std::endl;
@@ -117,24 +166,81 @@ void HistMaker::histMaker( std::string indir, std::string infilelist, std::strin
     	b_sMCType->GetEntry(entry);   //!
         std::string configKey(*sKey);
 
+        b_sumEvtGenWgt->GetEntry(entry);
+        b_cf_m_gt2jets->GetEntry(entry);   //!
+        b_cf_met150->GetEntry(entry);   //!
+        b_cf_mj_gt1phos->GetEntry(entry);   //!
+        b_cf_mjp_leadPhoPt30->GetEntry(entry);   //!
+        b_cf_nFltrdEvts->GetEntry(entry);   //!
+        b_cf_nTotEvts->GetEntry(entry);   //!
+        b_cf_sel_j->GetEntry(entry);   //!
+        b_cf_sel_m->GetEntry(entry);   //!
+        b_cf_sel_p->GetEntry(entry);   //!
+        b_cf_sel_ppt->GetEntry(entry);   //!
+        b_nFltrdEvts->GetEntry(entry);   //!
+        b_nTotEvts->GetEntry(entry);   //!
+        b_sumEvtWgt->GetEntry(entry);   //!
+        b_sumFltrdEvtWgt->GetEntry(entry);   //!
+
 		if( not configInfo.count(configKey) ){
-        	if(debug) std::cout << " - Filling configValues. " << std::endl;
-        	fConfigTree->Add(tfilename.c_str());			
+        	if(debug) std::cout << " - Filling Cutflow/Wieghts. " << std::endl;
+        	//fConfigTree->Add(tfilename.c_str());			
 			std::map< std::string, float > configValues;
         	configValues["nEvents"] = nEvents;
         	configValues["nSelectedEvents"] = nSelectedEvents;
+            configValues["sumEvtGenWgt"] = sumEvtGenWgt;
+            configValues["sumEvtWgt"] = sumEvtWgt;
+            if(debug) std::cout << " - Filling configValues. " << std::endl;
         	configValues["sCrossSection"] = sCrossSection;
         	configValues["sGMSBGravMass"] = sGMSBGravMass;
         	configValues["sGMSBChi1Mass"] = sGMSBChi1Mass;
         	configValues["sMCWgt"] = sMCWgt;
         	configValues["sMCType"] = sMCType;
+            configValues["nTotEvts"] = nTotEvts;
         	if(debug) std::cout << " - Filling configInfo. " << std::endl;
         	configInfo[configKey] = configValues;
 		} else {
 			auto & configValues = configInfo[configKey];
 			configValues["nEvents"] += nEvents;
+            configValues["nTotEvts"] += nTotEvts;
 			configValues["nSelectedEvents"] += nSelectedEvents;
+            configValues["sumEvtGenWgt"] += sumEvtGenWgt;
+            configValues["sumEvtWgt"] += sumEvtWgt;
 		}//<<>>if( not configInfo.count(configKey) )
+
+		float fillwt = scale * ( sCrossSection * 1000 ) * ( 1 / sumEvtWgt );
+        if( not cutflowInfo.count("nTotEvts") ){
+            if(debug) std::cout << " - Filling Cutflow/Wieghts. " << std::endl;
+            cutflowInfo["cf_m_gt2jets"] = cf_m_gt2jets*fillwt;
+            cutflowInfo["cf_met150"] = cf_met150*fillwt;
+            cutflowInfo["cf_mj_gt1phos"] = cf_mj_gt1phos*fillwt;
+            cutflowInfo["cf_mjp_leadPhoPt30"] = cf_mjp_leadPhoPt30*fillwt;
+            cutflowInfo["cf_nFltrdEvts"] = cf_nFltrdEvts*fillwt;
+            cutflowInfo["cf_nTotEvts"] = cf_nTotEvts*fillwt;
+            cutflowInfo["cf_sel_j"] = cf_sel_j*fillwt;
+            cutflowInfo["cf_sel_m"] = cf_sel_m*fillwt;
+            cutflowInfo["cf_sel_p"] = cf_sel_p*fillwt;
+            cutflowInfo["cf_sel_ppt"] = cf_sel_ppt*fillwt;
+            cutflowInfo["nFltrdEvts"] = nFltrdEvts*fillwt;
+            cutflowInfo["nTotEvts"] = nTotEvts*fillwt;
+            //cutflowWgts["sumEvtWgt"] = sumEvtWgt;
+            //cutflowWgts["sumFltrdEvtWgt"] = sumFltrdEvtWgt;
+        } else {
+            cutflowInfo["cf_m_gt2jets"] += cf_m_gt2jets*fillwt;
+            cutflowInfo["cf_met150"] += cf_met150*fillwt;
+            cutflowInfo["cf_mj_gt1phos"] += cf_mj_gt1phos*fillwt;
+            cutflowInfo["cf_mjp_leadPhoPt30"] += cf_mjp_leadPhoPt30*fillwt;
+            cutflowInfo["cf_nFltrdEvts"] += cf_nFltrdEvts*fillwt;
+            cutflowInfo["cf_nTotEvts"] += cf_nTotEvts*fillwt;
+            cutflowInfo["cf_sel_j"] += cf_sel_j*fillwt;
+            cutflowInfo["cf_sel_m"] += cf_sel_m*fillwt;
+            cutflowInfo["cf_sel_p"] += cf_sel_p*fillwt;
+            cutflowInfo["cf_sel_ppt"] += cf_sel_ppt*fillwt;
+            cutflowInfo["nFltrdEvts"] += nFltrdEvts*fillwt;
+            cutflowInfo["nTotEvts"] += nTotEvts*fillwt;
+            //cutflowWgts["sumEvtWgt"] += sumEvtWgt;
+            //cutflowWgts["sumFltrdEvtWgt"] += sumFltrdEvtWgt;
+        }//<<>>if( not configInfo.count(configKey) )
 
 	}//<<>>for (Long64_t centry = 0; centry < nConfigEntries; centry++)
 
@@ -145,6 +251,7 @@ void HistMaker::histMaker( std::string indir, std::string infilelist, std::strin
 		}//<<>>for( auto line : item.second )
 		std::cout << ")" << std::endl;
 	}//<<>>for( auto item : configInfo )
+
 
     std::cout << "<<<<<<<< Processing Event Loop <<<<<<<<<<<<<< " << std::endl;
 	int loopCounter(100000);
@@ -188,26 +295,30 @@ void HistMaker::histMaker( std::string indir, std::string infilelist, std::strin
 // ----------------------------------------------- event loop -------------------------------------------------------------------------
 void HistMaker::eventLoop( Long64_t entry ){
 
-    hist1d[2]->Fill(1);
 	int cs = ( cutselection == 0 ) ? 0 : 1;
 
     //auto dskey  = *DataSetKey
-    float evtgwt = evtGenWgt;
-    //float evtgwt = 1;
+    //float evtgwt = evtGenWgt;
+    float evtgwt = 1;
     float scale = 137;
     std::string configKey(*DataSetKey);
     float xsec = (configInfo[configKey])["sCrossSection"];
-    float segwt = (configInfo[configKey])["nEvents"];
+    //float segwt = (configInfo[configKey])["nEvents"];
+    //float segwt = (configInfo[configKey])["nTotEvts"];
+    float segwt = (configInfo[configKey])["sumEvtWgt"];
+	////float fillwt = scale * ( sCrossSection * 1000 ) * ( 1 / sumEvtWgt );
     float fillwt = scale * ( xsec * 1000 ) * ( evtgwt / segwt );
 	//if( cutselection == 1 ) fillwt = 1;
     if( DEBUG ) std::cout << " evtfillwt :( " << xsec << " * 1000 ) * ( " << evtgwt << " / " << segwt << " ) = " << fillwt << std::endl;
     //auto fillwt = (configInfo[configKey])["sCrossSection"] * evtwt;
     //if( configKey != "GMSBL"+lambda+"" ) return;
 
+    hist1d[2]->Fill(7,fillwt);
+
 	for( int i = 0; i < 1; i++ ){ // continue loop - can use continue to skip
 	if( rjrNRjrPhotons->size() == 0 ) continue;
 	//if( selPhoTime->at(0) < 2.0 ) continue;
-    hist1d[2]->Fill(2);
+    hist1d[2]->Fill(8,fillwt);
 
 	//bool genSigTypeCut( genSigType != 11 && genSigType != 12 && genSigType != 22 );
 
@@ -219,13 +330,14 @@ void HistMaker::eventLoop( Long64_t entry ){
 	else if( cutva == 30 ) genSigTypeCut = genSigType != 11 && genSigType != 12 && genSigType != 22;
 	else if( cutva == 0 ) genSigTypeCut = false;
 
-
-	if( genSigTypeCut ) continue;
-    hist1d[2]->Fill(3);
+    if( rjrNRjrPhotons->at(cs) == 1 ) hist1d[2]->Fill(9,fillwt);
+    if( rjrNRjrPhotons->at(cs) == 2 ) hist1d[2]->Fill(10,fillwt);
+    //if( genSigTypeCut ) continue;
+    //hist1d[2]->Fill(ecfbin++,fillwt);
     if( nRjrPhoCut ) continue;
-    hist1d[2]->Fill(4);
-	if( genSigTypeCut || nRjrPhoCut ) continue;
-    hist1d[2]->Fill(5);
+    hist1d[2]->Fill(11,fillwt);
+	//if( genSigTypeCut || nRjrPhoCut ) continue;
+    //hist1d[2]->Fill(ecfbin++,fillwt);
 
 	//if( rjrSMass->at(0) < 2000 ) continue;
 	//if( rjrX2NGMean->at(cs) < cutvc ) continue;
@@ -235,8 +347,22 @@ void HistMaker::eventLoop( Long64_t entry ){
     auto metCPt = hypo(selCMetPx,selCMetPy);
     auto metPt = hypo(selMetPx,selMetPy);
 	if( metCPt < cutvd ) continue;
-    hist1d[2]->Fill(6);
+    hist1d[2]->Fill(12,fillwt);
 
+	//exploritory cut flows
+	if( nSelPhotons < 3 ) hist1d[2]->Fill(13,fillwt);
+    if( (*rjrNJetsJa)[cs] > 0 && (*rjrNJetsJb)[cs] > 0 ) hist1d[2]->Fill(14,fillwt);
+    if( (*rjrNJetsJa)[cs] > 1 && (*rjrNJetsJb)[cs] > 1 ) hist1d[2]->Fill(15,fillwt);
+    if( (*rjrNJetsJa)[cs] > 2 && (*rjrNJetsJb)[cs] > 2 ) hist1d[2]->Fill(16,fillwt);
+
+	if( (*rjrNJetsJa)[cs] < 1 || (*rjrNJetsJb)[cs] < 1 ) continue;
+    hist1d[2]->Fill(17,fillwt);
+
+	//final cutflow bin
+    hist1d[2]->Fill(25,fillwt);//lastbin
+
+	//var hist fill
+	
     hist1d[400]->Fill( selCMet, fillwt );
     hist1d[401]->Fill( metCPt, fillwt );
     hist1d[402]->Fill( rjrMET->at(cs), fillwt );
@@ -379,6 +505,19 @@ void HistMaker::eventLoop( Long64_t entry ){
 
 void HistMaker::endJobs(){
 
+    hist1d[2]->SetBinContent(1,cutflowInfo["cf_nTotEvts"]);
+    hist1d[2]->SetBinError(1,std::sqrt(cutflowInfo["cf_nTotEvts"]));
+    hist1d[2]->SetBinContent(2,cutflowInfo["cf_nFltrdEvts"]);
+    hist1d[2]->SetBinError(2,std::sqrt(cutflowInfo["cf_nFltrdEvts"]));
+    hist1d[2]->SetBinContent(3,cutflowInfo["cf_met150"]);
+    hist1d[2]->SetBinError(3,std::sqrt(cutflowInfo["cf_met150"]));
+    hist1d[2]->SetBinContent(4,cutflowInfo["cf_m_gt2jets"]);
+    hist1d[2]->SetBinError(4,std::sqrt(cutflowInfo["cf_m_gt2jets"]));
+    hist1d[2]->SetBinContent(5,cutflowInfo["cf_mj_gt1phos"]);
+    hist1d[2]->SetBinError(5,std::sqrt(cutflowInfo["cf_mj_gt1phos"]));
+    hist1d[2]->SetBinContent(6,cutflowInfo["cf_mjp_leadPhoPt30"]);
+    hist1d[2]->SetBinError(6,std::sqrt(cutflowInfo["cf_mjp_leadPhoPt30"]));
+
 }//<<>>void HistMaker::endJobs()
 
 void HistMaker::initHists( std::string ht ){
@@ -455,7 +594,8 @@ void HistMaker::initHists( std::string ht ){
 
     hist1d[0] = new TH1D("genSigSGluinoMass", addstr(ht,"genSigSGluinoMass").c_str(), 1200, 0, 6000);
     hist1d[1] = new TH1D("genSigSQuarkMass", addstr(ht,"genSigSQuarkMass").c_str(), 1200, 0, 6000);
-    hist1d[2] = new TH1D("cutflow", addstr(ht,"cutFlow").c_str(), 10, 0, 10);
+    hist1d[2] = new TH1D("cutflow", addstr(ht,"cutFlow").c_str(), 25, 0.5, 25.5);
+    hist1d[2]->Sumw2();
 
     hist1d[250] = new TH1D("SCosA", addstr(ht,"SCosA").c_str(), 70, -3.5, 3.5);
     hist1d[251] = new TH1D("SMass", addstr(ht,"SMass").c_str(), 150, 0, 15000);
@@ -620,7 +760,7 @@ int main ( int argc, char *argv[] ){
                 //auto infilenameD = "KUCMS_RJR_DEG_ootmet_Skim_List.txt";
                 auto infilenameD = "KUCMS_RJR_MET_ootmet_Skim_List.txt";
                 //auto infilenameD = "KUCMS_RJR_JetHT_ootmet_Skim_List.txt";
-
+                auto infilenameWJLNu = "KUCMS_RJR_WJLNu_ootmet_Skim_List.txt";
                 //std::list<float> cuts = { 10000000 }; 
 
                 int modtype = 0;
@@ -630,7 +770,8 @@ int main ( int argc, char *argv[] ){
                 //std::string sigtype = "XinoXino"; modtype = 33; //33
                 //std::string sigtype = "SleptSlept"; modtype = 44; //44
                 //std::string sigtype = "BkGrd"; // modtype 0 - no modtype applied
-				std::string sigtype = "GIGI";
+				std::string sigtype = "gogoG";
+
 
 				std::string version = "_v23_";
 
@@ -639,6 +780,7 @@ int main ( int argc, char *argv[] ){
                 //std::string outfilenamed = "KUCMS_DEG_"+sigtype+version; //iso0_Skim_BaseHists.root"; //7
                 std::string outfilenamegj = "KUCMS_GJets_"+sigtype+version; //iso0_Skim_BaseHists.root"; //7
                 std::string outfilenameqcd = "KUCMS_QCD_"+sigtype+version; //iso0_Skim_BaseHists.root"; //7
+                std::string outfilenamewjlnu = "KUCMS_WJLNu_"+sigtype+version;
                 //std::string outfilename100 = "KUCMS_GMSB_L100_T30_v19_"; //iso0_Skim_BaseHists.root"; //7
                 //std::string outfilename300 = "KUCMS_GMSB_L350_T30_v19_"; //iso0_Skim_BaseHists.root"; //7
                 std::string outfilename0 = "KUCMS_GMSB_L100_"+sigtype+version; //iso0_Skim_BaseHists.root"; //7
@@ -652,7 +794,7 @@ int main ( int argc, char *argv[] ){
                 std::string outfilename12 = "KUCMS_GMSB_ct200cm_"+sigtype+version;
                 std::string outfilename13 = "KUCMS_GMSB_ct1000cm_"+sigtype+version;
                 std::string outfilename14 = "KUCMS_GMSB_ct10000cm_"+sigtype+version;
-				std::string outfilenameJ = "KUCMS_JustinV1_"+sigtype+version;
+				std::string outfilenameJ = "KUCMS_mGl-2000_mN2-1900_mN1-1_"+sigtype+version;
 
                 //std::string outfilename5 = "KUCMS_GMSB_L350_"+sigtype+version; //iso0_Skim_BaseHists.root"; //7
                 //std::string outfilename6 = "KUCMS_GMSB_L400_"+sigtype+version; //iso0_Skim_BaseHists.root"; //7
@@ -665,7 +807,7 @@ int main ( int argc, char *argv[] ){
                 //std::string ofnending = "wt2_RjrSkim_v22_rawmet_phojet_ztc2_multiHists.root"; float jrjtype = 1; // 1 = phojet, 0 = phomet
                 //std::string ofnending = "wt2_RjrSkim_v22_rawmet_phomet_ztc2_multiHists.root"; float jrjtype = 0; // 1 = phojet, 0 = phomet
 
-                //std::string ofnending = "wt2_RjrSkim_v24_ootmet_phomet_multiHists.root"; float jrjtype = 0; // 1 = phojet, 0 = phomet
+                ////std::string ofnending = "wt2_RjrSkim_v24_ootmet_phomet_multiHists.root"; float jrjtype = 0; // 1 = phojet, 0 = phomet
                 std::string ofnending = "wt2_RjrSkim_v24_ootmet_phojet_multiHists.root"; float jrjtype = 1; // 1 = phojet, 0 = phomet
 
                 ////std::string ofnending = "wt2_RjrSkim_v24_ootmet_phojet_multiHists.root"; float jrjtype = 0; // 0 = phojet, no phomet
@@ -673,6 +815,7 @@ int main ( int argc, char *argv[] ){
                 std::string htitled = "DEG_"+sigtype+version;
                 std::string htitlegj = "GJets_"+sigtype+version;
                 std::string htitleqcd = "QCD_"+sigtype+version;
+                std::string htitlewjlnu = "WJetsLNu_"+sigtype+version;
                 //std::string htitle100 = "GMSB_L100_v19_T30_";
                 //std::string htitle300 = "GMSB_L350_v19_T30_";
                 std::string htitle0 = "GMSB_L100_"+sigtype+version;
@@ -688,7 +831,7 @@ int main ( int argc, char *argv[] ){
                 std::string htitle14 = "GMSB_ct10000cm_"+sigtype+version;
                 //std::string htitle5 = "GMSB_L350_"+sigtype+version;
                 //std::string htitle6 = "GMSB_L400_"+sigtype+version;
-				std::string htitleJ = "GIGI_"+sigtype+version;
+				std::string htitleJ = "ct10cm_mGl-2000_mN2-1900_mN1-1_"+version;
 
                 HistMaker base;
 
@@ -700,7 +843,8 @@ int main ( int argc, char *argv[] ){
                 //std::string isoline = "genSigPerfect_nSigPho2_";
                 //std::string isolinebg = "nSigPho2_"; 
                 float nphos = 1;
-                std::string isoline = "genSigPerfect_nSigPho1_";
+                //std::string isoline = "genSigPerfect_nSigPho1_";
+                std::string isoline = "nSigPho1_ab1plus_";
                 std::string isolinebg = "nSigPho1_"; 
                 //float nphos = 0;
                 //std::string isoline = "genSigPerfect_nSigPho0_";
@@ -713,6 +857,7 @@ int main ( int argc, char *argv[] ){
                 std::string outfilenamesd = outfilenamed + isolinebg + ofnending;
                 std::string outfilenamesgj = outfilenamegj + isolinebg + ofnending;
                 std::string outfilenamesqcd = outfilenameqcd + isolinebg + ofnending;
+                std::string outfilenameswjlnu = outfilenamewjlnu + isolinebg + ofnending;
                 //std::string outfilenames100 = outfilename100 + isoline + ofnending;
                 //std::string outfilenames300 = outfilename300 + isoline + ofnending;
 				std::string outfilenames0 = outfilename0 + isoline + ofnending;
@@ -734,6 +879,7 @@ int main ( int argc, char *argv[] ){
                 std::string htitlesd =  htitled + isolinebg;
                 std::string htitlesgj =  htitlegj + isolinebg;
                 std::string htitlesqcd =  htitleqcd + isolinebg;
+                std::string htitleswjlnu =  htitlewjlnu + isolinebg;
                 //std::string htitles100 =  htitle100 + isoline;
                 //std::string htitles300 =  htitle300 + isoline;
                 std::string htitle0s =  htitle0 + isoline;
@@ -752,7 +898,7 @@ int main ( int argc, char *argv[] ){
 
 				std::string htitleJs =  htitleJ + isoline;
 
-				if( sigtype == "GIGI" ){
+				if( sigtype == "gogoG" ){
 
 					base.histMaker( listdir, infilenameJ, outfilenamesJ, htitleJs, jrjtype, modtype, nphos, rjrcut, rjrcut2 );
 
@@ -771,11 +917,12 @@ int main ( int argc, char *argv[] ){
                     //base.histMaker( listdir, infilename14, outfilenames14, htitle14s, jrjtype, modtype, nphos, rjrcut, rjrcut2 );
 
 				} else {
+                    base.histMaker( listdir, infilenameWJLNu, outfilenameswjlnu, htitleswjlnu, jrjtype, modtype, nphos, rjrcut, rjrcut2 );
                 	////base.histMaker( listdir, infilename1, outfilenames100, htitles100, jrjtype, 30, nphos, rjrcut, rjrcut2 );
                 	////base.histMaker( listdir, infilename3, outfilenames300, htitles300, jrjtype, 30, nphos, rjrcut, rjrcut2 );
-					base.histMaker( listdir, infilenameG, outfilenamesgj, htitlesgj, jrjtype, modtype, nphos, rjrcut, rjrcut2 );
-                	base.histMaker( listdir, infilenameQ, outfilenamesqcd, htitlesqcd, jrjtype, modtype, nphos, rjrcut, rjrcut2 );
-                	base.histMaker( listdir, infilenameD, outfilenamesd, htitlesd, 0, 0, nphos, rjrcut, rjrcut2 );
+					//base.histMaker( listdir, infilenameG, outfilenamesgj, htitlesgj, jrjtype, modtype, nphos, rjrcut, rjrcut2 );
+                	//base.histMaker( listdir, infilenameQ, outfilenamesqcd, htitlesqcd, jrjtype, modtype, nphos, rjrcut, rjrcut2 );
+                	//base.histMaker( listdir, infilenameD, outfilenamesd, htitlesd, 0, 0, nphos, rjrcut, rjrcut2 );
 				}                
 
 				//base.histMaker( listdir, infilename, outfilenames, htitles, fillwt?, gensigtype?, #phos?, rjrcut, n/a );

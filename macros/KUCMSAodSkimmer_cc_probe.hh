@@ -23,6 +23,7 @@
 
 KUCMSAodSkimmer::KUCMSAodSkimmer(){
 
+/*
 	LAB = new LabRecoFrame("LAB","LAB");
 	S   = new DecayRecoFrame("S","#tilde{S}");
 	X2a = new DecayRecoFrame("X2a","#tilde{#chi}_{2a}");
@@ -100,11 +101,13 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 		tree_plot.WriteOutput("trees.root");
 
 	}//<<>>treeplot on off
+*/
 
 }//<<>>KUCMSAodSkimmer::KUCMSAodSkimmer()
 
 KUCMSAodSkimmer::~KUCMSAodSkimmer(){
 
+/*
     delete LAB;
     delete S;
     delete X2a;
@@ -121,7 +124,8 @@ KUCMSAodSkimmer::~KUCMSAodSkimmer(){
       
     delete COMB_J;
     delete CombSplit_J;
-      
+*/  
+    
 }//<<>>KUCMSAodSkimmer::~KUCMSAodSkimmer()
 
 void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, int skipCnt ){
@@ -374,20 +378,21 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
 
 	// counts events and saves event varibles
 	// --------------------------------------
-	processEvntVars();	
+	//processEvntVars();	
 	processRechits();
-	processMet();
-	processPhotons();
-	processElectrons();
+	//processMet();
+	//processPhotons();
+	//processElectrons();
 	//processMuons();
-	processJets();
-	if( doGenInfo ){ processGenParticles(); }
+	//processJets();
+	//if( doGenInfo ){ processGenParticles(); }
 
 	// select events to process and store
 	//--------------------------------------
-	auto saveToTree = eventSelection();	
-	if( saveToTree ){ processRJR(0,true); processRJR(1,false); }
-	return saveToTree;
+	//auto saveToTree = eventSelection();	
+	//if( saveToTree ){ processRJR(0,true); processRJR(1,false); }
+	//return saveToTree;
+	return true;
 
 }//<<>>void KUCMSAodSkimmer::eventLoop( Long64_t entry )
 
@@ -471,6 +476,15 @@ void KUCMSAodSkimmer::processRechits(){
 			//auto radius = hypo( (*rhPosX)[it], (*rhPosY)[it] );
 
 		}//<<>>if( (*rhSubdet)[it] == 0 )
+
+		bool ogs1 = (*ECALRecHit_hasGS1)[it] == true;
+        bool ogs6 = (*ECALRecHit_hasGS6)[it] == true;
+
+		hist2d[1]->Fill( (*ECALRecHit_energy)[it], (*ECALRecHit_timeError)[it] );
+        if( ogs1 && not ogs6 ) hist2d[2]->Fill( (*ECALRecHit_energy)[it], (*ECALRecHit_timeError)[it] );
+        if( not ogs1 && ogs6 ) hist2d[3]->Fill( (*ECALRecHit_energy)[it], (*ECALRecHit_timeError)[it] );
+        if( ogs1 && ogs6 ) hist2d[4]->Fill( (*ECALRecHit_energy)[it], (*ECALRecHit_timeError)[it] );
+        if( not ogs1 && not ogs6 ) hist2d[5]->Fill( (*ECALRecHit_energy)[it], (*ECALRecHit_timeError)[it] );
 
 	}//<<>>for( int it = 0; it < nRecHits; it++ )
 
@@ -1530,12 +1544,6 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
   	float m_cosX1a = X1a->GetCosDecayAngle();
   	float m_MX1b = X1b->GetMass();
   	float m_cosX1b = X1b->GetCosDecayAngle();  
-    float x1a_pt = X1a->GetFourVector().Pt();
-    float x1a_eta = X1a->GetFourVector().Eta();
-    float x1a_phi = X1a->GetFourVector().Phi();
-    float x1b_pt = X1b->GetFourVector().Pt();
-    float x1b_eta = X1b->GetFourVector().Eta();
-    float x1b_phi = X1b->GetFourVector().Phi();
 
   	float m_MV = S->GetListVisibleFrames().GetMass();
   	float m_PV = S->GetListVisibleFrames().GetFourVector(*S).P();
@@ -1559,12 +1567,6 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     selRjrVars.fillBranch( "rjrX1aCosA", m_cosX1a );
     selRjrVars.fillBranch( "rjrX1bMass", m_MX1b );
     selRjrVars.fillBranch( "rjrX1bCosA", m_cosX1b );
-    selRjrVars.fillBranch( "rjrX1a_Pt", x1a_pt );
-    selRjrVars.fillBranch( "rjrX1a_Eta", x1a_eta );
-    selRjrVars.fillBranch( "rjrX1a_Phi", x1a_phi );
-    selRjrVars.fillBranch( "rjrX1b_Pt", x1b_pt );
-    selRjrVars.fillBranch( "rjrX1b_Eta", x1b_eta );
-    selRjrVars.fillBranch( "rjrX1b_Phi", x1b_phi );
 
     selRjrVars.fillBranch( "rjrEVa", m_EVa );
     selRjrVars.fillBranch( "rjrEVb", m_EVb );
@@ -1917,12 +1919,6 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     selRjrVars.makeBranch( "rjrX1aCosA", VFLOAT );
     selRjrVars.makeBranch( "rjrX1bMass", VFLOAT );
     selRjrVars.makeBranch( "rjrX1bCosA", VFLOAT );
-    selRjrVars.makeBranch( "rjrX1a_Pt", VFLOAT );
-    selRjrVars.makeBranch( "rjrX1a_Eta", VFLOAT );
-    selRjrVars.makeBranch( "rjrX1a_Phi", VFLOAT );
-    selRjrVars.makeBranch( "rjrX1b_Pt", VFLOAT );
-    selRjrVars.makeBranch( "rjrX1b_Eta", VFLOAT );
-    selRjrVars.makeBranch( "rjrX1b_Phi", VFLOAT );
 
     selRjrVars.makeBranch( "rjrX2aMass", VFLOAT );
     selRjrVars.makeBranch( "rjrX2aCosA", VFLOAT );
@@ -1977,16 +1973,6 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     selRjrVars.makeBranch( "rjrPX2Sb", VFLOAT );
     selRjrVars.makeBranch( "rjrDiffPJX2a", VFLOAT );
     selRjrVars.makeBranch( "rjrDiffPJX2b", VFLOAT );
-
-    selRjrVars.makeBranch( "rjrX1a_Sm", VFLOAT );
-    selRjrVars.makeBranch( "rjrX1a_Sp", VFLOAT );
-    selRjrVars.makeBranch( "rjrX1a", VFLOAT );
-    selRjrVars.makeBranch( "rjrX1a", VFLOAT );
-
-    selRjrVars.makeBranch( "rjrX1X2a", VFLOAT );
-    selRjrVars.makeBranch( "rjrX1X2a", VFLOAT );
-    selRjrVars.makeBranch( "rjrX1b", VFLOAT );
-    selRjrVars.makeBranch( "rjrX1b", VFLOAT );
 
     selRjrVars.makeBranch( "rjrAX2aMass", VFLOAT );
     selRjrVars.makeBranch( "rjrAX2bMass", VFLOAT );
@@ -2073,6 +2059,11 @@ void KUCMSAodSkimmer::initHists(){
     hist1d[3] = new TH1D("sctype","SC !Orig, Orig, OOT, Excl",4,0,4);
     hist1d[4] = new TH1D("scorigtype","Orig+OOT, Orig+!OOT, Orig+Exc, !Orig+OOT, !Orig+Exc, !Orig+!OOT",6,0,6);
 
+    hist2d[1] = new TH2D("timeerror1", "ErrVEnergy All;rechit E [GeV];jitterError",1200,0,120,500,0.5,5.5);
+    hist2d[2] = new TH2D("timeerror2", "ErrVEnergy GS1;rechit E [GeV];jitterError",1200,0,120,500,0.5,5.5);
+    hist2d[3] = new TH2D("timeerror3", "ErrVEnergy GS6;rechit E [GeV];jitterError",1200,0,120,500,0.5,5.5);
+    hist2d[4] = new TH2D("timeerror4", "ErrVEnergy GS16;rechit E [GeV];jitterError",1200,0,120,500,0.5,5.5);
+    hist2d[5] = new TH2D("timeerror5", "ErrVEnergy notGS16;rechit E [GeV];jitterError",1200,0,120,500,0.5,5.5);
 
     ////hist1d[100] = new TH1D("genPhoPt", "genPhoPt;Pt [GeV]",500,0,1000);
 
