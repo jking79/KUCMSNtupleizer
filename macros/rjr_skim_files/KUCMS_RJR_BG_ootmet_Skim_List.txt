@@ -1,12 +1,17 @@
+###############################################################
 rjr_skim_files/KUCMS_RJR_AllBG_ootmet_Skim_List.txt TotBG yes
-rjr_skim_files/KUCMS_RJR_WZTGJets_ootmet_Skim_List.txt WZTGJets yes
-rjr_skim_files/KUCMS_RJR_TTGJets_ootmet_Skim_List.txt TTGJets yes
+rjr_skim_files/KUCMS_RJR_WZTGJets_ootmet_Skim_List.txt WZNuTGJets yes
+rjr_skim_files/KUCMS_RJR_TTGJets_ootmet_Skim_List.txt TTTGJets yes
 rjr_skim_files/KUCMS_RJR_ttWZ_ootmet_Skim_List.txt ttWZ yes
-#rjr_skim_files/KUCMS_RJR_WJLNu_ootmet_Skim_List.txt WJetsLNU yes
-#rjr_skim_files/KUCMS_RJR_ZNuNu_ootmet_Skim_List.txt ZJetsNuNu yes
-#TTJets_R18_IPM100_v24_LLPGskim_v21_rjrvars.root TTJets no
-#WZ_R18_IPM100_v24_LLPGskim_v21_rjrvars.root WZ no
-#TGJets_R18_IPM100_v24_LLPGskim_v21_rjrvars.root TGJets no
-#TTGJets_R18_IPM100_v24_LLPGskim_v21_rjrvars.root TTGJets no
-#ttWJets_R18_IPM100_v24_LLPGskim_v21_rjrvars.root ttWJets no
-#ttZJets_R18_IPM100_v24_LLPGskim_v21_rjrvars.root ttZJets no
+###############################################################
+####### WZNuTGJets
+rjr_skim_files/KUCMS_RJR_WJLNu_ootmet_Skim_List.txt WJetsLNU yes
+rjr_skim_files/KUCMS_RJR_ZNuNu_ootmet_Skim_List.txt ZJetsNuNu yes
+TGJets_R18_IPM100_v24_LLPGskim_v21_rjrvars.root TGJets no
+####### TTTGJets
+TTJets_R18_IPM100_v24_LLPGskim_v21_rjrvars.root TTJets no
+TTGJets_R18_IPM100_v24_LLPGskim_v21_rjrvars.root TTGJets no
+####### ttWZ
+WZ_R18_IPM100_v24_LLPGskim_v21_rjrvars.root WZ no
+ttWJets_R18_IPM100_v24_LLPGskim_v21_rjrvars.root ttWJets no
+ttZJets_R18_IPM100_v24_LLPGskim_v21_rjrvars.root ttZJets no

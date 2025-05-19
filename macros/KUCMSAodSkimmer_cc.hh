@@ -747,7 +747,7 @@ void KUCMSAodSkimmer::processPhotons(){
 		bool isoPho = passHOE && passsEcalRhSum && passTrkSum && passHcalSum;
         bool failPhoIso = not isoPho;
 
-
+/*      // moved to after photon selection
         if( DEBUG ) std::cout << " -- looping photons : getting phojet iso " << std::endl;
         bool isJetPhoton = false;
 		phoJetVeto.clear();
@@ -769,6 +769,7 @@ void KUCMSAodSkimmer::processPhotons(){
 			if( minDr && isoPho ) phoJetVeto[jit] = true;
 
         } // for( int jit = 0; jit < nSelJets; jit++ )
+*/
 
 		//  change to skip jets and keep all photons regardless of photon iso with jet
 		bool phoskip = isExcluded || hasPixSeed || overMaxEta || underMinPt || failPhoIso;
@@ -1034,6 +1035,36 @@ void KUCMSAodSkimmer::processPhotons(){
 		}//for( auto phoptit = phoOrderIndx.crbegin(); phoptit != phoOrderIndx.crend(); phoptit++ )
 	}//if( phoOrderIndx.size() > 0 )
 */
+
+	int loopEnd = ( nSelPhotons > 0 ) ? ( nSelPhotons < 2  ) ? 1 : 2 : 0;
+	phoJetVeto.clear();
+	for( int jit = 0; jit < Jet_energy->size(); jit++ ){ phoJetVeto.push_back(false); } 
+	for( int pit = 0; pit < loopEnd; pit++ ){ 
+
+		float eta = (*Photon_eta)[phoOrderIndx[pit]];
+		float phi = (*Photon_phi)[phoOrderIndx[pit]];
+
+        if( DEBUG ) std::cout << " -- looping photons : getting phojet iso " << std::endl;
+        //bool isJetPhoton = false;
+        for( int jit = 0; jit < Jet_energy->size(); jit++ ){
+
+            bool underMinJPt = (*Jet_pt)[jit] < 30.0;
+            bool underMinJQual = getJetQuality(jit)  < 2;
+            auto jeta = (*Jet_eta)[jit];
+            auto jphi = (*Jet_phi)[jit];
+            auto overMaxJEta = std::abs(jeta) > 2.4;
+            if( underMinJPt || underMinJQual || overMaxJEta ) continue;
+
+            float dpjeta = jeta - eta;
+            float dpjphi = dPhi( jphi, phi );
+            float dr = hypo( dpjeta, dpjphi );
+            bool minDr = dr < 0.4;
+            //if( minDr ) isJetPhoton = true;
+            if( minDr ) phoJetVeto[jit] = true;
+
+        } // for( int jit = 0; jit < nSelJets; jit++ )
+
+	}//<<>>for( int pit = 0; pit < loopEnd; pit++ )
 
     if( DEBUG || verbose ) std::cout << " - Selected " << nSelPhotons << " photons" << std::endl;
     geCnts.set( "nSelPhotons", nSelPhotons );	
@@ -1303,7 +1334,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 
 	int nSelPhos = 0;
 	std::vector<RFKey> jetID;
-	if( nSelPhotons == 1 ){
+	if( nSelPhotons != 0 ){
 		nSelPhos = 1;
 		//std::vector<RFKey> phoJetKey;
 		if( DEBUG ) std::cout << " - Loading Lead/SubLead Pho" << std::endl;
@@ -1320,7 +1351,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 		}//<<>>if( type == 1 )
 		else {  std::cout << " !!!!!!!! Valid RJR Photon Processing Option Not Specified !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl; }
 	}//<<>>if( nSelPhotons > 0 )
-    if( nSelPhotons > 1 ){ 
+   if( nSelPhotons > 1 ){ 
 		nSelPhos = 2;
 		if( type == 0 ){
         	phoRMetCPx += subLeadPhoPt*std::cos(subLeadPhoPhi);
@@ -1365,7 +1396,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 		else jetID.push_back(COMB_J->AddLabFrameFourVector(jet)); 
 	}//<<>>for( int i = 0; i < nSelJets; i++ )
 
-  	if( !LAB->AnalyzeEvent() ) std::cout << "Something went wrong with tree event analysis" << std::endl;
+	if( !LAB->AnalyzeEvent() ) std::cout << "Something went wrong with tree event analysis" << std::endl;
 	
 	if( DEBUG ) std::cout << " - Getting RJR varibles." << std::endl;
 	// ---------  Finished Processing RJR varibles --------------------------------------------------------------------
@@ -1374,24 +1405,25 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 	if( type == 1 && nSelPhos > 0 ) firstObject = ( nSelPhos == 2 ) ? 2 : 1 ;
 	int nJetsJa = 0;
 	int nJetsJb = 0;
-	bool sideAisA = true;	
+	bool isALeadPhoSide = true;	
 	int subPhoLocation = 0;
 	int nVisObjects = jetID.size();
-	//if( type == 1 ){ if( COMB_J->GetFrame(jetID[it]) == *Jb ) sideAisA = false; } //else 
-	if( COMB_J->GetFrame(jetID[0]) == *Jb ) sideAisA = false;
+	//if( type == 1 ){ if( COMB_J->GetFrame(jetID[it]) == *Jb ) isALeadPhoSide = false; } //else 
+	if( COMB_J->GetFrame(jetID[0]) == *Jb ) isALeadPhoSide = false;
+	//  -- redifine A & B side for jets to be : is jet on lead pho side -> A ; is not on lead pho side -> B 
     for( uInt it = firstObject; it < nVisObjects; it++ ){	
 
-        if( COMB_J->GetFrame(jetID[it]) == *Ja ){ sideAisA ? nJetsJa++ : nJetsJb++; } // one for each frame 
-		else { sideAisA ? nJetsJb++ : nJetsJa++; }
-        //if( COMB_J->GetFrame(jetID[it]) == *Jb ){ sideAisA ? nJetsJb++ : nJetsJa++; } // one for each frame 
+        if( COMB_J->GetFrame(jetID[it]) == *Ja ){ isALeadPhoSide ? nJetsJa++ : nJetsJb++; } // one for each frame 
+		else { isALeadPhoSide ? nJetsJb++ : nJetsJa++; }
+        //if( COMB_J->GetFrame(jetID[it]) == *Jb ){ isALeadPhoSide ? nJetsJb++ : nJetsJa++; } // one for each frame 
 
 	}//<<>>for( int i = 0; i < nSelJets; i++ )
-	float abDiffSide = sideAisA ? 1 : -1;
+	float abDiffSide = isALeadPhoSide ? 1 : -1;
 	if( type == 1 && nSelPhos == 2 ) subPhoLocation = ( COMB_J->GetFrame(jetID[1]) == *Ja ) ? 1 : 2;
 
 /*  complicated bs that is not need with good logic
 	if( type == 1 ){
-		if( sideAisA ) nJetsJa -= 1; else nJetsJb -= 1;
+		if( isALeadPhoSide ) nJetsJa -= 1; else nJetsJb -= 1;
 		if( nSelPhos == 2 ){ 
 			if( COMB_J->GetFrame(phoJetKey[1]) == *Ja ){ nJetsJa -= 1; subPhoLocation = 1; } 
 			else { nJetsJb -= 1; subPhoLocation = 2; }
@@ -1400,13 +1432,24 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 	}//<<>>if( type == 1 )
 *//////////////////////////////////////////////////////
 
-    selRjrVars.fillBranch( "rjrABSide", sideAisA );
+    selRjrVars.fillBranch( "rjrABSide", isALeadPhoSide );
     selRjrVars.fillBranch( "rjrNJetsJa", nJetsJa );
     selRjrVars.fillBranch( "rjrNJetsJb", nJetsJb );
     selRjrVars.fillBranch( "rjrNJets", int(nSelJets) );
     selRjrVars.fillBranch( "rjrNPhotons", nSelPhos );
     selRjrVars.fillBranch( "rjrNVisObjects", nVisObjects );
     selRjrVars.fillBranch( "rjrSubPhoLocation", subPhoLocation );
+
+	if( type == 1 ){
+    	for( uInt it = 0; it < nVisObjects; it++ ){
+
+			bool onAside = true;
+			if( COMB_J->GetFrame(jetID[it]) == *Jb ) onAside = false;
+			if( it < nSelPhotons ) selRjrVars.fillBranch( "rjrVisPhoSide", onAside );
+			else selRjrVars.fillBranch( "rjrVisJetSide", onAside );
+
+		}//<<>>for( uInt it = 0; it < nVisObjects; it++ )
+	}//<<>>if( type == 1 )
 
   	float m_MS = S->GetMass();
   	//float m_PS = S->GetMomentum(*CM);
@@ -1955,6 +1998,9 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     selRjrVars.makeBranch( "rjrNVisObjects", VINT );
     selRjrVars.makeBranch( "rjrABSide", VBOOL );
 
+    selRjrVars.makeBranch( "rjrVisPhoSide", VBOOL );
+    selRjrVars.makeBranch( "rjrVisJetSide", VBOOL );
+
     selRjrVars.makeBranch( "rjrPVlab", VFLOAT );
     selRjrVars.makeBranch( "rjrDphiMETV", VFLOAT );
 
@@ -1978,15 +2024,15 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     selRjrVars.makeBranch( "rjrDiffPJX2a", VFLOAT );
     selRjrVars.makeBranch( "rjrDiffPJX2b", VFLOAT );
 
-    selRjrVars.makeBranch( "rjrX1a_Sm", VFLOAT );
-    selRjrVars.makeBranch( "rjrX1a_Sp", VFLOAT );
-    selRjrVars.makeBranch( "rjrX1a", VFLOAT );
-    selRjrVars.makeBranch( "rjrX1a", VFLOAT );
+    //selRjrVars.makeBranch( "rjrX1a_Sm", VFLOAT );
+    //selRjrVars.makeBranch( "rjrX1a_Sp", VFLOAT );
+    //selRjrVars.makeBranch( "rjrX1a", VFLOAT );
+    //selRjrVars.makeBranch( "rjrX1a", VFLOAT );
 
-    selRjrVars.makeBranch( "rjrX1X2a", VFLOAT );
-    selRjrVars.makeBranch( "rjrX1X2a", VFLOAT );
-    selRjrVars.makeBranch( "rjrX1b", VFLOAT );
-    selRjrVars.makeBranch( "rjrX1b", VFLOAT );
+    //selRjrVars.makeBranch( "rjrX1X2a", VFLOAT );
+    //selRjrVars.makeBranch( "rjrX1X2a", VFLOAT );
+    //selRjrVars.makeBranch( "rjrX1b", VFLOAT );
+    //selRjrVars.makeBranch( "rjrX1b", VFLOAT );
 
     selRjrVars.makeBranch( "rjrAX2aMass", VFLOAT );
     selRjrVars.makeBranch( "rjrAX2bMass", VFLOAT );
