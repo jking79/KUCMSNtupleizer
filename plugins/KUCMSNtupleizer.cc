@@ -197,6 +197,7 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     ObjMan.Load( "Photons", photonsObj );
     ObjMan.Load( "JetsAK4", ak4jetObj );
     ObjMan.Load( "PFMet", pfmetObj );
+    ObjMan.Load( "DisplacedVertex", displacedVertexObj );
     ObjMan.Load( "ECALRecHits", recHitsObj );// loaded last to process feedback from other objects
 
     if( cfFlag("hasGenInfo") ){
