@@ -31,7 +31,7 @@ void HistMaker::histMaker( std::string indir, std::string infilelist, std::strin
     const std::string configtreename("kuSkimConfigTree");
     const std::string eosdir("");
     const std::string listdir("");
-	const std::string ofnending = "_RjrSkim_v24_cfcHists.root";
+	const std::string ofnending = "_RjrSkim_v24_cfcatHists.root";
 
     cutselection = 1; // jrj type -> pho visible
     fl = true; // first event loop
@@ -356,25 +356,27 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 
 	for( int i = 0; i < 1; i++ ){ // continue loop - can use continue to skip
 	/////////////////////////////////////////////////////////////////////////
-	int nRjrPhotons = rjrNRjrPhotons->at(cs);
-	if( nRjrPhotons == 0 ) continue;
+	//int nRjrPhotons = rjrNRjrPhotons->at(cs);
+	//if( nRjrPhotons == 0 ) continue;
     //hist1d[2]->Fill(7,fillwt);
 
-    bool nRjrPhoCut( nRjrPhotons != nRjrPhos );
-    if( cutva == 0 ) nRjrPhoCut = false;
+	//!!!!! nRjrPhotons Cut
+    //bool nRjrPhoCut( nRjrPhotons != nRjrPhos );
+    //if( cutva == 0 ) nRjrPhoCut = false;
 	//cfbin++;
     //if( nRjrPhos == 1 ) hist1d[2]->Fill(cfbin,fillwt);
     //if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"rph1");
     //cfbin++;
     //if( nRjrPhos == 2 ) hist1d[2]->Fill(cfbin,fillwt);
     //if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"rph2");
-    //if( nRjrPhoCut ) continue;
+    if( rjrNRjrPhotons->at(cs) != nRjrPhos ) continue;
     //cfbin++;
     //hist1d[2]->Fill(cfbin,fillwt);
     //if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"rphc");
 
 	//if( DEBUG ) std::cout << "RJR cut at " << cutvc << " with value " << rjrX2GMean->at(0) << std::endl;
 
+	//!!!!! MET Cut
     auto metCPt = hypo(selCMetPx,selCMetPy);
     auto metPt = hypo(selMetPx,selMetPy);
 	if( metCPt < 150 ) continue;
@@ -406,7 +408,9 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     //if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"jab1");
     //if( (*rjrNJetsJa)[cs] > 3 && (*rjrNJetsJb)[cs] > 3 ) hist1d[2]->Fill(cfbin++,fillwt);
 
+	// Min # jets/side
 	if( (*rjrNJetsJa)[cs] < nRjrJets || (*rjrNJetsJb)[cs] < nRjrJets ) continue;
+
     cfbin++;
     hist1d[2]->Fill(cfbin,fillwt);
     if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"PSel");
@@ -442,98 +446,99 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     bool RvM = rjrNVSum > rv_vec[1];
     bool RvL = rjrNVSum > rv_vec[0];
 
-	cfbin++;
-	cfbin++;
-	if( MT && RT && RvT ) hist1d[2]->Fill(cfbin,fillwt);
-	if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"TTT");
-    cfbin++;
-    if( MT && RT && RvM ) hist1d[2]->Fill(cfbin,fillwt);
-    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"TTM");
-    cfbin++;
-    if( MT && RT && RvL ) hist1d[2]->Fill(cfbin,fillwt);
-    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"TTL");
-    //cfbin++;
-    cfbin++;
-    if( MT && RM && RvT ) hist1d[2]->Fill(cfbin,fillwt);
-    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"TMT");
-    cfbin++;
-    if( MT && RM && RvM ) hist1d[2]->Fill(cfbin,fillwt);
-    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"TMM");
-    cfbin++;
-    if( MT && RM && RvL ) hist1d[2]->Fill(cfbin,fillwt);
-    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"TML");
-    //cfbin++;
-    cfbin++;
-    if( MT && RL && RvT ) hist1d[2]->Fill(cfbin,fillwt);
-    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"TLT");
-    cfbin++;
-    if( MT && RL && RvM ) hist1d[2]->Fill(cfbin,fillwt);
-    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"TLM");
-    cfbin++;
-    if( MT && RL && RvL ) hist1d[2]->Fill(cfbin,fillwt);
-    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"TLL");
-
     cfbin++;
     cfbin++;
-    if( MM && RT && RvT ) hist1d[2]->Fill(cfbin,fillwt);
-    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"MTT");
-    cfbin++;
-    if( MM && RT && RvM ) hist1d[2]->Fill(cfbin,fillwt);
-    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"MTM");
-    cfbin++;
-    if( MM && RT && RvL ) hist1d[2]->Fill(cfbin,fillwt);
-    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"MTL");
-    //cfbin++;
-    cfbin++;
-    if( MM && RM && RvT ) hist1d[2]->Fill(cfbin,fillwt);
-    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"MMT");
-    cfbin++;
-    if( MM && RM && RvM ) hist1d[2]->Fill(cfbin,fillwt);
-    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"MMM");
-    cfbin++;
-    if( MM && RM && RvL ) hist1d[2]->Fill(cfbin,fillwt);
-    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"MML");
-    //cfbin++;
-    cfbin++;
-    if( MM && RL && RvT ) hist1d[2]->Fill(cfbin,fillwt);
-    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"MLT");
-    cfbin++;
-    if( MM && RL && RvM ) hist1d[2]->Fill(cfbin,fillwt);
-    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"MLM");
-    cfbin++;
-    if( MM && RL && RvL ) hist1d[2]->Fill(cfbin,fillwt);
-    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"MLL");
-
-    cfbin++;
-    cfbin++;
-    if( ML && RT && RvT ) hist1d[2]->Fill(cfbin,fillwt);
-    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"LTT");
-    cfbin++;
-    if( ML && RT && RvM ) hist1d[2]->Fill(cfbin,fillwt);
-    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"LTM");
-    cfbin++;
-    if( ML && RT && RvL ) hist1d[2]->Fill(cfbin,fillwt);
-    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"LTL");
-    //cfbin++;
-    cfbin++;
-    if( ML && RM && RvT ) hist1d[2]->Fill(cfbin,fillwt);
-    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"LMT");
-    cfbin++;
-    if( ML && RM && RvM ) hist1d[2]->Fill(cfbin,fillwt);
-    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"LMM");
-    cfbin++;
-    if( ML && RM && RvL ) hist1d[2]->Fill(cfbin,fillwt);
-    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"LML");
-    //cfbin++;
-    cfbin++;
-    if( ML && RL && RvT ) hist1d[2]->Fill(cfbin,fillwt);
-    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"LLT");
+    if( ML && RL && RvL ) hist1d[2]->Fill(cfbin,fillwt);
+    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"LLL");
     cfbin++;
     if( ML && RL && RvM ) hist1d[2]->Fill(cfbin,fillwt);
     if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"LLM");
     cfbin++;
-    if( ML && RL && RvL ) hist1d[2]->Fill(cfbin,fillwt);
-    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"LLL");
+    if( ML && RL && RvT ) hist1d[2]->Fill(cfbin,fillwt);
+    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"LLT");
+    //cfbin++;
+    cfbin++;
+    if( ML && RM && RvL ) hist1d[2]->Fill(cfbin,fillwt);
+    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"LML");
+    cfbin++;
+    if( ML && RM && RvM ) hist1d[2]->Fill(cfbin,fillwt);
+    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"LMM");
+    cfbin++;
+    if( ML && RM && RvT ) hist1d[2]->Fill(cfbin,fillwt);
+    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"LMT");
+    //cfbin++;
+    cfbin++;
+    if( ML && RT && RvL ) hist1d[2]->Fill(cfbin,fillwt);
+    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"LTL");
+    cfbin++;
+    if( ML && RT && RvM ) hist1d[2]->Fill(cfbin,fillwt);
+    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"LTM");
+    cfbin++;
+    if( ML && RT && RvT ) hist1d[2]->Fill(cfbin,fillwt);
+    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"LTT");
+
+
+    cfbin++;
+    cfbin++;
+    if( MM && RL && RvL ) hist1d[2]->Fill(cfbin,fillwt);
+    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"MLL");
+    cfbin++;
+    if( MM && RL && RvM ) hist1d[2]->Fill(cfbin,fillwt);
+    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"MLM");
+    cfbin++;
+    if( MM && RL && RvT ) hist1d[2]->Fill(cfbin,fillwt);
+    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"MLT");
+    //cfbin++;
+    cfbin++;
+    if( MM && RM && RvL ) hist1d[2]->Fill(cfbin,fillwt);
+    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"MML");
+    cfbin++;
+    if( MM && RM && RvM ) hist1d[2]->Fill(cfbin,fillwt);
+    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"MMM");
+    cfbin++;
+    if( MM && RM && RvT ) hist1d[2]->Fill(cfbin,fillwt);
+    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"MMT");
+    //cfbin++;
+    cfbin++;
+    if( MM && RT && RvL ) hist1d[2]->Fill(cfbin,fillwt);
+    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"MTL");
+    cfbin++;
+    if( MM && RT && RvM ) hist1d[2]->Fill(cfbin,fillwt);
+    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"MTM");
+    cfbin++;
+    if( MM && RT && RvT ) hist1d[2]->Fill(cfbin,fillwt);
+    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"MTT");
+
+    cfbin++;
+    cfbin++;
+    if( MT && RL && RvL ) hist1d[2]->Fill(cfbin,fillwt);
+    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"TLL");
+    cfbin++;
+    if( MT && RL && RvM ) hist1d[2]->Fill(cfbin,fillwt);
+    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"TLM");
+    cfbin++;
+    if( MT && RL && RvT ) hist1d[2]->Fill(cfbin,fillwt);
+    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"TLT");
+    //cfbin++;
+    cfbin++;
+    if( MT && RM && RvL ) hist1d[2]->Fill(cfbin,fillwt);
+    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"TML");
+    cfbin++;
+    if( MT && RM && RvM ) hist1d[2]->Fill(cfbin,fillwt);
+    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"TMM");
+    cfbin++;
+    if( MT && RM && RvT ) hist1d[2]->Fill(cfbin,fillwt);
+    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"TMT");
+    //cfbin++;
+    cfbin++;
+    if( MT && RT && RvL ) hist1d[2]->Fill(cfbin,fillwt);
+    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"TTL");
+    cfbin++;
+    if( MT && RT && RvM ) hist1d[2]->Fill(cfbin,fillwt);
+    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"TTM");
+    cfbin++;
+    if( MT && RT && RvT ) hist1d[2]->Fill(cfbin,fillwt);
+    if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"TTT");
 
 	//var hist fill
 
@@ -699,7 +704,7 @@ int main ( int argc, char *argv[] ){
 				std::string infilenameJ = "rjr_skim_files/KUCMS_RJR_GIGI_ootmet_Skim_List.txt";
 				std::string infilenameBG = "rjr_skim_files/KUCMS_RJR_BG_ootmet_Skim_List.txt";
 
-				std::string version = "_v23_";
+				std::string version = "_v24_";
 				std::string sigtype = "llpana";
 				std::string ofnstart = "KUCMS_";
 
@@ -715,33 +720,35 @@ int main ( int argc, char *argv[] ){
     			// ve   asmass
     			// vf vdiff
     
-				//std::string infilename = infilenameBG;
-				//std::string htitles = htitleBG;
+				int nj = 1;
+				int np = 1;
+                //for( int np = 1; np < 3; np++ ){
+                //for( int i = 1; i < 2; i++ ){
 
-                std::string infilename = infilenameJ;
-                std::string htitles = htitleJ;
-
-
-				for( int nj = 1; nj < 2; nj++ ){
-                for( int np = 1; np < 2; np++ ){
+				// no cuts
+				//std::vector<float> m_vec{0,0,0}; // L-M-T
+                //std::vector<float> r_vec{0,0,0}; // L-M-T
+                //std::vector<float> rv_vec{0,0,0}; // L-M-T
 
 				// 1-1
-				std::vector<float> m_vec{1500,2500,3500}; // L-M-T
-                std::vector<float> r_vec{0.2,0.35,0.4}; // L-M-T
-                std::vector<float> rv_vec{0.1,0.2,0.3}; // L-M-T
+				std::vector<float> m_vec{1000,2000,3000}; // L-M-T
+                std::vector<float> r_vec{0.2,0.275,0.35}; // L-M-T
+                std::vector<float> rv_vec{0.1,0.25,0.4}; // L-M-T
 				// 2-2
-                //std::vector<float> m_vec{1000,1750,2500}; // L-M-T
-                //std::vector<float> r_vec{0.2,0.25,0.3}; // L-M-T
-                //std::vector<float> rv_vec{0.1,0.3,0.4}; // L-M-T
+                //std::vector<float> m_vec{1000,1500,2000}; // L-M-T
+                //std::vector<float> r_vec{0.15,0.225,0.3}; // L-M-T
+                //std::vector<float> rv_vec{0.1,0.175,0.25}; // L-M-T
 
 				std::string isoline = "mj" + std::to_string( nj ) + "_";
 				isoline += "rp" + std::to_string( np ) + "_" ;
-                std::string outfilename = ofnstart + htitles + isoline;
-				std::string htitlefull =  htitles + isoline;
+                std::string outfilenameJ = ofnstart + htitleJ + isoline;
+				std::string htitlefullJ =  htitleJ + isoline;
+				base.histMaker( listdir, infilenameJ, outfilenameJ, htitlefullJ, np, nj, m_vec, r_vec, rv_vec );
+                std::string outfilenameBG = ofnstart + htitleBG + isoline;
+                std::string htitlefullBG =  htitleBG + isoline;
+                //base.histMaker( listdir, infilenameBG, outfilenameBG, htitlefullBG, np, nj, m_vec, r_vec, rv_vec );
 
-				base.histMaker( listdir, infilename, outfilename, htitlefull, nj, np, m_vec, r_vec, rv_vec );
-
-				}}
+				//}}
 
 
     return 1;
