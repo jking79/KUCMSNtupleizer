@@ -51,7 +51,8 @@ int main ( int argc, char *argv[] ){
                 //const std::string outfilename = "_Ntuple_v19_LLPgama_Skim_v19_ootmet_rjrcombo.root";
                 //const std::string outfilename = "_LLPGskim_v21_rjrvars.root"; // skim v21 use new process_name tags 
                 //const std::string outfilename = "_LLPGskim_v22_rjrvars.root"; // skim v22 keeps 0 pho events 
-                const std::string outfilename = "_LLPGskim_v21_extrjr.root";
+                //const std::string outfilename = "_LLPGskim_v23_rjrvars.root"; // fixed 2 sig pho events 
+                const std::string outfilename = "_LLPGskim_v24_rjrvars.root"; // jet veto on first 2 Sig Phos only
 
                 int skipCnt = 0;// Normal
 				//int skipCnt = 10;// Met0 GMSB
