@@ -1,2 +1,2 @@
-TTJets_R18_IPM100_v24_LLPGskim_v21_rjrvars.root
-TTGJets_R18_IPM100_v24_LLPGskim_v21_rjrvars.root
+TTJets_R18_IPM100_v24_LLPGskim_v24_rjrvars.root
+TTGJets_R18_IPM100_v24_LLPGskim_v24_rjrvars.root
