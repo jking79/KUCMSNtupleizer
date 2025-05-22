@@ -89,9 +89,9 @@ def docrab( dataset ):
         config.Data.splitting    = 'EventAwareLumiBased' # MC&Data Set unitsperjob correctly for dataset !!!!!!!!!!!!!!!!!!!!!!!!!!
         #config.Data.unitsPerJob   = 45000 # data  !!!!!! lumimask ?
         #config.Data.unitsPerJob  =  1500 # MC GMSB
-        config.Data.unitsPerJob  =  20000 # MC GJet
+        #config.Data.unitsPerJob  =  20000 # MC GJet
         #config.Data.unitsPerJob  =  15000 # MC QCD - WJetsToLNu
-        #config.Data.unitsPerJob  =  20000 # MC QCD - WJetsToLNu large
+        config.Data.unitsPerJob  =  20000 # MC QCD - WJetsToLNu large
         #config.Data.unitsPerJob  =  50000 # MC TTJet
         #config.Data.unitsPerJob  =  750 # MC DiPhoBox (DPB)
 
@@ -143,6 +143,7 @@ def docrab( dataset ):
             ##trial          = "kucmsntuple_MET_R18_MRL_AL1IsoPho_v24"
             ##trial          = "kucmsntuple_MET_R18_MRL_None_v24"
             ##trial          = "kucmsntuple_DEG_R17_MRL_AL1SelEle_v24"
+            #trial          = "kucmsntuple_MET_R18_MET100_v25"
 
             ##trial          = "kucmsntuple_SMS-GlGl_1000"
             ##trial          = "kucmsntuple_gogoG_Justin_None_v22" #
@@ -266,8 +267,9 @@ def run_multi():
         #['/GJets_HT-400To600_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
         #['/GJets_HT-600ToInf_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
 
+        ['/QCD_HT2000toInf_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
         #['/QCD_HT1500to2000_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
-        ['/QCD_HT50to100_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
+        #['/QCD_HT50to100_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
 
     ] 
 
