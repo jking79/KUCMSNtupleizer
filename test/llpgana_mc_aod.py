@@ -27,7 +27,7 @@ options.register('eventFilter','MET100',VarParsing.multiplicity.singleton,VarPar
 ## GT to be used
 ##------------------ mc gt
 #options.register('globalTag','106X_mc2017_realistic_v6',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
-#options.register('globalTag','106X_upgrade2018_realistic_v11_L1v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
+options.register('globalTag','106X_upgrade2018_realistic_v11_L1v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','94X_mc2017_realistic_v11',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','124X_mcRun3_2022_realistic_v12',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
@@ -37,7 +37,7 @@ options.register('eventFilter','MET100',VarParsing.multiplicity.singleton,VarPar
 ##options.register('globalTag','112X_mcRun3_2021_realistic_v16',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 
 ##------------------ data gt  
-options.register('globalTag','106X_dataRun2_v36',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
+#options.register('globalTag','106X_dataRun2_v36',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 ##options.register('globalTag','106X_dataRun2_v28',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 ##options.register('globalTag','124X_dataRun3_v15',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2022');
 ##options.register('globalTag','106X_dataRun2_v24',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2018UL');
@@ -116,10 +116,11 @@ process.source = cms.Source("PoolSource",
 
         #'/store/mc/RunIIFall17DRPremix/GMSB_L-100TeV_Ctau-0p001cm_TuneCP5_13TeV-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/100000/009A3F2E-C7B9-E811-9FCA-441EA171A998.root',
 
-        'file:Met_UL18B_AOD_973EEF0C-44AB-E94A-8591-04DCD00D8B4B.root',
+        #'file:Met_UL18B_AOD_973EEF0C-44AB-E94A-8591-04DCD00D8B4B.root',
+        #'root://cmseos.fnal.gov//store/user/janguian/gogoZ/SMS-GlGl_mGl-2000_mN2-400_mN1-350_Zff_N2ctau-0p001_AOD/250525_004955/0000/SMS-GlGl_mGl-2000_mN2-400_mN1-350_Zff_N2ctau-0p001_AOD_4.root',
+        #'root://cmseos.fnal.gov//store/user/janguian/gogoZ/SMS-GlGl_mGl-2000_mN2-400_mN1-350_Zff_N2ctau-0p001_AOD/250529_191831/0000/SMS-GlGl_mGl-2000_mN2-400_mN1-350_Zff_N2ctau-0p001_AOD_6.root',
+        'root://cmseos.fnal.gov//store/user/janguian/gogoZ/SMS-GlGl_mGl-2000_mN2-400_mN1-350_Zff_N2ctau-0p001_AOD/250601_053241/0000/SMS-GlGl_mGl-2000_mN2-400_mN1-350_Zff_N2ctau-0p001_AOD_89.root',
 
-        #'root://cmsxrootd-site.fnal.gov//store/user/janguian/gogoG_UL18/SMS-GlGl_mGl-3000_mN2-400_mN1-370_gam_N2ctau-0p1_AOD/250517_152613/0000/SMS-GlGl_mGl-3000_mN2-400_mN1-370_gam_N2ctau-0p1_AOD_1.root',
-        #'file:/uscms/home/janguian/nobackup/CMSSW_12_4_14_patch3/src/old/PPD-Run3Summer22DRPremix-00019.root',
         #'file:/uscms/home/janguian/nobackup/CMSSW_12_4_14_patch3/src/SlepSnuCascade_3.root',
         #'file:/uscms/home/janguian/nobackup/CMSSW_12_4_14_patch3/src/Gluino_N2N1_LLPN2_TuneCP5_13p6TeV-madgraphMLM_AOD.root',
         #'file:/uscms/home/janguian/nobackup/CMSSW_13_0_13/src/PPD-Run3Summer22wmLHEGS-00014_AOD.root',
@@ -239,7 +240,7 @@ process.source = cms.Source("PoolSource",
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500))#QT
@@ -250,7 +251,7 @@ process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100000))#MS
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250000))#MD
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500000))#LG
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
 
 # Set the global tag depending on the sample type
 from Configuration.AlCa.GlobalTag import GlobalTag
@@ -260,12 +261,12 @@ process.GlobalTag.globaltag = options.globalTag
 ## Setup the service to make a ROOT TTree
 process.TFileService = cms.Service("TFileService", fileName = cms.string(options.outputFileName))
 		
-#genInfo = True
-genInfo = False
+genInfo = True
+#genInfo = False
 if options.multicrab == True : genInfo = options.hasGenInfo		   
 
-#filterselect = 'None'
-filterselect = 'MET100'
+filterselect = 'None'
+#filterselect = 'MET100'
 #filterselect = 'AL1IsoPho'
 #filterselect = 'IsoPhoMet100'
 #filterselect = 'AL1SelEle'
@@ -275,6 +276,7 @@ probeout = False
 if options.multicrab == True : probeout = False
 
 if options.multicrab == True : filterselect = options.eventFilter
+
 
 #genMomChase = True
 genMomChase = False

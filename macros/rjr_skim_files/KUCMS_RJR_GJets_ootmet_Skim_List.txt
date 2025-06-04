@@ -1,0 +1,5 @@
+GJets_HT-100To200_R18_IPM100_v24_LLPGskim_v24_rjrvars.root
+GJets_HT-200To400_R18_IPM100_v25_LLPGskim_v24_rjrvars.root
+GJets_HT-400To600_R18_IPM100_v24_LLPGskim_v24_rjrvars.root
+GJets_HT-40To100_R18_IPM100_v24_LLPGskim_v24_rjrvars.root
+GJets_HT-600ToInf_R18_IPM100_v24_LLPGskim_v24_rjrvars.root

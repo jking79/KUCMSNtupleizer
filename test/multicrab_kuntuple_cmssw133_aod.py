@@ -90,8 +90,8 @@ def docrab( dataset ):
         #config.Data.unitsPerJob   = 45000 # data  !!!!!! lumimask ?
         #config.Data.unitsPerJob  =  1500 # MC GMSB
         #config.Data.unitsPerJob  =  20000 # MC GJet
-        #config.Data.unitsPerJob  =  15000 # MC QCD - WJetsToLNu
-        config.Data.unitsPerJob  =  20000 # MC QCD - WJetsToLNu large
+        config.Data.unitsPerJob  =  15000 # MC QCD - WJetsToLNu
+        #config.Data.unitsPerJob  =  20000 # MC QCD - WJetsToLNu large
         #config.Data.unitsPerJob  =  50000 # MC TTJet
         #config.Data.unitsPerJob  =  750 # MC DiPhoBox (DPB)
 
@@ -150,8 +150,8 @@ def docrab( dataset ):
 
             #trial          = "kucmsntuple_WJetsToLNu_R18_IPM100_v25" #
             #trial          = "kucmsntuple_TTXJets_R18_IPM100_v25" #
-            #trial          = "kucmsntuple_GJETS_R18_IPM100_v25"
-            trial          = "kucmsntuple_QCD_R18_IPM100_v25"
+            trial          = "kucmsntuple_GJETS_R18_IPM100_v25"
+            #trial          = "kucmsntuple_QCD_R18_IPM100_v25"
 
             print( 'processing for : ',trial )
 
@@ -267,8 +267,9 @@ def run_multi():
         #['/GJets_HT-400To600_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
         #['/GJets_HT-600ToInf_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
 
-        ['/QCD_HT2000toInf_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
+        #['/QCD_HT2000toInf_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
         #['/QCD_HT1500to2000_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
+        ['/QCD_HT1000to1500_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
         #['/QCD_HT50to100_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
 
     ] 

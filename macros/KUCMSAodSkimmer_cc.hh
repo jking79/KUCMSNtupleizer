@@ -957,6 +957,7 @@ void KUCMSAodSkimmer::processPhotons(){
     	selPhotons.fillBranch( "selPhoCorPt", cpt );
     	selPhotons.fillBranch( "selPhoMBetaEql", MBetaEqual );
 	    selPhotons.fillBranch( "selPhoMBetaPmt", MBetaPrompt );
+        selPhotons.fillBranch( "selPhoPVtoRH", tofPVtoRH );
 
 		//selPhotons.fillBranch( "selPhoGeoEgnVal", evaluegeo );
         selPhotons.fillBranch( "selPhoEta", eta );
@@ -1106,6 +1107,7 @@ void KUCMSAodSkimmer::processElectrons(){
     selElectrons.clearBranches(); // <<<<<<<   must do
 
 	uInt nElectrons = Electron_energy->size();
+    float nSelElectrons = 0;
 	float nEpDrMatch = 0;
     float nEpSeedIdMatch = 0;
     float nEpsidsolo = 0;
@@ -1122,6 +1124,7 @@ void KUCMSAodSkimmer::processElectrons(){
 		//std::cout << " -- esid : " << esid << std::endl;
 		auto eletime = (*Electron_seedTOFTime)[itr];
 		if( std::abs(eletime) > 30 ) continue;
+
     	uInt nPhotons = Photon_excluded->size();
 		float elePhoIsoDr(0.5);
 		bool epSeedIdMatch = false;
@@ -1144,6 +1147,7 @@ void KUCMSAodSkimmer::processElectrons(){
     	}//for( uInt pit2 = 0; pit2 < nPhotons; pit2++ )
 		elePhoIsoMinDr = elePhoIsoDr;
 		bool epDrMatch = ( elePhoIsoDr < 0.2  ) ? true : false;
+		if( not epDrMatch && (*Electron_pt)[itr] > 10 ) nSelElectrons++;
 
 		if( epDrMatch ) nEpDrMatch++;
 		if( epSeedIdMatch ) nEpSeedIdMatch++;
@@ -1152,6 +1156,8 @@ void KUCMSAodSkimmer::processElectrons(){
 
 	}//<<>>for( int itr = 0; itr < nElectrons; itr++ )
     if( DEBUG ) std::cout << " -- Finishd looping electrons " << std::endl;
+
+	geCnts.set("nSelEle",nSelElectrons);
 
     selElectrons.fillBranch( "elePhoMinDr", elePhoIsoMinDr );
     selElectrons.fillBranch( "nElectrons", nElectrons );
@@ -1383,6 +1389,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     auto selJetMass = geVects( "selJetMass");
     std::vector<RFKey> leadJetKey;
 	if( DEBUG ) std::cout << " - Loading Jets." << std::endl;
+	if( type == 0 && nSelJets > 2*nSelPhos ) nSelJets == 2*nSelPhos;
   	for( uInt it = 0; it < nSelJets; it++ ){
 		auto sjetPt = selJetPt[it]; //selJets.getFLBranchValue( "selJetPt", it );
 		auto sjetEta = selJetEta[it]; //selJets.getFLBranchValue( "selJetEta", it );
@@ -1435,7 +1442,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     selRjrVars.fillBranch( "rjrABSide", isALeadPhoSide );
     selRjrVars.fillBranch( "rjrNJetsJa", nJetsJa );
     selRjrVars.fillBranch( "rjrNJetsJb", nJetsJb );
-    selRjrVars.fillBranch( "rjrNJets", int(nSelJets) );
+    selRjrVars.fillBranch( "rjrNJets", int(geCnts("nSelJets")) );
     selRjrVars.fillBranch( "rjrNPhotons", nSelPhos );
     selRjrVars.fillBranch( "rjrNVisObjects", nVisObjects );
     selRjrVars.fillBranch( "rjrSubPhoLocation", subPhoLocation );
@@ -1552,8 +1559,10 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     selRjrVars.fillBranch( "rjrAX2aMass", a_MX2a );
     selRjrVars.fillBranch( "rjrAX2bMass", a_MX2b );
     selRjrVars.fillBranch( "rjrASMass", a_MS );
+    selRjrVars.fillBranch( "rjr_Mr", a_MS );
 
     selRjrVars.fillBranch( "rjrAX2NQSum", AX2NQSum );
+    selRjrVars.fillBranch( "rjr_R", AX2NQSum );
     selRjrVars.fillBranch( "rjrAX2NAve", AX2NAve );
     selRjrVars.fillBranch( "rjrAX2NGMean", AX2NGMean );
     selRjrVars.fillBranch( "rjrAX2QSum", AX2QSum );
@@ -1594,6 +1603,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     selRjrVars.fillBranch( "rjrMVDiff", m_MVDiff );
     selRjrVars.fillBranch( "rjrMVSum", m_MVSum );
     selRjrVars.fillBranch( "rjrMVNSum", m_MVNSum );
+    selRjrVars.fillBranch( "rjr_Rv", m_MVNSum );
 
   	float m_PV_lab    = S->GetListVisibleFrames().GetFourVector().P();
   	float m_dphiMET_V = S->GetListVisibleFrames().GetFourVector().Vect().DeltaPhi(ETMiss);
@@ -1625,6 +1635,26 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 	float rjrMet = hypo(phoRMetCPx,phoRMetCPy);
 
     selRjrVars.fillBranch( "rjrMET", rjrMet ); 
+
+    TLorentzVector x1alab = X1a->GetFourVector(*LAB);
+    TLorentzVector x1blab = X1b->GetFourVector(*LAB);
+    //TLorentzVector x1lab = isALeadPhoSide ? X1a->GetFourVector(*LAB) : X1b->GetFourVector(*LAB); 
+	float n2apx = x1alab.Px();
+    float n2apy = x1alab.Py();
+    float n2apz = x1alab.Pz();
+    //n2apx -= leadPhoPt*std::cos(leadPhoPhi);
+    //n2apy -= leadPhoPt*std::sin(leadPhoPhi);
+	float n2bpx = x1blab.Px();
+    float n2bpy = x1blab.Py();
+    float n2bpz = x1blab.Pz();
+	float n2ap = hypo( n2apx, n2apy, n2apz );
+    float n2bp = hypo( n2bpx, n2bpy, n2bpz );
+	float n2px = ( n2ap > n2bp ) ? n2apx : n2bpx;
+    float n2py = ( n2ap > n2bp ) ? n2apy : n2bpy;
+    float n2pz = ( n2ap > n2bp ) ? n2apz : n2bpz;
+    selRjrVars.fillBranch( "rjrN2Px", n2px );
+    selRjrVars.fillBranch( "rjrN2Py", n2py );
+    selRjrVars.fillBranch( "rjrN2Pz", n2pz );
 
 }
 
@@ -1861,6 +1891,7 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     selPhotons.makeBranch( "selPhoCorPt", VFLOAT );
     selPhotons.makeBranch( "selPhoMBetaEql", VFLOAT );
     selPhotons.makeBranch( "selPhoMBetaPmt", VFLOAT );
+    selPhotons.makeBranch( "selPhoPVtoRH", VFLOAT );
 
     selPhotons.makeBranch( "selPhoHcalTowerSumEtBcConeDR04", VFLOAT );
     selPhotons.makeBranch( "selPhoTrkSumPtHollowConeDR03", VFLOAT );
@@ -2049,6 +2080,14 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     selRjrVars.makeBranch( "rjrMVDiff", VFLOAT );
     selRjrVars.makeBranch( "rjrMVSum", VFLOAT );
     selRjrVars.makeBranch( "rjrMVNSum", VFLOAT );
+
+    selRjrVars.makeBranch( "rjr_Mr", VFLOAT );
+    selRjrVars.makeBranch( "rjr_R", VFLOAT );
+    selRjrVars.makeBranch( "rjr_Rv", VFLOAT );
+
+    selRjrVars.makeBranch( "rjrN2Px", VFLOAT );
+    selRjrVars.makeBranch( "rjrN2Py", VFLOAT );
+    selRjrVars.makeBranch( "rjrN2Pz", VFLOAT );
 
     selRjrVars.attachBranches( fOutTree );
 
