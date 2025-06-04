@@ -13,6 +13,8 @@
 #include "KUCMSHelperFunctions.hh"
 #include "KUCMSRootHelperFunctions.hh"
 
+#include "RestFrames/RestFrames.hh"
+
 #include "tree_base_files/kuSkimTree_Mod.h"
 
 #define n1dHists 512
@@ -36,6 +38,7 @@ class HistMaker : public kuSkimTree {
 	void histMaker( std::string indir, std::vector<std::string> infilelists, std::string outfilename, std::string htitle );
     void histMaker( std::string indir, std::string infilelist, std::string outfilename, std::vector<std::vector<std::string>> deflist, std::vector<float> params );
 	void histMaker( std::string indir, std::string infilelist, std::string outfilename, std::string htitle, int nphos, int njets, std::vector<float> m_vec, std::vector<float> r_vec, std::vector<float> rv_vec );
+    void histMaker( std::string indir, std::string infilelist, std::string outfilename, std::string htitle,int cut,float va,float vb,float vc,float vd );
 
 	void initHists( std::string htitle );
     void initHists( std::string htitle, int nhists );
@@ -61,7 +64,7 @@ class HistMaker : public kuSkimTree {
 	bool fl; // first event loop
 
     std::map< std::string, std::map< std::string, float > > configInfo;
-    std::map< std::string, int > cutflowInfo;
+    std::map< std::string, float > cutflowInfo;
 	int cfbin;
 
 	std::vector<std::string> bkglist, siglist, datalist, bkgleg, sigleg, dataleg, title, varsel;

@@ -760,7 +760,7 @@ void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
         const bool rhIsPoor = recHit.checkFlag(EcalRecHit::kPoorReco) || recHit.checkFlag(EcalRecHit::kFaultyHardware) || recHit.checkFlag(EcalRecHit::kNoisy) || recHit.checkFlag(EcalRecHit::kPoorCalib) || recHit.checkFlag(EcalRecHit::kSaturated);
         const bool rhIsDead = recHit.checkFlag(EcalRecHit::kDead) || recHit.checkFlag(EcalRecHit::kKilled);
         const bool rhIsOther = recHit.checkFlag(EcalRecHit::kTPSaturated) || recHit.checkFlag(EcalRecHit::kL1SpikeFlag);
-        const bool rhIsNotGood = not recHit.checkFlag(EcalRecHit::kGood);
+        //const bool rhIsNotGood = not recHit.checkFlag(EcalRecHit::kGood);
 
         const float rhEnergy = recHit.energy();
 		float rhJErr = recHit.timeError();

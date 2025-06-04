@@ -300,7 +300,7 @@ void HistMaker::eventLoop( Long64_t entry ){
     //auto dskey  = *DataSetKey
     //float evtgwt = evtGenWgt;
     float evtgwt = 1;
-    float scale = 137;
+    float scale = 400;
     std::string configKey(*DataSetKey);
     float xsec = (configInfo[configKey])["sCrossSection"];
     //float segwt = (configInfo[configKey])["nEvents"];
@@ -385,12 +385,45 @@ void HistMaker::eventLoop( Long64_t entry ){
     float NormMBetaPmt = (*selPhoMBetaPmt)[0]/nmass;
 	float rjrNVSum = 2*rjrVSum/nmass;
 
+	float rjr_Ms = nmass;
+	float rjr_R = (*rjrAX2NQSum)[cs]; 
+	float rjr_Rv = rjrNVSum;
+
+	//if( rjr_Ms < 2000 || rjr_R < 0.275 || rjr_Rv < 0.25 ) continue;
 
 	//if( rjrNVSum < 0.2 ) continue;
 	//if( std::abs( rjrVDiff ) > 0.6 ) continue;
 	//if( nmass < 1250 ) continue;
     //if( (*rjrNJetsJa)[cs] < 3 ) continue;
 	//if( (*rjrNJetsJb)[cs] < 4 ) continue;
+
+	float n2px = (*rjrN2Px)[1];
+    float n2py = (*rjrN2Py)[1];
+    ////float n2pz = (*rjrN2Pz)[0];
+    TVector3 n2pv( n2px, n2py, 0 );
+    ////TVector3 n2pv( n2px, n2py, n2pz );
+	float n2p = n2pv.Mag();
+
+    //float mtpx = (*rjrN2Px)[1];
+    //float mtpy = (*rjrN2Py)[1];
+    //float sppt = (*selPhoPt)[0];
+    //float spphi = (*selPhoPhi)[0];
+    //TVector3 n2pv( sppt*std::cos(spphi)+mtpx, sppt*std::sin(spphi)+mtpy, 0 );
+    //float n2p = n2pv.Mag();
+
+	float gn2px = (*selPhoGenSigMomPx)[0];
+    float gn2py = (*selPhoGenSigMomPy)[0];
+    //float gn2pz = (*selPhoGenSigMomPz)[0];
+    TVector3 gn2pv( gn2px, gn2py, 0 );
+    //TVector3 gn2pv( gn2px, gn2py, gn2pz );	
+	float gn2p = gn2pv.Mag();
+
+	float n2da = std::acos(n2pv.Dot(gn2pv)/(n2p*gn2p));
+	float n2dp = n2p-gn2p;
+	hist1d[10]->Fill(n2da);
+    hist1d[11]->Fill(n2dp);
+	hist2d[20]->Fill(n2da,n2dp);
+
 
 	//if( (*rjrSMass)[cs] > 1500 ){
 	if( DEBUG ) std::cout << " -- Filling Histograms set 1" << std::endl;
@@ -595,7 +628,9 @@ void HistMaker::initHists( std::string ht ){
     hist1d[0] = new TH1D("genSigSGluinoMass", addstr(ht,"genSigSGluinoMass").c_str(), 1200, 0, 6000);
     hist1d[1] = new TH1D("genSigSQuarkMass", addstr(ht,"genSigSQuarkMass").c_str(), 1200, 0, 6000);
     hist1d[2] = new TH1D("cutflow", addstr(ht,"cutFlow").c_str(), 25, 0.5, 25.5);
-    hist1d[2]->Sumw2();
+
+    hist1d[10] = new TH1D("N2da", addstr(ht,"N2da").c_str(), 70, 0, 3.5);
+    hist1d[11] = new TH1D("N2dp", addstr(ht,"N2dp").c_str(), 80, -2000, 2000);
 
     hist1d[250] = new TH1D("SCosA", addstr(ht,"SCosA").c_str(), 70, -3.5, 3.5);
     hist1d[251] = new TH1D("SMass", addstr(ht,"SMass").c_str(), 150, 0, 15000);
@@ -696,6 +731,8 @@ void HistMaker::initHists( std::string ht ){
     hist2d[9] = new TH2D("VMassvVDiff", addstr(ht,"NVSumvVDiff;NVSum;VDiff").c_str(), 25, 0, 1.0, 25, -1.0, 1.0 );
     hist2d[10] = new TH2D("NJetsJavNJetsJb", addstr(ht,"NJetsJavNJetsJb;NJetsJa;NJetsJb").c_str(), 20, 0, 20,20, 0, 20 );
 
+	hist2d[20] = new TH2D("n2dadp", addstr(ht,"N2 da v dp; opening angle;delta(pt)").c_str(), 70, 0, 3.5, 80, -2000, 2000); 
+
 	//------- jets ( time ) 0-49 ------------------------------
 
 	//---jet id stuff 50 - 99 ---------------------------------------------------
@@ -748,7 +785,8 @@ int main ( int argc, char *argv[] ){
                 auto infilename14 = "KUCMS_RJR_GMSB_ct10000_ootmet_Skim_List.txt";
                 ////auto infilename5 = "KUCMS_RJR_GMSB350_ootmet_Skim_List.txt";
                 ////auto infilename6 = "KUCMS_RJR_GMSB400_ootmet_Skim_List.txt";
-				auto infilenameJ = "KUCMS_RJR_GIGI_ootmet_Skim_List.txt";
+				//auto infilenameJ = "KUCMS_RJR_GIGI_ootmet_Skim_List.txt";
+                auto infilenameJ = "KUCMS_RJR_GoGo_ootmet_24a_Skim_List.txt";
 
                 //auto infilenameG = "KUCMS_RJR_GJETS_rawmet_Skim_List.txt";
                 //auto infilenameQ = "KUCMS_RJR_QCD_rawmet_Skim_List.txt";
@@ -773,7 +811,7 @@ int main ( int argc, char *argv[] ){
 				std::string sigtype = "gogoG";
 
 
-				std::string version = "_v23_";
+				std::string version = "_v24a_";
 
                 std::string outfilenamed = "KUCMS_MET_"+sigtype+version; //iso0_Skim_BaseHists.root"; //7
                 //std::string outfilenamed = "KUCMS_JetHT_"+sigtype+version; //iso0_Skim_BaseHists.root"; //7
@@ -808,7 +846,7 @@ int main ( int argc, char *argv[] ){
                 //std::string ofnending = "wt2_RjrSkim_v22_rawmet_phomet_ztc2_multiHists.root"; float jrjtype = 0; // 1 = phojet, 0 = phomet
 
                 ////std::string ofnending = "wt2_RjrSkim_v24_ootmet_phomet_multiHists.root"; float jrjtype = 0; // 1 = phojet, 0 = phomet
-                std::string ofnending = "wt2_RjrSkim_v24_ootmet_phojet_multiHists.root"; float jrjtype = 1; // 1 = phojet, 0 = phomet
+                std::string ofnending = "RjrSkim_v24_jwk_ootmet_phojet_multiHists.root"; float jrjtype = 1; // 1 = phojet, 0 = phomet
 
                 ////std::string ofnending = "wt2_RjrSkim_v24_ootmet_phojet_multiHists.root"; float jrjtype = 0; // 0 = phojet, no phomet
 
@@ -831,7 +869,7 @@ int main ( int argc, char *argv[] ){
                 std::string htitle14 = "GMSB_ct10000cm_"+sigtype+version;
                 //std::string htitle5 = "GMSB_L350_"+sigtype+version;
                 //std::string htitle6 = "GMSB_L400_"+sigtype+version;
-				std::string htitleJ = "ct10cm_mGl-2000_mN2-1900_mN1-1_"+version;
+				std::string htitleJ = "ct10cm_mGl-2000_mN2-1500_mN1-500_"+version;
 
                 HistMaker base;
 

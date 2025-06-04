@@ -70,8 +70,8 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
         h1[n].GetXaxis().SetTitle(layout['xtitle'])
         h1[n].GetYaxis().CenterTitle(True)
         h1[n].GetYaxis().SetTitle(layout['ytitle'])
-        k = [kMagenta+2,kGreen+2,kOrange+1,kBlue+2,kRed+2,kAzure+4,kViolet+5,kOrange+5,kGreen+3,kRed+4,kBlue+4,kGreen+2,kAzure+4,kMagenta+2,kGreen+2,kMagenta+4,kGreen+4,kYellow+3,kBlue+4,kRed+4,kAzure+6,kBlack,kViolet+3,kOrange+3,kGreen+5,kRed+3,kBlue+3,kGreen+4,kAzure+7,kMagenta+4,kGreen+4]
-        #k = [kBlack,kMagenta+2,kGreen+2,kOrange+1,kBlue+2,kRed+2,kAzure+4,kViolet+5,kOrange+5,kGreen+3,kRed+4,kBlue+4,kGreen+2,kAzure+4,kMagenta+2,kGreen+2,kMagenta+4,kGreen+4,kYellow+3,kBlue+4,kRed+4,kAzure+6,kBlack,kViolet+3,kOrange+3,kGreen+5,kRed+3,kBlue+3,kGreen+4,kAzure+7,kMagenta+4,kGreen+4]
+        #k = [kMagenta+2,kGreen+2,kOrange+1,kBlue+2,kRed+2,kAzure+4,kViolet+5,kOrange+5,kGreen+3,kRed+4,kBlue+4,kGreen+2,kAzure+4,kMagenta+2,kGreen+2,kMagenta+4,kGreen+4,kYellow+3,kBlue+4,kRed+4,kAzure+6,kBlack,kViolet+3,kOrange+3,kGreen+5,kRed+3,kBlue+3,kGreen+4,kAzure+7,kMagenta+4,kGreen+4]
+        k = [kBlack,kMagenta+2,kGreen+2,kOrange+1,kBlue+2,kRed+2,kAzure+4,kViolet+5,kOrange+5,kGreen+3,kRed+4,kBlue+4,kGreen+2,kAzure+4,kMagenta+2,kGreen+2,kMagenta+4,kGreen+4,kYellow+3,kBlue+4,kRed+4,kAzure+6,kBlack,kViolet+3,kOrange+3,kGreen+5,kRed+3,kBlue+3,kGreen+4,kAzure+7,kMagenta+4,kGreen+4]
         h1[n].SetLineColor(k[n])
         h1[n].SetMarkerColor(k[n])
         h1[n].SetMarkerSize(0.8)
@@ -144,10 +144,14 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
     #c1.Show()
     c1.Close()
 
+cutset = 'cf_1-2-3_2-275-35_1-25-40/'
+#cutset = 'cf_2-275-35_2-275-35_1-25-40/'
 
-indir = 'cf_1pho_1jet/'
+indir = cutset + 'cf_2pho_1jet/'
 
-pjcut = 'mj1_rp1'
+pjcut = 'mj1_rp2'
+
+vN = 'v23_'
 
 cf_hist_list = [
 
@@ -165,41 +169,42 @@ cf_hist_list = [
     #['KUCMS_BG_llpana_v23_mj2_rp2_TotBG_RjrSkim_v24_cfcatHists.root','2Pho2Jet','cf_2pho_2jet/'],
     #['KUCMS_BG_llpana_v23_mj3_rp2_TotBG_RjrSkim_v24_cfcatHists.root','2Pho3Jet','cf_2pho_3jet/'],
 
-    #['KUCMS_BG_llpana_v23_'+pjcut+'_TotBG_RjrSkim_v24_cfcatHists.root','TotBG',indir],
+    ['KUCMS_BG_llpana_v24_'+pjcut+'_TotBG_RjrSkim_v24_cfcatHists.root','TotBG',indir],
     #['KUCMS_BG_llpana_v23_'+pjcut+'_TTTGJets_RjrSkim_v24_cfcatHists.root','TTGJets',indir],
     #['KUCMS_BG_llpana_v23_'+pjcut+'_WZNuTGJets_RjrSkim_v24_cfcatHists.root','WZTGJets',indir],
     #['KUCMS_BG_llpana_v23_'+pjcut+'_ttWZ_RjrSkim_v24_cfcatHists.root','ttWZ',indir],
 
-    #['KUCMS_BG_llpana_v23_'+pjcut+'_WJetsLNU_RjrSkim_v24_cfcatHists.root','WJetsLNU',indir],
-    #['KUCMS_BG_llpana_v23_'+pjcut+'_ZJetsNuNu_RjrSkim_v24_cfcatHists.root','ZJetsNuNu',indir],
-    #['KUCMS_BG_llpana_v23_'+pjcut+'_TGJets_RjrSkim_v24_cfcatHists.root','TGJets',indir],
-    #['KUCMS_BG_llpana_v23_'+pjcut+'_TTGJets_RjrSkim_v24_cfcatHists.root','TTGJets',indir],
-    #['KUCMS_BG_llpana_v23_'+pjcut+'_TTJets_RjrSkim_v24_cfcatHists.root','TTJets',indir],
-    #['KUCMS_BG_llpana_v23_'+pjcut+'_WZ_RjrSkim_v24_cfcatHists.root','WZ',indir],
-    #['KUCMS_BG_llpana_v23_'+pjcut+'_ttWJets_RjrSkim_v24_cfcatHists.root','ttWJets',indir],
-    #['KUCMS_BG_llpana_v23_'+pjcut+'_ttZJets_RjrSkim_v24_cfcatHists.root','ttZJets',indir],
+    #['KUCMS_BG_llpana_v24_'+pjcut+'_GJets_RjrSkim_v24_cfcatHists.root','GJets',indir],
+    #['KUCMS_BG_llpana_'+vN+pjcut+'_WJetsLNU_RjrSkim_v24_cfcatHists.root','WJetsLNU',indir],
+    #['KUCMS_BG_llpana_'+vN+pjcut+'_ZJetsNuNu_RjrSkim_v24_cfcatHists.root','ZJetsNuNu',indir],
+    #['KUCMS_BG_llpana_'+vN+pjcut+'_TGJets_RjrSkim_v24_cfcatHists.root','TGJets',indir],
+    #['KUCMS_BG_llpana_'+vN+pjcut+'_TTGJets_RjrSkim_v24_cfcatHists.root','TTGJets',indir],
+    #['KUCMS_BG_llpana_'+vN+pjcut+'_TTJets_RjrSkim_v24_cfcatHists.root','TTJets',indir],
+    #['KUCMS_BG_llpana_'+vN+pjcut+'_WZ_RjrSkim_v24_cfcatHists.root','WZ',indir],
+    #['KUCMS_BG_llpana_'+vN+pjcut+'_ttWJets_RjrSkim_v24_cfcatHists.root','ttWJets',indir],
+    #['KUCMS_BG_llpana_'+vN+pjcut+'_ttZJets_RjrSkim_v24_cfcatHists.root','ttZJets',indir],
 
-    ['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-1500_mN2-500_mN1-100_RjrSkim_v24_cfcatHists.root','1500-500-100',indir],#
-    ['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-500_mN1-1_RjrSkim_v24_cfcatHists.root','2000-500-1',indir],
-    ['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-500_mN1-250_RjrSkim_v24_cfcatHists.root','2000-500-250',indir],#
-    ['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1000_mN1-1_RjrSkim_v24_cfcatHists.root','2000-1000-1',indir],#
-    ['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1000_mN1-250_RjrSkim_v24_cfcatHists.root','2000-1000-250',indir],
-    ['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1000_mN1-500_RjrSkim_v24_cfcatHists.root','2000-1000-500',indir],
-    ['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1500_mN1-1000_RjrSkim_v24_cfcatHists.root','2000-1500-1000',indir],#
-    ['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1500_mN1-1_RjrSkim_v24_cfcatHists.root','2000-1500-1',indir],
-    ['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1500_mN1-250_RjrSkim_v24_cfcatHists.root','2000-1500-250',indir],
-    ['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1500_mN1-500_RjrSkim_v24_cfcatHists.root','2000-1500-500',indir],
-    ['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1900_mN1-1000_RjrSkim_v24_cfcatHists.root','2000-1900-1000',indir],
-    ['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1900_mN1-1500_RjrSkim_v24_cfcatHists.root','2000-1900-1500',indir],#
-    ['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1900_mN1-1_RjrSkim_v24_cfcatHists.root','2000-1900-1',indir],
-    ['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1900_mN1-250_RjrSkim_v24_cfcatHists.root','2000-1900-250',indir],#
-    ['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1900_mN1-500_RjrSkim_v24_cfcatHists.root','2000-1900-500',indir],
-    ['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1950_mN1-1000_RjrSkim_v24_cfcatHists.root','2000-1950-1000',indir],
-    ['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1950_mN1-1500_RjrSkim_v24_cfcatHists.root','2000-1950-1500',indir],#
-    ['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1950_mN1-1900_RjrSkim_v24_cfcatHists.root','2000-1950-1900',indir],#
-    ['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1950_mN1-250_RjrSkim_v24_cfcatHists.root','2000-1950-250',indir],
-    ['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1950_mN1-500_RjrSkim_v24_cfcatHists.root','2000-1950-500',indir],
-    ['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2500_mN2-1500_mN1-1000_RjrSkim_v24_cfcatHists.root','2500-1500-1000',indir],#
+    #['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-1500_mN2-500_mN1-100_RjrSkim_v24_cfcatHists.root','1500-500-100',indir],#
+    #['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-500_mN1-1_RjrSkim_v24_cfcatHists.root','2000-500-1',indir],
+    ['KUCMS_Sgg10_llpana_'+vN+pjcut+'_mGl-2000_mN2-500_mN1-250_RjrSkim_v24_cfcatHists.root','2000-500-250',indir],#
+    #['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1000_mN1-1_RjrSkim_v24_cfcatHists.root','2000-1000-1',indir],#
+    #['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1000_mN1-250_RjrSkim_v24_cfcatHists.root','2000-1000-250',indir],
+    #['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1000_mN1-500_RjrSkim_v24_cfcatHists.root','2000-1000-500',indir],
+    ['KUCMS_Sgg10_llpana_'+vN+pjcut+'_mGl-2000_mN2-1500_mN1-1000_RjrSkim_v24_cfcatHists.root','2000-1500-1000',indir],#
+    #['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1500_mN1-1_RjrSkim_v24_cfcatHists.root','2000-1500-1',indir],
+    #['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1500_mN1-250_RjrSkim_v24_cfcatHists.root','2000-1500-250',indir],
+    #['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1500_mN1-500_RjrSkim_v24_cfcatHists.root','2000-1500-500',indir],
+    #['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1900_mN1-1000_RjrSkim_v24_cfcatHists.root','2000-1900-1000',indir],
+    ['KUCMS_Sgg10_llpana_'+vN+pjcut+'_mGl-2000_mN2-1900_mN1-1500_RjrSkim_v24_cfcatHists.root','2000-1900-1500',indir],#
+    #['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1900_mN1-1_RjrSkim_v24_cfcatHists.root','2000-1900-1',indir],
+    #['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1900_mN1-250_RjrSkim_v24_cfcatHists.root','2000-1900-250',indir],#
+    #['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1900_mN1-500_RjrSkim_v24_cfcatHists.root','2000-1900-500',indir],
+    #['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1950_mN1-1000_RjrSkim_v24_cfcatHists.root','2000-1950-1000',indir],
+    ['KUCMS_Sgg10_llpana_'+vN+pjcut+'_mGl-2000_mN2-1950_mN1-1500_RjrSkim_v24_cfcatHists.root','2000-1950-1500',indir],#
+    #['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1950_mN1-1900_RjrSkim_v24_cfcatHists.root','2000-1950-1900',indir],#
+    #['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1950_mN1-250_RjrSkim_v24_cfcatHists.root','2000-1950-250',indir],
+    #['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1950_mN1-500_RjrSkim_v24_cfcatHists.root','2000-1950-500',indir],
+    ['KUCMS_Sgg10_llpana_'+vN+pjcut+'_mGl-2500_mN2-1500_mN1-1000_RjrSkim_v24_cfcatHists.root','2500-1500-1000',indir],#
 
 ]
 
@@ -219,9 +224,10 @@ islogy = True
 
 layout = { 'xtitle' : xtitle, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'legtitle' : legtitle }
 
-pjcut = '1 SelPho 1+ Jets/Side ImprvPhoJetIso'
+pjcut = '2 SelPho 1+ Jets/Side ImprvPhoJetIso'
 #pjcut = 'TotBG & mGl-2000_mN2-500_mN1-250'
 mcuts = 'Mr:  1000, 2000, 3000'
+#mcuts = 'Mr:  2000, 2750, 3500'
 rcuts = 'R:  0.200, 0.275, 0.350' 
 rvcuts = 'Rv: 0.10, 0.25, 0.40'
 

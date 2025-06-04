@@ -227,6 +227,10 @@ public :
    std::vector<float>   *rjrX2bMass;
    std::vector<float>   *rjrX2bPtS;
 
+   std::vector<float>   *rjrN2Px;
+   std::vector<float>   *rjrN2Py;
+   std::vector<float>   *rjrN2Pz;
+
    // List of branches
    TBranch        *b_DataSetKey;   //!
    TBranch        *b_evtGenWgt;
@@ -422,6 +426,10 @@ public :
    TBranch        *b_rjrX2bCosA;   //!
    TBranch        *b_rjrX2bMass;   //!
    TBranch        *b_rjrX2bPtS;   //!
+
+   TBranch        *b_rjrN2Px;
+   TBranch        *b_rjrN2Py;
+   TBranch        *b_rjrN2Pz;
 
    //kuSkimTree(TTree *tree=0);
    //virtual ~kuSkimTree();
@@ -663,6 +671,10 @@ void kuSkimTree::Init(TTree *tree)
    rjrX2bMass = 0;
    rjrX2bPtS = 0;
 
+   rjrN2Px = 0;
+   rjrN2Py = 0;
+   rjrN2Pz = 0;
+
   // Set branch addresses and branch pointers
    if (!tree) return;
    fChain = tree;
@@ -870,6 +882,10 @@ void kuSkimTree::Init(TTree *tree)
    fChain->SetBranchAddress("rjrX2bCosA", &rjrX2bCosA, &b_rjrX2bCosA);
    fChain->SetBranchAddress("rjrX2bMass", &rjrX2bMass, &b_rjrX2bMass);
    fChain->SetBranchAddress("rjrX2bPtS", &rjrX2bPtS, &b_rjrX2bPtS);
+
+   fChain->SetBranchAddress("rjrN2Px", &rjrN2Px, &b_rjrN2Px);
+   fChain->SetBranchAddress("rjrN2Py", &rjrN2Py, &b_rjrN2Py);
+   fChain->SetBranchAddress("rjrN2Pz", &rjrN2Pz, &b_rjrN2Pz);
 
    //Notify();
 }
@@ -1080,6 +1096,10 @@ void kuSkimTree::getBranches(Long64_t entry){
    b_rjrX2bCosA->GetEntry(entry);   //!
    b_rjrX2bMass->GetEntry(entry);   //!
    b_rjrX2bPtS->GetEntry(entry);   //!
+
+   b_rjrN2Px->GetEntry(entry);
+   b_rjrN2Py->GetEntry(entry);
+   b_rjrN2Pz->GetEntry(entry);
 
    if( mdebug ) std::cout << "Done getting entries" << std::endl;
 

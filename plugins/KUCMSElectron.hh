@@ -146,9 +146,16 @@ void KUCMSElectronObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("Py","Electron_py",VFLOAT);
     Branches.makeBranch("Pz","Electron_pz",VFLOAT);
     Branches.makeBranch("TrackZ","Electron_trackz",VFLOAT);
+    Branches.makeBranch("nSele","Electron_nSelElectrons",INT);
     Branches.makeBranch("GenIdx","Electron_genIdx",VINT);
     Branches.makeBranch("GenXMomIdx","Electron_genSigXMomId",VINT);
     Branches.makeBranch("GenWZIdx","Electron_genSigWZId",VINT);
+    Branches.makeBranch("Sieie","Electron_Sieie",VFLOAT);
+    Branches.makeBranch("DetaSCTV","Electron_DetaSCTV",VFLOAT);
+    Branches.makeBranch("DphiSCTV","Electron_DphiSCTV",VFLOAT);
+    Branches.makeBranch("HOE","Electron_HOE",VFLOAT);
+    Branches.makeBranch("IsLoose","Electron_isLoose",VBOOL);
+
     //Branches.makeBranch("GenDr","Electron_genDr",VFLOAT);
     //Branches.makeBranch("GenDp","Electron_genDp",VFLOAT);
     //Branches.makeBranch("GenSIdx","Electron_genSIdx",VINT);
@@ -248,14 +255,21 @@ void KUCMSElectronObject::ProcessEvent( ItemManager<float>& geVar ){
         //auto timeStats = getTimeDistStats( tofTimes, eleRhGroup );
         const float seedTOFTime = rhObj->getSeedTofTime( *scptr, geVar("vtxX"), geVar("vtxY"), geVar("vtxZ") );
 
+		bool isLoose = false;
         bool sieiec = electron.full5x5_sigmaIetaIeta() < 0.0112;
         bool descvc = electron.deltaEtaSuperClusterTrackAtVtx() < 0.00377;
         bool dpscvc = electron.deltaPhiSuperClusterTrackAtVtx() < 0.0884;
         bool hoec = electron.hadronicOverEm() < 0.05 + 1.16/eleEnergy + 0.0324/eleEnergy;
-        bool eptc = elePt >= 20;
-		if( sieiec && descvc && dpscvc && hoec && eptc ) nSelEle++;
+        bool eptc = elePt >= 10;
+		if( sieiec && descvc && dpscvc && hoec && eptc ){ nSelEle++; isLoose = true; }
 
+        Branches.fillBranch("IsLoose",isLoose);
         Branches.fillBranch("SeedTOFTime",seedTOFTime);
+    	Branches.fillBranch("Sieie",electron.full5x5_sigmaIetaIeta());
+    	Branches.fillBranch("DetaSCTV",electron.deltaEtaSuperClusterTrackAtVtx());
+    	Branches.fillBranch("DphiSCTV",electron.deltaPhiSuperClusterTrackAtVtx());
+    	Branches.fillBranch("HOE",electron.hadronicOverEm());
+		
 
 	    eleIndx++;
         // GenParticle Info for electron  -------------------------------------------------------------------
@@ -266,6 +280,7 @@ void KUCMSElectronObject::ProcessEvent( ItemManager<float>& geVar ){
 
     }//<<>>for( const auto electron : *electrons_ )
 	Branches.fillBranch("nEle",eleIndx);
+    Branches.fillBranch("nSele",nSelEle);
 	geVar.set("nSelEle",nSelEle);
 
     if( cfFlag("hasGenInfo") ){
