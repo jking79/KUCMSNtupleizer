@@ -224,8 +224,8 @@ void KUCMSDisplacedVertex::LoadEvent( const edm::Event& iEvent, const edm::Event
 
   iEvent.getByToken( muonTracksToken_, muonTracksHandle_);
   iEvent.getByToken( muonEnhancedTracksToken_, muonEnhancedTracksHandle_);
-  iEvent.getByToken(genToken_, genHandle_);
-  iEvent.getByToken(pvToken_, pvHandle_);
+  if(cfFlag("hasGenInfo")) iEvent.getByToken( genToken_, genHandle_);
+  iEvent.getByToken( pvToken_, pvHandle_);
   iEvent.getByToken( mergedSCsToken_, mergedSCsHandle_);
   primaryVertex_ = iEvent.get(pvToken_).at(0);
 

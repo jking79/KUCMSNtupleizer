@@ -299,7 +299,7 @@ void KUCMSGenObject::LoadEvent( const edm::Event& iEvent, const edm::EventSetup&
         //if( cfFlag("motherChase") && genPart.status() < 40 ){
         bool motherMeson( false );
         if( genPart.numberOfMothers() > 0 ) motherMeson = ( genPart.mother(0)->pdgId() > 100 ) ? true : false;
-        if( cfFlag("motherChase") && genPart.pdgId() == 22 && not motherMeson ){
+        if( cfFlag("motherChase") && ( genPart.pdgId() == 22 || genPart.pdgId() == 11 )  && not motherMeson ){
         //if( cfFlag("motherChase") ){
             std::cout << "- New Gen Particles ------------------------------------------------------------------" << std::endl;
 			motherChase( genPart, "" );
@@ -330,6 +330,7 @@ void KUCMSGenObject::LoadEvent( const edm::Event& iEvent, const edm::EventSetup&
 			bool isWZ( genPdgId == 23 || genPdgId == 24 );
 			bool isSusy( genPdgId > 1000000 && genPdgId < 3000000 );
             bool isNtlino1( genPdgId == 1000022 );
+            bool isNtlino2( genPdgId == 1000023 );
             bool isChrino1( genPdgId == 1000024 );
             //bool isGrvtino( genPdgId == 1000039 );
 			if( isQuark && isTree ){
@@ -349,11 +350,13 @@ void KUCMSGenObject::LoadEvent( const edm::Event& iEvent, const edm::EventSetup&
 				tgpKeep[oIndx] = true;
 				tgpGetMom[oIndx] = true;
 			}//<<>>if( isSusy && isTree ( 
-            if( isNtlino1 || isChrino1 ){
+            if( isNtlino1 || isNtlino2 || isChrino1 ){
             	int kPdgId = genPart.pdgId();
             	int mPdgId = (genPart.mother(0))->pdgId();
 				bool lastInChian = ( kPdgId == mPdgId ) ? 0 : 1;
-				if( lastInChian ) isNtlino1 ? nueEvntId.push_back( typeChase(genPart) ) : chrEvntId.push_back( typeChase(genPart) );  
+				if( lastInChian ){ 
+					( isNtlino1 || isNtlino2 ) ? nueEvntId.push_back( typeChase(genPart) ) : chrEvntId.push_back( typeChase(genPart) ); 
+				}//<<>>if( lastInChian )  
                 //std::cout << "Gen Susy Particle : " << std::endl; motherChase( genPart.mother(0), "" );
 			}//<<>>if( ( isSQuark || isGlino ) ) 
 		}//<<>> else if( genPart.status() == 1 )

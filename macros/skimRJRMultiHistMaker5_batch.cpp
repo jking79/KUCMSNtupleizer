@@ -241,13 +241,13 @@ void HistMaker::histMaker( std::string indir, std::string infilelist, std::strin
                 cutflowInfo["cf_mj_gt1phos"] = cf_mj_gt1phos*fillwt;
                 cutflowInfo["cf_mjp_leadPhoPt30"] = cf_mjp_leadPhoPt30*fillwt;
                 cutflowInfo["cf_nFltrdEvts"] = cf_nFltrdEvts*fillwt;
-                cutflowInfo["cf_nTotEvts"] = cf_nTotEvts*fillwt;
+                cutflowInfo["cf_nTotEvts"] = float(cf_nTotEvts)*fillwt;
                 cutflowInfo["cf_sel_j"] = cf_sel_j*fillwt;
                 cutflowInfo["cf_sel_m"] = cf_sel_m*fillwt;
                 cutflowInfo["cf_sel_p"] = cf_sel_p*fillwt;
                 cutflowInfo["cf_sel_ppt"] = cf_sel_ppt*fillwt;
                 cutflowInfo["nFltrdEvts"] = nFltrdEvts*fillwt;
-                cutflowInfo["nTotEvts"] = nTotEvts*fillwt;
+                cutflowInfo["nTotEvts"] = float(nTotEvts)*fillwt;
                 //cutflowWgts["sumEvtWgt"] = sumEvtWgt;
                 //cutflowWgts["sumFltrdEvtWgt"] = sumFltrdEvtWgt;
             } else {
@@ -256,13 +256,13 @@ void HistMaker::histMaker( std::string indir, std::string infilelist, std::strin
                 cutflowInfo["cf_mj_gt1phos"] += cf_mj_gt1phos*fillwt;
                 cutflowInfo["cf_mjp_leadPhoPt30"] += cf_mjp_leadPhoPt30*fillwt;
                 cutflowInfo["cf_nFltrdEvts"] += cf_nFltrdEvts*fillwt;
-                cutflowInfo["cf_nTotEvts"] += cf_nTotEvts*fillwt;
+                cutflowInfo["cf_nTotEvts"] += float(cf_nTotEvts)*fillwt;
                 cutflowInfo["cf_sel_j"] += cf_sel_j*fillwt;
                 cutflowInfo["cf_sel_m"] += cf_sel_m*fillwt;
                 cutflowInfo["cf_sel_p"] += cf_sel_p*fillwt;
                 cutflowInfo["cf_sel_ppt"] += cf_sel_ppt*fillwt;
                 cutflowInfo["nFltrdEvts"] += nFltrdEvts*fillwt;
-                cutflowInfo["nTotEvts"] += nTotEvts*fillwt;
+                cutflowInfo["nTotEvts"] += float(nTotEvts)*fillwt;
                 //cutflowWgts["sumEvtWgt"] += sumEvtWgt;
                 //cutflowWgts["sumFltrdEvtWgt"] += sumFltrdEvtWgt;
             }//<<>>if( not configInfo.count(configKey) )
@@ -720,35 +720,35 @@ int main ( int argc, char *argv[] ){
     			// ve   asmass
     			// vf vdiff
     
-				int nj = 1;
-				int np = 1;
-                //for( int np = 1; np < 3; np++ ){
-                //for( int i = 1; i < 2; i++ ){
+				//int nj = 1;
+				//int np = 1;
+                for( int np = 1; np < 3; np++ ){
+                for( int nj = 1; nj < 3; nj++ ){
 
-				// no cuts
-				//std::vector<float> m_vec{0,0,0}; // L-M-T
-                //std::vector<float> r_vec{0,0,0}; // L-M-T
-                //std::vector<float> rv_vec{0,0,0}; // L-M-T
+				std::string subdir = "cf_" + std::to_string(np) + "pho_" + std::to_string(nj) + "jet/";
 
 				// 1-1
-				std::vector<float> m_vec{1000,2000,3000}; // L-M-T
+				//std::vector<float> m_vec{1000,2000,3000}; // L-M-T
+				std::vector<float> m_vec{2000,2750,3500}; // L-M-T
                 std::vector<float> r_vec{0.2,0.275,0.35}; // L-M-T
                 std::vector<float> rv_vec{0.1,0.25,0.4}; // L-M-T
-				// 2-2
+				//std::string outdir = "cf_1-2-3_2-275-35_1-25-40/" + subdir;
+                std::string outdir = "cf_2-275-35_2-275-35_1-25-40/" + subdir;
+				// 2-2   cf_1pho_4jet
                 //std::vector<float> m_vec{1000,1500,2000}; // L-M-T
                 //std::vector<float> r_vec{0.15,0.225,0.3}; // L-M-T
                 //std::vector<float> rv_vec{0.1,0.175,0.25}; // L-M-T
 
 				std::string isoline = "mj" + std::to_string( nj ) + "_";
 				isoline += "rp" + std::to_string( np ) + "_" ;
-                std::string outfilenameJ = ofnstart + htitleJ + isoline;
+                std::string outfilenameJ = outdir + ofnstart + htitleJ + isoline;
 				std::string htitlefullJ =  htitleJ + isoline;
-				base.histMaker( listdir, infilenameJ, outfilenameJ, htitlefullJ, np, nj, m_vec, r_vec, rv_vec );
-                std::string outfilenameBG = ofnstart + htitleBG + isoline;
+				//base.histMaker( listdir, infilenameJ, outfilenameJ, htitlefullJ, np, nj, m_vec, r_vec, rv_vec );
+                std::string outfilenameBG = outdir + ofnstart + htitleBG + isoline;
                 std::string htitlefullBG =  htitleBG + isoline;
-                //base.histMaker( listdir, infilenameBG, outfilenameBG, htitlefullBG, np, nj, m_vec, r_vec, rv_vec );
+                base.histMaker( listdir, infilenameBG, outfilenameBG, htitlefullBG, np, nj, m_vec, r_vec, rv_vec );
 
-				//}}
+				}}
 
 
     return 1;
