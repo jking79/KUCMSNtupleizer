@@ -165,6 +165,7 @@ void KUCMSDisplacedVertex::InitObject( TTree* fOutTree ){
   Branches.makeBranch("Vertex_scMatchRatio", "Vertex_scMatchRatio", VFLOAT);
   Branches.makeBranch("Vertex_passLooseMuonID", "Vertex_passLooseMuonID", VBOOL);
   Branches.makeBranch("Vertex_passLooseElectronID", "Vertex_passLooseElectronID", VBOOL);
+  Branches.makeBranch("Vertex_passLooseID", "Vertex_passLooseID", VBOOL);
   
   // VertexTrack Branches
   Branches.makeBranch("VertexTrack_vertexIndex","VertexTrack_vertexIndex", VUINT);
@@ -293,7 +294,10 @@ void KUCMSDisplacedVertex::ProcessEvent( ItemManager<float>& geVar ){
       reco::Vertex vertex(tvertex);
       LorentzVec vertex4Vec(VertexHelper::GetVertex4Vector(vertex));
       LorentzVec vertexWeighted4Vec(VertexHelper::GetVertexWeighted4Vector(vertex));
-      
+      const bool passLooseMuonID(vertex.tracksSize() == 2 && VertexHelper::CountInstances(vertex, *muonTracksHandle_) == 2);
+      const bool passLooseElectronID(vertex.tracksSize() == 2 && VertexHelper::CountInstances(vertex, electronTracks_) == 2);
+      const bool passLooseID(vertex.tracksSize() < 4? (passLooseMuonID || passLooseElectronID) : true);
+
       Branches.fillBranch("Vertex_nTracks", unsigned(vertex.tracksSize()) );
       Branches.fillBranch("Vertex_x", float(vertex.x()) );
       Branches.fillBranch("Vertex_y", float(vertex.y()) );
@@ -322,8 +326,9 @@ void KUCMSDisplacedVertex::ProcessEvent( ItemManager<float>& geVar ){
       Branches.fillBranch("Vertex_sumCharge", int(VertexHelper::CalculateTotalCharge(vertex)) );
       Branches.fillBranch("Vertex_isUnique", bool(generalVertices_.isVertexUnique(tvertex)));
       Branches.fillBranch("Vertex_scMatchRatio", float(VertexHelper::CountInstances(vertex, electronTracks_)/float(tvertex.size())));
-      Branches.fillBranch("Vertex_passLooseMuonID", bool(vertex.tracksSize() == 2 && VertexHelper::CountInstances(vertex, *muonTracksHandle_) == 2));
-      Branches.fillBranch("Vertex_passLooseElectronID", bool(vertex.tracksSize() == 2 && VertexHelper::CountInstances(vertex, electronTracks_) == 2));
+      Branches.fillBranch("Vertex_passLooseMuonID", bool(passLooseMuonID));
+      Branches.fillBranch("Vertex_passLooseElectronID", bool(passLooseElectronID));
+      Branches.fillBranch("Vertex_passLooseID", bool(passLooseID));
       
       if(cfFlag("hasGenInfo")) {
 	double minDistance;
