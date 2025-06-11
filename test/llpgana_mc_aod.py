@@ -119,7 +119,7 @@ process.source = cms.Source("PoolSource",
         #'file:Met_UL18B_AOD_973EEF0C-44AB-E94A-8591-04DCD00D8B4B.root',
         #'root://cmseos.fnal.gov//store/user/janguian/gogoZ/SMS-GlGl_mGl-2000_mN2-400_mN1-350_Zff_N2ctau-0p001_AOD/250525_004955/0000/SMS-GlGl_mGl-2000_mN2-400_mN1-350_Zff_N2ctau-0p001_AOD_4.root',
         #'root://cmseos.fnal.gov//store/user/janguian/gogoZ/SMS-GlGl_mGl-2000_mN2-400_mN1-350_Zff_N2ctau-0p001_AOD/250529_191831/0000/SMS-GlGl_mGl-2000_mN2-400_mN1-350_Zff_N2ctau-0p001_AOD_6.root',
-        'root://cmseos.fnal.gov//store/user/janguian/gogoZ/SMS-GlGl_mGl-2000_mN2-400_mN1-350_Zff_N2ctau-0p001_AOD/250601_053241/0000/SMS-GlGl_mGl-2000_mN2-400_mN1-350_Zff_N2ctau-0p001_AOD_89.root',
+        #'root://cmseos.fnal.gov//store/user/janguian/gogoZ/SMS-GlGl_mGl-2000_mN2-400_mN1-350_Zff_N2ctau-0p001_AOD/250601_053241/0000/SMS-GlGl_mGl-2000_mN2-400_mN1-350_Zff_N2ctau-0p001_AOD_89.root',
 
         #'file:/uscms/home/janguian/nobackup/CMSSW_12_4_14_patch3/src/SlepSnuCascade_3.root',
         #'file:/uscms/home/janguian/nobackup/CMSSW_12_4_14_patch3/src/Gluino_N2N1_LLPN2_TuneCP5_13p6TeV-madgraphMLM_AOD.root',
@@ -159,7 +159,7 @@ process.source = cms.Source("PoolSource",
         # AOD Data MET
         
         #'file:/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/test/MetPD_003A2484-A2DC-E711-9D0A-02163E019C46.root'
-        #'root://cmseos.fnal.gov//store/user/janguian/gogoG/SMS-GlGl_mGl-1500_mN2-500_mN1-100_gam_N2ctau-0p1_AOD/250123_145920/0000/SMS-GlGl_mGl-1500_mN2-500_mN1-100_gam_N2ctau-0p1_AOD_99.root'
+        'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoG/SMS-GlGl_mGl-1500_mN2-500_mN1-100_gam_N2ctau-0p1_AOD/250123_145920/0000/SMS-GlGl_mGl-1500_mN2-500_mN1-100_gam_N2ctau-0p1_AOD_99.root'
 
 	#lpcpath_350_600+'120000/80762156-99D6-E811-8942-34E6D7E3879B.root',
         #lpcpath_350_600+'120000/322875DC-DDD6-E811-8C5F-001E675A68C4.root',
@@ -475,7 +475,7 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
                               caloClusters = cms.InputTag("particleFlowEGamma", "EBEEClusters"),
                               ## gen info
                               genEvt = cms.InputTag("generator", ""),
-                              gent0 = cms.InputTag("genParticles", "t0"),
+                              gk4PFJetsent0 = cms.InputTag("genParticles", "t0"),
                               genxyz0 = cms.InputTag("genParticles", "xyz0"),
                               pileups = cms.InputTag("addPileupInfo", ""),
                               #Phoronpileups = cms.InputTag("mixData", ""),

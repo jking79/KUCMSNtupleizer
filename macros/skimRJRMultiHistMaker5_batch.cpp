@@ -629,20 +629,20 @@ void HistMaker::initHists( std::string ht ){
 
 	hist1d[100] = new TH1D("nSelPho", addstr(ht,"nSelPho").c_str(), 20, 0, 20);
 
-    hist1d[255] = new TH1D("rjrNJetsJa", addstr(ht,"rjrNJetsJa").c_str(), 20, 0, 20);
-    hist1d[256] = new TH1D("rjrNJetsJb", addstr(ht,"rjrNJetsJb").c_str(), 20, 0, 20);
+    hist1d[255] = new TH1D("rjrNJetsJa", addstr(ht,"NJets A").c_str(), 20, 0, 20);
+    hist1d[256] = new TH1D("rjrNJetsJb", addstr(ht,"NJets B").c_str(), 20, 0, 20);
 
     hist1d[268] = new TH1D("selPhoMBetaEql", addstr(ht,"selPhoBetaMass").c_str(), 60, 0, 1200);//----------- BetaMass
     hist1d[269] = new TH1D("selPhoMBetaPmt", addstr(ht,"selPhoMBetaPmt").c_str(), 60, 0, 1200);
 
-    hist1d[272] = new TH1D("rjrVDiff", addstr(ht,"NVisMassDiff").c_str(), 25, -1, 1);//---------------VisMassDiff !!!!!!!!!!
-    hist1d[273] = new TH1D("rjrVSum", addstr(ht,"NVisMass").c_str(), 25, 0, 1.0);//--------------VisMassSum !!!!!!!!!!
+    hist1d[272] = new TH1D("rjrVDiff", addstr(ht,"rjrVDiff").c_str(), 25, -1, 1);//---------------VisMassDiff !!!!!!!!!!
+    hist1d[273] = new TH1D("rjrVSum", addstr(ht,"R_{v};Events").c_str(), 25, 0, 1.0);//--------------VisMassSum !!!!!!!!!!
 
     hist1d[274] = new TH1D("rjrPhoNMBetaEql", addstr(ht,"rjrPhoNBetaEql").c_str(), 100, 0, 2);//----------- BetaMass
     hist1d[275] = new TH1D("rjrPhoNMBetaPmt", addstr(ht,"rjrPhoNMBetaPmt").c_str(), 100, 0, 2);
 
-    hist1d[351] = new TH1D("ASMass", addstr(ht,"ASMass").c_str(), 48, 0, 12000); //----------------------ASMass !!!!!!!!!!!!!!!!!!1
-    hist1d[366] = new TH1D("rjrAX2NQSum", addstr(ht,"X2MassRatio").c_str(), 25, 0, 1.0);//----------X2MassRatio !!!!!!!!!!!!!!!!!
+    hist1d[351] = new TH1D("ASMass", addstr(ht,"M_{r} [GeV];Events").c_str(), 48, 0, 12000); //----------------------ASMass !!!!!!!!!!!!!!!!!!1
+    hist1d[366] = new TH1D("rjrAX2NQSum", addstr(ht,"R;Events").c_str(), 25, 0, 1.0);//----------X2MassRatio !!!!!!!!!!!!!!!!!
 
 
 	//-------- event vars 400 - 450
@@ -654,13 +654,13 @@ void HistMaker::initHists( std::string ht ){
 	//------------------------------------------------------------------------------------------
     //------ 2D Hists --------------------------------------------------------------------------
 
-    hist2d[0] = new TH2D("ASMvAX2NQSum", addstr(ht,"ASMvAX2NQSum;ASMass [GeV];X2ANQSum").c_str(), 48, 0, 12000, 25, 0, 1.0 );
-    hist2d[2] = new TH2D("ASMvNVMass", addstr(ht,"ASMvNVSum;ASMass [GeV];NVSum").c_str(), 48, 0, 12000, 25, 0, 1.0 );
-    hist2d[3] = new TH2D("ASMvVDiff", addstr(ht,"ASMvVDiff;ASMass [GeV];VDiff").c_str(), 48, 0, 12000, 25, -1.0, 1.0 );
-    hist2d[4] = new TH2D("AX2NQSumvVMass", addstr(ht,"AX2NQSumvNVSum;AX2NQSum;NVSum").c_str(), 25, 0, 1.0, 25, 0, 1.0 );
+    hist2d[0] = new TH2D("ASMvAX2NQSum", addstr(ht,"M_{r} v R 400 fb^{-1};M_{r} [GeV];R;").c_str(), 48, 0, 12000, 25, 0, 1.0 );
+    hist2d[2] = new TH2D("ASMvNVMass", addstr(ht,"M_{r} v R_{v} 400 fb^{-1};M_{r} [GeV];R_{v}").c_str(), 48, 0, 12000, 25, 0, 1.0 );
+    hist2d[3] = new TH2D("ASMvVDiff", addstr(ht,"ASMvVDiff;M_{r} [GeV];VDiff").c_str(), 48, 0, 12000, 25, -1.0, 1.0 );
+    hist2d[4] = new TH2D("AX2NQSumvVMass", addstr(ht,"R v R_{v} 400 fb^{-1};R;R_{v}").c_str(), 25, 0, 1.0, 25, 0, 1.0 );
     hist2d[5] = new TH2D("AX2NQSumvVDiff", addstr(ht,"AX2NQSumvVDiff;AX2NQSum;VDiff").c_str(), 25, 0, 1.0, 25, -1.0, 1.0 );
     hist2d[9] = new TH2D("VMassvVDiff", addstr(ht,"NVSumvVDiff;NVSum;VDiff").c_str(), 25, 0, 1.0, 25, -1.0, 1.0 );
-    hist2d[10] = new TH2D("NJetsJavNJetsJb", addstr(ht,"NJetsJavNJetsJb;NJetsJa;NJetsJb").c_str(), 20, 0, 20,20, 0, 20 );
+    hist2d[10] = new TH2D("NJetsJavNJetsJb", addstr(ht,"nJets A v nJets B 400 fb^{-1};nJets A;nJets B").c_str(), 20, 0, 20,20, 0, 20 );
 
 	//------- jets ( time ) 0-49 ------------------------------
 
@@ -730,10 +730,16 @@ int main ( int argc, char *argv[] ){
 				// 1-1
 				//std::vector<float> m_vec{1000,2000,3000}; // L-M-T
 				std::vector<float> m_vec{2000,2750,3500}; // L-M-T
+				//std::vector<float> m_vec{0,0,0}; // L-M-T
                 std::vector<float> r_vec{0.2,0.275,0.35}; // L-M-T
-                std::vector<float> rv_vec{0.1,0.25,0.4}; // L-M-T
+                ////std::vector<float> rv_vec{0.1,0.25,0.4}; // L-M-T
+				//std::vector<float> r_vec{0,0,0};
+				std::vector<float> rv_vec{0.0,0.15,0.3}; // L-M-T
+				//std::vector<float> rv_vec{0,0,0};
 				//std::string outdir = "cf_1-2-3_2-275-35_1-25-40/" + subdir;
-                std::string outdir = "cf_2-275-35_2-275-35_1-25-40/" + subdir;
+                //std::string outdir = "cf_2-275-35_2-275-35_1-25-40/" + subdir;
+                std::string outdir = "cf_2-275-35_2-275-35_0-15-3/" + subdir;
+                //std::string outdir = "cf_0_0_0/" + subdir;
 				// 2-2   cf_1pho_4jet
                 //std::vector<float> m_vec{1000,1500,2000}; // L-M-T
                 //std::vector<float> r_vec{0.15,0.225,0.3}; // L-M-T

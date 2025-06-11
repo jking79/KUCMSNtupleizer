@@ -8,7 +8,7 @@
 //////////////////////////////////////////////////////////////////////
 
 
-#include "skimHistMaker.hh"
+#include "skimHistMakerExp.hh"
 
 //#define DEBUG true
 #define DEBUG false
@@ -355,7 +355,7 @@ void HistMaker::eventLoop( Long64_t entry ){
     if( (*rjrNJetsJa)[cs] > 1 && (*rjrNJetsJb)[cs] > 1 ) hist1d[2]->Fill(15,fillwt);
     if( (*rjrNJetsJa)[cs] > 2 && (*rjrNJetsJb)[cs] > 2 ) hist1d[2]->Fill(16,fillwt);
 
-	if( (*rjrNJetsJa)[cs] < 1 || (*rjrNJetsJb)[cs] < 1 ) continue;
+	//if( (*rjrNJetsJa)[cs] < 1 || (*rjrNJetsJb)[cs] < 1 ) continue;
     hist1d[2]->Fill(17,fillwt);
 
 	//final cutflow bin
@@ -397,12 +397,13 @@ void HistMaker::eventLoop( Long64_t entry ){
     //if( (*rjrNJetsJa)[cs] < 3 ) continue;
 	//if( (*rjrNJetsJb)[cs] < 4 ) continue;
 
-	float n2px = (*rjrN2Px)[1];
-    float n2py = (*rjrN2Py)[1];
-    ////float n2pz = (*rjrN2Pz)[0];
-    TVector3 n2pv( n2px, n2py, 0 );
-    ////TVector3 n2pv( n2px, n2py, n2pz );
-	float n2p = n2pv.Mag();
+	float rjrn2px = (*rjrN2Px)[0];
+    float rjrn2py = (*rjrN2Py)[0];
+    float rjrn2pz = (*rjrN2Pz)[0];
+    TVector3 rjrn2pvt( rjrn2px, rjrn2py, 0 );
+    TVector3 rjrn2pv( rjrn2px, rjrn2py, rjrn2pz );
+    float rjrn2p = rjrn2pv.Mag();
+	float rjrn2pt = rjrn2pvt.Mag();
 
     //float mtpx = (*rjrN2Px)[1];
     //float mtpy = (*rjrN2Py)[1];
@@ -413,17 +414,32 @@ void HistMaker::eventLoop( Long64_t entry ){
 
 	float gn2px = (*selPhoGenSigMomPx)[0];
     float gn2py = (*selPhoGenSigMomPy)[0];
-    //float gn2pz = (*selPhoGenSigMomPz)[0];
-    TVector3 gn2pv( gn2px, gn2py, 0 );
-    //TVector3 gn2pv( gn2px, gn2py, gn2pz );	
-	float gn2p = gn2pv.Mag();
+    float gn2pz = (*selPhoGenSigMomPz)[0];
+    TVector3 gn2pvt( gn2px, gn2py, 0 );
+    TVector3 gn2pv( gn2px, gn2py, gn2pz );	
+	float gn2pt = gn2pvt.Mag();
+    float gn2p = gn2pv.Mag();
 
-	float n2da = std::acos(n2pv.Dot(gn2pv)/(n2p*gn2p));
-	float n2dp = n2p-gn2p;
+	float n2da = std::acos(rjrn2pv.Dot(gn2pv)/(rjrn2p*gn2p));
+	float n2dp = rjrn2p-gn2p;
 	hist1d[10]->Fill(n2da);
     hist1d[11]->Fill(n2dp);
 	hist2d[20]->Fill(n2da,n2dp);
 
+	float scx = (*selPhoSCx)[0];
+    float scy = (*selPhoSCy)[0];
+    float scz = (*selPhoSCz)[0]; 
+	TVector3 scv( scx - PVx, scy - PVy, scz - PVz );
+	float alpha = scv.Angle(gn2pv);
+	float jwk_alpha = scv.Angle(rjrn2pv);
+
+	hist1d[12]->Fill(alpha);
+	hist1d[13]->Fill(jwk_alpha);
+	hist1d[14]->Fill(alpha-jwk_alpha);
+
+	float delayt = (*selPhoTime)[0];
+    hist1d[15]->Fill(delayt);
+	hist2d[21]->Fill(delayt,alpha);
 
 	//if( (*rjrSMass)[cs] > 1500 ){
 	if( DEBUG ) std::cout << " -- Filling Histograms set 1" << std::endl;
@@ -632,6 +648,11 @@ void HistMaker::initHists( std::string ht ){
     hist1d[10] = new TH1D("N2da", addstr(ht,"N2da").c_str(), 70, 0, 3.5);
     hist1d[11] = new TH1D("N2dp", addstr(ht,"N2dp").c_str(), 80, -2000, 2000);
 
+	hist1d[12] = new TH1D("talpha", addstr(ht,"true Alpha").c_str(), 70, 0, 3.5);
+    hist1d[13] = new TH1D("rjralpha", addstr(ht,"rjr Alpha").c_str(), 70, 0, 3.5);
+    hist1d[14] = new TH1D("dalpha", addstr(ht,"Delta Alpha").c_str(), 70, -1.75, 1.75);
+    hist1d[15] = new TH1D("dtime", addstr(ht,"delayTime").c_str(), 500, 0, 5);
+
     hist1d[250] = new TH1D("SCosA", addstr(ht,"SCosA").c_str(), 70, -3.5, 3.5);
     hist1d[251] = new TH1D("SMass", addstr(ht,"SMass").c_str(), 150, 0, 15000);
     hist1d[252] = new TH1D("X2aMass", addstr(ht,"X2aMass").c_str(), 90, 0, 3600);
@@ -732,6 +753,7 @@ void HistMaker::initHists( std::string ht ){
     hist2d[10] = new TH2D("NJetsJavNJetsJb", addstr(ht,"NJetsJavNJetsJb;NJetsJa;NJetsJb").c_str(), 20, 0, 20,20, 0, 20 );
 
 	hist2d[20] = new TH2D("n2dadp", addstr(ht,"N2 da v dp; opening angle;delta(pt)").c_str(), 70, 0, 3.5, 80, -2000, 2000); 
+    hist2d[21] = new TH2D("alphavdt", addstr(ht,"True Alpha v delay time; delaytime; true alpha").c_str(), 100, 0, 5.0, 70, 0, 3.5);
 
 	//------- jets ( time ) 0-49 ------------------------------
 
@@ -869,7 +891,7 @@ int main ( int argc, char *argv[] ){
                 std::string htitle14 = "GMSB_ct10000cm_"+sigtype+version;
                 //std::string htitle5 = "GMSB_L350_"+sigtype+version;
                 //std::string htitle6 = "GMSB_L400_"+sigtype+version;
-				std::string htitleJ = "ct10cm_mGl-2000_mN2-1500_mN1-500_"+version;
+				std::string htitleJ = "ct10cm_Test_"+version;
 
                 HistMaker base;
 
