@@ -379,7 +379,7 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
 	processMet();
 	processPhotons();
 	processElectrons();
-	//processMuons();
+	processMuons();
 	processJets();
 	if( doGenInfo ){ processGenParticles(); }
 
@@ -1154,19 +1154,43 @@ void KUCMSAodSkimmer::processElectrons(){
 		if( epsidsolo ) nEpsidsolo++;
 		if( DEBUG ) std::cout << " ---- next electrons: " << std::endl;
 
+		selElectrons.fillBranch( "elePhoMinDr", elePhoIsoMinDr );
+		bool isLoose = (*Electron_isLoose)[itr];
+		selElectrons.fillBranch( "eleIsLoose", isLoose );
+
 	}//<<>>for( int itr = 0; itr < nElectrons; itr++ )
     if( DEBUG ) std::cout << " -- Finishd looping electrons " << std::endl;
 
 	geCnts.set("nSelEle",nSelElectrons);
 
-    selElectrons.fillBranch( "elePhoMinDr", elePhoIsoMinDr );
     selElectrons.fillBranch( "nElectrons", nElectrons );
 	if( nElectrons == 0 ) nElectrons = 1;
     selElectrons.fillBranch( "epDrMatch", nEpDrMatch/nElectrons );
     selElectrons.fillBranch( "epSeedIdMatch", nEpSeedIdMatch/nElectrons );
     selElectrons.fillBranch( "epSeedIdUnique", nEpsidsolo/nElectrons );
+    selElectrons.fillBranch( "nLooseElectrons", Electron_nSelElectrons );
 
 }//<<>>void KUCMSAodSkimmer::processElectrons
+
+void KUCMSAodSkimmer::processMuons(){
+
+    if( DEBUG ) std::cout << "Finding muons" << std::endl;
+    //-------- muons --------------------------------------
+    
+    selMuons.clearBranches(); // <<<<<<<   must do
+
+    uInt nMuons = Muon_energy->size();
+    if( DEBUG ) std::cout << " -- Looping muons: " << std::endl;
+    //for( uInt itr = 0; itr < nMuons; itr++ ){
+	//
+	//	float energy = (*Muons_energy)[itr];
+	//	selMuons.fillBranch( "nMuons", nMuons );
+	//
+	//}//<<>>for( uInt itr = 0; itr < nMuons; itr++ )
+    selMuons.fillBranch( "nMuons", nMuons );
+    selMuons.fillBranch( "nLooseMuons", Muon_nSelMuons );
+
+}//<<>>void KUCMSAodSkimmer::processMuons
 
 void KUCMSAodSkimmer::processJets(){
 
@@ -1528,14 +1552,14 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 
 	float a_MX2a = ( p4[0] + p4[2] ).M();
 	float a_MX2b = ( p4[1] + p4[3] ).M();
-	float a_MS = ( p4[0] + p4[2] + p4[1] + p4[3] ).M();	
+	float a_MS = ( p4[0] + p4[2] + p4[1] + p4[3] ).M();// -- !! Mr	
 
 	//float a_MX2a = 2*m_PX1X2a;
     //float a_MX2b = 2*m_PX1X2b;
 	//float a_MS = sqrt(sq2(m_PX2Sa)+sq2(a_MX2a)) + sqrt(sq2(m_PX2Sb)+sq2(a_MX2b));
 
     float AX2QSum = std::sqrt((sq2(a_MX2a)+sq2(a_MX2b))/2);
-    float AX2NQSum = 2*AX2QSum/a_MS;//*2
+    float AX2NQSum = 2*AX2QSum/a_MS;//*2 -- !! R
     float AX2Ave = (a_MX2a+a_MX2b)/2;
     float AX2NAve = 2*AX2Ave/a_MS;//*2 sch tath 0-1
     float AX2GMean = std::sqrt(a_MX2a*a_MX2b);
@@ -1598,7 +1622,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 
     float m_MVDiff = abDiffSide*(m_MVa-m_MVb)/(m_MVa+m_MVb);
     float m_MVSum = std::sqrt((sq2(m_MVa)+sq2(m_MVb))/2);
-	float m_MVNSum = 2*m_MVSum/a_MS;
+	float m_MVNSum = 2*m_MVSum/a_MS;// -- !! Rv
 
     selRjrVars.fillBranch( "rjrMVDiff", m_MVDiff );
     selRjrVars.fillBranch( "rjrMVSum", m_MVSum );
@@ -1638,20 +1662,20 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 
     TLorentzVector x1alab = X1a->GetFourVector(*LAB);
     TLorentzVector x1blab = X1b->GetFourVector(*LAB);
-    //TLorentzVector x1lab = isALeadPhoSide ? X1a->GetFourVector(*LAB) : X1b->GetFourVector(*LAB); 
 	float n2apx = x1alab.Px();
     float n2apy = x1alab.Py();
     float n2apz = x1alab.Pz();
-    //n2apx -= leadPhoPt*std::cos(leadPhoPhi);
-    //n2apy -= leadPhoPt*std::sin(leadPhoPhi);
 	float n2bpx = x1blab.Px();
     float n2bpy = x1blab.Py();
     float n2bpz = x1blab.Pz();
 	float n2ap = hypo( n2apx, n2apy, n2apz );
     float n2bp = hypo( n2bpx, n2bpy, n2bpz );
-	float n2px = ( n2ap > n2bp ) ? n2apx : n2bpx;
-    float n2py = ( n2ap > n2bp ) ? n2apy : n2bpy;
-    float n2pz = ( n2ap > n2bp ) ? n2apz : n2bpz;
+	bool aorb = true;
+	//bool aorb = n2ap > n2bp;
+	//bool aorb = isALeadPhoSide;
+	float n2px = ( aorb ) ? n2apx : n2bpx;
+    float n2py = ( aorb ) ? n2apy : n2bpy;
+    float n2pz = ( aorb ) ? n2apz : n2bpz;
     selRjrVars.fillBranch( "rjrN2Px", n2px );
     selRjrVars.fillBranch( "rjrN2Py", n2py );
     selRjrVars.fillBranch( "rjrN2Pz", n2pz );
@@ -1865,10 +1889,13 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
 	selGenPart.attachBranches( fOutTree );
 
 	selElectrons.makeBranch( "nElectrons", UINT );
+    selElectrons.makeBranch( "nSelElectrons", UINT );
     selElectrons.makeBranch( "epDrMatch", VFLOAT );
     selElectrons.makeBranch( "epSeedIdMatch", VFLOAT );
     selElectrons.makeBranch( "epSeedIdUnique", VFLOAT );
     selElectrons.makeBranch( "elePhoMinDr", VFLOAT );
+    selElectrons.makeBranch( "eleIsLoose", VBOOL );
+    selElectrons.makeBranch( "nLooseElectrons", UINT );
 
     selElectrons.attachBranches( fOutTree );
 
@@ -1950,6 +1977,11 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     selPhotons.makeBranch( "selPhoGenSigMomVz", VFLOAT );   //!
 
     selPhotons.attachBranches( fOutTree );
+
+    selMuons.makeBranch( "nLooseMuons", UINT );
+    selMuons.makeBranch( "nMuons", UINT );
+    //selMuons.makeBranch( "muonIsLoose", VBOOL );
+    selMuons.attachBranches( fOutTree );
 
     //selJets.makeBranch( "JetHt", &JetHt );
     selJets.makeBranch( "nJets", UINT );

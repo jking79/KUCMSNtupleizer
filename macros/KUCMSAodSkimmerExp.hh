@@ -156,7 +156,6 @@ class KUCMSAodSkimmer : public llpgtree {
 	KUCMSBranchManager selMet;
     KUCMSBranchManager selElectrons;
 	KUCMSBranchManager selPhotons;
-    KUCMSBranchManager selMuons;
 	KUCMSBranchManager selJets;
 	KUCMSBranchManager selRjrVars;
     KUCMSBranchManager selGenPart;

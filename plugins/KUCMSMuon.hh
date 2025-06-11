@@ -149,6 +149,7 @@ void KUCMSMuonObject::InitObject( TTree* fOutTree ){
     //Branches.makeBranch("timeValid","Muon_timeValid",VBOOL);
     //Branches.makeBranch("TrackZ","Muon_trackz",VFLOAT);
     Branches.makeBranch("looseID","Muon_isLoose",VBOOL);
+    Branches.makeBranch("mediumID","Muon_isMedium",VBOOL);
     Branches.makeBranch("nSMu","Muon_nSelMuons",INT);
     //Branches.makeBranch("GenIdx","Muon_genIdx",VINT);
     //Branches.makeBranch("GenXMomIdx","Muon_genSigXMomId",VINT);
@@ -222,6 +223,7 @@ void KUCMSMuonObject::ProcessEvent( ItemManager<float>& geVar ){
 		//const float time = muon.time();
 		//const bool timeValid = muon.isTimeValid();
 		const bool isLoose = muon::isLooseMuon( muon );
+		const bool isMedium = muon::isMediumMuon( muon );
 	
         ////const float muTrackZ = muon.trackPositionAtVtx().Z();
 
@@ -234,6 +236,7 @@ void KUCMSMuonObject::ProcessEvent( ItemManager<float>& geVar ){
         Branches.fillBranch("Pz",muPz);
     	//Branches.fillBranch("Time",time);
 		Branches.fillBranch("looseID",isLoose);
+        Branches.fillBranch("mediumID",isMedium);
 		////Branches.fillBranch("TrackZ",muTrackZ);
     	//Branches.fillBranch("timeValid","Muon_timeValid",VBOOL);
 

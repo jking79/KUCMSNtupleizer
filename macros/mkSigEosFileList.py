@@ -163,11 +163,20 @@ if not done :
 
 
 #print( filelist )
+ext = '_v26.txt'
+past = ''
 select =  filelist[0].split("/")
-outfile = select[0] + '_v26.txt'
-print( outfile )
+outfile = select[1] + ext
 outf = open( outfile, 'w' )
+print( outfile )
 for thefile in filelist:
+    select =  thefile.split("/")
+    if select[1] not in past :
+        past = select[1]
+        outfile = select[1] + ext
+        outf.close()
+        outf = open( outfile, 'w' )
+        print( outfile )
     outf.write( thefile + '\n' )
 outf.close()
 

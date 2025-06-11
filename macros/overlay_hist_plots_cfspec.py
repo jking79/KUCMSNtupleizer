@@ -62,7 +62,7 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
         m = [ 20,21,22,23,47,33,34,20,21,22,23,47,33,34,20,21,22,23,47,33,34,20,21,22,23,47,33,34,20,21,22,23,47,33,34]
         #m = [ 24,20,21,22,23,47,33,34,20,21,22,23,47,33,34,20,21,22,23,47,33,34,20,21,22,23,47,33,34,20,21,22,23,47,33,34]
         ##m = [ 24,25,20,21,22,23,47,33,34,20,21,22,23,47,33,34,20,21,22,23,47,33,34,20,21,22,23,47,33,34,20,21,22,23,47,33,34]
-        ##m = [ 24,25,26,32,20,21,22,23,47,33,34,20,21,22,23,47,33,34,20,21,22,23,47,33,34,20,21,22,23,47,33,34,20,21,22,23,47,33,34]
+        #m = [ 24,25,26,32,20,21,22,23,47,33,34,20,21,22,23,47,33,34,20,21,22,23,47,33,34,20,21,22,23,47,33,34,20,21,22,23,47,33,34]
         h1[n].UseCurrentStyle()
         h1[n].SetMarkerStyle(m[n])
         h1[n].SetTitle(layout['title'])
@@ -75,7 +75,7 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
         h1[n].SetLineColor(k[n])
         h1[n].SetMarkerColor(k[n])
         h1[n].SetMarkerSize(0.8)
-        #if n == 0 : h1[n].SetMarkerSize(1.2)
+        if n == 0 : h1[n].SetMarkerSize(1.2)
         h1[n].SetMinimum(y[1])
         h1[n].SetMaximum(y[0])
         h1[n].GetXaxis().SetRangeUser(x[0],x[1])
@@ -144,35 +144,43 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
     #c1.Show()
     c1.Close()
 
-cutset = 'cf_1-2-3_2-275-35_1-25-40/'
+cutset = 'cf_2-275-35_2-275-35_0-15-3/'
+#cutset = 'cf_1-2-3_2-275-35_1-25-40/'
 #cutset = 'cf_2-275-35_2-275-35_1-25-40/'
 
 indir = cutset + 'cf_2pho_1jet/'
 
 pjcut = 'mj1_rp2'
 
-vN = 'v23_'
+vN = 'v24_'
 
 cf_hist_list = [
 
     #[histname, tree, infile, lego],
 
-    #['KUCMS_Sgg10_llpana_v23_mj1_rp1_mGl-2000_mN2-500_mN1-250_RjrSkim_v24_cfcatHists.root','1Pho1Jet','cf_1pho_1jet/'],#
-    #['KUCMS_Sgg10_llpana_v23_mj2_rp1_mGl-2000_mN2-500_mN1-250_RjrSkim_v24_cfcatHists.root','1Pho2Jet','cf_1pho_2jet/'],#
-    #['KUCMS_Sgg10_llpana_v23_mj1_rp2_mGl-2000_mN2-500_mN1-250_RjrSkim_v24_cfcatHists.root','2Pho1Jet','cf_2pho_1jet/'],#
-    #['KUCMS_Sgg10_llpana_v23_mj2_rp2_mGl-2000_mN2-500_mN1-250_RjrSkim_v24_cfcatHists.root','2Pho2Jet','cf_2pho_2jet/'],#
-    #['KUCMS_BG_llpana_v23_mj0_rp1_TotBG_RjrSkim_v24_cfcatHists.root','1Pho0Jet','cf_1pho_0jet/'],
-    #['KUCMS_BG_llpana_v23_mj1_rp1_TotBG_RjrSkim_v24_cfcatHists.root','1Pho1Jet','cf_1pho_1jet/'],
-    #['KUCMS_BG_llpana_v23_mj2_rp1_TotBG_RjrSkim_v24_cfcatHists.root','1Pho2Jet','cf_1pho_2jet/'],
-    #['KUCMS_BG_llpana_v23_mj3_rp1_TotBG_RjrSkim_v24_cfcatHists.root','1Pho3Jet','cf_1pho_3jet/'],
-    #['KUCMS_BG_llpana_v23_mj1_rp2_TotBG_RjrSkim_v24_cfcatHists.root','2Pho1Jet','cf_2pho_1jet/'],
-    #['KUCMS_BG_llpana_v23_mj2_rp2_TotBG_RjrSkim_v24_cfcatHists.root','2Pho2Jet','cf_2pho_2jet/'],
-    #['KUCMS_BG_llpana_v23_mj3_rp2_TotBG_RjrSkim_v24_cfcatHists.root','2Pho3Jet','cf_2pho_3jet/'],
+    #['KUCMS_Sgg10_llpana_v24_mj1_rp1_mGl-2000_mN2-500_mN1-250_RjrSkim_v24_cfcatHists.root','1Pho1Jet Sig',cutset+'cf_1pho_1jet/'],#
+    #['KUCMS_Sgg10_llpana_v24_mj2_rp1_mGl-2000_mN2-500_mN1-250_RjrSkim_v24_cfcatHists.root','1Pho2Jet Sig',cutset+'cf_1pho_2jet/'],#
+    #['KUCMS_Sgg10_llpana_v24_mj1_rp2_mGl-2000_mN2-500_mN1-250_RjrSkim_v24_cfcatHists.root','2Pho1Jet Sig',cutset+'cf_2pho_1jet/'],#
+    #['KUCMS_Sgg10_llpana_v24_mj2_rp2_mGl-2000_mN2-500_mN1-250_RjrSkim_v24_cfcatHists.root','2Pho2Jet Sig',cutset+'cf_2pho_2jet/'],#
+    #['KUCMS_BG_llpana_v24_mj0_rp1_TotBG_RjrSkim_v24_cfcatHists.root','1Pho0Jet BG',cutset+'cf_1pho_0jet/'],
+    #['KUCMS_BG_llpana_v24_mj1_rp1_TotBG_RjrSkim_v24_cfcatHists.root','1Pho1Jet BG',cutset+'cf_1pho_1jet/'],
+    #['KUCMS_BG_llpana_v24_mj2_rp1_TotBG_RjrSkim_v24_cfcatHists.root','1Pho2Jet BG',cutset+'cf_1pho_2jet/'],
+    #['KUCMS_BG_llpana_v24_mj3_rp1_TotBG_RjrSkim_v24_cfcatHists.root','1Pho3Jet BG',cutset+'cf_1pho_3jet/'],
+    #['KUCMS_BG_llpana_v24_mj1_rp2_TotBG_RjrSkim_v24_cfcatHists.root','2Pho1Jet BG',cutset+'cf_2pho_1jet/'],
+    #['KUCMS_BG_llpana_v24_mj2_rp2_TotBG_RjrSkim_v24_cfcatHists.root','2Pho2Jet BG',cutset+'cf_2pho_2jet/'],
+    #['KUCMS_BG_llpana_v24_mj3_rp2_TotBG_RjrSkim_v24_cfcatHists.root','2Pho3Jet BG',cutset+'cf_2pho_3jet/'],
 
     ['KUCMS_BG_llpana_v24_'+pjcut+'_TotBG_RjrSkim_v24_cfcatHists.root','TotBG',indir],
     #['KUCMS_BG_llpana_v23_'+pjcut+'_TTTGJets_RjrSkim_v24_cfcatHists.root','TTGJets',indir],
     #['KUCMS_BG_llpana_v23_'+pjcut+'_WZNuTGJets_RjrSkim_v24_cfcatHists.root','WZTGJets',indir],
     #['KUCMS_BG_llpana_v23_'+pjcut+'_ttWZ_RjrSkim_v24_cfcatHists.root','ttWZ',indir],
+
+    #['KUCMS_BG_llpana_v24_'+pjcut+'_GJets_RjrSkim_v24_cfcatHists.root','GJets',indir],
+    #['KUCMS_BG_llpana_v24_'+pjcut+'_WJetsLNU_RjrSkim_v24_cfcatHists.root','WJetsLNU',indir],
+    #['KUCMS_BG_llpana_v24_'+pjcut+'_ZJetsNuNu_RjrSkim_v24_cfcatHists.root','ZJetsNuNu',indir],
+    #['KUCMS_BG_llpana_v24_'+pjcut+'_TTTGJets_RjrSkim_v24_cfcatHists.root','TG/TTGJets',indir],
+    #['KUCMS_BG_llpana_v24_'+pjcut+'_ttWZ_RjrSkim_v24_cfcatHists.root','tt/WZ/Jets',indir],
+
 
     #['KUCMS_BG_llpana_v24_'+pjcut+'_GJets_RjrSkim_v24_cfcatHists.root','GJets',indir],
     #['KUCMS_BG_llpana_'+vN+pjcut+'_WJetsLNU_RjrSkim_v24_cfcatHists.root','WJetsLNU',indir],
@@ -194,13 +202,13 @@ cf_hist_list = [
     #['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1500_mN1-1_RjrSkim_v24_cfcatHists.root','2000-1500-1',indir],
     #['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1500_mN1-250_RjrSkim_v24_cfcatHists.root','2000-1500-250',indir],
     #['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1500_mN1-500_RjrSkim_v24_cfcatHists.root','2000-1500-500',indir],
-    #['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1900_mN1-1000_RjrSkim_v24_cfcatHists.root','2000-1900-1000',indir],
-    ['KUCMS_Sgg10_llpana_'+vN+pjcut+'_mGl-2000_mN2-1900_mN1-1500_RjrSkim_v24_cfcatHists.root','2000-1900-1500',indir],#
+    ['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1900_mN1-1000_RjrSkim_v24_cfcatHists.root','2000-1900-1000',indir],
+    #['KUCMS_Sgg10_llpana_'+vN+pjcut+'_mGl-2000_mN2-1900_mN1-1500_RjrSkim_v24_cfcatHists.root','2000-1900-1500',indir],#
     #['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1900_mN1-1_RjrSkim_v24_cfcatHists.root','2000-1900-1',indir],
     #['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1900_mN1-250_RjrSkim_v24_cfcatHists.root','2000-1900-250',indir],#
     #['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1900_mN1-500_RjrSkim_v24_cfcatHists.root','2000-1900-500',indir],
-    #['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1950_mN1-1000_RjrSkim_v24_cfcatHists.root','2000-1950-1000',indir],
-    ['KUCMS_Sgg10_llpana_'+vN+pjcut+'_mGl-2000_mN2-1950_mN1-1500_RjrSkim_v24_cfcatHists.root','2000-1950-1500',indir],#
+    ['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1950_mN1-1000_RjrSkim_v24_cfcatHists.root','2000-1950-1000',indir],
+    #['KUCMS_Sgg10_llpana_'+vN+pjcut+'_mGl-2000_mN2-1950_mN1-1500_RjrSkim_v24_cfcatHists.root','2000-1950-1500',indir],#
     #['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1950_mN1-1900_RjrSkim_v24_cfcatHists.root','2000-1950-1900',indir],#
     #['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1950_mN1-250_RjrSkim_v24_cfcatHists.root','2000-1950-250',indir],
     #['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1950_mN1-500_RjrSkim_v24_cfcatHists.root','2000-1950-500',indir],
@@ -224,19 +232,20 @@ islogy = True
 
 layout = { 'xtitle' : xtitle, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'legtitle' : legtitle }
 
-pjcut = '2 SelPho 1+ Jets/Side ImprvPhoJetIso'
+#pjcut = '1 SelPho 1+ Jets/Side ImprvPhoJetIso'
+pjcut = '2 SelPho 1+ Jets/Side'
 #pjcut = 'TotBG & mGl-2000_mN2-500_mN1-250'
 mcuts = 'Mr:  1000, 2000, 3000'
 #mcuts = 'Mr:  2000, 2750, 3500'
 rcuts = 'R:  0.200, 0.275, 0.350' 
-rvcuts = 'Rv: 0.10, 0.25, 0.40'
+rvcuts = 'Rv: 0.0, 0.15, 0.30'
 
 cutline = '#splitline{'+pjcut+'}{#splitline{'+mcuts+'}{#splitline{'+rcuts+'}{'+rvcuts+'}}}'
 #ptitle=[' DYJetsToLL','','#splitline{#splitline{ECAL Barrel}{pCalo energy > 1.5 GeV}}{4 Crystal}']
 #ptitle=[' DYJetsToLL','','#splitline{ECAL Barrel}{4 Crystal}']
 #ptitle=[' ','','#splitline{DiJet dTime Width vs}{Z->ee dTime Width}']
 ptitle=[' 400 fb^{-1}','',cutline]
-y = [ 1000000000, 0.001 ]
+y = [ 40000000000, 0.001 ]
 #y = [ 10000000, 0 ]
 #y = [ 10000, 0 ]
 x = [ 1, 36 ]

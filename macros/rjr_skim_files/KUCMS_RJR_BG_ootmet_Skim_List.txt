@@ -1,8 +1,8 @@
 ###############################################################
-rjr_skim_files/KUCMS_RJR_AllBG_ootmet_Skim_List.txt TotBG yes
-#rjr_skim_files/KUCMS_RJR_WZTGJets_ootmet_Skim_List.txt WZNuTGJets yes
-#rjr_skim_files/KUCMS_RJR_TTGJets_ootmet_Skim_List.txt TTTGJets yes
-#rjr_skim_files/KUCMS_RJR_ttWZ_ootmet_Skim_List.txt ttWZ yes
+#rjr_skim_files/KUCMS_RJR_AllBG_ootmet_Skim_List.txt TotBG yes
+###rjr_skim_files/KUCMS_RJR_WZTGJets_ootmet_Skim_List.txt WZNuTGJets yes
+rjr_skim_files/KUCMS_RJR_TTGJets_ootmet_Skim_List.txt TTTGJets yes
+rjr_skim_files/KUCMS_RJR_ttWZ_ootmet_Skim_List.txt ttWZ yes
 ###############################################################
 #
 ####### GJets

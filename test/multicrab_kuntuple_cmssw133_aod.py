@@ -89,14 +89,15 @@ def docrab( dataset ):
         config.Data.splitting    = 'EventAwareLumiBased' # MC&Data Set unitsperjob correctly for dataset !!!!!!!!!!!!!!!!!!!!!!!!!!
         #config.Data.unitsPerJob   = 45000 # data  !!!!!! lumimask ?
         #config.Data.unitsPerJob  =  1500 # MC GMSB
-        #config.Data.unitsPerJob  =  20000 # MC GJet
-        config.Data.unitsPerJob  =  15000 # MC QCD - WJetsToLNu
-        #config.Data.unitsPerJob  =  20000 # MC QCD - WJetsToLNu large
-        #config.Data.unitsPerJob  =  50000 # MC TTJet
+        ##config.Data.unitsPerJob  =  20000 # MC GJet
+        #config.Data.unitsPerJob  =  15000 # MC QCD - WJetsToLNu
+        #config.Data.unitsPerJob  =  25000 # MC QCD - WJetsToLNu large
+        config.Data.unitsPerJob  =  30000 # MC TTJet
         #config.Data.unitsPerJob  =  750 # MC DiPhoBox (DPB)
 
         config.JobType.allowUndistributedCMSSW = True
-        config.JobType.maxJobRuntimeMin = 1800
+        #config.JobType.maxJobRuntimeMin = 1800
+        config.JobType.maxJobRuntimeMin = 2160
         config.Data.publication    = False
         config.Site.storageSite    = 'T3_US_FNALLPC'
         #--------------------------------------------------------
@@ -124,8 +125,9 @@ def docrab( dataset ):
             dataset        = inDO[0].split('/')[3]
             print( dataset )
 
-            print( 'current KUCMSNtuple version : 25' ) 
+            print( 'current KUCMSNtuple version : 26' ) 
             # 25 Adds ECAL TimeError and GS info + Adds SV processing           
+            # 26 Adds Muon Object and loose Muon/electron counting
 
             ##trial          = "kucmsntuple_DEG_R17_AL1IsoPho_v24" #
             ##trial          = "kucmsntuple_JetHT_R17_MET100_v24" #
@@ -150,8 +152,8 @@ def docrab( dataset ):
 
             #trial          = "kucmsntuple_WJetsToLNu_R18_IPM100_v25" #
             #trial          = "kucmsntuple_TTXJets_R18_IPM100_v25" #
-            trial          = "kucmsntuple_GJETS_R18_IPM100_v25"
-            #trial          = "kucmsntuple_QCD_R18_IPM100_v25"
+            #trial          = "kucmsntuple_GJETS_R18_IPM100_v25"
+            trial          = "kucmsntuple_QCD_R18_IPM100_v26"
 
             print( 'processing for : ',trial )
 
@@ -269,8 +271,11 @@ def run_multi():
 
         #['/QCD_HT2000toInf_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
         #['/QCD_HT1500to2000_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
-        ['/QCD_HT1000to1500_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
+        #['/QCD_HT1000to1500_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
         #['/QCD_HT50to100_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
+        #['/QCD_HT100to200_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
+        #['/QCD_HT700to1000_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
+        ['/QCD_HT200to300_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
 
     ] 
 
