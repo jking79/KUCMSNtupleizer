@@ -288,7 +288,9 @@ void KUCMSDisplacedVertex::ProcessEvent( ItemManager<float>& geVar ){
     map<string, TrackVertexSetCollection> vertexMap = {{"passSignificanceCut", TrackVertexSetHelper::applySignificanceCut(generalVertices_, primaryVertex_)},
 						       {"passTrackCuts", TrackVertexSetHelper::applyPostDisambiguationTrackCuts(generalVertices_, primaryVertex_)}};
 
-    Branches.fillBranch("Vertex_nTotal", unsigned(generalVertices_.size()) );
+	auto nGVertices = generalVertices_.size();
+    Branches.fillBranch("Vertex_nTotal", unsigned(nGVertices) );
+	int nDisSV(0);
     int vtxIndex(0);
     for(const auto &tvertex : generalVertices_) {
       reco::Vertex vertex(tvertex);
@@ -297,6 +299,10 @@ void KUCMSDisplacedVertex::ProcessEvent( ItemManager<float>& geVar ){
       const bool passLooseMuonID(vertex.tracksSize() == 2 && VertexHelper::CountInstances(vertex, *muonTracksHandle_) == 2);
       const bool passLooseElectronID(vertex.tracksSize() == 2 && VertexHelper::CountInstances(vertex, electronTracks_) == 2);
       const bool passLooseID(vertex.tracksSize() < 4? (passLooseMuonID || passLooseElectronID) : true);
+
+	  bool lepsv = ( unsigned(vertex.tracksSize()) == 2 ) && ( passLooseMuonID || passLooseElectronID );
+	  bool hadsv = ( unsigned(vertex.tracksSize()) >= 5 ) && ( (float(vertex4Vec.M())/unsigned(vertex.tracksSize()) ) > 1 );
+	  if( lepsv || hadsv ) nDisSV++;
 
       Branches.fillBranch("Vertex_nTracks", unsigned(vertex.tracksSize()) );
       Branches.fillBranch("Vertex_x", float(vertex.x()) );
@@ -340,8 +346,9 @@ void KUCMSDisplacedVertex::ProcessEvent( ItemManager<float>& geVar ){
 	Branches.fillBranch("Vertex_nearestGenVertexIndex", int(nearestGenVertexIndex));
 	Branches.fillBranch("Vertex_min3D", float(minDistance));
 	Branches.fillBranch("Vertex_matchRatio", float(nearestGenVertexIndex>=0? matchRatio(tvertex, genVertices_[nearestGenVertexIndex]) : -1));
-      }
-      
+      }  
+	geVar.set("nDisSVs",nDisSV);
+
       for(const auto &trackRef : vertex.tracks()) {
 	const reco::Track track(*trackRef);
 	const reco::TrackRef ref(TrackHelper::GetTrackRef(*trackRef, muonEnhancedTracksHandle_));

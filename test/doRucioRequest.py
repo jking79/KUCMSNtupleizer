@@ -44,8 +44,8 @@ qcd_list = [
     #'cms:/QCD_HT50to100_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',
 
     #'cms:/QCD_HT700to1000_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',
-    'cms:/QCD_HT200to300_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',
-    'cms:/QCD_HT300to500_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',
+    #'cms:/QCD_HT200to300_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',
+    #'cms:/QCD_HT300to500_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',
 
 ]
 
@@ -74,7 +74,7 @@ deg_list = [
     #'cms:/EGamma/Run2018A-15Feb2022_UL2018-v1/MINIAOD',
     #'cms:/EGamma/Run2018B-15Feb2022_UL2018-v1/MINIAOD',
     #'cms:/EGamma/Run2018C-15Feb2022_UL2018-v1/MINIAOD',
-    #'cms:/EGamma/Run2018D-15Feb2022_UL2018-v1/MINIAOD',
+    'cms:/EGamma/Run2018D-15Feb2022_UL2018-v1/MINIAOD',
 
 ]
 
@@ -99,8 +99,8 @@ jetht18 = [ 'cms:/JetHT/Run2018C-15Feb2022_UL2018-v1/AOD' ]
 dy_list = [ 'cms:/DY1JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v1/AODSIM' ]
 
 #runlist = dy_list
-#runlist = deg_list
-runlist = qcd_list
+runlist = deg_list
+#runlist = qcd_list
 #runlist = gjets_list
 #runlist = gmsb_list
 #runlist = met_list

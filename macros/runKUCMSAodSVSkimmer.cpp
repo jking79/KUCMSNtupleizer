@@ -7,7 +7,7 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#include "KUCMSAodSkimmer_cc.hh"
+#include "KUCMSAodSkimmer_sv_cc.hh"
 //#include "KUCMSAodSkimmer_cc_probe.hh"
 //#include "KUCMSAodSkimmer_rh_cc.hh"
 //#include "KUCMSAodSkimmer_v16_rh_cc.hh"
@@ -19,6 +19,7 @@ int main ( int argc, char *argv[] ){
                 const std::string listdir = "ntuple_master_lists/";
                 //const string KUCMSAodSkimmer::eosdir = "root://cmseos.fnal.gov//store/user/jaking/";
                 const std::string eosdir = "root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/";
+                //const std::string eosdir = "root://cmseos.fnal.gov//store/user/lpcsusylep/anazario/";
                 //const std::string eosdir = "root://cmseos.fnal.gov//store/user/janguian/";
 				//const std::string eosdir = "../";				
 
@@ -36,12 +37,13 @@ int main ( int argc, char *argv[] ){
                 //const std::string infilename = "KUCMS_Ntuple_Jusin_Signal_Files_List.txt";
                 //const std::string infilename = "KUCMS_Ntuple_Master_BG_IPM100_Files_List.txt";
                 //const std::string infilename = "KUCMS_Ntuple_Master_GoGoG_Files_List.txt";
-                const std::string infilename = "KUCMS_Ntuple_Master_SqSqG_Files_List.txt";
+                //const std::string infilename = "KUCMS_Ntuple_Master_ZBG_SVIPM100_Files_List.txt";
+                const std::string infilename = "KUCMS_Ntuple_Master_GoGoZ_Files_List.txt";
 
                 //const std::string outfilename = "_LLPGskim_v21_rjrvars.root"; // skim v21 use new process_name tags 
                 //const std::string outfilename = "_LLPGskim_v22_rjrvars.root"; // skim v22 keeps 0 pho events 
                 //const std::string outfilename = "_LLPGskim_v23_rjrvars.root"; // fixed 2 sig pho events 
-                const std::string outfilename = "_LLPGskim_v26_rjrvars.root"; // jet veto on first 2 Sig Phos only
+                const std::string outfilename = "_LLPGZskim_v28a_rjrvars.root"; // jet veto on first 2 Sig Phos only
 
                 int skipCnt = 0;// Normal
 				//int skipCnt = 10;// Met0 GMSB

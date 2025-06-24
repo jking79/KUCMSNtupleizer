@@ -8,7 +8,7 @@
 //////////////////////////////////////////////////////////////////////
 
 
-#include "KUCMSAodSkimmer.hh"
+#include "KUCMSAodSVSkimmer.hh"
 
 //-----------------------------------------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------------------------------------
@@ -422,6 +422,27 @@ void KUCMSAodSkimmer::processEvntVars(){
     selEvtVars.fillBranch( "evtGenWgt", Evt_genWgt );
     sumEvtGenWgt += Evt_genWgt;
     selEvtVars.fillBranch( "evtXSection", xsctn );
+
+	// SVs
+	int nSVs = Vertex_mass->size();
+	int nLsv = 0;
+	int nHsv = 0;
+	for( int svit = 0; svit < nSVs; svit++ ){
+
+		float mass = (*Vertex_mass)[svit];
+        uInt ntrack = (*Vertex_nTracks)[svit];
+        bool peleid = (*Vertex_passLooseElectronID)[svit];
+        bool pmuonid = (*Vertex_passLooseMuonID)[svit];
+
+		if( ntrack == 2 && ( peleid || pmuonid ) ) nLsv++;
+		if( ntrack >= 5 && mass/ntrack > 1 ) nHsv++;
+
+	}//<<>>for( svit = 0; svit < nSVs; scit++ )
+
+	selEvtVars.fillBranch( "SV_nLeptonic", nLsv );
+	selEvtVars.fillBranch( "SV_nHadronic", nHsv );
+	geVars.set("nSVLep", nLsv );
+	geVars.set("nSVHad", nHsv );
 
 }//<<>>void KUCMSAodSkimmer::processEvntVars()
 
@@ -1155,8 +1176,8 @@ void KUCMSAodSkimmer::processElectrons(){
 		if( DEBUG ) std::cout << " ---- next electrons: " << std::endl;
 
 		selElectrons.fillBranch( "elePhoMinDr", elePhoIsoMinDr );
-		bool isLoose = (*Electron_isLoose)[itr];
-		selElectrons.fillBranch( "eleIsLoose", isLoose );
+		//bool isLoose = (*Electron_isLoose)[itr];
+		//selElectrons.fillBranch( "eleIsLoose", isLoose );
 
 	}//<<>>for( int itr = 0; itr < nElectrons; itr++ )
     if( DEBUG ) std::cout << " -- Finishd looping electrons " << std::endl;
@@ -1168,21 +1189,19 @@ void KUCMSAodSkimmer::processElectrons(){
     selElectrons.fillBranch( "epDrMatch", nEpDrMatch/nElectrons );
     selElectrons.fillBranch( "epSeedIdMatch", nEpSeedIdMatch/nElectrons );
     selElectrons.fillBranch( "epSeedIdUnique", nEpsidsolo/nElectrons );
-    selElectrons.fillBranch( "nLooseElectrons", Electron_nSelElectrons );// "select" in ntuplizer means passes loose filter
+    //selElectrons.fillBranch( "nLooseElectrons", Electron_nSelElectrons );
 
 }//<<>>void KUCMSAodSkimmer::processElectrons
 
 void KUCMSAodSkimmer::processMuons(){
 
     if( DEBUG ) std::cout << "Finding muons" << std::endl;
-	std::cout << "Finding muons" << std::endl;
     //-------- muons --------------------------------------
     
     selMuons.clearBranches(); // <<<<<<<   must do
 
     uInt nMuons = Muon_energy->size();
     if( DEBUG ) std::cout << " -- Looping muons: " << std::endl;
-	std::cout << " -- Looping muons: " << nMuons << " - " << Muon_nSelMuons << std::endl;
     //for( uInt itr = 0; itr < nMuons; itr++ ){
 	//
 	//	float energy = (*Muons_energy)[itr];
@@ -1190,7 +1209,7 @@ void KUCMSAodSkimmer::processMuons(){
 	//
 	//}//<<>>for( uInt itr = 0; itr < nMuons; itr++ )
     selMuons.fillBranch( "nMuons", nMuons );
-    selMuons.fillBranch( "nLooseMuons", Muon_nSelMuons );// "select" in ntuplizer means passes loose filter
+    selMuons.fillBranch( "nLooseMuons", Muon_nSelMuons );
 
 }//<<>>void KUCMSAodSkimmer::processMuons
 
@@ -1366,6 +1385,8 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 
 	int nSelPhos = 0;
 	std::vector<RFKey> jetID;
+	bool zsig = true;	
+	if( not zsig ){
 	if( nSelPhotons != 0 ){
 		nSelPhos = 1;
 		//std::vector<RFKey> phoJetKey;
@@ -1383,7 +1404,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 		}//<<>>if( type == 1 )
 		else {  std::cout << " !!!!!!!! Valid RJR Photon Processing Option Not Specified !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl; }
 	}//<<>>if( nSelPhotons > 0 )
-   if( nSelPhotons > 1 ){ 
+	if( nSelPhotons > 1 ){ 
 		nSelPhos = 2;
 		if( type == 0 ){
         	phoRMetCPx += subLeadPhoPt*std::cos(subLeadPhoPhi);
@@ -1397,6 +1418,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 			//jetID.push_back(phoJetKey[1]);
 		}//<<>>if( type == 1 )
 	}//<<>>if( nSelPhotons > 1 )
+	}//<<>>if( not zsig )
 
     if( DEBUG ) std::cout << " - Loading MET." << std::endl;
 	if( verbose ){
@@ -1415,7 +1437,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     auto selJetMass = geVects( "selJetMass");
     std::vector<RFKey> leadJetKey;
 	if( DEBUG ) std::cout << " - Loading Jets." << std::endl;
-	if( type == 0 && nSelJets > 2*nSelPhos ) nSelJets == 2*nSelPhos;
+	//if( type == 0 && nSelJets > 2*nSelPhos ) nSelJets == 2*nSelPhos;
   	for( uInt it = 0; it < nSelJets; it++ ){
 		auto sjetPt = selJetPt[it]; //selJets.getFLBranchValue( "selJetPt", it );
 		auto sjetEta = selJetEta[it]; //selJets.getFLBranchValue( "selJetEta", it );
@@ -1703,6 +1725,10 @@ bool KUCMSAodSkimmer::eventSelection(){
     float subLeadPhoPt = ( nSelPhotons > 1 ) ? geVars("subLeadPhoPt") : 0;
 	if( DEBUG ) std::cout << " - Lead/Sublead Photons: " << leadSelPho << " - " << subLeadSelPho << std::endl;
 
+	bool hasLepSV = geVars("nSVLep") > 0;
+    bool hasHadSV = geVars("nSVHad") > 0;
+	bool hasSV = hasLepSV || hasHadSV;
+
 	bool met150 = evtMet >= 150;
     bool gt1phos = nSelPhotons >= 1;
     bool gt2jets = nSelJets >= 2;
@@ -1711,8 +1737,9 @@ bool KUCMSAodSkimmer::eventSelection(){
     bool leadPhoPt30 = leadPhoPt >= 30;
 	bool subLeadPhoPt40 = subLeadPhoPt >= 40; 
 
-    //bool evtSelected = met150 && gt2jets;	
-    bool evtSelected = met150 && gt2jets && gt1phos && leadPhoPt30;
+    bool evtSelected = met150 && gt2jets;
+    //bool evtSelected = met150 && gt2jets && hasSV;	
+    //bool evtSelected = met150 && gt2jets && gt1phos && leadPhoPt30;
 	//auto evtSelected = leadPhoPt70 && subLeadPhoPt40 && gt2jets && gt2phos;
 
     if( met150 ) cutflow["met150"]++;
@@ -1846,6 +1873,8 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     selEvtVars.makeBranch( "PVx", FLOAT );
     selEvtVars.makeBranch( "PVy", FLOAT );
     selEvtVars.makeBranch( "PVz", FLOAT );
+    selEvtVars.makeBranch( "SV_nLeptonic", INT );
+    selEvtVars.makeBranch( "SV_nHadronic", INT );
     selEvtVars.attachBranches( fOutTree );
 
 	//selMet.makeBranch( "Met", FLOAT );

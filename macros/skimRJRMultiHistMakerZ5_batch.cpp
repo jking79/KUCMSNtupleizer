@@ -8,7 +8,7 @@
 //////////////////////////////////////////////////////////////////////
 
 
-#include "skimHistMaker.hh"
+#include "skimHistMakerZ.hh"
 
 //#define DEBUG true
 #define DEBUG false
@@ -369,7 +369,23 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     //cfbin++;
     //if( nRjrPhos == 2 ) hist1d[2]->Fill(cfbin,fillwt);
     //if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"rph2");
-    if( rjrNRjrPhotons->at(cs) != nRjrPhos ) continue;
+	//std::cout << "SV : " << nSVLeptonic << " - " << nSVHadronic << std::endl;
+	//if( nRjrPhos == 3 ){ 
+
+	if( nRjrJets == 1 && not ( nSVLeptonic > 0 && nSVHadronic > 0 )	) continue;
+	if( nRjrJets == 2 && not ( nSVLeptonic == 1 && nSVHadronic == 1 ) ) continue;
+    if( nRjrJets == 3 && not ( nSVLeptonic == 0 && nSVHadronic == 2 ) ) continue;
+    if( nRjrJets == 4 && not ( nSVLeptonic > 0 || nSVHadronic > 0 ) ) continue;
+    if( nRjrJets == 5 && not ( nSVLeptonic > 0 ) ) continue;
+    if( nRjrJets == 6 && not ( nSVHadronic > 0 ) ) continue;
+    if( nRjrJets == 7 && not ( nSVLeptonic == 1 ) ) continue;
+    if( nRjrJets == 8 && not ( nSVHadronic == 1 ) ) continue;
+    if( nRjrJets == 9 && not ( nSVLeptonic > 1 ) ) continue;
+    if( nRjrJets == 10 && not ( nSVHadronic > 1 ) ) continue;
+
+		//nRjrJets = 1;		
+
+    //} else if( rjrNRjrPhotons->at(cs) != nRjrPhos ) continue;
     //cfbin++;
     //hist1d[2]->Fill(cfbin,fillwt);
     //if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"rphc");
@@ -381,7 +397,7 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     auto metPt = hypo(selMetPx,selMetPy);
 	if( metCPt < 150 ) continue;
     //hist1d[2]->Fill(12,fillwt);
-
+	//std::cout << "Met : " << metCPt << std::endl;
 // ( minJetsPer, nphos, maxSelPhos, rjrcut2, metcut )
 	//exploritory cut flows // nPhotons
 	int numPhos = int( nSelPhotons );
@@ -409,12 +425,14 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     //if( (*rjrNJetsJa)[cs] > 3 && (*rjrNJetsJb)[cs] > 3 ) hist1d[2]->Fill(cfbin++,fillwt);
 
 	// Min # jets/side
-	if( (*rjrNJetsJa)[cs] < nRjrJets || (*rjrNJetsJb)[cs] < nRjrJets ) continue;
+	//if( (*rjrNJetsJa)[cs] < nRjrJets || (*rjrNJetsJb)[cs] < nRjrJets ) continue;
+    if( (*rjrNJetsJa)[cs] < 1 || (*rjrNJetsJb)[cs] < 1 ) continue;
+    //std::cout << "Jets : " << (*rjrNJetsJa)[cs] << " - " << (*rjrNJetsJb)[cs] << std::endl;
 
     cfbin++;
     hist1d[2]->Fill(cfbin,fillwt);
     if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"PSel");
-
+    hist1d[3]->Fill(2,fillwt);
 
 	// rjr var cuts
 	//cutvc = vc; ax2nq
@@ -422,13 +440,19 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 	// ve	asmass
 	// vf vdiff
 
+    //std::cout << "Cuts : Start " << std::endl;
+
     float nmass = (*rjrASMass)[cs];
     float rjrVDiff = (*rjrMVDiff)[cs]; //((*rjrMVa)[cs]-(*rjrMVb)[cs])/((*rjrMVa)[cs]+(*rjrMVb)[cs]); 
     float rjrVSum = (*rjrMVSum)[cs]; //std::sqrt((sq2((*rjrMVa)[cs])+sq2((*rjrMVb)[cs]))/2);
     float rjrNVSum = 2*rjrVSum/nmass;
 
-    float NormMBetaEql = (*selPhoMBetaEql)[0]/nmass;
-    float NormMBetaPmt = (*selPhoMBetaPmt)[0]/nmass;
+    //std::cout << "Cuts : " << nmass << " - " << rjrVDiff << " - " << rjrNVSum << std::endl;
+
+    //float NormMBetaEql = (*selPhoMBetaEql)[0]/nmass;
+    //float NormMBetaPmt = (*selPhoMBetaPmt)[0]/nmass;
+
+    //std::cout << "Cuts : " << NormMBetaEql << " - " << NormMBetaPmt << std::endl;
 
 	//(*rjrASMass)[cs] -- M
 	//(*rjrAX2NQSum)[cs] -- R
@@ -445,6 +469,8 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     bool RvT = rjrNVSum > rv_vec[2];
     bool RvM = rjrNVSum > rv_vec[1];
     bool RvL = rjrNVSum > rv_vec[0];
+
+    //std::cout << "Cuts : " << MT << " - " << RT << " - " << RvT << std::endl;
 
     cfbin++;
     cfbin++;
@@ -540,6 +566,9 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     if( MT && RT && RvT ) hist1d[2]->Fill(cfbin,fillwt);
     if( fl ) hist1d[2]->GetXaxis()->SetBinLabel(cfbin,"TTT");
 
+
+
+    hist1d[3]->Fill(3,fillwt);
 	//var hist fill
 
     hist1d[402]->Fill( rjrMET->at(cs), fillwt );
@@ -553,14 +582,14 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 
     if( DEBUG ) std::cout << " -- Filling Histograms set 12" << std::endl;
 
-        hist1d[268]->Fill((*selPhoMBetaEql)[0], fillwt );
-        hist1d[269]->Fill((*selPhoMBetaPmt)[0], fillwt );
+        //hist1d[268]->Fill((*selPhoMBetaEql)[0], fillwt );
+        //hist1d[269]->Fill((*selPhoMBetaPmt)[0], fillwt );
 
         hist1d[272]->Fill(rjrVDiff, fillwt );
         hist1d[273]->Fill(rjrNVSum, fillwt );
 
-        hist1d[274]->Fill(NormMBetaEql, fillwt );
-        hist1d[275]->Fill(NormMBetaPmt, fillwt );
+        //hist1d[274]->Fill(NormMBetaEql, fillwt );
+        //hist1d[275]->Fill(NormMBetaPmt, fillwt );
 
     if( DEBUG ) std::cout << " -- Filling Histograms set 2" << std::endl;
 
@@ -569,12 +598,12 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 
     if( DEBUG ) std::cout << " -- Filling Histograms set 3" << std::endl;
 
-		if( rjrNVSum > rv_vec[0] ) hist2d[0]->Fill( (*rjrASMass)[cs], (*rjrAX2NQSum)[cs], fillwt );
-    	if( (*rjrAX2NQSum)[cs] > r_vec[0] ) hist2d[2]->Fill( (*rjrASMass)[cs], rjrNVSum, fillwt ); 
-    	if( false ) hist2d[3]->Fill( (*rjrASMass)[cs], rjrVDiff, fillwt ); 
-    	if( (*rjrASMass)[cs] > m_vec[0] ) hist2d[4]->Fill( (*rjrAX2NQSum)[cs], rjrNVSum, fillwt ); 
-    	if( false ) hist2d[5]->Fill( (*rjrAX2NQSum)[cs], rjrVDiff, fillwt ); 
-    	if( false ) hist2d[9]->Fill( rjrNVSum, rjrVDiff, fillwt ); 
+		hist2d[0]->Fill( (*rjrASMass)[cs], (*rjrAX2NQSum)[cs], fillwt );
+    	hist2d[2]->Fill( (*rjrASMass)[cs], rjrNVSum, fillwt ); 
+    	hist2d[3]->Fill( (*rjrASMass)[cs], rjrVDiff, fillwt ); 
+    	hist2d[4]->Fill( (*rjrAX2NQSum)[cs], rjrNVSum, fillwt ); 
+    	hist2d[5]->Fill( (*rjrAX2NQSum)[cs], rjrVDiff, fillwt ); 
+    	hist2d[9]->Fill( rjrNVSum, rjrVDiff, fillwt ); 
 		hist2d[10]->Fill( (*rjrNJetsJa)[cs], (*rjrNJetsJb)[cs], fillwt );
 
 
@@ -609,6 +638,7 @@ void HistMaker::endJobs(){
     //hist1d[2]->SetBinError(6,std::sqrt(cutflowInfo["cf_mjp_leadPhoPt30"]));
     //hist1d[2]->SetBinContent(2,cutflowInfo["cf_mjp_leadPhoPt30"]);
     //hist1d[2]->GetXaxis()->SetBinLabel(2,"PSel");
+	hist1d[3]->SetBinContent(1,cutflowInfo["cf_nTotEvts"]);
 
 }//<<>>void HistMaker::endJobs()
 
@@ -626,6 +656,7 @@ void HistMaker::initHists( std::string ht ){
 
     hist1d[2] = new TH1D("cutflow", addstr(ht,"_cutFlow").c_str(), 32, 0.5, 32.5);
 	hist1d[2]->GetXaxis()->SetLabelSize(.02);
+	hist1d[3] = new TH1D("finalcutflow", addstr(ht,"_finalCutFlow").c_str(), 3, 0.5, 3.5);
 
 	hist1d[100] = new TH1D("nSelPho", addstr(ht,"nSelPho").c_str(), 20, 0, 20);
 
@@ -700,16 +731,19 @@ int main ( int argc, char *argv[] ){
     //if( argc != 4 ) { std::cout << "Insufficent arguments." << std::endl; }
     //else {
                 std::string listdir = "/uscms/home/jaking/nobackup/llpana_skims/";
+				//std::string listdir = "rjr_skim_files/";
             
-				std::string infilenameJ = "rjr_skim_files/KUCMS_RJR_GIGI_ootmet_Skim_List.txt";
+				std::string infilenameJ = "rjr_skim_files/KUCMS_RJR_GIGIZ_ootmet_Skim_List.txt";
 				std::string infilenameBG = "rjr_skim_files/KUCMS_RJR_BG_ootmet_Skim_List.txt";
+                std::string infilenameZBG = "rjr_skim_files/KUCMS_RJR_ZBG_ootmet_Skim_List.txt";
 
 				std::string version = "_v24_";
 				std::string sigtype = "llpana";
 				std::string ofnstart = "KUCMS_";
 
                 std::string htitleBG = "BG_"+sigtype+version;
-				std::string htitleJ = "Sgg10_"+sigtype+version;
+                std::string htitleZBG = "SVBG_"+sigtype+version;
+				std::string htitleJ = "SggZ_"+sigtype+version;
 
                 HistMaker base;
 
@@ -722,8 +756,8 @@ int main ( int argc, char *argv[] ){
     
 				//int nj = 1;
 				//int np = 1;
-                for( int np = 1; np < 3; np++ ){
-                for( int nj = 1; nj < 3; nj++ ){
+                for( int np = 3; np < 4; np++ ){
+                for( int nj = 1; nj < 11; nj++ ){
 
 				std::string subdir = "cf_" + std::to_string(np) + "pho_" + std::to_string(nj) + "jet/";
 
@@ -739,7 +773,8 @@ int main ( int argc, char *argv[] ){
 				//std::string outdir = "cf_1-2-3_2-275-35_1-25-40/" + subdir;
                 //std::string outdir = "cf_2-275-35_2-275-35_1-25-40/" + subdir;
                 //std::string outdir = "cf_2-275-35_2-275-35_0-15-3/" + subdir;
-                std::string outdir = "cf_0_0_0/" + subdir;
+                std::string outdir = "zcutflow/";
+                //std::string outdir = "cf_0_0_0/" + subdir;
 				// 2-2   cf_1pho_4jet
                 //std::vector<float> m_vec{1000,1500,2000}; // L-M-T
                 //std::vector<float> r_vec{0.15,0.225,0.3}; // L-M-T
@@ -747,12 +782,17 @@ int main ( int argc, char *argv[] ){
 
 				std::string isoline = "mj" + std::to_string( nj ) + "_";
 				isoline += "rp" + std::to_string( np ) + "_" ;
-                std::string outfilenameJ = outdir + ofnstart + htitleJ + isoline;
-				std::string htitlefullJ =  htitleJ + isoline;
-				base.histMaker( listdir, infilenameJ, outfilenameJ, htitlefullJ, np, nj, m_vec, r_vec, rv_vec );
+                std::string zisoline = "lep" + std::to_string( np ) + "_";
+                zisoline += "had" + std::to_string( nj ) + "_" ;
+                std::string outfilenameJ = outdir + ofnstart + htitleJ + zisoline;
+				std::string htitlefullJ =  htitleJ + zisoline;
+				//base.histMaker( listdir, infilenameJ, outfilenameJ, htitlefullJ, np, nj, m_vec, r_vec, rv_vec );
                 std::string outfilenameBG = outdir + ofnstart + htitleBG + isoline;
+                std::string outfilenameZBG = outdir + ofnstart + htitleZBG + zisoline;
                 std::string htitlefullBG =  htitleBG + isoline;
-                base.histMaker( listdir, infilenameBG, outfilenameBG, htitlefullBG, np, nj, m_vec, r_vec, rv_vec );
+                std::string htitlefullZBG =  htitleZBG + zisoline;
+                //base.histMaker( listdir, infilenameBG, outfilenameBG, htitlefullBG, np, nj, m_vec, r_vec, rv_vec );
+                base.histMaker( listdir, infilenameZBG, outfilenameZBG, htitlefullZBG, np, nj, m_vec, r_vec, rv_vec );
 
 				}}
 

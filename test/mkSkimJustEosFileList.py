@@ -19,9 +19,10 @@ def doCommand( command ):
 	output = os.system( command )
 	return output
 
-rootdir = 'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoG/'
+rootdir = 'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/sqsqG/'
 #mspc = '/store/user/jaking/'
-justin = '/store/user/lpcsusylep/jaking/KUCMSNtuple/gogoG/'
+#justin = '/store/user/lpcsusylep/jaking/KUCMSNtuple/gogoG/'
+justin = '/store/user/lpcsusylep/jaking/KUCMSNtuple/sqsqG/'
 #justin = '/store/user/janguian/gogoG/'
 eosll = 'eos root://cmseos.fnal.gov ls '
 
@@ -29,9 +30,9 @@ command = eosll+justin
 
 rootfile = '.root'
 
-dirselect = '2500_mN2-1500_mN1-1000'
+#dirselect = '2500_mN2-1500_mN1-1000'
 
-#dirselect = ''
+dirselect = ''
 
 debug = True
 #debug = False
