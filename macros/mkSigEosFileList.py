@@ -22,6 +22,7 @@ def doCommand( command ):
 mspc = '/store/user/jaking/'
 mdis = '/store/user/lpcsusylep/jaking/'
 justin = '/store/user/janguian/'
+andreas = '/store/user/lpcsusylep/anazario/'
 eosll = 'eos root://cmseos.fnal.gov ls '
 #command = eosll+mspc+'LLPGamma/llpga_GMSB_AOD_v48/'
 #command = eosll+mspc+'A/'
@@ -49,7 +50,13 @@ eosll = 'eos root://cmseos.fnal.gov ls '
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_MET_R18_MRL_MET100_v24/'
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_GJETS_R18_IPM100_v24/'
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_GJETS_R18_IPM100_v25/'
-command = eosll+mdis+'KUCMSNtuple/kucmsntuple_gogoG_Sig_IPM100_v26/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_gogoG_Sig_IPM100_v26/'
+#command = eosll+mdis+'KUCMSNtuple/gogoZ/'
+#command = eosll+andreas+'KUCMSNtuple/kucmsntuple_ZJetsToNuNu_R18_IPM100_v25/'
+command = eosll+mdis+'KUCMSNtuple/kucmsntuple_gogoZ_Sig_IPM100_v27/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_ZJets_R18_SVIPM100_v27/'
+#command = eosll+mdis+'KUCMSNtuple/sqsqG/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_sqsqG_Sig_IPM100_v27/'
 
 #version = ''
 #version = '_v11_'
@@ -59,6 +66,8 @@ command = eosll+mdis+'KUCMSNtuple/kucmsntuple_gogoG_Sig_IPM100_v26/'
 #version = 'WJetsToLNu'
 #version = 'ZJetsToNuNu'
 #version = 'kucmsntuple_gogoG_Sig2_IPM100_v24_SMS-GlGl_AODSIM_mGl-2000_mN2-1500_mN1-1'
+#version = 'kucmsntuple_gogoZ'
+version = ''
 
 rootfile = '.root'
 
@@ -81,14 +90,13 @@ dirselect = 'CRAB_UserFiles'
 #dirselect = 'ttWJets'
 #dirselect = 'GJets_HT-200To400'
 #dirselect = 'MET'
-
-#dirselect = ''
+#dirselect = 'SMS-SqSq'
 
 debug = True
 #debug = False
 
-#deep = True
-deep = False
+deep = True
+#deep = False
 
 targdirs = []
 subdirlist1 = []
@@ -163,17 +171,18 @@ if not done :
 
 
 #print( filelist )
+index = 1
 ext = '_v26.txt'
 past = ''
 select =  filelist[0].split("/")
-outfile = select[1] + ext
+outfile = select[index] + ext
 outf = open( outfile, 'w' )
 print( outfile )
 for thefile in filelist:
     select =  thefile.split("/")
-    if select[1] not in past :
-        past = select[1]
-        outfile = select[1] + ext
+    if select[index] not in past :
+        past = select[index]
+        outfile = select[index] + ext
         outf.close()
         outf = open( outfile, 'w' )
         print( outfile )

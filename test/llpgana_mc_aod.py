@@ -159,7 +159,8 @@ process.source = cms.Source("PoolSource",
         # AOD Data MET
         
         #'file:/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/test/MetPD_003A2484-A2DC-E711-9D0A-02163E019C46.root'
-        'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoG/SMS-GlGl_mGl-1500_mN2-500_mN1-100_gam_N2ctau-0p1_AOD/250123_145920/0000/SMS-GlGl_mGl-1500_mN2-500_mN1-100_gam_N2ctau-0p1_AOD_99.root'
+        #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoG/SMS-GlGl_mGl-1500_mN2-500_mN1-100_gam_N2ctau-0p1_AOD/250123_145920/0000/SMS-GlGl_mGl-1500_mN2-500_mN1-100_gam_N2ctau-0p1_AOD_99.root'
+        'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoZ/SMS-GlGl_mGl-2000_mN2-1900_mN1-200_Zff_N2ctau-0p3_AOD/250607_191347/0000/SMS-GlGl_mGl-2000_mN2-1900_mN1-200_Zff_N2ctau-0p3_AOD_2.root'
 
 	#lpcpath_350_600+'120000/80762156-99D6-E811-8942-34E6D7E3879B.root',
         #lpcpath_350_600+'120000/322875DC-DDD6-E811-8C5F-001E675A68C4.root',
@@ -265,7 +266,9 @@ genInfo = True
 #genInfo = False
 if options.multicrab == True : genInfo = options.hasGenInfo		   
 
-filterselect = 'None'
+#filterselect = 'None'
+filterselect = 'AL1DisSV'
+#filterselect = 'SVIPMet100'
 #filterselect = 'MET100'
 #filterselect = 'AL1IsoPho'
 #filterselect = 'IsoPhoMet100'
@@ -475,7 +478,7 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
                               caloClusters = cms.InputTag("particleFlowEGamma", "EBEEClusters"),
                               ## gen info
                               genEvt = cms.InputTag("generator", ""),
-                              gk4PFJetsent0 = cms.InputTag("genParticles", "t0"),
+                              gent0 = cms.InputTag("genParticles", "t0"),
                               genxyz0 = cms.InputTag("genParticles", "xyz0"),
                               pileups = cms.InputTag("addPileupInfo", ""),
                               #Phoronpileups = cms.InputTag("mixData", ""),

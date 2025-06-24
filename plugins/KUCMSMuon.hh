@@ -126,9 +126,9 @@ KUCMSMuonObject::KUCMSMuonObject( const edm::ParameterSet& iConfig ){
 // ---- end constructor initilizations  --------------------------
 
     cfFlag.set( "hasGenInfo", iConfig.existsAs<bool>("hasGenInfo") ? iConfig.getParameter<bool>("hasGenInfo") : true );
-    cfFlag.set( "onlyEB", iConfig.existsAs<bool>("onlyEB") ? iConfig.getParameter<bool>("onlyEB") : false );
+    //cfFlag.set( "onlyEB", iConfig.existsAs<bool>("onlyEB") ? iConfig.getParameter<bool>("onlyEB") : false );
     cfPrm.set( "minMuE", iConfig.existsAs<double>("minMuE") ? iConfig.getParameter<double>("minMuE") : 2.0 );
-    cfPrm.set( "ebMaxEta",iConfig.existsAs<double>("ebMaxEta")? iConfig.getParameter<double>("ebMaxEta") : 1.479 );
+    //cfPrm.set( "ebMaxEta",iConfig.existsAs<double>("ebMaxEta")? iConfig.getParameter<double>("ebMaxEta") : 1.479 );
 
 }//<<>>KUCMSMuon::KUCMSMuon( const edm::ParameterSet& iConfig, const ItemManager<bool>& cfFlag )
 
@@ -186,7 +186,6 @@ void KUCMSMuonObject::LoadEvent( const edm::Event& iEvent, const edm::EventSetup
         //auto idx = itMuon - muons_->begin();//unsigned int
         //auto muonRef = muons_->refAt(idx);//edm::RefToBase<reco::GsfMuon> 
         auto &muon = (*itMuon);
-        if ( cfFlag("onlyEB") && std::abs(muon.eta()) > cfPrm("ebMaxEta") ) continue;
         //auto passIdCut = true; //muon.muonID(muCutLoose);// pat muon ( miniAOD ) method
         //muIdBools.push_back((*muMVAIDLooseMap_)[muonRef]);// order is important, track how this vector is loaded
         auto passEnergyCut = muon.energy() > cfPrm("minMuE");
@@ -224,7 +223,8 @@ void KUCMSMuonObject::ProcessEvent( ItemManager<float>& geVar ){
 		//const bool timeValid = muon.isTimeValid();
 		const bool isLoose = muon::isLooseMuon( muon );
 		const bool isMedium = muon::isMediumMuon( muon );
-	
+
+		if( MuonDEBUG ) std::cout << " -- " << muPt << " - " << muEta << " - " << isLoose << " - " << isMedium << std::endl;	
         ////const float muTrackZ = muon.trackPositionAtVtx().Z();
 
         Branches.fillBranch("Pt",muPt);
@@ -242,7 +242,7 @@ void KUCMSMuonObject::ProcessEvent( ItemManager<float>& geVar ){
 
         if( MuonDEBUG ) std::cout << " --- Proccesssing : " << muon << std::endl;
 
-        bool mptc = muPt >= 10;
+        bool mptc = muPt >= 10 ;
 		if( mptc && isLoose ) nSelMu++;
 
 	    muIndx++;

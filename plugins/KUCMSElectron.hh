@@ -194,7 +194,7 @@ void KUCMSElectronObject::LoadEvent( const edm::Event& iEvent, const edm::EventS
         //auto idx = itElectron - electrons_->begin();//unsigned int
         //auto electronRef = electrons_->refAt(idx);//edm::RefToBase<reco::GsfElectron> 
         auto &electron = (*itElectron);
-        if ( cfFlag("onlyEB") && std::abs(electron.eta()) > cfPrm("ebMaxEta") ) continue;
+        if ( cfFlag("onlyEB") && ( std::abs(electron.eta()) > cfPrm("ebMaxEta") ) ) continue;
         //auto passIdCut = true; //electron.electronID(eleCutLoose);// pat electron ( miniAOD ) method
         //eleIdBools.push_back((*eleMVAIDLooseMap_)[electronRef]);// order is important, track how this vector is loaded
         auto passEnergyCut = electron.energy() > cfPrm("minEleE");
@@ -255,13 +255,20 @@ void KUCMSElectronObject::ProcessEvent( ItemManager<float>& geVar ){
         //auto timeStats = getTimeDistStats( tofTimes, eleRhGroup );
         const float seedTOFTime = rhObj->getSeedTofTime( *scptr, geVar("vtxX"), geVar("vtxY"), geVar("vtxZ") );
 
-		bool isLoose = false;
         bool sieiec = electron.full5x5_sigmaIetaIeta() < 0.0112;
-        bool descvc = electron.deltaEtaSuperClusterTrackAtVtx() < 0.00377;
+		float dEtaSeed = electron.deltaEtaSuperClusterTrackAtVtx() - scptr->eta() + scptr->seed()->eta();
+		bool detaseed = std::abs(dEtaSeed) < 0.00377;
+        //bool descvc = electron.deltaEtaSuperClusterTrackAtVtx() < 0.00377;
         bool dpscvc = electron.deltaPhiSuperClusterTrackAtVtx() < 0.0884;
-        bool hoec = electron.hadronicOverEm() < 0.05 + 1.16/eleEnergy + 0.0324/eleEnergy;
+		float rho = 1;
+        bool hoec = electron.hadronicOverEm() < ( 0.05 + 1.16/scptr->energy() + 0.0324*rho/scptr->energy() );
+		bool ooemoop = ( std::abs( 1.0 - electron.eSuperClusterOverP() )/electron.ecalEnergy() ) < 0.193;		
+		constexpr auto missingHitType = reco::HitPattern::MISSING_INNER_HITS;
+		bool mistrack = electron.gsfTrack()->hitPattern().numberOfLostHits(missingHitType) <= 1;
+		// conversion  veto not implimented
         bool eptc = elePt >= 10;
-		if( sieiec && descvc && dpscvc && hoec && eptc ){ nSelEle++; isLoose = true; }
+		bool isLoose = sieiec && detaseed && dpscvc && hoec && ooemoop && mistrack;
+		if( eptc && isLoose ) nSelEle++;
 
         Branches.fillBranch("IsLoose",isLoose);
         Branches.fillBranch("SeedTOFTime",seedTOFTime);

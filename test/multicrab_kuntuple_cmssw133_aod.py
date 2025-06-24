@@ -84,20 +84,22 @@ def docrab( dataset ):
         config.Data.inputDataset   = None
         #config.Data.lumiMask       = inputJSON    # Comment out for MC only set for data !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         #config.Data.splitting     = 'Automatic' # data
-        #config.Data.splitting = 'FileBased' # Justin
+        config.Data.splitting = 'FileBased' # Justin
         #config.Data.unitsPerJob  =  10
-        config.Data.splitting    = 'EventAwareLumiBased' # MC&Data Set unitsperjob correctly for dataset !!!!!!!!!!!!!!!!!!!!!!!!!!
+        #config.Data.splitting    = 'EventAwareLumiBased' # MC&Data Set unitsperjob correctly for dataset !!!!!!!!!!!!!!!!!!!!!!!!!!
         #config.Data.unitsPerJob   = 45000 # data  !!!!!! lumimask ?
         #config.Data.unitsPerJob  =  1500 # MC GMSB
         ##config.Data.unitsPerJob  =  20000 # MC GJet
         #config.Data.unitsPerJob  =  15000 # MC QCD - WJetsToLNu
         #config.Data.unitsPerJob  =  25000 # MC QCD - WJetsToLNu large
-        config.Data.unitsPerJob  =  30000 # MC TTJet
+        #config.Data.unitsPerJob  =  30000 # MC TTJet
         #config.Data.unitsPerJob  =  750 # MC DiPhoBox (DPB)
+        #config.Data.unitsPerJob  =  1 # File based ZJets
+        config.Data.unitsPerJob  =  4 # File based QCD
 
         config.JobType.allowUndistributedCMSSW = True
         #config.JobType.maxJobRuntimeMin = 1800
-        config.JobType.maxJobRuntimeMin = 2160
+        config.JobType.maxJobRuntimeMin = 2280
         config.Data.publication    = False
         config.Site.storageSite    = 'T3_US_FNALLPC'
         #--------------------------------------------------------
@@ -125,35 +127,19 @@ def docrab( dataset ):
             dataset        = inDO[0].split('/')[3]
             print( dataset )
 
-            print( 'current KUCMSNtuple version : 26' ) 
+            print( 'current KUCMSNtuple version : 27' ) 
             # 25 Adds ECAL TimeError and GS info + Adds SV processing           
             # 26 Adds Muon Object and loose Muon/electron counting
+            # 27 Updated SV object
 
-            ##trial          = "kucmsntuple_DEG_R17_AL1IsoPho_v24" #
-            ##trial          = "kucmsntuple_JetHT_R17_MET100_v24" #
-
-            ##trial          = "kucmsntuple_GMSB_R17_MET100_v24" #
-            ##trial          = "kucmsntuple_GMSB_R17_AL1IsoPho_v24" # 
-
-            ##trial          = "kucmsntuple_GJETS_R17_MET100_v24"
-            ##trial          = "kucmsntuple_GJETS_R17_AL1IsoPho_v24" # 
-            ##trial          = "kucmsntuple_QCD_R17_MET100_v24" #
-
-            # set trial name - used in output path ?
-            ##trial          = "kucmsntuple_MET_R18_IPM100_v24"
-            ##trial          = "kucmsntuple_MET_R18_MRL_MET100_v24"
-            ##trial          = "kucmsntuple_MET_R18_MRL_AL1IsoPho_v24"
-            ##trial          = "kucmsntuple_MET_R18_MRL_None_v24"
-            ##trial          = "kucmsntuple_DEG_R17_MRL_AL1SelEle_v24"
-            #trial          = "kucmsntuple_MET_R18_MET100_v25"
-
-            ##trial          = "kucmsntuple_SMS-GlGl_1000"
-            ##trial          = "kucmsntuple_gogoG_Justin_None_v22" #
 
             #trial          = "kucmsntuple_WJetsToLNu_R18_IPM100_v25" #
             #trial          = "kucmsntuple_TTXJets_R18_IPM100_v25" #
-            #trial          = "kucmsntuple_GJETS_R18_IPM100_v25"
-            trial          = "kucmsntuple_QCD_R18_IPM100_v26"
+            #trial          = "kucmsntuple_GJets_R18_IPM100_v25"
+
+            trial          = "kucmsntuple_QCD_R18_IPM100_v27"
+            trial          = "kucmsntuple_QCD_R18_ReTry_IPM100_v27"
+            #trial          = "kucmsntuple_ZJets_R18_SVIPM100_v27"
 
             print( 'processing for : ',trial )
 
@@ -162,15 +148,21 @@ def docrab( dataset ):
             config.General.requestName   = trial+"_"+primaryDataset+"_"+dataset+"_"+runEra+"_request"
             config.Data.outputDatasetTag = trial+"_"+primaryDataset+"_"+dataset+"_"+runEra
 
-            skimM100 = 'eventFilter=MET100'
-            skimAL1P = 'eventFilter=AL1IsoPho'
-            skimIPM100 = 'eventFilter=IsoPhoMet100'
-            skimNone = 'eventFilter=None'
-            skimAL1E = 'eventFilter=AL1SelEle'
+            fSVIPM125 = 'eventFilter=SVIPMet125'
+            fSVIPM100 = 'eventFilter=SVIPMet100'
+            fM100 = 'eventFilter=MET100'
+            fAL1P = 'eventFilter=AL1IsoPho'
+            fIPM100 = 'eventFilter=IsoPhoMet100'
+            fNone = 'eventFilter=None'
+            fAL1E = 'eventFilter=AL1SelEle'
 
             geninfo = 'hasGenInfo=True'
             mcrab = 'multicrab=True'
 
+            efilter = fIPM100
+            #efilter = fSVIPM125 #!!!!!!!!!!!!!!!!!!!!!11
+            print( 'using :', efilter )
+            print( 'using :', geninfo )
 
 #  -------  selsect PD/MC dependent paramters
 #-----------------------------------------------------------------------------------------------------------------------------
@@ -191,7 +183,7 @@ def docrab( dataset ):
 #>>>>>      #MC RunIISummer20UL18RECO
             gt = 'globalTag=106X_upgrade2018_realistic_v11_L1v1'
             #config.JobType.pyCfgParams   = ['globalTag=106X_upgrade2018_realistic_v11_L1v1','multicrab=True','hasGenInfo=True']
-            config.JobType.pyCfgParams   = [gt,mcrab,geninfo,skimIPM100]
+            config.JobType.pyCfgParams   = [gt,mcrab,geninfo,efilter]
             #config.JobType.pyCfgParams   = ['globalTag=106X_upgrade2018_realistic_v11_L1v1','multicrab=True','hasGenInfo=True','eventSkim=AL1IsoPho']
 #>>>>>      #MC GMSB RunIIFall17DRPremix  #globalTag=94X_mc2017_realistic_v14  #  <<< comment/uncomment lumi mask when using/!using MC
             #config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v14','multicrab=True','hasGenInfo=True']
@@ -257,6 +249,14 @@ def run_multi():
         #['/WJetsToLNu_HT-1200To2500_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext2-v3/AODSIM'],
         #['/WJetsToLNu_HT-2500ToInf_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext2-v3/AODSIM'],
 
+        #['/ZJetsToNuNu_HT-100To200_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM'],
+        #['/ZJetsToNuNu_HT-200To400_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM'],
+        #['/ZJetsToNuNu_HT-400To600_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM'],
+        #['/ZJetsToNuNu_HT-1200To2500_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM'],
+        #['/ZJetsToNuNu_HT-2500ToInf_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM'],
+        #['/ZJetsToNuNu_HT-600To800_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM'],
+        #['/ZJetsToNuNu_HT-800To1200_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM'],
+
         #['/TTJets_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
         #['/ttWJets_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM'],
         #['/ttZJets_+TuneCP5MP+/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v1/AODSIM'],
@@ -275,7 +275,8 @@ def run_multi():
         #['/QCD_HT50to100_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
         #['/QCD_HT100to200_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
         #['/QCD_HT700to1000_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
-        ['/QCD_HT200to300_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
+        #['/QCD_HT200to300_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
+        ['/QCD_HT300to500_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
 
     ] 
 

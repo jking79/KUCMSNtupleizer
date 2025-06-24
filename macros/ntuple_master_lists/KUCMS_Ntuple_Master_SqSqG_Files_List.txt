@@ -1,0 +1,5 @@
+# ------------------------------------
+# Master Filelist : Private Sig MC
+# -------------------------------------
+ 
+KUCMSNtuple/kucmsntuple_sqsqG_Sig_IPM100_v27/ kucmsntuple_sqsqG_Sig_IPM100_v27_SMS-SqSq_AODSIM_mGl-1700_mN2-1500_mN1-100-ct0p1_v26.txt sqsqgctp1g17dn15dn1d .001248 1500 100 1 0
