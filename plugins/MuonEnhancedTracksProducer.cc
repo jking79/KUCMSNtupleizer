@@ -105,6 +105,7 @@ MuonEnhancedTracksProducer::MuonEnhancedTracksProducer(const edm::ParameterSet& 
   produces<reco::TrackCollection>("combinedMuonTracks").setBranchAlias("combinedMuonTracks");
   produces<reco::TrackCollection>("muonEnhancedTracks").setBranchAlias("muonEnhancedTracks");
   produces<reco::TrackCollection>("sip2DTracks").setBranchAlias("sip2DTracks");
+  produces<reco::TrackCollection>("sip2DMuonEnhancedTracks").setBranchAlias("sip2DMuonEnhancedTracks");
   produces<reco::TrackCollection>("selectedTracks").setBranchAlias("selectedTracks");
 }
 
@@ -122,8 +123,6 @@ void MuonEnhancedTracksProducer::produce(edm::Event& iEvent, const edm::EventSet
   iEvent.getByToken( displacedMuonsToken_, displacedMuonsHandle_);
   iEvent.getByToken( pvToken_, pvHandle_);
 
-  const reco::Vertex primaryVertex(pvHandle_->at(0));
-
   const TransientTrackBuilder* ttBuilder = &iSetup.getData(transientTrackBuilder_);
   dsaTrackSet_ = toTrackSet(dsaMuonTracksHandle_);
   
@@ -131,6 +130,7 @@ void MuonEnhancedTracksProducer::produce(edm::Event& iEvent, const edm::EventSet
   unique_ptr<reco::TrackCollection> combinedMuonTracks = make_unique<reco::TrackCollection>();
   unique_ptr<reco::TrackCollection> muonEnhancedTracks = make_unique<reco::TrackCollection>();
   unique_ptr<reco::TrackCollection> sip2DTracks = make_unique<reco::TrackCollection>();
+  unique_ptr<reco::TrackCollection> sip2DMuonEnhancedTracks = make_unique<reco::TrackCollection>();
   unique_ptr<reco::TrackCollection> selectedTracks = make_unique<reco::TrackCollection>();
 
   std::vector<std::set<reco::TrackRef>> allMuonTracks({toTrackSet(displacedGlobalMuonTracksHandle_),
@@ -141,16 +141,17 @@ void MuonEnhancedTracksProducer::produce(edm::Event& iEvent, const edm::EventSet
   for(const auto &collection : allMuonTracks) {
     allMuonTrackVector.insert(allMuonTrackVector.end(), collection.begin(), collection.end());
   }
-  
+
   NewVertexMerger merger(pvHandle_->at(0));
   TrackVertexSetCollection vertexSeeds(merger.trackVertexSetSeeds(allMuonTrackVector, ttBuilder));
-  vertexSeeds = TrackVertexSetHelper::applySignificanceCut(vertexSeeds.postCleaningCuts(primaryVertex), primaryVertex);
-  TrackVertexSetHelper::cleanDuplicates(vertexSeeds, primaryVertex);
+  vertexSeeds = TrackVertexSetHelper::applySignificanceCut(vertexSeeds.postCleaningCuts(pvHandle_->at(0)), pvHandle_->at(0));
+  TrackVertexSetHelper::cleanDuplicates(vertexSeeds, pvHandle_->at(0));
   set<reco::TrackRef> muonTracks(vertexSeeds.completeTrackSet());
   
   for(const auto &trackRef : muonTracks)
     combinedMuonTracks->emplace_back(*trackRef);
 
+  //cout << "Combining muon tracks with general tracks" << endl;
   set<reco::TrackRef> generalTrackSet(toTrackSet(generalTracksHandle_));  
   // Apply preliminary track cuts to all collections before attempting to merge
   // Use erase-remove idiom with a predicate
@@ -181,7 +182,7 @@ void MuonEnhancedTracksProducer::produce(edm::Event& iEvent, const edm::EventSet
 
   // Add all muon tracks to the selected general tracks. If matching criteria is satisfied erase general track from collection.
   subMuonTracks(generalTrackSet, muonTracks);
-    
+
   // Fill output tracks with merged collection
   for(const auto &trackRef : generalTrackSet)
     muonEnhancedTracks->emplace_back(*trackRef);
@@ -192,7 +193,7 @@ void MuonEnhancedTracksProducer::produce(edm::Event& iEvent, const edm::EventSet
 
     reco::TransientTrack ttrack(ttBuilder->build(track));
     GlobalVector direction(track.px(), track.py(), track.pz());
-    std::pair<bool, Measurement1D> ip2D = IPTools::signedTransverseImpactParameter(ttrack, direction, primaryVertex);
+    std::pair<bool, Measurement1D> ip2D = IPTools::signedTransverseImpactParameter(ttrack, direction, pvHandle_->at(0));
 
     const double pt(track.pt());
     const double ptError(track.ptError());
@@ -200,19 +201,26 @@ void MuonEnhancedTracksProducer::produce(edm::Event& iEvent, const edm::EventSet
     const double normChi2(track.normalizedChi2());
     const double sip2D(ip2D.second.value() / ip2D.second.error());
 
-    if(pt > 1 && ptRes < 0.5 && normChi2 < 5 && sip2D > 4)
+    if(pt > 1 && ptRes < 0.5 && normChi2 < 5 && fabs(sip2D) > 4)
       sip2DTrackSet.insert(TrackHelper::GetTrackRef(track, generalTracksHandle_));
   }
 
-  subMuonTracks(sip2DTrackSet, muonTracks);
+  set<reco::TrackRef> sip2DMuonEnhancedTrackSet(sip2DTrackSet);
+  subMuonTracks(sip2DMuonEnhancedTrackSet, muonTracks);
     
   for(const auto &trackRef : sip2DTrackSet)
     sip2DTracks->emplace_back(*trackRef);
 
+  for(const auto &trackRef : sip2DMuonEnhancedTrackSet)
+    sip2DMuonEnhancedTracks->emplace_back(*trackRef);
+  
+  //cout << "Finished" << endl;
+  
   // Put in EDM
   iEvent.put(std::move(combinedMuonTracks), "combinedMuonTracks");
   iEvent.put(std::move(muonEnhancedTracks), "muonEnhancedTracks");
   iEvent.put(std::move(sip2DTracks), "sip2DTracks");
+  iEvent.put(std::move(sip2DMuonEnhancedTracks), "sip2DMuonEnhancedTracks");
   iEvent.put(std::move(selectedTracks), "selectedTracks"); 
 }// Producer end
 
@@ -267,6 +275,7 @@ void MuonEnhancedTracksProducer::subMuonTracks(std::set<reco::TrackRef> &tracks,
       tracks.erase(findRef(track, tracks));
   }
 }
+
 //define this as a plug-in
 DEFINE_FWK_MODULE(MuonEnhancedTracksProducer);
 

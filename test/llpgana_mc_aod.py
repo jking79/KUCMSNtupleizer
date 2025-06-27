@@ -422,6 +422,7 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
                               displacedTracks = cms.InputTag("displacedElectrons", "displacedCandidateTracks"),
                               muonEnhancedTracks = cms.InputTag("muonEnhancedTracks", "muonEnhancedTracks"),
                               combinedMuonTracks = cms.InputTag("muonEnhancedTracks", "combinedMuonTracks"),
+                              sip2DMuonEnhancedTracks = cms.InputTag("muonEnhancedTracks", "sip2DMuonEnhancedTracks"),
                               ## vertices
                               #vertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
                               vertices = cms.InputTag("offlinePrimaryVertices"),
