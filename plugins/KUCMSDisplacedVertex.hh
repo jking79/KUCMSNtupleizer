@@ -49,6 +49,7 @@
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/GenVertex.h"
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/TrackVertexSet.h"
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/TTBuilderWrapper.h"
+#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/MatchTracksToSC.h"
 
 //  KUCMS Object includes
 #include "KUCMSObjectBase.hh"
@@ -78,6 +79,9 @@ public:
   void PostProcessEvent( ItemManager<float>& geVar ) {}
   void EndJobs() {}
 
+  template<class T>
+  bool FoundLeptonMatch(const T &lepton) const;
+  
 private:
 
   reco::Vertex primaryVertex_;
@@ -542,6 +546,27 @@ double KUCMSDisplacedVertex::matchRatio(const TrackVertexSet &vertex, const GenV
     }
   }
   return double(count)/vertex.size();
+}
+
+template<class T>
+bool KUCMSDisplacedVertex::FoundLeptonMatch(const T &lepton) const {
+
+  bool foundMatch(false);
+  for(const auto &sv : generalVertices_) {
+    if(sv.size() > 2)
+      continue;
+
+    for(const auto &track : sv.tracks()) {
+      const double deltaR = sqrt(DeltaR2(lepton, *track));
+      if(deltaR < 0.02) {
+        foundMatch = true;
+        break;
+      }
+    }
+    if(foundMatch)
+      break;
+  }
+  return foundMatch;
 }
 
 #endif

@@ -154,7 +154,7 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
 
 	    	// Displaced Vertices
 	    	auto combinedMuonTracks = consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("combinedMuonTracks"));
-	    	auto muonEnhancedTracks = consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("muonEnhancedTracks"));
+	    	auto muonEnhancedTracks = consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("sip2DMuonEnhancedTracks"));
 
 	    	displacedVertexObj = new KUCMSDisplacedVertex(iConfig);
 	    	displacedVertexObj->LoadMuonTracks(combinedMuonTracks);
@@ -165,7 +165,7 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
 	    	displacedVertexObj->LoadAssociationParameters(trackAssocParameters);
 	    	displacedVertexObj->LoadMergedSCs(mergedSCToken);
   	
-			ObjMan.Load( "DisplacedVertex", displacedVertexObj );
+		ObjMan.Load( "DisplacedVertex", displacedVertexObj );
     	}//<<>>if( cfFlag("doSVModule") )
 
 		if( cfFlag("doDisEleModule") ){
