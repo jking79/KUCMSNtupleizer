@@ -9,6 +9,8 @@ options = VarParsing('python')
 options.register('multicrab',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'swtich to use muticrab paramters');
 options.register('hasGenInfo',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to get pcalo in mc');
 options.register('eventFilter','MET100',VarParsing.multiplicity.singleton,VarParsing.varType.string,'filter to use in event processing');
+options.register('doSV',True,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to run displaced SVs');
+options.register('doDisEle',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag ro run displaced electrons');
 
 ## object prep cuts
 #options.register('jetpTmin',15.0,VarParsing.multiplicity.singleton,VarParsing.varType.float,'jet pT minimum cut');
@@ -274,6 +276,14 @@ filterselect = 'AL1DisSV'
 #filterselect = 'IsoPhoMet100'
 #filterselect = 'AL1SelEle'
 
+dosv = True
+#dosv = False
+if options.multicrab == True : dosv = options.doSV
+
+#dode = True
+dode = False
+if options.multicrab == True : dode = options.doDisEle
+
 #probeout = True
 probeout = False
 if options.multicrab == True : probeout = False
@@ -290,7 +300,7 @@ if options.multicrab == True : makeTrigList = False
 
 print( "Using options : mutlicrab = ",options.multicrab," geninfo = ",genInfo," filter = ",filterselect )
 print( "Using options : momChase = ",genMomChase," trgiList = ",makeTrigList," probeout = ",probeout ) 
-print( "Using options : globalTag = ",options.globalTag )
+print( "Using options : globalTag = ",options.globalTag," doDisEle = ",dode," doSVs = ",dosv )
 print( "With output file name : ",options.outputFileName )
 
 # Make the tree 
@@ -304,6 +314,8 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
                               doGenMotherChase = cms.bool(genMomChase),
                               makeTriggerList =  cms.bool(makeTrigList),
                               doProbeOut = cms.bool(probeout),
+                              doSVModule = cms.bool(dosv),
+                              doDisEleModule = cms.bool(dode),
 
                               ##skim type selectuon 
                               fltrSelection = cms.string(filterselect),
@@ -502,30 +514,59 @@ process.Flag_BadChargedCandidateFilter = cms.Path( process.BadChargedCandidateFi
 process.Flag_eeBadScFilter = cms.Path( process.eeBadScFilter )
 process.Flag_ecalBadCalibFilter = cms.Path( process.ecalBadCalibFilter )
 
+process.setFlags = cms.Sequence( process.goodVertices +
+                                 process.globalSuperTightHalo2016Filter +
+                                 process.HBHENoiseFilterResultProducer * process.HBHENoiseFilter +
+                                 process.HBHENoiseIsoFilter +
+                                 process.EcalDeadCellTriggerPrimitiveFilter +
+                                 process.BadPFMuonFilter +
+                                 process.BadPFMuonDzFilter +
+                                 process.hfNoisyHitsFilter +
+                                 process.BadChargedCandidateFilter +
+                                 process.eeBadScFilter +
+                                 process.ecalBadCalibFilter )                               
+
+process.kuEcalTracks = cms.Sequence( ecalTracks )
+process.kuSV = cms.Sequence( muonEnhancedTracks )
+process.kuDisEle = cms.Sequence( displacedElectrons )
+
 # Set up the path
-process.ecalTracks_path = cms.Path(ecalTracks)
-process.displacedElectrons_path = cms.Path(displacedElectrons)
-process.muonEnhancedTracks_path = cms.Path(muonEnhancedTracks)
+#process.ecalTracks_path = cms.Path(ecalTracks)
+#process.displacedElectrons_path = cms.Path(displacedElectrons)
+#process.muonEnhancedTracks_path = cms.Path(muonEnhancedTracks)
+
+process.kuDisplaced_path = cms.Path()
+if ( dosv and not dode ) : process.kuDisplaced_path = cms.Path( process.kuEcalTracks + process.kuSV )
+if ( not dosv and dode ) : process.kuDisplaced_path = cms.Path( process.kuEcalTracks + process.kuDisEle )
+if ( dosv and dode ) : process.kuDisplaced_path = cms.Path( process.kuEcalTracks + process.kuDisEle + process.kuSV )
+
+process.setFlags_path = cms.Path(process.setFlags)
 process.tree_step = cms.EndPath(process.tree)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 
-process.schedule = cms.Schedule( process.ecalTracks_path,
-                                 process.displacedElectrons_path,
-                                 process.muonEnhancedTracks_path,
-                                 process.Flag_goodVertices,
-                                 process.Flag_globalSuperTightHalo2016Filter,
-                                 process.Flag_HBHENoiseFilter,
-                                 process.Flag_HBHENoiseIsoFilter,
-                                 process.Flag_EcalDeadCellTriggerPrimitiveFilter,
-                                 process.Flag_BadPFMuonFilter,
-                                 process.Flag_BadPFMuonDzFilter,
-                                 process.Flag_hfNoisyHitsFilter,
-                                 process.Flag_BadChargedCandidateFilter,
-                                 process.Flag_eeBadScFilter,
-                                 process.Flag_ecalBadCalibFilter,
-                                 process.tree_step,
-                                 process.endjob_step,
-)#process.schedule
+#if dosv :
+process.schedule = cms.Schedule( process.kuDisplaced_path, process.setFlags_path, process.tree_step, process.endjob_step )
+#else :
+#    process.schedule = cms.Schedule( process.setFlags_path, process.tree_step, process.endjob_step )
+
+
+#process.schedule = cms.Schedule( process.ecalTracks_path,
+#                                 process.displacedElectrons_path,
+#                                 process.muonEnhancedTracks_path,
+#                                 process.Flag_goodVertices,
+#                                 process.Flag_globalSuperTightHalo2016Filter,
+#                                 process.Flag_HBHENoiseFilter,
+#                                 process.Flag_HBHENoiseIsoFilter,
+#                                 process.Flag_EcalDeadCellTriggerPrimitiveFilter,
+#                                 process.Flag_BadPFMuonFilter,
+#                                 process.Flag_BadPFMuonDzFilter,
+#                                 process.Flag_hfNoisyHitsFilter,
+#                                 process.Flag_BadChargedCandidateFilter,
+#                                 process.Flag_eeBadScFilter,
+#                                 process.Flag_ecalBadCalibFilter,
+#                                 process.tree_step,
+#                                 process.endjob_step,
+#)#process.schedule
 
 process.options = cms.untracked.PSet()
 

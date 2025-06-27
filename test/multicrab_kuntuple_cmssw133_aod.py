@@ -82,7 +82,7 @@ def docrab( dataset ):
 
         config.Data.partialDataset = True
         config.Data.inputDataset   = None
-        #config.Data.lumiMask       = inputJSON    # Comment out for MC only set for data !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        config.Data.lumiMask       = inputJSON    # Comment out for MC only set for data !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         #config.Data.splitting     = 'Automatic' # data
         config.Data.splitting = 'FileBased' # Justin
         #config.Data.unitsPerJob  =  10
@@ -94,8 +94,8 @@ def docrab( dataset ):
         #config.Data.unitsPerJob  =  25000 # MC QCD - WJetsToLNu large
         #config.Data.unitsPerJob  =  30000 # MC TTJet
         #config.Data.unitsPerJob  =  750 # MC DiPhoBox (DPB)
-        #config.Data.unitsPerJob  =  1 # File based ZJets
-        config.Data.unitsPerJob  =  4 # File based QCD
+        #config.Data.unitsPerJob  =  1 # File based : ZJets 1
+        config.Data.unitsPerJob  =  3 # File based : QCD 4 - EGamma 3
 
         config.JobType.allowUndistributedCMSSW = True
         #config.JobType.maxJobRuntimeMin = 1800
@@ -133,12 +133,13 @@ def docrab( dataset ):
             # 27 Updated SV object
 
 
+            trial          = "kucmsntuple_EGamma_R18_AL1IsoPho_NoSV_v27" #
             #trial          = "kucmsntuple_WJetsToLNu_R18_IPM100_v25" #
             #trial          = "kucmsntuple_TTXJets_R18_IPM100_v25" #
             #trial          = "kucmsntuple_GJets_R18_IPM100_v25"
 
-            trial          = "kucmsntuple_QCD_R18_IPM100_v27"
-            trial          = "kucmsntuple_QCD_R18_ReTry_IPM100_v27"
+            #trial          = "kucmsntuple_QCD_R18_IPM100_v27"
+            #trial          = "kucmsntuple_QCD_R18_ReTry_IPM100_v27"
             #trial          = "kucmsntuple_ZJets_R18_SVIPM100_v27"
 
             print( 'processing for : ',trial )
@@ -159,8 +160,12 @@ def docrab( dataset ):
             geninfo = 'hasGenInfo=True'
             mcrab = 'multicrab=True'
 
-            efilter = fIPM100
-            #efilter = fSVIPM125 #!!!!!!!!!!!!!!!!!!!!!11
+            fNoSV = 'doSV=False'
+
+            efilter = fAL1P
+            #efilter = fM100
+            #efilter = fIPM100
+            #efilter = fSVIPM100 #!!!!!!!!!!!!!!!!!!!!!11
             print( 'using :', efilter )
             print( 'using :', geninfo )
 
@@ -170,30 +175,27 @@ def docrab( dataset ):
 #>>>>>>>>>>>>>>>>>>>     #2017UL #globalTag=106X_dataRun2_v20
             #config.JobType.pyCfgParams   = ['globalTag=106X_dataRun2_v20','multicrab=True']
 #>>>>>>>>>>>>>>>>>>>     #2018UL #globalTag=106X_dataRun2_v36
-            #gt = 'globalTag=106X_dataRun2_v36'
-            #config.JobType.pyCfgParams   = [gt,mcrab,skimIPM100]
-            #config.JobType.pyCfgParams   = [gt,mcrab,skimM100]
-            #config.JobType.pyCfgParams   = [gt,mcrab,skimAL1P]
-            #config.JobType.pyCfgParams   = [gt,mcrab,skimNone]
-            #config.JobType.pyCfgParams   = [gt,mcrab,skimAL1E]
+            gt = 'globalTag=106X_dataRun2_v36'
+            #config.JobType.pyCfgParams   = [gt,mcrab,efilter]
+            config.JobType.pyCfgParams   = [gt,mcrab,efilter,fNoSV]
 #>>>>>>>>>>>>>>>>>>>        #2022 #globalTag=124X_dataRun3_v15
             #config.JobType.pyCfgParams   = ['globalTag=124X_dataRun3_v15','multicrab=True']
 
 #-----------------------------------------------------------------------------------------------------------------------------
 #>>>>>      #MC RunIISummer20UL18RECO
-            gt = 'globalTag=106X_upgrade2018_realistic_v11_L1v1'
-            #config.JobType.pyCfgParams   = ['globalTag=106X_upgrade2018_realistic_v11_L1v1','multicrab=True','hasGenInfo=True']
-            config.JobType.pyCfgParams   = [gt,mcrab,geninfo,efilter]
-            #config.JobType.pyCfgParams   = ['globalTag=106X_upgrade2018_realistic_v11_L1v1','multicrab=True','hasGenInfo=True','eventSkim=AL1IsoPho']
+            #gt = 'globalTag=106X_upgrade2018_realistic_v11_L1v1'
+            ##config.JobType.pyCfgParams   = ['globalTag=106X_upgrade2018_realistic_v11_L1v1','multicrab=True','hasGenInfo=True']
+            #config.JobType.pyCfgParams   = [gt,mcrab,geninfo,efilter]
+            ##config.JobType.pyCfgParams   = ['globalTag=106X_upgrade2018_realistic_v11_L1v1','multicrab=True','hasGenInfo=True','eventSkim=AL1IsoPho']
 #>>>>>      #MC GMSB RunIIFall17DRPremix  #globalTag=94X_mc2017_realistic_v14  #  <<< comment/uncomment lumi mask when using/!using MC
-            #config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v14','multicrab=True','hasGenInfo=True']
-            #config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v14','multicrab=True','hasGenInfo=True','eventSkim=AL1IsoPho']
+            ##config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v14','multicrab=True','hasGenInfo=True']
+            ##config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v14','multicrab=True','hasGenInfo=True','eventSkim=AL1IsoPho']
 #>>>>>>>>>>>>>>>>>>>     #MC RunIIAutumn18DRPremix 102X_upgrade2018_realistic_v15  
-            #config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v11','multicrab=True','hasGenInfo=True']
-            #config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v11','multicrab=True','hasGenInfo=True','eventSkim=AL1IsoPho']
+            ##config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v11','multicrab=True','hasGenInfo=True']
+            ##config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v11','multicrab=True','hasGenInfo=True','eventSkim=AL1IsoPho']
 #>>>>>      #MC Justin
             #gt = 'globalTag=94X_mc2017_realistic_v14'
-            #config.JobType.pyCfgParams   = [gt,mcrab,geninfo,skimNone]
+            ##config.JobType.pyCfgParams   = [gt,mcrab,geninfo,skimNone]
 #-----------------------------------------------------------------------------------------------------------------------------
 
             # Submit.
@@ -240,6 +242,8 @@ def run_multi():
         #['/MET/Run2018C-15Feb2022_UL2018-v1/AOD'],
         #['/MET/Run2018D-15Feb2022_UL2018-v1/AOD'],
 
+        ['/EGamma/Run2018B-15Feb2022_UL2018-v1/AOD'],
+
         #['/WJetsToLNu_HT-70To100_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext1-v3/AODSIM'],
         #['/WJetsToLNu_HT-100To200_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext1-v3/AODSIM'],
         #['/WJetsToLNu_HT-200To400_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext1-v3/AODSIM'],
@@ -276,7 +280,7 @@ def run_multi():
         #['/QCD_HT100to200_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
         #['/QCD_HT700to1000_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
         #['/QCD_HT200to300_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
-        ['/QCD_HT300to500_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
+        #['/QCD_HT300to500_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
 
     ] 
 

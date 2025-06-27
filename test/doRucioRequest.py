@@ -71,10 +71,10 @@ met18UL = [
 
 deg_list = [
 
-    #'cms:/EGamma/Run2018A-15Feb2022_UL2018-v1/MINIAOD',
+    'cms:/EGamma/Run2018A-15Feb2022_UL2018-v1/MINIAOD',
     #'cms:/EGamma/Run2018B-15Feb2022_UL2018-v1/MINIAOD',
     #'cms:/EGamma/Run2018C-15Feb2022_UL2018-v1/MINIAOD',
-    'cms:/EGamma/Run2018D-15Feb2022_UL2018-v1/MINIAOD',
+    #'cms:/EGamma/Run2018D-15Feb2022_UL2018-v1/MINIAOD',
 
 ]
 
