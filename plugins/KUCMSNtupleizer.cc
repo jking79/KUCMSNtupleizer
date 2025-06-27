@@ -167,7 +167,6 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
   	
 			ObjMan.Load( "DisplacedVertex", displacedVertexObj );
     	}//<<>>if( cfFlag("doSVModule") )
-    	else geVar.set("nDisSVs",0.f);
 
 		if( cfFlag("doDisEleModule") ){
 
@@ -193,6 +192,7 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
 		}//<<>>if( cfFlag("doDisEleModule") )
 
     }//<<>>if( cfFlag("doSVModule") )
+	if( not cfFlag("doSVModule") ) geVar.set("nDisSVs",0.f);
 
 	//Muons    
 	auto muonObj = new KUCMSMuonObject( iConfig );
@@ -253,11 +253,9 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
 	    electronsObj->LoadGenObject( genObjs );
         photonsObj->LoadGenObject( genObjs );
         ak4jetObj->LoadGenObject( genObjs );
-		if( cfFlag("doSVModule") ){ 
-			displacedVertexObj->LoadGenParticlesToken(genPartToken);
-			ecalTracksObj->LoadGenObject( genObjs );
-			displacedElectronObj->LoadGenObject( genObjs );
-		}//<<>>if( cfFlag("doSVModule") )	
+		if( cfFlag("doSVModule") || cfFlag("doDisEleModule") ){ ecalTracksObj->LoadGenObject( genObjs ); }
+		if( cfFlag("doSVModule") ){ displacedVertexObj->LoadGenParticlesToken(genPartToken); }
+	    if( cfFlag("doDisEleModule") ){	displacedElectronObj->LoadGenObject( genObjs ); }
 
         // Load gen object into objman last, should be no dependence with other objects
         ObjMan.Load( "GenObjects", genObjs );
