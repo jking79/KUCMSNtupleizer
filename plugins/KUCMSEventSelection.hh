@@ -49,6 +49,7 @@ class KUCMSEventSelection {
 
 const bool KUCMSEventSelection::selectEvent( ItemManager<float>& geVar ){
 
+
     bool hasMinMet150 = geVar("evtMET") > 150;
     bool hasMinMet125 = geVar("evtMET") > 125;
     bool hasMinMet100 = geVar("evtMET") > 100;	
