@@ -167,24 +167,28 @@ void KUCMSAK4JetObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("Parts","Jet_egIndxs",VVUINT);
     Branches.makeBranch("DrRhIds","Jet_drRhIds",VVUINT);
 
-    Branches.makeBranch("GenImpactAngle","Jet_genImpactAngle",VFLOAT);
-    Branches.makeBranch("GenTime","Jet_genTime",VFLOAT);
-    Branches.makeBranch("GenPt","Jet_genPt",VFLOAT);
-    Branches.makeBranch("GenEta","Jet_genEta",VFLOAT);
-    Branches.makeBranch("GenPhi","Jet_genPhi",VFLOAT);
-    Branches.makeBranch("GenEnergy","Jet_genEnergy",VFLOAT);
-    Branches.makeBranch("GenDrMatch","Jet_genDrMatch",VFLOAT);
-    Branches.makeBranch("GenDptMatch","Jet_genDptMatch",VFLOAT);
-    Branches.makeBranch("GenTimeLLP","Jet_genTimeLLP",VFLOAT);
-    Branches.makeBranch("GenTOF","Jet_genTOF",VFLOAT);
+	if( cfFlag("hasGenInfo") ){
 
-    Branches.makeBranch("GenQrkLlpDr","Jet_genQrkLlpDr",VFLOAT);
-    Branches.makeBranch("GenQrkLlpRp","Jet_genQrkLlpRp",VFLOAT);
-    Branches.makeBranch("GenQrkLlpId","Jet_genQrkLlpId",VINT);
+    	Branches.makeBranch("GenImpactAngle","Jet_genImpactAngle",VFLOAT);
+    	Branches.makeBranch("GenTime","Jet_genTime",VFLOAT);
+    	Branches.makeBranch("GenPt","Jet_genPt",VFLOAT);
+    	Branches.makeBranch("GenEta","Jet_genEta",VFLOAT);
+    	Branches.makeBranch("GenPhi","Jet_genPhi",VFLOAT);
+    	Branches.makeBranch("GenEnergy","Jet_genEnergy",VFLOAT);
+    	Branches.makeBranch("GenDrMatch","Jet_genDrMatch",VFLOAT);
+    	Branches.makeBranch("GenDptMatch","Jet_genDptMatch",VFLOAT);
+    	Branches.makeBranch("GenTimeLLP","Jet_genTimeLLP",VFLOAT);
+    	Branches.makeBranch("GenTOF","Jet_genTOF",VFLOAT);
 
-    Branches.makeBranch("GejJetDr","Jet_genJetLlpDr",VFLOAT);
-    Branches.makeBranch("GenJetRp","Jet_genJetLlpRp",VFLOAT);
-    Branches.makeBranch("GenJetLlpId","Jet_genJetLlpId",VINT);
+    	Branches.makeBranch("GenQrkLlpDr","Jet_genQrkLlpDr",VFLOAT);
+    	Branches.makeBranch("GenQrkLlpRp","Jet_genQrkLlpRp",VFLOAT);
+    	Branches.makeBranch("GenQrkLlpId","Jet_genQrkLlpId",VINT);
+
+    	Branches.makeBranch("GejJetDr","Jet_genJetLlpDr",VFLOAT);
+    	Branches.makeBranch("GenJetRp","Jet_genJetLlpRp",VFLOAT);
+    	Branches.makeBranch("GenJetLlpId","Jet_genJetLlpId",VINT);
+
+	}//<<>>if( cfFlag("hasGenInfo") )
 
 	Branches.attachBranches(fOutTree);
 
