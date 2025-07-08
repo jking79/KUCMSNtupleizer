@@ -81,6 +81,9 @@ public:
 
   template<class T>
   bool FoundLeptonMatch(const T &lepton) const;
+
+  template<class T>
+  bool IsPromptLepton(const T &lepton) const;
   
 private:
 
@@ -567,6 +570,19 @@ bool KUCMSDisplacedVertex::FoundLeptonMatch(const T &lepton) const {
       break;
   }
   return foundMatch;
+}
+
+template<class T>
+bool KUCMSDisplacedVertex::IsPromptLepton(const T &lepton) const {
+
+  for(const auto &track : *muonEnhancedTracksHandle_) {
+    const double deltaR = sqrt(DeltaR2(lepton, track));
+    if(deltaR < 0.02) {
+      return false;
+    }
+  }
+  
+  return true;
 }
 
 #endif
