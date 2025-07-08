@@ -82,24 +82,22 @@ def docrab( dataset ):
 
         config.Data.partialDataset = True
         config.Data.inputDataset   = None
-        config.Data.lumiMask       = inputJSON    # Comment out for MC only set for data !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        #config.Data.lumiMask       = inputJSON    # Comment out for MC only set for data !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         #config.Data.splitting     = 'Automatic' # data
         config.Data.splitting = 'FileBased' # Justin
         #config.Data.unitsPerJob  =  10
+        config.Data.unitsPerJob  =  4 # File based : Wjets 70,100,200
+        #config.Data.unitsPerJob  =  3 # File based : QCD 4 - EGamma 3
+        #config.Data.unitsPerJob  =  2 # File based : Wjets 400+
         #config.Data.splitting    = 'EventAwareLumiBased' # MC&Data Set unitsperjob correctly for dataset !!!!!!!!!!!!!!!!!!!!!!!!!!
-        #config.Data.unitsPerJob   = 45000 # data  !!!!!! lumimask ?
-        #config.Data.unitsPerJob  =  1500 # MC GMSB
-        ##config.Data.unitsPerJob  =  20000 # MC GJet
-        #config.Data.unitsPerJob  =  15000 # MC QCD - WJetsToLNu
-        #config.Data.unitsPerJob  =  25000 # MC QCD - WJetsToLNu large
-        #config.Data.unitsPerJob  =  30000 # MC TTJet
-        #config.Data.unitsPerJob  =  750 # MC DiPhoBox (DPB)
-        #config.Data.unitsPerJob  =  1 # File based : ZJets 1
-        config.Data.unitsPerJob  =  3 # File based : QCD 4 - EGamma 3
+        #config.Data.unitsPerJob   = 72500 # data  !!!!!! lumimask ?
+        #config.Data.splitting    = 'LumiBased'
+        #config.Data.unitsPerJob   = 14 # 14 for eg c 18ul ~ 2 files & 19 hours too much disk space -> 1 file worth & break up to keep under 2000 jobs
 
-        config.JobType.allowUndistributedCMSSW = True
+        #config.JobType.allowUndistributedCMSSW = True
         #config.JobType.maxJobRuntimeMin = 1800
         config.JobType.maxJobRuntimeMin = 2280
+        #config.JobType.maxMemoryMB = 3000
         config.Data.publication    = False
         config.Site.storageSite    = 'T3_US_FNALLPC'
         #--------------------------------------------------------
@@ -127,20 +125,22 @@ def docrab( dataset ):
             dataset        = inDO[0].split('/')[3]
             print( dataset )
 
-            print( 'current KUCMSNtuple version : 27' ) 
+            print( 'current KUCMSNtuple version : 28' ) 
             # 25 Adds ECAL TimeError and GS info + Adds SV processing           
             # 26 Adds Muon Object and loose Muon/electron counting
             # 27 Updated SV object
+            # 28 Updated SV object + sip3d cut on SV + lepton-SV matching
 
 
-            trial          = "kucmsntuple_EGamma_R18_AL1IsoPho_NoSV_v27" #
+            #trial          = "kucmsntuple_EGamma_R18_AL1SelEle_DEOnly_v28" #
             #trial          = "kucmsntuple_WJetsToLNu_R18_IPM100_v25" #
             #trial          = "kucmsntuple_TTXJets_R18_IPM100_v25" #
             #trial          = "kucmsntuple_GJets_R18_IPM100_v25"
 
             #trial          = "kucmsntuple_QCD_R18_IPM100_v27"
             #trial          = "kucmsntuple_QCD_R18_ReTry_IPM100_v27"
-            #trial          = "kucmsntuple_ZJets_R18_SVIPM100_v27"
+            #trial          = "kucmsntuple_ZJets_R18_SVIPM100_v28"
+            trial          = "kucmsntuple_WJets_R18_SVIPM100_v28"
 
             print( 'processing for : ',trial )
 
@@ -160,32 +160,35 @@ def docrab( dataset ):
             geninfo = 'hasGenInfo=True'
             mcrab = 'multicrab=True'
 
-            fNoSV = 'doSV=False'
+            mNoSV = 'doSV=False'
+            mDoDEle = 'doDisEle=true'
+            mDoETOnly = 'doECALTrackOnly=true'
 
-            efilter = fAL1P
-            #efilter = fM100
-            #efilter = fIPM100
-            #efilter = fSVIPM100 #!!!!!!!!!!!!!!!!!!!!!11
+            ##efilter = fAL1P
+            ##efilter = fM100
+            ##efilter = fIPM100
+            ##efilter = fAL1E
+            efilter = fSVIPM100 #!!!!!!!!!!!!!!!!
             print( 'using :', efilter )
             print( 'using :', geninfo )
 
 #  -------  selsect PD/MC dependent paramters
-#-----------------------------------------------------------------------------------------------------------------------------
+#---DATA--------------------------------------------------------------------------------------------------------------------------
 
 #>>>>>>>>>>>>>>>>>>>     #2017UL #globalTag=106X_dataRun2_v20
             #config.JobType.pyCfgParams   = ['globalTag=106X_dataRun2_v20','multicrab=True']
 #>>>>>>>>>>>>>>>>>>>     #2018UL #globalTag=106X_dataRun2_v36
-            gt = 'globalTag=106X_dataRun2_v36'
+            #gt = 'globalTag=106X_dataRun2_v36'
             #config.JobType.pyCfgParams   = [gt,mcrab,efilter]
-            config.JobType.pyCfgParams   = [gt,mcrab,efilter,fNoSV]
+            #config.JobType.pyCfgParams   = [gt,mcrab,efilter,mDoETOnly]
 #>>>>>>>>>>>>>>>>>>>        #2022 #globalTag=124X_dataRun3_v15
             #config.JobType.pyCfgParams   = ['globalTag=124X_dataRun3_v15','multicrab=True']
 
-#-----------------------------------------------------------------------------------------------------------------------------
+#---MC--------------------------------------------------------------------------------------------------------------------------
 #>>>>>      #MC RunIISummer20UL18RECO
-            #gt = 'globalTag=106X_upgrade2018_realistic_v11_L1v1'
+            gt = 'globalTag=106X_upgrade2018_realistic_v11_L1v1'
             ##config.JobType.pyCfgParams   = ['globalTag=106X_upgrade2018_realistic_v11_L1v1','multicrab=True','hasGenInfo=True']
-            #config.JobType.pyCfgParams   = [gt,mcrab,geninfo,efilter]
+            config.JobType.pyCfgParams   = [gt,mcrab,geninfo,efilter]
             ##config.JobType.pyCfgParams   = ['globalTag=106X_upgrade2018_realistic_v11_L1v1','multicrab=True','hasGenInfo=True','eventSkim=AL1IsoPho']
 #>>>>>      #MC GMSB RunIIFall17DRPremix  #globalTag=94X_mc2017_realistic_v14  #  <<< comment/uncomment lumi mask when using/!using MC
             ##config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v14','multicrab=True','hasGenInfo=True']
@@ -242,12 +245,14 @@ def run_multi():
         #['/MET/Run2018C-15Feb2022_UL2018-v1/AOD'],
         #['/MET/Run2018D-15Feb2022_UL2018-v1/AOD'],
 
-        ['/EGamma/Run2018B-15Feb2022_UL2018-v1/AOD'],
+        #['/EGamma/Run2018B-15Feb2022_UL2018-v1/AOD'],#72500 eventsperlumi ( 36.5K per file - 4268 files )
+        #['/EGamma/Run2018C-15Feb2022_UL2018-v1/AOD'],#72500 eventsperlumi   ( 36.1K per file - 4051 files )
+        #['/EGamma/Run2018D-15Feb2022_UL2018-v1/AOD'],#72500 eventsperlumi
 
         #['/WJetsToLNu_HT-70To100_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext1-v3/AODSIM'],
-        #['/WJetsToLNu_HT-100To200_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext1-v3/AODSIM'],
+        ['/WJetsToLNu_HT-100To200_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext1-v3/AODSIM'],
         #['/WJetsToLNu_HT-200To400_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext1-v3/AODSIM'],
-        #['/WJetsToLNu_HT-400To600_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext2-v3/AODSIM'],
+        ##['/WJetsToLNu_HT-400To600_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext2-v3/AODSIM'],
         #['/WJetsToLNu_HT-600To800_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext2-v3/AODSIM'],
         #['/WJetsToLNu_HT-800To1200_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext2-v3/AODSIM'],
         #['/WJetsToLNu_HT-1200To2500_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext2-v3/AODSIM'],

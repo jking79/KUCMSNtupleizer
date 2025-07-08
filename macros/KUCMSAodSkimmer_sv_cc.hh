@@ -124,8 +124,10 @@ KUCMSAodSkimmer::~KUCMSAodSkimmer(){
       
 }//<<>>KUCMSAodSkimmer::~KUCMSAodSkimmer()
 
-void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, int skipCnt ){
+void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, bool doSVs, int skipCnt, bool useEvtWgts ){
 
+
+	useEvtWgt = useEvtWgts;
     doGenInfo = hasGenInfo;
     const std::string disphotreename = "tree/llpgtree";
     const std::string configtreename = "tree/configtree";
@@ -182,7 +184,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
 		int nfiles = 0;	
 	    while( std::getline( infile, str ) ){
 			nfiles++;
-			if( skipCnt != 0 && nfiles%skipCnt != 0 ) continue;
+			if( skipCnt != 0 && ( nfiles%skipCnt != 0 ) ) continue;
 	        auto tfilename = eosdir + inpath + str;
 			fInTree->Add(tfilename.c_str());
 			fInConfigTree->Add(tfilename.c_str());
@@ -248,8 +250,8 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
 
 			configCnts["nTotEvts"] += nTotEvts;
             configCnts["nFltrdEvts"] += nFltrdEvts;
-            configWgts["sumEvtWgt"] += sumEvtWgt;
-            configWgts["sumFltrdEvtWgt"] += sumFltrdEvtWgt;
+            configWgts["sumEvtWgt"] += useEvtWgt ? sumEvtWgt : nTotEvts;
+            configWgts["sumFltrdEvtWgt"] += useEvtWgt ? sumFltrdEvtWgt : nFltrdEvts;
             configCnts["nMetFltrdEvts"] += nMetFltrdEvts;
             configCnts["nPhoFltrdEvts"] += nPhoFltrdEvts;
 
@@ -284,6 +286,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
             geVars.clear();
             //geVects.clear();
 			if( genSigPerfect ) geVars.set( "genSigPerfect", 1 ); else geVars.set( "genSigPerfect", 0 );
+            if( doSVs ) geVars.set( "doSVs", 1 ); else geVars.set( "doSVs", 0 );
 			if(DEBUG) std::cout << " -- Event Loop " << std::endl;
 			auto saveToTree = eventLoop(entry);
             if( saveToTree ){ fOutTree->Fill(); }
@@ -345,7 +348,7 @@ void KUCMSAodSkimmer::startJobs(){
 	nEvents = 0;
 	nSelectedEvents = 0;
 
-    sumEvtGenWgt = 0.0;
+    //sumEvtGenWgt = 0.0;
 
     configCnts.clear();
     configWgts.clear();
@@ -419,8 +422,9 @@ void KUCMSAodSkimmer::processEvntVars(){
 	//fill
 
     selEvtVars.fillBranch( "dsKey", dataSetKey );
-    selEvtVars.fillBranch( "evtGenWgt", Evt_genWgt );
-    sumEvtGenWgt += Evt_genWgt;
+	float evtGenWgt = useEvtWgt ? Evt_genWgt : 1;
+    selEvtVars.fillBranch( "evtGenWgt", evtGenWgt );
+    //sumEvtGenWgt += Evt_genWgt;
     selEvtVars.fillBranch( "evtXSection", xsctn );
 
 	// SVs
@@ -434,8 +438,8 @@ void KUCMSAodSkimmer::processEvntVars(){
         bool peleid = (*Vertex_passLooseElectronID)[svit];
         bool pmuonid = (*Vertex_passLooseMuonID)[svit];
 
-		if( ntrack == 2 && ( peleid || pmuonid ) ) nLsv++;
-		if( ntrack >= 5 && mass/ntrack > 1 ) nHsv++;
+		if( ( ntrack == 2 ) && ( peleid || pmuonid ) ) nLsv++;
+		if( ( ntrack >= 5 ) && ( mass/ntrack > 1 ) ) nHsv++;
 
 	}//<<>>for( svit = 0; svit < nSVs; scit++ )
 
@@ -443,6 +447,21 @@ void KUCMSAodSkimmer::processEvntVars(){
 	selEvtVars.fillBranch( "SV_nHadronic", nHsv );
 	geVars.set("nSVLep", nLsv );
 	geVars.set("nSVHad", nHsv );
+
+    selEvtVars.fillBranch( "Flag_BadChargedCandidateFilter", Flag_BadChargedCandidateFilter );//not suggested
+    selEvtVars.fillBranch( "Flag_BadPFMuonDzFilter", Flag_BadPFMuonDzFilter );//suggested
+    selEvtVars.fillBranch( "Flag_BadPFMuonFilter", Flag_BadPFMuonFilter );//suggested
+    selEvtVars.fillBranch( "Flag_EcalDeadCellTriggerPrimitiveFilter", Flag_EcalDeadCellTriggerPrimitiveFilter );//suggested
+    selEvtVars.fillBranch( "Flag_HBHENoiseFilter", Flag_HBHENoiseFilter );//suggested
+    selEvtVars.fillBranch( "Flag_HBHENoiseIsoFilter", Flag_HBHENoiseIsoFilter );//suggested
+    selEvtVars.fillBranch( "Flag_ecalBadCalibFilter", Flag_ecalBadCalibFilter );//suggested
+    selEvtVars.fillBranch( "Flag_eeBadScFilter", Flag_eeBadScFilter );//suggested
+    selEvtVars.fillBranch( "Flag_globalSuperTightHalo2016Filter", Flag_globalSuperTightHalo2016Filter );//suggested
+    selEvtVars.fillBranch( "Flag_goodVertices", Flag_goodVertices );//suggested
+    selEvtVars.fillBranch( "Flag_hfNoisyHitsFilter", Flag_hfNoisyHitsFilter );//optional
+	bool metfilter = Flag_BadPFMuonDzFilter && Flag_BadPFMuonFilter && Flag_EcalDeadCellTriggerPrimitiveFilter && Flag_HBHENoiseFilter;
+	metfilter = metfilter && Flag_HBHENoiseIsoFilter && Flag_ecalBadCalibFilter && Flag_eeBadScFilter && Flag_goodVertices;
+	selEvtVars.fillBranch( "Flag_MetFilter",metfilter);
 
 }//<<>>void KUCMSAodSkimmer::processEvntVars()
 
@@ -576,7 +595,7 @@ void KUCMSAodSkimmer::processGenParticles(){
 		//float gama = ( beta >= 0 ) ? 1/std::sqrt( 1 - beta*beta ) : -1; 
 		float gbeta = ( mommass > 0 ) ? genmomp/mommass : -1;
         //float gbeta = ( gama >= 0 && beta >= 0 ) ? gama*beta : -1;
-		float ctau = ( gbeta >= 0 && displacment >= 0 ) ? displacment/gbeta : -1;
+		float ctau = ( ( gbeta >= 0 ) && ( displacment >= 0 ) ) ? displacment/gbeta : -1;
 		if( mompdg == 1000023 ){ selGenPart.fillBranch( "genXMomCTau", ctau ); }
 		//if( mompdg != 0 ){
         if( false ){
@@ -585,33 +604,33 @@ void KUCMSAodSkimmer::processGenParticles(){
         	std::cout << " ctau: " << ctau << std::endl; 
 		}//<<>>if( mompdg != 0 )
 
-		if( pdgId > 1000000 && pdgId < 1000007 ){ nSQuark++; selGenPart.fillBranch( "genSQMass", mass ); }
+		if( ( pdgId > 1000000 ) && ( pdgId < 1000007 ) ){ nSQuark++; selGenPart.fillBranch( "genSQMass", mass ); }
         if( pdgId == 1000021 ){ nSGlue++; selGenPart.fillBranch( "genSGMass", mass ); }
         if( pdgId == 1000023 ){ selGenPart.fillBranch( "genLLPMass", mass ); }
         if( pdgId == 1000022 ){ selGenPart.fillBranch( "genLSPMass", mass ); }
         if( pdgId == 1000039 ){ selGenPart.fillBranch( "genGrvtinoMass", mass ); }
 
 		//if( pdgId < 7 ) continue;
-		bool hasMom( momIndx < nGenParts && momIndx > -1 );
+		bool hasMom( ( momIndx < nGenParts ) && ( momIndx > -1 ) );
 		int gMomIndx = hasMom ? Gen_motherIdx->at(momIndx) : -1;
 		bool hasGrandMom( gMomIndx > -1 );
-        bool lsp( pdgId == 1000039 || ( pdgId == 1000022 && status == 1 ) );
-		bool hasX234( pdgId > 1000022 && pdgId < 1000038 );
-		bool fromX( hasMom && ( Gen_pdgId->at(momIndx) == 1000022 || Gen_pdgId->at(momIndx) == 1000023 ) );
-		bool fromSg( hasMom && Gen_pdgId->at(momIndx) == 1000021 );
-        bool fromSqkL( hasMom && Gen_pdgId->at(momIndx) > 1000000 && Gen_pdgId->at(momIndx) < 1000009 );
-        bool fromSqkR( hasMom && Gen_pdgId->at(momIndx) > 2000000 && Gen_pdgId->at(momIndx) < 2000009 );
+        bool lsp( ( pdgId == 1000039 ) || ( ( pdgId == 1000022 ) && ( status == 1 ) ) );
+		bool hasX234( ( pdgId > 1000022 ) && ( pdgId < 1000038 ) );
+		bool fromX( hasMom && ( ( Gen_pdgId->at(momIndx) == 1000022 ) || ( Gen_pdgId->at(momIndx) == 1000023 ) ) );
+		bool fromSg( hasMom && ( Gen_pdgId->at(momIndx) == 1000021 ) );
+        bool fromSqkL( hasMom && ( Gen_pdgId->at(momIndx) > 1000000 ) && ( Gen_pdgId->at(momIndx) < 1000009 ) );
+        bool fromSqkR( hasMom && ( Gen_pdgId->at(momIndx) > 2000000 ) && ( Gen_pdgId->at(momIndx) < 2000009 ) );
 		bool fromSqk( fromSqkL || fromSqkR );
-		bool fromZ( hasMom && Gen_pdgId->at(momIndx) == 23 );
-		bool momFromX( hasGrandMom && ( Gen_pdgId->at(gMomIndx) == 1000022 || Gen_pdgId->at(gMomIndx) == 1000023 ) );
-		bool momFromSg( hasGrandMom && Gen_pdgId->at(gMomIndx) == 1000021 );
-        bool momFromSqkL( hasGrandMom && Gen_pdgId->at(gMomIndx) > 1000000 && Gen_pdgId->at(gMomIndx) < 1000009 );
-        bool momFromSqkR( hasGrandMom && Gen_pdgId->at(gMomIndx) > 2000000 && Gen_pdgId->at(gMomIndx) < 2000009 );
+		bool fromZ( hasMom && ( Gen_pdgId->at(momIndx) == 23 ) );
+		bool momFromX( hasGrandMom && ( ( Gen_pdgId->at(gMomIndx) == 1000022 ) || ( Gen_pdgId->at(gMomIndx) == 1000023 ) ) );
+		bool momFromSg( hasGrandMom && ( Gen_pdgId->at(gMomIndx) == 1000021 ) );
+        bool momFromSqkL( hasGrandMom && ( Gen_pdgId->at(gMomIndx) > 1000000 ) && ( Gen_pdgId->at(gMomIndx) < 1000009 ) );
+        bool momFromSqkR( hasGrandMom && ( Gen_pdgId->at(gMomIndx) > 2000000 ) && ( Gen_pdgId->at(gMomIndx) < 2000009 ) );
         bool momFromSqk( momFromSqkL || momFromSqkR );
 		bool quark( pdgId < 9 );
 		bool photon( pdgId == 22 ); 
         bool zee( pdgId == 23 );
-		bool lept( pdgId > 10 && pdgId < 19 );
+		bool lept( ( pdgId > 10 ) && ( pdgId < 19 ) );
 		bool N0( pdgId == 1000022 );
 
     	//if( lsp && fromX && momFromSg ) nLSPfXfSg++;
@@ -875,10 +894,10 @@ void KUCMSAodSkimmer::processPhotons(){
         float s3 = std::exp( -1*sq2(rtime-0.2037)/144.942338);
         //float core = ( rtime < -0.549 ) ? 1 : ( rtime < 3.37 ) ? s1 : s2;
         float core = ( rtime < -0.549 ) ? 1 : s1;
-        if( re < 325 && rtime > 7.0 ) core = s2;
-        if( re < 200 && rtime > 6.0 ) core = s2;
-        if( re < 150 && rtime > 5.0 ) core = s2;
-        if( re < 100 && rtime > 4.0 ) core = s2;
+        if( ( re < 325 ) && ( rtime > 7.0 ) ) core = s2;
+        if( ( re < 200 ) && ( rtime > 6.0 ) ) core = s2;
+        if( ( re < 150 ) && ( rtime > 5.0 ) ) core = s2;
+        if( ( re < 100 ) && ( rtime > 4.0 ) ) core = s2;
         if( rtime > 16.0 ) core = s3;
         ////float core = ( rtime < 0.204 ) ? 1 : std::exp(-1*sq2(rtime-0.204)/144.942338);
         float ce = energy/core;
@@ -1121,19 +1140,20 @@ void KUCMSAodSkimmer::processPhotons(){
 
 void KUCMSAodSkimmer::processElectrons(){
 
-    if( DEBUG ) std::cout << "Finding electrons" << std::endl;
+    //if( DEBUG ) std::cout << "Finding electrons" << std::endl;
 	//-------- electrons --------------------------------------
 
     // intilize
     selElectrons.clearBranches(); // <<<<<<<   must do
 
 	uInt nElectrons = Electron_energy->size();
-    float nSelElectrons = 0;
+	uInt nLooseEle = 0;
+    uInt nSelIsoElectrons = 0;
 	float nEpDrMatch = 0;
     float nEpSeedIdMatch = 0;
-    float nEpsidsolo = 0;
+    uInt nEpsidsolo = 0;
     float elePhoIsoMinDr(10.0); 
-    if( DEBUG ) std::cout << " -- Looping electrons: " << std::endl;
+    //if( DEBUG ) std::cout << " -- Looping electrons: " << std::endl;
     for( uInt itr = 0; itr < nElectrons; itr++ ){
 		
     	if( DEBUG ) std::cout << " ---- Processing  electron: " << itr << " of: " << nElectrons << std::endl;
@@ -1147,10 +1167,10 @@ void KUCMSAodSkimmer::processElectrons(){
 		if( std::abs(eletime) > 30 ) continue;
 
     	uInt nPhotons = Photon_excluded->size();
-		float elePhoIsoDr(0.5);
+		float elePhoIsoDr(10.0);
 		bool epSeedIdMatch = false;
 		bool epsidsolo = true;
-		if( DEBUG ) std::cout << " -- doing ele pho iso sstuff " << std::endl;
+		//if( DEBUG ) std::cout << " -- doing ele pho iso sstuff " << std::endl;
     	for( uInt pit2 = 0; pit2 < nPhotons; pit2++ ){
         	float eta2 = (*Photon_eta)[pit2];
         	float phi2 = (*Photon_phi)[pit2];
@@ -1166,30 +1186,37 @@ void KUCMSAodSkimmer::processElectrons(){
 			//std::cout << " -- psid : " << psid << std::endl;
 			if( esid == psid ){ if( epSeedIdMatch == true ) epsidsolo = false ; epSeedIdMatch = true; }
     	}//for( uInt pit2 = 0; pit2 < nPhotons; pit2++ )
+		//std::cout << " ---- next electrons: " << std::endl;
 		elePhoIsoMinDr = elePhoIsoDr;
 		bool epDrMatch = ( elePhoIsoDr < 0.2  ) ? true : false;
-		if( not epDrMatch && (*Electron_pt)[itr] > 10 ) nSelElectrons++;
+		bool eleminpt = (*Electron_pt)[itr] > 10;
+		if( not epDrMatch & eleminpt ) nSelIsoElectrons++;
 
 		if( epDrMatch ) nEpDrMatch++;
 		if( epSeedIdMatch ) nEpSeedIdMatch++;
 		if( epsidsolo ) nEpsidsolo++;
 		if( DEBUG ) std::cout << " ---- next electrons: " << std::endl;
-
+        //std::cout << " ---- filling electrons: " << std::endl;
 		selElectrons.fillBranch( "elePhoMinDr", elePhoIsoMinDr );
-		//bool isLoose = (*Electron_isLoose)[itr];
-		//selElectrons.fillBranch( "eleIsLoose", isLoose );
+		selElectrons.fillBranch( "eleHasSVMatch", (*Electron_hasSVMatch)[itr] );
+		selElectrons.fillBranch( "eleIsLoose", (*Electron_isLoose)[itr] );
+		if( (*Electron_isLoose)[itr] ) nLooseEle++;
 
 	}//<<>>for( int itr = 0; itr < nElectrons; itr++ )
     if( DEBUG ) std::cout << " -- Finishd looping electrons " << std::endl;
 
-	geCnts.set("nSelEle",nSelElectrons);
+	geCnts.set("nSelEle",nSelIsoElectrons);// passes min pt, isolated from photons, && good time criteria
 
     selElectrons.fillBranch( "nElectrons", nElectrons );
 	if( nElectrons == 0 ) nElectrons = 1;
-    selElectrons.fillBranch( "epDrMatch", nEpDrMatch/nElectrons );
-    selElectrons.fillBranch( "epSeedIdMatch", nEpSeedIdMatch/nElectrons );
-    selElectrons.fillBranch( "epSeedIdUnique", nEpsidsolo/nElectrons );
-    //selElectrons.fillBranch( "nLooseElectrons", Electron_nSelElectrons );
+    //std::cout << " -- Finish nEle looping electrons " << std::endl;
+    selElectrons.fillBranch( "epDrMatch", nEpDrMatch/float(nElectrons) );
+    selElectrons.fillBranch( "epSeedIdMatch", nEpSeedIdMatch/float(nElectrons) );
+    selElectrons.fillBranch( "epSeedIdUnique", nEpsidsolo/float(nElectrons) );
+    //std::cout << " -- Finish New looping electrons " << std::endl;
+    selElectrons.fillBranch( "nSelElectrons", Electron_nSelElectrons );
+    selElectrons.fillBranch( "nEleSVMatched", Electron_nSVMatched );
+    selElectrons.fillBranch( "nSelIsoElectrons", nLooseEle );
 
 }//<<>>void KUCMSAodSkimmer::processElectrons
 
@@ -1201,15 +1228,20 @@ void KUCMSAodSkimmer::processMuons(){
     selMuons.clearBranches(); // <<<<<<<   must do
 
     uInt nMuons = Muon_energy->size();
+	uInt nLooseMuons = 0;
     if( DEBUG ) std::cout << " -- Looping muons: " << std::endl;
-    //for( uInt itr = 0; itr < nMuons; itr++ ){
-	//
-	//	float energy = (*Muons_energy)[itr];
-	//	selMuons.fillBranch( "nMuons", nMuons );
-	//
-	//}//<<>>for( uInt itr = 0; itr < nMuons; itr++ )
+    for( uInt itr = 0; itr < nMuons; itr++ ){
+	
+		//float energy = (*Muons_energy)[itr];
+    	selMuons.fillBranch( "muonIsLoose", (*Muon_isLoose)[itr] );
+		selMuons.fillBranch( "muonIsMedium", (*Muon_isMedium)[itr] );
+
+		if( (*Muon_isLoose)[itr] ) nLooseMuons++;
+
+	}//<<>>for( uInt itr = 0; itr < nMuons; itr++ )
     selMuons.fillBranch( "nMuons", nMuons );
-    selMuons.fillBranch( "nLooseMuons", Muon_nSelMuons );
+    selMuons.fillBranch( "nLooseMuons", nLooseMuons );
+	selMuons.fillBranch( "nMuonSVMatched", Muon_nSVMatched );
 
 }//<<>>void KUCMSAodSkimmer::processMuons
 
@@ -1385,7 +1417,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 
 	int nSelPhos = 0;
 	std::vector<RFKey> jetID;
-	bool zsig = true;	
+	bool zsig = ( geVars("doSVs") == 1 ) ? true : false;	
 	if( not zsig ){
 	if( nSelPhotons != 0 ){
 		nSelPhos = 1;
@@ -1457,7 +1489,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 	// ---------  Finished Processing RJR varibles --------------------------------------------------------------------
 
 	uInt firstObject = 0;
-	if( type == 1 && nSelPhos > 0 ) firstObject = ( nSelPhos == 2 ) ? 2 : 1 ;
+	if( ( type == 1 ) && ( nSelPhos > 0 ) ) firstObject = ( nSelPhos == 2 ) ? 2 : 1 ;
 	int nJetsJa = 0;
 	int nJetsJb = 0;
 	bool isALeadPhoSide = true;	
@@ -1474,7 +1506,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 
 	}//<<>>for( int i = 0; i < nSelJets; i++ )
 	float abDiffSide = isALeadPhoSide ? 1 : -1;
-	if( type == 1 && nSelPhos == 2 ) subPhoLocation = ( COMB_J->GetFrame(jetID[1]) == *Ja ) ? 1 : 2;
+	if( ( type == 1 ) && ( nSelPhos == 2 ) ) subPhoLocation = ( COMB_J->GetFrame(jetID[1]) == *Ja ) ? 1 : 2;
 
 /*  complicated bs that is not need with good logic
 	if( type == 1 ){
@@ -1704,7 +1736,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     selRjrVars.fillBranch( "rjrN2Py", n2py );
     selRjrVars.fillBranch( "rjrN2Pz", n2pz );
 
-}
+}//<<>>void KUCMSAodSkimmer::processRJR( int type, bool newEvent )
 
 //------------------------------------------------------------------------------------------------------------
 // decide which events to save to tree
@@ -1715,6 +1747,7 @@ bool KUCMSAodSkimmer::eventSelection(){
 
 	if( DEBUG ) std::cout << "Event selection." << std::endl;
 	// determine if we want to save event
+	bool zsig = ( geVars("doSVs") == 1 ) ? true : false;
 
     float evtMet = geVars("cmet");
 	int nSelJets = geCnts("nSelJets"); //selJets.getUIBranchValue("nSelJets");
@@ -1737,10 +1770,12 @@ bool KUCMSAodSkimmer::eventSelection(){
     bool leadPhoPt30 = leadPhoPt >= 30;
 	bool subLeadPhoPt40 = subLeadPhoPt >= 40; 
 
-    bool evtSelected = met150 && gt2jets;
-    //bool evtSelected = met150 && gt2jets && hasSV;	
-    //bool evtSelected = met150 && gt2jets && gt1phos && leadPhoPt30;
+    bool basesel = met150 && gt2jets;
+    //bool svsel = basesel && hasSV;	
+    bool phosel = basesel && ( ( gt1phos && leadPhoPt30 ) || hasSV );
 	//auto evtSelected = leadPhoPt70 && subLeadPhoPt40 && gt2jets && gt2phos;
+
+	bool evtSelected = zsig ? basesel : phosel;
 
     if( met150 ) cutflow["met150"]++;
     if( met150 && gt2jets ) cutflow["m_gt2jets"]++;
@@ -1868,13 +1903,30 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
 
 	//fOutTree->Branch( "RunNumber", &RunNumber );
     selEvtVars.makeBranch( "dsKey", "DataSetKey", STR, "Key for source data set of event" );
+
     selEvtVars.makeBranch( "evtGenWgt", FLOAT );
     selEvtVars.makeBranch( "evtXSection", FLOAT );
+
     selEvtVars.makeBranch( "PVx", FLOAT );
     selEvtVars.makeBranch( "PVy", FLOAT );
     selEvtVars.makeBranch( "PVz", FLOAT );
+
     selEvtVars.makeBranch( "SV_nLeptonic", INT );
     selEvtVars.makeBranch( "SV_nHadronic", INT );
+
+    selEvtVars.makeBranch( "Flag_BadChargedCandidateFilter", BOOL );
+    selEvtVars.makeBranch( "Flag_BadPFMuonDzFilter", BOOL );
+    selEvtVars.makeBranch( "Flag_BadPFMuonFilter", BOOL );
+    selEvtVars.makeBranch( "Flag_EcalDeadCellTriggerPrimitiveFilter", BOOL );
+    selEvtVars.makeBranch( "Flag_HBHENoiseFilter", BOOL );
+    selEvtVars.makeBranch( "Flag_HBHENoiseIsoFilter", BOOL );
+    selEvtVars.makeBranch( "Flag_ecalBadCalibFilter", BOOL );
+    selEvtVars.makeBranch( "Flag_eeBadScFilter", BOOL );
+    selEvtVars.makeBranch( "Flag_globalSuperTightHalo2016Filter", BOOL );
+    selEvtVars.makeBranch( "Flag_goodVertices", BOOL );
+    selEvtVars.makeBranch( "Flag_hfNoisyHitsFilter", BOOL );
+	selEvtVars.makeBranch( "Flag_MetFilter", BOOL );
+
     selEvtVars.attachBranches( fOutTree );
 
 	//selMet.makeBranch( "Met", FLOAT );
@@ -1920,13 +1972,15 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
 	selGenPart.attachBranches( fOutTree );
 
 	selElectrons.makeBranch( "nElectrons", UINT );
-    selElectrons.makeBranch( "nSelElectrons", UINT );
+    selElectrons.makeBranch( "nSelIsoElectrons", UINT );
     selElectrons.makeBranch( "epDrMatch", VFLOAT );
     selElectrons.makeBranch( "epSeedIdMatch", VFLOAT );
     selElectrons.makeBranch( "epSeedIdUnique", VFLOAT );
     selElectrons.makeBranch( "elePhoMinDr", VFLOAT );
     selElectrons.makeBranch( "eleIsLoose", VBOOL );
-    selElectrons.makeBranch( "nLooseElectrons", UINT );
+    selElectrons.makeBranch( "nSelElectrons", UINT );
+    selElectrons.makeBranch( "eleHasSVMatch", VBOOL );
+    selElectrons.makeBranch( "nEleSVMatched", INT );
 
     selElectrons.attachBranches( fOutTree );
 
@@ -2011,7 +2065,11 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
 
     selMuons.makeBranch( "nLooseMuons", UINT );
     selMuons.makeBranch( "nMuons", UINT );
-    //selMuons.makeBranch( "muonIsLoose", VBOOL );
+    selMuons.makeBranch( "muonIsLoose", VBOOL );
+    selMuons.makeBranch( "muonIsMedium", VBOOL );
+    //selMuons.makeBranch( "muonHasSVMatch", VBOOL );
+    selMuons.makeBranch( "nMuonSVMatched", INT );
+
     selMuons.attachBranches( fOutTree );
 
     //selJets.makeBranch( "JetHt", &JetHt );
@@ -2181,8 +2239,8 @@ void KUCMSAodSkimmer::fillConfigTree( TTree* fConfigTree ){
     sMCWgtBranch->Fill();
     TBranch *sMCTypeBranch = fConfigTree->Branch( "sMCType", &mctype );
     sMCTypeBranch->Fill();
-    TBranch *sumEvtGenWgtBranch = fConfigTree->Branch( "sumEvtGenWgt", &sumEvtGenWgt );
-    sumEvtGenWgtBranch->Fill();
+    //TBranch *sumEvtGenWgtBranch = fConfigTree->Branch( "sumEvtGenWgt", &sumEvtGenWgt );
+    //sumEvtGenWgtBranch->Fill();
 
     for( auto item : cutflow ){
 		std::string bname = "cf_" + item.first;
@@ -2407,7 +2465,7 @@ std::vector<float> KUCMSAodSkimmer::getRhGrpEigenFromAngles( std::vector<uInt> r
 std::vector<float> KUCMSAodSkimmer::getLeadTofRhTime( std::vector<uInt> recHitIds, double vtxX, double vtxY, double vtxZ ){
 
     std::vector<float> result;
-    if( recHitIds.size() < 1 || ECALRecHit_ID->size() < 1 ){ result.push_back(-99); return result; }
+    if( ( recHitIds.size() < 1 ) || ( ECALRecHit_ID->size() < 1 ) ){ result.push_back(-99); return result; }
     auto lrhid = getLeadRhID(recHitIds);
     auto lrhidx = getRhIdx(lrhid);
     auto X = (*ECALRecHit_rhx)[lrhidx];
@@ -2446,7 +2504,7 @@ std::vector<float> KUCMSAodSkimmer::getRhGrpEigen_sph( std::vector<float> times,
     if( DEBUG ) std::cout << " getRhGrpEigen_sph 1, ";
 
     auto nRecHits = rechitids.size();
-    if( nRecHits < 16 || ECALRecHit_ID->size() < 1 ) return emptyReturn;
+    if( ( nRecHits < 16 ) || ( ECALRecHit_ID->size() < 1 ) ) return emptyReturn;
     float sumRhEn(0);
     for ( auto id : rechitids ){ sumRhEn +=  (*ECALRecHit_energy)[getRhIdx(id)]; }
     if( sumRhEn <= 0 ) return emptyReturn;

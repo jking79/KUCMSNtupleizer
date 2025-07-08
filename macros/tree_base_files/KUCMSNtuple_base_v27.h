@@ -176,6 +176,7 @@ public :
    std::vector<float>   *ECALTrack_vz;
    std::vector<float>   *TrackSCMatch_deltaR;
    std::vector<float>   *TrackSCMatch_scEnergyToTrackPRatio;
+
    std::vector<float>   *Electron_energy;
    std::vector<float>   *Electron_eta;
    std::vector<int>     *Electron_genIdx;
@@ -192,6 +193,9 @@ public :
    Int_t           Electron_nSelElectrons;
    Int_t           Electron_nElectrons;
    std::vector<int>     *Electron_scIndex;
+   std::vector<bool>    *Electron_hasSVMatch;
+   Int_t           Electron_nSVMatched;
+
 
    Bool_t          Flag_BadChargedCandidateFilter;
    Bool_t          Flag_BadPFMuonDzFilter;
@@ -324,9 +328,11 @@ public :
    std::vector<float>   *Muon_py;
    std::vector<float>   *Muon_pz;
    std::vector<bool>    *Muon_isLoose;
-   //std::vector<bool>    *Muon_isMedium;
+   std::vector<bool>    *Muon_isMedium;
    Int_t           Muon_nMuons;
    Int_t           Muon_nSelMuons;
+   std::vector<bool>    *Muon_hasSVMatch;
+   Int_t           Muon_nSVMatched;
 
    std::vector<float>   *Jet_area;
    std::vector<float>   *Jet_chEmEF;
@@ -573,6 +579,7 @@ public :
    TBranch        *b_ECALTrack_vz;   //!
    TBranch        *b_TrackSCMatch_deltaR;   //!
    TBranch        *b_TrackSCMatch_scEnergyToTrackPRatio;   //!
+
    TBranch        *b_Electron_energy;   //!
    TBranch        *b_Electron_eta;   //!
    TBranch        *b_Electron_genIdx;   //!
@@ -589,6 +596,8 @@ public :
    TBranch        *b_Electron_scIndex;   //!
    TBranch        *b_Electron_isLoose;   //!
    TBranch        *b_Electron_nSelElectrons;   //!
+   TBranch        *b_Electron_hasSVMatch;
+   TBranch        *b_Electron_nSVMatched;
 
    TBranch        *b_Flag_BadChargedCandidateFilter;   //!
    TBranch        *b_Flag_BadPFMuonDzFilter;   //!
@@ -719,9 +728,11 @@ public :
    TBranch        *b_Muon_py;   //!
    TBranch        *b_Muon_pz;   //!
    TBranch        *b_Muon_isLoose;   //!
-   //TBranch        *b_Muon_isMedium;   //!
+   TBranch        *b_Muon_isMedium;   //!
    TBranch        *b_Muon_nMuons;   //!
    TBranch        *b_Muon_nSelMuons;   //!
+   TBranch        *b_Muon_hasSVMatch;
+   TBranch        *b_Muon_nSVMatched;
 
    TBranch        *b_Jet_area;   //!
    TBranch        *b_Jet_chEmEF;   //!
@@ -1023,6 +1034,7 @@ void llpgtree::Init( TChain *tree, bool doGenInfo ){
    ECALTrack_vz = 0;
    TrackSCMatch_deltaR = 0;
    TrackSCMatch_scEnergyToTrackPRatio = 0;
+
    Electron_energy = 0;
    Electron_eta = 0;
    Electron_genIdx = 0;
@@ -1037,6 +1049,7 @@ void llpgtree::Init( TChain *tree, bool doGenInfo ){
    Electron_trackz = 0;
    Electron_scIndex = 0;
    Electron_isLoose = 0;
+   Electron_hasSVMatch = 0;
 
    Gen_charge = 0;
    Gen_energy = 0;
@@ -1065,7 +1078,8 @@ void llpgtree::Init( TChain *tree, bool doGenInfo ){
    Muon_py = 0;
    Muon_pz = 0;
    Muon_isLoose = 0;
-   //Muon_isMedium = 0;
+   Muon_isMedium = 0;
+   Muon_hasSVMatch = 0;
 
    Jet_area = 0;
    Jet_chEmEF = 0;
@@ -1329,8 +1343,10 @@ void llpgtree::Init( TChain *tree, bool doGenInfo ){
    fChain->SetBranchAddress("Electron_trackz", &Electron_trackz, &b_Electron_trackz);
    fChain->SetBranchAddress("Electron_nElectrons", &Electron_nElectrons, &b_Electron_nElectrons);
    fChain->SetBranchAddress("Electron_scIndex", &Electron_scIndex, &b_Electron_scIndex);
-   //fChain->SetBranchAddress("Electron_nSelElectrons", &Electron_nSelElectrons, &b_Electron_nSelElectrons);
-   //fChain->SetBranchAddress("Electron_isLoose", &Electron_isLoose, &b_Electron_isLoose);
+   fChain->SetBranchAddress("Electron_nSelElectrons", &Electron_nSelElectrons, &b_Electron_nSelElectrons);
+   fChain->SetBranchAddress("Electron_isLoose", &Electron_isLoose, &b_Electron_isLoose);
+   fChain->SetBranchAddress("Electron_hasSVMatch", &Electron_hasSVMatch, &b_Electron_hasSVMatch);
+   fChain->SetBranchAddress("Electron_nSVMatched", &Electron_nSVMatched, &b_Electron_nSVMatched);
 
    fChain->SetBranchAddress("Flag_BadChargedCandidateFilter", &Flag_BadChargedCandidateFilter, &b_Flag_BadChargedCandidateFilter);
    fChain->SetBranchAddress("Flag_BadPFMuonDzFilter", &Flag_BadPFMuonDzFilter, &b_Flag_BadPFMuonDzFilter);
@@ -1469,9 +1485,11 @@ void llpgtree::Init( TChain *tree, bool doGenInfo ){
    fChain->SetBranchAddress("Muon_py", &Muon_py, &b_Muon_py);
    fChain->SetBranchAddress("Muon_pz", &Muon_pz, &b_Muon_pz);
    fChain->SetBranchAddress("Muon_isLoose", &Muon_isLoose, &b_Muon_isLoose);
-   //fChain->SetBranchAddress("Muon_isMedium", &Muon_isMedium, &b_Muon_isMedium);
+   fChain->SetBranchAddress("Muon_isMedium", &Muon_isMedium, &b_Muon_isMedium);
    fChain->SetBranchAddress("Muon_nMuons", &Muon_nMuons, &b_Muon_nMuons);
    fChain->SetBranchAddress("Muon_nSelMuons", &Muon_nSelMuons, &b_Muon_nSelMuons);
+   fChain->SetBranchAddress("Muon_hasSVMatch", &Muon_hasSVMatch, &b_Muon_hasSVMatch);
+   fChain->SetBranchAddress("Muon_nSVMatched", &Muon_nSVMatched, &b_Muon_nSVMatched);
 
    fChain->SetBranchAddress("Jet_area", &Jet_area, &b_Jet_area);
    fChain->SetBranchAddress("Jet_chEmEF", &Jet_chEmEF, &b_Jet_chEmEF);
@@ -1757,8 +1775,10 @@ void llpgtree::getBranches( Long64_t entry, bool doGenInfo ){
    b_Electron_trackz->GetEntry(entry);     //!
    b_Electron_nElectrons->GetEntry(entry);     //!
    b_Electron_scIndex->GetEntry(entry);     //!
-   //b_Electron_isLoose->GetEntry(entry);   //!
-   //b_Electron_nSelElectrons->GetEntry(entry);   //!
+   b_Electron_isLoose->GetEntry(entry);   //!
+   b_Electron_nSelElectrons->GetEntry(entry);   //!
+   b_Electron_hasSVMatch->GetEntry(entry);   //!
+   b_Electron_nSVMatched->GetEntry(entry);   //!
 
    if( doGenInfo ){
    if( sbDEBUG ) std::cout << "Getting Branches GenEle" << std::endl;
@@ -1910,9 +1930,11 @@ void llpgtree::getBranches( Long64_t entry, bool doGenInfo ){
    b_Muon_py->GetEntry(entry);   //!
    b_Muon_pz->GetEntry(entry);   //!
    b_Muon_isLoose->GetEntry(entry);   //!
-   //b_Muon_isMedium->GetEntry(entry);   //!
+   b_Muon_isMedium->GetEntry(entry);   //!
    b_Muon_nMuons->GetEntry(entry);   //!
    b_Muon_nSelMuons->GetEntry(entry);   //!
+   b_Muon_hasSVMatch->GetEntry(entry);   //!
+   b_Muon_nSVMatched->GetEntry(entry);   //!
 
    if( sbDEBUG ) std::cout << "Getting Branches Jet" << std::endl;
    b_Jet_area->GetEntry(entry);     //!

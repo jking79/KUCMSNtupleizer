@@ -63,6 +63,8 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     cfFlag.set( "hasGenInfo", iConfig.existsAs<bool>("hasGenInfo") ? iConfig.getParameter<bool>("hasGenInfo") : true );
     cfFlag.set( "doSVModule", iConfig.existsAs<bool>("doSVModule") ? iConfig.getParameter<bool>("doSVModule") : true );
     cfFlag.set( "doDisEleModule", iConfig.existsAs<bool>("doDisEleModule") ? iConfig.getParameter<bool>("doDisEleModule") : false );
+    cfFlag.set( "doECALTrackOnly", iConfig.existsAs<bool>("doECALTrackOnly") ? iConfig.getParameter<bool>("doECALTrackOnly") : false );
+
     //cfFlag.set( "onlyEB", iConfig.existsAs<bool>("onlyEB") ? iConfig.getParameter<bool>("onlyEB") : false );
     //cfFlag.set( "motherChase", iConfig.existsAs<bool>("doGenMotherChase") ? iConfig.getParameter<bool>("doGenMotherChase") : false );
     //cfPrm.set( "ebMaxEta",iConfig.existsAs<double>("ebMaxEta")? iConfig.getParameter<double>("ebMaxEta") : 1.479 );
@@ -119,10 +121,16 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     electronsObj->LoadRecHitObject( recHitsObj );
     ObjMan.Load( "Electrons", electronsObj );
 
+    //Muons    
+    auto muonObj = new KUCMSMuonObject( iConfig );
+    auto muonToken = consumes<edm::View<reco::Muon>>(iConfig.getParameter<edm::InputTag>("muons"));
+    muonObj->LoadMuonTokens( muonToken );
+    ObjMan.Load( "Muons", muonObj );
+
 	KUCMSECALTracks* ecalTracksObj;
 	KUCMSDisplacedElectron* displacedElectronObj;
     KUCMSDisplacedVertex* displacedVertexObj;
-	if( cfFlag("doSVModule") || cfFlag("doDisEleModule") ){
+	if( cfFlag("doSVModule") || cfFlag("doDisEleModule") || cfFlag("doECALTrackOnly") ){
 
 	    //ECAL Tracks
 	    ecalTracksObj = new KUCMSECALTracks(iConfig);
@@ -165,7 +173,11 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
 	    	displacedVertexObj->LoadAssociationParameters(trackAssocParameters);
 	    	displacedVertexObj->LoadMergedSCs(mergedSCToken);
   	
-		ObjMan.Load( "DisplacedVertex", displacedVertexObj );
+			ObjMan.Load( "DisplacedVertex", displacedVertexObj );
+
+			electronsObj->LoadDisplacedVertexObject( displacedVertexObj );
+			muonObj->LoadDisplacedVertexObject( displacedVertexObj );
+
     	}//<<>>if( cfFlag("doSVModule") )
 
 		if( cfFlag("doDisEleModule") ){
@@ -193,13 +205,6 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
 
     }//<<>>if( cfFlag("doSVModule") )
 	if( not cfFlag("doSVModule") ) geVar.set("nDisSVs",0.f);
-
-	//Muons    
-	auto muonObj = new KUCMSMuonObject( iConfig );
-    auto muonToken = consumes<edm::View<reco::Muon>>(iConfig.getParameter<edm::InputTag>("muons"));
-    muonObj->LoadMuonTokens( muonToken );
-    ObjMan.Load( "Muons", muonObj );
-
 
 	//Photons
     auto photonsObj = new KUCMSPhotonObject( iConfig );

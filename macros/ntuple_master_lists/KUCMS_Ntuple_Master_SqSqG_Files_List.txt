@@ -2,4 +2,8 @@
 # Master Filelist : Private Sig MC
 # -------------------------------------
  
-KUCMSNtuple/kucmsntuple_sqsqG_Sig_IPM100_v27/ kucmsntuple_sqsqG_Sig_IPM100_v27_SMS-SqSq_AODSIM_mGl-1700_mN2-1500_mN1-100-ct0p1_v26.txt sqsqgctp1g17dn15dn1d .001248 1500 100 1 0
+KUCMSNtuple/kucmsntuple_sqsqG_Sig_SVIPM100_v27/ sqsqG_SVIPM100_v27_SMS-SqSq_AODSIM_mGl-1700_mN2-1500_mN1-100_ct0p1_v26.txt qqp1g17dn15dn1d .001248 1500 100 1 0
+KUCMSNtuple/kucmsntuple_sqsqG_Sig_SVIPM100_v27/ sqsqG_SVIPM100_v27_SMS-SqSq_AODSIM_mGl-1700_mN2-300_mN1-100_ct0p1_v26.txt qqp1g17dn3dn1d .001248 300 100 1 0
+KUCMSNtuple/kucmsntuple_sqsqG_Sig_SVIPM100_v27/ sqsqG_SVIPM100_v27_SMS-SqSq_AODSIM_mGl-1850_mN2-1650_mN1-100_ct0p1_v26.txt qqp1g1850n1650dn1d .0005679 1650 100 1 0
+KUCMSNtuple/kucmsntuple_sqsqG_Sig_SVIPM100_v27/ sqsqG_SVIPM100_v27_SMS-SqSq_AODSIM_mGl-1850_mN2-300_mN1-100_ct0p1_v26.txt qqp1g1850dn3dn1d .0005679 300 100 1 0
+KUCMSNtuple/kucmsntuple_sqsqG_Sig_SVIPM100_v27/ sqsqG_SVIPM100_v27_SMS-SqSq_AODSIM_mGl-2000_mN2-1800_mN1-100_ct0p1_v26.txt qqp1g2kn18dn1d .0002654 1800 100 1 0

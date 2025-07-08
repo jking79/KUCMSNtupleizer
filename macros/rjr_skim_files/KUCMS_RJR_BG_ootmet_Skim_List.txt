@@ -1,15 +1,16 @@
 ###############################################################
-rjr_skim_files/KUCMS_RJR_AllBG_ootmet_Skim_List.txt TotBG yes
+#rjr_skim_files/KUCMS_RJR_AllBG_ootmet_Skim_List.txt TotBG yes
 ###rjr_skim_files/KUCMS_RJR_WZTGJets_ootmet_Skim_List.txt WZNuTGJets yes
 #rjr_skim_files/KUCMS_RJR_TTGJets_ootmet_Skim_List.txt TTTGJets yes
 #rjr_skim_files/KUCMS_RJR_ttWZ_ootmet_Skim_List.txt ttWZ yes
 ###############################################################
-#
+####### QCD
+rjr_skim_files/KUCMS_RJR_QCD_ootmet_Skim_List.txt QCD yes
 ####### GJets
-#rjr_skim_files/KUCMS_RJR_GJets_ootmet_Skim_List.txt GJets yes
+rjr_skim_files/KUCMS_RJR_GJets_ootmet_Skim_List.txt GJets yes
 ####### WZNuTGJets
-#rjr_skim_files/KUCMS_RJR_WJLNu_ootmet_Skim_List.txt WJetsLNU yes
-#rjr_skim_files/KUCMS_RJR_ZNuNu_ootmet_Skim_List.txt ZJetsNuNu yes
+rjr_skim_files/KUCMS_RJR_WJLNu_ootmet_Skim_List.txt WJetsLNU yes
+rjr_skim_files/KUCMS_RJR_ZNuNu_ootmet_Skim_List.txt ZJetsNuNu yes
 #TGJets_R18_IPM100_v24_LLPGskim_v24_rjrvars.root TGJets no
 ####### TTTGJets
 #TTJets_R18_IPM100_v24_LLPGskim_v24_rjrvars.root TTJets no

@@ -19,13 +19,14 @@ def doCommand( command ):
 	output = os.system( command )
 	return output
 
-rootdir = 'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/sqsqG/'
 #mspc = '/store/user/jaking/'
 #justin = '/store/user/lpcsusylep/jaking/KUCMSNtuple/gogoG/'
 justin = '/store/user/lpcsusylep/jaking/KUCMSNtuple/sqsqG/'
 #justin = '/store/user/janguian/gogoG/'
 eosll = 'eos root://cmseos.fnal.gov ls '
+eosopen = 'root://cmseos.fnal.gov/'
 
+rootdir = eosopen + justin 
 command = eosll+justin
 
 rootfile = '.root'

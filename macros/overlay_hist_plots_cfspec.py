@@ -151,7 +151,7 @@ cutset = 'cf_2-275-35_2-275-35_0-15-3/'
 
 indir = cutset + 'cf_1pho_1jet/'
 pjcut = 'mj1_rp1'
-pjleg = 'SelPhoton 1'
+pjleg = 'SelPhoton 2'
 
 indir1 = cutset + 'cf_2pho_1jet/'
 pjcut1 = 'mj1_rp2'
@@ -218,6 +218,7 @@ cf_hist_list = [
     #['KUCMS_BG_llpana_v23_'+pjcut+'_WZNuTGJets_'+sfle,'WZTGJets',indir],
     #['KUCMS_BG_llpana_v23_'+pjcut+'_ttWZ_'+sfle,'ttWZ',indir],
 
+    #['KUCMS_BG_llpana_v24_'+pjcut+'_QCD_'+sfle,'QCD',indir],
     #['KUCMS_BG_llpana_v24_'+pjcut+'_GJets_'+sfle,'GJets',indir],
     #['KUCMS_BG_llpana_v24_'+pjcut+'_WJetsLNU_'+sfle,'WJetsLNU',indir],
     #['KUCMS_BG_llpana_v24_'+pjcut+'_ZJetsNuNu_'+sfle,'ZJetsNuNu',indir],
@@ -262,15 +263,61 @@ cf_hist_list = [
     #['KUCMS_Sgg10_llpana_v24_'+pjcut+'_mGl-2000_mN2-1950_mN1-500_'+sfle,'2000-1950-500',indir],
     #['KUCMS_Sgg10_llpana_'+vN+pjcut+'_mGl-2500_mN2-1500_mN1-1000_'+sfle,'2500, 1500, 1000',indir],#
 
+    #['KUCMS_llpana_v28_v24_mj1_rp1_PG15N5N1C1_RjrSkim_v24_cfcatHists.root','PG15N5N1C1',cutset],
+    #['KUCMS_llpana_v28_v24_mj1_rp1_PG2N15N10C1_RjrSkim_v24_cfcatHists.root','PG2N15N10C1',cutset],
+    #['KUCMS_llpana_v28_v24_mj1_rp1_PG2N15N1C1_RjrSkim_v24_cfcatHists.root','PG2N15N1C1',cutset],
+    #['KUCMS_llpana_v28_v24_mj1_rp1_PG2N15N25C1_RjrSkim_v24_cfcatHists.root','PG2N15N25C1',cutset],
+    #['KUCMS_llpana_v28_v24_mj1_rp1_PG2N15N5C1_RjrSkim_v24_cfcatHists.root','PG2N15N5C1',cutset],
+
+    #['KUCMS_llpana_v28_v24_mj1_rp1_PG2N195N10C1_RjrSkim_v24_cfcatHists.root','PG2N195N10C1',cutset],
+    #['KUCMS_llpana_v28_v24_mj1_rp1_PG2N195N15C1_RjrSkim_v24_cfcatHists.root','PG2N195N15C1',cutset],
+    #['KUCMS_llpana_v28_v24_mj1_rp1_PG2N195N19C1_RjrSkim_v24_cfcatHists.root','PG2N195N19C1',cutset],
+    #['KUCMS_llpana_v28_v24_mj1_rp1_PG2N195N1C1_RjrSkim_v24_cfcatHists.root','PG2N195N1C1',cutset],
+    #['KUCMS_llpana_v28_v24_mj1_rp1_PG2N195N25C1_RjrSkim_v24_cfcatHists.root','PG2N195N25C1',cutset],
+    #['KUCMS_llpana_v28_v24_mj1_rp1_PG2N195N5C1_RjrSkim_v24_cfcatHists.root','PG2N195N5C1',cutset],
+
+    #['KUCMS_llpana_v28_v24_mj1_rp1_PG2N19N10C1_RjrSkim_v24_cfcatHists.root','PG2N19N10C1',cutset],
+    #['KUCMS_llpana_v28_v24_mj1_rp1_PG2N19N15C1_RjrSkim_v24_cfcatHists.root','PG2N19N15C1',cutset],
+    #['KUCMS_llpana_v28_v24_mj1_rp1_PG2N19N1C1_RjrSkim_v24_cfcatHists.root','PG2N19N1C1',cutset],
+    #['KUCMS_llpana_v28_v24_mj1_rp1_PG2N19N25C1_RjrSkim_v24_cfcatHists.root','PG2N19N25C1',cutset],
+    #['KUCMS_llpana_v28_v24_mj1_rp1_PG2N19N5C1_RjrSkim_v24_cfcatHists.root','PG2N19N5C1',cutset],
+
+    #['KUCMS_llpana_v28_v24_mj1_rp1_PG2N1N1C1_RjrSkim_v24_cfcatHists.root','PG2N1N1C1',cutset],
+    #['KUCMS_llpana_v28_v24_mj1_rp1_PG2N1N25C1_RjrSkim_v24_cfcatHists.root','PG2N1N25C1',cutset],
+    #['KUCMS_llpana_v28_v24_mj1_rp1_PG2N1N5C1_RjrSkim_v24_cfcatHists.root','PG2N1N5C1',cutset],
+    #['KUCMS_llpana_v28_v24_mj1_rp1_PG2N5N1C1_RjrSkim_v24_cfcatHists.root','PG2N5N1C1',cutset],
+    #['KUCMS_llpana_v28_v24_mj1_rp1_PG2N5N25C1_RjrSkim_v24_cfcatHists.root','PG2N5N25C1',cutset],
+
+    #['KUCMS_llpana_v28_v24_mj1_rp1_QPG17N15N1C1_RjrSkim_v24_cfcatHists.root','QPG17N15N1C1',cutset],
+    #['KUCMS_llpana_v28_v24_mj1_rp1_QPG17N3N1C1_RjrSkim_v24_cfcatHists.root','QPG17N3N1C1',cutset],
+    #['KUCMS_llpana_v28_v24_mj1_rp1_QPG185N165N1C1_RjrSkim_v24_cfcatHists.root','QPG185N165N1C1',cutset],
+    #['KUCMS_llpana_v28_v24_mj1_rp1_QPG185N3N1C1_RjrSkim_v24_cfcatHists.root','QPG185N3N1C1',cutset],
+    #['KUCMS_llpana_v28_v24_mj1_rp1_QPG2N18N1C1_RjrSkim_v24_cfcatHists.root','QPG2N18N1C1',cutset],
+
+    ['zcutflow/KUCMS_SVBG_llpana_v24_lep3_had4_SVJetsNuNu_'+sfle,'ZJets',""],
+    ['zcutflow/KUCMS_llpana_v28nt_v24_lep3_had4_ZG15N5N1C1_RjrSkim_v24_cfcatHists.root','ZG15N5N1C1',""],
+    ['zcutflow/KUCMS_llpana_v28nt_v24_lep3_had4_ZG2N195N19C1_RjrSkim_v24_cfcatHists.root','ZG2N195N19C1',""],
+    ['zcutflow/KUCMS_llpana_v28nt_v24_lep3_had4_ZG2N19N2C001_RjrSkim_v24_cfcatHists.root','ZG2N19N2C001',""],
+    ['zcutflow/KUCMS_llpana_v28nt_v24_lep3_had4_ZG2N19N2C2_RjrSkim_v24_cfcatHists.root','ZG2N19N2C3',""],
+    ['zcutflow/KUCMS_llpana_v28nt_v24_lep3_had4_ZG2N19N35C001_RjrSkim_v24_cfcatHists.root','ZG2N19N35C001',""],
+    ['zcutflow/KUCMS_llpana_v28nt_v24_lep3_had4_ZG2N19N35C1_RjrSkim_v24_cfcatHists.root','ZG2N19N35C1',""],
+    ['zcutflow/KUCMS_llpana_v28nt_v24_lep3_had4_ZG2N19N35C3_RjrSkim_v24_cfcatHists.root','ZG2N19N35C3',""],
+    ['zcutflow/KUCMS_llpana_v28nt_v24_lep3_had4_ZG2N4N2C001_RjrSkim_v24_cfcatHists.root','ZG2N4N2C001',""],
+    ['zcutflow/KUCMS_llpana_v28nt_v24_lep3_had4_ZG2N4N2C1_RjrSkim_v24_cfcatHists.root','ZG2N4N2C1',""],
+    ['zcutflow/KUCMS_llpana_v28nt_v24_lep3_had4_ZG2N4N2C3_RjrSkim_v24_cfcatHists.root','ZG2N4N2C3',""],
+    ['zcutflow/KUCMS_llpana_v28nt_v24_lep3_had4_ZG2N4N35C001_RjrSkim_v24_cfcatHists.root','ZG2N4N35C001',""],
+    ['zcutflow/KUCMS_llpana_v28nt_v24_lep3_had4_ZG2N4N35C1_RjrSkim_v24_cfcatHists.root','ZG2N4N35C1',""],
+    ['zcutflow/KUCMS_llpana_v28nt_v24_lep3_had4_ZG2N4N35C3_RjrSkim_v24_cfcatHists.root','ZG2N4N35C3',""],
+
     #['zcutflow/KUCMS_ZBG_llpana_v24_lep1_had3_SVZJetsNuNu_'+sfle,'lep1+ && had1+',""],
     #['zcutflow/KUCMS_ZBG_llpana_v24_lep2_had3_SVZJetsNuNu_'+sfle,'lep1 && had1',""],
     #['zcutflow/KUCMS_ZBG_llpana_v24_lep3_had3_SVZJetsNuNu_'+sfle,'lep0 && had2',""],
 
-    ['zcutflow/KUCMS_SVBG_llpana_v24_lep3_had7_SVJetsNuNu_'+sfle,'ZJetsToNuNu',""],
-    ['zcutflow/KUCMS_SggZ_llpana_v24_lep3_had7_G2N19N2C3_'+sfle,'2000, 1900, 200',""],
-    ['zcutflow/KUCMS_SggZ_llpana_v24_lep3_had7_G2N19N35C3_'+sfle,'2000, 1900, 350',""],
-    ['zcutflow/KUCMS_SggZ_llpana_v24_lep3_had7_G2N4N2C3_'+sfle,'2000, 400, 200',""],
-    ['zcutflow/KUCMS_SggZ_llpana_v24_lep3_had7_G2N4N35C3_'+sfle,'2000, 400, 350',""],
+    #['zcutflow/KUCMS_SVBG_llpana_v24_lep3_had7_SVJetsNuNu_'+sfle,'ZJetsToNuNu',""],
+    #['zcutflow/KUCMS_SggZ_llpana_v24_lep3_had7_G2N19N2C3_'+sfle,'2000, 1900, 200',""],
+    #['zcutflow/KUCMS_SggZ_llpana_v24_lep3_had7_G2N19N35C3_'+sfle,'2000, 1900, 350',""],
+    #['zcutflow/KUCMS_SggZ_llpana_v24_lep3_had7_G2N4N2C3_'+sfle,'2000, 400, 200',""],
+    #['zcutflow/KUCMS_SggZ_llpana_v24_lep3_had7_G2N4N35C3_'+sfle,'2000, 400, 350',""],
     #['zcutflow/KUCMS_SggZ_llpana_v24_lep3_had'+N+'_G2N195N19C1_'+sfle,'195-19 ct 0.1 '+lgnd,""],
 
     #['zcutflow/KUCMS_SggZ_llpana_v24_lep3_had'+N+'_G2N19N2C001_'+sfle,'19-2 ct 0.001 '+lgnd,""],
@@ -345,11 +392,13 @@ layout = { 'xtitle' : xtitle, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islo
 #pjcut = 'ct0.1 lep1+ had1+'
 #pjcut = 'Gl 2000 N1 1900 N2 200'
 #pjcut = '1 SelPho 1+ Jets/Side ImprvPhoJetIso'
+#pjcut = '1 SelPho 1+ Jets/Side'
 #pjcut = '2 SelPho 1+ Jets/Side'
+pjcut = '1+ Lep SV || 1+ Had SV'
 #pjcut = 'SV ZJetsToNuNu'
 #pjcut = 'TotBG & mGl-2000_mN2-500_mN1-250'
 #pjcut = 'ZJetsNuNu'
-pjcut = 'Leptonic SV 1'
+#pjcut = 'Leptonic SV 1'
 #mcuts = 'Mr:  1000, 2000, 3000'
 tcuts =  'Cut  Loose  Medium  Tight '
 mcuts =  'Mr   2000    2750       3500  '
@@ -361,7 +410,7 @@ cutline = '#splitline{'+pjcut+'}{#splitline{'+tcuts+'}{#splitline{'+mcuts+'}{#sp
 #ptitle=[' DYJetsToLL','','#splitline{ECAL Barrel}{4 Crystal}']
 #ptitle=[' ','','#splitline{DiJet dTime Width vs}{Z->ee dTime Width}']
 ptitle=[' 400 fb^{-1}','',cutline]
-y = [ 40000000000, 0.001 ]
+y = [ 1e14, 1e-3 ]
 #y = [ 10000000, 0 ]
 #y = [ 10000, 0 ]
 x = [ 1, 36 ]

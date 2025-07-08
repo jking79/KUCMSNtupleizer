@@ -47,6 +47,7 @@ class HistMaker : public kuSkimTree {
 	void eventLoop( Long64_t entry, int chist );
     void eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector<float> r_vec, std::vector<float> rv_vec  );
  	void endJobs();	
+	void endBatchJobs();
 
     TH1D *hist1d[n1dHists];
     TH2D *hist2d[n2dHists];
@@ -62,7 +63,10 @@ class HistMaker : public kuSkimTree {
     float cutva, cutvb, cutvc, cutvd, cutve, cutvf;
     float sumEvtGenWgt;
 	bool fl; // first event loop
+	std::string skimlabel;
 
+	std::map< std::string, float > batchVars;
+    std::map< std::string, std::vector< float > > batchVecVars;
     std::map< std::string, std::map< std::string, float > > configInfo;
     std::map< std::string, float > cutflowInfo;
 	int cfbin;
@@ -75,6 +79,8 @@ class HistMaker : public kuSkimTree {
     TH2D *ebeeMapP[nEBEEMaps], *ebeeMapT[nEBEEMaps], *ebeeMapR[nEBEEMaps];
     void makeEBEEMaps( int phoit );
     void makeEBEEMaps( std::vector<unsigned int> rhcol );
+
+	float round( float input ){ return float(int(input*10000.0))/10000.0; };
 
 };
 

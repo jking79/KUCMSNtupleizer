@@ -99,7 +99,7 @@ void HistMaker::histMaker( std::string indir, std::string infilelist, std::strin
         Float_t         sGMSBChi1Mass;
         Float_t         sMCWgt;
         Int_t           sMCType;
-        Float_t         sumEvtGenWgt;
+        ////Float_t         sumEvtGenWgt;
     
         Int_t           cf_m_gt2jets;
         Int_t           cf_met150;
@@ -124,7 +124,7 @@ void HistMaker::histMaker( std::string indir, std::string infilelist, std::strin
         TBranch        *b_sGMSBChi1Mass;   //!
         TBranch        *b_sMCWgt;   //!
         TBranch        *b_sMCType;   //!
-        TBranch        *b_sumEvtGenWgt;
+        //TBranch        *b_sumEvtGenWgt;
     
        	TBranch        *b_cf_m_gt2jets;   //!
        	TBranch        *b_cf_met150;   //!
@@ -152,7 +152,7 @@ void HistMaker::histMaker( std::string indir, std::string infilelist, std::strin
         fConfigTree->SetBranchAddress("sGMSBChi1Mass", &sGMSBChi1Mass, &b_sGMSBChi1Mass);
         fConfigTree->SetBranchAddress("sMCWgt", &sMCWgt, &b_sMCWgt);
         fConfigTree->SetBranchAddress("sMCType", &sMCType, &b_sMCType);
-        fConfigTree->SetBranchAddress("sumEvtGenWgt", &sumEvtGenWgt, &b_sumEvtGenWgt);
+        //fConfigTree->SetBranchAddress("sumEvtGenWgt", &sumEvtGenWgt, &b_sumEvtGenWgt);
     
         fConfigTree->SetBranchAddress("cf_m_gt2jets", &cf_m_gt2jets, &b_cf_m_gt2jets);
         fConfigTree->SetBranchAddress("cf_met150", &cf_met150, &b_cf_met150);
@@ -188,7 +188,7 @@ void HistMaker::histMaker( std::string indir, std::string infilelist, std::strin
         	b_sMCType->GetEntry(entry);   //!
             std::string configKey(*sKey);
     
-            b_sumEvtGenWgt->GetEntry(entry);
+            //b_sumEvtGenWgt->GetEntry(entry);
             b_cf_m_gt2jets->GetEntry(entry);   //!
             b_cf_met150->GetEntry(entry);   //!
             b_cf_mj_gt1phos->GetEntry(entry);   //!
@@ -210,7 +210,7 @@ void HistMaker::histMaker( std::string indir, std::string infilelist, std::strin
     			std::map< std::string, float > configValues;
             	configValues["nEvents"] = nEvents;
             	configValues["nSelectedEvents"] = nSelectedEvents;
-                configValues["sumEvtGenWgt"] = sumEvtGenWgt;
+                //configValues["sumEvtGenWgt"] = sumEvtGenWgt;
                 configValues["sumEvtWgt"] = sumEvtWgt;
                 if(debug) std::cout << " - Filling configValues. " << std::endl;
             	configValues["sCrossSection"] = sCrossSection;
@@ -226,12 +226,12 @@ void HistMaker::histMaker( std::string indir, std::string infilelist, std::strin
     			configValues["nEvents"] += nEvents;
                 configValues["nTotEvts"] += nTotEvts;
     			configValues["nSelectedEvents"] += nSelectedEvents;
-                configValues["sumEvtGenWgt"] += sumEvtGenWgt;
+                //configValues["sumEvtGenWgt"] += sumEvtGenWgt;
                 configValues["sumEvtWgt"] += sumEvtWgt;
     		}//<<>>if( not configInfo.count(configKey) )
     
-    		float fillwt = scale * ( sCrossSection * 1000 ) * ( 1 / sumEvtWgt );
-            //float fillwt = scale * ( sCrossSection * 1000 ) * ( 1.0 / float( nTotEvts) );
+    		//float fillwt = scale * ( sCrossSection * 1000 ) * ( 1 / sumEvtWgt );
+            float fillwt = scale * ( sCrossSection * 1000 ) * ( 1.0 / float( nTotEvts) );
 			std::cout << " fillwt : " << scale <<  " * ( " << sCrossSection << " * 1000 ) * ( " << " 1 / " << nTotEvts << " ) = " 
 						<< fillwt << std::endl;
             if( not cutflowInfo.count("nTotEvts") ){
@@ -542,6 +542,8 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 
 	//var hist fill
 
+	//if( not( ML && RL && RvM ) ) continue;
+
     hist1d[402]->Fill( rjrMET->at(cs), fillwt );
     hist1d[403]->Fill( metCPt, fillwt );
 
@@ -577,6 +579,14 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     	if( false ) hist2d[9]->Fill( rjrNVSum, rjrVDiff, fillwt ); 
 		hist2d[10]->Fill( (*rjrNJetsJa)[cs], (*rjrNJetsJb)[cs], fillwt );
 
+		float dPhib = (*rjrSdphiBV)[cs];
+		float sBeta = (*rjrPTS)[cs] / hypo( (*rjrPTS)[cs], (*rjrSMass)[cs] );
+        float zBeta = (*rjrPZS)[cs] / hypo( (*rjrPZS)[cs], (*rjrSMass)[cs] );
+		if( sBeta > ( dPhib * 0.8 / 3.1614 ) ) continue; 
+		hist2d[11]->Fill( sBeta, dPhib, fillwt );
+        hist2d[12]->Fill( zBeta, dPhib, fillwt );
+        hist2d[13]->Fill( sBeta, zBeta, fillwt );
+
 
 	}//<<>>if( rjrAX2NGMean->at(cs) < cutvc && rjrAX2GMean->at(cs) < cutvd )
 	}//<<>>for( int i = 0; i < 1; i++ ) -- continue loop
@@ -594,9 +604,9 @@ void HistMaker::endJobs(){
     hist1d[2]->SetBinContent(1,cutflowInfo["cf_nTotEvts"]);
     //hist1d[2]->SetBinError(1,std::sqrt(cutflowInfo["cf_nTotEvts"]));
 	hist1d[2]->GetXaxis()->SetBinLabel(1,"Evts");
-    //hist1d[2]->SetBinContent(2,cutflowInfo["cf_nFltrdEvts"]);
+    hist1d[2]->SetBinContent(2,cutflowInfo["cf_nFltrdEvts"]);
     //hist1d[2]->SetBinError(2,std::sqrt(cutflowInfo["cf_nFltrdEvts"]));
-    //hist1d[2]->GetXaxis()->SetBinLabel(2,"Fltr");
+    hist1d[2]->GetXaxis()->SetBinLabel(2,"Fltr");
     //hist1d[2]->SetBinContent(3,cutflowInfo["cf_met150"]);
     //hist1d[2]->SetBinError(3,std::sqrt(cutflowInfo["cf_met150"]));
     //hist1d[2]->GetXaxis()->SetBinLabel(3,"M150");
@@ -661,6 +671,9 @@ void HistMaker::initHists( std::string ht ){
     hist2d[5] = new TH2D("AX2NQSumvVDiff", addstr(ht,"AX2NQSumvVDiff;AX2NQSum;VDiff").c_str(), 25, 0, 1.0, 25, -1.0, 1.0 );
     hist2d[9] = new TH2D("VMassvVDiff", addstr(ht,"NVSumvVDiff;NVSum;VDiff").c_str(), 25, 0, 1.0, 25, -1.0, 1.0 );
     hist2d[10] = new TH2D("NJetsJavNJetsJb", addstr(ht,"nJets A v nJets B 400 fb^{-1};nJets A;nJets B").c_str(), 20, 0, 20,20, 0, 20 );
+    hist2d[11] = new TH2D("bptsvdphibv", addstr(ht,"Beta_Pts v dPhiBV;Beta_Pts;dPhiBV").c_str(), 100, 0, 1, 35, 0, 3.5 );
+    hist2d[12] = new TH2D("bpzsvdphibv", addstr(ht,"Beta_Pzs v dPhiBV;Beta_Pzs;dPhiBV").c_str(), 100, 0, 1, 35, 0, 3.5 );
+    hist2d[13] = new TH2D("bptsvbpzs", addstr(ht,"Beta_Pts v Beta_Pzs;Beta_Pts;Beta_Pzs").c_str(), 100, 0, 1, 100, 0, 1 );
 
 	//------- jets ( time ) 0-49 ------------------------------
 
@@ -701,15 +714,18 @@ int main ( int argc, char *argv[] ){
     //else {
                 std::string listdir = "/uscms/home/jaking/nobackup/llpana_skims/";
             
-				std::string infilenameJ = "rjr_skim_files/KUCMS_RJR_GIGI_ootmet_Skim_List.txt";
+				//std::string infilenameJ = "rjr_skim_files/KUCMS_RJR_GIGI_ootmet_Skim_List.txt";
+                std::string infilenameJ = "rjr_skim_files/KUCMS_RJR_SMS_ootmet_Skim_List.txt";
 				std::string infilenameBG = "rjr_skim_files/KUCMS_RJR_BG_ootmet_Skim_List.txt";
 
 				std::string version = "_v24_";
-				std::string sigtype = "llpana";
+				std::string sigtype = "llpana_v28nt";
 				std::string ofnstart = "KUCMS_";
 
                 std::string htitleBG = "BG_"+sigtype+version;
-				std::string htitleJ = "Sgg10_"+sigtype+version;
+				//std::string htitleJ = "Sgg10_"+sigtype+version;
+                std::string htitleJ = sigtype+version;
+
 
                 HistMaker base;
 
@@ -723,9 +739,10 @@ int main ( int argc, char *argv[] ){
 				//int nj = 1;
 				//int np = 1;
                 for( int np = 1; np < 3; np++ ){
-                for( int nj = 1; nj < 3; nj++ ){
+                for( int nj = 1; nj < 2; nj++ ){
 
-				std::string subdir = "cf_" + std::to_string(np) + "pho_" + std::to_string(nj) + "jet/";
+				//std::string subdir = "cf_" + std::to_string(np) + "pho_" + std::to_string(nj) + "jet/";
+				std::string subdir = "";
 
 				// 1-1
 				//std::vector<float> m_vec{1000,2000,3000}; // L-M-T
@@ -738,8 +755,8 @@ int main ( int argc, char *argv[] ){
 				//std::vector<float> rv_vec{0,0,0};
 				//std::string outdir = "cf_1-2-3_2-275-35_1-25-40/" + subdir;
                 //std::string outdir = "cf_2-275-35_2-275-35_1-25-40/" + subdir;
-                //std::string outdir = "cf_2-275-35_2-275-35_0-15-3/" + subdir;
-                std::string outdir = "cf_0_0_0/" + subdir;
+                std::string outdir = "cf_2-275-35_2-275-35_0-15-3/" + subdir;
+                //std::string outdir = "cf_0_0_0/" + subdir;
 				// 2-2   cf_1pho_4jet
                 //std::vector<float> m_vec{1000,1500,2000}; // L-M-T
                 //std::vector<float> r_vec{0.15,0.225,0.3}; // L-M-T
@@ -752,7 +769,7 @@ int main ( int argc, char *argv[] ){
 				base.histMaker( listdir, infilenameJ, outfilenameJ, htitlefullJ, np, nj, m_vec, r_vec, rv_vec );
                 std::string outfilenameBG = outdir + ofnstart + htitleBG + isoline;
                 std::string htitlefullBG =  htitleBG + isoline;
-                base.histMaker( listdir, infilenameBG, outfilenameBG, htitlefullBG, np, nj, m_vec, r_vec, rv_vec );
+                //base.histMaker( listdir, infilenameBG, outfilenameBG, htitlefullBG, np, nj, m_vec, r_vec, rv_vec );
 
 				}}
 

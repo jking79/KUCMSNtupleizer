@@ -45,6 +45,19 @@ public :
    Float_t         PVy;
    Float_t         PVz;
 
+   bool	MetFilter;
+   bool HaloFilter;
+   Int_t SV_nHadronic;
+   Int_t SV_nLeptonic;
+   Int_t nEleSVMatched;
+   UInt_t nSelIsoElectrons;
+   UInt_t nLooseMuons;
+   Int_t nMuonSVMatched;
+
+   std::vector<bool>     *eleIsLoose;
+   std::vector<bool>     *muonIsLoose;
+   std::vector<bool>     *muonIsMedium;
+
    std::vector<int>     *genCharge;
    std::vector<float>   *genMass;
    std::vector<float>   *genPartEnergy;
@@ -231,6 +244,11 @@ public :
    std::vector<float>   *rjrN2Py;
    std::vector<float>   *rjrN2Pz;
 
+   std::vector<float>   *rjr_Mr;
+   std::vector<float>   *rjr_Rv;
+   std::vector<float>   *rjr_R;
+
+
    // List of branches
    TBranch        *b_DataSetKey;   //!
    TBranch        *b_evtGenWgt;
@@ -242,6 +260,19 @@ public :
    TBranch        *b_selMet;   //!
    TBranch        *b_selMetPx;   //!
    TBranch        *b_selMetPy;   //!
+
+   TBranch        *b_MetFilter;
+   TBranch        *b_HaloFilter;
+   TBranch        *b_SV_nHadronic;
+   TBranch        *b_SV_nLeptonic;
+   TBranch        *b_nEleSVMatched; 
+   TBranch        *b_nSelIsoElectrons;
+   TBranch        *b_nLooseMuons;
+   TBranch        *b_nMuonSVMatched;
+
+   TBranch     *b_eleIsLoose;
+   TBranch     *b_muonIsLoose;
+   TBranch     *b_muonIsMedium;
 
 
    TBranch        *b_PVx;
@@ -427,9 +458,9 @@ public :
    TBranch        *b_rjrX2bMass;   //!
    TBranch        *b_rjrX2bPtS;   //!
 
-   //TBranch        *b_rjrN2Px;
-   //TBranch        *b_rjrN2Py;
-   //TBranch        *b_rjrN2Pz;
+   TBranch        *b_rjr_Mr;
+   TBranch        *b_rjr_Rv;
+   TBranch        *b_rjr_R;
 
    //kuSkimTree(TTree *tree=0);
    //virtual ~kuSkimTree();
@@ -500,6 +531,10 @@ void kuSkimTree::Init(TTree *tree)
 
    // Set object pointer
    DataSetKey = 0;
+
+   eleIsLoose = 0;
+   muonIsLoose = 0;
+   muonIsMedium = 0;
 
    genCharge = 0;
    genMass = 0;
@@ -671,9 +706,9 @@ void kuSkimTree::Init(TTree *tree)
    rjrX2bMass = 0;
    rjrX2bPtS = 0;
 
-   //rjrN2Px = 0;
-   //rjrN2Py = 0;
-   //rjrN2Pz = 0;
+   rjr_Mr = 0;
+   rjr_Rv = 0;
+   rjr_R = 0;
 
   // Set branch addresses and branch pointers
    if (!tree) return;
@@ -695,6 +730,20 @@ void kuSkimTree::Init(TTree *tree)
    fChain->SetBranchAddress("PVx", &PVx, &b_PVx);
    fChain->SetBranchAddress("PVy", &PVy, &b_PVy);
    fChain->SetBranchAddress("PVz", &PVz, &b_PVz);
+
+   fChain->SetBranchAddress("Flag_MetFilter", &MetFilter, &b_MetFilter);
+   fChain->SetBranchAddress("Flag_globalSuperTightHalo2016Filter", &HaloFilter, &b_HaloFilter);
+   fChain->SetBranchAddress("SV_nHadronic", &SV_nHadronic, &b_SV_nHadronic);
+   fChain->SetBranchAddress("SV_nLeptonic", &SV_nLeptonic, &b_SV_nLeptonic);
+   fChain->SetBranchAddress("nEleSVMatched", &nEleSVMatched, &b_nEleSVMatched);
+   fChain->SetBranchAddress("nSelIsoElectrons", &nSelIsoElectrons, &b_nSelIsoElectrons);
+   fChain->SetBranchAddress("nLooseMuons", &nLooseMuons, &b_nLooseMuons);
+   fChain->SetBranchAddress("nMuonSVMatched", &nMuonSVMatched, &b_nMuonSVMatched);
+
+   fChain->SetBranchAddress("eleIsLoose", &eleIsLoose, &b_eleIsLoose);
+   fChain->SetBranchAddress("muonIsLoose", &muonIsLoose, &b_muonIsLoose);
+   fChain->SetBranchAddress("muonIsMedium", &muonIsMedium, &b_muonIsMedium);
+
 
    fChain->SetBranchAddress("genCharge", &genCharge, &b_genCharge);
    fChain->SetBranchAddress("genMass", &genMass, &b_genMass);
@@ -883,9 +932,9 @@ void kuSkimTree::Init(TTree *tree)
    fChain->SetBranchAddress("rjrX2bMass", &rjrX2bMass, &b_rjrX2bMass);
    fChain->SetBranchAddress("rjrX2bPtS", &rjrX2bPtS, &b_rjrX2bPtS);
 
-   //fChain->SetBranchAddress("rjrN2Px", &rjrN2Px, &b_rjrN2Px);
-   //fChain->SetBranchAddress("rjrN2Py", &rjrN2Py, &b_rjrN2Py);
-   //fChain->SetBranchAddress("rjrN2Pz", &rjrN2Pz, &b_rjrN2Pz);
+   fChain->SetBranchAddress("rjr_Mr", &rjr_Mr, &b_rjr_Mr);
+   fChain->SetBranchAddress("rjr_Rv", &rjr_Rv, &b_rjr_Rv);
+   fChain->SetBranchAddress("rjr_R", &rjr_R, &b_rjr_R);
 
    //Notify();
 }
@@ -907,6 +956,20 @@ void kuSkimTree::getBranches(Long64_t entry){
    b_PVx->GetEntry(entry);   //!
    b_PVy->GetEntry(entry);   //!
    b_PVz->GetEntry(entry);   //!
+
+   b_MetFilter->GetEntry(entry);
+   b_HaloFilter->GetEntry(entry);
+   b_SV_nHadronic->GetEntry(entry);
+   b_SV_nLeptonic->GetEntry(entry);
+   b_nEleSVMatched->GetEntry(entry);
+   b_nSelIsoElectrons->GetEntry(entry);
+   b_nLooseMuons->GetEntry(entry);
+   b_nMuonSVMatched->GetEntry(entry);
+
+   b_eleIsLoose->GetEntry(entry);
+   b_muonIsLoose->GetEntry(entry);
+   b_muonIsMedium->GetEntry(entry);
+
 
    b_genCharge->GetEntry(entry);   //!
    b_genMass->GetEntry(entry);   //!
@@ -1097,9 +1160,9 @@ void kuSkimTree::getBranches(Long64_t entry){
    b_rjrX2bMass->GetEntry(entry);   //!
    b_rjrX2bPtS->GetEntry(entry);   //!
 
-   //b_rjrN2Px->GetEntry(entry);
-   //b_rjrN2Py->GetEntry(entry);
-   //b_rjrN2Pz->GetEntry(entry);
+   b_rjr_Mr->GetEntry(entry);
+   b_rjr_Rv->GetEntry(entry);
+   b_rjr_R->GetEntry(entry);
 
    if( mdebug ) std::cout << "Done getting entries" << std::endl;
 

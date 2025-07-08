@@ -11,6 +11,7 @@ options.register('hasGenInfo',False,VarParsing.multiplicity.singleton,VarParsing
 options.register('eventFilter','MET100',VarParsing.multiplicity.singleton,VarParsing.varType.string,'filter to use in event processing');
 options.register('doSV',True,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to run displaced SVs');
 options.register('doDisEle',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag ro run displaced electrons');
+options.register('doECALTrackOnly',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to run ECAL Tracks only');
 
 ## object prep cuts
 #options.register('jetpTmin',15.0,VarParsing.multiplicity.singleton,VarParsing.varType.float,'jet pT minimum cut');
@@ -159,10 +160,10 @@ process.source = cms.Source("PoolSource",
 
 
         # AOD Data MET
-        
+        'file:/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/test/Met_UL18B_AOD_973EEF0C-44AB-E94A-8591-04DCD00D8B4B.root'      
         #'file:/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/test/MetPD_003A2484-A2DC-E711-9D0A-02163E019C46.root'
         #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoG/SMS-GlGl_mGl-1500_mN2-500_mN1-100_gam_N2ctau-0p1_AOD/250123_145920/0000/SMS-GlGl_mGl-1500_mN2-500_mN1-100_gam_N2ctau-0p1_AOD_99.root'
-        'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoZ/SMS-GlGl_mGl-2000_mN2-1900_mN1-200_Zff_N2ctau-0p3_AOD/250607_191347/0000/SMS-GlGl_mGl-2000_mN2-1900_mN1-200_Zff_N2ctau-0p3_AOD_2.root'
+        #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoZ/SMS-GlGl_mGl-2000_mN2-1900_mN1-200_Zff_N2ctau-0p3_AOD/250607_191347/0000/SMS-GlGl_mGl-2000_mN2-1900_mN1-200_Zff_N2ctau-0p3_AOD_2.root'
 
 	#lpcpath_350_600+'120000/80762156-99D6-E811-8942-34E6D7E3879B.root',
         #lpcpath_350_600+'120000/322875DC-DDD6-E811-8C5F-001E675A68C4.root',
@@ -268,13 +269,13 @@ process.TFileService = cms.Service("TFileService", fileName = cms.string(options
 genInfo = False
 if options.multicrab == True : genInfo = options.hasGenInfo		   
 
-filterselect = 'None'
+#filterselect = 'None'
 #filterselect = 'AL1DisSV'
 #filterselect = 'SVIPMet100'
 #filterselect = 'MET100'
 #filterselect = 'AL1IsoPho'
 #filterselect = 'IsoPhoMet100'
-#filterselect = 'AL1SelEle'
+filterselect = 'AL1SelEle'
 
 dosv = True
 #dosv = False
@@ -283,6 +284,13 @@ if options.multicrab == True : dosv = options.doSV
 #dode = True
 dode = False
 if options.multicrab == True : dode = options.doDisEle
+
+doet = True
+#doet = False
+if options.multicrab == True : doet = options.doECALTrackOnly
+if doet : 
+    dosv = False
+    dode = False
 
 #probeout = True
 probeout = False
@@ -300,7 +308,8 @@ if options.multicrab == True : makeTrigList = False
 
 print( "Using options : mutlicrab = ",options.multicrab," geninfo = ",genInfo," filter = ",filterselect )
 print( "Using options : momChase = ",genMomChase," trgiList = ",makeTrigList," probeout = ",probeout ) 
-print( "Using options : globalTag = ",options.globalTag," doDisEle = ",dode," doSVs = ",dosv )
+print( "Using options : doDisEle = ",dode," doSVs = ",dosv," doECALTrackOnly = ",doet )
+print( "Using options : globalTag = ",options.globalTag )
 print( "With output file name : ",options.outputFileName )
 
 # Make the tree 
@@ -316,6 +325,7 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
                               doProbeOut = cms.bool(probeout),
                               doSVModule = cms.bool(dosv),
                               doDisEleModule = cms.bool(dode),
+                              doECALTrackOnly = cms.bool(doet),
 
                               ##skim type selectuon 
                               fltrSelection = cms.string(filterselect),
@@ -540,6 +550,7 @@ process.kuDisplaced_path = cms.Path()
 if ( dosv and not dode ) : process.kuDisplaced_path = cms.Path( process.kuEcalTracks + process.kuSV )
 if ( not dosv and dode ) : process.kuDisplaced_path = cms.Path( process.kuEcalTracks + process.kuDisEle )
 if ( dosv and dode ) : process.kuDisplaced_path = cms.Path( process.kuEcalTracks + process.kuDisEle + process.kuSV )
+if ( doet ) : process.kuDisplaced_path = cms.Path( process.kuEcalTracks )
 
 process.setFlags_path = cms.Path(process.setFlags)
 process.tree_step = cms.EndPath(process.tree)

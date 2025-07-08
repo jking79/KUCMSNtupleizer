@@ -40,6 +40,7 @@
 // includes for other KUCMSObjects
 #include "KUCMSEcalRechit.hh"
 #include "KUCMSGenObjects.hh"
+#include "KUCMSDisplacedVertex.hh"
 
 #ifndef KUCMSMuonObjectHeader
 #define KUCMSMuonObjectHeader
@@ -68,6 +69,7 @@ class KUCMSMuonObject : public KUCMSObjectBase {
     // void LoadObject( exampleObject* otherObject ){ otherObjectPtr = otherObject; }; // define with specific KUCMS object(s) needed 
     void LoadRecHitObject( KUCMSEcalRecHitObject* rhObj_ ){ rhObj = rhObj_; }; // define with specific KUCMS object(s) needed 
     void LoadGenObject( KUCMSGenObject* genObjs_ ){ genObjs = genObjs_; };
+    void LoadDisplacedVertexObject( KUCMSDisplacedVertex* svObj_ ){ svObj = svObj_; };
 
     // object processing : 1) LoadEvent prior to event loop 2) ProcessEvent during event loop via objectManager
     // get collections, do initial processing
@@ -119,6 +121,7 @@ class KUCMSMuonObject : public KUCMSObjectBase {
     // exampleObject* otherObjectPtr;
     KUCMSEcalRecHitObject* rhObj;
     KUCMSGenObject* genObjs;
+    KUCMSDisplacedVertex* svObj;
 
 };//<<>>class KUCMSMuon : public KUCMSObjectBase
 
@@ -129,6 +132,7 @@ KUCMSMuonObject::KUCMSMuonObject( const edm::ParameterSet& iConfig ){
     //cfFlag.set( "onlyEB", iConfig.existsAs<bool>("onlyEB") ? iConfig.getParameter<bool>("onlyEB") : false );
     cfPrm.set( "minMuE", iConfig.existsAs<double>("minMuE") ? iConfig.getParameter<double>("minMuE") : 2.0 );
     //cfPrm.set( "ebMaxEta",iConfig.existsAs<double>("ebMaxEta")? iConfig.getParameter<double>("ebMaxEta") : 1.479 );
+    cfFlag.set( "doSVModule", iConfig.existsAs<bool>("doSVModule") ? iConfig.getParameter<bool>("doSVModule") : true );
 
 }//<<>>KUCMSMuon::KUCMSMuon( const edm::ParameterSet& iConfig, const ItemManager<bool>& cfFlag )
 
@@ -158,6 +162,8 @@ void KUCMSMuonObject::InitObject( TTree* fOutTree ){
     //Branches.makeBranch("DetaSCTV","Muon_DetaSCTV",VFLOAT);
     //Branches.makeBranch("DphiSCTV","Muon_DphiSCTV",VFLOAT);
     //Branches.makeBranch("HOE","Muon_HOE",VFLOAT);
+    Branches.makeBranch("svMatch","Muon_hasSVMatch",VBOOL);
+    Branches.makeBranch("nSVMatch","Muon_nSVMatched",INT);
 
     //Branches.makeBranch("GenDr","Muon_genDr",VFLOAT);
     //Branches.makeBranch("GenDp","Muon_genDp",VFLOAT);
@@ -207,6 +213,7 @@ void KUCMSMuonObject::ProcessEvent( ItemManager<float>& geVar ){
 
 	int muIndx = 0;
 	int nSelMu = 0;
+    int nSVMatched = 0;
     //scGroup scptrs;
     //std::vector<float> scptres;
     if( MuonDEBUG ) std::cout << "Processing Muons" << std::endl;
@@ -242,6 +249,11 @@ void KUCMSMuonObject::ProcessEvent( ItemManager<float>& geVar ){
 
         if( MuonDEBUG ) std::cout << " --- Proccesssing : " << muon << std::endl;
 
+        bool hasSVMatch = false;
+        if( cfFlag("hasGenInfo") ) hasSVMatch = svObj->FoundLeptonMatch( muon );
+        if( hasSVMatch ) nSVMatched++;
+        Branches.fillBranch("svMatch",hasSVMatch);
+
         bool mptc = muPt >= 10 ;
 		if( mptc && isLoose ) nSelMu++;
 
@@ -250,6 +262,7 @@ void KUCMSMuonObject::ProcessEvent( ItemManager<float>& geVar ){
     }//<<>>for( const auto muon : *muons_ )
 	Branches.fillBranch("nMu",muIndx);
     Branches.fillBranch("nSMu",nSelMu);
+    Branches.fillBranch("nSVMatch",nSVMatched);
 	geVar.set("nSelMu",nSelMu);
 
 /*
