@@ -34,9 +34,9 @@ int main ( int argc, char *argv[] ){
                 //const std::string infilename = "KUCMS_Ntuple_Master_JetHT_Files_List.txt"; hasGenInfo = false;
                 //const std::string infilename = "KUCMS_Ntuple_Master_DEG_Files_List.txt"; hasGenInfo = false;
                 //const std::string infilename = "KUCMS_Ntuple_Jusin_Signal_Files_List.txt";
-                //const std::string infilename = "KUCMS_Ntuple_Master_BG_IPM100_Files_List.txt";
+                const std::string infilename = "KUCMS_Ntuple_Master_BG_IPM100_Files_List.txt";
                 //const std::string infilename = "KUCMS_Ntuple_Master_GoGoG_Files_List.txt";
-                const std::string infilename = "KUCMS_Ntuple_Master_SqSqG_Files_List.txt";
+                //const std::string infilename = "KUCMS_Ntuple_Master_SqSqG_Files_List.txt";
 
                 //const std::string outfilename = "_LLPGskim_v21_rjrvars.root"; // skim v21 use new process_name tags 
                 //const std::string outfilename = "_LLPGskim_v22_rjrvars.root"; // skim v22 keeps 0 pho events 

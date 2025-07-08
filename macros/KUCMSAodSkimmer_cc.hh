@@ -378,8 +378,8 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
 	processRechits();
 	processMet();
 	processPhotons();
-	processElectrons();
-	processMuons();
+	//processElectrons();
+	//processMuons();
 	processJets();
 	if( doGenInfo ){ processGenParticles(); }
 
@@ -1175,14 +1175,14 @@ void KUCMSAodSkimmer::processElectrons(){
 void KUCMSAodSkimmer::processMuons(){
 
     if( DEBUG ) std::cout << "Finding muons" << std::endl;
-	std::cout << "Finding muons" << std::endl;
+	//std::cout << "Finding muons" << std::endl;
     //-------- muons --------------------------------------
     
     selMuons.clearBranches(); // <<<<<<<   must do
 
     uInt nMuons = Muon_energy->size();
     if( DEBUG ) std::cout << " -- Looping muons: " << std::endl;
-	std::cout << " -- Looping muons: " << nMuons << " - " << Muon_nSelMuons << std::endl;
+	//std::cout << " -- Looping muons: " << nMuons << " - " << Muon_nSelMuons << std::endl;
     //for( uInt itr = 0; itr < nMuons; itr++ ){
 	//
 	//	float energy = (*Muons_energy)[itr];

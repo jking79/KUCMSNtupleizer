@@ -23,9 +23,14 @@ int main ( int argc, char *argv[] ){
                 //const std::string eosdir = "root://cmseos.fnal.gov//store/user/janguian/";
 				//const std::string eosdir = "../";				
 
-				bool genSigPerfect = false;
+				bool useEvtGenWgt = true;
+                //bool useEvtGenWgt = false;
+				//bool doSV = true; // only base selection
+				bool doSV = false; // must have a sig pho or a sv
                 //bool genSigPerfect = true;
+                bool genSigPerfect = false;
                 bool hasGenInfo = true;
+                //bool hasGenInfo = false;
                 ////const std::string infilename = "KUCMS_Ntuple_Master_BG_Files_List.txt"; genSigPerfect = false;
                 //const std::string infilename = "KUCMS_Ntuple_Master_IsoPho_GMSB_Files_List.txt"; genSigPerfect = true;
 				//const std::string infilename = "KUCMS_Ntuple_Master_DataPD_Files_List.txt"; hasGenInfo = false;
@@ -37,19 +42,23 @@ int main ( int argc, char *argv[] ){
                 //const std::string infilename = "KUCMS_Ntuple_Jusin_Signal_Files_List.txt";
                 //const std::string infilename = "KUCMS_Ntuple_Master_BG_IPM100_Files_List.txt";
                 //const std::string infilename = "KUCMS_Ntuple_Master_GoGoG_Files_List.txt";
-                //const std::string infilename = "KUCMS_Ntuple_Master_ZBG_SVIPM100_Files_List.txt";
-                const std::string infilename = "KUCMS_Ntuple_Master_GoGoZ_Files_List.txt";
+                const std::string infilename = "KUCMS_Ntuple_Master_ZBG_SVIPM100_Files_List.txt";
+                //const std::string infilename = "KUCMS_Ntuple_Master_GoGoZ_Files_List.txt";
+                //const std::string infilename = "KUCMS_Ntuple_Master_SqSqG_Files_List.txt";
+                //const std::string infilename = "KUCMS_Ntuple_Master_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
 
                 //const std::string outfilename = "_LLPGskim_v21_rjrvars.root"; // skim v21 use new process_name tags 
                 //const std::string outfilename = "_LLPGskim_v22_rjrvars.root"; // skim v22 keeps 0 pho events 
                 //const std::string outfilename = "_LLPGskim_v23_rjrvars.root"; // fixed 2 sig pho events 
-                const std::string outfilename = "_LLPGZskim_v28a_rjrvars.root"; // jet veto on first 2 Sig Phos only
+                //const std::string outfilename = "_rjrskim_v26.root"; // jet veto on first 2 Sig Phos only
+                //const std::string outfilename = "_rjrskim_v27.root"; // SV matching & SVs & lepton veto
+                const std::string outfilename = "_rjrskim_v28.root"; // MET cleaning flags 
 
                 int skipCnt = 0;// Normal
 				//int skipCnt = 10;// Met0 GMSB
                 //int skipCnt = 100;// Met0 QCD
                 KUCMSAodSkimmer llpgana;
-                llpgana.kucmsAodSkimmer( listdir, eosdir, infilename, outfilename, hasGenInfo, genSigPerfect, skipCnt );
+                llpgana.kucmsAodSkimmer( listdir, eosdir, infilename, outfilename, hasGenInfo, genSigPerfect, doSV, skipCnt, useEvtGenWgt );
     //}
     return 1;
 

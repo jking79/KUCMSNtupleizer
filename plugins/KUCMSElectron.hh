@@ -40,6 +40,7 @@
 // includes for other KUCMSObjects
 #include "KUCMSEcalRechit.hh"
 #include "KUCMSGenObjects.hh"
+#include "KUCMSDisplacedVertex.hh"
 
 #ifndef KUCMSElectronObjectHeader
 #define KUCMSElectronObjectHeader
@@ -68,6 +69,7 @@ class KUCMSElectronObject : public KUCMSObjectBase {
     // void LoadObject( exampleObject* otherObject ){ otherObjectPtr = otherObject; }; // define with specific KUCMS object(s) needed 
     void LoadRecHitObject( KUCMSEcalRecHitObject* rhObj_ ){ rhObj = rhObj_; }; // define with specific KUCMS object(s) needed 
     void LoadGenObject( KUCMSGenObject* genObjs_ ){ genObjs = genObjs_; };
+	void LoadDisplacedVertexObject( KUCMSDisplacedVertex* svObj_ ){ svObj = svObj_; };
 
     // object processing : 1) LoadEvent prior to event loop 2) ProcessEvent during event loop via objectManager
     // get collections, do initial processing
@@ -119,6 +121,7 @@ class KUCMSElectronObject : public KUCMSObjectBase {
     // exampleObject* otherObjectPtr;
     KUCMSEcalRecHitObject* rhObj;
     KUCMSGenObject* genObjs;
+	KUCMSDisplacedVertex* svObj;
 
 };//<<>>class KUCMSElectron : public KUCMSObjectBase
 
@@ -129,6 +132,7 @@ KUCMSElectronObject::KUCMSElectronObject( const edm::ParameterSet& iConfig ){
     cfFlag.set( "onlyEB", iConfig.existsAs<bool>("onlyEB") ? iConfig.getParameter<bool>("onlyEB") : false );
     cfPrm.set( "minEleE", iConfig.existsAs<double>("minEleE") ? iConfig.getParameter<double>("minEleE") : 2.0 );
     cfPrm.set( "ebMaxEta",iConfig.existsAs<double>("ebMaxEta")? iConfig.getParameter<double>("ebMaxEta") : 1.479 );
+    cfFlag.set( "doSVModule", iConfig.existsAs<bool>("doSVModule") ? iConfig.getParameter<bool>("doSVModule") : true );
 
 }//<<>>KUCMSElectron::KUCMSElectron( const edm::ParameterSet& iConfig, const ItemManager<bool>& cfFlag )
 
@@ -155,6 +159,8 @@ void KUCMSElectronObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("DphiSCTV","Electron_DphiSCTV",VFLOAT);
     Branches.makeBranch("HOE","Electron_HOE",VFLOAT);
     Branches.makeBranch("IsLoose","Electron_isLoose",VBOOL);
+    Branches.makeBranch("svMatch","Electron_hasSVMatch",VBOOL);
+    Branches.makeBranch("nSVMatch","Electron_nSVMatched",INT);
 
     //Branches.makeBranch("GenDr","Electron_genDr",VFLOAT);
     //Branches.makeBranch("GenDp","Electron_genDp",VFLOAT);
@@ -216,6 +222,7 @@ void KUCMSElectronObject::ProcessEvent( ItemManager<float>& geVar ){
 
 	int eleIndx = 0;
 	int nSelEle = 0;
+	int nSVMatched = 0;
     scGroup scptrs;
     std::vector<float> scptres;
     if( ElectronDEBUG ) std::cout << "Processing Electrons" << std::endl;
@@ -277,6 +284,10 @@ void KUCMSElectronObject::ProcessEvent( ItemManager<float>& geVar ){
     	Branches.fillBranch("DphiSCTV",electron.deltaPhiSuperClusterTrackAtVtx());
     	Branches.fillBranch("HOE",electron.hadronicOverEm());
 		
+		bool hasSVMatch = false;
+		if( cfFlag("hasGenInfo") ) hasSVMatch = svObj->FoundLeptonMatch( electron );
+		if( hasSVMatch ) nSVMatched++;
+        Branches.fillBranch("svMatch",hasSVMatch);
 
 	    eleIndx++;
         // GenParticle Info for electron  -------------------------------------------------------------------
@@ -288,6 +299,7 @@ void KUCMSElectronObject::ProcessEvent( ItemManager<float>& geVar ){
     }//<<>>for( const auto electron : *electrons_ )
 	Branches.fillBranch("nEle",eleIndx);
     Branches.fillBranch("nSele",nSelEle);
+    Branches.fillBranch("nSVMatch",nSVMatched);
 	geVar.set("nSelEle",nSelEle);
 
     if( cfFlag("hasGenInfo") ){

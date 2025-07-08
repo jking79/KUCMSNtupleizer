@@ -56,6 +56,8 @@ class KUCMSAodSkimmer : public llpgtree {
     void kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo );
     void kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect );
     void kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, int skipCnt );
+    void kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, bool doSVs, int skipCnt );
+    void kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, bool doSVs, int skipCnt, bool useEvtWgts );
     void initHists();
     bool eventLoop( Long64_t entry );
 	void startJobs();
@@ -92,6 +94,7 @@ class KUCMSAodSkimmer : public llpgtree {
     TH2D *ebeeMapP[nEBEEMaps], *ebeeMapT[nEBEEMaps], *ebeeMapR[nEBEEMaps];
     void makeEBEEMaps( int phoit );
     void makeEBEEMaps( std::vector<unsigned int> rhcol );
+	bool useEvtWgt;
 
     // aod skimmer helper functions & varibles
 
