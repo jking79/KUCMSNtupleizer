@@ -127,9 +127,9 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     muonObj->LoadMuonTokens( muonToken );
     ObjMan.Load( "Muons", muonObj );
 
-	KUCMSECALTracks* ecalTracksObj;
-	KUCMSDisplacedElectron* displacedElectronObj;
-    KUCMSDisplacedVertex* displacedVertexObj;
+	KUCMSECALTracks* ecalTracksObj = NULL;
+	KUCMSDisplacedElectron* displacedElectronObj = NULL;
+    KUCMSDisplacedVertex* displacedVertexObj = NULL;
 	if( cfFlag("doSVModule") || cfFlag("doDisEleModule") || cfFlag("doECALTrackOnly") ){
 
 	    //ECAL Tracks
@@ -139,7 +139,7 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
 	    //auto gsfTracksToken = consumes<edm::View<reco::GsfTrack>>(iConfig.getParameter<edm::InputTag>("gsfTracksSrc"));
 	    auto parameters = iConfig.getParameter<edm::ParameterSet>("TrackAssociatorParameters");
 	    auto magneticFieldToken = esConsumes<MagneticField, IdealMagneticFieldRecord>();
-	auto transientTrackBuilderToken = esConsumes<TransientTrackBuilder,TransientTrackRecord>(edm::ESInputTag("","TransientTrackBuilder"));
+		auto transientTrackBuilderToken = esConsumes<TransientTrackBuilder,TransientTrackRecord>(edm::ESInputTag("","TransientTrackBuilder"));
 		auto mergedSCToken = consumes<reco::SuperClusterCollection>(iConfig.getParameter<edm::InputTag>("displacedSCs"));
 			
     
@@ -256,6 +256,7 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
 
         // Load gen object into other collections
 	    electronsObj->LoadGenObject( genObjs );
+		muonObj->LoadGenObject( genObjs );
         photonsObj->LoadGenObject( genObjs );
         ak4jetObj->LoadGenObject( genObjs );
 		if( cfFlag("doSVModule") || cfFlag("doDisEleModule") ){ ecalTracksObj->LoadGenObject( genObjs ); }
