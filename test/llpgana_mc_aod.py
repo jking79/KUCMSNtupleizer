@@ -144,6 +144,11 @@ process.source = cms.Source("PoolSource",
         #'root://cmsxrootd-site.fnal.gov//store/data/Run2022C/JetHT/AOD/27Jun2023-v2/25310000/161a4ef3-6d8f-4026-bc32-12473677119e.root',
         #'root://cmsxrootd-site.fnal.gov//store/data/Run2018A/JetHT/MINIAOD/12Nov2019_UL2018-v2/100000/07082E78-7805-EB44-BB4D-1D3AB8892FB7.root',
 
+        #'root://cmsxrootd-site.fnal.gov//store/mc/RunIISummer20UL18RECO/WJetsToLNu_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/106X_upgrade2018_realistic_v11_L1v1_ext2-v3/40000/6021A8AE-9B41-7A4F-8E33-470F73F3D4FC.root',
+
+        'file:WJets_72B9C618-FE23-1E41-872E-57314D7CB454.root',
+
+        #'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18RECO/WJetsToLNu_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/106X_upgrade2018_realistic_v11_L1v1_ext2-v3/40000/72B9C618-FE23-1E41-872E-57314D7CB454.root',
 	#'/store/mc/RunIISummer20UL18RECO/GJets_HT-40To100_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/2550000/06CC60F3-D74E-174E-8AD7-DCDAB14FB26F.root',
 	#'/store/data/Run2018C/JetHT/AOD/15Feb2022_UL2018-v1/2530001/B2C0793B-3D7B-104F-B34B-87D010EFDEF4.root',	
 
@@ -160,7 +165,7 @@ process.source = cms.Source("PoolSource",
 
 
         # AOD Data MET
-        'file:/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/test/Met_UL18B_AOD_973EEF0C-44AB-E94A-8591-04DCD00D8B4B.root'      
+        #'file:/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/test/Met_UL18B_AOD_973EEF0C-44AB-E94A-8591-04DCD00D8B4B.root'      
         #'file:/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/test/MetPD_003A2484-A2DC-E711-9D0A-02163E019C46.root'
         #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoG/SMS-GlGl_mGl-1500_mN2-500_mN1-100_gam_N2ctau-0p1_AOD/250123_145920/0000/SMS-GlGl_mGl-1500_mN2-500_mN1-100_gam_N2ctau-0p1_AOD_99.root'
         #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoZ/SMS-GlGl_mGl-2000_mN2-1900_mN1-200_Zff_N2ctau-0p3_AOD/250607_191347/0000/SMS-GlGl_mGl-2000_mN2-1900_mN1-200_Zff_N2ctau-0p3_AOD_2.root'
@@ -265,17 +270,17 @@ process.GlobalTag.globaltag = options.globalTag
 ## Setup the service to make a ROOT TTree
 process.TFileService = cms.Service("TFileService", fileName = cms.string(options.outputFileName))
 		
-#genInfo = True
-genInfo = False
+genInfo = True
+#genInfo = False
 if options.multicrab == True : genInfo = options.hasGenInfo		   
 
-#filterselect = 'None'
+filterselect = 'None'
 #filterselect = 'AL1DisSV'
 #filterselect = 'SVIPMet100'
 #filterselect = 'MET100'
 #filterselect = 'AL1IsoPho'
 #filterselect = 'IsoPhoMet100'
-filterselect = 'AL1SelEle'
+#filterselect = 'AL1SelEle'
 
 dosv = True
 #dosv = False
@@ -285,8 +290,8 @@ if options.multicrab == True : dosv = options.doSV
 dode = False
 if options.multicrab == True : dode = options.doDisEle
 
-doet = True
-#doet = False
+#doet = True
+doet = False
 if options.multicrab == True : doet = options.doECALTrackOnly
 if doet : 
     dosv = False

@@ -161,6 +161,8 @@ void KUCMSElectronObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("IsLoose","Electron_isLoose",VBOOL);
     Branches.makeBranch("svMatch","Electron_hasSVMatch",VBOOL);
     Branches.makeBranch("nSVMatch","Electron_nSVMatched",INT);
+    Branches.makeBranch("IsPrompt","Electron_isPrompt",VBOOL);
+    Branches.makeBranch("nPrompt","Electron_nPrompt",INT);
 
     //Branches.makeBranch("GenDr","Electron_genDr",VFLOAT);
     //Branches.makeBranch("GenDp","Electron_genDp",VFLOAT);
@@ -223,6 +225,7 @@ void KUCMSElectronObject::ProcessEvent( ItemManager<float>& geVar ){
 	int eleIndx = 0;
 	int nSelEle = 0;
 	int nSVMatched = 0;
+    int nPromptEle = 0;
     scGroup scptrs;
     std::vector<float> scptres;
     if( ElectronDEBUG ) std::cout << "Processing Electrons" << std::endl;
@@ -285,9 +288,16 @@ void KUCMSElectronObject::ProcessEvent( ItemManager<float>& geVar ){
     	Branches.fillBranch("HOE",electron.hadronicOverEm());
 		
 		bool hasSVMatch = false;
-		if( cfFlag("hasGenInfo") ) hasSVMatch = svObj->FoundLeptonMatch( electron );
+		if( cfFlag("doSVModule") ) hasSVMatch = svObj->FoundLeptonMatch( electron );
 		if( hasSVMatch ) nSVMatched++;
         Branches.fillBranch("svMatch",hasSVMatch);
+
+		bool isPrompt = false;
+		if( cfFlag("doSVModule") ) isPrompt = svObj->IsPromptLepton( electron );
+
+		bool isPromptEle = false;
+		if( isPrompt && isLoose && eptc ){ isPromptEle = true; nPromptEle++; }
+		Branches.fillBranch("IsPrompt",isPromptEle);  
 
 	    eleIndx++;
         // GenParticle Info for electron  -------------------------------------------------------------------
@@ -300,6 +310,7 @@ void KUCMSElectronObject::ProcessEvent( ItemManager<float>& geVar ){
 	Branches.fillBranch("nEle",eleIndx);
     Branches.fillBranch("nSele",nSelEle);
     Branches.fillBranch("nSVMatch",nSVMatched);
+	Branches.fillBranch("nPrompt",nPromptEle);
 	geVar.set("nSelEle",nSelEle);
 
     if( cfFlag("hasGenInfo") ){

@@ -37,6 +37,7 @@
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/JetReco/interface/GenJet.h"
 #include "DataFormats/GeometryVector/interface/GlobalPoint.h"
+#include "DataFormats/RecoCandidate/interface/RecoCandidate.h"
 
 //#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/MatchingTools.h"
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/GenLeptonInfo.h"
@@ -125,6 +126,9 @@ class KUCMSGenObject : public KUCMSObjectBase {
     int getGenSigPhoXMother( uInt genIndex );
     int getGenSigEleXMother( uInt genIndex );
 	int getGenSigPhoXMother( uInt genIndex, int loopcnt );
+
+	// basic gen matching
+	int getGenParticleIndex( const reco::RecoCandidate & parton, int type  );
 
     // Gen electrons
     void GenElectronContent() const;
@@ -752,6 +756,54 @@ std::vector<float> KUCMSGenObject::getGenPartMatch( const reco::SuperCluster* sc
     return results;
 
 }//<<>>getGenPartMatch( reco::SuperClusterCollection *scptr, std::vector<reco::GenParticle> fgenparts )
+
+int KUCMSGenObject::getGenParticleIndex( const reco::RecoCandidate & parton, int type ){
+
+	//std::cout << " - In getGenParticleIndex : " << std::endl;
+	//std::cout << " -- e/eta/phi: " << parton.eta() << " " << parton.phi() << " " << parton.energy() << " " << std::endl;
+	float eta = parton.eta();
+    float phi = parton.phi();
+	float en = parton.energy();
+	int parPdgId = parton.pdgId();
+	//std::cout << " -- type/pdgid: " << type << " ?= " << parPdgId << std::endl;
+    int index(0);
+    float minRe(10.0);
+    float minDr(0.3);
+	int matchedIdx(-1);
+	//std::cout << " -- Getting fgenparts size " << std::endl;
+	int nGenPart = fgenparts.size();
+    //std::cout << " -- Starting fgenparts loop " << std::endl;
+    for( int idx = 0; idx < nGenPart; idx++ ){
+
+        //std::cout << " -- in loop with :: " << std::endl;
+        if( fgenparts[idx].status() != 1 ) continue;
+
+		//std::cout << " -- pdgID: " << fgenparts[idx].pdgId() << std::endl;
+		if( fgenparts[idx].pdgId() != parPdgId ) continue;
+        int pdgId = std::abs( fgenparts[idx].pdgId() );
+		if( pdgId != type ){ index++; continue; }
+
+		float geta = fgenparts[idx].eta();
+		float gphi = fgenparts[idx].phi();
+		float gen = fgenparts[idx].energy();
+        auto dr = std::sqrt(reco::deltaR2(geta,gphi,eta,phi));
+        auto re = std::abs( (en/gen) - 1 );
+
+		bool dRmatch = dr <= minDr;
+		bool rEmatch = re <= ( minRe + 0.2 );	
+        if( dRmatch && rEmatch ){
+            minDr = dr;
+            minRe = re;
+            matchedIdx = index;
+        }//<<>>if( dr < minDr && dp < minDp )
+        index++;
+	
+	}//<<>>for(const auto & genPart : fgenparts ){
+
+	//std::cout << " -- returning : " << matchedIdx << " from  getGenParticleIndex " << std::endl;
+	return matchedIdx;
+
+}//<<>> int KUCMSGenObject::getGenPartMatch( const T &lepton )
 
 int KUCMSGenObject::getGenSigPhoXMother( uInt genIndex ){
 

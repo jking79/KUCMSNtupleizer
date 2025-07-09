@@ -155,7 +155,7 @@ void KUCMSMuonObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("looseID","Muon_isLoose",VBOOL);
     Branches.makeBranch("mediumID","Muon_isMedium",VBOOL);
     Branches.makeBranch("nSMu","Muon_nSelMuons",INT);
-    //Branches.makeBranch("GenIdx","Muon_genIdx",VINT);
+    Branches.makeBranch("GenIdx","Muon_genIdx",VINT);
     //Branches.makeBranch("GenXMomIdx","Muon_genSigXMomId",VINT);
     //Branches.makeBranch("GenWZIdx","Muon_genSigWZId",VINT);
     //Branches.makeBranch("Sieie","Muon_Sieie",VFLOAT);
@@ -164,6 +164,8 @@ void KUCMSMuonObject::InitObject( TTree* fOutTree ){
     //Branches.makeBranch("HOE","Muon_HOE",VFLOAT);
     Branches.makeBranch("svMatch","Muon_hasSVMatch",VBOOL);
     Branches.makeBranch("nSVMatch","Muon_nSVMatched",INT);
+    Branches.makeBranch("IsPrompt","Muon_isPrompt",VBOOL);
+    Branches.makeBranch("nPrompt","Muon_nPrompt",INT);
 
     //Branches.makeBranch("GenDr","Muon_genDr",VFLOAT);
     //Branches.makeBranch("GenDp","Muon_genDp",VFLOAT);
@@ -214,6 +216,7 @@ void KUCMSMuonObject::ProcessEvent( ItemManager<float>& geVar ){
 	int muIndx = 0;
 	int nSelMu = 0;
     int nSVMatched = 0;
+	int nPromptMuon = 0;
     //scGroup scptrs;
     //std::vector<float> scptres;
     if( MuonDEBUG ) std::cout << "Processing Muons" << std::endl;
@@ -250,12 +253,23 @@ void KUCMSMuonObject::ProcessEvent( ItemManager<float>& geVar ){
         if( MuonDEBUG ) std::cout << " --- Proccesssing : " << muon << std::endl;
 
         bool hasSVMatch = false;
-        if( cfFlag("hasGenInfo") ) hasSVMatch = svObj->FoundLeptonMatch( muon );
+        if( cfFlag("doSVModule") ) hasSVMatch = svObj->FoundLeptonMatch( muon );
         if( hasSVMatch ) nSVMatched++;
         Branches.fillBranch("svMatch",hasSVMatch);
 
-        bool mptc = muPt >= 10 ;
-		if( mptc && isLoose ) nSelMu++;
+        bool isPrompt = false;
+        if( cfFlag("doSVModule") ) isPrompt = svObj->IsPromptLepton( muon );
+
+        bool mptc = muPt >= 20 ;
+        if( mptc && isLoose ) nSelMu++;
+
+        bool isPromptMuon = false;
+        if( isPrompt && isLoose && mptc ){ isPromptMuon = true; nPromptMuon++; }
+        Branches.fillBranch("IsPrompt",isPromptMuon);
+
+		int genIndex = -9;
+		if( cfFlag("hasGenInfo") ) genIndex = genObjs->getGenParticleIndex( muon, 13 ); 
+		Branches.fillBranch("GenIdx", genIndex );
 
 	    muIndx++;
 
@@ -263,32 +277,9 @@ void KUCMSMuonObject::ProcessEvent( ItemManager<float>& geVar ){
 	Branches.fillBranch("nMu",muIndx);
     Branches.fillBranch("nSMu",nSelMu);
     Branches.fillBranch("nSVMatch",nSVMatched);
+	Branches.fillBranch("nPrompt",nPromptMuon);
 	geVar.set("nSelMu",nSelMu);
 
-/*
-    if( cfFlag("hasGenInfo") ){
-        auto genInfo = genObjs->getGenMuMatch( scptrs, scptres );
-        //if( MuonDEBUG) 
-		//std::cout << " Muon Gen Match ------------------------- " << std::endl;
-        for( auto genidx : genInfo ){
-			//std::cout << " -- Filling genindex : " << genidx << std::endl;
-            Branches.fillBranch("GenIdx",genidx);
-            if( genidx > -1 ){
-                int genWZMomIndx = genObjs->getGenSigMuXMother( genidx );
-                //std::cout << " -- Muon Match : level 1 : genidx: " << genidx << " mom: " << genMomIndx  << std::endl;
-                Branches.fillBranch("GenWZIdx",genWZMomIndx);
-				if( genWZMomIndx > -1 ){
-					//uInt wzIndx = genMomIndx;
-                	int genGMomIndx = genObjs->getGenSigMuXMother( genWZMomIndx );
-                    //std::cout << "  -- Muon Match : level 2 : mom: " << genMomIndx << " gmom: " << genGMomIndx  << std::endl;
-					Branches.fillBranch("GenXMomIdx",genGMomIndx);
-				} else { Branches.fillBranch("GenXMomIdx",-5); }//<<>>if( genMomIndx > -1 )
-            } else { Branches.fillBranch("GenWZIdx",-5); Branches.fillBranch("GenXMomIdx",-5); }//<<>>if( genidx > -1 )
-			//std::cout << " --- next muon -------------------------- " << std::endl;
-        }//<<>>for( auto genidx : genInfo )
-		//std::cout << " Muon Gen Match Finished ------------------------- " << std::endl;
-    }//<<>>if( cfFlag("hasGenInfo") )
-*/
 
 }//<<>>void KUCMSMuon::ProcessEvent()
 
