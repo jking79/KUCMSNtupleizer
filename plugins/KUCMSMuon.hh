@@ -61,6 +61,7 @@ class KUCMSMuonObject : public KUCMSObjectBase {
     // object setup : 1) construct object 2) InitObject 3) CrossLoad 4) load into Object Manager
     // load tokens for eventt based collections
     void LoadMuonTokens( edm::EDGetTokenT<edm::View<reco::Muon>> muonsToken ){ muonsToken_ = muonsToken; }; 
+    void LoadVertexTokens( edm::EDGetTokenT<std::vector<reco::Vertex>> verticesToken_ ){ verticesToken = verticesToken_; };
     ////void LoadConversionTokens( edm::EDGetTokenT<reco::ConversionCollection> conversionsToken ){ conversionsToken_ = conversionsToken; };
     ////void LoadBeamSpotTokens( edm::EDGetTokenT<reco::BeamSpot> beamLineToken ){ beamLineToken_ = beamLineToken; };
     // sets up branches, do preloop jobs 
@@ -103,6 +104,9 @@ class KUCMSMuonObject : public KUCMSObjectBase {
     edm::Handle<edm::View<reco::Muon> > muons_;
     //std::vector<reco::GsfMuon> muons;
 
+    edm::EDGetTokenT<std::vector<reco::Vertex>> verticesToken;
+    edm::Handle<std::vector<reco::Vertex>> vertices_;
+
     //const edm::InputTag muMVAIDLooseMapTag;
     //edm::EDGetTokenT<edm::ValueMap<bool>> muMVAIDLooseMapToken_;
     //edm::Handle<edm::ValueMap<bool>> muMVAIDLooseMap_;
@@ -131,7 +135,7 @@ KUCMSMuonObject::KUCMSMuonObject( const edm::ParameterSet& iConfig ){
     cfFlag.set( "hasGenInfo", iConfig.existsAs<bool>("hasGenInfo") ? iConfig.getParameter<bool>("hasGenInfo") : true );
     //cfFlag.set( "onlyEB", iConfig.existsAs<bool>("onlyEB") ? iConfig.getParameter<bool>("onlyEB") : false );
     cfPrm.set( "minMuE", iConfig.existsAs<double>("minMuE") ? iConfig.getParameter<double>("minMuE") : 2.0 );
-    //cfPrm.set( "ebMaxEta",iConfig.existsAs<double>("ebMaxEta")? iConfig.getParameter<double>("ebMaxEta") : 1.479 );
+    cfPrm.set( "maxEta",iConfig.existsAs<double>("maxEta")? iConfig.getParameter<double>("maxEta") : 2.44 );
     cfFlag.set( "doSVModule", iConfig.existsAs<bool>("doSVModule") ? iConfig.getParameter<bool>("doSVModule") : true );
 
 }//<<>>KUCMSMuon::KUCMSMuon( const edm::ParameterSet& iConfig, const ItemManager<bool>& cfFlag )
@@ -154,8 +158,9 @@ void KUCMSMuonObject::InitObject( TTree* fOutTree ){
     //Branches.makeBranch("TrackZ","Muon_trackz",VFLOAT);
     Branches.makeBranch("looseID","Muon_isLoose",VBOOL);
     Branches.makeBranch("mediumID","Muon_isMedium",VBOOL);
+    Branches.makeBranch("tightID","Muon_isTight",VBOOL);
     Branches.makeBranch("nSMu","Muon_nSelMuons",INT);
-    Branches.makeBranch("GenIdx","Muon_genIdx",VINT);
+    Branches.makeBranch("dRGenMatch","Muon_dRGenMatch",VFLOAT);
     //Branches.makeBranch("GenXMomIdx","Muon_genSigXMomId",VINT);
     //Branches.makeBranch("GenWZIdx","Muon_genSigWZId",VINT);
     //Branches.makeBranch("Sieie","Muon_Sieie",VFLOAT);
@@ -164,7 +169,10 @@ void KUCMSMuonObject::InitObject( TTree* fOutTree ){
     //Branches.makeBranch("HOE","Muon_HOE",VFLOAT);
     Branches.makeBranch("svMatch","Muon_hasSVMatch",VBOOL);
     Branches.makeBranch("nSVMatch","Muon_nSVMatched",INT);
-    Branches.makeBranch("IsPrompt","Muon_isPrompt",VBOOL);
+    Branches.makeBranch("passPrompt","Muon_passPrompt",VBOOL);
+    //Branches.makeBranch("hasMinPt","Muon_hasMinPt",VBOOL);
+    Branches.makeBranch("hasGenMatch","Muon_hasGenMatch",VBOOL);
+    Branches.makeBranch("IsPromptMuon","Muon_isPromptMuon",VBOOL);
     Branches.makeBranch("nPrompt","Muon_nPrompt",INT);
 
     //Branches.makeBranch("GenDr","Muon_genDr",VFLOAT);
@@ -185,6 +193,7 @@ void KUCMSMuonObject::LoadEvent( const edm::Event& iEvent, const edm::EventSetup
 	iEvent.getByToken(muonsToken_, muons_);
     //iEvent.getByToken(conversionsToken_, conversions_);
     //iEvent.getByToken(beamLineToken_, beamSpot_);
+    iEvent.getByToken( verticesToken, vertices_ );
 
     if( MuonDEBUG ) std::cout << "Collecting Muons" << std::endl;
 
@@ -197,7 +206,8 @@ void KUCMSMuonObject::LoadEvent( const edm::Event& iEvent, const edm::EventSetup
         //auto passIdCut = true; //muon.muonID(muCutLoose);// pat muon ( miniAOD ) method
         //muIdBools.push_back((*muMVAIDLooseMap_)[muonRef]);// order is important, track how this vector is loaded
         auto passEnergyCut = muon.energy() > cfPrm("minMuE");
-        if( passEnergyCut ) fmuons.push_back(muon);
+		auto passEtaCut = std::abs( muon.eta() ) < cfPrm("maxEta");
+        if( passEnergyCut && passEtaCut ) fmuons.push_back(muon);
     }//<<>>for( const auto muon : *muons_ )
 
 
@@ -231,8 +241,16 @@ void KUCMSMuonObject::ProcessEvent( ItemManager<float>& geVar ){
         const float muPz = muon.pz();
 		//const float time = muon.time();
 		//const bool timeValid = muon.isTimeValid();
-		const bool isLoose = muon::isLooseMuon( muon );
-		const bool isMedium = muon::isMediumMuon( muon );
+		//const bool isLoose = muon::isLooseMuon( muon );
+		const bool isLoose = muon.passed( reco::Muon::CutBasedIdLoose );
+		//const bool isMedium = muon::isMediumMuon( muon );
+        const bool isMedium = muon.passed( reco::Muon::CutBasedIdMedium );
+		//const auto & primevtx = vertices_->front();
+		//const bool isTight = muon::isTightMuon( muon, primevtx );
+        //const bool isTight = muon.passed( reco::Muon::TkIsoTight );
+		const bool isTight = muon.passed( reco::Muon::PFIsoVeryVeryTight );
+        //const bool isTight = muon.passed( reco::Muon::CutBasedIdTight );
+		//const bool isGlobal = muon.isGlobalMuon();
 
 		if( MuonDEBUG ) std::cout << " -- " << muPt << " - " << muEta << " - " << isLoose << " - " << isMedium << std::endl;	
         ////const float muTrackZ = muon.trackPositionAtVtx().Z();
@@ -247,6 +265,7 @@ void KUCMSMuonObject::ProcessEvent( ItemManager<float>& geVar ){
     	//Branches.fillBranch("Time",time);
 		Branches.fillBranch("looseID",isLoose);
         Branches.fillBranch("mediumID",isMedium);
+        Branches.fillBranch("tightID",isTight);
 		////Branches.fillBranch("TrackZ",muTrackZ);
     	//Branches.fillBranch("timeValid","Muon_timeValid",VBOOL);
 
@@ -257,19 +276,25 @@ void KUCMSMuonObject::ProcessEvent( ItemManager<float>& geVar ){
         if( hasSVMatch ) nSVMatched++;
         Branches.fillBranch("svMatch",hasSVMatch);
 
-        bool isPrompt = false;
-        if( cfFlag("doSVModule") ) isPrompt = svObj->IsPromptLepton( muon );
-
-        bool mptc = muPt >= 20 ;
+        bool mptc = ( muPt >= 10 );
         if( mptc && isLoose ) nSelMu++;
+        //Branches.fillBranch("hasMinPt",mptc);
+
+        bool passPrompt = false;
+        if( cfFlag("doSVModule") ) passPrompt = svObj->IsPromptLepton( muon );
+        Branches.fillBranch("passPrompt",passPrompt);
+
+		float dRGenMatch = -9;
+		if( cfFlag("hasGenInfo") ) dRGenMatch = genObjs->getGenParticleIndex( muon, 13 ); 
+		//Branches.fillBranch("GenIdx", genIndex );
+		bool hasGenMatch = cfFlag("hasGenInfo")  ? ( dRGenMatch > -1 ) : true;
+        Branches.fillBranch("hasGenMatch",hasGenMatch);
+        Branches.fillBranch("dRGenMatch", dRGenMatch);
 
         bool isPromptMuon = false;
-        if( isPrompt && isLoose && mptc ){ isPromptMuon = true; nPromptMuon++; }
-        Branches.fillBranch("IsPrompt",isPromptMuon);
-
-		int genIndex = -9;
-		if( cfFlag("hasGenInfo") ) genIndex = genObjs->getGenParticleIndex( muon, 13 ); 
-		Branches.fillBranch("GenIdx", genIndex );
+        if( passPrompt && isLoose && mptc && hasGenMatch ){ isPromptMuon = true; nPromptMuon++; }
+        //if( passPrompt && isLoose && mptc ){ isPromptMuon = true; nPromptMuon++; }
+        Branches.fillBranch("IsPromptMuon",isPromptMuon);
 
 	    muIndx++;
 

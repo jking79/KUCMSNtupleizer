@@ -89,7 +89,7 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     auto vertexToken = consumes<std::vector<reco::Vertex>>(iConfig.getParameter<edm::InputTag>("vertices"));
     auto triggerResultsToken = consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("triggerResults"));
     auto triggerEventToken = consumes<trigger::TriggerEvent>(iConfig.getParameter<edm::InputTag>("triggerEvent"));
-    //auto rhoToken_ = consumes<double>(iConfig.getParameter<edm::InputTag>("rho"));
+	//auto rhoToken = consumes<double>(iConfig.getParameter<edm::InputTag>("Rho"));
     eventInfoObj->LoadVertexTokens( vertexToken );
     eventInfoObj->LoadTriggerTokens( triggerResultsToken, triggerEventToken );
     ObjMan.Load( "EventInfo", eventInfoObj );
@@ -112,6 +112,8 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
 
     //Electrons 
     auto electronsObj = new KUCMSElectronObject( iConfig );
+    auto rhoToken = consumes<double>(iConfig.getParameter<edm::InputTag>("rho"));
+    electronsObj->LoadRhoTokens( rhoToken );
     auto electronToken = consumes<edm::View<reco::GsfElectron>>(iConfig.getParameter<edm::InputTag>("electrons"));
     electronsObj->LoadElectronTokens( electronToken );
     auto conversionsToken = consumes<reco::ConversionCollection>(iConfig.getParameter<edm::InputTag>("conversions"));
@@ -124,6 +126,7 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     //Muons    
     auto muonObj = new KUCMSMuonObject( iConfig );
     auto muonToken = consumes<edm::View<reco::Muon>>(iConfig.getParameter<edm::InputTag>("muons"));
+    muonObj->LoadVertexTokens( vertexToken );
     muonObj->LoadMuonTokens( muonToken );
     ObjMan.Load( "Muons", muonObj );
 
