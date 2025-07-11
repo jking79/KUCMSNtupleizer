@@ -500,8 +500,8 @@ void KUCMSAodSkimmer::processRechits(){
     if( DEBUG ) std::cout << " -- Looping over " << nRecHits << " rechits" << std::endl;
     for( int it = 0; it < nRecHits; it++ ){
 
-		auto id = (*ECALRecHit_ID)[it];
-		auto idinfo = DetIDMap[id];
+		//auto id = (*ECALRecHit_ID)[it];
+		//auto idinfo = DetIDMap[id];
 		//if( idinfo.ecal == ECAL::EB ){
         if( true ){
 
