@@ -84,6 +84,9 @@ public:
 
   template<class T>
   bool IsPromptLepton(const T &lepton) const;
+
+  template<class T>
+  std::pair<double, double> BestMatch(const T &lepton) const;
   
 private:
 
@@ -577,15 +580,44 @@ bool KUCMSDisplacedVertex::FoundLeptonMatch(const T &lepton) const {
 
 template<class T>
 bool KUCMSDisplacedVertex::IsPromptLepton(const T &lepton) const {
+    double deltaRCut = 0.02;
+    double relPtDiffCut = 0.01;
+    
+    if constexpr (std::is_same_v<T, reco::Electron>) {
+        deltaRCut = 0.01;
+        relPtDiffCut = 0.05;
+    } else if constexpr (std::is_same_v<T, reco::Muon>) {
+        deltaRCut = 0.001;   
+        relPtDiffCut = 0.005;
+    }
+    
+    for(const auto &track : *muonEnhancedTracksHandle_) {
+        const double deltaR = sqrt(DeltaR2(lepton, track));
+        const double trackPt(track.pt()), leptonPt(lepton.pt());
+        const double relPtDiffMin = 0.5*(trackPt-leptonPt)/(trackPt+leptonPt);
+        if(deltaR < deltaRCut && fabs(relPtDiffMin) < relPtDiffCut) {
+            return false;
+        }
+    }
+    
+    return true;
+}
 
+template<class T>
+std::pair<double, double> KUCMSDisplacedVertex::BestMatch(const T &lepton) const {
+
+  double bestDeltaRMatch(10), relPtDiffMin(-1);
   for(const auto &track : *muonEnhancedTracksHandle_) {
     const double deltaR = sqrt(DeltaR2(lepton, track));
-    if(deltaR < 0.02) {
-      return false;
+    if(deltaR < bestDeltaRMatch) {
+      const double trackPt(track.pt()), leptonPt(lepton.pt());
+      relPtDiffMin = 0.5*(trackPt-leptonPt)/(trackPt+leptonPt);
+      
+      bestDeltaRMatch = deltaR;
     }
   }
-  
-  return true;
+
+  return std::make_pair(bestDeltaRMatch, relPtDiffMin);
 }
 
 #endif
