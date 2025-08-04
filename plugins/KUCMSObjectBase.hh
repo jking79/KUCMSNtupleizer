@@ -112,6 +112,7 @@ class KUCMSObjectBase : public edm::one::EDAnalyzer<edm::one::SharedResources> {
     // input parameters
     ItemManager<double> cfPrm; // confguration paramters loaded in object constructor step from iConfig
 	ItemManager<bool> cfFlag;    
+    ItemManager<std::string> prmStr;
 
     // Branch Manager
     KUCMSBranchManager Branches;
@@ -124,6 +125,7 @@ class KUCMSObjectBase : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 
 	//Internal information passing
     ItemManager<float> objVars;
+    ItemManager<std::string> objStrVar;
 
 	private:
 

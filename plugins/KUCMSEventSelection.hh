@@ -21,7 +21,7 @@ class KUCMSEventSelection {
 
     public:
 
-    KUCMSEventSelection(){};
+    KUCMSEventSelection(){ eventSelectionTag = "none"; };
     ~KUCMSEventSelection(){};
 
 	private:
@@ -57,6 +57,7 @@ const bool KUCMSEventSelection::selectEvent( ItemManager<float>& geVar ){
 	bool hasAL1SelElectron = geVar("nSelEle") > 0;
 	bool hasAL1IsoPhoton = geVar("nIsoPhos") > 0;
 	bool hasAL1DisSV = geVar("nDisSVs") > 0;
+	bool hasAL1NpSC = geVar("nNpSC") > 0;
 
 	bool hasAl1IsoPhoPlusMinMet100 = hasAL1IsoPhoton && hasMinMet100;
     bool hasDSVAl1IsoPhoPlusMinMet100 = ( hasAL1DisSV || hasAL1IsoPhoton ) && hasMinMet100;
@@ -72,9 +73,10 @@ const bool KUCMSEventSelection::selectEvent( ItemManager<float>& geVar ){
     selectionMap["SVIPMet100"] = hasDSVAl1IsoPhoPlusMinMet100;
     selectionMap["SVIPMet125"] = hasDSVAl1IsoPhoPlusMinMet125;
     selectionMap["AL1DisSV"] = hasAL1DisSV;
+    selectionMap["AL1NpSC"] = hasAL1NpSC;
 
 	metFilter = hasMinMet100;
-	phoFilter = hasAL1DisSV;
+	phoFilter = hasAL1DisSV || hasAL1DisSV;
 
 	//std::cout << "Event select for ntuple with " << eventSelectionTag << " w/ result " << selectionMap[eventSelectionTag] << std::endl;
 	return selectionMap[eventSelectionTag];

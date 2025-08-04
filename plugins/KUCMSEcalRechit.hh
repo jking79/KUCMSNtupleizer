@@ -165,6 +165,7 @@ class KUCMSEcalRecHitObject : public KUCMSObjectBase {
     std::vector<float> getMissFractionList( const scGroup superClusterGroup );
 	std::tuple<uInt,float> getHFList( const scGroup superClusterGroup );
 	float getRecHitEnergy( const uInt id );
+    float getRecHitTime( const uInt id );
 
     float getRhTOF( EcalRecHit rechit, double vtxX, double vtxY, double vtxZ );
     float getLeadTofTime( rhGroup recHits, double vtxX, double vtxY, double vtxZ );
@@ -366,6 +367,7 @@ void KUCMSEcalRecHitObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("zscExcluded","SuperCluster_excluded",VBOOL,"This SC is superseeded by an overlapping OOT SC");
     Branches.makeBranch("zscOriginal","SuperCluster_original",VBOOL,"This SC is only found in the orignal propmt or oot collection");
     Branches.makeBranch("zscsid","SuperCluster_XtalSeedID",VUINT);
+    Branches.makeBranch("zscstime","SuperCluster_SeedTime",VFLOAT);
     Branches.makeBranch("zscotype","SuperCluster_ObjectPdgId",VINT,"Currently is 0( no match ), 11, 22, or 33( matches an ele & pho )");
     Branches.makeBranch("zscphoindx","SuperCluster_PhotonIndx",VINT,"Index of matching photon");
     Branches.makeBranch("zsceleindx","SuperCluster_ElectronIndx",VINT,"index of matching electron");
@@ -596,6 +598,8 @@ void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
     Branches.clearBranches();
 
     if( ERHODEBUG ) std::cout << " - enetering SuperCluster loop" << std::endl;
+
+	float nNpSupClstrs( 0 );//# of non-prompt super clusters
     int nSupClstrs = fsupclstrs.size();
     Branches.fillBranch("zscnSC",nSupClstrs);
     for ( int it = 0; it < nSupClstrs; it++ ){
@@ -606,6 +610,7 @@ void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
         bool isOOT = fscIsOOT[it];
         DetId xsDetId = supclstr.seed()->seed();
         uInt xseed = xsDetId.rawId();
+		float time = getRecHitTime( xseed );
         float clcx = supclstr.x();
         float clcy = supclstr.y();
         float clcz = supclstr.z();
@@ -621,6 +626,7 @@ void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
         Branches.fillBranch("zscExcluded",excluded);
         Branches.fillBranch("zscOriginal",original);
         Branches.fillBranch("zscsid",xseed);
+        Branches.fillBranch("zscstime",time);
         Branches.fillBranch("zscotype",scOType);
         Branches.fillBranch("zscphoindx",scPhoIdx);
         Branches.fillBranch("zsceleindx",scEleIdx);
@@ -696,7 +702,11 @@ void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
         Branches.fillBranch("zscCovEtaPhi",scCovEtaPhi);
         Branches.fillBranch("zscCovPhiPhi",scCovPhiPhi);
 
+		if( ( isOOT || ( time < -1.0 ) ) && scenergy > 5.0 ) nNpSupClstrs++;
+
     }//<<>>for ( int it = 0; it < nSupClstrs; it++ )
+	//std::cout << " -- nNpSC : " << nNpSupClstrs << std::endl;
+	geVar.set("nNpSC",nNpSupClstrs);
 
     if( ERHODEBUG ) std::cout << " - enetering RecHit loop" << std::endl;
     int nRecHits = frechits.size();
@@ -1427,7 +1437,18 @@ float KUCMSEcalRecHitObject::getRecHitEnergy( const uInt id ){
 			if( getRawID(rh) == id ) return rh.energy();
     	}//<<>> for( auto rh : frechits )
 	}//if ( id != 0 )
-    return 0;
+    return -999.f;
+
+}//<<>>float EcalTools::recHitE( const DetId id, const EcalRecHitCollection &recHits )
+
+float KUCMSEcalRecHitObject::getRecHitTime( const uInt id ){
+
+    if ( id != 0 ){
+        for( auto rh : frechits ){
+            if( getRawID(rh) == id ) return rh.time();
+        }//<<>> for( auto rh : frechits )
+    }//if ( id != 0 )
+    return -999.f;
 
 }//<<>>float EcalTools::recHitE( const DetId id, const EcalRecHitCollection &recHits )
 

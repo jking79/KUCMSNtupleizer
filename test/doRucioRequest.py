@@ -64,14 +64,14 @@ met18UL = [
     #'cms:/MET/Run2018A-15Feb2022_UL2018-v1/AOD', #17
     #'cms:/MET/Run2018B-15Feb2022_UL2018-v1/AOD', #9
     #'cms:/MET/Run2018C-15Feb2022_UL2018-v1/AOD', #10
-    #'cms:/MET/Run2018D-15Feb2022_UL2018-v1/AOD', #52
+    'cms:/MET/Run2018D-15Feb2022_UL2018-v1/AOD', #52
 
 ]
 
 
 deg_list = [
 
-    'cms:/EGamma/Run2018A-15Feb2022_UL2018-v1/MINIAOD',
+    #'cms:/EGamma/Run2018A-15Feb2022_UL2018-v1/MINIAOD',
     #'cms:/EGamma/Run2018B-15Feb2022_UL2018-v1/MINIAOD',
     #'cms:/EGamma/Run2018C-15Feb2022_UL2018-v1/MINIAOD',
     #'cms:/EGamma/Run2018D-15Feb2022_UL2018-v1/MINIAOD',
@@ -99,13 +99,13 @@ jetht18 = [ 'cms:/JetHT/Run2018C-15Feb2022_UL2018-v1/AOD' ]
 dy_list = [ 'cms:/DY1JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v1/AODSIM' ]
 
 #runlist = dy_list
-runlist = deg_list
+#runlist = deg_list
 #runlist = qcd_list
 #runlist = gjets_list
 #runlist = gmsb_list
 #runlist = met_list
 #runlist = jetht18
-#runlist = met18UL
+runlist = met18UL
 #runlist = WjetsToLNU
 #runlist = TandJets
 
