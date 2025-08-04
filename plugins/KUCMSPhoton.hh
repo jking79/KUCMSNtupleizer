@@ -222,8 +222,8 @@ void KUCMSPhotonObject::InitObject( TTree* fOutTree ){
     //Branches.makeBranch("esEnergyOverRawE","Photon_esEnergyOverRawE",VFLOAT,"ratio of preshower energy to raw supercluster energy");
     //Branches.makeBranch("haloTaggerMVAVal","Photon_haloTaggerMVAVal",VFLOAT,"Value of MVA based beam halo tagger in the Ecal endcap (valid for pT > 200 GeV)");//
 
-    Branches.makeBranch("gloResRHs","Photon_gloResRhId",VVUINT);
-    Branches.makeBranch("locResRHs","Photon_locResRhId",VVUINT);
+    //Branches.makeBranch("gloResRHs","Photon_gloResRhId",VVUINT);
+    //Branches.makeBranch("locResRHs","Photon_locResRhId",VVUINT);
 
     Branches.makeBranch("GenIdx","Photon_genIdx",VINT);
     //Branches.makeBranch("GenDr","Photon_genDr",VFLOAT);
@@ -255,7 +255,7 @@ void KUCMSPhotonObject::InitObject( TTree* fOutTree ){
     //Branches.makeBranch("CovEtaEta","Photon_covEtaEta",VFLOAT);
     //Branches.makeBranch("CovEtaPhi","Photon_covEtaPhi",VFLOAT);
     //Branches.makeBranch("CovPhiPhi","Photon_covPhiPhi",VFLOAT);
-
+    Branches.makeBranch("passQuality","Photon_isSelect",VBOOL,"photon passes base selection");
 
 
     Branches.attachBranches(fOutTree);
@@ -410,7 +410,8 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
 
 	float nIsoPhotons = 0;
     int phoIdx = 0;
-	scGroup scptrs;
+	//scGroup scptrs;
+    std::vector<v3fPoint> scvertex;
 	std::vector<float> scptres;
 	//std::vector<int> scmatched;
     std::vector<uInt> locRHCands;
@@ -609,12 +610,17 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
 
         // GenParticle Info for photon  -------------------------------------------------------------------
         if( cfFlag("hasGenInfo") ){
-			scptrs.push_back(*scptr);
+			//scptrs.push_back(*scptr);
+            v3fPoint scv( scptr->x(), scptr->y(), scptr->z() );
+            scvertex.push_back( scv );
 			scptres.push_back(phoEnergy);
         }//<<>>if( hasGenInfo )
 
-		if( passPhoQuality( photon ) ) nIsoPhotons++;
+		bool isSelect = passPhoQuality( photon );
+		if( isSelect ) nIsoPhotons++;
+		Branches.fillBranch("passQuality",isSelect);
 
+/*
         // get time resolution information
 
         // select global photons
@@ -666,13 +672,14 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
             }//<<>>for( rechit : phoRhGroup )
 
         }//<<>>if ( smin < 0.3 && smaj < 0.5)
+*/
 
         phoIdx++;
     }//<<>>for( const auto &photon : fPhotons 
 	Branches.fillBranch("nPho",phoIdx);
 
 	if( cfFlag("hasGenInfo") ){
-		auto genInfo = genObj->getGenPhoMatch( scptrs, scptres );
+		auto genInfo = genObj->getGenPhoMatch( scvertex, scptres );
 		//std::cout << " - genmatched - scmatched comp : " << std::endl;
 		//std::cout << " Photon Gen Match ------------------------- " << std::endl;
 		//for( uInt i = 0; i < genInfo.size(); i++ ){ std::cout << " -- gen: " << genInfo[i] << " sc: " << scmatched[i] << std::endl; }
@@ -698,6 +705,7 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
 		//std::cout << " Photon Gen Match Finished ------------------------- " << std::endl;
 	}//<<>>if( cfFlag("hasGenInfo") )
 
+/*
     // Process time resolution rechits/photons
     // select rhs for global
     //gloAllSeedRHs.clear();
@@ -768,11 +776,12 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
         	}//<<>>if( zMassMatch < 35.00 )
 		}//<<>>for( int idx = 0; idx < nMassMatches; idx++ )
     }//<<>>if( gloPhotons.size() > 1 )
+*/
 
 	geVar.set("nIsoPhos",nIsoPhotons);
 	
-    Branches.fillBranch("gloResRHs",gloAllSeedRHs);
-    Branches.fillBranch("locResRHs",locRHCands);
+    //Branches.fillBranch("gloResRHs",gloAllSeedRHs);
+    //Branches.fillBranch("locResRHs",locRHCands);
 
 }//<<>>void KUCMSPhoton::ProcessEvent()
 

@@ -190,6 +190,11 @@ public :
    std::vector<float>   *Electron_seedTOFTime;
    std::vector<float>   *Electron_trackz;
    std::vector<bool>   *Electron_isLoose;
+   std::vector<bool>   *Electron_isMedium;
+   std::vector<bool>   *Electron_isVeto;
+   std::vector<bool>   *Electron_isLVeto;
+
+
    Int_t           Electron_nSelElectrons;
    Int_t           Electron_nElectrons;
    std::vector<int>     *Electron_scIndex;
@@ -595,6 +600,9 @@ public :
    TBranch        *b_Electron_nElectrons;   //!
    TBranch        *b_Electron_scIndex;   //!
    TBranch        *b_Electron_isLoose;   //!
+   TBranch        *b_Electron_isLVeto;   //!
+   TBranch        *b_Electron_isVeto;   //!
+   TBranch        *b_Electron_isMedium;   //!
    TBranch        *b_Electron_nSelElectrons;   //!
    TBranch        *b_Electron_hasSVMatch;
    TBranch        *b_Electron_nSVMatched;
@@ -1049,6 +1057,9 @@ void llpgtree::Init( TChain *tree, bool doGenInfo ){
    Electron_trackz = 0;
    Electron_scIndex = 0;
    Electron_isLoose = 0;
+   Electron_isLVeto = 0;
+   Electron_isVeto = 0;
+   Electron_isMedium = 0;
    Electron_hasSVMatch = 0;
 
    Gen_charge = 0;
@@ -1345,6 +1356,9 @@ void llpgtree::Init( TChain *tree, bool doGenInfo ){
    fChain->SetBranchAddress("Electron_scIndex", &Electron_scIndex, &b_Electron_scIndex);
    fChain->SetBranchAddress("Electron_nSelElectrons", &Electron_nSelElectrons, &b_Electron_nSelElectrons);
    fChain->SetBranchAddress("Electron_isLoose", &Electron_isLoose, &b_Electron_isLoose);
+   fChain->SetBranchAddress("Electron_isLVeto", &Electron_isLVeto, &b_Electron_isLVeto);
+   fChain->SetBranchAddress("Electron_isVeto", &Electron_isVeto, &b_Electron_isVeto);
+   fChain->SetBranchAddress("Electron_isMedium", &Electron_isMedium, &b_Electron_isMedium);
    fChain->SetBranchAddress("Electron_hasSVMatch", &Electron_hasSVMatch, &b_Electron_hasSVMatch);
    fChain->SetBranchAddress("Electron_nSVMatched", &Electron_nSVMatched, &b_Electron_nSVMatched);
 
@@ -1776,6 +1790,9 @@ void llpgtree::getBranches( Long64_t entry, bool doGenInfo ){
    b_Electron_nElectrons->GetEntry(entry);     //!
    b_Electron_scIndex->GetEntry(entry);     //!
    b_Electron_isLoose->GetEntry(entry);   //!
+   b_Electron_isLVeto->GetEntry(entry);   //!
+   b_Electron_isVeto->GetEntry(entry);   //!
+   b_Electron_isMedium->GetEntry(entry);   //!
    b_Electron_nSelElectrons->GetEntry(entry);   //!
    b_Electron_hasSVMatch->GetEntry(entry);   //!
    b_Electron_nSVMatched->GetEntry(entry);   //!

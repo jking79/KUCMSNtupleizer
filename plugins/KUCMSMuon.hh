@@ -62,6 +62,7 @@ class KUCMSMuonObject : public KUCMSObjectBase {
     // load tokens for eventt based collections
     void LoadMuonTokens( edm::EDGetTokenT<edm::View<reco::Muon>> muonsToken ){ muonsToken_ = muonsToken; }; 
     void LoadVertexTokens( edm::EDGetTokenT<std::vector<reco::Vertex>> verticesToken_ ){ verticesToken = verticesToken_; };
+
     ////void LoadConversionTokens( edm::EDGetTokenT<reco::ConversionCollection> conversionsToken ){ conversionsToken_ = conversionsToken; };
     ////void LoadBeamSpotTokens( edm::EDGetTokenT<reco::BeamSpot> beamLineToken ){ beamLineToken_ = beamLineToken; };
     // sets up branches, do preloop jobs 
@@ -71,6 +72,7 @@ class KUCMSMuonObject : public KUCMSObjectBase {
     void LoadRecHitObject( KUCMSEcalRecHitObject* rhObj_ ){ rhObj = rhObj_; }; // define with specific KUCMS object(s) needed 
     void LoadGenObject( KUCMSGenObject* genObjs_ ){ genObjs = genObjs_; };
     void LoadDisplacedVertexObject( KUCMSDisplacedVertex* svObj_ ){ svObj = svObj_; };
+    void LoadTTrackBuilder(edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> ttbuilder) {transientTrackBuilder_ = ttbuilder; }
 
     // object processing : 1) LoadEvent prior to event loop 2) ProcessEvent during event loop via objectManager
     // get collections, do initial processing
@@ -103,9 +105,14 @@ class KUCMSMuonObject : public KUCMSObjectBase {
     //edm::Handle<std::vector<reco::GsfMuon> > muons_;
     edm::Handle<edm::View<reco::Muon> > muons_;
     //std::vector<reco::GsfMuon> muons;
+    edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> transientTrackBuilder_;
 
     edm::EDGetTokenT<std::vector<reco::Vertex>> verticesToken;
     edm::Handle<std::vector<reco::Vertex>> vertices_;
+
+	//Tracks
+    //TransientTrackBuilder* ttBuilder;
+	TTBuilderWrapper ttBuilder;
 
     //const edm::InputTag muMVAIDLooseMapTag;
     //edm::EDGetTokenT<edm::ValueMap<bool>> muMVAIDLooseMapToken_;
@@ -160,9 +167,16 @@ void KUCMSMuonObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("mediumID","Muon_isMedium",VBOOL);
     Branches.makeBranch("tightID","Muon_isTight",VBOOL);
     Branches.makeBranch("nSMu","Muon_nSelMuons",INT);
-    Branches.makeBranch("dRGenMatch","Muon_dRGenMatch",VFLOAT);
-    //Branches.makeBranch("GenXMomIdx","Muon_genSigXMomId",VINT);
-    //Branches.makeBranch("GenWZIdx","Muon_genSigWZId",VINT);
+
+	if( cfFlag("hasGenInfo") ){
+	Branches.makeBranch("isLWZP", "Muon_isLWZP", VBOOL );
+	Branches.makeBranch("GenIdx","Muon_genIdx",VINT);
+	Branches.makeBranch("GenWZIdx","Muon_genSigWZId",VINT);
+	Branches.makeBranch("GenXMomIdx","Muon_genSigXMomId",VINT);
+    Branches.makeBranch("hasGenIdx","Muon_hasGenMatch",VBOOL);
+    Branches.makeBranch("nGenMatch","Muon_nGenMatch",INT);
+	}//<<>>if( cfFlag("hasGenInfo") )
+
     //Branches.makeBranch("Sieie","Muon_Sieie",VFLOAT);
     //Branches.makeBranch("DetaSCTV","Muon_DetaSCTV",VFLOAT);
     //Branches.makeBranch("DphiSCTV","Muon_DphiSCTV",VFLOAT);
@@ -171,17 +185,8 @@ void KUCMSMuonObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("nSVMatch","Muon_nSVMatched",INT);
     Branches.makeBranch("passPrompt","Muon_passPrompt",VBOOL);
     //Branches.makeBranch("hasMinPt","Muon_hasMinPt",VBOOL);
-    Branches.makeBranch("hasGenMatch","Muon_hasGenMatch",VBOOL);
     Branches.makeBranch("IsPromptMuon","Muon_isPromptMuon",VBOOL);
     Branches.makeBranch("nPrompt","Muon_nPrompt",INT);
-
-    //Branches.makeBranch("GenDr","Muon_genDr",VFLOAT);
-    //Branches.makeBranch("GenDp","Muon_genDp",VFLOAT);
-    //Branches.makeBranch("GenSIdx","Muon_genSIdx",VINT);
-    //Branches.makeBranch("GenSDr","Muon_genSDr",VFLOAT);
-    //Branches.makeBranch("GenSDr","Muon_genSDp",VFLOAT);
-    //Branches.makeBranch("GenLlpId","Muon_genLlpId",VFLOAT);
-    //Branches.makeBranch("GenSLlpId","Muon_genSLlpId",VFLOAT);
 
     Branches.attachBranches(fOutTree);
 
@@ -194,6 +199,8 @@ void KUCMSMuonObject::LoadEvent( const edm::Event& iEvent, const edm::EventSetup
     //iEvent.getByToken(conversionsToken_, conversions_);
     //iEvent.getByToken(beamLineToken_, beamSpot_);
     iEvent.getByToken( verticesToken, vertices_ );
+
+	ttBuilder = TTBuilderWrapper( &iSetup.getData(transientTrackBuilder_) );
 
     if( MuonDEBUG ) std::cout << "Collecting Muons" << std::endl;
 
@@ -227,8 +234,9 @@ void KUCMSMuonObject::ProcessEvent( ItemManager<float>& geVar ){
 	int nSelMu = 0;
     int nSVMatched = 0;
 	int nPromptMuon = 0;
-    //scGroup scptrs;
-    //std::vector<float> scptres;
+    std::vector<v3fPoint> scvertex;
+    std::vector<float> scptres;
+	std::vector<reco::TransientTrack> sctrks;
     if( MuonDEBUG ) std::cout << "Processing Muons" << std::endl;
     for( const auto &muon : fmuons ){
 
@@ -276,27 +284,37 @@ void KUCMSMuonObject::ProcessEvent( ItemManager<float>& geVar ){
         if( hasSVMatch ) nSVMatched++;
         Branches.fillBranch("svMatch",hasSVMatch);
 
-        bool mptc = ( muPt >= 10 );
-        if( mptc && isLoose ) nSelMu++;
+        bool vmptc = ( muPt >= 20 );
+        bool smptc = ( muPt >= 10 );
+        if( smptc && isMedium ) nSelMu++;
         //Branches.fillBranch("hasMinPt",mptc);
 
         bool passPrompt = false;
         if( cfFlag("doSVModule") ) passPrompt = svObj->IsPromptLepton( muon );
         Branches.fillBranch("passPrompt",passPrompt);
 
-		float dRGenMatch = -9;
-		if( cfFlag("hasGenInfo") ) dRGenMatch = genObjs->getGenParticleIndex( muon, 13 ); 
-		//Branches.fillBranch("GenIdx", genIndex );
-		bool hasGenMatch = cfFlag("hasGenInfo")  ? ( dRGenMatch > -1 ) : true;
-        Branches.fillBranch("hasGenMatch",hasGenMatch);
-        Branches.fillBranch("dRGenMatch", dRGenMatch);
-
         bool isPromptMuon = false;
-        if( passPrompt && isLoose && mptc && hasGenMatch ){ isPromptMuon = true; nPromptMuon++; }
-        //if( passPrompt && isLoose && mptc ){ isPromptMuon = true; nPromptMuon++; }
+        //if( passPrompt && isLoose && vmptc ){ isPromptMuon = true; nPromptMuon++; }
+        if( isLoose && vmptc ){ isPromptMuon = true; nPromptMuon++; }
         Branches.fillBranch("IsPromptMuon",isPromptMuon);
 
 	    muIndx++;
+
+		//std::cout << " -- Muon getting sc : " << std::endl;
+        const auto btptr = muon.bestTrack();
+        auto ttrack = ttBuilder.build( *btptr );
+
+        // GenParticle Info for muon  -------------------------------------------------------------------
+        if( cfFlag("hasGenInfo") ){
+            //scptrs.push_back(*scptr);
+            //std::cout << " -- Muon sc : " << itptr->vx() << " - " << itptr->vy() << " - " << itptr->vz() << std::endl;
+            //v3fPoint itv( itloc.x(), itloc.y(), itloc.z() );
+			sctrks.push_back( ttrack );
+			v3fPoint itv( muEta, muPhi, 0.f );
+            scvertex.push_back( itv );
+            scptres.push_back( muEnergy );
+        }//<<>>if( hasGenInfo )
+
 
     }//<<>>for( const auto muon : *muons_ )
 	Branches.fillBranch("nMu",muIndx);
@@ -305,6 +323,28 @@ void KUCMSMuonObject::ProcessEvent( ItemManager<float>& geVar ){
 	Branches.fillBranch("nPrompt",nPromptMuon);
 	geVar.set("nSelMu",nSelMu);
 
+    int nGenMatched = 0;
+    if( cfFlag("hasGenInfo") ){
+        auto genInfo = genObjs->getGenMuonMatch( scvertex, scptres, sctrks );
+        for( auto genidx : genInfo ){
+            Branches.fillBranch("GenIdx",genidx);
+			bool hasGenMatch = ( genidx > -1 );
+			Branches.fillBranch("hasGenIdx", hasGenMatch );
+			if( hasGenMatch ) nGenMatched++;
+			int genWZMomIndx = hasGenMatch ? genObjs->getGenSigEleXMother( genidx ) : -5;
+			Branches.fillBranch("GenWZIdx",genWZMomIndx);
+			int genGMomIndx = ( genWZMomIndx > -1 ) ? genObjs->getGenSigEleXMother( genWZMomIndx ) : -5;
+			Branches.fillBranch("GenXMomIdx",genGMomIndx);
+			int momIdx = genObjs->getGenMomIdx( genidx ); 	
+			int genMomPdgId = genObjs->getGenPdgId( momIdx ); 
+			int gmomIdx = genObjs->getGenMomIdx( momIdx );	
+			int genGMomPdgId = genObjs->getGenPdgId( gmomIdx );
+			bool isLWZ =  ( genMomPdgId == 23 || genMomPdgId == 24 );		
+			bool isLWZP = isLWZ && ( ( genGMomPdgId > 0 && genGMomPdgId < 10 ) || ( genGMomPdgId == 1000023 ) );	
+			Branches.fillBranch("isLWZP", isLWZP );
+        }//<<>>for( auto genidx : genInfo )
+    }//<<>>if( cfFlag("hasGenInfo") )
+	Branches.fillBranch("nGenMatch",nGenMatched);
 
 }//<<>>void KUCMSMuon::ProcessEvent()
 

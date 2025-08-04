@@ -1,0 +1,3 @@
+./ kucmsntuple_wjets_1k.root test 1 0 0 1 0
+#./ kucmsntuple_smsp_20.root test 1 1900 250 1 0
+#./ kucmsntuple_wjets_20.root test 1 0 0 1 0
