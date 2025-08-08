@@ -299,6 +299,9 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
         edm::ESGetToken<EcalPedestals, EcalPedestalsRcd> EcalPedestalsToken_;
         edm::ESHandle<EcalPedestals> pedestals_;
 
+
+
+
 };//<<>>class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -148,6 +148,7 @@ class KUCMSEcalRecHitObject : public KUCMSObjectBase {
     // sc functions
     float getSuperClusterSeedTime( reco::SuperClusterRef supercluster );
 	int getSuperClusterIndex( const reco::SuperCluster* supercluster, int objectPdgId, int objectIdx );
+    std::vector<int> getSuperClusterIndex( const rhIdGroup crystals, int objectIdx );
 
     // rechit group functions
     rhGroup getRHGroup( float eta, float phi, float drmin, float minenr = 0.f );
@@ -161,6 +162,7 @@ class KUCMSEcalRecHitObject : public KUCMSObjectBase {
     EcalRecHit getLeadRh( rhGroup recHits );
     std::vector<float> getRhTofTime( rhGroup recHits, double vtxX, double vtxY, double vtxZ );
     std::vector<float> getLeadTofRhTime( rhGroup recHits, double vtxX, double vtxY, double vtxZ );
+	rhIdGroup getRhRawIdList( const scGroup superClusterGroup );
     std::vector<float> getFractionList( const scGroup superClusterGroup, rhGroup recHits );
     std::vector<float> getMissFractionList( const scGroup superClusterGroup );
 	std::tuple<uInt,float> getHFList( const scGroup superClusterGroup );
@@ -202,12 +204,15 @@ class KUCMSEcalRecHitObject : public KUCMSObjectBase {
     std::vector<bool> frhused;
 
     std::vector<reco::SuperCluster> fsupclstrs;
+	std::vector<rhIdGroup> fscRhIdGrpList;
     std::vector<bool> fscExclude;
     std::vector<bool> fscIsOOT;
     std::vector<int> fscOType;
     std::vector<int> fscPhoIndx;
     std::vector<int> fscEleIndx;
+    std::vector<std::vector<int>> fscTrackIndx;
     std::vector<bool> fscOriginal;
+	std::map<uInt,int> scRechitMap;
 
     //const edm::InputTag recHitsEBTag;
     edm::EDGetTokenT<recHitCol> recHitsEBToken_;
@@ -371,6 +376,7 @@ void KUCMSEcalRecHitObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("zscotype","SuperCluster_ObjectPdgId",VINT,"Currently is 0( no match ), 11, 22, or 33( matches an ele & pho )");
     Branches.makeBranch("zscphoindx","SuperCluster_PhotonIndx",VINT,"Index of matching photon");
     Branches.makeBranch("zsceleindx","SuperCluster_ElectronIndx",VINT,"index of matching electron");
+    Branches.makeBranch("zsctrackindx","SuperCluster_TrackIndx",VVINT,"index of intersecting track");
     Branches.makeBranch("zsclcx","SuperCluster_clcx",VFLOAT,"x coordinate of cluster centroid");
     Branches.makeBranch("zsclcy","SuperCluster_clcy",VFLOAT,"y coordinate of cluster centroid");
     Branches.makeBranch("zsclcz","SuperCluster_clcz",VFLOAT,"z coordinate of cluster centroid");
@@ -512,23 +518,47 @@ void KUCMSEcalRecHitObject::LoadEvent( const edm::Event& iEvent, const edm::Even
 	outfile.close();
 */
     if( ERHODEBUG ) std::cout << "Collecting SuperClusters" << std::endl;
+
     fsupclstrs.clear();
     fscExclude.clear();
     fscIsOOT.clear();
     fscOType.clear();
 	fscPhoIndx.clear();
 	fscEleIndx.clear();
+	fscTrackIndx.clear();
     fscOriginal.clear();
-    for( const auto &supclstr : *superCluster_ ){ 
-		if(supclstr.energy() < cfPrm("minSCE"))  continue;
-		fsupclstrs.push_back(supclstr);
-		fscExclude.push_back(false);
-		fscIsOOT.push_back(false);
-		fscOType.push_back(0);
-    	fscPhoIndx.push_back(-1);
-    	fscEleIndx.push_back(-1);
-		fscOriginal.push_back(false);
+	scRechitMap.clear();
+
+    for( const auto &ootSupclstr : *ootSuperCluster_ ){
+		if(ootSupclstr.energy() < cfPrm("minSCE"))  continue;
+		fsupclstrs.push_back(ootSupclstr);
+		fscIsOOT.push_back(true);
+		fscOriginal.push_back(true);
 	}//<<>>for( const auto &supclstr : *ootSuperCluster_ )
+
+    for( const auto &supclstr : *superCluster_ ){
+        if( supclstr.energy() < cfPrm("minSCE")) continue;
+        bool found = false;
+        auto pEta = supclstr.eta();
+        auto pPhi = supclstr.phi();
+        for( const auto &fsc : fsupclstrs ){
+            auto fEta = fsc.eta();
+            auto fPhi = fsc.phi();
+            float dRmatch = std::sqrt(reco::deltaR2( pEta, pPhi, fEta, fPhi ));
+			if( dRmatch < 0.1 ){ found = true; break; }
+        }//<<>>for( int ip; ip < nPhotons; ip++ )
+        if( not found ){
+            fsupclstrs.push_back(supclstr);
+            fscIsOOT.push_back(false);
+            fscOriginal.push_back(true);
+        }//<<>>if( found == -1 )
+		else {
+            scGroup scSCGroup{supclstr};
+            rhIdGroup scRhIdsGroup = getRhRawIdList( scSCGroup );
+            setRecHitUsed( scRhIdsGroup );
+		}//<<>>if( not found )
+    }//<<>>for( const auto &supclstr : *superCluster_ )
+
     for( const auto &oSupclstr : *otherSuperCluster_ ){
         if(oSupclstr.energy() < cfPrm("minSCE")) continue;
         bool skip = false;
@@ -543,49 +573,40 @@ void KUCMSEcalRecHitObject::LoadEvent( const edm::Event& iEvent, const edm::Even
         if( not skip ){
             fsupclstrs.push_back(oSupclstr);
             fscIsOOT.push_back(false);
-            fscOType.push_back(0);
-            fscPhoIndx.push_back(-1);
-            fscEleIndx.push_back(-1);
-            fscExclude.push_back(true);
-        	fscOriginal.push_back(true);
+        	fscOriginal.push_back(false);
         }//<<>>if( not skip )
     }//<<>>for( const auto &supclstr : *superCluster_ )
-    for( const auto &ootSupclstr : *ootSuperCluster_ ){
-        if(ootSupclstr.energy() < cfPrm("minSCE")) continue;
-        int found = -1;
-		//int matched = -1;
-		int icnt = 0;
-        //double minDr(10.0);
-        //double dRmatch(10.0);
-        //float matchpt(0);
-        //auto pEta = ootSupclstr.eta();
-        //auto pPhi = ootSupclstr.phi();
-        const auto & pSeedDetId = ootSupclstr.seed()->seed(); // get seed detid 
-        const auto pSeedRawID = pSeedDetId.rawId();
-        for( const auto &fsc : fsupclstrs ){
-            const auto & fSeedDetId = fsc.seed()->seed(); // get seed detid 
-            const auto fSeedRawID = fSeedDetId.rawId();
-            if( pSeedRawID == fSeedRawID ){ found = icnt; }
-            //if( cfFlag("onlyEB") && ootPho.isEE() ) continue;
-            //auto fEta = fsc.eta();
-            //auto fPhi = fsc.phi();
-            //dRmatch = std::sqrt(reco::deltaR2( pEta, pPhi, fEta, fPhi ));
-            //if( dRmatch < minDr && found != icnt ){ minDr = dRmatch; matched = icnt; }
-			icnt++;
-        }//<<>>for( int ip; ip < nPhotons; ip++ )
-		//if( minDr < 0.05 ) fscExclude[matched] = true;
-        if( found == -1 ){
-            fsupclstrs.push_back(ootSupclstr);
-            fscIsOOT.push_back(true);
+
+	int scIndx = -1;
+	int nSCRechits = 0;
+	//int nFSCs = fsupclstrs.size();
+	for( const auto &sc : fsupclstrs ){
+	//for( int iter = nFSCs; iter < 0; iter-- ){	
+
+			//auto sc = fsupclstrs[iter];
+			scIndx++;
             fscOType.push_back(0);
             fscPhoIndx.push_back(-1);
             fscEleIndx.push_back(-1);
+			std::vector<int> trackIndexList{-1};
+            fscTrackIndx.push_back(trackIndexList);
             fscExclude.push_back(false);
-			fscOriginal.push_back(true);
-        }//<<>>if( found == -1 )
-        else fscIsOOT[found] = true;
-    }//<<>>for( const auto &supclstr : *superCluster_ )
-	//std::cout << " -- OtherSC is IN cluded : " << nOtherSC << std::endl;
+            scGroup scSCGroup{sc};
+            rhIdGroup scRhIdsGroup = getRhRawIdList( scSCGroup );
+			setRecHitUsed( scRhIdsGroup );
+			nSCRechits += scRhIdsGroup.size();
+            fscRhIdGrpList.push_back(scRhIdsGroup);
+			for( const auto rhid : scRhIdsGroup ){
+				if( scRechitMap.find(rhid) == scRechitMap.end() ) scRechitMap[rhid] = scIndx;
+				//scRechitMap[rhid] = scIndx;
+			}//<<>>for( const auto rhid : scRhIdsGroup )
+
+	}//<<>>for( const auto sc : fsupclstrs )
+
+	//std::cout << "SC - Rechit Map ------------------------" << std::endl;
+	//std::cout << " # SC  " << fsupclstrs.size() << " -- nSCRecHits : " << nSCRechits << " v " <<  scRechitMap.size() << std::endl;
+	//for( auto & ent : scRechitMap ){ std::cout << " -- " << ent.first << " : " << ent.second << std::endl; }
+	//std::cout << "SC - Rechit Map ------------------------" << std::endl;
 
 }//<<>>void KUCMSEcalRecHit::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
@@ -639,13 +660,14 @@ void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
 
         const scGroup scSCGroup{supclstr};
         const rhGroup scRhGroup = getRHGroup( scSCGroup );
-        const rhIdGroup scRhIdsGroup = getRhGrpIDs( scRhGroup );
+        //const rhIdGroup scRhIdsGroup = getRhGrpIDs( scRhGroup );
+		const rhIdGroup scRhIdsGroup = fscRhIdGrpList[it];
 		std::vector<float> fracList = getFractionList( scSCGroup, scRhGroup );
         //std::vector<float> missFracList = getMissFractionList( scSCGroup );
         Branches.fillBranch("zscrhids",scRhIdsGroup);
         Branches.fillBranch("zscrhfracs",fracList);
         //Branches.fillBranch("zscmissrhfracs",missFracList);
-        setRecHitUsed(scRhIdsGroup);
+        //setRecHitUsed(scRhIdsGroup); // now done above
         //setRecHitUsed(scRhIdsGroup, isOOT, scenergy, fracList );
         uInt sc_rhg_size = scRhIdsGroup.size();
         uInt sc_hfl_size = (supclstr.hitsAndFractions()).size();
@@ -655,6 +677,8 @@ void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
         Branches.fillBranch("zscnrh",sc_rhg_size);
         //Branches.fillBranch("zscsizedif",sc_dups_size);
         Branches.fillBranch("zscbcsize",bcsize);
+
+ 		Branches.fillBranch("zsctrackindx",fscTrackIndx[it]);
 
         const float scEnergyRaw = supclstr.rawEnergy();
         const bool isScEtaEB = abs(supclstr.eta()) < 1.4442;
@@ -826,92 +850,6 @@ void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
     Branches.fillBranch("pused",pUsed);
 	//std::cout << " -- % rechits used : " << pUsed << std::endl;
 
-/*
-    nOtherSC = ootSuperCluster_->size();
-    nOtherSCEx = 0;
-	int nOtherSCIn = 0;
-    for( const auto &osupclstr : *ootSuperCluster_ ){
-	//for( const auto &osupclstr : fsupclstrs ){
-        //if(osupclstr.energy() < cfPrm("minSCE")) continue;
-        const float oscEnergy = osupclstr.energy();
-        const auto & oscSeedDetId = osupclstr.seed()->seed(); // get seed detid 
-        const auto oscSeedRawID = oscSeedDetId.rawId();
-		Branches.fillBranch("zscnOtherSID",oscSeedRawID);
-        const scGroup oscgroup{osupclstr};
-        const rhGroup orhgroup = getRHGroup( oscgroup );
-        const auto orhidsgroup = getRhGrpIDs( orhgroup );
-        //bool matched = false;
-        float minDr(10.0);
-        float minDrX(-1.0);
-        int maxOverX(0);
-        auto pEta = osupclstr.eta();
-        auto pPhi = osupclstr.phi();
-		int nOverlapMatch(-1);
-		float precentOverlap(-10.0);
-        float precentOverlapX(-10.0);
-		float energyDiff( 1000.0 );
-        float energyDiffX( 1000.0 );
-        float energyPerDiff( -100.0 );
-        float energyPerDiffX( -100.0 );
-		uInt oMatchSID(0);
-        uInt oMatchSIDX(0);
-		int iter(-1);
-        for( const auto &fsupclstr : *superCluster_ ){
-			iter++;
-			//if( fscIsOOT[iter] == false ) continue;
-			float fscEnergy = fsupclstr.energy();
-            float oEta = fsupclstr.eta();
-            float oPhi = fsupclstr.phi();
-            float dRmatch = std::sqrt(reco::deltaR2( pEta, pPhi, oEta, oPhi ));
-			const scGroup fscgroup{fsupclstr};
-        	const rhGroup frhgroup = getRHGroup( fscgroup );
-        	const auto frhidsgroup = getRhGrpIDs( frhgroup );
-            const auto & fscSeedDetId = fsupclstr.seed()->seed(); // get seed detid 
-            const auto fscSeedRawID = fscSeedDetId.rawId();
-			int nOverlap = getOverLapCnt(orhidsgroup,frhidsgroup);
-            if( dRmatch < minDr ){
-				energyDiff = fscEnergy - oscEnergy;
-				energyPerDiff = energyDiff/oscEnergy; 
-				minDr = dRmatch;
-				nOverlapMatch = nOverlap; 
-				precentOverlap = float(nOverlap)/float(orhidsgroup.size());
-				oMatchSID = fscSeedRawID;
-				//std::cout << " -- OtherSC new min : " << minDr << " With overlap: " << nOverlap;
-				//std::cout << " from: " << orhidsgroup.size() << ", " << frhidsgroup.size() << std::endl;
-			}//<<>>if( dRmatch < minDr )
-            if( nOverlap > maxOverX ){
-				minDrX = dRmatch;
-                energyDiffX = fscEnergy - oscEnergy;
-                energyPerDiffX = energyDiffX/oscEnergy;
-                maxOverX = nOverlap;
-                precentOverlapX = float(nOverlap)/float(orhidsgroup.size());
-                oMatchSIDX = fscSeedRawID;
-            }//<<>>if(  nOverlap > maxOverX )
-        	//if( oscSeedRawID == fscSeedRawID ){ matched = true; break; }
-        }//<<>>for( int ip; ip < nPhotons; ip++ )
-		Branches.fillBranch("zscnOExDr",minDr);
-        Branches.fillBranch("zscnOver",nOverlapMatch);
-        Branches.fillBranch("zscpOver",precentOverlap);
-		Branches.fillBranch("zscnOMatchSID",oMatchSID);
-		Branches.fillBranch("zscnOExDiffE",energyDiff);
-        Branches.fillBranch("zscnOExPerDiffE",energyPerDiff);
-        Branches.fillBranch("zscnOExDrX",minDrX);
-        Branches.fillBranch("zscnOverX",maxOverX);
-        Branches.fillBranch("zscpOverX",precentOverlapX);
-        Branches.fillBranch("zscnOMatchSIDX",oMatchSIDX);
-        Branches.fillBranch("zscnOExDiffEX",energyDiffX);
-        Branches.fillBranch("zscnOExPerDiffEX",energyPerDiffX);
-        if( minDr < 0.03 ){ nOtherSCIn++; } //s"
-        //if( matched ){ nOtherSCIn++; } //s"
-        //{ fscExclude.push_back(true); } //std::cout << " -- OtherSC is EX cluded !!!!! " << std::endl; }
-        else { nOtherSCEx++; } //Branches.fillBranch("zscnOExDr",dRmatch); } //std::cout << " -- OtherSC is IN cluded !!!!! " << std::endl; }
-    }//<<>>for( const auto &supclstr : *superCluster_ )
-    //std::cout << " -- OtherSC is IN cluded : " << nOtherSC << std::endl;
-    Branches.fillBranch("zscnOther",nOtherSC);
-    Branches.fillBranch("zscnOtherEx",nOtherSCEx);
-    Branches.fillBranch("zscnOtherIn",nOtherSCIn);
-*/
-
 }//<<>>void KUCMSEcalRecHit::ProcessEvent()
 
 void KUCMSEcalRecHitObject::EndJobs(){}
@@ -958,15 +896,43 @@ float KUCMSEcalRecHitObject::getSuperClusterSeedTime( reco::SuperClusterRef supe
 
 }//<<>>getSuperClusterSeedTime( reco::SuperClusterRef supercluster )
 
+std::vector<int> KUCMSEcalRecHitObject::getSuperClusterIndex( const rhIdGroup crystals, int objectIdx ){
+
+    int fscIter = -1;
+    std::vector<int> retIndex{-1};
+	std::vector<int> prev;
+    //std::cout << " -- SC Track matching Trk Indx : " << objectIdx << " with " << crystals.size() << " crystals" << std::endl;
+	fscIter++;
+	for( const auto cryst : crystals ){
+
+		//std::cout << " ---- Crystal  : " << cryst << std::endl;;
+		if( scRechitMap.find(cryst) != scRechitMap.end() ){
+	
+			int scIndex = scRechitMap[cryst];
+            //std::cout << " ----- Matched to : " << scIndex << std::endl;
+			if( std::find( prev.begin(), prev.end(), scIndex ) != prev.end() ) continue;
+			prev.push_back(scIndex);
+			if( fscTrackIndx[scIndex][0] == -1 ) fscTrackIndx[scIndex][0] = objectIdx;
+			else fscTrackIndx[scIndex].push_back(objectIdx);
+			if( retIndex[0] == -1 ) retIndex[0] = scIndex;
+			else retIndex.push_back(scIndex);
+
+		}//<<>>if( loc != scRechitMap.end() )
+
+	}//<<>>for( const auto cryst : crystals )
+    //std::cout << " ------------------------------------------ SC matched Idx: "; 
+	//for( auto & x : retIndex ){ std::cout << x << " "; }  
+	//std::cout << " in: " << objectIdx << std::endl;
+    return retIndex;
+
+}//<<>>float KUCMSEcalRecHitObject::getSuperClusterIndex( reco::SuperCluster supercluster )
+
 int KUCMSEcalRecHitObject::getSuperClusterIndex( const reco::SuperCluster* supercluster, int objectID, int objectIdx ){
 
 	const auto & scSeedDetId = supercluster->seed()->seed(); // get seed detid	
 	const auto scSeedRawID = scSeedDetId.rawId();
-	//const auto osceta = supercluster->eta();
-    //const auto oscphi = supercluster->phi();
 	int fscIter = 0;
 	int retIndex = -1;
-	//float mindr = 0.4;
     //std::cout << " -- SC matching : " << scSeedRawID << " eta: " << osceta << std::endl;
 	for( const auto & fsclsrt : fsupclstrs ){ 
 		
@@ -982,10 +948,6 @@ int KUCMSEcalRecHitObject::getSuperClusterIndex( const reco::SuperCluster* super
 			//std::cout << " pho: " << fscPhoIndx[fscIter] << " ele: " << fscEleIndx[fscIter] << std::endl; 
 			break; 
 		}//<<>>if( scSeedRawID == fscSeedRawID )
-		//const auto sceta = fsclsrt.eta();
-		//const auto scphi = fsclsrt.phi();
-		//auto dr = std::sqrt(reco::deltaR2( osceta, oscphi, sceta, scphi ));
-		//if( dr < mindr ){ mindr = dr; retIndex = fscIter; std::cout << " --- SC matched: " << retIndex << " dr: " << mindr << std::endl; }
 		fscIter++;		
 
 	}//<<>>for( sclsrt : fsupclstrs )		
@@ -1226,62 +1188,14 @@ rhGroup KUCMSEcalRecHitObject::getRHGroup( const scGroup superClusterGroup, floa
 			//const auto frac = hitsAndFractions[iHAF].second; 
             const auto rawId = detId.rawId();
             //if( ERHODEBUG ) std::cout << " h&f : rawid " << rawId << " frac : " << frac << std::endl;
-/*
-            bool onlist = false;
-            if( std::find( rawIds.begin(), rawIds.end(), rawId ) == rawIds.end() ){ 
-				rawIds.push_back(rawId); 
-				onlist = true; }
-			else { 
-            	float prevFrac = 0;
-                for( uInt iHAF2 = 0; iHAF2 < nHAF; iHAF2++ ){
-                    const auto detId2 = hitsAndFractions[iHAF2].first;
-                    if( detId2 == rawId ){ prevFrac = hitsAndFractions[iHAF2].second; break; }}
-				if( ERHODEBUG ) 
-				std::cout << " -- Found Duplicate : " << rawId << " frac " << frac << " prevFrac " << prevFrac; onlist = false; }
-*/
+
             for (const auto &recHit : frechits ){
                 const auto recHitId = recHit.detid();
                 const uInt rhRawId = recHitId.rawId();
-                if( rhRawId == rawId ){ 
-					result.push_back(recHit);
-/*
-					if( not onlist && ERHODEBUG ){ 
-						const float e = recHit.energy();
-        				const bool rhIsOOT = recHit.checkFlag(EcalRecHit::kOutOfTime);
-        				const bool rhIsWrd = recHit.checkFlag(EcalRecHit::kWeird) || recHit.checkFlag(EcalRecHit::kDiWeird);
-        				const bool rhIsRecov = recHit.checkFlag(EcalRecHit::kLeadingEdgeRecovered) || 
-												recHit.checkFlag(EcalRecHit::kNeighboursRecovered) ||
-                    							recHit.checkFlag(EcalRecHit::kTowerRecovered);
-        				const bool rhIsPoor = recHit.checkFlag(EcalRecHit::kPoorReco) || recHit.checkFlag(EcalRecHit::kFaultyHardware) ||
-                    			recHit.checkFlag(EcalRecHit::kNoisy) || 
-								recHit.checkFlag(EcalRecHit::kPoorCalib) || recHit.checkFlag(EcalRecHit::kSaturated);
-        				const bool rhIsDead = recHit.checkFlag(EcalRecHit::kDead) || recHit.checkFlag(EcalRecHit::kKilled);
-        				const bool rhIsOther = recHit.checkFlag(EcalRecHit::kTPSaturated) || recHit.checkFlag(EcalRecHit::kL1SpikeFlag);
-						std::cout << " e: " << e << " OWDRPXT: " << rhIsOOT 
-									<< rhIsWrd << rhIsRecov << rhIsPoor << rhIsDead << rhIsOther <<  std::endl; }
-*/
-					break; } //std::cout << " ---- Found " <<  std::endl; break; }
+                if( rhRawId == rawId ){ result.push_back(recHit); break; } //std::cout << " ---- Found " <<  std::endl; break; }
             }//<<>>for (const auto &recHit : recHits ){
         }//<<>>for( uInt iHAF = 0; iHAF < nHAF; iHAF++ )
     }//<<>>for ( const auto superCluster : superClusterGroup )
-
- /*
-    rhGroup result2;
-    for (const auto &recHit : *recHitsEB_ ){
-        auto enr = recHit.energy();
-        if( enr <= minenr ) continue;
-        const auto recHitId = recHit.detid();
-        const auto rawId = recHitId.rawId();
-        if( std::find( rawIds.begin(), rawIds.end(), rawId ) != rawIds.end() ) result.push_back(recHit);
-    }//<<>>for (const auto recHit : *recHitsEB_ )
-    for (const auto &recHit : *recHitsEE_ ){
-        auto enr = recHit.energy();
-        if( enr <= minenr ) continue;
-        const auto recHitId = recHit.detid();
-        const auto rawId = recHitId.rawId();
-        if( std::find( rawIds.begin(), rawIds.end(), rawId ) != rawIds.end() ) result.push_back(recHit);
-    }//<<>>for (const auto recHit : *recHitsEE_ )
-*/
 
 	//std::cout << " -------------------------------------------------------------- " << std::endl;
     return result;
@@ -1309,62 +1223,23 @@ std::vector<float> KUCMSEcalRecHitObject::getFractionList( const scGroup superCl
 
 }//<<>>std::vector<float> KUCMSEcalRecHitObject::getFractionList( const scGroup superClusterGroup, rhGroup recHits )
 
-std::vector<float> KUCMSEcalRecHitObject::getMissFractionList( const scGroup superClusterGroup ){
+rhIdGroup KUCMSEcalRecHitObject::getRhRawIdList( const scGroup superClusterGroup ){
 
-/*
-    std::vector<float> fracs;
-    //rhGroup result;
-    //std::vector<uInt> rawIds;
+    rhIdGroup list;
     for ( const auto &superCluster : superClusterGroup ){
-        std::vector<uInt> rawIds;
         auto & hitsAndFractions = superCluster.hitsAndFractions();
         const auto nHAF = hitsAndFractions.size();
         for( uInt iHAF = 0; iHAF < nHAF; iHAF++ ){
             const auto detId = hitsAndFractions[iHAF].first;
-            const auto frac = hitsAndFractions[iHAF].second;
             const auto rawId = detId.rawId();
-            //if( ERHODEBUG ) std::cout << " h&f : rawid " << rawId << " frac : " << frac << std::endl;
-            //bool onlist = false;
-            if( std::find( rawIds.begin(), rawIds.end(), rawId ) == rawIds.end() ){
-                rawIds.push_back(rawId);}
-                //onlist = true; }
-            else {
-                //float prevFrac = 0;
-                //for( uInt iHAF2 = 0; iHAF2 < nHAF; iHAF2++ ){
-                //    const auto detId2 = hitsAndFractions[iHAF2].first;
-                //    if( detId2 == rawId ){ prevFrac = hitsAndFractions[iHAF2].second; break; }}
-				fracs.push_back( frac );} 
-				//fracs.push_back(frac);
-                //fracs.push_back(prevFrac);}
-                //if( ERHODEBUG ) 
-                //std::cout << " -- Found Duplicate : " << rawId << " frac " << frac << " prevFrac " << prevFrac; onlist = false; }
+			list.push_back(rawId);
+		}//<<>>for( uInt iHAF = 0; iHAF < nHAF; iHAF++ )
+	}//<<>>for ( const auto &superCluster : superClusterGroup )
+    return list;
 
-            for (const auto &recHit : frechits ){
-                const auto recHitId = recHit.detid();
-                const uInt rhRawId = recHitId.rawId();
-                if( rhRawId == rawId ){
-                    result.push_back(recHit);
-                    if( not onlist && ERHODEBUG ){
-                        const float e = recHit.energy();
-                        const bool rhIsOOT = recHit.checkFlag(EcalRecHit::kOutOfTime);
-                        const bool rhIsWrd = recHit.checkFlag(EcalRecHit::kWeird) || recHit.checkFlag(EcalRecHit::kDiWeird);
-                        const bool rhIsRecov = recHit.checkFlag(EcalRecHit::kLeadingEdgeRecovered) || 
-								recHit.checkFlag(EcalRecHit::kNeighboursRecovered) ||
-                                recHit.checkFlag(EcalRecHit::kTowerRecovered);
-                        const bool rhIsPoor = recHit.checkFlag(EcalRecHit::kPoorReco) || recHit.checkFlag(EcalRecHit::kFaultyHardware) ||
-                                recHit.checkFlag(EcalRecHit::kNoisy) || recHit.checkFlag(EcalRecHit::kPoorCalib) || 
-								recHit.checkFlag(EcalRecHit::kSaturated);
-                        const bool rhIsDead = recHit.checkFlag(EcalRecHit::kDead) || recHit.checkFlag(EcalRecHit::kKilled);
-                        const bool rhIsOther = recHit.checkFlag(EcalRecHit::kTPSaturated) || recHit.checkFlag(EcalRecHit::kL1SpikeFlag);
-                        std::cout << " e: " << e << " OWDRPXT: " << rhIsOOT << rhIsWrd << rhIsRecov 
-									<< rhIsPoor << rhIsDead << rhIsOther <<  std::endl; }
-                    break; } //std::cout << " ---- Found " <<  std::endl; break; }
-            }//<<>>for (const auto &recHit : recHits ){
-  
-      	}//<<>>for( uInt iHAF = 0; iHAF < nHAF; iHAF++ )
-    }//<<>>for ( const auto superCluster : superClusterGroup )
-    return fracs;
-*/
+}//<<>>std::vector<float> KUCMSEcalRecHitObject::getRhRawIdList( const scGroup superClusterGroup )
+
+std::vector<float> KUCMSEcalRecHitObject::getMissFractionList( const scGroup superClusterGroup ){
 
 	std::vector<uInt> rawIds;
     std::vector<uInt> rawIdsDup;
@@ -1391,17 +1266,6 @@ std::vector<float> KUCMSEcalRecHitObject::getMissFractionList( const scGroup sup
 						}//<<>>if( rhRawId == rawId )
 					}//<<>>for (const auto &recHit : frechits )	
 					if( cnt > 1 ) std::cout << " More than 1 matching rechit ? " << std::endl;
-
-//					float cnt = 0;
-//					for( uInt iHAF2 = 0; iHAF2 < nHAF; iHAF2++ ){
-//						const auto detId2 = hitsAndFractions[iHAF2].first;
-//						const auto rawId2 = detId2.rawId();
-//						const auto frac2 = hitsAndFractions[iHAF2].second;
-//						if( rawId2 == rawId ) cnt += 1;
-//                		//if( rawId2 == rawId ) fracs.push_back(frac2);
-//					}//<<>>for( uInt iHAF2 = 0; iHAF2 < nHAF; iHAF2++ )
-//					if( cnt > 1 ) dupcnt.push_back(cnt);
-
 
 				}//<<>>if( std::find( rawIdsDup.begin(), rawIdsDup.end(), rawId ) == rawIdsDup.end() )
 			}//<<>>if( std::find( rawIds.begin(), rawIds.end(), rawId ) == rawIds.end() )
