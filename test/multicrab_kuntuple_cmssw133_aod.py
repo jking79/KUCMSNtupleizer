@@ -80,6 +80,10 @@ def docrab( dataset ):
         config.JobType.psetName    = 'llpgana_mc_aod.py'
         config.JobType.pyCfgParams = None
 
+        config.section_("Site")
+        config.Site.whitelist = ['T1_*','T2_US_*','T2_IT_*','T2_DE_*','T2_ES_*','T2_FR_*','T2_UK_*']
+        config.Site.blacklist = ['T2_ES_IFCA']
+
         config.Data.partialDataset = True
         config.Data.inputDataset   = None
         config.Data.lumiMask       = inputJSON    # Comment out for MC only set for data !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -189,7 +193,8 @@ def docrab( dataset ):
             #config.JobType.pyCfgParams   = [gt,mcrab,efilter]
             config.JobType.pyCfgParams   = [gt,mcrab,efilter,mDoETOnly]
 #>>>>>>>>>>>>>>>>>>>        #2022 #globalTag=124X_dataRun3_v15
-            #config.JobType.pyCfgParams   = ['globalTag=124X_dataRun3_v15','multicrab=True']
+            #gt = 'globalTag=124X_dataRun3_v15'
+            #config.JobType.pyCfgParams   = [gt,mcrab,efilter,mDoETOnly]
 
 #---MC--------------------------------------------------------------------------------------------------------------------------
 #>>>>>      #MC RunIISummer20UL18RECO

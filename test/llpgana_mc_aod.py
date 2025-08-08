@@ -171,9 +171,9 @@ process.source = cms.Source("PoolSource",
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250))#KT
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500))#QT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(5000))#BT
@@ -488,9 +488,10 @@ process.kuDisEle = cms.Sequence( displacedElectrons )
 
 process.kuDisplaced_path = cms.Path()
 if ( dosv and not dode ) : process.kuDisplaced_path = cms.Path( process.kuEcalTracks + process.kuSV )
-if ( not dosv and dode ) : process.kuDisplaced_path = cms.Path( process.kuEcalTracks + process.kuDisEle )
-if ( dosv and dode ) : process.kuDisplaced_path = cms.Path( process.kuEcalTracks + process.kuDisEle + process.kuSV )
+#if ( not dosv and dode ) : process.kuDisplaced_path = cms.Path( process.kuEcalTracks + process.kuDisEle )
+#if ( dosv and dode ) : process.kuDisplaced_path = cms.Path( process.kuEcalTracks + process.kuDisEle + process.kuSV )
 if ( doet ) : process.kuDisplaced_path = cms.Path( process.kuEcalTracks )
+#if ( dosv ) : process.kuDisplaced_path = cms.Path( process.kuSV )
 
 process.setFlags_path = cms.Path(process.setFlags)
 process.tree_step = cms.EndPath(process.tree)
