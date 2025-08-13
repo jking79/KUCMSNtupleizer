@@ -61,7 +61,8 @@ eosll = 'eos root://cmseos.fnal.gov ls '
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_gogoZ_Sig_SVIPM100_v27/'
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_QCD_R18_IPM100_v24/'
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_WJets_R18_SVIPM100_v28/'
-command = eosll+mdis+'KUCMSNtuple/kucmsntuple_SMS_Sig_SVIPM100_v28/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_SMS_Sig_SVIPM100_v28/'
+command = eosll+mdis+'KUCMSNtuple/kucmsntuple_ZJets_R18_SVIPM100_v29/'
 
 #version = ''
 #version = '_v11_'
@@ -178,7 +179,7 @@ if not done :
 
 #print( filelist )
 index = 1
-ext = '_v26.txt'
+ext = '_v29.txt'
 past = ''
 select =  filelist[0].split("/")
 outfile = select[index] + ext

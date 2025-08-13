@@ -163,7 +163,7 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
 	muonObj->LoadTTrackBuilder(transientTrackBuilderToken);
     ObjMan.Load( "Muons", muonObj );
 
-	KUCMSECALTracks* ecalTracksObj = NULL;
+	//KUCMSECALTracks* ecalTracksObj = NULL;
 	//KUCMSDisplacedElectron* displacedElectronObj = NULL;
     KUCMSDisplacedVertex* displacedVertexObj = NULL;
 	//if( cfFlag("doSVModule") || cfFlag("doDisEleModule") || cfFlag("doECALTrackOnly") ){

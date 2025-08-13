@@ -49,9 +49,10 @@ eosll = 'eos root://cmseos.fnal.gov ls '
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_MET_R18_MRL_MET100_v24/'
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_GJETS_R18_IPM100_v24/'
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_GJETS_R18_IPM100_v25/'
-command = eosll+mdis+'KUCMSNtuple/kucmsntuple_gogoG_Sig_IPM100_v26/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_gogoG_Sig_IPM100_v26/'
+command = eosll+mdis+'KUCMSNtuple/kucmsntuple_ZJets_R18_SVIPM100_v29/'
 
-#version = ''
+version = ''
 #version = '_v11_'
 #version = '_noOOTAmp_'
 #version = '_wthOOTAmp_'
@@ -72,7 +73,7 @@ rootfile = '.root'
 #dirselect = 'noOOTCC_kustc0_EGamma_MINIAOD_Run2022C-PromptReco-v1_357101-357268'
 #dirselect = 'CCstc0_EGamma_MINIAOD_Run2022C-PromptReco-v1_357101-357268'
 
-dirselect = 'CRAB_UserFiles'
+#dirselect = 'CRAB_UserFiles'
 #dirselect = 'WJetsToLNu'
 #dirselect = 'QCD'
 #dirselect = 'TTJets'
@@ -81,6 +82,7 @@ dirselect = 'CRAB_UserFiles'
 #dirselect = 'ttWJets'
 #dirselect = 'GJets_HT-200To400'
 #dirselect = 'MET'
+dirselect = 'ZJetsToNuNu_HT-600To800'
 
 #dirselect = ''
 
@@ -164,7 +166,7 @@ if not done :
 
 #print( filelist )
 select =  filelist[0].split("/")
-outfile = select[0] + '_v26.txt'
+outfile = select[0] + '_v29.txt'
 print( outfile )
 outf = open( outfile, 'w' )
 for thefile in filelist:
