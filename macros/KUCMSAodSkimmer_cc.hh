@@ -15,6 +15,7 @@
 //// KUCMSAodSkimmer class ----------------------------------------------------------------------------------------------------
 ////---------------------------------------------------------------------------------------------------------------------------
 
+
 //#define DEBUG true
 #define DEBUG false
 
@@ -422,6 +423,27 @@ void KUCMSAodSkimmer::processEvntVars(){
     selEvtVars.fillBranch( "evtGenWgt", Evt_genWgt );
     sumEvtGenWgt += Evt_genWgt;
     selEvtVars.fillBranch( "evtXSection", xsctn );
+
+	// ntuple test
+	//std::cout << " test 0 " << std::endl;
+	int nRH = ECALRecHit_energy->size();
+	for( int iter = 0; iter < nRH; iter++ ){
+    	selEvtVars.fillBranch( "ev_ECALRecHit_energy", ECALRecHit_energy->at(iter) );
+    	selEvtVars.fillBranch( "ev_ECALRecHit_time", ECALRecHit_time->at(iter) );
+	}//<<>>for( int iter = 0; iter < nRH; iter++ )
+    //std::cout << " test 1 " << nRH << std::endl;
+	int nSC = SuperCluster_energyRaw->size();
+    for( int iter = 0; iter < nSC; iter++ ){ selEvtVars.fillBranch( "ev_SuperCluster_energyRaw", SuperCluster_energyRaw->at(iter) ); }
+    //std::cout << " test 2 " << nSC << std::endl;
+    int nET = ECALTrack_pt->size();
+    for( int iter = 0; iter < nET; iter++ ){ selEvtVars.fillBranch( "ev_ECALTrack_pt", ECALTrack_pt->at(iter) ); }
+    //std::cout << " test 3 " << nET << std::endl;
+    int nEL = Electron_energy->size();
+    for( int iter = 0; iter < nEL; iter++ ){ selEvtVars.fillBranch( "ev_Electron_energy", Electron_energy->at(iter) ); }
+    //std::cout << " test 4 " << nEL << std::endl;
+    //int nMU = Muon_energy->size();
+    //for( int iter = 0; iter < nMU; iter++ ){ selEvtVars.fillBranch( "ev_Muon_energy",  Muon_energy->at(iter) ); }
+    //std::cout << " test 5 " << nMU << std::endl;
 
 }//<<>>void KUCMSAodSkimmer::processEvntVars()
 
@@ -1846,6 +1868,14 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     selEvtVars.makeBranch( "PVx", FLOAT );
     selEvtVars.makeBranch( "PVy", FLOAT );
     selEvtVars.makeBranch( "PVz", FLOAT );
+
+    selEvtVars.makeBranch( "ev_ECALRecHit_energy", FLOAT );
+    selEvtVars.makeBranch( "ev_ECALRecHit_time", FLOAT );
+    selEvtVars.makeBranch( "ev_SuperCluster_energyRaw", FLOAT );
+    selEvtVars.makeBranch( "ev_ECALTrack_pt", FLOAT );
+    selEvtVars.makeBranch( "ev_Electron_energy", FLOAT );
+    selEvtVars.makeBranch( "ev_Muon_energy", FLOAT );
+
     selEvtVars.attachBranches( fOutTree );
 
 	//selMet.makeBranch( "Met", FLOAT );
