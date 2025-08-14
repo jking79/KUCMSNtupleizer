@@ -174,8 +174,8 @@ void KUCMSMuonObject::InitObject( TTree* fOutTree ){
 	Branches.makeBranch("GenWZIdx","Muon_genSigWZId",VINT);
 	Branches.makeBranch("GenXMomIdx","Muon_genSigXMomId",VINT);
     Branches.makeBranch("hasGenIdx","Muon_hasGenMatch",VBOOL);
-    Branches.makeBranch("nGenMatch","Muon_nGenMatch",INT);
 	}//<<>>if( cfFlag("hasGenInfo") )
+    Branches.makeBranch("nGenMatch","Muon_nGenMatch",INT);
 
     //Branches.makeBranch("Sieie","Muon_Sieie",VFLOAT);
     //Branches.makeBranch("DetaSCTV","Muon_DetaSCTV",VFLOAT);

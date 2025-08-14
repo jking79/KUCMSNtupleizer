@@ -424,27 +424,6 @@ void KUCMSAodSkimmer::processEvntVars(){
     sumEvtGenWgt += Evt_genWgt;
     selEvtVars.fillBranch( "evtXSection", xsctn );
 
-	// ntuple test
-	//std::cout << " test 0 " << std::endl;
-	int nRH = ECALRecHit_energy->size();
-	for( int iter = 0; iter < nRH; iter++ ){
-    	selEvtVars.fillBranch( "ev_ECALRecHit_energy", ECALRecHit_energy->at(iter) );
-    	selEvtVars.fillBranch( "ev_ECALRecHit_time", ECALRecHit_time->at(iter) );
-	}//<<>>for( int iter = 0; iter < nRH; iter++ )
-    //std::cout << " test 1 " << nRH << std::endl;
-	int nSC = SuperCluster_energyRaw->size();
-    for( int iter = 0; iter < nSC; iter++ ){ selEvtVars.fillBranch( "ev_SuperCluster_energyRaw", SuperCluster_energyRaw->at(iter) ); }
-    //std::cout << " test 2 " << nSC << std::endl;
-    int nET = ECALTrack_pt->size();
-    for( int iter = 0; iter < nET; iter++ ){ selEvtVars.fillBranch( "ev_ECALTrack_pt", ECALTrack_pt->at(iter) ); }
-    //std::cout << " test 3 " << nET << std::endl;
-    int nEL = Electron_energy->size();
-    for( int iter = 0; iter < nEL; iter++ ){ selEvtVars.fillBranch( "ev_Electron_energy", Electron_energy->at(iter) ); }
-    //std::cout << " test 4 " << nEL << std::endl;
-    //int nMU = Muon_energy->size();
-    //for( int iter = 0; iter < nMU; iter++ ){ selEvtVars.fillBranch( "ev_Muon_energy",  Muon_energy->at(iter) ); }
-    //std::cout << " test 5 " << nMU << std::endl;
-
 }//<<>>void KUCMSAodSkimmer::processEvntVars()
 
 void KUCMSAodSkimmer::processMet(){
@@ -491,6 +470,7 @@ void KUCMSAodSkimmer::processRechits(){
             hist1d[1]->Fill( (*ECALRecHit_energy)[it], 1 );
             hist1d[2]->Fill( (*ECALRecHit_energy)[it], 1 );
 			//auto radius = hypo( (*rhPosX)[it], (*rhPosY)[it] );
+            hist1d[5]->Fill( (*ECALRecHit_time)[it], 1 );
 
 		}//<<>>if( (*rhSubdet)[it] == 0 )
 
@@ -516,10 +496,15 @@ void KUCMSAodSkimmer::processRechits(){
 		int xfill = orig ? 1 : 0;
 		int yfill = oot ? 1 : exc ? 2 : 0;
 		hist2d[1]->Fill(xfill,yfill);
+        hist1d[6]->Fill( (*SuperCluster_energyRaw)[it], 1 );
 
 	}//<<>>for( int it = 0; it < nSCs; it++ )
 	// fill
 
+    auto nDEs = DisplacedElectron_pt->size();
+    for( int it = 0; it < nDEs; it++ ){ hist1d[7]->Fill( (*DisplacedElectron_pt)[it], 1 ); }
+    auto nETs = ECALTrack_pt->size();
+    for( int it = 0; it < nETs; it++ ){ hist1d[8]->Fill( (*ECALTrack_pt)[it], 1 ); }
 
 }//<<>>void KUCMSAodSkimmer::processRechits()
 
@@ -2221,7 +2206,10 @@ void KUCMSAodSkimmer::initHists(){
     hist1d[2] = new TH1D("ecalrhenergy2", "RecHit Energy;rechit E [GeV]",200,0,2);
     hist1d[3] = new TH1D("sctype","SC !Orig, Orig, OOT, Excl",4,0,4);
     hist1d[4] = new TH1D("scorigtype","Orig+OOT, Orig+!OOT, Orig+Exc, !Orig+OOT, !Orig+Exc, !Orig+!OOT",6,0,6);
-
+    hist1d[5] = new TH1D("ecalrhtime", "RecHit Time;rechit t [ns]",200,-10,10);
+    hist1d[6] = new TH1D("scenergy","SC rawEnergy;energy [GeV]",100,0,1000);
+    hist1d[7] = new TH1D("dept","DE pt;DE pt [GeV]",100,0,1000);
+    hist1d[8] = new TH1D("ecpt","ET pt;ET pt [GeV]",100,0,1000);
 
     ////hist1d[100] = new TH1D("genPhoPt", "genPhoPt;Pt [GeV]",500,0,1000);
 

@@ -1205,6 +1205,8 @@ void llpgtree::Init( TChain *tree, bool doGenInfo ){
    fChain->SetBranchAddress("DisplacedElectron_zECAL", &DisplacedElectron_zECAL, &b_DisplacedElectron_zECAL);
 */
 
+   fChain->SetBranchAddress("DisplacedElectron_pt", &DisplacedElectron_pt, &b_DisplacedElectron_pt);
+
    fChain->SetBranchAddress("ECALRecHit_energy", &ECALRecHit_energy, &b_ECALRecHit_energy);
    //fChain->SetBranchAddress("ECALRecHit_timeError", &ECALRecHit_timeError, &b_ECALRecHit_timeError);
    //fChain->SetBranchAddress("ECALRecHit_hasGS1", &ECALRecHit_hasGS1, &b_ECALRecHit_hasGS1);
@@ -1626,6 +1628,8 @@ void llpgtree::getBranches( Long64_t entry, bool doGenInfo ){
    b_DisplacedElectron_zECAL->GetEntry(entry);     //!
 */
 
+   b_DisplacedElectron_pt->GetEntry(entry);     //!
+
    if( sbDEBUG ) std::cout << "Getting Branches RH" << std::endl;
    b_ECALRecHit_energy->GetEntry(entry);     //!
    //b_ECALRecHit_timeError->GetEntry(entry);     //!
@@ -1689,6 +1693,8 @@ void llpgtree::getBranches( Long64_t entry, bool doGenInfo ){
    b_SuperCluster_y_calo->GetEntry(entry);     //!
    b_SuperCluster_z_calo->GetEntry(entry);     //!
    if( doGenInfo ) b_SuperCluster_ObjectPdgId->GetEntry(entry);     //!
+
+   b_ECALTrack_pt->GetEntry(entry);     //!
 
 /*
    if( sbDEBUG ) std::cout << "Getting Branches TR" << std::endl;

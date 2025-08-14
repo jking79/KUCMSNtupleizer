@@ -506,22 +506,6 @@ void KUCMSAodSkimmer::processEvntVars(){
 	metfilter = metfilter && Flag_HBHENoiseIsoFilter && Flag_ecalBadCalibFilter && Flag_eeBadScFilter && Flag_goodVertices;
 	selEvtVars.fillBranch( "Flag_MetFilter",metfilter);
 
-    // ntuple test
-    int nRH = ECALRecHit_energy->size();
-    for( int iter = 0; iter < nRH; iter++ ){
-        selEvtVars.fillBranch( "ev_ECALRecHit_energy", ECALRecHit_energy->at(iter) );
-        selEvtVars.fillBranch( "ev_ECALRecHit_time", ECALRecHit_time->at(iter) );
-    }//<<>>for( int iter = 0; iter < nRH; iter++ )
-    int nSC = SuperCluster_energyRaw->size();
-    for( int iter = 0; iter < nSC; iter++ ){ selEvtVars.fillBranch( "ev_SuperCluster_energyRaw", SuperCluster_energyRaw->at(iter) ); }
-    int nET = Track_pt->size();
-    for( int iter = 0; iter < nET; iter++ ){ selEvtVars.fillBranch( "ev_Track_pt", Track_pt->at(iter) ); }
-    int nEL = Electron_energy->size();
-    for( int iter = 0; iter < nEL; iter++ ){ selEvtVars.fillBranch( "ev_Electron_energy", Electron_energy->at(iter) ); }
-    int nMU = Muon_energy->size();
-    for( int iter = 0; iter < nMU; iter++ ){ selEvtVars.fillBranch( "ev_Muon_energy",  Muon_energy->at(iter) ); }
-
-
 }//<<>>void KUCMSAodSkimmer::processEvntVars()
 
 void KUCMSAodSkimmer::processMet(){
@@ -567,6 +551,7 @@ void KUCMSAodSkimmer::processRechits(){
 			hist1d[0]->Fill( (*ECALRecHit_energy)[it], 1 );
             hist1d[1]->Fill( (*ECALRecHit_energy)[it], 1 );
             hist1d[2]->Fill( (*ECALRecHit_energy)[it], 1 );
+            hist1d[5]->Fill( (*ECALRecHit_time)[it], 1 );
 			//auto radius = hypo( (*rhPosX)[it], (*rhPosY)[it] );
 
 		}//<<>>if( (*rhSubdet)[it] == 0 )
@@ -579,6 +564,7 @@ void KUCMSAodSkimmer::processRechits(){
 		bool oot = (*SuperCluster_isOot)[it];
 		bool exc = (*SuperCluster_excluded)[it];
 		bool orig = (*SuperCluster_original)[it];
+		hist1d[6]->Fill( (*SuperCluster_energyRaw)[it], 1 );
     	//hist1d[3] = new TH1D("sctype","SC !Orig, Orig, OOT, Excl",4,0,4);
     	//hist1d[4] = new TH1D("scorigtype","Orig+OOT, Orig+!OOT, Orig+Exc, !Orig+OOT, !Orig+Exc, !Orig+!OOT",6,0,6);
 		if( orig ) hist1d[3]->Fill(1); else hist1d[3]->Fill(0);
@@ -597,6 +583,8 @@ void KUCMSAodSkimmer::processRechits(){
 	}//<<>>for( int it = 0; it < nSCs; it++ )
 	// fill
 
+    auto nETs = Track_pt->size();
+    for( int it = 0; it < nETs; it++ ){ hist1d[7]->Fill( (*Track_pt)[it], 1 ); }
 
 }//<<>>void KUCMSAodSkimmer::processRechits()
 
@@ -1628,30 +1616,30 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     selRjrVars.fillBranch( "rjrPZS", m_PZS );
 
 
-	float X2QSum = std::sqrt((sq2(m_MX2a)+sq2(m_MX2b))/2);
-    float X2NQSum = X2QSum/m_MS;
-    float X2Ave = (m_MX2a+m_MX2b)/2;
-	float X2NAve = X2Ave/m_MS;
-    float X2GMean = std::sqrt(m_MX2a*m_MX2b);
-    float X2NGMean = X2GMean/m_MS;
-    float X2Diff = abDiffSide*(m_MX2a-m_MX2b)/(m_MX2a+m_MX2b);
+	//float X2QSum = std::sqrt((sq2(m_MX2a)+sq2(m_MX2b))/2);
+    //float X2NQSum = X2QSum/m_MS;
+    //float X2Ave = (m_MX2a+m_MX2b)/2;
+	//float X2NAve = X2Ave/m_MS;
+    //float X2GMean = std::sqrt(m_MX2a*m_MX2b);
+    //float X2NGMean = X2GMean/m_MS;
+    //float X2Diff = abDiffSide*(m_MX2a-m_MX2b)/(m_MX2a+m_MX2b);
 
-    selRjrVars.fillBranch( "rjrX2NQSum", X2NQSum );
-    selRjrVars.fillBranch( "rjrX2NAve", X2NAve );
-    selRjrVars.fillBranch( "rjrX2NGMean", X2NGMean );
-    selRjrVars.fillBranch( "rjrX2QSum", X2QSum );
-    selRjrVars.fillBranch( "rjrX2Ave", X2Ave );
-    selRjrVars.fillBranch( "rjrX2GMean", X2GMean );
-    selRjrVars.fillBranch( "rjrX2Diff", X2Diff );
+    //selRjrVars.fillBranch( "rjrX2NQSum", X2NQSum );
+    //selRjrVars.fillBranch( "rjrX2NAve", X2NAve );
+    //selRjrVars.fillBranch( "rjrX2NGMean", X2NGMean );
+    //selRjrVars.fillBranch( "rjrX2QSum", X2QSum );
+    //selRjrVars.fillBranch( "rjrX2Ave", X2Ave );
+    //selRjrVars.fillBranch( "rjrX2GMean", X2GMean );
+    //selRjrVars.fillBranch( "rjrX2Diff", X2Diff );
 
-	float m_PX1X2a = X1a->GetFourVector(*X2a).P();  // ?
-    float m_PX1X2b = X1b->GetFourVector(*X2b).P();  //?
-    float m_PJX2a = Ja->GetListVisibleFrames().GetFourVector(*X2a).P();
-    float m_PJX2b = Jb->GetListVisibleFrames().GetFourVector(*X2b).P();
-	float m_PX2Sa = X2a->GetFourVector(*S).P();
-    float m_PX2Sb = X2b->GetFourVector(*S).P();
-	float diff_PJX2a = m_PX1X2a - m_PJX2a;
-    float diff_PJX2b = m_PX1X2b - m_PJX2b;
+	//float m_PX1X2a = X1a->GetFourVector(*X2a).P();  // ?
+    //float m_PX1X2b = X1b->GetFourVector(*X2b).P();  //?
+    //float m_PJX2a = Ja->GetListVisibleFrames().GetFourVector(*X2a).P();
+    //float m_PJX2b = Jb->GetListVisibleFrames().GetFourVector(*X2b).P();
+	//float m_PX2Sa = X2a->GetFourVector(*S).P();
+    //float m_PX2Sb = X2b->GetFourVector(*S).P();
+	//float diff_PJX2a = m_PX1X2a - m_PJX2a;
+    //float diff_PJX2b = m_PX1X2b - m_PJX2b;
 
 	std::vector< TLorentzVector > p4;
 	p4.push_back(Ja->GetFourVector(*S));
@@ -1679,10 +1667,10 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 
     float AX2QSum = std::sqrt((sq2(a_MX2a)+sq2(a_MX2b))/2);
     float AX2NQSum = 2*AX2QSum/a_MS;//*2 -- !! R
-    float AX2Ave = (a_MX2a+a_MX2b)/2;
-    float AX2NAve = 2*AX2Ave/a_MS;//*2 sch tath 0-1
-    float AX2GMean = std::sqrt(a_MX2a*a_MX2b);
-    float AX2NGMean = 2*AX2GMean/a_MS;
+    //float AX2Ave = (a_MX2a+a_MX2b)/2;
+    //float AX2NAve = 2*AX2Ave/a_MS;//*2 sch tath 0-1
+    //float AX2GMean = std::sqrt(a_MX2a*a_MX2b);
+    //float AX2NGMean = 2*AX2GMean/a_MS;
     float AX2Diff = abDiffSide*(a_MX2a-a_MX2b)/(a_MX2a+a_MX2b);
 	//float AX2DiffTest = (a_MX2a-a_MX2b)/(a_MX2a+a_MX2b);
 	//std::cout << " - AX2Diff : " << abDiffSide << " " << AX2Diff << " " << AX2DiffTest << std::endl;
@@ -1690,27 +1678,27 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     float pf_ptX2a = X2a->GetMomentum(*S);
     float pf_ptX2b = X2b->GetMomentum(*S);
 
-    selRjrVars.fillBranch( "rjrPX1X2a", m_PX1X2a );
-    selRjrVars.fillBranch( "rjrPX1X2b", m_PX1X2b );
-    selRjrVars.fillBranch( "rjrPJX2a", m_PJX2a );
-    selRjrVars.fillBranch( "rjrPJX2b", m_PJX2b );
-    selRjrVars.fillBranch( "rjrPX2Sa", m_PX2Sa );
-    selRjrVars.fillBranch( "rjrPX2Sb", m_PX2Sb );
-    selRjrVars.fillBranch( "rjrDiffPJX2a", diff_PJX2a );
-    selRjrVars.fillBranch( "rjrDiffPJX2b", diff_PJX2b );
+    //selRjrVars.fillBranch( "rjrPX1X2a", m_PX1X2a );
+    //selRjrVars.fillBranch( "rjrPX1X2b", m_PX1X2b );
+    //selRjrVars.fillBranch( "rjrPJX2a", m_PJX2a );
+    //selRjrVars.fillBranch( "rjrPJX2b", m_PJX2b );
+    //selRjrVars.fillBranch( "rjrPX2Sa", m_PX2Sa );
+    //selRjrVars.fillBranch( "rjrPX2Sb", m_PX2Sb );
+    //selRjrVars.fillBranch( "rjrDiffPJX2a", diff_PJX2a );
+    //selRjrVars.fillBranch( "rjrDiffPJX2b", diff_PJX2b );
 
-    selRjrVars.fillBranch( "rjrAX2aMass", a_MX2a );
-    selRjrVars.fillBranch( "rjrAX2bMass", a_MX2b );
-    selRjrVars.fillBranch( "rjrASMass", a_MS );
+    //selRjrVars.fillBranch( "rjrAX2aMass", a_MX2a );
+    //selRjrVars.fillBranch( "rjrAX2bMass", a_MX2b );
+    //selRjrVars.fillBranch( "rjrASMass", a_MS );
     selRjrVars.fillBranch( "rjr_Mr", a_MS );
 
-    selRjrVars.fillBranch( "rjrAX2NQSum", AX2NQSum );
+    //selRjrVars.fillBranch( "rjrAX2NQSum", AX2NQSum );
     selRjrVars.fillBranch( "rjr_R", AX2NQSum );
-    selRjrVars.fillBranch( "rjrAX2NAve", AX2NAve );
-    selRjrVars.fillBranch( "rjrAX2NGMean", AX2NGMean );
-    selRjrVars.fillBranch( "rjrAX2QSum", AX2QSum );
-    selRjrVars.fillBranch( "rjrAX2Ave", AX2Ave );
-    selRjrVars.fillBranch( "rjrAX2GMean", AX2GMean );
+    //selRjrVars.fillBranch( "rjrAX2NAve", AX2NAve );
+    //selRjrVars.fillBranch( "rjrAX2NGMean", AX2NGMean );
+    //selRjrVars.fillBranch( "rjrAX2QSum", AX2QSum );
+    //selRjrVars.fillBranch( "rjrAX2Ave", AX2Ave );
+    //selRjrVars.fillBranch( "rjrAX2GMean", AX2GMean );
     selRjrVars.fillBranch( "rjrAX2Diff", AX2Diff );
 
     selRjrVars.fillBranch( "rjrX2aPtS", pf_ptX2a );
@@ -1732,20 +1720,20 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     float x1b_eta = X1b->GetFourVector().Eta();
     float x1b_phi = X1b->GetFourVector().Phi();
 
-  	float m_MV = S->GetListVisibleFrames().GetMass();
-  	float m_PV = S->GetListVisibleFrames().GetFourVector(*S).P();
+  	//float m_MV = S->GetListVisibleFrames().GetMass();
+  	//float m_PV = S->GetListVisibleFrames().GetFourVector(*S).P();
   	//float m_MVa = X2a->GetListVisibleFrames().GetMass();// sub ja ect
     float m_MVa = Ja->GetMass();
   	//float m_MVb = X2b->GetListVisibleFrames().GetMass();
     float m_MVb = Jb->GetMass();
 
-    float m_MVDiff = abDiffSide*(m_MVa-m_MVb)/(m_MVa+m_MVb);
+    //float m_MVDiff = abDiffSide*(m_MVa-m_MVb)/(m_MVa+m_MVb);
     float m_MVSum = std::sqrt((sq2(m_MVa)+sq2(m_MVb))/2);
 	float m_MVNSum = 2*m_MVSum/a_MS;// -- !! Rv
 
-    selRjrVars.fillBranch( "rjrMVDiff", m_MVDiff );
-    selRjrVars.fillBranch( "rjrMVSum", m_MVSum );
-    selRjrVars.fillBranch( "rjrMVNSum", m_MVNSum );
+    //selRjrVars.fillBranch( "rjrMVDiff", m_MVDiff );
+    //selRjrVars.fillBranch( "rjrMVSum", m_MVSum );
+    //selRjrVars.fillBranch( "rjrMVNSum", m_MVNSum );
     selRjrVars.fillBranch( "rjr_Rv", m_MVNSum );
 
   	float m_PV_lab    = S->GetListVisibleFrames().GetFourVector().P();
@@ -1767,10 +1755,10 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     selRjrVars.fillBranch( "rjrPVa", m_PVa );
     selRjrVars.fillBranch( "rjrPVb", m_PVb );
 
-    selRjrVars.fillBranch( "rjrMV", m_MV );
-    selRjrVars.fillBranch( "rjrPV", m_PV );
-    selRjrVars.fillBranch( "rjrMVa", m_MVa );
-    selRjrVars.fillBranch( "rjrMVb", m_MVb );
+	//selRjrVars.fillBranch( "rjrMV", m_MV );
+    //selRjrVars.fillBranch( "rjrPV", m_PV );
+    //selRjrVars.fillBranch( "rjrMVa", m_MVa );
+    //selRjrVars.fillBranch( "rjrMVb", m_MVb );
 
     selRjrVars.fillBranch( "rjrPVlab", m_PV_lab );
     selRjrVars.fillBranch( "rjrDphiMETV", m_dphiMET_V );
@@ -1990,13 +1978,6 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     selEvtVars.makeBranch( "Flag_hfNoisyHitsFilter", BOOL );
 	selEvtVars.makeBranch( "Flag_MetFilter", BOOL );
 
-    selEvtVars.makeBranch( "ev_ECALRecHit_energy", FLOAT );
-    selEvtVars.makeBranch( "ev_ECALRecHit_time", FLOAT );
-    selEvtVars.makeBranch( "ev_SuperCluster_energyRaw", FLOAT );
-    selEvtVars.makeBranch( "ev_Track_pt", FLOAT );
-    selEvtVars.makeBranch( "ev_Electron_energy", FLOAT );
-    selEvtVars.makeBranch( "ev_Muon_energy", FLOAT );
-
     selEvtVars.attachBranches( fOutTree );
 
 	//selMet.makeBranch( "Met", FLOAT );
@@ -2208,10 +2189,10 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     selRjrVars.makeBranch( "rjrPVa", VFLOAT );
     selRjrVars.makeBranch( "rjrPVb", VFLOAT );
 
-    selRjrVars.makeBranch( "rjrMV", VFLOAT );
-    selRjrVars.makeBranch( "rjrPV", VFLOAT );
-    selRjrVars.makeBranch( "rjrMVa", VFLOAT );
-    selRjrVars.makeBranch( "rjrMVb", VFLOAT );
+    //selRjrVars.makeBranch( "rjrMV", VFLOAT );
+    //selRjrVars.makeBranch( "rjrPV", VFLOAT );
+    //selRjrVars.makeBranch( "rjrMVa", VFLOAT );
+    //selRjrVars.makeBranch( "rjrMVb", VFLOAT );
 
     selRjrVars.makeBranch( "rjrNPhotons", VINT );
     selRjrVars.makeBranch( "rjrMET", VFLOAT );
@@ -2226,25 +2207,25 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     selRjrVars.makeBranch( "rjrPVlab", VFLOAT );
     selRjrVars.makeBranch( "rjrDphiMETV", VFLOAT );
 
-    selRjrVars.makeBranch( "rjrX2NQSum", VFLOAT );
-    selRjrVars.makeBranch( "rjrX2NAve", VFLOAT );
-    selRjrVars.makeBranch( "rjrX2NGMean", VFLOAT );
-    selRjrVars.makeBranch( "rjrX2QSum", VFLOAT );
-    selRjrVars.makeBranch( "rjrX2Ave", VFLOAT );
-    selRjrVars.makeBranch( "rjrX2GMean", VFLOAT );
-    selRjrVars.makeBranch( "rjrX2Diff", VFLOAT );
+    //selRjrVars.makeBranch( "rjrX2NQSum", VFLOAT );
+    //selRjrVars.makeBranch( "rjrX2NAve", VFLOAT );
+    //selRjrVars.makeBranch( "rjrX2NGMean", VFLOAT );
+    //selRjrVars.makeBranch( "rjrX2QSum", VFLOAT );
+    //selRjrVars.makeBranch( "rjrX2Ave", VFLOAT );
+    //selRjrVars.makeBranch( "rjrX2GMean", VFLOAT );
+    //selRjrVars.makeBranch( "rjrX2Diff", VFLOAT );
 
     selRjrVars.makeBranch( "rjrNJetsJb", VINT );
     selRjrVars.makeBranch( "rjrNJetsJa", VINT );
 
-    selRjrVars.makeBranch( "rjrPX1X2a", VFLOAT );
-    selRjrVars.makeBranch( "rjrPX1X2b", VFLOAT );
-    selRjrVars.makeBranch( "rjrPJX2a", VFLOAT );
-    selRjrVars.makeBranch( "rjrPJX2b", VFLOAT );
-    selRjrVars.makeBranch( "rjrPX2Sa", VFLOAT );
-    selRjrVars.makeBranch( "rjrPX2Sb", VFLOAT );
-    selRjrVars.makeBranch( "rjrDiffPJX2a", VFLOAT );
-    selRjrVars.makeBranch( "rjrDiffPJX2b", VFLOAT );
+    //selRjrVars.makeBranch( "rjrPX1X2a", VFLOAT );
+    //selRjrVars.makeBranch( "rjrPX1X2b", VFLOAT );
+    //selRjrVars.makeBranch( "rjrPJX2a", VFLOAT );
+    //selRjrVars.makeBranch( "rjrPJX2b", VFLOAT );
+    //selRjrVars.makeBranch( "rjrPX2Sa", VFLOAT );
+    //selRjrVars.makeBranch( "rjrPX2Sb", VFLOAT );
+    //selRjrVars.makeBranch( "rjrDiffPJX2a", VFLOAT );
+    //selRjrVars.makeBranch( "rjrDiffPJX2b", VFLOAT );
 
     //selRjrVars.makeBranch( "rjrX1a_Sm", VFLOAT );
     //selRjrVars.makeBranch( "rjrX1a_Sp", VFLOAT );
@@ -2256,21 +2237,21 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     //selRjrVars.makeBranch( "rjrX1b", VFLOAT );
     //selRjrVars.makeBranch( "rjrX1b", VFLOAT );
 
-    selRjrVars.makeBranch( "rjrAX2aMass", VFLOAT );
-    selRjrVars.makeBranch( "rjrAX2bMass", VFLOAT );
-    selRjrVars.makeBranch( "rjrASMass", VFLOAT );
+    //selRjrVars.makeBranch( "rjrAX2aMass", VFLOAT );
+    //selRjrVars.makeBranch( "rjrAX2bMass", VFLOAT );
+    //selRjrVars.makeBranch( "rjrASMass", VFLOAT );
 
-    selRjrVars.makeBranch( "rjrAX2NQSum", VFLOAT );
-    selRjrVars.makeBranch( "rjrAX2NAve", VFLOAT );
-    selRjrVars.makeBranch( "rjrAX2NGMean", VFLOAT );
-    selRjrVars.makeBranch( "rjrAX2QSum", VFLOAT );
-    selRjrVars.makeBranch( "rjrAX2Ave", VFLOAT );
-    selRjrVars.makeBranch( "rjrAX2GMean", VFLOAT );
-    selRjrVars.makeBranch( "rjrAX2Diff", VFLOAT );
+    //selRjrVars.makeBranch( "rjrAX2NQSum", VFLOAT );
+    //selRjrVars.makeBranch( "rjrAX2NAve", VFLOAT );
+    //selRjrVars.makeBranch( "rjrAX2NGMean", VFLOAT );
+    //selRjrVars.makeBranch( "rjrAX2QSum", VFLOAT );
+    //selRjrVars.makeBranch( "rjrAX2Ave", VFLOAT );
+    //selRjrVars.makeBranch( "rjrAX2GMean", VFLOAT );
+    selRjrVars.makeBranch( "rjrAX2Diff","rjr_Rdiff", VFLOAT );
 
-    selRjrVars.makeBranch( "rjrMVDiff", VFLOAT );
-    selRjrVars.makeBranch( "rjrMVSum", VFLOAT );
-    selRjrVars.makeBranch( "rjrMVNSum", VFLOAT );
+    //selRjrVars.makeBranch( "rjrMVDiff", VFLOAT );
+    //selRjrVars.makeBranch( "rjrMVSum", VFLOAT );
+    //selRjrVars.makeBranch( "rjrMVNSum", VFLOAT );
 
     selRjrVars.makeBranch( "rjr_Mr", VFLOAT );
     selRjrVars.makeBranch( "rjr_R", VFLOAT );
@@ -2352,6 +2333,10 @@ void KUCMSAodSkimmer::initHists(){
     hist1d[2] = new TH1D("ecalrhenergy2", "RecHit Energy;rechit E [GeV]",200,0,2);
     hist1d[3] = new TH1D("sctype","SC !Orig, Orig, OOT, Excl",4,0,4);
     hist1d[4] = new TH1D("scorigtype","Orig+OOT, Orig+!OOT, Orig+Exc, !Orig+OOT, !Orig+Exc, !Orig+!OOT",6,0,6);
+    hist1d[5] = new TH1D("ecalrhtime", "RecHit Time;rechit t [ns]",200,-10,10);
+    hist1d[6] = new TH1D("scenergy","SC rawEnergy;energy [GeV]",200,0,1000);
+    hist1d[7] = new TH1D("trckpt","Track pt;Track pt [GeV]",500,0,1000);
+
 
 	hist1d[10] = new TH1D("elept","Electron Pt [GeV];Electron Pt [GeV];a.u.",100,0,1000);
     hist1d[11] = new TH1D("elept_lv","LooseVeto;Electron Pt [GeV];Eff",100,0,1000);

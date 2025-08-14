@@ -103,7 +103,8 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     auto sctoken  = consumes<reco::SuperClusterCollection>(iConfig.getParameter<edm::InputTag>("superClusters"));
     auto ootsctoken = consumes<reco::SuperClusterCollection>(iConfig.getParameter<edm::InputTag>("ootSuperClusters"));
     auto othersctoken = consumes<reco::SuperClusterCollection>(iConfig.getParameter<edm::InputTag>("otherSuperClusters"));
-    if( cfFlag("doSVModule") ) recHitsObj->LoadSCTokens( sctoken, ootsctoken ); else recHitsObj->LoadSCTokens( othersctoken, ootsctoken );
+    //if( cfFlag("doSVModule") ) recHitsObj->LoadSCTokens( sctoken, ootsctoken ); else recHitsObj->LoadSCTokens( othersctoken, ootsctoken );
+	recHitsObj->LoadSCTokens( sctoken, ootsctoken );
     recHitsObj->LoadSCTokens( othersctoken );
     auto ccltoken = consumes<std::vector<reco::CaloCluster>>(iConfig.getParameter<edm::InputTag>("caloClusters"));
     recHitsObj->LoadClusterTokens( ccltoken );
@@ -197,7 +198,7 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
         //ObjMan.Load( "ECALTracks", ecalTracksObj );
 
 
-		if( cfFlag("doSVModule") ){
+		//if( cfFlag("doSVModule") ){
 
 	    	// Displaced Vertices
 	    	auto combinedMuonTracks = consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("combinedMuonTracks"));
@@ -217,7 +218,7 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
 			electronsObj->LoadDisplacedVertexObject( displacedVertexObj );
 			muonObj->LoadDisplacedVertexObject( displacedVertexObj );
 
-    	}//<<>>if( cfFlag("doSVModule") )
+    	//}//<<>>if( cfFlag("doSVModule") )
 
 /*
 		if( cfFlag("doDisEleModule") ){
