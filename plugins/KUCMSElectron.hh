@@ -272,9 +272,9 @@ void KUCMSElectronObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("GenXMomIdx","Electron_genSigXMomId",VINT);
     Branches.makeBranch("GenWZIdx","Electron_genSigWZId",VINT);
     Branches.makeBranch("hasGenIdx","Electron_hasGenMatch",VBOOL);
-    Branches.makeBranch("nGenMatch","Electron_nGenMatch",INT);
     Branches.makeBranch("isLWZP", "Electron_isLWZP", VBOOL );
 	}//<<>>if( cfFlag("hasGenInfo") )
+    Branches.makeBranch("nGenMatch","Electron_nGenMatch",INT);
 
     Branches.makeBranch("Sieie","Electron_Sieie",VFLOAT);
     Branches.makeBranch("DetaSCTV","Electron_DetaSCTV",VFLOAT);

@@ -192,7 +192,7 @@ void KUCMSTrackObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("ndof","Track_ndof",VFLOAT);//float(track.ndof()) );
     Branches.makeBranch("chi2","Track_chi2",VFLOAT);//float(track.chi2()) );
     Branches.makeBranch("normalizedChi2","Track_normalizedChi2",VFLOAT);//float(track.normalizedChi2()) );
-    Branches.makeBranch("qoverp","Track_normalizedChi2",VFLOAT);//float(track.qoverp()) );
+    Branches.makeBranch("qoverp","Track_qoverp",VFLOAT);//float(track.qoverp()) );
     Branches.makeBranch("ptError","Track_ptError",VFLOAT);//float(track.ptError()) );
     Branches.makeBranch("etaError","Track_etaError",VFLOAT);//float(track.etaError()) );
     Branches.makeBranch("phiError","Track_phiError",VFLOAT);//float(track.phiError()) );
@@ -288,13 +288,13 @@ void KUCMSTrackObject::ProcessEvent( ItemManager<float>& geVar ){
 
     PolarLorentzVector polarP4;
 	double zero(0);
-	float ptmin = 20;
 	//float rimax = 0.2;//0.2
     //float minmax = 0.2;//0.2
     //float absval = 5;//5
 	float rilepmax = 0.05;
     //float rilepmax = 0.1;
     //float rilepmax = 0.2;
+	float isoptmin = 20.0;
 	for( const auto &track : prmtTracks ){
 
 		trackIndx++;
@@ -310,7 +310,6 @@ void KUCMSTrackObject::ProcessEvent( ItemManager<float>& geVar ){
             if( TrackHelper::SameTrack( track, *pftrackPtr ) ){ matched = idx; mpdg = id; break; }
         }//<<>>for(const auto &pfcan : *pfcands_ )
         //if( mpdg < 0 ) continue;
-		if( track.pt() < ptmin ) continue;
 
         float m = 0;  //assume ~ massless
         float pt = track.pt();
@@ -335,7 +334,7 @@ void KUCMSTrackObject::ProcessEvent( ItemManager<float>& geVar ){
         float mrilpu = std::max( zero, miniIso.neutralHadronIso() + miniIso.photonIso() - 0.5*miniIso.puChargedHadronIso() );
         float mrelisolep = ( miniIso.chargedHadronIso() + mrilpu ) / polarP4.pt();
 
-        bool ptcut = polarP4.pt() > ptmin;
+        bool ptcut = polarP4.pt() > isoptmin;
         //bool isocut = relisolep < rilepmax;
         bool isocut = mrelisolep < rilepmax;
         bool trkiso = ptcut && isocut;

@@ -258,13 +258,13 @@ class KUCMSEcalRecHitObject : public KUCMSObjectBase {
     edm::ESHandle<CaloGeometry> caloGeo_;
     const CaloSubdetectorGeometry * barrelGeometry;
     const CaloSubdetectorGeometry * endcapGeometry;
-    const CaloGeometry * ecalGeometry;
+    //const CaloGeometry * ecalGeometry;
 
     // CaloTopology
     edm::ESGetToken<CaloTopology, CaloTopologyRecord> caloTopologyToken_;
     edm::ESHandle<CaloTopology> caloTopo_;
-    const CaloSubdetectorTopology * barrelTopology;
-    const CaloSubdetectorTopology * endcapTopology;
+    //const CaloSubdetectorTopology * barrelTopology;
+    //const CaloSubdetectorTopology * endcapTopology;
     const CaloTopology * ecalTopology;
 
     // lasers
@@ -456,13 +456,13 @@ void KUCMSEcalRecHitObject::LoadEvent( const edm::Event& iEvent, const edm::Even
     caloGeo_ = iSetup.getHandle(caloGeometryToken_);
     barrelGeometry = caloGeo_->getSubdetectorGeometry(DetId::Ecal, EcalSubdetector::EcalBarrel);
     endcapGeometry = caloGeo_->getSubdetectorGeometry(DetId::Ecal, EcalSubdetector::EcalEndcap);
-    ecalGeometry = &iSetup.getData(caloGeometryToken_);
+    //ecalGeometry = &iSetup.getData(caloGeometryToken_);
 
     // CaloTopology
     caloTopo_ = iSetup.getHandle(caloTopologyToken_);
     ecalTopology = &iSetup.getData(caloTopologyToken_);
-    barrelTopology = caloTopo_->getSubdetectorTopology(DetId::Ecal, EcalSubdetector::EcalBarrel);
-    endcapTopology = caloTopo_->getSubdetectorTopology(DetId::Ecal, EcalSubdetector::EcalEndcap);
+    //barrelTopology = caloTopo_->getSubdetectorTopology(DetId::Ecal, EcalSubdetector::EcalBarrel);
+    //endcapTopology = caloTopo_->getSubdetectorTopology(DetId::Ecal, EcalSubdetector::EcalEndcap);
 
     // Laser constants : http://cmslxr.fnal.gov/source/RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h
     laser_ = iSetup.getHandle(ecalLaserDbServiceToken_);
@@ -1363,12 +1363,14 @@ Cluster2ndMoments KUCMSEcalRecHitObject::getCluster2ndMoments( const reco::Super
 
 }//<<>>Cluster2ndMoments KUCMSEcalRecHitObject::getCluster2ndMoments( reco::SuperCluster* scptr )
 
+
 std::array<float, 3> KUCMSEcalRecHitObject::getCovariances( const reco::SuperCluster* scptr ){
 
     const auto &seedDetId = scptr->seed()->seed();// seed detid
     const auto isEB = (seedDetId.subdetId() == EcalBarrel);// which subdet
     const auto recHits = ( isEB ? recHitsEB_.product() : recHitsEE_.product() );
-    return EcalClusterTools::covariances( *(scptr->seed()), recHits, ecalTopology, ecalGeometry );
+    //return EcalClusterTools::covariances( *(scptr->seed()), recHits, ecalTopology, ecalGeometry );
+	return EcalClusterTools::localCovariances( *(scptr->seed()), recHits, &(*ecalTopology));
 
 }//<<>>std::array<float, 3> KUCMSEcalRecHitObject::getCovariances( reco::SuperCluster* scptr )
 
