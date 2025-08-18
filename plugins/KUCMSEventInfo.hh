@@ -92,6 +92,7 @@ class KUCMSEventInfoObject : public KUCMSObjectBase {
 	std::map<std::string,bool> trigFlags;
 	std::vector<std::string> triggerList;
 	std::vector<std::string> fullTriggerList;
+    std::vector<std::string> metFilterList;
 
     std::map<std::string,bool> flags;
 	void fillFlagBranch( std::string flag ){ if( flags.find(flag) != flags.end() ) Branches.fillBranch( flag, flags[flag] ); }
@@ -114,6 +115,10 @@ KUCMSEventInfoObject::KUCMSEventInfoObject( const edm::ParameterSet& iConfig ){
 		triggerList = iConfig.getParameter<std::vector<std::string>>("triggerList");
 	}//<<>>if( iConfig.existsAs<std::vector<std::string>>("triggerList") )
 
+    if( iConfig.existsAs<std::vector<std::string>>("metFilters") ){
+        metFilterList = iConfig.getParameter<std::vector<std::string>>("metFilters");
+    }//<<>>if( iConfig.existsAs<std::vector<std::string>>("triggerList") )
+
 	fullTriggerList.clear();
 
 }//<<>>KUCMSEventInfo::KUCMSEventInfo( const edm::ParameterSet& iConfig, const ItemManager<bool>& cfFlag )
@@ -128,6 +133,7 @@ void KUCMSEventInfoObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("vtxY","PV_y",FLOAT);
     Branches.makeBranch("vtxZ","PV_z",FLOAT);
 
+/*
     Branches.makeBranch("Flag_goodVertices","Flag_goodVertices",BOOL);
     Branches.makeBranch("Flag_globalSuperTightHalo2016Filter","Flag_globalSuperTightHalo2016Filter",BOOL);
     Branches.makeBranch("Flag_HBHENoiseFilter","Flag_HBHENoiseFilter",BOOL);
@@ -139,12 +145,18 @@ void KUCMSEventInfoObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("Flag_BadChargedCandidateFilter","Flag_BadChargedCandidateFilter",BOOL);
     Branches.makeBranch("Flag_eeBadScFilter","Flag_eeBadScFilter",BOOL);
     Branches.makeBranch("Flag_ecalBadCalibFilter","Flag_ecalBadCalibFilter",BOOL);
+*/
+
+    for( auto filterName : metFilterList ){
+
+        Branches.makeBranch( filterName, filterName, BOOL );
+
+    }//<<>>for( auto trigName : triggerList )
 
 	for( auto trigName : triggerList ){
 
 		std::string branchName = "Trigger_" + trigName;
 		Branches.makeBranch( trigName, branchName, BOOL );
-		//trigFlags[trigName] = false;
 
 	}//<<>>for( auto trigName : triggerList )
 
@@ -219,6 +231,8 @@ void KUCMSEventInfoObject::ProcessEvent( ItemManager<float>& geVar ){
     Branches.fillBranch("vtxY",geVar("vtxY"));
     Branches.fillBranch("vtxZ",geVar("vtxZ"));
 
+
+/*
     //if( flags.find("metfilters_path") != flags.end() ) std::cout << "metfilters_path = " << flags["metfilters_path"] << std::endl;
 	//if( flags.find("Flag_goodVertices") != flags.end() ) Branches.fillBranch( "Flag_goodVertices", flags["Flag_goodVertices"] );
 	fillFlagBranch("Flag_goodVertices");
@@ -232,7 +246,9 @@ void KUCMSEventInfoObject::ProcessEvent( ItemManager<float>& geVar ){
     fillFlagBranch("Flag_BadChargedCandidateFilter");
     fillFlagBranch("Flag_eeBadScFilter");
     fillFlagBranch("Flag_ecalBadCalibFilter");
+*/
 
+    for( auto filterName : metFilterList ){ fillFlagBranch( filterName ); }
 
 	//std::cout << " -------------------------- Trigger Event :" << std::endl;
 	std::vector<std::string> triggetList;
@@ -266,6 +282,7 @@ void KUCMSEventInfoObject::ProcessEvent( ItemManager<float>& geVar ){
 
 	for( auto trigName : triggerList ){ Branches.fillBranch( trigName, trigFlags[trigName] ); }
 	//Branches.fillBranch("triggerList",triggetList);
+
 
 }//<<>>void KUCMSEventInfo::ProcessEvent()
 

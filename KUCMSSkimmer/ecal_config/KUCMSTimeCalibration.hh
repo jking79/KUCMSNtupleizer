@@ -13,6 +13,8 @@
 #include "TGraphErrors.h"
 #include "TMultiGraph.h"
 
+#include "KUCMSEcalDetIDFunctions.hh"
+
 #ifndef KUCMSTimeCalibrationClass
 #define KUCMSTimeCalibrationClass
 
@@ -34,23 +36,6 @@
 //  	rhid_info_list.txt 
 //
 /////////////////////////////////////////////////////////////////////////////////////////
-
-struct DetIDStruct {
-
-    DetIDStruct(){}
-    DetIDStruct( const int ni1, const int ni2, const int nTT, const int & necal, const float nphi, const float neta )
-        : i1(ni1), i2(ni2), TT(nTT), ecal(necal), phi(nphi), eta(neta) {}
-
-    int i1; // EB: iphi, EE: ix
-    int i2; // EB: ieta, EE: iy
-    int TT; // trigger tower
-    int ecal; // EB, EM, EP
-    float phi; // xtal phi
-    float eta; // xtal eta
-
-};//<<>>struct DetIDStruct
-
-//---------------------------------------------------------------------------------------------------------------------
 
 struct lumiRunStruct {
 

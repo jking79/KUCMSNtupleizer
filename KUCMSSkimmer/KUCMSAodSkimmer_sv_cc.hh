@@ -131,6 +131,15 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 
 	}//<<>>treeplot on off
 
+    // Cali Tags : Tags for calibrations to use 
+    //std::string r2EOY( "EG_EOY_MINI" ); 
+    //std::string r2Fall17AOD( "RunIIFall17DRPremix" ); 
+    //std::string r2Fall17MINIAOD( "RunIIFall17MiniAODv2" ); 
+    //std::string r2UL( "UL_R2_MINI" ); 
+
+	//timeCali = new KUCMSTimeCalibration();
+	//timeCali->setTag(r2UL);
+
 }//<<>>KUCMSAodSkimmer::KUCMSAodSkimmer()
 
 KUCMSAodSkimmer::~KUCMSAodSkimmer(){
@@ -157,6 +166,8 @@ KUCMSAodSkimmer::~KUCMSAodSkimmer(){
     delete CombSplit_J;
     delete CombSplit_Ja;
     delete CombSplit_Jb;
+
+	//delete timeCali;
       
 }//<<>>KUCMSAodSkimmer::~KUCMSAodSkimmer()
 
@@ -314,7 +325,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
         std::cout << ")" << std::endl;
 
 	    std::cout << "Setting up For Main Loop." << std::endl;
-		int loopCounter(100000);
+		int loopCounter(1000);
 	    auto nEntries = fInTree->GetEntries();
 	    if(DEBUG){ nEntries = 1000; loopCounter = 100; }
 	    std::cout << "Proccessing " << nEntries << " entries." << std::endl;
@@ -455,7 +466,10 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
 
 void KUCMSAodSkimmer::processEvntVars(){
 
+    if( DEBUG ) std::cout << "Finding PV Vars" << std::endl;
     selEvtVars.clearBranches(); // <<<<<<<   must do
+	bool doEVSVs = true;
+	if( not doEVSVs ) std::cout << " ------ !!!!!!!!!! Fill SV Branches turned off !!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
 
 	// calc
     selEvtVars.fillBranch( "PVx", PV_x );
@@ -464,16 +478,26 @@ void KUCMSAodSkimmer::processEvntVars(){
    
 	//fill
 
+    if( DEBUG ) std::cout << "Finding Event wts Vars" << std::endl;
     selEvtVars.fillBranch( "dsKey", dataSetKey );
-	float evtGenWgt = useEvtWgt ? Evt_genWgt : 1;
+    float evtGenWgt = 1;
+	if( useEvtWgt && doGenInfo ) evtGenWgt = Evt_genWgt;
     selEvtVars.fillBranch( "evtGenWgt", evtGenWgt );
     //sumEvtGenWgt += Evt_genWgt;
     selEvtVars.fillBranch( "evtXSection", xsctn );
 
+	float fillWgt = ( ( xsctn * 1000 ) * evtGenWgt  ) / configWgts["sumEvtWgt"];
+	selEvtVars.fillBranch( "fillwgt", fillWgt );
+
 	// SVs
-	int nSVs = Vertex_mass->size();
+	if( DEBUG ) std::cout << "Finding SV Vars" << std::endl;
+
+	int nSVs = 0;
+	if( doEVSVs )  nSVs = Vertex_mass->size();
 	int nLsv = 0;
 	int nHsv = 0;
+
+	if( doEVSVs ){
 	for( int svit = 0; svit < nSVs; svit++ ){
 
 		float mass = (*Vertex_mass)[svit];
@@ -485,6 +509,7 @@ void KUCMSAodSkimmer::processEvntVars(){
 		if( ( ntrack >= 5 ) && ( mass/ntrack > 1 ) ) nHsv++;
 
 	}//<<>>for( svit = 0; svit < nSVs; scit++ )
+	}//<<>>if( doSVs )
 
 	selEvtVars.fillBranch( "SV_nLeptonic", nLsv );
 	selEvtVars.fillBranch( "SV_nHadronic", nHsv );
@@ -534,6 +559,7 @@ void KUCMSAodSkimmer::processRechits(){
 
 	// initilize
     //selECALRecHit.clearBranches(); // <<<<<<<   must do
+	bool checkRHs = false;
 
 	// calc
     if( DEBUG ) std::cout << "Finding rechits" << std::endl;
@@ -558,9 +584,11 @@ void KUCMSAodSkimmer::processRechits(){
 
 	}//<<>>for( int it = 0; it < nRecHits; it++ )
 
+    int nMissingRechits = 0;
 	auto nSCs = SuperCluster_nSuperCluster;
 	for( int it = 0; it < nSCs; it++ ){
 
+		int nMissingRhInSC = 0;
 		bool oot = (*SuperCluster_isOot)[it];
 		bool exc = (*SuperCluster_excluded)[it];
 		bool orig = (*SuperCluster_original)[it];
@@ -580,9 +608,27 @@ void KUCMSAodSkimmer::processRechits(){
 		int yfill = oot ? 1 : exc ? 2 : 0;
 		hist2d[1]->Fill(xfill,yfill);
 
-	}//<<>>for( int it = 0; it < nSCs; it++ )
-	// fill
+		if( checkRHs ){
+		bool found = false;
+		std::vector<unsigned int> scrhids = (*SuperCluster_rhIds)[it];
+		int nSCRhids = scrhids.size();
+		//std::cout << " -- Checking : " << it << " of " << nSCRhids << " SCs " << std::endl;
+		for( int sciter = 0; sciter < nSCRhids; sciter++  ){ 
+			auto scrhid = scrhids[sciter];
+			for( int iter = 0; iter < nRecHits; iter++ ){
+				auto rhid = (*ECALRecHit_ID)[iter];
+				//std::cout << " -- Checking : " << rhid << " == " << scrhid << std::endl;
+				if( scrhid == rhid ){ found = true; break; } 
+			}//<<>>for( int iter = 0; iter < nRecHits; it++ )
+			if( not found ){ nMissingRechits++; nMissingRhInSC++; }// std::cout << " ---- !!!!!!  Rechit in SC and not in Rechits !!!!!!! " << std::endl;
+		}//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
+		}//<<>>if( checkRHs )		
+		if( nMissingRhInSC > 0 ) std::cout << " !! Missing " << nMissingRhInSC << " rechits in SC " << it << " w/ OOT" << oot << " && ORG " << orig << std::endl;
 
+	}//<<>>for( int it = 0; it < nSCs; it++ )
+	if( nMissingRechits > 0 ) std::cout << " !! ------ !! Missing " << nMissingRechits << " rechits in " << nSCs << " SCs "<< std::endl;
+
+	// fill
     auto nETs = Track_pt->size();
     for( int it = 0; it < nETs; it++ ){ hist1d[7]->Fill( (*Track_pt)[it], 1 ); }
 
@@ -1957,6 +2003,7 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
 
     selEvtVars.makeBranch( "evtGenWgt", FLOAT );
     selEvtVars.makeBranch( "evtXSection", FLOAT );
+    selEvtVars.fillBranch( "evtFillWgt", FLOAT );
 
     selEvtVars.makeBranch( "PVx", FLOAT );
     selEvtVars.makeBranch( "PVy", FLOAT );
