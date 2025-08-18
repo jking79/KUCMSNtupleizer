@@ -2209,7 +2209,7 @@ void KUCMSAodSkimmer::initHists(){
     hist1d[5] = new TH1D("ecalrhtime", "RecHit Time;rechit t [ns]",200,-10,10);
     hist1d[6] = new TH1D("scenergy","SC rawEnergy;energy [GeV]",100,0,1000);
     hist1d[7] = new TH1D("dept","DE pt;DE pt [GeV]",100,0,1000);
-    hist1d[8] = new TH1D("ecpt","ET pt;ET pt [GeV]",100,0,1000);
+    hist1d[8] = new TH1D("ecpt","ET pt;ET pt [GeV]",400,0,200);
 
     ////hist1d[100] = new TH1D("genPhoPt", "genPhoPt;Pt [GeV]",500,0,1000);
 

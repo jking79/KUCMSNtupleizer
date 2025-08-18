@@ -1359,7 +1359,7 @@ void llpgtree::Init( TChain *tree, bool doGenInfo ){
    fChain->SetBranchAddress("GenVertex_y", &GenVertex_y, &b_GenVertex_y);
    fChain->SetBranchAddress("GenVertex_z", &GenVertex_z, &b_GenVertex_z);
    }//<<>>if( doGenInfo )
-
+/*
    fChain->SetBranchAddress("VertexTrack_SCDR", &VertexTrack_SCDR, &b_VertexTrack_SCDR);
    fChain->SetBranchAddress("VertexTrack_energySC", &VertexTrack_energySC, &b_VertexTrack_energySC);
    fChain->SetBranchAddress("VertexTrack_isSignalElectron", &VertexTrack_isSignalElectron, &b_VertexTrack_isSignalElectron);
@@ -1413,6 +1413,7 @@ void llpgtree::Init( TChain *tree, bool doGenInfo ){
    fChain->SetBranchAddress("Vertex_x", &Vertex_x, &b_Vertex_x);
    fChain->SetBranchAddress("Vertex_y", &Vertex_y, &b_Vertex_y);
    fChain->SetBranchAddress("Vertex_z", &Vertex_z, &b_Vertex_z);
+*/
 
    fChain->SetBranchAddress("ECALRecHit_energy", &ECALRecHit_energy, &b_ECALRecHit_energy);
    fChain->SetBranchAddress("ECALRecHit_ID", &ECALRecHit_ID, &b_ECALRecHit_ID);
@@ -1709,7 +1710,7 @@ void llpgtree::Init( TChain *tree, bool doGenInfo ){
    fChain->SetBranchAddress("Muon_px", &Muon_px, &b_Muon_px);
    fChain->SetBranchAddress("Muon_py", &Muon_py, &b_Muon_py);
    fChain->SetBranchAddress("Muon_pz", &Muon_pz, &b_Muon_pz);
-   if( doGenInfo ) fChain->SetBranchAddress("Muon_isLWZP", &Muon_isLWZP, &b_Muon_isLWZP);
+   //fChain->SetBranchAddress("Muon_isLWZP", &Muon_isLWZP, &b_Muon_isLWZP);
    fChain->SetBranchAddress("Muon_isLoose", &Muon_isLoose, &b_Muon_isLoose);
    fChain->SetBranchAddress("Muon_isMedium", &Muon_isMedium, &b_Muon_isMedium);
    fChain->SetBranchAddress("Muon_nGenMatch", &Muon_nGenMatch, &b_Muon_nGenMatch);
@@ -1824,7 +1825,7 @@ void llpgtree::Init( TChain *tree, bool doGenInfo ){
 void llpgtree::getBranches( Long64_t entry, bool doGenInfo ){
 
    // List of branches
-
+   //std::cout << " getBranches 1" << std::endl;
    if( doGenInfo ){
    b_GenVertex_dxy->GetEntry(entry);   //!
    b_GenVertex_eta->GetEntry(entry);   //!
@@ -1850,6 +1851,7 @@ void llpgtree::getBranches( Long64_t entry, bool doGenInfo ){
    b_GenVertex_z->GetEntry(entry);   //!
    }//<<>>if( doGenInfo )
 
+/*
    b_VertexTrack_SCDR->GetEntry(entry);   //!
    b_VertexTrack_energySC->GetEntry(entry);   //!
    b_VertexTrack_isSignalElectron->GetEntry(entry);   //!
@@ -1903,7 +1905,9 @@ void llpgtree::getBranches( Long64_t entry, bool doGenInfo ){
    b_Vertex_x->GetEntry(entry);   //!
    b_Vertex_y->GetEntry(entry);   //!
    b_Vertex_z->GetEntry(entry);   //!
+*/
 
+   //std::cout << " getBranches 2" << std::endl;
    b_ECALRecHit_energy->GetEntry(entry);   //!
    b_ECALRecHit_ID->GetEntry(entry);   //!
    b_ECALRecHit_swCross->GetEntry(entry);   //!
@@ -1930,12 +1934,14 @@ void llpgtree::getBranches( Long64_t entry, bool doGenInfo ){
    b_ECALRecHit_rhy->GetEntry(entry);   //!
    b_ECALRecHit_rhz->GetEntry(entry);   //!
 
+   //std::cout << " getBranches 3" << std::endl;
    b_SuperCluster_covEtaEta->GetEntry(entry);   //!
    b_SuperCluster_covEtaPhi->GetEntry(entry);   //!
    b_SuperCluster_covPhiPhi->GetEntry(entry);   //!
    b_SuperCluster_energyRaw->GetEntry(entry);   //!
    b_SuperCluster_etaWidth->GetEntry(entry);   //!
    b_SuperCluster_excluded->GetEntry(entry);   //!
+   //std::cout << " getBranches 3o" << std::endl;
    b_SuperCluster_seedIsEB->GetEntry(entry);   //!
    b_SuperCluster_isScEtaEB->GetEntry(entry);   //!
    b_SuperCluster_isScEtaEE->GetEntry(entry);   //!
@@ -1948,6 +1954,7 @@ void llpgtree::getBranches( Long64_t entry, bool doGenInfo ){
    b_SuperCluster_seediEtaOriX->GetEntry(entry);   //!
    b_SuperCluster_seediPhiOriY->GetEntry(entry);   //!
    b_SuperCluster_nBasicClusters->GetEntry(entry);   //!
+   //std::cout << " getBranches 3a" << std::endl;
    b_SuperCluster_ElectronIndx->GetEntry(entry);   //!
    b_SuperCluster_energy->GetEntry(entry);   //!
    b_SuperCluster_eta->GetEntry(entry);   //!
@@ -1958,6 +1965,7 @@ void llpgtree::getBranches( Long64_t entry, bool doGenInfo ){
    b_SuperCluster_nRHXtals->GetEntry(entry);   //!
    b_SuperCluster_ObjectPdgId->GetEntry(entry);   //!
    b_SuperCluster_phi->GetEntry(entry);   //!
+   //std::cout << " getBranches 3b" << std::endl;
    b_SuperCluster_PhotonIndx->GetEntry(entry);   //!
    b_SuperCluster_rhFracs->GetEntry(entry);   //!
    b_SuperCluster_rhIds->GetEntry(entry);   //!
@@ -1969,10 +1977,12 @@ void llpgtree::getBranches( Long64_t entry, bool doGenInfo ){
    b_SuperCluster_y_calo->GetEntry(entry);   //!
    b_SuperCluster_z_calo->GetEntry(entry);   //!
 
+   //std::cout << " getBranches 4" << std::endl;
    b_Electron_DetaSCTV->GetEntry(entry);   //!
    b_Electron_DphiSCTV->GetEntry(entry);   //!
    b_Electron_energy->GetEntry(entry);   //!
    b_Electron_eta->GetEntry(entry);   //!
+   //std::cout << " getBranches 4" << std::endl;
    if( doGenInfo ){
    b_Electron_genIdx->GetEntry(entry);   //!
    b_Electron_genSigWZId->GetEntry(entry);   //!
@@ -1984,6 +1994,7 @@ void llpgtree::getBranches( Long64_t entry, bool doGenInfo ){
    b_Electron_isMedium->GetEntry(entry);   //!
    b_Electron_isPrompt->GetEntry(entry);   //!
    b_Electron_isVeto->GetEntry(entry);   //!
+   //std::cout << " getBranches 4" << std::endl;
    b_Electron_phi->GetEntry(entry);   //!
    b_Electron_pt->GetEntry(entry);   //!
    b_Electron_px->GetEntry(entry);   //!
@@ -1999,6 +2010,7 @@ void llpgtree::getBranches( Long64_t entry, bool doGenInfo ){
    b_Electron_Vooemoop->GetEntry(entry);   //!
    b_Electron_VrelIsoWithEA->GetEntry(entry);   //!
    b_Electron_Vsieiec->GetEntry(entry);   //!
+   //std::cout << " getBranches 4" << std::endl;
    if( doGenInfo ) b_Electron_hasGenMatch->GetEntry(entry);   //!
    if( doGenInfo ) b_Electron_isLWZP->GetEntry(entry);   //!
    b_Electron_nElectrons->GetEntry(entry);   //!
@@ -2027,6 +2039,7 @@ void llpgtree::getBranches( Long64_t entry, bool doGenInfo ){
    b_Evt_run->GetEntry(entry);   //!
    b_Evt_event->GetEntry(entry);   //!
 
+   //std::cout << " getBranches 5" << std::endl;
    b_Trigger_hltEG20EtFilterLooseHoverE->GetEntry(entry);   //!
    b_Trigger_hltEG20EtL1TripleEGFilter->GetEntry(entry);   //!
    b_Trigger_hltEG20HEFilterLooseHoverE->GetEntry(entry);   //!
@@ -2115,6 +2128,7 @@ void llpgtree::getBranches( Long64_t entry, bool doGenInfo ){
    b_PV_y->GetEntry(entry);   //!
    b_PV_z->GetEntry(entry);   //!
 
+   //std::cout << " getBranches 6" << std::endl;
    if( doGenInfo ){
    b_Gen_charge->GetEntry(entry);   //!
    b_Gen_energy->GetEntry(entry);   //!
@@ -2178,32 +2192,40 @@ void llpgtree::getBranches( Long64_t entry, bool doGenInfo ){
    b_Jet_pt->GetEntry(entry);   //!
    b_Jet_nConstituents->GetEntry(entry);   //!
 
+   //std::cout << " getBranches 7" << std::endl;
    b_Muon_energy->GetEntry(entry);   //!
    b_Muon_eta->GetEntry(entry);   //!
+   //std::cout << " getBranches 7" << std::endl;
    if( doGenInfo ){
    b_Muon_genIdx->GetEntry(entry);   //!
    b_Muon_genSigWZId->GetEntry(entry);   //!
    b_Muon_genSigXMomId->GetEntry(entry);   //!
    }//<<>>if( doGenInfo )
+   //std::cout << " getBranches 7" << std::endl;
    b_Muon_isPromptMuon->GetEntry(entry);   //!
    b_Muon_phi->GetEntry(entry);   //!
    b_Muon_pt->GetEntry(entry);   //!
    b_Muon_px->GetEntry(entry);   //!
    b_Muon_py->GetEntry(entry);   //!
    b_Muon_pz->GetEntry(entry);   //!
+   //std::cout << " getBranches 7" << std::endl;
    if( doGenInfo ) b_Muon_hasGenMatch->GetEntry(entry);   //!
    if( doGenInfo ) b_Muon_isLWZP->GetEntry(entry);   //!
+   //std::cout << " getBranches 7" << std::endl;
    b_Muon_isLoose->GetEntry(entry);   //!
    b_Muon_isMedium->GetEntry(entry);   //!
    b_Muon_nGenMatch->GetEntry(entry);   //!
+   //std::cout << " getBranches 7" << std::endl;
    b_Muon_nMuons->GetEntry(entry);   //!
    b_Muon_nPrompt->GetEntry(entry);   //!
    b_Muon_nSelMuons->GetEntry(entry);   //!
    b_Muon_nSVMatched->GetEntry(entry);   //!
+   //std::cout << " getBranches 7" << std::endl;
    b_Muon_passPrompt->GetEntry(entry);   //!
    b_Muon_hasSVMatch->GetEntry(entry);   //!
    b_Muon_isTight->GetEntry(entry);   //!
 
+   //std::cout << " getBranches 7.5" << std::endl;
    b_Met_CPt->GetEntry(entry);   //!
    b_Met_Cpx->GetEntry(entry);   //!
    b_Met_Cpy->GetEntry(entry);   //!
@@ -2215,6 +2237,7 @@ void llpgtree::getBranches( Long64_t entry, bool doGenInfo ){
    b_Met_py->GetEntry(entry);   //!
    b_Met_sumEt->GetEntry(entry);   //!
 
+   //std::cout << " getBranches 8" << std::endl;
    b_Photon_ecalRHSumEtConeDR04->GetEntry(entry);   //!
    b_Photon_energy->GetEntry(entry);   //!
    b_Photon_energyErr->GetEntry(entry);   //!
@@ -2262,6 +2285,7 @@ void llpgtree::getBranches( Long64_t entry, bool doGenInfo ){
    b_Photon_sieip->GetEntry(entry);   //!
    b_Photon_sipip->GetEntry(entry);   //!
 
+   //std::cout << " getBranches 9" << std::endl;
    b_Track_absIso->GetEntry(entry);   //!
    b_Track_charge->GetEntry(entry);   //!
    b_Track_chi2->GetEntry(entry);   //!

@@ -298,8 +298,8 @@ void HistMaker::eventLoop( Long64_t entry ){
 	int cs = ( cutselection == 0 ) ? 0 : 1;
 
     //auto dskey  = *DataSetKey
-    //float evtgwt = evtGenWgt;
-    float evtgwt = 1;
+    float evtgwt = evtGenWgt;
+    //float evtgwt = 1;
     float scale = 400;
     std::string configKey(*DataSetKey);
     float xsec = (configInfo[configKey])["sCrossSection"];

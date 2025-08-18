@@ -29,8 +29,8 @@ int main ( int argc, char *argv[] ){
 				bool doSV = false; // ( must have a sig pho or a sv ) + base selection - loads photons in rjr
                 //bool genSigPerfect = true;
                 bool genSigPerfect = false;
-                bool hasGenInfo = true;
-                //bool hasGenInfo = false;
+                //bool hasGenInfo = true;
+                bool hasGenInfo = false;
                 ////const std::string infilename = "KUCMS_Ntuple_Master_BG_Files_List.txt"; genSigPerfect = false;
 				//const std::string infilename = "KUCMS_Ntuple_Master_DataPD_Files_List.txt"; hasGenInfo = false;
                 //const std::string infilename = "KUCMS_Ntuple_Master_DEG_Files_List.txt"; hasGenInfo = false;

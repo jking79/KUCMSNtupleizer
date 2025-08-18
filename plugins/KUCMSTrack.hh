@@ -239,7 +239,7 @@ void KUCMSTrackObject::LoadEvent( const edm::Event& iEvent, const edm::EventSetu
 
     if( TrackDEBUG ) std::cout << "Collecting Tracks" << std::endl;
 
-	float ptmin = 5.0;
+	float ptmin = 0.0;
 	prmtTracks.clear();
     isGenTrack.clear();
 	detIdInfo.clear();
@@ -294,6 +294,7 @@ void KUCMSTrackObject::ProcessEvent( ItemManager<float>& geVar ){
 	float rilepmax = 0.05;
     //float rilepmax = 0.1;
     //float rilepmax = 0.2;
+    float trkptmin = 5.0;
 	float isoptmin = 20.0;
 	for( const auto &track : prmtTracks ){
 
@@ -321,6 +322,26 @@ void KUCMSTrackObject::ProcessEvent( ItemManager<float>& geVar ){
 		//float beta = track.beta();
 		float p = track.p();
 		int charge = track.charge();
+
+        std::vector<DetId> ecalDetIDs = detIdInfo[trackIndx].crossedEcalIds;
+        std::vector<uInt> ecalRawIds;
+        std::vector<int> scIndex{-9};
+        if( ecalDetIDs.size() > 0 ){
+            for( auto & id : ecalDetIDs ){ ecalRawIds.push_back( id.rawId() ); }
+            scIndex = rhObj->getSuperClusterIndex( ecalRawIds, trackIndx );
+        }//<<>>if( ecalDetIDs.size() > 0 )
+
+		if( ( scIndex[0] < 0 ) && ( pt < trkptmin ) ) continue;
+        Branches.fillBranch("ecalDetIds", ecalRawIds );
+        Branches.fillBranch("scIndex", scIndex );
+
+        std::vector<DetId> hcalDetIDs = detIdInfo[trackIndx].crossedHcalIds;
+        std::vector<uInt> hcalRawIds;
+        if( hcalDetIDs.size() > 0 ){
+            for( auto & id : hcalDetIDs ){ hcalRawIds.push_back( id.rawId() ); }
+        }//<<>>if( ecalDetIDs.size() > 0 )
+        Branches.fillBranch("hcalDetIds", hcalRawIds );
+
 
         polarP4.SetCoordinates( pt, eta, phi, m);
         pat::PFIsolation pfIso;
@@ -392,23 +413,6 @@ void KUCMSTrackObject::ProcessEvent( ItemManager<float>& geVar ){
         Branches.fillBranch("qualityMask", int(track.qualityMask()) );
         Branches.fillBranch("nValidHits", int(track.numberOfValidHits()) );
         Branches.fillBranch("nLostHits", int(track.numberOfLostHits()) );
-
-		std::vector<DetId> ecalDetIDs = detIdInfo[trackIndx].crossedEcalIds;
-		std::vector<uInt> ecalRawIds;
-		std::vector<int> scIndex{-9};
-		if( ecalDetIDs.size() > 0 ){
-			for( auto & id : ecalDetIDs ){ ecalRawIds.push_back( id.rawId() ); }
-			scIndex = rhObj->getSuperClusterIndex( ecalRawIds, trackIndx );
-		}//<<>>if( ecalDetIDs.size() > 0 )
-    	Branches.fillBranch("ecalDetIds", ecalRawIds );
-        Branches.fillBranch("scIndex", scIndex );
-
-        std::vector<DetId> hcalDetIDs = detIdInfo[trackIndx].crossedHcalIds;
-        std::vector<uInt> hcalRawIds;
-        if( hcalDetIDs.size() > 0 ){
-            for( auto & id : hcalDetIDs ){ hcalRawIds.push_back( id.rawId() ); }
-        }//<<>>if( ecalDetIDs.size() > 0 )
-    	Branches.fillBranch("hcalDetIds", hcalRawIds );
 
     }//<<>>for(const auto &track : *generalTracksHandle_ )
 
