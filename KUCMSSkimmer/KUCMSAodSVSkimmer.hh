@@ -16,10 +16,14 @@
 #include "RestFrames/RestFrames.hh"
 //#include "BayesianClustering/BayesianClustering.hh"
 
+//#include "KUCMSHelperBaseClass.hh"
+//#include "KUCMSRootHelperBaseClass.hh"
 #include "KUCMSHelperFunctions.hh"
 #include "KUCMSRootHelperFunctions.hh"
-#include "ecal_config/KUCMSEcalDetIDFunctions.hh"
-//#include "ecal_config/KUCMSTimeCalibration.hh"
+
+
+#include "KUCMSEcalDetIDFunctions.hh"
+//#include "KUCMSTimeCalibration.hh"
 
 #include "KUCMSNtuple_base_v30.h"
 //#include "KUCMSNtuple_base_noSV_v30.h"

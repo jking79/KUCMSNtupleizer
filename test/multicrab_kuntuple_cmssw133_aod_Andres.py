@@ -82,7 +82,7 @@ def docrab( dataset ):
 
         config.section_("Site")
         #config.Site.whitelist = ['T1_*','T2_US_*','T2_IT_*','T2_DE_*','T2_ES_*','T2_FR_*','T2_UK_*']
-        config.Site.blacklist = ['T2_CH_CSCS']
+        config.Site.blacklist = ['T2_CH_CSCS','T2_ES_CIEMAT']
 
         config.Data.partialDataset = True
         config.Data.inputDataset   = None
