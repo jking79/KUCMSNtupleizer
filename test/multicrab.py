@@ -57,7 +57,7 @@ def main():
             except :
                     print ("Command not executed")
         else :
-            print ("Executing (the equivalent of): crab %s %s %s" %(options.crabCmd, task, options.crabCmdOptions))
+            print ("Executing ( runtime 2280 ): crab %s %s %s" %(options.crabCmd, task, options.crabCmdOptions))
             os.system('crab resubmit ' + task + ' --maxjobruntime 2280' )
 
 if __name__ == '__main__':

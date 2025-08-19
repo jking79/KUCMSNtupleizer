@@ -255,8 +255,8 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
         initHists();
         setOutputBranches(fOutTree);
 
-        SetupDetIDsEB(DetIDMap);
-        SetupDetIDsEE(DetIDMap);
+        SetupDetIDsEB_(DetIDMap);
+        SetupDetIDsEE_(DetIDMap);
 
         startJobs(); // clear && init count varibles
 
@@ -487,7 +487,7 @@ void KUCMSAodSkimmer::processEvntVars(){
     selEvtVars.fillBranch( "evtXSection", xsctn );
 
 	float fillWgt = ( ( xsctn * 1000 ) * evtGenWgt  ) / configWgts["sumEvtWgt"];
-	selEvtVars.fillBranch( "fillwgt", fillWgt );
+	selEvtVars.fillBranch( "evtFillWgt", fillWgt );
 
 	// SVs
 	if( DEBUG ) std::cout << "Finding SV Vars" << std::endl;
@@ -2003,7 +2003,7 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
 
     selEvtVars.makeBranch( "evtGenWgt", FLOAT );
     selEvtVars.makeBranch( "evtXSection", FLOAT );
-    selEvtVars.fillBranch( "evtFillWgt", FLOAT );
+    selEvtVars.makeBranch( "evtFillWgt", FLOAT );
 
     selEvtVars.makeBranch( "PVx", FLOAT );
     selEvtVars.makeBranch( "PVy", FLOAT );

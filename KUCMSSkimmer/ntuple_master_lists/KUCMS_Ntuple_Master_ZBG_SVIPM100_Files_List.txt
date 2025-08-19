@@ -2,7 +2,7 @@
 # Skim input BG MC
 ###################
 
-#KUCMSNtuple/kucmsntuple_GJets_R18_SVIPM100_v30/ kucmsntuple_GJets_R18_IPM100_v30_GJets_HT-100To200_v29.txt test 8639 0 0 1 0
+KUCMSNtuple/kucmsntuple_GJets_R18_SVIPM100_v30/ kucmsntuple_GJets_R18_IPM100_v30_GJets_HT-100To200_v29.txt test 8639 0 0 1 0
 #kucmsntuple_GJets_R18_SVIPM100_v30_GJets_HT-400To600_v29.txt
 #kucmsntuple_GJets_R18_SVIPM100_v30_GJets_HT-40To100_v29.txt
 #kucmsntuple_GJets_R18_SVIPM100_v30_GJets_HT-600ToInf_v29.txt
