@@ -1113,7 +1113,7 @@ inline void KUCMSTimeCalibration::makeCaliMaps(){
 
 }//<<>>void KUCMSTimeCalibration::makeCaliMaps()
 
-void KUCMSTimeCalibration::LoadExtCali( std::string calihist, std::string mapname, std::string tag, int startr, int endr ){
+inline void KUCMSTimeCalibration::LoadExtCali( std::string calihist, std::string mapname, std::string tag, int startr, int endr ){
 
     std::cout << " - Loading External Cali Map : " << mapname << std::endl;
 	//std::cout << " --- found : " << tfilename << std::endl;

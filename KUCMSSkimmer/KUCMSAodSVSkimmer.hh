@@ -14,7 +14,7 @@
 #include "KUCMSBranchManager2.hh"
 
 #include "RestFrames/RestFrames.hh"
-//#include "BayesianClustering/BayesianClustering.hh"
+#include "BayesianClustering/BayesianClustering.hh"
 
 //#include "KUCMSHelperBaseClass.hh"
 //#include "KUCMSRootHelperBaseClass.hh"

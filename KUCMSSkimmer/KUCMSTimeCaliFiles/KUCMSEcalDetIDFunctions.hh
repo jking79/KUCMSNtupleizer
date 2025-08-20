@@ -50,7 +50,7 @@ struct DetIDStruct {
 
 };//<<>>struct DetIDStruct
 
-void SetupDetIDsEB_( std::map<UInt_t,DetIDStruct> &DetIDMap ){
+inline void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap ){
 
 	const std::string inDir("/uscms/home/jaking/nobackup/el8/ecaltiming/CMSSW_14_0_11/src/GammaResTool/GammaResTool/macros/ecal_config/");
     const std::string detIDConfigEB("fullinfo_v2_detids_EB.txt");
@@ -69,7 +69,7 @@ void SetupDetIDsEB_( std::map<UInt_t,DetIDStruct> &DetIDMap ){
 
 }//<<>>void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap )
 
-void SetupDetIDsEE_( std::map<UInt_t,DetIDStruct> &DetIDMap ){
+inline void SetupDetIDsEE( std::map<UInt_t,DetIDStruct> &DetIDMap ){
 
     const std::string inDir("/uscms/home/jaking/nobackup/el8/ecaltiming/CMSSW_14_0_11/src/GammaResTool/GammaResTool/macros/ecal_config/");
     const std::string detIDConfigEE("fullinfo_v2_detids_EE.txt");

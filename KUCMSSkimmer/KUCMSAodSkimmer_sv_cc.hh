@@ -255,8 +255,8 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
         initHists();
         setOutputBranches(fOutTree);
 
-        SetupDetIDsEB_(DetIDMap);
-        SetupDetIDsEE_(DetIDMap);
+        SetupDetIDsEB(DetIDMap);
+        SetupDetIDsEE(DetIDMap);
 
         startJobs(); // clear && init count varibles
 
@@ -565,6 +565,9 @@ void KUCMSAodSkimmer::processRechits(){
     if( DEBUG ) std::cout << "Finding rechits" << std::endl;
 	//------------ rechits -------------------------
 
+	BayesPoint vtx();	
+
+	std::vector<Jet> jetrhs;
     auto nRecHits = ECALRecHit_ID->size();
     if( DEBUG ) std::cout << " -- Looping over " << nRecHits << " rechits" << std::endl;
     for( int it = 0; it < nRecHits; it++ ){
@@ -582,7 +585,40 @@ void KUCMSAodSkimmer::processRechits(){
 
 		}//<<>>if( (*rhSubdet)[it] == 0 )
 
+		float rhe = (*ECALRecHit_energy)[it];
+		float rhx = (*ECALRecHit_rhx)[it];
+        float rhy = (*ECALRecHit_rhy)[it];
+        float rhz = (*ECALRecHit_rhz)[it];
+		float rht = (*ECALRecHit_time)[it];
+		float rheta = (*ECALRecHit_eta)[it];
+        float rhphi = (*ECALRecHit_phi)[it];
+		uInt rhid = (*ECALRecHit_ID)[it];
+
+		JetPoint jrh( rhx, rhy, rhz, rht ); //in nutple units
+		//I also do a cut on rh time to only keep rhs with -20 ns < rh time < 20 ns
+		jrh.SetEnergy(rhe);
+		jrh.SetEta(rheta);
+		jrh.SetPhi(rhphi);
+		jrh.SetWeight(rhe*0.25); //where _gev is some fraction (I have it at 0.25 for now)
+		jrh.SetRecHitId(rhid);
+		//can add to a larger, Jet object (like a photon or supercluster) and call photon.GetJets(rhs) to get these rhs as “Jet” objects
+		//or can recast them here as Jets with the line below
+		Jet jet(jrh);
+		jetrhs.push_back(jet);
+
 	}//<<>>for( int it = 0; it < nRecHits; it++ )
+
+	BayesCluster *algo = new BayesCluster(rhs);
+	GaussianMixture* gmm = algo->SubCluster();
+	int nclusters = gmm->GetNClusters();
+	for(int k = 0; k < nclusters; k++){
+		map<string, Matrix> params = gmm->GetLHPosteriorParameters(k);
+		double ec = params["mean"].at(0,0); //eta center of subcluster
+		double pc = params["mean"].at(1,0); //phi center of subcluster
+		double tc = params["mean"].at(2,0); //time center of subcluster
+		Matrix cov = params["cov"]; //3x3 covariance matrix of subcluster 
+	}//<<>>for(int k = 0; k < nclusters; k++)
+	delete algo;
 
     int nMissingRechits = 0;
 	auto nSCs = SuperCluster_nSuperCluster;
