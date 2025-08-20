@@ -496,6 +496,8 @@ void KUCMSAodSkimmer::processEvntVars(){
 	if( doEVSVs )  nSVs = Vertex_mass->size();
 	int nLsv = 0;
 	int nHsv = 0;
+	int nEle = 0;
+	int nMuon = 0;
 
 	if( doEVSVs ){
 	for( int svit = 0; svit < nSVs; svit++ ){
@@ -505,14 +507,32 @@ void KUCMSAodSkimmer::processEvntVars(){
         bool peleid = (*Vertex_passLooseElectronID)[svit];
         bool pmuonid = (*Vertex_passLooseMuonID)[svit];
 
-		if( ( ntrack == 2 ) && ( peleid || pmuonid ) ) nLsv++;
-		if( ( ntrack >= 5 ) && ( mass/ntrack > 1 ) ) nHsv++;
+	if(ntrack == 2) {
+	  if( peleid || pmuonid ) nLsv++;
+	  if(peleid) nEle++;
+	  if(pmuonid) nMuon++;
+	}
+	if( ( ntrack >= 5 ) && ( mass/ntrack > 1 ) ) nHsv++;
 
+	const float p((*Vertex_p)[svit]), dxy((*Vertex_dxy)[svit]), dxyError((*Vertex_dxyError)[svit]),
+                cosTheta((*Vertex_cosTheta)[svit]), decayAngle((*Vertex_decayAngle)[svit]);
+
+	selEvtVars.fillBranch( "SV_nTracks", int(ntrack));
+	selEvtVars.fillBranch( "SV_mass", mass);
+	selEvtVars.fillBranch( "SV_pOverE", float(p/sqrt(p*p + mass*mass)));
+	selEvtVars.fillBranch( "SV_decayAngle", decayAngle);
+	selEvtVars.fillBranch( "SV_cosTheta", cosTheta);
+	selEvtVars.fillBranch( "SV_massOverNtracks", mass/ntrack);
+	selEvtVars.fillBranch( "SV_dxy", dxy);
+	selEvtVars.fillBranch( "SV_dxySig", dxy/dxyError);
 	}//<<>>for( svit = 0; svit < nSVs; scit++ )
 	}//<<>>if( doSVs )
 
 	selEvtVars.fillBranch( "SV_nLeptonic", nLsv );
 	selEvtVars.fillBranch( "SV_nHadronic", nHsv );
+	selEvtVars.fillBranch( "SV_nElectron", nEle );
+	selEvtVars.fillBranch( "SV_nMuon", nMuon );
+	
 	geVars.set("nSVLep", nLsv );
 	geVars.set("nSVHad", nHsv );
 
@@ -2053,9 +2073,20 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     selEvtVars.makeBranch( "PVy", FLOAT );
     selEvtVars.makeBranch( "PVz", FLOAT );
 
+    selEvtVars.makeBranch( "SV_nTracks", VINT);
+    selEvtVars.makeBranch( "SV_pOverE", VFLOAT);
+    selEvtVars.makeBranch( "SV_decayAngle", VFLOAT);
+    selEvtVars.makeBranch( "SV_cosTheta", VFLOAT);
+    selEvtVars.makeBranch( "SV_mass", VFLOAT);
+    selEvtVars.makeBranch( "SV_massOverNtracks", VFLOAT);
+    selEvtVars.makeBranch( "SV_dxy", VFLOAT);
+    selEvtVars.makeBranch( "SV_dxySig", VFLOAT);
+    
     selEvtVars.makeBranch( "SV_nLeptonic", INT );
     selEvtVars.makeBranch( "SV_nHadronic", INT );
-
+    selEvtVars.makeBranch( "SV_nElectron", INT );
+    selEvtVars.makeBranch( "SV_nMuon", INT );
+    
     selEvtVars.makeBranch( "Flag_BadChargedCandidateFilter", BOOL );
     selEvtVars.makeBranch( "Flag_BadPFMuonDzFilter", BOOL );
     selEvtVars.makeBranch( "Flag_BadPFMuonFilter", BOOL );
