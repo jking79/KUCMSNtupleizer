@@ -92,8 +92,8 @@ def docrab( dataset ):
         #config.Data.unitsPerJob  =  10
         #config.Data.unitsPerJob  =  4 # File based : Wjets 70,100,200
         #config.Data.unitsPerJob  =  3 # File based : QCD 4 - EGamma 3
-        config.Data.unitsPerJob  =  2 # File based : Wjets 400+
-        #config.Data.unitsPerJob  =  1
+        #config.Data.unitsPerJob  =  2 # File based : Wjets 400+
+        config.Data.unitsPerJob  =  1
         #config.Data.splitting    = 'EventAwareLumiBased' # MC&Data Set unitsperjob correctly for dataset !!!!!!!!!!!!!!!!!!!!!!!!!!
         #config.Data.unitsPerJob   = 72500 # data  !!!!!! lumimask ?
         #config.Data.splitting    = 'LumiBased'
@@ -149,8 +149,8 @@ def docrab( dataset ):
             #trial          = "kucmsntuple_TTXJets_R18_SVIPM100_v31" #
             #trial          = "kucmsntuple_GJets_R18_SVIPM100_v31"
             #trial          = "kucmsntuple_QCD_R18_SVIPM100_v31"
-            #trial          = "kucmsntuple_ZJets_R18_SVIPM100_v31"
-            trial          = "kucmsntuple_WJets_R18_SVIPM100_v31"
+            trial          = "kucmsntuple_ZJets_R18_SVIPM100_v30"
+            #trial          = "kucmsntuple_WJets_R18_SVIPM100_v31"
             #trial          = "kucmsntuple_WZDYX_R18_SVIPM100_v31" 
             #trial          = "kucmsntuple_DiPJBox_R18_SVIPM100_v31"  
 
@@ -267,13 +267,13 @@ def run_multi():
         #['/WJetsToLNu_HT-100To200_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext1-v3/AODSIM'],
         #['/WJetsToLNu_HT-200To400_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext1-v3/AODSIM'],
         #['/WJetsToLNu_HT-400To600_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext2-v3/AODSIM'],
-        ['/WJetsToLNu_HT-600To800_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext2-v3/AODSIM'],
+        #['/WJetsToLNu_HT-600To800_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext2-v3/AODSIM'],
         #['/WJetsToLNu_HT-800To1200_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext2-v3/AODSIM'],
         #['/WJetsToLNu_HT-1200To2500_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext2-v3/AODSIM'],
         #['/WJetsToLNu_HT-2500ToInf_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext2-v3/AODSIM'],
 
         #['/ZJetsToNuNu_HT-100To200_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM'],
-        #['/ZJetsToNuNu_HT-200To400_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM'],
+        ['/ZJetsToNuNu_HT-200To400_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM'],
         #['/ZJetsToNuNu_HT-400To600_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM'],
         #['/ZJetsToNuNu_HT-600To800_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM'],
         #['/ZJetsToNuNu_HT-800To1200_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM'],

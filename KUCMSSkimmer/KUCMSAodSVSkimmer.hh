@@ -22,8 +22,8 @@
 #include "KUCMSRootHelperFunctions.hh"
 
 
-#include "KUCMSEcalDetIDFunctions.hh"
-//#include "KUCMSTimeCalibration.hh"
+//#include "KUCMSEcalDetIDFunctions.hh"
+#include "KUCMSTimeCalibration.hh"
 
 #include "KUCMSNtuple_base_v30.h"
 //#include "KUCMSNtuple_base_noSV_v30.h"
@@ -103,8 +103,8 @@ class KUCMSAodSkimmer : public llpgtree {
 
     // aod skimmer helper functions & varibles
 
-    std::map<UInt_t,DetIDStruct> DetIDMap;
-	//KUCMSTimeCalibration* timeCali;
+    //std::map<UInt_t,DetIDStruct> DetIDMap;
+	KUCMSTimeCalibration* timeCali;
 
     int getRhIdx( uInt rhDetID );
     uInt getLeadRhID( std::vector<uInt> recHitIds );

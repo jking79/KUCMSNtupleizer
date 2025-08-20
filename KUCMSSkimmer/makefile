@@ -4,7 +4,12 @@
 #
 #################################################3
 
-export $LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/BayesianClustering/lib
+############################################################################################3
+#
+#  Need to place the following line into your bash_profile or run from command line
+#  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/BayesianClustering/lib
+#
+###############################################################3
 
 RTCFLAGS = $(shell root-config --cflags)
 RTGLIBS = $(shell root-config --glibs)
