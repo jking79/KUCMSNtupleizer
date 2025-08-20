@@ -51,9 +51,14 @@
 
 class KUCMSRootHelperBaseClass : public KUCMSHelperBaseClass {
 
+	private:
+
+	bool rootHelperUsed;
+
+
 	public:
 
-	//KUCMSRootHelperBaseClass(){};
+	KUCMSRootHelperBaseClass(){ rootHelperUsed = true; };
 	//~KUCMSRootHelperBaseClass(){};
 
 	void fillTH1( float val, TH1F* hist ){

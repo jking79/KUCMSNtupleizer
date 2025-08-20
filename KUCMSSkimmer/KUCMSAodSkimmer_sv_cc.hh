@@ -132,13 +132,13 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 	}//<<>>treeplot on off
 
     // Cali Tags : Tags for calibrations to use 
-    //std::string r2EOY( "EG_EOY_MINI" ); 
-    //std::string r2Fall17AOD( "RunIIFall17DRPremix" ); 
-    //std::string r2Fall17MINIAOD( "RunIIFall17MiniAODv2" ); 
-    //std::string r2UL( "UL_R2_MINI" ); 
+    std::string r2EOY( "EG_EOY_MINI" ); 
+    std::string r2Fall17AOD( "RunIIFall17DRPremix" ); 
+    std::string r2Fall17MINIAOD( "RunIIFall17MiniAODv2" ); 
+    std::string r2UL( "UL_R2_MINI" ); 
 
-	//timeCali = new KUCMSTimeCalibration();
-	//timeCali->setTag(r2UL);
+	timeCali = new KUCMSTimeCalibration();
+	timeCali->setTag(r2UL);
 
 }//<<>>KUCMSAodSkimmer::KUCMSAodSkimmer()
 
@@ -167,7 +167,7 @@ KUCMSAodSkimmer::~KUCMSAodSkimmer(){
     delete CombSplit_Ja;
     delete CombSplit_Jb;
 
-	//delete timeCali;
+	delete timeCali;
       
 }//<<>>KUCMSAodSkimmer::~KUCMSAodSkimmer()
 
@@ -255,8 +255,8 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
         initHists();
         setOutputBranches(fOutTree);
 
-        SetupDetIDsEB_(DetIDMap);
-        SetupDetIDsEE_(DetIDMap);
+        //SetupDetIDsEB(DetIDMap);
+        //SetupDetIDsEE(DetIDMap);
 
         startJobs(); // clear && init count varibles
 
@@ -585,6 +585,9 @@ void KUCMSAodSkimmer::processRechits(){
     if( DEBUG ) std::cout << "Finding rechits" << std::endl;
 	//------------ rechits -------------------------
 
+	BayesPoint vtx(1);	
+
+	std::vector<Jet> jetrhs;
     auto nRecHits = ECALRecHit_ID->size();
     if( DEBUG ) std::cout << " -- Looping over " << nRecHits << " rechits" << std::endl;
     for( int it = 0; it < nRecHits; it++ ){
@@ -602,7 +605,48 @@ void KUCMSAodSkimmer::processRechits(){
 
 		}//<<>>if( (*rhSubdet)[it] == 0 )
 
+		float rhe = (*ECALRecHit_energy)[it];
+		float rhx = (*ECALRecHit_rhx)[it];
+        float rhy = (*ECALRecHit_rhy)[it];
+        float rhz = (*ECALRecHit_rhz)[it];
+		float rht = (*ECALRecHit_time)[it];
+		float rheta = (*ECALRecHit_eta)[it];
+        float rhphi = (*ECALRecHit_phi)[it];
+		uInt rhid = (*ECALRecHit_ID)[it];
+		//auto idinfo = timeCali->getDetIdInfo(rhid);
+		//std::cout << " -- TimeCali DetIDInfo : " << idinfo.i2 << " " << idinfo.i1 << " " << idinfo.ecal << std::endl;
+
+/*
+		JetPoint jrh( rhx, rhy, rhz, rht ); //in nutple units
+		//I also do a cut on rh time to only keep rhs with -20 ns < rh time < 20 ns
+		jrh.SetEnergy(rhe);
+		jrh.SetEta(rheta);
+		jrh.SetPhi(rhphi);
+		jrh.SetWeight(rhe*0.25); //where _gev is some fraction (I have it at 0.25 for now)
+		jrh.SetRecHitId(rhid);
+		//can add to a larger, Jet object (like a photon or supercluster) and call photon.GetJets(rhs) to get these rhs as “Jet” objects
+		//or can recast them here as Jets with the line below
+		Jet jet( jrh, vtx );
+		jetrhs.push_back(jet);
+*/
+
 	}//<<>>for( int it = 0; it < nRecHits; it++ )
+
+/*
+	//std::cout << " -- Running BayesCluster :" << std::endl;
+	BayesCluster *algo = new BayesCluster(jetrhs);
+	GaussianMixture* gmm = algo->SubCluster();
+	int nclusters = gmm->GetNClusters();
+	for(int k = 0; k < nclusters; k++){
+		map<string, Matrix> params = gmm->GetLHPosteriorParameters(k);
+		double ec = params["mean"].at(0,0); //eta center of subcluster
+		double pc = params["mean"].at(1,0); //phi center of subcluster
+		double tc = params["mean"].at(2,0); //time center of subcluster
+		Matrix cov = params["cov"]; //3x3 covariance matrix of subcluster 
+		//std::cout << " --- BayesCluster " << k << " ec " << ec << " pc " << pc << " tc " << tc << std::endl;
+	}//<<>>for(int k = 0; k < nclusters; k++)
+	delete algo;
+*/
 
     int nMissingRechits = 0;
 	auto nSCs = SuperCluster_nSuperCluster;
@@ -2541,7 +2585,8 @@ std::vector<float> KUCMSAodSkimmer::getRhGrpEigenFromAngles( std::vector<uInt> r
     for( uInt it(0); it < nRecHits; it++ ){
 
         const auto rhIDX = getRhIdx(rechitids[it]);
-        auto idinfo = DetIDMap[rechitids[it]];
+        //auto idinfo = DetIDMap[rechitids[it]];
+		auto idinfo = timeCali->getDetIdInfo(rechitids[it]);
         auto isEB = idinfo.ecal == ECAL::EB;
         if( rhIDX == -1 ){ if( verbose ) std::cout << " ---- Bad idx !!!!! -- In getRhGrpEigen ---- " << std::endl; return emptyReturn; }
         if( not isEB ){ if( verbose ) std::cout << " ---- rechit group has EE members " << idinfo.ecal << std::endl; return emptyReturn; }

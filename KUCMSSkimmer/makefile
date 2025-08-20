@@ -4,24 +4,32 @@
 #
 #################################################3
 
-export $LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/BayesianClustering/lib
-
+############################################################################################3
+#
+#  Need to place the following line into your bash_profile or run from command line
+#  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/BayesianClustering/lib
+#
+###############################################################3
 
 RTCFLAGS = $(shell root-config --cflags)
 RTGLIBS = $(shell root-config --glibs)
 
-RFCFLAGS    = $(shell restframes-config --cxxflags)
-RFGLIBS     = $(shell restframes-config --libs)
+RFCFLAGS = $(shell restframes-config --cxxflags)
+RFGLIBS = $(shell restframes-config --libs)
+
+GLIBS += -L/cvmfs/cms.cern.ch/el8_amd64_gcc11/external/boost/1.80.0-0eec8fa902b6ad913364ef1d6ac9c8d0/lib/ -lboost_thread
+GLIBS += -L/cvmfs/cms.cern.ch/el8_amd64_gcc11/external/gmp-static/6.2.1-b661550d99fe45fff5976e08ec5e3b5f/lib/ -lgmp
 
 BCFLAGS += -I/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/BayesianClustering/include -frounding-math
-BCGLIBS += -L/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/BayesianClustering/lib -lBayesianClusteringi
+BCFLAGS += -I/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/CGAL-5.6.1/include
+BCFLAGS += -I/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/frugally-deep-master/include
+BCFLAGS += -I/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/eigen
+BCFLAGS += -I/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/FunctionalPlus-master/include
 
-HHFLAGS += -I/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/interface
+BCGLIBS += -L/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/BayesianClustering/lib -lBayesianClustering
+BCGLIBS += $(GLIBS)
 
-CGFLAGS += -I/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/CGAL-5.6.1/include
-FDFLAGS += -I/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/frugally-deep-master/include
-EGFLAGS += -I/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/eigen
-FPFLAGS += -I/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/FunctionalPlus-master/include
+TCFLAGS += -I/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSTimeCaliFiles
 
 CC=g++
 
@@ -31,7 +39,7 @@ p2=spaceholder
 all: $(p1) 
 
 $(p1): $(p1).cpp
-	$(CC) -o $(p1).obj $(p1).cpp $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS)  
+	$(CC) -o $(p1).obj $(p1).cpp $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS) $(BCGLIBS)  
 
 $(p2): $(p2).cpp
 	$(CC) -o $(p2).obj $(p2).cpp $(RTCFLAGS) $(RTGLIBS)

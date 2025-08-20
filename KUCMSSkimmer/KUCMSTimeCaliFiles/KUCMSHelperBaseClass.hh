@@ -54,9 +54,14 @@ typedef const std::vector<double> CVDbl;
 
 class KUCMSHelperBaseClass {
 
+	private :
+
+	bool helperUsed;
+
+
 	public :
 
-	//KUCMSHelperBaseClass(){};
+	KUCMSHelperBaseClass(){ helperUsed = true; };
 	//~KUCMSHelperBaseClass(){};
 
 	//auto sortByPt = [](auto & obj1, auto & obj2) {return obj1.pt() > obj2.pt();};
