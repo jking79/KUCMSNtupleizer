@@ -67,6 +67,8 @@ def docrab( dataset ):
         inputJSON    = 'Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt'
         #inputJSON    = 'Cert_Collisions2022_355100_362760_Golden.json'	
 
+        filespjob = int(dataset[1])
+
         #--------------------------------------------------------
         # This is the base config:
         #--------------------------------------------------------
@@ -89,11 +91,12 @@ def docrab( dataset ):
         #config.Data.lumiMask       = inputJSON    # Comment out for MC only set for data !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         #config.Data.splitting     = 'Automatic' # data
         config.Data.splitting = 'FileBased' # Justin
+        config.Data.unitsPerJob  =  filespjob
         #config.Data.unitsPerJob  =  10
         #config.Data.unitsPerJob  =  4 # File based : Wjets 70,100,200
         #config.Data.unitsPerJob  =  3 # File based : QCD 4 - EGamma 3
         #config.Data.unitsPerJob  =  2 # File based : Wjets 400+
-        config.Data.unitsPerJob  =  1
+        #config.Data.unitsPerJob  =  1
         #config.Data.splitting    = 'EventAwareLumiBased' # MC&Data Set unitsperjob correctly for dataset !!!!!!!!!!!!!!!!!!!!!!!!!!
         #config.Data.unitsPerJob   = 72500 # data  !!!!!! lumimask ?
         #config.Data.splitting    = 'LumiBased'
@@ -149,8 +152,8 @@ def docrab( dataset ):
             #trial          = "kucmsntuple_TTXJets_R18_SVIPM100_v31" #
             #trial          = "kucmsntuple_GJets_R18_SVIPM100_v31"
             #trial          = "kucmsntuple_QCD_R18_SVIPM100_v31"
-            trial          = "kucmsntuple_ZJets_R18_SVIPM100_v30"
-            #trial          = "kucmsntuple_WJets_R18_SVIPM100_v31"
+            #trial          = "kucmsntuple_ZJets_R18_SVIPM100_v30"
+            trial          = "kucmsntuple_WJets_R18_SVIPM100_v31"
             #trial          = "kucmsntuple_WZDYX_R18_SVIPM100_v31" 
             #trial          = "kucmsntuple_DiPJBox_R18_SVIPM100_v31"  
 
@@ -184,6 +187,7 @@ def docrab( dataset ):
             efilter = fSVIPM100 #!!!!!!!!!!!!!!!!
             print( 'using :', efilter )
             print( 'using :', geninfo )
+            print( 'with files/job :', filespjob )
 
 #  -------  selsect PD/MC dependent paramters
 #---DATA--------------------------------------------------------------------------------------------------------------------------
@@ -263,17 +267,17 @@ def run_multi():
         #['/EGamma/Run2018C-15Feb2022_UL2018-v1/AOD'],#72500 eventsperlumi   ( 36.1K per file - 4051 files )
         #['/EGamma/Run2018D-15Feb2022_UL2018-v1/AOD'],#72500 eventsperlumi
 
-        #['/WJetsToLNu_HT-70To100_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext1-v3/AODSIM'],
-        #['/WJetsToLNu_HT-100To200_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext1-v3/AODSIM'],
-        #['/WJetsToLNu_HT-200To400_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext1-v3/AODSIM'],
-        #['/WJetsToLNu_HT-400To600_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext2-v3/AODSIM'],
-        #['/WJetsToLNu_HT-600To800_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext2-v3/AODSIM'],
-        #['/WJetsToLNu_HT-800To1200_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext2-v3/AODSIM'],
-        #['/WJetsToLNu_HT-1200To2500_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext2-v3/AODSIM'],
-        #['/WJetsToLNu_HT-2500ToInf_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext2-v3/AODSIM'],
+        #['/WJetsToLNu_HT-70To100_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext1-v3/AODSIM',4],
+        #['/WJetsToLNu_HT-100To200_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext1-v3/AODSIM',4],
+        #['/WJetsToLNu_HT-200To400_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext1-v3/AODSIM',4],
+        #['/WJetsToLNu_HT-400To600_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext2-v3/AODSIM',1],
+        #['/WJetsToLNu_HT-600To800_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext2-v3/AODSIM',2],
+        ['/WJetsToLNu_HT-800To1200_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext2-v3/AODSIM',1],
+        ['/WJetsToLNu_HT-1200To2500_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext2-v3/AODSIM',2],
+        ['/WJetsToLNu_HT-2500ToInf_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext2-v3/AODSIM',2],
 
         #['/ZJetsToNuNu_HT-100To200_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM'],
-        ['/ZJetsToNuNu_HT-200To400_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM'],
+        #['/ZJetsToNuNu_HT-200To400_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM'],
         #['/ZJetsToNuNu_HT-400To600_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM'],
         #['/ZJetsToNuNu_HT-600To800_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM'],
         #['/ZJetsToNuNu_HT-800To1200_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM'],

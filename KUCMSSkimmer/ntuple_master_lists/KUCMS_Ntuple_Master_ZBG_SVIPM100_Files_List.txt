@@ -2,7 +2,7 @@
 # Skim input BG MC
 ###################
 
-KUCMSNtuple/kucmsntuple_GJets_R18_SVIPM100_v30/ kucmsntuple_GJets_R18_IPM100_v30_GJets_HT-100To200_v29.txt test 8639 0 0 1 0
+#KUCMSNtuple/kucmsntuple_GJets_R18_SVIPM100_v30/ kucmsntuple_GJets_R18_IPM100_v30_GJets_HT-100To200_v29.txt test 8639 0 0 1 0
 #kucmsntuple_GJets_R18_SVIPM100_v30_GJets_HT-400To600_v29.txt
 #kucmsntuple_GJets_R18_SVIPM100_v30_GJets_HT-40To100_v29.txt
 #kucmsntuple_GJets_R18_SVIPM100_v30_GJets_HT-600ToInf_v29.txt
@@ -37,6 +37,12 @@ KUCMSNtuple/kucmsntuple_GJets_R18_SVIPM100_v30/ kucmsntuple_GJets_R18_IPM100_v30
 ##KUCMSNtuple/kucmsntuple_WJetsToLNu_R18_IPM100_v24/ WJetsToLNu_HT-800To1200_R18_IPM100_v24.txt WJets-800To1200_R18_IPM100 4.926 0 0 1 0
 ##KUCMSNtuple/kucmsntuple_WJetsToLNu_R18_IPM100_v24/ WJetsToLNu_HT-1200To2500_R18_IPM100_v24.txt WJets-1200To2500_R18_IPM100 1.16 0 0 1 0
 ##KUCMSNtuple/kucmsntuple_WJetsToLNu_R18_IPM100_v24/ WJetsToLNu_HT-2500ToInf_R18_IPM100_v24.txt WJets-2500ToInf_R18_IPM100 0.026 0 0 1 0
+
+#KUCMSNtuple/kucmsntuple_GJets_R18_SVIPM100_v30/ GJets_R18_SVIPM100_v30_GJets_HT-100To200.txt GJets_HT-100To200_R18_IPM100 8639 0 0 1 0 
+#KUCMSNtuple/kucmsntuple_GJets_R18_SVIPM100_v30/ GJets_R18_SVIPM100_v30_GJets_HT-200To400.txt GJets_HT-200To400_R18_IPM100 2173 0 0 1 0
+#KUCMSNtuple/kucmsntuple_GJets_R18_SVIPM100_v30/ GJets_R18_SVIPM100_v30_GJets_HT-400To600.txt GJets_HT-400To600_R18_IPM100 260.7 0 0 1 0 
+#KUCMSNtuple/kucmsntuple_GJets_R18_SVIPM100_v30/ GJets_R18_SVIPM100_v30_GJets_HT-40To100.txt GJets_HT-40To100_R18_IPM100 18650 0 0 1 0 
+KUCMSNtuple/kucmsntuple_GJets_R18_SVIPM100_v30/ GJets_R18_SVIPM100_v30_GJets_HT-600ToInf.txt GJets_HT-600ToInf 86.55 0 0 1 0
 
 ##KUCMSNtuple/kucmsntuple_GJETS_R18_IPM100_v24/ GJets_HT-100To200_R18_IPM100_v24.txt GJets_HT-100To200_R18_IPM100 8639 0 0 1 0
 ##KUCMSNtuple/kucmsntuple_GJETS_R18_IPM100_v25/ GJets_HT-200To400_R18_IPM100_v25.txt GJets_HT-200To400_R18_IPM100 2173 0 0 1 0

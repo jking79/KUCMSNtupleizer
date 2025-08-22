@@ -38,15 +38,15 @@ int main ( int argc, char *argv[] ){
                 //const std::string infilename = "KUCMS_Ntuple_Master_ZBG_SVIPM100_Files_List.txt";
                 //const std::string infilename = "KUCMS_Ntuple_Master_GoGoZ_Files_List.txt";
                 //const std::string infilename = "KUCMS_Ntuple_Master_SqSqG_Files_List.txt";
-                //const std::string infilename = "KUCMS_Ntuple_Master_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
-				const std::string infilename = "KUCMS_Ntuple_Master_NtupleTest_Files_List.txt";
+                const std::string infilename = "KUCMS_Ntuple_Master_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
+				//const std::string infilename = "KUCMS_Ntuple_Master_NtupleTest_Files_List.txt";
 
                 //const std::string outfilename = "_LLPGskim_v21_rjrvars.root"; // skim v21 use new process_name tags 
                 //const std::string outfilename = "_LLPGskim_v22_rjrvars.root"; // skim v22 keeps 0 pho events 
                 //const std::string outfilename = "_LLPGskim_v23_rjrvars.root"; // fixed 2 sig pho events 
                 //const std::string outfilename = "_rjrskim_v26.root"; // jet veto on first 2 Sig Phos only
                 //const std::string outfilename = "_rjrskim_v27.root"; // SV matching & SVs & lepton veto
-                const std::string outfilename = "_rjrskim_v28.root"; // MET cleaning flags 
+                const std::string outfilename = "_rjrskim_v30a.root"; // MET cleaning flags 
 
                 int skipCnt = 0;// Normal
 				//int skipCnt = 10;// Met0 GMSB

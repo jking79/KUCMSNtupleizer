@@ -90,6 +90,8 @@ dl2016data = [
 ]
 
 
+
+
 dl2017mc = [
 
     '/GJets_HT-100To200_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL17RECO-4cores5k_106X_mc2017_realistic_v6-v2/AODSIM',
@@ -335,10 +337,25 @@ dl2018QCD = [
 
 ]
 
+dl201DiPho = [
+
+    '/DiPhotonJetsBox_M40_80-sherpa/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',
+    '/DiPhotonJetsBox_MGG-0to40_13TeV-sherpa/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v1/AODSIM',
+    '/DiPhotonJetsBox_MGG-1000to2000_13TeV-sherpa/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',
+    '/DiPhotonJetsBox_MGG-2000to4000_13TeV-sherpa/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',
+    '/DiPhotonJetsBox_MGG-200to500_13TeV-sherpa/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',
+    '/DiPhotonJetsBox_MGG-4000to8000_13TeV-sherpa/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',
+    '/DiPhotonJetsBox_MGG-500to1000_13TeV-sherpa/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',
+    '/DiPhotonJetsBox_MGG-8000toInf_13TeV-sherpa/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',
+    '/DiPhotonJetsBox_MGG-80to200_13TeV-sherpa/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',
+    '/DiPhotonJetsBox_MGG-80toInf_13TeV-sherpa/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',
+
+]
+
 #query = 'dasgoclient --json -query=\'dataset='
 query = 'dasgoclient --json -query=\'site dataset=' 
 
-datalist = dl2018QCD
+datalist = dl201DiPho
 
 for data in datalist :
     

@@ -25,20 +25,20 @@ int main ( int argc, char *argv[] ){
 
 				bool useEvtGenWgt = true;
                 //bool useEvtGenWgt = false;
-				//bool doSV = true; // only base selection - will not load phos in rjr
-				bool doSV = false; // ( must have a sig pho or a sv ) + base selection - loads photons in rjr
+				//bool noSVorPho = true; // only base selection - will not load phos in rjr
+				bool noSVorPho = false; // ( must have a sig pho or a sv ) + base selection - loads photons in rjr
                 //bool genSigPerfect = true;
                 bool genSigPerfect = false;
-                //bool hasGenInfo = true;
-                bool hasGenInfo = false;
+                //bool hasGenInfo = false;
+                bool hasGenInfo = true;
                 ////const std::string infilename = "KUCMS_Ntuple_Master_BG_Files_List.txt"; genSigPerfect = false;
 				//const std::string infilename = "KUCMS_Ntuple_Master_DataPD_Files_List.txt"; hasGenInfo = false;
-                //const std::string infilename = "KUCMS_Ntuple_Master_DEG_Files_List.txt"; hasGenInfo = false;
-                //const std::string infilename = "KUCMS_Ntuple_Master_GoGoG_Files_List.txt";
-                const std::string infilename = "KUCMS_Ntuple_Master_ZBG_SVIPM100_Files_List.txt";
-                //const std::string infilename = "KUCMS_Ntuple_Master_GoGoZ_Files_List.txt";
-                //const std::string infilename = "KUCMS_Ntuple_Master_SqSqG_Files_List.txt";
-                //const std::string infilename = "KUCMS_Ntuple_Master_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
+                ////const std::string infilename = "KUCMS_Ntuple_Master_DEG_Files_List.txt"; hasGenInfo = false;
+                ////const std::string infilename = "KUCMS_Ntuple_Master_GoGoG_Files_List.txt";
+                //const std::string infilename = "KUCMS_Ntuple_Master_ZBG_SVIPM100_Files_List.txt";
+                ////const std::string infilename = "KUCMS_Ntuple_Master_GoGoZ_Files_List.txt";
+                ////const std::string infilename = "KUCMS_Ntuple_Master_SqSqG_Files_List.txt";
+                const std::string infilename = "KUCMS_Ntuple_Master_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
 				//const std::string infilename = "KUCMS_Ntuple_Master_NtupleTest_Files_List.txt";
 
                 //const std::string outfilename = "_LLPGskim_v21_rjrvars.root"; // skim v21 use new process_name tags 
@@ -47,13 +47,14 @@ int main ( int argc, char *argv[] ){
                 //const std::string outfilename = "_rjrskim_v26.root"; // jet veto on first 2 Sig Phos only
                 //const std::string outfilename = "_rjrskim_v27.root"; // SV matching & SVs & lepton veto
                 //const std::string outfilename = "_rjrskim_v28.root"; // MET cleaning flags 
-                const std::string outfilename = "_rjrskim_v29.root"; // Track collection consoldation, Mu - Ele collections, RJR subjets 1a, 2a, ect..
+                //const std::string outfilename = "_rjrskim_v29.root"; // Track collection consoldation, Mu - Ele collections, RJR subjets 1a, 2a, ect..
+                const std::string outfilename = "_rjrskim_v32.root"; // SV vars + BaysC && TimeCali added
 
                 int skipCnt = 0;// Normal
 				//int skipCnt = 10;// Met0 GMSB
                 //int skipCnt = 100;// Met0 QCD
                 KUCMSAodSkimmer llpgana;
-                llpgana.kucmsAodSkimmer( listdir, eosdir, infilename, outfilename, hasGenInfo, genSigPerfect, doSV, skipCnt, useEvtGenWgt );
+                llpgana.kucmsAodSkimmer( listdir, eosdir, infilename, outfilename, hasGenInfo, genSigPerfect, noSVorPho, skipCnt, useEvtGenWgt );
     //}
     return 1;
 

@@ -718,8 +718,8 @@ int main ( int argc, char *argv[] ){
                 std::string infilenameJ = "rjr_skim_files/KUCMS_RJR_SMS_ootmet_Skim_List.txt";
 				std::string infilenameBG = "rjr_skim_files/KUCMS_RJR_BG_ootmet_Skim_List.txt";
 
-				std::string version = "_v24_";
-				std::string sigtype = "llpana_v28nt";
+				std::string version = "_v30_";
+				std::string sigtype = "sms_glgl";
 				std::string ofnstart = "KUCMS_";
 
                 std::string htitleBG = "BG_"+sigtype+version;

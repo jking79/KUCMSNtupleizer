@@ -28,12 +28,12 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 	X2a = new DecayRecoFrame("X2a","#tilde{#chi}_{2a}");
 	X2b = new DecayRecoFrame("X2b","#tilde{#chi}_{2b}");
 	
-	Ja = new DecayRecoFrame("Ja","jets_{a}");
-	Jb = new DecayRecoFrame("Jb","jets_{b}");
-	J1a = new VisibleRecoFrame("J1a","jets_{1a}");
-	J2a = new VisibleRecoFrame("J2a","jets_{2a}");
-	J1b = new VisibleRecoFrame("J1b","jets_{1b}");
-    J2b = new VisibleRecoFrame("J2b","jets_{2b}");
+	Ja = new VisibleRecoFrame("Ja","jets_{a}");
+	Jb = new VisibleRecoFrame("Jb","jets_{b}");
+	//J1a = new VisibleRecoFrame("J1a","jets_{1a}");
+	//J2a = new VisibleRecoFrame("J2a","jets_{2a}");
+	//J1b = new VisibleRecoFrame("J1b","jets_{1b}");
+    //J2b = new VisibleRecoFrame("J2b","jets_{2b}");
 
 	X1a = new InvisibleRecoFrame("X1a","#tilde{#chi}_{1a}");
 	X1b = new InvisibleRecoFrame("X1b","#tilde{#chi}_{1b}");
@@ -45,7 +45,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 	X2b->AddChildFrame(*X1b);
 	X2a->AddChildFrame(*Ja);
 	X2b->AddChildFrame(*Jb);
-	Ja->AddChildFrame(); // finish	
+	//Ja->AddChildFrame(); // finish	
 
 	if(!LAB->InitializeTree()){ std::cout << "Problem initializing tree" << std::endl; }
 	
@@ -63,37 +63,26 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 	InvSplit = new MinMassesSqInvJigsaw("InvSplit", "INV -> #tilde{#chi_{1a}}+ #tilde{#chi_{1b}}", 2);
     //InvSplit = new ContraBoostInvJigsaw("InvSplit", "INV -> #tilde{#chi_{1a}}+ #tilde{#chi_{1b}}");
 	INV->AddJigsaw(*InvSplit);
-	InvSplit->AddVisibleFrame(Ja->GetVisiblFrames(), 0);
-	InvSplit->AddVisibleFrame(Jb->GetVisiblFrames(), 1);
+	InvSplit->AddVisibleFrame(*Ja, 0);
+	InvSplit->AddVisibleFrame(*Jb, 1);
 	InvSplit->AddInvisibleFrame(*X1a, 0);
 	InvSplit->AddInvisibleFrame(*X1b, 1);
 	
 	COMB_J =  new CombinatoricGroup("COMB_J", "Combinatoric System of Jets");
 	CombSplit_J = new MinMassesSqCombJigsaw("CombSplit_J", "Minimize M_{Va}^{2} + M_{Vb}^{2} ",2,2);
-    CombSplit_Ja = new MinMassesCombJigsaw("CombSplit_Ja", "Minimize M_{Va}^{2} + M_{Vb}^{2} ");
-    CombSplit_Jb = new MinMassesCombJigsaw("CombSplit_Jb", "Minimize M_{Va}^{2} + M_{Vb}^{2} ");
+    //CombSplit_Ja = new MinMassesCombJigsaw("CombSplit_Ja", "Minimize M_{Va}^{2} + M_{Vb}^{2} ");
+    //CombSplit_Jb = new MinMassesCombJigsaw("CombSplit_Jb", "Minimize M_{Va}^{2} + M_{Vb}^{2} ");
 
-	COMB_J->AddFrame(*J1a);
-    COMB_J->AddFrame(*J2a);
-	COMB_J->SetNElementsForFrame(*J1a, 1);
-    COMB_J->SetNElementsForFrame(*J2a, 0);
-	COMB_J->AddFrame(*J1b);
-    COMB_J->AddFrame(*J2b);
-	COMB_J->SetNElementsForFrame(*J1b, 1);
-    COMB_J->SetNElementsForFrame(*J2b, 0);
-	
-	COMB_J->AddJigsaw(*CombSplit_J);
-	CombSplit_J->AddCombFrame(*Ja, 0);
-	CombSplit_J->AddCombFrame(*Jb, 1);
-	CombSplit_J->AddObjectFrames(X2a->GetListVisibleFrames(), 0);
-	CombSplit_J->AddObjectFrames(X2b->GetListVisibleFrames(), 1);// check syntax from example
-	 
-	//add bloc do b
-    COMB_J->AddJigsaw(*CombSplit_Ja);
-    CombSplit_J->AddCombFrame(*J1a, 0);
-    CombSplit_J->AddCombFrame(*J2a, 1);
-    CombSplit_J->AddObjectFrames(*J1a, 0);
-    CombSplit_J->AddObjectFrames(*J2b, 1);// check syntax from example
+    COMB_J->AddFrame(*Ja);
+    COMB_J->SetNElementsForFrame(*Ja, 1);
+    COMB_J->AddFrame(*Jb);
+    COMB_J->SetNElementsForFrame(*Jb, 1);
+
+    COMB_J->AddJigsaw(*CombSplit_J);
+    CombSplit_J->AddCombFrame(*Ja, 0);
+    CombSplit_J->AddCombFrame(*Jb, 1);
+    CombSplit_J->AddObjectFrames(X2a->GetListVisibleFrames(), 0);
+    CombSplit_J->AddObjectFrames(X2b->GetListVisibleFrames(), 1);// check syntax from example
 
 	if(!LAB->InitializeAnalysis()) std::cout << "Problem initializing analysis tree" << std::endl;
 

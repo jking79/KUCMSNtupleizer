@@ -123,6 +123,8 @@ class KUCMSAodSkimmer : public llpgtree {
 	DecayRecoFrame* X2b;
   	DecayRecoFrame* Ja; 
     DecayRecoFrame* Jb;
+    //VisibleRecoFrame* Ja;
+    //VisibleRecoFrame* Jb;
     VisibleRecoFrame* J1a;
     VisibleRecoFrame* J1b;
     VisibleRecoFrame* J2a;
