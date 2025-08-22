@@ -80,12 +80,12 @@ deg_list = [
 
 WjetsToLNU = [
 
-    'cms:/WJetsToLNu_HT-1200To2500_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM',
-    'cms:/WJetsToLNu_HT-2500ToInf_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM',
-    'cms:/WJetsToLNu_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM',
-    'cms:/WJetsToLNu_HT-800To1200_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM',
+    #'cms:/WJetsToLNu_HT-1200To2500_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM',
+    #'cms:/WJetsToLNu_HT-2500ToInf_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM',
+    #'cms:/WJetsToLNu_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM',
+    #'cms:/WJetsToLNu_HT-800To1200_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM',
 
-    #'cms:/WJetsToLNu_HT-70To100_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v3/AODSIM',
+    'cms:/WJetsToLNu_HT-70To100_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v3/AODSIM',
 
     #'cms:/WJetsToLNu_HT-600To800_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext2-v3/AODSIM',
     #'cms:/WJetsToLNu_HT-100To200_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v3/AODSIM',
@@ -114,6 +114,23 @@ ZjetsToNuNU = [
 
 ]
 
+disjet18 = [
+
+    'cms:/DisplacedJet/Run2018A-15Feb2022_UL2018-v1/AOD',
+    'cms:/DisplacedJet/Run2018B-15Feb2022_UL2018-v1/AOD',
+    'cms:/DisplacedJet/Run2018C-15Feb2022_UL2018-v1/AOD',
+    'cms:/DisplacedJet/Run2018D-15Feb2022_UL2018-v1/AOD',
+
+]
+
+jetmetexo22 = [
+
+    'cms:/JetMET/Run2022C-EXODelayedJetMET-27Jun2023-v1/AOD',
+    'cms:/JetMET/Run2022D-EXODelayedJetMET-27Jun2023-v2/AOD',
+    'cms:/JetMET/Run2022E-EXODelayedJetMET-27Jun2023-v1/AOD',
+
+]
+
 jetht18 = [ 'cms:/JetHT/Run2018C-15Feb2022_UL2018-v1/AOD' ]
 
 dy_list = [ 'cms:/DY1JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v1/AODSIM' ]
@@ -125,6 +142,7 @@ dy_list = [ 'cms:/DY1JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17
 runlist = WjetsToLNU
 #runlist = TandJets
 #runlist = ZjetsToNuNU
+#runlist = jetmetexo22
 
 for thefile in runlist :
 

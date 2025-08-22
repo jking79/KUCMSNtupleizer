@@ -1268,7 +1268,7 @@ void llpgtree::Init( TChain *tree, bool doGenInfo ){
    fChain->SetBranchAddress("SuperCluster_x_calo", &SuperCluster_x_calo, &b_SuperCluster_x_calo);
    fChain->SetBranchAddress("SuperCluster_y_calo", &SuperCluster_y_calo, &b_SuperCluster_y_calo);
    fChain->SetBranchAddress("SuperCluster_z_calo", &SuperCluster_z_calo, &b_SuperCluster_z_calo);
-
+/*
    fChain->SetBranchAddress("ECALTrackDetID_detId", &ECALTrackDetID_detId, &b_ECALTrackDetID_detId);
    fChain->SetBranchAddress("ECALTrackDetID_isECAL", &ECALTrackDetID_isECAL, &b_ECALTrackDetID_isECAL);
    fChain->SetBranchAddress("ECALTrackDetID_isHCAL", &ECALTrackDetID_isHCAL, &b_ECALTrackDetID_isHCAL);
@@ -1307,6 +1307,8 @@ void llpgtree::Init( TChain *tree, bool doGenInfo ){
    fChain->SetBranchAddress("ECALTrack_vz", &ECALTrack_vz, &b_ECALTrack_vz);
    fChain->SetBranchAddress("TrackSCMatch_deltaR", &TrackSCMatch_deltaR, &b_TrackSCMatch_deltaR);
    fChain->SetBranchAddress("TrackSCMatch_scEnergyToTrackPRatio", &TrackSCMatch_scEnergyToTrackPRatio, &b_TrackSCMatch_scEnergyToTrackPRatio);
+*/
+
    fChain->SetBranchAddress("Electron_energy", &Electron_energy, &b_Electron_energy);
    fChain->SetBranchAddress("Electron_eta", &Electron_eta, &b_Electron_eta);
 /*  
@@ -1545,12 +1547,12 @@ void llpgtree::Init( TChain *tree, bool doGenInfo ){
    fChain->SetBranchAddress("Photon_trkSumPtSolidConeDR04", &Photon_trkSumPtSolidConeDR04, &b_Photon_trkSumPtSolidConeDR04);
    fChain->SetBranchAddress("Photon_ecalPFClusterIso", &Photon_ecalPFClusterIso, &b_Photon_ecalPFClusterIso);
    fChain->SetBranchAddress("Photon_electronVeto", &Photon_electronVeto, &b_Photon_electronVeto);
-   fChain->SetBranchAddress("Photon_gloResRhId", &Photon_gloResRhId, &b_Photon_gloResRhId);
+   //fChain->SetBranchAddress("Photon_gloResRhId", &Photon_gloResRhId, &b_Photon_gloResRhId);
    fChain->SetBranchAddress("hasConversionTracks", &hasConversionTracks, &b_hasConversionTracks);
    fChain->SetBranchAddress("Photon_pixelSeed", &Photon_pixelSeed, &b_Photon_pixelSeed);
    fChain->SetBranchAddress("Photon_hcalPFClusterIso", &Photon_hcalPFClusterIso, &b_Photon_hcalPFClusterIso);
    fChain->SetBranchAddress("Photon_Hoe_PUcorr", &Photon_Hoe_PUcorr, &b_Photon_Hoe_PUcorr);
-   fChain->SetBranchAddress("Photon_locResRhId", &Photon_locResRhId, &b_Photon_locResRhId);
+   //fChain->SetBranchAddress("Photon_locResRhId", &Photon_locResRhId, &b_Photon_locResRhId);
    fChain->SetBranchAddress("Photon_nPhoton", &Photon_nPhoton, &b_Photon_nPhoton);
    fChain->SetBranchAddress("Photon_pfChargedIso", &Photon_pfChargedIso, &b_Photon_pfChargedIso);
    fChain->SetBranchAddress("Photon_pfChargedIsoPFPV", &Photon_pfChargedIsoPFPV, &b_Photon_pfChargedIsoPFPV);
@@ -1694,7 +1696,7 @@ void llpgtree::getBranches( Long64_t entry, bool doGenInfo ){
    b_SuperCluster_z_calo->GetEntry(entry);     //!
    if( doGenInfo ) b_SuperCluster_ObjectPdgId->GetEntry(entry);     //!
 
-   b_ECALTrack_pt->GetEntry(entry);     //!
+   //b_ECALTrack_pt->GetEntry(entry);     //!
 
 /*
    if( sbDEBUG ) std::cout << "Getting Branches TR" << std::endl;
@@ -1986,12 +1988,12 @@ void llpgtree::getBranches( Long64_t entry, bool doGenInfo ){
    b_Photon_trkSumPtSolidConeDR04->GetEntry(entry);     //!
    b_Photon_ecalPFClusterIso->GetEntry(entry);     //!
    b_Photon_electronVeto->GetEntry(entry);     //!
-   b_Photon_gloResRhId->GetEntry(entry);     //!
+   //b_Photon_gloResRhId->GetEntry(entry);     //!
    b_hasConversionTracks->GetEntry(entry);     //!
    b_Photon_pixelSeed->GetEntry(entry);     //!
    b_Photon_hcalPFClusterIso->GetEntry(entry);     //!
    b_Photon_Hoe_PUcorr->GetEntry(entry);     //!
-   b_Photon_locResRhId->GetEntry(entry);     //!
+   //b_Photon_locResRhId->GetEntry(entry);     //!
    b_Photon_nPhoton->GetEntry(entry);     //!
    b_Photon_pfChargedIso->GetEntry(entry);     //!
    b_Photon_pfChargedIsoPFPV->GetEntry(entry);     //!
