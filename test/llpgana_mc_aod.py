@@ -90,9 +90,9 @@ process.load("FWCore.MessageService.MessageLogger_cfi")
 #process.MessageLogger.cerr.FwkReport.reportEvery = 1
 #process.MessageLogger.cerr.FwkReport.reportEvery = 2
 #process.MessageLogger.cerr.FwkReport.reportEvery = 10
-process.MessageLogger.cerr.FwkReport.reportEvery = 100
+#process.MessageLogger.cerr.FwkReport.reportEvery = 100
 #process.MessageLogger.cerr.FwkReport.reportEvery = 1000
-#process.MessageLogger.cerr.FwkReport.reportEvery = 100000
+process.MessageLogger.cerr.FwkReport.reportEvery = 100000
 
 from KUCMSNtupleizer.KUCMSNtupleizer.TrackAssociator_cfi import tkAssocParamBlock
 
@@ -131,10 +131,10 @@ process.source = cms.Source("PoolSource",
         # WJets
         #'root://cmsxrootd-site.fnal.gov//store/mc/RunIISummer20UL18RECO/WJetsToLNu_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/106X_upgrade2018_realistic_v11_L1v1_ext2-v3/40000/6021A8AE-9B41-7A4F-8E33-470F73F3D4FC.root',
 
-        #'file:WJets_72B9C618-FE23-1E41-872E-57314D7CB454.root',
+        'file:WJets_72B9C618-FE23-1E41-872E-57314D7CB454.root',
 
         # DiPhotonJetsBox
-        'root://cmsxrootd-site.fnal.gov//store/mc/RunIISummer20UL18RECO/DiPhotonJetsBox_MGG-80toInf_13TeV-sherpa/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/50000/E1C9ABB4-D708-D14E-8E97-803013F321E6.root',
+        #'root://cmsxrootd-site.fnal.gov//store/mc/RunIISummer20UL18RECO/DiPhotonJetsBox_MGG-80toInf_13TeV-sherpa/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/50000/E1C9ABB4-D708-D14E-8E97-803013F321E6.root',
         #'root://cmsxrootd-site.fnal.gov//store/mc/RunIISummer20UL18RECO/DiPhotonJetsBox_MGG-80toInf_13TeV-sherpa/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/2520000/E28F5CDC-017D-2D49-87DA-864981D2E02F.root',
 
         #'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18RECO/WJetsToLNu_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/106X_upgrade2018_realistic_v11_L1v1_ext2-v3/40000/72B9C618-FE23-1E41-872E-57314D7CB454.root',
@@ -163,7 +163,7 @@ process.source = cms.Source("PoolSource",
 ## How many events to process
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2))#ONE
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
@@ -176,7 +176,7 @@ process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100000))#MS
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250000))#MD
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500000))#LG
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
 
 genInfo = True
 #genInfo = False
@@ -199,8 +199,8 @@ if options.multicrab == True : filterselect = options.eventFilter
 runera = "Run2" # BG models
 if options.multicrab == True : runera = options.runera
 
-#dosv = True
-dosv = False
+dosv = True
+#dosv = False
 if options.multicrab == True : dosv = options.doSV
 
 ############dode = True

@@ -1642,7 +1642,6 @@ std::vector<float> KUCMSGenObject::getGenJetInfo( float jetEta, float jetPhi, fl
 
 // Gen Electron methods
 
-
 /*
 std::vector<int>KUCMSGenObject:: MomIDs(const reco::GenParticle &genElectron) const {
 
@@ -1652,7 +1651,6 @@ std::vector<int>KUCMSGenObject:: MomIDs(const reco::GenParticle &genElectron) co
   std::vector<int> motherIDs;
 
   //if( genElectron.numberOfMothers() < 1 ) return motherIDs; 
-/*
   auto mother = genElectron.mother(0);
   while(mother->pt() > 0) {
     const int motherID = mother->pdgId();
@@ -1664,7 +1662,6 @@ std::vector<int>KUCMSGenObject:: MomIDs(const reco::GenParticle &genElectron) co
 
     motherIDs.push_back(motherID);
   }
-*/
 
   return motherIDs;
 
@@ -1710,7 +1707,6 @@ void KUCMSGenObject::PrintMother(const LepMomType &momType) const {
 
 }
 
-/*
 void KUCMSGenObject::GenElectronContent() const {
 
   int index(0);
@@ -1749,7 +1745,6 @@ void KUCMSGenObject::GenElectronContent() const {
     index++;
   }
 }
-*/
 
 LepMomType KUCMSGenObject::AssignLeptonMomType(const int motherID) const {
   
@@ -1817,4 +1812,5 @@ GenClassifiedElectrons<T> KUCMSGenObject::GetGenClassifiedElectrons(const std::v
   return classifiedElectrons;
 }
 */
+
 #endif
