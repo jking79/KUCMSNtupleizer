@@ -131,7 +131,11 @@ process.source = cms.Source("PoolSource",
         # WJets
         #'root://cmsxrootd-site.fnal.gov//store/mc/RunIISummer20UL18RECO/WJetsToLNu_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/106X_upgrade2018_realistic_v11_L1v1_ext2-v3/40000/6021A8AE-9B41-7A4F-8E33-470F73F3D4FC.root',
 
-        'file:WJets_72B9C618-FE23-1E41-872E-57314D7CB454.root',
+        #'file:WJets_72B9C618-FE23-1E41-872E-57314D7CB454.root',
+
+        # DiPhotonJetsBox
+        'root://cmsxrootd-site.fnal.gov//store/mc/RunIISummer20UL18RECO/DiPhotonJetsBox_MGG-80toInf_13TeV-sherpa/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/50000/E1C9ABB4-D708-D14E-8E97-803013F321E6.root',
+        #'root://cmsxrootd-site.fnal.gov//store/mc/RunIISummer20UL18RECO/DiPhotonJetsBox_MGG-80toInf_13TeV-sherpa/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/2520000/E28F5CDC-017D-2D49-87DA-864981D2E02F.root',
 
         #'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18RECO/WJetsToLNu_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/106X_upgrade2018_realistic_v11_L1v1_ext2-v3/40000/72B9C618-FE23-1E41-872E-57314D7CB454.root',
 
@@ -194,20 +198,21 @@ if options.multicrab == True : filterselect = options.eventFilter
 #runera = "Run3"  # current siganl model
 runera = "Run2" # BG models
 if options.multicrab == True : runera = options.runera
-dosv = True
-#dosv = False
+
+#dosv = True
+dosv = False
 if options.multicrab == True : dosv = options.doSV
 
-#dode = True
-dode = False
-if options.multicrab == True : dode = options.doDisEle
+############dode = True
+dode = False # removed - only false with v30
+#if options.multicrab == True : dode = options.doDisEle
 
-#doet = True
-doet = False
-if options.multicrab == True : doet = options.doECALTrackOnly
-if doet : 
-    dosv = False
-    dode = False
+doet = True ## with v30 no longer optional when using ( "ecalTracks", "displacedElectronSCs" ) for SCs collection
+#doet = False
+#if options.multicrab == True : doet = options.doECALTrackOnly
+#if doet : 
+#    dosv = False
+#    dode = False
 
 #probeout = True
 probeout = False
@@ -447,7 +452,7 @@ process.tree.metFilters = cms.vstring( #"bla" )
     "Flag_globalSuperTightHalo2016Filter",    
     "Flag_HBHENoiseFilter",
     "Flag_HBHENoiseIsoFilter",
-#    "Flag_EcalDeadCellTriggerPrimitiveFilter",
+    "Flag_EcalDeadCellTriggerPrimitiveFilter",
     "Flag_BadPFMuonFilter",
     "Flag_BadPFMuonDzFilter",
     "Flag_hfNoisyHitsFilter",
@@ -465,7 +470,7 @@ process.Flag_globalSuperTightHalo2016Filter = cms.Path( process.globalSuperTight
 process.hbheSequence = cms.Sequence( process.HBHENoiseFilterResultProducer * process.HBHENoiseFilter )
 process.Flag_HBHENoiseFilter = cms.Path( process.hbheSequence )
 process.Flag_HBHENoiseIsoFilter = cms.Path( process.HBHENoiseIsoFilter )
-#process.Flag_EcalDeadCellTriggerPrimitiveFilter = cms.Path( process.EcalDeadCellTriggerPrimitiveFilter )
+process.Flag_EcalDeadCellTriggerPrimitiveFilter = cms.Path( process.EcalDeadCellTriggerPrimitiveFilter )
 process.Flag_BadPFMuonFilter = cms.Path( process.BadPFMuonFilter )
 process.Flag_BadPFMuonDzFilter = cms.Path( process.BadPFMuonDzFilter )
 process.Flag_hfNoisyHitsFilter = cms.Path( process.hfNoisyHitsFilter )
@@ -478,9 +483,9 @@ process.kuEcalTracks = cms.Sequence( ecalTracks )
 process.kuSV = cms.Sequence( muonEnhancedTracks )
 #process.kuDisEle = cms.Sequence( displacedElectrons )
 
-process.kuDisplaced_path = cms.Path()
-if ( dosv and not dode ) : process.kuDisplaced_path = cms.Path( process.kuEcalTracks + process.kuSV )
-if ( doet ) : process.kuDisplaced_path = cms.Path( process.kuEcalTracks )
+#process.kuDisplaced_path = cms.Path()
+process.kuDisplaced_path = cms.Path( process.kuEcalTracks )
+if ( dosv ) : process.kuDisplaced_path = cms.Path( process.kuEcalTracks + process.kuSV )
 
 ## Set final paths and schedule
 
@@ -496,7 +501,7 @@ process.schedule = cms.Schedule( process.kuDisplaced_path,
                                  process.Flag_globalSuperTightHalo2016Filter,
                                  process.Flag_HBHENoiseFilter,
                                  process.Flag_HBHENoiseIsoFilter,
-#                                 process.Flag_EcalDeadCellTriggerPrimitiveFilter,
+                                 process.Flag_EcalDeadCellTriggerPrimitiveFilter,
                                  process.Flag_BadPFMuonFilter,
                                  process.Flag_BadPFMuonDzFilter,
                                  process.Flag_hfNoisyHitsFilter,

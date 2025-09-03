@@ -111,8 +111,8 @@
 using namespace std;
 using namespace edm;
 
-//#define DEBUG true
-#define DEBUG false
+//#define NTHDEBUG true
+#define NTHDEBUG false
 
 //
 // In class declaration :
@@ -332,7 +332,7 @@ void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
     // -- Consume Tokens --------------------------------------------
     // gets pointer to the collections from cmssw using the "token" for that collection
 
-    //if( DEBUG ) std::cout << "Consume Tokens -------------------------------------------- " << std::endl;
+    if( NTHDEBUG ) std::cout << "Consume Tokens -------------------------------------------- " << std::endl;
 
     // TRIGGER
     //iEvent.getByToken(triggerResultsToken_,triggerResults_);
@@ -350,7 +350,7 @@ void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
     // ** for example only -- convert to nano?, use ewkino varibles for output, find rechit information ** 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    //if( DEBUG ) std::cout << "********************************************************************************************" << std::endl;
+    if( NTHDEBUG ) std::cout << "********************************************************************************************" << std::endl;
 
     // clear global event varibles 
     geVar.clear(); // floats
@@ -364,7 +364,7 @@ void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
     // ---  Collecting objects ( preprocessing object pruning & fill global object vectors )------------
     // -------------------------------------------------------------------------------------------------
 
-    if( DEBUG ) std::cout << "LoadEvent ObjMan" << std::endl;
+    if( NTHDEBUG ) std::cout << "LoadEvent ObjMan" << std::endl;
     ObjMan.LoadEvent( iEvent, iSetup, geVar );
 
     //------------------------------------------------------------------------------------
@@ -376,7 +376,7 @@ void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
     // use PostProcessEvent() for any processing that must be done after crosstalk <<<  Most work should be done now.
 
 
-    if( DEBUG ) std::cout << "ProcessEvent ObjMan" << std::endl;
+    if( NTHDEBUG ) std::cout << "ProcessEvent ObjMan" << std::endl;
     ObjMan.ProcessEvent( geVar );
     ObjMan.PostProcessEvent( geVar );
 
@@ -386,7 +386,7 @@ void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 
     // -- Fill output trees ------------------------------------------
 
-    //if( DEBUG ) std::cout << "Select Event and Fill Tree" << std::endl;
+    if( NTHDEBUG ) std::cout << "Select Event and Fill Tree" << std::endl;
     if( ntupleFilter.selectEvent( geVar ) ){
  
 		outTree->Fill();
@@ -427,7 +427,7 @@ void KUCMSNtupilizer::beginJob(){
  
     std::cout << "Services Booked" << std::endl;
  
-    if( DEBUG ) std::cout << "Init ObjMan" << std::endl;
+    if( NTHDEBUG ) std::cout << "Init ObjMan" << std::endl;
     ObjMan.Init( outTree );
 
     nTotEvts = 0; 
@@ -455,7 +455,7 @@ void KUCMSNtupilizer::InitConfigTree( TTree* fConfigTree ){
 // ------------ method called once each job just after ending the event loop    ------------
 void KUCMSNtupilizer::endJob(){
  
-    if( DEBUG ) std::cout << "ObjMan EndJobs" << std::endl;
+    if( NTHDEBUG ) std::cout << "ObjMan EndJobs" << std::endl;
     ObjMan.EndJobs();
 
 	ConfigBranches.clearBranches();

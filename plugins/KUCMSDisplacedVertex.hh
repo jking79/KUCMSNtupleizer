@@ -232,12 +232,17 @@ void KUCMSDisplacedVertex::InitObject( TTree* fOutTree ){
 
 void KUCMSDisplacedVertex::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar ){
 
+  //std::cout << " LoadEvent DisplacedVertex Tokesn" << std::endl;
+
   iEvent.getByToken( muonTracksToken_, muonTracksHandle_);
   iEvent.getByToken( muonEnhancedTracksToken_, muonEnhancedTracksHandle_);
   if(cfFlag("hasGenInfo")) iEvent.getByToken( genToken_, genHandle_);
   iEvent.getByToken( pvToken_, pvHandle_);
   iEvent.getByToken( mergedSCsToken_, mergedSCsHandle_);
   primaryVertex_ = iEvent.get(pvToken_).at(0);
+
+  //std::cout << " LoadEvent DisplacedVertex TTrack" << std::endl;
+
 
   signalTracks_.clear();
   genVertices_.clear();
@@ -251,7 +256,9 @@ void KUCMSDisplacedVertex::LoadEvent( const edm::Event& iEvent, const edm::Event
     ttracks.emplace_back(ttBuilder->build(track));
   
   ttBuilder_ = TTBuilderWrapper(ttBuilder);
-  
+
+  //std::cout << " LoadEvent DisplacedVertex Merger" << std::endl;
+
   NewVertexMerger diLeptonMerger(primaryVertex_, 0.75), hadronicMerger(primaryVertex_, 0.);
   if(cfFlag("hasGenInfo")) {
     GenVertices allSignalSVs(*genHandle_);
@@ -273,6 +280,8 @@ void KUCMSDisplacedVertex::LoadEvent( const edm::Event& iEvent, const edm::Event
         signalTracks_.emplace_back(pair.GetObjectA());
     }
   }
+
+  //std::cout << " LoadEvent DisplacedVertex Canadates" << std::endl;
 
   std::vector<reco::TrackRef> trackRefs(ConvertTracksToRefs(muonEnhancedTracksHandle_));
   TrackVertexSetCollection diLeptonCandidates(diLeptonMerger.trackVertexSets(trackRefs, ttBuilder).fullSelection(primaryVertex_));

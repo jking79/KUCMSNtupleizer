@@ -436,20 +436,30 @@ void KUCMSEcalRecHitObject::InitObject( TTree* fOutTree ){
 
 void KUCMSEcalRecHitObject::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar ){
 
+    if( ERHODEBUG ) std::cout << "Getting Tokens ECAL RecHits" << std::endl;
+
     // ECAL RECHITS
     iEvent.getByToken( recHitsEBToken_, recHitsEB_);
     iEvent.getByToken( recHitsEEToken_, recHitsEE_);
+
+    if( ERHODEBUG ) std::cout << "Getting Tokens SC" << std::endl;
 
     // SUPERCLUSTERS
     iEvent.getByToken( scToken_, superCluster_);
     iEvent.getByToken( ootScToken_, ootSuperCluster_);
     iEvent.getByToken( otherScToken_, otherSuperCluster_);
 
+    if( ERHODEBUG ) std::cout << "Getting Tokens Calo Clusters" << std::endl;
+
     // CALOCLUSTERS
     iEvent.getByToken( ccToken_, caloCluster_);
 
+    if( ERHODEBUG ) std::cout << "Getting Tokens BeamSpot" << std::endl;
+
 	// BeamSpot
     iEvent.getByToken(beamLineToken_,beamSpot_);
+
+    if( ERHODEBUG ) std::cout << "Getting Tokens GEOMETRY" << std::endl;
 
     // GEOMETRY : https://gitlab.cern.ch/shervin/ECALELF
     caloGeo_ = iSetup.getHandle(caloGeometryToken_);
@@ -457,25 +467,30 @@ void KUCMSEcalRecHitObject::LoadEvent( const edm::Event& iEvent, const edm::Even
     endcapGeometry = caloGeo_->getSubdetectorGeometry(DetId::Ecal, EcalSubdetector::EcalEndcap);
     //ecalGeometry = &iSetup.getData(caloGeometryToken_);
 
+    if( ERHODEBUG ) std::cout << "Getting Tokens CaloTopology" << std::endl;
     // CaloTopology
     caloTopo_ = iSetup.getHandle(caloTopologyToken_);
     ecalTopology = &iSetup.getData(caloTopologyToken_);
     //barrelTopology = caloTopo_->getSubdetectorTopology(DetId::Ecal, EcalSubdetector::EcalBarrel);
     //endcapTopology = caloTopo_->getSubdetectorTopology(DetId::Ecal, EcalSubdetector::EcalEndcap);
 
+    if( ERHODEBUG ) std::cout << "Getting Tokens Laser" << std::endl;
     // Laser constants : http://cmslxr.fnal.gov/source/RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h
     laser_ = iSetup.getHandle(ecalLaserDbServiceToken_);
     evTime = iEvent.time();
 
+    if( ERHODEBUG ) std::cout << "Getting Tokens Intercalibration" << std::endl;
     // Intercalibration constants : http://cmslxr.fnal.gov/source/RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h
     interCalib_ = iSetup.getHandle(ecalIntercalibConstantsToken_);
     interCalibMap = &interCalib_->getMap();
 
+    if( ERHODEBUG ) std::cout << "Getting Tokens ADCToGeV" << std::endl;
     // ADCToGeV : http://cmslxr.fnal.gov/source/RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h
     adcToGeV_ = iSetup.getHandle(ecalADCToGeVConstantToken_);
     adcToGeVEB = adcToGeV_->getEBValue();
     adcToGeVEE = adcToGeV_->getEEValue();
 
+    if( ERHODEBUG ) std::cout << "Getting Tokens Pedestals" << std::endl;
     // Pedestals : https://github.com/ferriff/usercode/blob/master/DBDump/plugins/DBDump.cc
     pedestals_ = iSetup.getHandle(EcalPedestalsToken_);
 
@@ -845,7 +860,7 @@ void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
     }//<<>>for (const auto recHit : *recHitsEB_ )
 	float pUsed = nUsed/float(nRecHits); 
     Branches.fillBranch("pused",pUsed);
-	//std::cout << " -- % rechits used : " << pUsed << std::endl;
+	if( ERHODEBUG ) std::cout << " -- % rechits used : " << pUsed << std::endl;
 
 }//<<>>void KUCMSEcalRecHit::ProcessEvent()
 

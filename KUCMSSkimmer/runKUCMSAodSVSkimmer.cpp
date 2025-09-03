@@ -48,11 +48,12 @@ int main ( int argc, char *argv[] ){
                 //const std::string outfilename = "_rjrskim_v27.root"; // SV matching & SVs & lepton veto
                 //const std::string outfilename = "_rjrskim_v28.root"; // MET cleaning flags 
                 //const std::string outfilename = "_rjrskim_v29.root"; // Track collection consoldation, Mu - Ele collections, RJR subjets 1a, 2a, ect..
-                const std::string outfilename = "_rjrskim_v32.root"; // SV vars + BaysC && TimeCali added
+				//const std::string outfilename = "_rjrskim_v31.root"; // alternate RJR setup with invis in comb split rule
+                //const std::string outfilename = "_rjrskim_v32.root"; // SV vars + BaysC && TimeCali added
+                const std::string outfilename = "_rjrskim_v34.root"; // expanded hts & hs rjr vars selection
 
-                int skipCnt = 0;// Normal
-				//int skipCnt = 10;// Met0 GMSB
-                //int skipCnt = 100;// Met0 QCD
+                int skipCnt = 0; // used to skip files ( in tchian ) for fast processing - if( nFiles%skipCnt != 0 ) continue; --  disabled in code  --  
+				// !!!!!!!!!!!!!!!!!!!  alternate RJR setup with invis in comb split rule
                 KUCMSAodSkimmer llpgana;
                 llpgana.kucmsAodSkimmer( listdir, eosdir, infilename, outfilename, hasGenInfo, genSigPerfect, noSVorPho, skipCnt, useEvtGenWgt );
     //}

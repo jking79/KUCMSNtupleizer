@@ -95,7 +95,7 @@ WjetsToLNU = [
 
 TandJets = [
 
-    #'cms://TTJets_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',
+    'cms:/TTJets_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',
     #'cms:/TGJets_TuneCP5_13TeV-amcatnlo-madspin-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v1/AODSIM',
     #'cms:/TTGJets_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v1/AODSIM',
     #'#cms:/ttZJets_TuneCP5_13TeV_madgraphMLM_pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v1/AODSIM',
@@ -131,6 +131,16 @@ jetmetexo22 = [
 
 ]
 
+dipho = [ 
+    
+    #'cms:/DiPhotonJetsBox_MGG-80toInf_13TeV-sherpa/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM', 
+    'cms:/DiPhotonJetsBox_MGG-0to40_13TeV-sherpa/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v1/AODSIM',
+    'cms:/DiPhotonJetsBox_M40_80-sherpa/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',
+
+]
+
+
+
 jetht18 = [ 'cms:/JetHT/Run2018C-15Feb2022_UL2018-v1/AOD' ]
 
 dy_list = [ 'cms:/DY1JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v1/AODSIM' ]
@@ -139,10 +149,11 @@ dy_list = [ 'cms:/DY1JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17
 #runlist = gjets_list
 #runlist = met_list
 #runlist = met18UL
-runlist = WjetsToLNU
-#runlist = TandJets
+#runlist = WjetsToLNU
+runlist = TandJets
 #runlist = ZjetsToNuNU
 #runlist = jetmetexo22
+#runlist = dipho
 
 for thefile in runlist :
 

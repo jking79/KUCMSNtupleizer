@@ -40,7 +40,7 @@
 #ifndef KUCMSEventInfoObjectHeader
 #define KUCMSEventInfoObjectHeader
 
-//#define EventInfoEBUG true
+//#define EventInfoDEBUG true
 #define EventInfoDEBUG false
 
 using namespace edm; 
@@ -168,6 +168,7 @@ void KUCMSEventInfoObject::InitObject( TTree* fOutTree ){
 
 void KUCMSEventInfoObject::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar ){
 
+    if( EventInfoDEBUG ) std::cout << "LoadEvent EventInfo" << std::endl;
     // Load handels from tokens
     iEvent.getByToken( verticesToken, vertices_ );
     iEvent.getByToken( triggerResultsToken, triggerResults );
@@ -187,7 +188,7 @@ void KUCMSEventInfoObject::LoadEvent( const edm::Event& iEvent, const edm::Event
 	trigFlags.clear();
 	for( auto trigName : triggerList ){ trigFlags[trigName] = false; }
 
-    //if( EventInfoDEBUG ) std::cout << "Collecting EventInfos" << std::endl;
+    if( EventInfoDEBUG ) std::cout << "Collecting EventInfos" << std::endl;
 
 	//edm::Hadndle<bool> goodVerticesFilter;
     //iEvent.getByLabel("metfilters_path",goodVerticesFilter);

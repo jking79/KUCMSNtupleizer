@@ -90,6 +90,8 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 	COMB_J->AddJigsaw(*CombSplit_J);
 	CombSplit_J->AddCombFrames(Ja->GetListVisibleFrames(), 0);
 	CombSplit_J->AddCombFrames(Jb->GetListVisibleFrames(), 1);
+    //CombSplit_J->AddObjectFrame(*X2a, 0);// included vis & invis frames in split
+    //CombSplit_J->AddObjectFrame(*X2b, 1);// check syntax from example
     CombSplit_J->AddObjectFrames(X2a->GetListVisibleFrames(), 0);
     CombSplit_J->AddObjectFrames(X2b->GetListVisibleFrames(), 1);// check syntax from example
 
@@ -230,7 +232,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
 		std::ifstream infile(listdir+infiles);
 	    while( std::getline( infile, str ) ){
 			nfiles++;
-			if( skipCnt != 0 && ( nfiles%skipCnt != 0 ) ) continue;
+			//if( skipCnt != 0 && ( nfiles%skipCnt != 0 ) ) continue;
 	        auto tfilename = eosdir + inpath + str;
 			fInTree->Add(tfilename.c_str());
 			fInConfigTree->Add(tfilename.c_str());
@@ -1579,12 +1581,14 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     auto phoRMetCPy = geVars("metPy"); //selMet.getFLBranchValue("metPy");
 	float unCorMet = hypo(phoRMetCPx,phoRMetCPy);
 
-	int nSelPhos = 0;
+	int nRJRPhos = 0;
 	std::vector<RFKey> jetID;
+	std::vector<TLorentzVector> pho4vec;
 	bool zsig = ( geVars("noSVorPho") == 1 ) ? true : false;	
+	if( zsig ) std::cout << " ------------ noSVorPho is True !!!!!!!!!!!!!!!!!!!!!!!! " << std::endl;
 	if( not zsig ){
 	if( nSelPhotons != 0 ){
-		nSelPhos = 1;
+		nRJRPhos = 1;
 		if( DEBUG ) std::cout << " - Loading Lead/SubLead Pho" << std::endl;
 		if( type == 0 ){
 			phoRMetCPx += leadPhoPt*std::cos(leadPhoPhi); 
@@ -1594,11 +1598,12 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 			TLorentzVector phojet;
 			phojet.SetPtEtaPhiM( leadPhoPt, leadPhoEta, leadPhoPhi, 0 );
         	jetID.push_back( COMB_J->AddLabFrameFourVector(phojet) );
+			pho4vec.push_back(phojet);
 		}//<<>>if( type == 1 )
 		else {  std::cout << " !!!!!!!! Valid RJR Photon Processing Option Not Specified !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl; }
 	}//<<>>if( nSelPhotons > 0 )
 	if( nSelPhotons > 1 ){ 
-		nSelPhos = 2;
+		nRJRPhos = 2;
 		if( type == 0 ){
         	phoRMetCPx += subLeadPhoPt*std::cos(subLeadPhoPhi);
         	phoRMetCPy += subLeadPhoPt*std::sin(subLeadPhoPhi);
@@ -1607,6 +1612,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 			TLorentzVector sphojet;
         	sphojet.SetPtEtaPhiM( subLeadPhoPt, subLeadPhoEta, subLeadPhoPhi, 0 );
             jetID.push_back( COMB_J->AddLabFrameFourVector(sphojet) );
+            pho4vec.push_back(sphojet);
 		}//<<>>if( type == 1 )
 	}//<<>>if( nSelPhotons > 1 )
 	}//<<>>if( not zsig )
@@ -1628,6 +1634,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     auto selJetPhi = geVects( "selJetPhi");
     auto selJetMass = geVects( "selJetMass");
     std::vector<RFKey> leadJetKey;
+    std::vector<TLorentzVector> jet4vec;
 	if( DEBUG ) std::cout << " - Loading Jets." << std::endl;
   	for( uInt it = 0; it < nSelJets; it++ ){
 		auto sjetPt = selJetPt[it]; //selJets.getFLBranchValue( "selJetPt", it );
@@ -1639,7 +1646,8 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 		if( verbose ) std::cout << " - Loading Jet Pt: " << sjetPt << " Eta: " << sjetEta;
 		if( verbose ) std::cout << " Phi: " << sjetPhi << " M: " << sjetMass << std::endl;
 		if( it == 0 ){ leadJetKey.push_back( COMB_J->AddLabFrameFourVector(jet) ); jetID.push_back(leadJetKey[0]); } 
-		else jetID.push_back(COMB_J->AddLabFrameFourVector(jet)); 
+		else jetID.push_back(COMB_J->AddLabFrameFourVector(jet));
+		jet4vec.push_back(jet); 
 	}//<<>>for( int i = 0; i < nSelJets; i++ )
 
 	if( !LAB->AnalyzeEvent() ) std::cout << "Something went wrong with tree event analysis" << std::endl;
@@ -1648,12 +1656,16 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 	// ---------  Finished Processing RJR varibles --------------------------------------------------------------------
 
 	uInt firstObject = 0;
-	if( ( type == 1 ) && ( nSelPhos > 0 ) ) firstObject = ( nSelPhos == 2 ) ? 2 : 1 ;
+	if( ( type == 1 ) && ( nRJRPhos > 0 ) ) firstObject = ( nRJRPhos == 2 ) ? 2 : 1 ;
 	int nJetsJa = 0;
 	int nJetsJb = 0;
 	bool isALeadPhoSide = true;	
 	int subPhoLocation = 0;
 	int nVisObjects = jetID.size();
+	if( nVisObjects != ( (type == 0 ) ? nSelJets : nRJRPhos + nSelJets ) ){ 
+		std::cout << " !!!!!!    nVisObjects != ( nRJRPhos + nSelJets )  !!!!!!!!! " << std::endl;
+		std::cout << " !!!!!!    " << nVisObjects << " != ( " << nRJRPhos << " + " << nSelJets << " )  !!!!!!!!! " << std::endl;
+	}//<<>>if( nVisObjects != ( nRJRPhos + nSelJets ) )
 	if( COMB_J->GetFrame(jetID[0]) == *J1b || COMB_J->GetFrame(jetID[0]) == *J2b ) isALeadPhoSide = false;
 	//  -- redifine A & B side for jets to be : is jet on lead pho side -> A ; is not on lead pho side -> B 
     for( uInt it = firstObject; it < nVisObjects; it++ ){	
@@ -1663,26 +1675,41 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 
 	}//<<>>for( int i = 0; i < nSelJets; i++ )
 	float abDiffSide = isALeadPhoSide ? 1 : -1;
-	if( ( type == 1 ) && ( nSelPhos == 2 ) ) subPhoLocation = ( COMB_J->GetFrame(jetID[1]) == *J1a || COMB_J->GetFrame(jetID[1]) == *J2a ) ? 1 : 2;
+	if( ( type == 1 ) && ( nRJRPhos == 2 ) ) subPhoLocation = ( COMB_J->GetFrame(jetID[1]) == *J1a || COMB_J->GetFrame(jetID[1]) == *J2a ) ? 1 : 2;
 
+    selRjrVars.fillBranch( "rjrType", type );
     selRjrVars.fillBranch( "rjrABSide", isALeadPhoSide );
     selRjrVars.fillBranch( "rjrNJetsJa", nJetsJa );
     selRjrVars.fillBranch( "rjrNJetsJb", nJetsJb );
     selRjrVars.fillBranch( "rjrNJets", int(geCnts("nSelJets")) );
-    selRjrVars.fillBranch( "rjrNPhotons", nSelPhos );
+    selRjrVars.fillBranch( "rjrNPhotons", nRJRPhos );
     selRjrVars.fillBranch( "rjrNVisObjects", nVisObjects );
     selRjrVars.fillBranch( "rjrSubPhoLocation", subPhoLocation );
 
-	if( type == 1 ){
+	std::vector<int> phoside;
+    std::vector<int> jetside;
+	//if( type == 1 ){
     	for( uInt it = 0; it < nVisObjects; it++ ){
 
 			bool onAside = true;
-			if( COMB_J->GetFrame(jetID[it]) == *J1b || COMB_J->GetFrame(jetID[it]) == *J2b  ) onAside = false;
-			if( it < nSelPhotons ) selRjrVars.fillBranch( "rjrVisPhoSide", onAside );
-			else selRjrVars.fillBranch( "rjrVisJetSide", onAside );
+			int whichside = -1;
+			//if( COMB_J->GetFrame(jetID[it]) == *J1b || COMB_J->GetFrame(jetID[it]) == *J2b  ) onAside = false;
+			if( COMB_J->GetFrame(jetID[it]) == *J1a ) whichside = 0;
+            if( COMB_J->GetFrame(jetID[it]) == *J2a ) whichside = 1;
+            if( COMB_J->GetFrame(jetID[it]) == *J1b ) whichside = 2;
+            if( COMB_J->GetFrame(jetID[it]) == *J2b ) whichside = 3;
+			if( whichside < 0 ) std::cout << " !!!!!!!  Visible object is not on a side !!!!!!! " << std::endl;
+			if( whichside > 1 ) onAside = false;
+			if( it < firstObject ){ 
+    			selRjrVars.fillBranch( "rjrVisPhoSide", onAside );
+				phoside.push_back(whichside);
+			} else { 
+				selRjrVars.fillBranch( "rjrVisJetSide", onAside );
+				jetside.push_back(whichside);
+			}//<<>>if( it < nSelPhotons )
 
 		}//<<>>for( uInt it = 0; it < nVisObjects; it++ )
-	}//<<>>if( type == 1 )
+	//}//<<>>if( type == 1 )
 
   	float m_MS = S->GetMass();
   	float m_cosS  = S->GetCosDecayAngle();
@@ -1711,40 +1738,173 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 
 
 	std::vector< TLorentzVector > hp4;
-    hp4.push_back(J1a->GetFourVector(*S));//0
-    hp4.push_back(J2a->GetFourVector(*S));//1
-    hp4.push_back(J1b->GetFourVector(*S));//2
-    hp4.push_back(J2b->GetFourVector(*S));//3
-    hp4.push_back(X1a->GetFourVector(*S));//4
-    hp4.push_back(X1b->GetFourVector(*S));//5
+    std::vector< TLorentzVector > hxp4;
+	
+	int nPhov = pho4vec.size();
+	if( nPhov != phoside.size() ) std::cout << " !!!!!!!  pho4vec - phoside count mismatch !!!!!!!" << std::endl; 
+	int nJetv = jet4vec.size();
+    if( nJetv != jetside.size() ) std::cout << " !!!!!!!  jet4vec - jetside count mismatch !!!!!!!" << std::endl;
+	//std::cout << " nPhov " << nPhov << " phoside " << phoside.size() << " nJetv " << nJetv << " jetside " << jetside.size() << std::endl; 
 
-	hp4.push_back( hp4[0] + hp4[1] );//6
-    hp4.push_back( hp4[2] + hp4[3] );//7
-    hp4.push_back( hp4[4] + hp4[5] );//8
+	TLorentzVector nulltv(0,0,0,0);
+	std::vector< TLorentzVector > pJetSideSum4Vec{nulltv,nulltv,nulltv,nulltv};
+	std::vector< TLorentzVector > phoSideSum4Vec{nulltv,nulltv,nulltv,nulltv};
+	for ( int pit = 0; pit < nPhov; pit++ ){ phoSideSum4Vec[phoside[pit]] += pho4vec[pit]; pJetSideSum4Vec[phoside[pit]] += pho4vec[pit];}
+    std::vector< TLorentzVector > jetSideSum4Vec{nulltv,nulltv,nulltv,nulltv};
+    for ( int jit = 0; jit < nJetv; jit++ ){ jetSideSum4Vec[jetside[jit]] += jet4vec[jit]; pJetSideSum4Vec[jetside[jit]] += jet4vec[jit];}
 
-	float hs21 = hp4[6].P() + hp4[7].P() + hp4[8].P();
-    float hs41 = hp4[0].P() + hp4[1].P() + hp4[2].P() + hp4[3].P() + hp4[8].P();
+    hp4.push_back(S->GetFourVector(pJetSideSum4Vec[0]));//0 J1a
+    hp4.push_back(S->GetFourVector(pJetSideSum4Vec[1]));//1 J2a
+    hp4.push_back(S->GetFourVector(pJetSideSum4Vec[2]));//2 J1b
+    hp4.push_back(S->GetFourVector(pJetSideSum4Vec[3]));//3 J2b
 
-	float j1apt = J1a->GetTransverseMomentum();
-    float j2apt = J2a->GetTransverseMomentum();
-    float j1bpt = J1b->GetTransverseMomentum();
-    float j2bpt = J2b->GetTransverseMomentum();
-    float japt = Ja->GetTransverseMomentum();
-    float jbpt = Jb->GetTransverseMomentum();
+	float x1sp = ( X1a->GetFourVector(*S) + X1b->GetFourVector(*S) ).P();
+	float x1asp = ( X1a->GetFourVector(*S) ).P();
+    float x1bsp = ( X1b->GetFourVector(*S) ).P();
 
-	float hts21 = japt + jbpt + hp4[8].P();
-	float hts41 = j1apt + j2apt + j1bpt + j2bpt + hp4[8].P();
+    hp4.push_back( hp4[0] + hp4[1] );//4 Ja
+    hp4.push_back( hp4[2] + hp4[3] );//5 Jb
 
-    selRjrVars.fillBranch( "rjr_Hs21", hs21 );
-    selRjrVars.fillBranch( "rjr_Hs41", hs41 );
-    selRjrVars.fillBranch( "rjr_Hts21", hts21 );
-    selRjrVars.fillBranch( "rjr_Hts41", hts41 );
+    float phs21 = hp4[4].P() + hp4[5].P() + x1sp;
+    float phs41 = hp4[0].P() + hp4[1].P() + hp4[2].P() + hp4[3].P() + x1sp;
+
+    float phs21a = hp4[0].P() + hp4[1].P() + x1asp;
+    float phs21b = hp4[2].P() + hp4[3].P() + x1bsp;
+    float phs11a = hp4[4].P() + x1asp;
+    float phs11b = hp4[5].P() + x1bsp;
+
+    selRjrVars.fillBranch( "rjr_pHs21", phs21 );
+    selRjrVars.fillBranch( "rjr_pHs41", phs41 );
+    selRjrVars.fillBranch( "rjr_pHs21a", phs21a );
+    selRjrVars.fillBranch( "rjr_pHs21b", phs21b );
+    selRjrVars.fillBranch( "rjr_pHs11a", phs11a );
+    selRjrVars.fillBranch( "rjr_pHs11b", phs11b );
+
+    hxp4.push_back(X2a->GetFourVector(pJetSideSum4Vec[0]));//0
+    hxp4.push_back(X2a->GetFourVector(pJetSideSum4Vec[1]));//1
+    hxp4.push_back(X1a->GetFourVector(*X2a));//2
+    hxp4.push_back(X2b->GetFourVector(pJetSideSum4Vec[2]));//3
+    hxp4.push_back(X2b->GetFourVector(pJetSideSum4Vec[3]));//4
+    hxp4.push_back(X1b->GetFourVector(*X2b));//5
+
+    hxp4.push_back( hxp4[0] + hxp4[1] );//6
+    hxp4.push_back( hxp4[3] + hxp4[4] );//7
+
+    float phxa20 = hxp4[0].P() + hxp4[1].P();
+    float phxb20 = hxp4[3].P() + hxp4[4].P();
+    float phxa21 = phxa20 + hxp4[2].P();
+    float phxb21 = phxb20 + hxp4[5].P();
+    float phxa10 = hxp4[6].P();
+    float phxb10 = hxp4[7].P();
+    float phxa11 = hxp4[6].P() + hxp4[2].P();
+    float phxb11 = hxp4[7].P() + hxp4[5].P();
+
+    selRjrVars.fillBranch( "rjr_pHxa20", phxa20 );
+    selRjrVars.fillBranch( "rjr_pHxb20", phxb20 );
+    selRjrVars.fillBranch( "rjr_pHxa21", phxa21 );
+    selRjrVars.fillBranch( "rjr_pHxb21", phxb21 );
+    selRjrVars.fillBranch( "rjr_pHxa10", phxa10 );
+    selRjrVars.fillBranch( "rjr_pHxb10", phxb10 );
+    selRjrVars.fillBranch( "rjr_pHxa11", phxa11 );
+    selRjrVars.fillBranch( "rjr_pHxb11", phxb11 );
+
+    float pj1apt = S->GetTransverseMomentum(pJetSideSum4Vec[0]);
+    float pj2apt = S->GetTransverseMomentum(pJetSideSum4Vec[1]);
+    float pj1bpt = S->GetTransverseMomentum(pJetSideSum4Vec[2]);
+    float pj2bpt = S->GetTransverseMomentum(pJetSideSum4Vec[3]);
+    float pjapt = S->GetTransverseMomentum(pJetSideSum4Vec[0]+pJetSideSum4Vec[1]);
+    float pjbpt = S->GetTransverseMomentum(pJetSideSum4Vec[2]+pJetSideSum4Vec[3]);
+
+	float x1spt = S->GetTransverseMomentum( X1a->GetFourVector(*LAB) + X1b->GetFourVector(*LAB) );
+    float x1aspt = S->GetTransverseMomentum( X1a->GetFourVector(*LAB) );
+    float x1bspt = S->GetTransverseMomentum( X1b->GetFourVector(*LAB) );
+
+    float phts21 = pjapt + pjbpt + x1spt;
+    float phts41 = pj1apt + pj2apt + pj1bpt + pj2bpt + x1spt;
+
+    float phts21a = pj1apt + pj2apt + x1aspt;
+    float phts21b = pj1bpt + pj2bpt + x1bspt;
+    float phts11a = pjapt + x1aspt;
+    float phts11b = pjbpt + x1bspt;
+
+    selRjrVars.fillBranch( "rjr_pHts21", phts21 );
+    selRjrVars.fillBranch( "rjr_pHts41", phts41 );
+    selRjrVars.fillBranch( "rjr_pHts21a", phts21a );
+    selRjrVars.fillBranch( "rjr_pHts21b", phts21b );
+    selRjrVars.fillBranch( "rjr_pHts11a", phts11a );
+    selRjrVars.fillBranch( "rjr_pHts11b", phts11b );
+
+    float ptj1apt = X2a->GetTransverseMomentum(pJetSideSum4Vec[0]);
+    float ptj2apt = X2a->GetTransverseMomentum(pJetSideSum4Vec[1]);
+    float ptx1apt = X2a->GetTransverseMomentum(X1a->GetFourVector(*LAB));
+    float ptj1bpt = X2b->GetTransverseMomentum(pJetSideSum4Vec[2]);
+    float ptj2bpt = X2b->GetTransverseMomentum(pJetSideSum4Vec[3]);
+    float ptx1bpt = X2b->GetTransverseMomentum(X1b->GetFourVector(*LAB));
+    float ptj12apt = X2a->GetTransverseMomentum(pJetSideSum4Vec[0]+pJetSideSum4Vec[1]);
+    float ptj12bpt = X2b->GetTransverseMomentum(pJetSideSum4Vec[2]+pJetSideSum4Vec[3]);
+
+    float phtxa20 = ptj1apt + ptj2apt;
+    float phtxb20 = ptj1bpt + ptj2bpt;
+    float phtxa21 = phtxa20 + ptx1apt;
+    float phtxb21 = phtxb20 + ptx1bpt;
+    float phtxa10 = ptj12apt;
+    float phtxb10 = ptj12bpt;
+    float phtxa11 = ptj12apt + ptx1apt;
+    float phtxb11 = ptj12bpt + ptx1bpt;
+
+    selRjrVars.fillBranch( "rjr_pHtxa20", phtxa20 );
+    selRjrVars.fillBranch( "rjr_pHtxb20", phtxb20 );
+    selRjrVars.fillBranch( "rjr_pHtxa21", phtxa21 );
+    selRjrVars.fillBranch( "rjr_pHtxb21", phtxb21 );
+    selRjrVars.fillBranch( "rjr_pHtxa10", phtxa10 );
+    selRjrVars.fillBranch( "rjr_pHtxb10", phtxb10 );
+    selRjrVars.fillBranch( "rjr_pHtxa11", phtxa11 );
+    selRjrVars.fillBranch( "rjr_pHtxb11", phtxb11 );
+
+	float phopt1 = -9;
+    float phopt2 = -9;
+	if( nPhov > 0 ) phopt1 = S->GetTransverseMomentum( pho4vec[0] );
+    if( nPhov > 1 ) phopt2 = S->GetTransverseMomentum( pho4vec[1] );
+
+    selRjrVars.fillBranch( "rjr_p1Pts", phopt1 );
+    selRjrVars.fillBranch( "rjr_p2Pts", phopt2 );
+
+    float phopt1xa = -9;
+    float phopt1xb = -9;
+    float phopt2xa = -9;
+    float phopt2xb = -9;
+    if( nPhov > 0 ) ( phoside[0] < 2 ) ? phopt1xa = X2a->GetTransverseMomentum( pho4vec[0] )
+									     : phopt1xb = X2b->GetTransverseMomentum( pho4vec[0] );
+    if( nPhov > 1 ) ( phoside[0] < 2 ) ? phopt2xa = X2a->GetTransverseMomentum( pho4vec[1] )
+                                         : phopt2xb = X2b->GetTransverseMomentum( pho4vec[1] );
+    selRjrVars.fillBranch( "rjr_p1Ptxa", phopt1xa );
+    selRjrVars.fillBranch( "rjr_p1Ptxb", phopt1xb );
+    selRjrVars.fillBranch( "rjr_p2Ptxa", phopt2xa );
+    selRjrVars.fillBranch( "rjr_p2Ptxb", phopt2xb );
 
 	std::vector< TLorentzVector > p4;
 	p4.push_back(Ja->GetFourVector(*S));
     p4.push_back(Jb->GetFourVector(*S));
     p4.push_back(X1a->GetFourVector(*S));
     p4.push_back(X1b->GetFourVector(*S));
+
+	float pHs22 = p4[0].P() + p4[1].P() + p4[2].P() + p4[3].P();
+    float pHs11 =  ( p4[0] + p4[1] ).P() + ( p4[2] + p4[3] ).P();
+
+    float pHJas = Ja->GetTransverseMomentum(*S);
+    float pHJbs = Jb->GetTransverseMomentum(*S);
+    float pHX1as = X1a->GetTransverseMomentum(*S);
+    float pHX1bs = X1b->GetTransverseMomentum(*S);
+	float pHJs = S->GetTransverseMomentum( Ja->GetFourVector(*LAB) + Jb->GetFourVector(*LAB) );
+    float pHX1s = S->GetTransverseMomentum( X1a->GetFourVector(*LAB) + X1b->GetFourVector(*LAB) );
+
+	float pHts22 = pHJas + pHJbs + pHX1as + pHX1bs;
+	float pHts11 = pHJs + pHX1s;
+
+    selRjrVars.fillBranch( "rjr_pHs22", pHs22 );
+    selRjrVars.fillBranch( "rjr_pHs11", pHs11 );
+    selRjrVars.fillBranch( "rjr_pHts22", pHts22 );
+    selRjrVars.fillBranch( "rjr_pHts11", pHts11 );
 
 	for( int i = 0; i < 4; i++ ){
 
@@ -1764,15 +1924,15 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     float AX2NQSum = 2*AX2QSum/a_MS;//*2 -- !! R
     float AX2Diff = abDiffSide*(a_MX2a-a_MX2b)/(a_MX2a+a_MX2b);
 
-    float pf_ptX2a = X2a->GetMomentum(*S);
-    float pf_ptX2b = X2b->GetMomentum(*S);
+    float pf_pX2a = X2a->GetMomentum(*S);
+    float pf_pX2b = X2b->GetMomentum(*S);
 
     selRjrVars.fillBranch( "rjr_Mr", a_MS );
     selRjrVars.fillBranch( "rjr_R", AX2NQSum );
     selRjrVars.fillBranch( "rjrAX2Diff", AX2Diff );
 
-    selRjrVars.fillBranch( "rjrX2aPtS", pf_ptX2a );
-    selRjrVars.fillBranch( "rjrX2bPtS", pf_ptX2b );
+    selRjrVars.fillBranch( "rjrX2aPs", pf_pX2a );
+    selRjrVars.fillBranch( "rjrX2bPs", pf_pX2b );
 
   	float m_EVa = X2a->GetListVisibleFrames().GetFourVector(*X2a).E();
   	float m_EVb = X2b->GetListVisibleFrames().GetFourVector(*X2b).E();
@@ -2229,6 +2389,8 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
 
     selJets.attachBranches( fOutTree );
 
+    selRjrVars.makeBranch( "rjrType", VINT );
+
     selRjrVars.makeBranch( "rjrX1aMass", VFLOAT );
     selRjrVars.makeBranch( "rjrX1aCosA", VFLOAT );
     selRjrVars.makeBranch( "rjrX1bMass", VFLOAT );
@@ -2242,10 +2404,10 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
 
     selRjrVars.makeBranch( "rjrX2aMass", VFLOAT );
     selRjrVars.makeBranch( "rjrX2aCosA", VFLOAT );
-    selRjrVars.makeBranch( "rjrX2aPtS", VFLOAT );
+    selRjrVars.makeBranch( "rjrX2aPs", VFLOAT );
     selRjrVars.makeBranch( "rjrX2bMass", VFLOAT );
     selRjrVars.makeBranch( "rjrX2bCosA", VFLOAT );
-    selRjrVars.makeBranch( "rjrX2bPtS", VFLOAT );
+    selRjrVars.makeBranch( "rjrX2bPs", VFLOAT );
 
     selRjrVars.makeBranch( "rjrSMass", VFLOAT );
     selRjrVars.makeBranch( "rjrSCosA", VFLOAT );
@@ -2275,10 +2437,50 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     selRjrVars.makeBranch( "rjrNJetsJb", VINT );
     selRjrVars.makeBranch( "rjrNJetsJa", VINT );
 
-    selRjrVars.makeBranch( "rjr_Hs21", VFLOAT );
-    selRjrVars.makeBranch( "rjr_Hs41", VFLOAT );
-    selRjrVars.makeBranch( "rjr_Hts21", VFLOAT );
-    selRjrVars.makeBranch( "rjr_Hts41", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHts21", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHts41", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHts21a", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHts21b", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHts11a", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHts11b", VFLOAT );
+
+    selRjrVars.makeBranch( "rjr_pHs21", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHs41", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHs21a", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHs21b", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHs11a", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHs11b", VFLOAT );
+
+    selRjrVars.makeBranch( "rjr_pHxa20", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHxb20", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHxa21", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHxb21", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHxa10", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHxb10", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHxa11", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHxb11", VFLOAT );
+
+    selRjrVars.makeBranch( "rjr_pHtxa20", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHtxb20", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHtxa21", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHtxb21", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHtxa10", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHtxb10", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHtxa11", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHtxb11", VFLOAT );
+
+    selRjrVars.makeBranch( "rjr_pHs22", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHs11", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHts22", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHts11", VFLOAT );
+
+    selRjrVars.makeBranch( "rjr_p1Pts", VFLOAT );
+    selRjrVars.makeBranch( "rjr_p2Pts", VFLOAT );
+
+    selRjrVars.makeBranch( "rjr_p1Ptxa", VFLOAT );
+    selRjrVars.makeBranch( "rjr_p1Ptxb", VFLOAT );
+    selRjrVars.makeBranch( "rjr_p2Ptxa", VFLOAT );
+    selRjrVars.makeBranch( "rjr_p2Ptxb", VFLOAT );
 
     selRjrVars.makeBranch( "rjrAX2Diff","rjr_Rdiff", VFLOAT );
 
