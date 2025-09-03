@@ -11,13 +11,15 @@ inline std::vector<int> MomIDs(const reco::GenParticle &genLepton) {
 
   if(!mother)
     return std::vector<int>();
-  
+
   std::vector<int> motherIDs;
   while(mother->pt() > 0) {
     const int motherID = mother->pdgId();
 
-    mother = mother->mother();
-
+    if(auto *mom = mother->mother())
+      mother = mom;
+    else break;
+    
     if(motherID == mother->pdgId())
       continue;
 

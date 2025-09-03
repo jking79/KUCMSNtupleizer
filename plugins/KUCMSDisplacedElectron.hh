@@ -156,7 +156,7 @@ private:
   
   MatchedTrackSCPairs<reco::TransientTrack> matchedTracksToSCs_;
 
-  double SaveGenInfo(const reco::GenParticleCollection &genCollection);
+  //double SaveGenInfo(const reco::GenParticleCollection &genCollection);
 
 };//<<>>class KUCMSDisplacedElectron : public KUCMSObjectBase
 
@@ -284,6 +284,7 @@ void KUCMSDisplacedElectron::PostProcessEvent( ItemManager<float>& geVar ){
   signalGenElectrons_.clear();
 
   // Get Gen-Matching information, if available
+  /*
   float genCost = -1;
   if(cfFlag("hasGenInfo")) {
 
@@ -310,7 +311,7 @@ void KUCMSDisplacedElectron::PostProcessEvent( ItemManager<float>& geVar ){
   Branches.fillBranch("DisplacedElectron_nTotal",  int(matchedTracksToSCs_.size()) );
   Branches.fillBranch("DisplacedElectron_costSC",  float(matchedTracksToSCs_.GetCost()) );
   Branches.fillBranch("DisplacedElectron_costGen", float(genCost));
-  
+  */
   //isoTool_->CalculateIsolation(matchedTracksToSCs_);
 
   int index = 0;
@@ -360,7 +361,7 @@ void KUCMSDisplacedElectron::PostProcessEvent( ItemManager<float>& geVar ){
     Branches.fillBranch("DisplacedElectron_ip2Dbs",         float(candidate.GetIsoInfo()["ip2Dbs"]) );
     Branches.fillBranch("DisplacedElectron_sip3Dbs",        float(candidate.GetIsoInfo()["sip3Dbs"]) );
     Branches.fillBranch("DisplacedElectron_sip2Dbs",        float(candidate.GetIsoInfo()["sip2Dbs"]) );
-    
+    /*
     if(cfFlag("hasGenInfo")) {
       GenLeptonInfo genInfo(candidate.GetGenInfo());
       Branches.fillBranch("DisplacedElectron_isSignal",     bool(genInfo.GetLepMomType() == kZ || genInfo.GetLepMomType() == kSusy) );
@@ -372,10 +373,11 @@ void KUCMSDisplacedElectron::PostProcessEvent( ItemManager<float>& geVar ){
       Branches.fillBranch("DisplacedElectron_pdgId",        int(genInfo.GetPdgID()) );
 
     }
+    */
     index++;
   }
 }//<<>>void KUCMSDisplacedElectron::PostProcessEvent()
-
+/*
 double KUCMSDisplacedElectron::SaveGenInfo(const reco::GenParticleCollection &genCollection) {
 
   if(matchedTracksToSCs_.size() == 0)
@@ -396,5 +398,5 @@ double KUCMSDisplacedElectron::SaveGenInfo(const reco::GenParticleCollection &ge
   return genToTrackAssigner.GetCost();
 
 }
-
+*/
 #endif

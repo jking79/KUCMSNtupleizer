@@ -133,19 +133,20 @@ class KUCMSGenObject : public KUCMSObjectBase {
 	std::pair<int,std::pair<float,float>> getGenLeptonMatch( const reco::RecoCandidate & parton, int type  );
 
     // Gen electrons
-    void GenElectronContent() const;
-    std::vector<reco::GenParticle> GetSignalGenElectrons() const {return genSignalElectrons_;}
-    std::vector<reco::GenParticle> GetGenElectrons() const {return genElectrons_;}
-    std::vector<reco::GenParticle> GetGenParticles() const {return fgenparts;}
-    LepMomType ClassifyGenElectron(const reco::GenParticle &genElectron) const;
-    std::vector<int> MomIDs(const reco::GenParticle &genElectron) const; 
- 	//template <typename T>
-    //GenClassifiedElectrons<T> GetGenClassifiedElectrons(const std::vector<T> &candidateTracks) const;
-  	//std::map<std::string, float> GenMatchElectrons(const Lorentz4Vec &electronTrack, const int charge) const;
-  	//std::map<std::string, float> getGenPartMatch( const reco::SuperCluster &scptr, float pt ) const;
-  	//std::map<std::string, bool> MotherID(const int genIndex) const;
-    bool IsMotherZ(const reco::GenParticle &genElectron) const;
-
+  /*
+  void GenElectronContent() const;
+  std::vector<reco::GenParticle> GetSignalGenElectrons() const {return genSignalElectrons_;}
+  std::vector<reco::GenParticle> GetGenElectrons() const {return genElectrons_;}
+  std::vector<reco::GenParticle> GetGenParticles() const {return fgenparts;}
+  LepMomType ClassifyGenElectron(const reco::GenParticle &genElectron) const;
+  std::vector<int> MomIDs(const reco::GenParticle &genElectron) const; 
+  //template <typename T>
+  //GenClassifiedElectrons<T> GetGenClassifiedElectrons(const std::vector<T> &candidateTracks) const;
+  //std::map<std::string, float> GenMatchElectrons(const Lorentz4Vec &electronTrack, const int charge) const;
+  //std::map<std::string, float> getGenPartMatch( const reco::SuperCluster &scptr, float pt ) const;
+  //std::map<std::string, bool> MotherID(const int genIndex) const;
+  bool IsMotherZ(const reco::GenParticle &genElectron) const;
+  */
     private:
 
     std::vector<reco::GenParticle> fgenparts;
@@ -202,12 +203,12 @@ class KUCMSGenObject : public KUCMSObjectBase {
     edm::EDGetTokenT<std::vector<reco::GenJet>> genJetsToken_;
     edm::Handle<std::vector<reco::GenJet>> genJets_;
 
-	//std::vector<int> MomIDs(const reco::GenParticle &genElectron) const;
-  	LepMomType AssignLeptonMomType(const int motherID) const;
-  	//LepType ClassifyGenElectron(const std::vector<int> &motherIDs) const;
-  	//LepType ClassifyGenElectron(const reco::GenParticle &genElectron) const;
-  	bool isSignalGenElectron(const reco::GenParticle &genElectron) const;
-  	void PrintMother(const LepMomType &momType) const;
+  //std::vector<int> MomIDs(const reco::GenParticle &genElectron) const;
+  //LepMomType AssignLeptonMomType(const int motherID) const;
+  //LepType ClassifyGenElectron(const std::vector<int> &motherIDs) const;
+  //LepType ClassifyGenElectron(const reco::GenParticle &genElectron) const;
+  //	bool isSignalGenElectron(const reco::GenParticle &genElectron) const;
+  //	void PrintMother(const LepMomType &momType) const;
 
 	public:
 
@@ -1638,6 +1639,7 @@ std::vector<float> KUCMSGenObject::getGenJetInfo( float jetEta, float jetPhi, fl
 
 // Gen Electron methods
 
+/*
 std::vector<int>KUCMSGenObject:: MomIDs(const reco::GenParticle &genElectron) const {
 
   auto mother = genElectron.mother();
@@ -1766,7 +1768,7 @@ LepMomType KUCMSGenObject::AssignLeptonMomType(const int motherID) const {
   return type;
   
 }
- /*
+ 
 template <typename T>
 GenClassifiedElectrons<T> KUCMSGenObject::GetGenClassifiedElectrons(const std::vector<T> &candidateTracks) const {
   
