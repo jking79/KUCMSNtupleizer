@@ -287,7 +287,7 @@ void KUCMSDisplacedElectron::PostProcessEvent( ItemManager<float>& geVar ){
   float genCost = -1;
   if(cfFlag("hasGenInfo")) {
 
-    signalGenElectrons_ = genObjs_->GetSignalGenElectrons();
+    //signalGenElectrons_ = genObjs_->GetSignalGenElectrons();
 
     int index(0);
     for(auto const &gen : genObjs_->GetGenParticles()) {

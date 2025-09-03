@@ -68,8 +68,8 @@
 #include "KUCMSBranchManager.hh"
 #include "KUCMSObjectBase.hh"
 
-//#define DEBUG true
-#define DEBUG false
+#define ETDEBUG true
+//#define ETDEBUG false
 
 using namespace edm; 
 
@@ -212,7 +212,7 @@ void KUCMSECALTracks::InitObject( TTree* fOutTree ){
 
 void KUCMSECALTracks::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar ){
   
-  if( DEBUG ) std::cout << "Collecting Tracks" << std::endl;
+  if( ETDEBUG ) std::cout << "Collecting Tracks" << std::endl;
 
   ecalTracks_.clear();
   
@@ -274,10 +274,10 @@ void KUCMSECALTracks::LoadEvent( const edm::Event& iEvent, const edm::EventSetup
 
 void KUCMSECALTracks::PostProcessEvent( ItemManager<float>& geVar ){
   
-  if( DEBUG ) std::cout << "Processing Tracks" << std::endl;
+  if( ETDEBUG ) std::cout << "Processing Tracks" << std::endl;
   
   Branches.clearBranches();
-  if( DEBUG ) std::cout << " - Entering Track loop" << std::endl;
+  if( ETDEBUG ) std::cout << " - Entering Track loop" << std::endl;
 
   Branches.fillBranch("ECALTrack_nTracks", int(ecalTracks_.size()) );
   

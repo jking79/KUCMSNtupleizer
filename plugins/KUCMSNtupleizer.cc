@@ -39,6 +39,9 @@
 
 using namespace std;
 
+//#define NTDEBUG true
+#define NTDEBUG false
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // constructor
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -73,7 +76,7 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     // -- consume tags ------------------------------------------------------------
     // creats "token" for all collections that we wish to process
     
-    //if( DEBUG ) 
+    //if( NTDEBUG ) 
     std::cout << "In constructor for KUCMSNtupilizer - tag and tokens" << std::endl;
 
 	// -----  set event skim selection ----------------------------------------------------------------
@@ -83,7 +86,9 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     // Triggers
     //auto triggerObjectsToken = consumes<std::vector<pat::TriggerObjectStandAlone>>(iConfig.getParameter<edm::InputTag>("triggerObjects"));
 
-	if( DEBUG ) std::cout << "Create Object Classes" << std::endl;
+	if( NTDEBUG ) std::cout << "Create Object Classes" << std::endl;
+	// note : objects stored in a map - the order in which the objects are called is set by the alphanumeric order of the object names
+
 
 	//Event Info
     auto eventInfoObj = new KUCMSEventInfoObject(  iConfig ); 
@@ -275,12 +280,12 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     pfmetObj->LoadPhotonObject( photonsObj );
     ObjMan.Load( "PFMet", pfmetObj );
 
-	if( DEBUG ) std::cout << "Loading Final Objects" << std::endl;
+	if( NTDEBUG ) std::cout << "Loading Final Objects" << std::endl;
     ObjMan.Load( "ECALRecHits", recHitsObj );// loaded last to process feedback from other objects
 
     if( cfFlag("hasGenInfo") ){
 
-        if( DEBUG ) std::cout << "Create & Load Gen Information" << std::endl;
+        if( NTDEBUG ) std::cout << "Create & Load Gen Information" << std::endl;
 
         auto genObjs = new KUCMSGenObject( iConfig );
         auto genEvtInfoToken = consumes<GenEventInfoProduct>(iConfig.getParameter<edm::InputTag>("genEvt"));

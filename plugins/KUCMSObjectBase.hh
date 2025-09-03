@@ -80,6 +80,9 @@ typedef ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<float>,ROOT::Math::
 #define BUNCHES 3564
 #define SAMPLES 10
 
+//#define OMDEUG true
+#define OMDEUG false
+
 class KUCMSObjectBase : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 
     public:
@@ -178,21 +181,53 @@ void ObjectManager::Load( std::string name, KUCMSObjectBase* object ){ Load( nam
 
 void ObjectManager::Init( TTree* fOutTree ){
 
-    for( auto & object : objects ){ object.second->InitObject( fOutTree ); }
+	if( OMDEUG ) std::cout << " :: Objects Init :: " << std::endl;
+    for( auto & object : objects ){ 
+		object.second->InitObject( fOutTree ); 
+		if( OMDEUG ) std::cout << " :::: " << object.second->getName() << std::endl;
+	}//<<>>for( auto & object : objects )
 
 }//<<>>void ObjectManager::Init( ItemManager<float>& geVar, TTree* fOutTree )
 
 void ObjectManager::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar ){
 
-    for( auto & object : objects ){ object.second->LoadEvent( iEvent, iSetup, geVar ); }
+    if( OMDEUG ) std::cout << " :: Objects LoadEvent :: " << std::endl;
+    for( auto & object : objects ){ 
+		object.second->LoadEvent( iEvent, iSetup, geVar ); 
+        if( OMDEUG ) std::cout << " :::: " << object.second->getName() << std::endl;
+	}//<<>>for( auto & object : objects )
 
 }//<<>>void ObjectManager::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
-void ObjectManager::ProcessEvent( ItemManager<float>& geVar ){ for( auto & object : objects ){object.second->ProcessEvent(geVar);}}
+void ObjectManager::ProcessEvent( ItemManager<float>& geVar ){ 
+	
+    if( OMDEUG ) std::cout << " :: Objects ProcessEvent :: " << std::endl;
+	for( auto & object : objects ){
+		object.second->ProcessEvent(geVar);
+		if( OMDEUG ) std::cout << " :::: " << object.second->getName() << std::endl;
+	}//<<>>for( auto & object : objects )
 
-void ObjectManager::PostProcessEvent( ItemManager<float>& geVar ){ for( auto & object : objects ){object.second->PostProcessEvent(geVar);}}
+}//<<>>void ObjectManager::ProcessEvent( ItemManager<float>& geVar )
 
-void ObjectManager::EndJobs(){ for( auto & object : objects ){ object.second->EndJobs(); } }
+void ObjectManager::PostProcessEvent( ItemManager<float>& geVar ){ 
+
+    if( OMDEUG ) std::cout << " :: Objects PostProcessEvent :: " << std::endl;
+	for( auto & object : objects ){
+		object.second->PostProcessEvent(geVar);
+        if( OMDEUG ) std::cout << " :::: " << object.second->getName() << std::endl;
+	}//<<>>for( auto & object : objects )
+
+}//<<>>void ObjectManager::PostProcessEvent( ItemManager<float>& geVar )
+
+void ObjectManager::EndJobs(){ 
+
+    if( OMDEUG ) std::cout << " :: Objects EndJobs :: " << std::endl;
+	for( auto & object : objects ){ 
+		object.second->EndJobs(); 
+        if( OMDEUG ) std::cout << " :::: " << object.second->getName() << std::endl;
+	}//<<>>for( auto & object : objects )
+
+}//<<>>void ObjectManager::EndJobs()
 
 bool ObjectManager::valid( std::string key ){
 

@@ -133,9 +133,9 @@ class KUCMSGenObject : public KUCMSObjectBase {
 	std::pair<int,std::pair<float,float>> getGenLeptonMatch( const reco::RecoCandidate & parton, int type  );
 
     // Gen electrons
-    void GenElectronContent() const;
-    std::vector<reco::GenParticle> GetSignalGenElectrons() const {return genSignalElectrons_;}
-    std::vector<reco::GenParticle> GetGenElectrons() const {return genElectrons_;}
+    //void GenElectronContent() const;
+    //std::vector<reco::GenParticle> GetSignalGenElectrons() const {return genSignalElectrons_;}
+    //std::vector<reco::GenParticle> GetGenElectrons() const {return genElectrons_;}
     std::vector<reco::GenParticle> GetGenParticles() const {return fgenparts;}
     LepMomType ClassifyGenElectron(const reco::GenParticle &genElectron) const;
     std::vector<int> MomIDs(const reco::GenParticle &genElectron) const; 
@@ -167,8 +167,8 @@ class KUCMSGenObject : public KUCMSObjectBase {
     std::vector<float> matdr;
     std::vector<float> matde;
 
-    std::vector<reco::GenParticle> genElectrons_;
-    std::vector<reco::GenParticle> genSignalElectrons_;
+    //std::vector<reco::GenParticle> genElectrons_;
+    //std::vector<reco::GenParticle> genSignalElectrons_;
 
     // genEvtInfo
     //const edm::InputTag genEvtInfoTag;
@@ -273,6 +273,7 @@ void KUCMSGenObject::InitObject( TTree* fOutTree ){
 void KUCMSGenObject::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar ){
 
     if( GenDEBUG ) std::cout << "Getting gen tokens" << std::endl;
+	//std::cout << "Getting gen tokens" << std::endl;
 
     iEvent.getByToken(genEvtInfoToken_, genEvtInfo_);
     iEvent.getByToken(gent0Token_, gent0_);
@@ -296,8 +297,8 @@ void KUCMSGenObject::LoadEvent( const edm::Event& iEvent, const edm::EventSetup&
 
     fgenjets.clear();
     fgenjetllp.clear();
-    genElectrons_.clear();
-    genSignalElectrons_.clear();
+    //genElectrons_.clear();
+    //genSignalElectrons_.clear();
 
     if( GenDEBUG ) std::cout << "Collecting Gen Particles" << std::endl;
 	if( cfFlag("motherChase") ){
@@ -338,13 +339,13 @@ void KUCMSGenObject::LoadEvent( const edm::Event& iEvent, const edm::EventSetup&
 			//	{ std::cout << "Stable PO: " << genPartSUSID << " : " << std::endl; motherChase( genPart, "" );}
 			//motherChase( genPart, "" );
 	    	// Gen electron collections
-	    	if(abs(genPart.pdgId()) == 11) {
-	      		genElectrons_.push_back(genPart);
-	      		//std::cout << "\nmatched as electron!" << std::endl;
-	      		//for(const auto &id : MomIDs(genPart))
-	      		//std::cout << "  id = " << id << std::endl;
-	      		if( isSignalGenElectron(genPart) ) genSignalElectrons_.push_back(genPart);
-	    	}//if(abs(genPart.pdgId()) == 11)
+	    	//if(abs(genPart.pdgId()) == 11) {
+	      	//	genElectrons_.push_back(genPart);
+	      	//	//std::cout << "\nmatched as electron!" << std::endl;
+	      	//	//for(const auto &id : MomIDs(genPart))
+	      	//	//std::cout << "  id = " << id << std::endl;
+	      	//	//if( isSignalGenElectron(genPart) ) genSignalElectrons_.push_back(genPart);
+	    	//}//if(abs(genPart.pdgId()) == 11)
             if( GenDEBUG && genPartSUSID == 22 ) std::cout << "Found genParton signal photon" << std::endl;
         } else {
 			bool isTree( genPart.status() < 40 );
@@ -580,7 +581,8 @@ void KUCMSGenObject::ProcessEvent( ItemManager<float>& geVar ){
     Branches.clearBranches();
 
     //if( GenDEBUG ) std::cout << " - enetering Gen loop" << std::endl;
-	
+	//std::cout << " - enetering Gen loop" << std::endl;	
+
 	bool hasLWZX = false;
     bool hasLWZQ = false;
 	int nLWZX = 0;
@@ -1241,7 +1243,7 @@ int KUCMSGenObject::llpGenChaseP( const reco::GenParticle & kid, int depth ){
     int nMoms = kid.numberOfMothers();
 	if( nMoms == 1 && kid.pdgId() == kid.mother(0)->pdgId() ) return 101;
     int genPartId = std::abs(kid.pdgId());
-    if( GenDEBUG ) std::cout << "Genpart motherCase for : " << genPartId << std::endl;
+    //if( GenDEBUG ) std::cout << "Genpart motherCase for : " << genPartId << std::endl;
     for( int gmit(0); gmit < nMoms; gmit++ ){
         auto mGenPartSusID = llpGenChaseP(kid.mother(gmit),genPartId);
         if( mGenPartSusID < genPartSusID ) genPartSusID = mGenPartSusID;
@@ -1638,11 +1640,13 @@ std::vector<float> KUCMSGenObject::getGenJetInfo( float jetEta, float jetPhi, fl
 
 // Gen Electron methods
 
-std::vector<int>KUCMSGenObject:: MomIDs(const reco::GenParticle &genElectron) const {
-
-  auto mother = genElectron.mother();
+std::vector<int> KUCMSGenObject::MomIDs(const reco::GenParticle &genElectron) const {
 
   std::vector<int> motherIDs;
+
+  //if( genElectron.numberOfMothers() < 1 ) return motherIDs; 
+/*
+  auto mother = genElectron.mother(0);
   while(mother->pt() > 0) {
     const int motherID = mother->pdgId();
 
@@ -1653,6 +1657,7 @@ std::vector<int>KUCMSGenObject:: MomIDs(const reco::GenParticle &genElectron) co
 
     motherIDs.push_back(motherID);
   }
+*/
 
   return motherIDs;
 
@@ -1686,7 +1691,7 @@ LepMomType KUCMSGenObject::ClassifyGenElectron(const reco::GenParticle &genElect
 
 void KUCMSGenObject::PrintMother(const LepMomType &momType) const {
 
-  std::cout << "mother: ";
+  std::cout << ": ";
   if (momType == kW) std::cout << "W boson" << std::endl;
   else if (momType == kZ) std::cout << "Z boson" << std::endl;
   else if (momType == kTau)  std::cout << "tau lepton" << std::endl;
@@ -1698,6 +1703,7 @@ void KUCMSGenObject::PrintMother(const LepMomType &momType) const {
 
 }
 
+/*
 void KUCMSGenObject::GenElectronContent() const {
 
   int index(0);
@@ -1736,6 +1742,7 @@ void KUCMSGenObject::GenElectronContent() const {
     index++;
   }
 }
+*/
 
 LepMomType KUCMSGenObject::AssignLeptonMomType(const int motherID) const {
   

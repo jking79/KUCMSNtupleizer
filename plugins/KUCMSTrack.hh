@@ -226,6 +226,8 @@ void KUCMSTrackObject::InitObject( TTree* fOutTree ){
 void KUCMSTrackObject::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar ){
 
 
+    if( TrackDEBUG ) std::cout << "Getting Tokens in Tracks" << std::endl;
+
     iEvent.getByToken( beamLineToken_, beamSpot_ );
     iEvent.getByToken( pfcandToken_, pfcands_ );
   	iEvent.getByToken( generalTracksToken_, generalTracksHandle_ );

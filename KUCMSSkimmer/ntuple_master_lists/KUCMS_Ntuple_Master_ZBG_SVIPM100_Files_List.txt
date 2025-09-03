@@ -7,7 +7,7 @@
 #kucmsntuple_GJets_R18_SVIPM100_v30_GJets_HT-40To100_v29.txt
 #kucmsntuple_GJets_R18_SVIPM100_v30_GJets_HT-600ToInf_v29.txt
 
-#################KUCMSNtuple/kucmsntuple_MET_R18_AL1NpSC_DEOnly_v31/ kucmsntuple_MET_R18_AL1NpSC_DEOnly_v31_MET_AOD_Run2018A-15Feb2022_UL2018-v1_v29.txt mettest 1 0 0 1 0 
+####KUCMSNtuple/kucmsntuple_MET_R18_AL1NpSC_DEOnly_v31/ kucmsntuple_MET_R18_AL1NpSC_DEOnly_v31_MET_AOD_Run2018A-15Feb2022_UL2018-v1_v29.txt mettest 1 0 0 1 0 
 
 #KUCMSNtuple/kucmsntuple_ZJets_R18_SVIPM100_v29/ kucmsntuple_ZJets_R18_SVIPM100_v29_ZJetsToNuNu_HT-600To800_v29.txt Test 3.257 0 0 1 0
 
