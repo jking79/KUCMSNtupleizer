@@ -15,7 +15,7 @@
 
 #include "RestFrames/RestFrames.hh"
 
-#include "tree_base_files/kuSkimTree_Mod.h"
+#include "tree_base_files/skimtuple_v36.h"
 
 #define n1dHists 512
 #define n2dHists 512 
@@ -26,7 +26,7 @@
 // KUCMSSkimmer class -----------------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-class HistMaker : public kuSkimTree {
+class HistMaker : public skimtuple_v36 {
 
 	public:
 

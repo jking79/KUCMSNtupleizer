@@ -430,13 +430,13 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 
 // ( minJetsPer, nphos, maxSelPhos, rjrcut2, metcut )
     //auto dskey  = *DataSetKey
-    //float evtgwt = evtGenWgt;
-    float evtgwt = 1;
+    float evtgwt = evtGenWgt;
+    //float evtgwt = 1;
 	float cfbin = 1;
     std::string configKey(*DataSetKey);
     float xsec = (configInfo[configKey])["sCrossSection"];
-    float segwt = (configInfo[configKey])["nTotEvts"];
-    //float segwt = (configInfo[configKey])["sumEvtWgt"];
+    //float segwt = (configInfo[configKey])["nTotEvts"];
+    float segwt = (configInfo[configKey])["sumEvtWgt"];
     float fillwt = scale * ( xsec * 1000 ) * ( evtgwt / segwt );
     if( DEBUG ) std::cout << " evtfillwt :( " << xsec << " * 1000 ) * ( " << evtgwt << " / " << segwt << " ) = " << fillwt << std::endl;
 	batchVars[bfillwgt] += fillwt;
@@ -689,7 +689,9 @@ int main ( int argc, char *argv[] ){
     			//cutvd = vd; nvsum
     			// ve   asmass
     			// vf vdiff
-    
+   
+				// lepton - SV veto studies -----------------------------------------------------------------------------
+ 
 				//int nj = 1;
 				//int np = 1;
                 for( int np = 1; np < 2; np++ ){
