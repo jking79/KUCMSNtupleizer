@@ -1524,7 +1524,7 @@ void llpgtree::Init( TChain *tree, bool doGenInfo ){
    fChain->SetBranchAddress("Flag_BadChargedCandidateFilter", &Flag_BadChargedCandidateFilter, &b_Flag_BadChargedCandidateFilter);
    fChain->SetBranchAddress("Flag_BadPFMuonDzFilter", &Flag_BadPFMuonDzFilter, &b_Flag_BadPFMuonDzFilter);
    fChain->SetBranchAddress("Flag_BadPFMuonFilter", &Flag_BadPFMuonFilter, &b_Flag_BadPFMuonFilter);
-   fChain->SetBranchAddress("Flag_EcalDeadCellTriggerPrimitiveFilter", &Flag_EcalDeadCellTriggerPrimitiveFilter, &b_Flag_EcalDeadCellTriggerPrimitiveFilter);
+   //fChain->SetBranchAddress("Flag_EcalDeadCellTriggerPrimitiveFilter", &Flag_EcalDeadCellTriggerPrimitiveFilter, &b_Flag_EcalDeadCellTriggerPrimitiveFilter);
    fChain->SetBranchAddress("Flag_HBHENoiseFilter", &Flag_HBHENoiseFilter, &b_Flag_HBHENoiseFilter);
    fChain->SetBranchAddress("Flag_HBHENoiseIsoFilter", &Flag_HBHENoiseIsoFilter, &b_Flag_HBHENoiseIsoFilter);
    fChain->SetBranchAddress("Flag_ecalBadCalibFilter", &Flag_ecalBadCalibFilter, &b_Flag_ecalBadCalibFilter);
@@ -2014,7 +2014,7 @@ void llpgtree::getBranches( Long64_t entry, bool doGenInfo ){
    b_Flag_BadChargedCandidateFilter->GetEntry(entry);   //!
    b_Flag_BadPFMuonDzFilter->GetEntry(entry);   //!
    b_Flag_BadPFMuonFilter->GetEntry(entry);   //!
-   b_Flag_EcalDeadCellTriggerPrimitiveFilter->GetEntry(entry);   //!
+   //b_Flag_EcalDeadCellTriggerPrimitiveFilter->GetEntry(entry);   //!
    b_Flag_HBHENoiseFilter->GetEntry(entry);   //!
    b_Flag_HBHENoiseIsoFilter->GetEntry(entry);   //!
    b_Flag_ecalBadCalibFilter->GetEntry(entry);   //!

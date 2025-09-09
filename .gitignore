@@ -22,6 +22,7 @@ macros/*.obj
 .nfs*
 *.txt
 !*List.txt
+!KUCMSSkimmer/ntuple_master_lists/*.txt
 !macros/ecal_config/*.txt
 !*readme.txt
 test/*WorkSpace/

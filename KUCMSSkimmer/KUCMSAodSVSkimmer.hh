@@ -81,6 +81,7 @@ class KUCMSAodSkimmer : public llpgtree {
 	void processMuons();
     void processJets();
 	void processMet();
+    void processSV();
 	void processRJR( int type, bool newEvent );
 
 	int getPhoQuality( int it );
@@ -177,7 +178,7 @@ class KUCMSAodSkimmer : public llpgtree {
 	KUCMSBranchManager selJets;
 	KUCMSBranchManager selRjrVars;
     KUCMSBranchManager selGenPart;
-
+    KUCMSBranchManager selSV;
 
    std::vector<float>   *OSuperCluster_diffEnergy;
    std::vector<float>   *OSuperCluster_dR;
