@@ -426,24 +426,24 @@ void KUCMSAodSkimmer::startJobs(){
 
 bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
 
-	// counts events and saves event varibles
-	// --------------------------------------
-	processEvntVars();	
-	processRechits();
-	processMet();
-	processPhotons();
-	processElectrons();
-	processMuons();
-	processJets();
-    processSV();
-	if( doGenInfo ){ processGenParticles(); }
-
-	// select events to process and store
-	//--------------------------------------
-	auto saveToTree = eventSelection();	
-	if( saveToTree ){ processRJR(0,true); processRJR(1,false); }
-	return saveToTree;
-
+  // counts events and saves event varibles
+  // --------------------------------------
+  processEvntVars();	
+  processRechits();
+  processMet();
+  processPhotons();
+  processElectrons();
+  processMuons();
+  processJets();
+  processSV();
+  if( doGenInfo ){ processGenParticles(); }
+  
+  // select events to process and store
+  //--------------------------------------
+  auto saveToTree = eventSelection();	
+  if( saveToTree ){ processRJR(0,true); processRJR(1,false); }
+  return saveToTree;
+  
 }//<<>>void KUCMSAodSkimmer::eventLoop( Long64_t entry )
 
 //------------------------------------------------------------------------------------------------------------
@@ -464,99 +464,113 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
 
 void KUCMSAodSkimmer::processSV(){
 
-    selSV.clearBranches(); // <<<<<<<   must do
+  bool doEVSVs = true;
+  if( not doEVSVs ) std::cout << " ------ !!!!!!!!!! Fill SV Branches turned off !!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+  
+  selSV.clearBranches(); // <<<<<<<   must do
+  
+  // SVs                                                                                                                                                                                              
+  if( DEBUG ) std::cout << "Finding SV Vars" << std::endl;
+  
+  int nSVs = 0;
+  if( doEVSVs )  nSVs = Vertex_mass->size();
+  int nLsv = 0;
+  int nHsv = 0;
+  int nEle = 0;
+  int nMuon = 0;
+  
+  if( doEVSVs ){
+    for( int svit = 0; svit < nSVs; svit++ ){
+      
+      const float mass((*Vertex_mass)[svit]);
+      const float dxy((*Vertex_dxy)[svit]);
+      const float x((*Vertex_x)[svit]),  y((*Vertex_y)[svit]), z((*Vertex_z)[svit]);
+      const float cosTheta((*Vertex_cosTheta)[svit]);
+      const uInt ntracks((*Vertex_nTracks)[svit]);
+      const bool peleid((*Vertex_passLooseElectronID)[svit]);
+      const bool pmuonid((*Vertex_passLooseMuonID)[svit]);
+      
+      ROOT::Math::XYZVectorF vec3D(x, y, z);
+      const float etaOrigin(vec3D.eta());
 
+      // baseline selection
+      if(dxy < 2 || (dxy < 15 && fabs(z) > 15) || (dxy > 15 && fabs(etaOrigin) > 1.) || cosTheta > 0.995)
+	continue;
 
+      MaterialVeto vetoTool("fullMask60cm_Data.root");
+      const bool tightOnZSelection(ntracks == 2? (peleid && mass > 60) || (pmuonid && mass > 70) : ntracks >= 5 && mass > 20 && mass/ntracks > 1);
+      
+      if(ntracks == 2) {
+	if( peleid || pmuonid ) nLsv++;
+	if(peleid) nEle++;
+	if(pmuonid) nMuon++;
+      }
+      if( ( ntracks >= 5 ) && ( mass/ntracks > 1 ) ) nHsv++;
+      
+      const float p((*Vertex_p)[svit]), dxyError((*Vertex_dxyError)[svit]), decayAngle((*Vertex_decayAngle)[svit]);
+      
+      selSV.fillBranch( "SV_nTracks", int(ntracks));
+      selSV.fillBranch( "SV_mass", mass);
+      selSV.fillBranch( "SV_pOverE", float(p/sqrt(p*p + mass*mass)));
+      selSV.fillBranch( "SV_decayAngle", decayAngle);
+      selSV.fillBranch( "SV_cosTheta", cosTheta);
+      selSV.fillBranch( "SV_massOverNtracks", mass/ntracks);
+      selSV.fillBranch( "SV_dxy", dxy);
+      selSV.fillBranch( "SV_dxySig", dxy/dxyError);
+      selSV.fillBranch( "SV_passMaterialVeto",  vetoTool.PassVeto(x, y));
+      selSV.fillBranch( "SV_tightZWindowSelection", tightOnZSelection);
+    }//<<>>for( svit = 0; svit < nSVs; scit++ )
+  }//<<>>if( doEVSVs )
+  
+  selSV.fillBranch( "SV_nLeptonic", nLsv );
+  selSV.fillBranch( "SV_nHadronic", nHsv );
+  selSV.fillBranch( "SV_nElectron", nEle );
+  selSV.fillBranch( "SV_nMuon", nMuon );
+  
+  geVars.set("nSVLep", nLsv );
+  geVars.set("nSVHad", nHsv );
+  
 }//<<>>void KUCMSAodSkimmer::processSV()
 
 void KUCMSAodSkimmer::processEvntVars(){
+  
+  if( DEBUG ) std::cout << "Finding PV Vars" << std::endl;
+  selEvtVars.clearBranches(); // <<<<<<<   must do
+  
+  // calc
+  selEvtVars.fillBranch( "PVx", PV_x );
+  selEvtVars.fillBranch( "PVy", PV_y );
+  selEvtVars.fillBranch( "PVz", PV_z ); 
+  
+  //fill
 
-    if( DEBUG ) std::cout << "Finding PV Vars" << std::endl;
-    selEvtVars.clearBranches(); // <<<<<<<   must do
-	bool doEVSVs = true;
-	if( not doEVSVs ) std::cout << " ------ !!!!!!!!!! Fill SV Branches turned off !!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+  if( DEBUG ) std::cout << "Finding Event wts Vars" << std::endl;
+  selEvtVars.fillBranch( "dsKey", dataSetKey );
+  float evtGenWgt = 1;
+  if( useEvtWgt && doGenInfo ) evtGenWgt = Evt_genWgt;
+  selEvtVars.fillBranch( "evtGenWgt", evtGenWgt );
+  //sumEvtGenWgt += Evt_genWgt;
+  selEvtVars.fillBranch( "evtXSection", xsctn );
+  
+  float fillWgt = ( ( xsctn * 1000 ) * evtGenWgt  ) / configWgts["sumEvtWgt"];
 
-	// calc
-    selEvtVars.fillBranch( "PVx", PV_x );
-    selEvtVars.fillBranch( "PVy", PV_y );
-    selEvtVars.fillBranch( "PVz", PV_z ); 
-   
-	//fill
-
-    if( DEBUG ) std::cout << "Finding Event wts Vars" << std::endl;
-    selEvtVars.fillBranch( "dsKey", dataSetKey );
-    float evtGenWgt = 1;
-	if( useEvtWgt && doGenInfo ) evtGenWgt = Evt_genWgt;
-    selEvtVars.fillBranch( "evtGenWgt", evtGenWgt );
-    //sumEvtGenWgt += Evt_genWgt;
-    selEvtVars.fillBranch( "evtXSection", xsctn );
-
-	float fillWgt = ( ( xsctn * 1000 ) * evtGenWgt  ) / configWgts["sumEvtWgt"];
-	selEvtVars.fillBranch( "evtFillWgt", fillWgt );
-
-	// SVs
-	if( DEBUG ) std::cout << "Finding SV Vars" << std::endl;
-
-	int nSVs = 0;
-	if( doEVSVs )  nSVs = Vertex_mass->size();
-	int nLsv = 0;
-	int nHsv = 0;
-	int nEle = 0;
-	int nMuon = 0;
-
-	if( doEVSVs ){
-	for( int svit = 0; svit < nSVs; svit++ ){
-
-		float mass = (*Vertex_mass)[svit];
-        uInt ntrack = (*Vertex_nTracks)[svit];
-        bool peleid = (*Vertex_passLooseElectronID)[svit];
-        bool pmuonid = (*Vertex_passLooseMuonID)[svit];
-
-	if(ntrack == 2) {
-	  if( peleid || pmuonid ) nLsv++;
-	  if(peleid) nEle++;
-	  if(pmuonid) nMuon++;
-	}
-	if( ( ntrack >= 5 ) && ( mass/ntrack > 1 ) ) nHsv++;
-
-	const float p((*Vertex_p)[svit]), dxy((*Vertex_dxy)[svit]), dxyError((*Vertex_dxyError)[svit]),
-                cosTheta((*Vertex_cosTheta)[svit]), decayAngle((*Vertex_decayAngle)[svit]);
-
-	selEvtVars.fillBranch( "SV_nTracks", int(ntrack));
-	selEvtVars.fillBranch( "SV_mass", mass);
-	selEvtVars.fillBranch( "SV_pOverE", float(p/sqrt(p*p + mass*mass)));
-	selEvtVars.fillBranch( "SV_decayAngle", decayAngle);
-	selEvtVars.fillBranch( "SV_cosTheta", cosTheta);
-	selEvtVars.fillBranch( "SV_massOverNtracks", mass/ntrack);
-	selEvtVars.fillBranch( "SV_dxy", dxy);
-	selEvtVars.fillBranch( "SV_dxySig", dxy/dxyError);
-	}//<<>>for( svit = 0; svit < nSVs; scit++ )
-	}//<<>>if( doEVSVs )
-
-	selEvtVars.fillBranch( "SV_nLeptonic", nLsv );
-	selEvtVars.fillBranch( "SV_nHadronic", nHsv );
-	selEvtVars.fillBranch( "SV_nElectron", nEle );
-	selEvtVars.fillBranch( "SV_nMuon", nMuon );
-	
-	geVars.set("nSVLep", nLsv );
-	geVars.set("nSVHad", nHsv );
-
-    selEvtVars.fillBranch( "Flag_BadChargedCandidateFilter", Flag_BadChargedCandidateFilter );//not suggested
-    selEvtVars.fillBranch( "Flag_BadPFMuonDzFilter", Flag_BadPFMuonDzFilter );//suggested
-    selEvtVars.fillBranch( "Flag_BadPFMuonFilter", Flag_BadPFMuonFilter );//suggested
-    //selEvtVars.fillBranch( "Flag_EcalDeadCellTriggerPrimitiveFilter", Flag_EcalDeadCellTriggerPrimitiveFilter );//suggested
-    selEvtVars.fillBranch( "Flag_HBHENoiseFilter", Flag_HBHENoiseFilter );//suggested
-    selEvtVars.fillBranch( "Flag_HBHENoiseIsoFilter", Flag_HBHENoiseIsoFilter );//suggested
-    selEvtVars.fillBranch( "Flag_ecalBadCalibFilter", Flag_ecalBadCalibFilter );//suggested
-    selEvtVars.fillBranch( "Flag_eeBadScFilter", Flag_eeBadScFilter );//suggested
-    selEvtVars.fillBranch( "Flag_globalSuperTightHalo2016Filter", Flag_globalSuperTightHalo2016Filter );//suggested
-    selEvtVars.fillBranch( "Flag_goodVertices", Flag_goodVertices );//suggested
-    selEvtVars.fillBranch( "Flag_hfNoisyHitsFilter", Flag_hfNoisyHitsFilter );//optional
-	//bool metfilter = Flag_BadPFMuonDzFilter && Flag_BadPFMuonFilter && Flag_EcalDeadCellTriggerPrimitiveFilter && Flag_HBHENoiseFilter;
-    bool metfilter = Flag_BadPFMuonDzFilter && Flag_BadPFMuonFilter && Flag_HBHENoiseFilter;
-	metfilter = metfilter && Flag_HBHENoiseIsoFilter && Flag_ecalBadCalibFilter && Flag_eeBadScFilter && Flag_goodVertices;
-	selEvtVars.fillBranch( "Flag_MetFilter",metfilter);
-
+  selEvtVars.fillBranch( "evtFillWgt", fillWgt );
+  selEvtVars.fillBranch( "Flag_BadChargedCandidateFilter", Flag_BadChargedCandidateFilter );//not suggested
+  selEvtVars.fillBranch( "Flag_BadPFMuonDzFilter", Flag_BadPFMuonDzFilter );//suggested
+  selEvtVars.fillBranch( "Flag_BadPFMuonFilter", Flag_BadPFMuonFilter );//suggested
+  //selEvtVars.fillBranch( "Flag_EcalDeadCellTriggerPrimitiveFilter", Flag_EcalDeadCellTriggerPrimitiveFilter );//suggested
+  selEvtVars.fillBranch( "Flag_HBHENoiseFilter", Flag_HBHENoiseFilter );//suggested
+  selEvtVars.fillBranch( "Flag_HBHENoiseIsoFilter", Flag_HBHENoiseIsoFilter );//suggested
+  selEvtVars.fillBranch( "Flag_ecalBadCalibFilter", Flag_ecalBadCalibFilter );//suggested
+  selEvtVars.fillBranch( "Flag_eeBadScFilter", Flag_eeBadScFilter );//suggested
+  selEvtVars.fillBranch( "Flag_globalSuperTightHalo2016Filter", Flag_globalSuperTightHalo2016Filter );//suggested
+  selEvtVars.fillBranch( "Flag_goodVertices", Flag_goodVertices );//suggested
+  selEvtVars.fillBranch( "Flag_hfNoisyHitsFilter", Flag_hfNoisyHitsFilter );//optional
+  //bool metfilter = Flag_BadPFMuonDzFilter && Flag_BadPFMuonFilter && Flag_EcalDeadCellTriggerPrimitiveFilter && Flag_HBHENoiseFilter;
+  bool metfilter = Flag_BadPFMuonDzFilter && Flag_BadPFMuonFilter && Flag_HBHENoiseFilter;
+  metfilter = metfilter && Flag_HBHENoiseIsoFilter && Flag_ecalBadCalibFilter && Flag_eeBadScFilter && Flag_goodVertices;
+  selEvtVars.fillBranch( "Flag_MetFilter",metfilter);
+  
 }//<<>>void KUCMSAodSkimmer::processEvntVars()
 
 void KUCMSAodSkimmer::processMet(){
@@ -2221,11 +2235,6 @@ int KUCMSAodSkimmer::getJetQuality( int it ){
 
 void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
 
-
-    //selSV.makeBranch( "evtGenWgt", FLOAT );
-
-    selSV.attachBranches( fOutTree );
-
 	//fOutTree->Branch( "RunNumber", &RunNumber );
     selEvtVars.makeBranch( "dsKey", "DataSetKey", STR, "Key for source data set of event" );
 
@@ -2237,20 +2246,6 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     selEvtVars.makeBranch( "PVy", FLOAT );
     selEvtVars.makeBranch( "PVz", FLOAT );
 
-    selEvtVars.makeBranch( "SV_nTracks", VINT);
-    selEvtVars.makeBranch( "SV_pOverE", VFLOAT);
-    selEvtVars.makeBranch( "SV_decayAngle", VFLOAT);
-    selEvtVars.makeBranch( "SV_cosTheta", VFLOAT);
-    selEvtVars.makeBranch( "SV_mass", VFLOAT);
-    selEvtVars.makeBranch( "SV_massOverNtracks", VFLOAT);
-    selEvtVars.makeBranch( "SV_dxy", VFLOAT);
-    selEvtVars.makeBranch( "SV_dxySig", VFLOAT);
-    
-    selEvtVars.makeBranch( "SV_nLeptonic", INT );
-    selEvtVars.makeBranch( "SV_nHadronic", INT );
-    selEvtVars.makeBranch( "SV_nElectron", INT );
-    selEvtVars.makeBranch( "SV_nMuon", INT );
-    
     selEvtVars.makeBranch( "Flag_BadChargedCandidateFilter", BOOL );
     selEvtVars.makeBranch( "Flag_BadPFMuonDzFilter", BOOL );
     selEvtVars.makeBranch( "Flag_BadPFMuonFilter", BOOL );
@@ -2262,21 +2257,21 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     selEvtVars.makeBranch( "Flag_globalSuperTightHalo2016Filter", BOOL );
     selEvtVars.makeBranch( "Flag_goodVertices", BOOL );
     selEvtVars.makeBranch( "Flag_hfNoisyHitsFilter", BOOL );
-	selEvtVars.makeBranch( "Flag_MetFilter", BOOL );
+    selEvtVars.makeBranch( "Flag_MetFilter", BOOL );
 
     selEvtVars.attachBranches( fOutTree );
 
 	//selMet.makeBranch( "Met", FLOAT );
-	selMet.makeBranch( "cmet", "selCMet", FLOAT, "Magnitude of event Met corrected for OOT photons" );
+    selMet.makeBranch( "cmet", "selCMet", FLOAT, "Magnitude of event Met corrected for OOT photons" );
     selMet.makeBranch( "cmetPx", "selCMetPx", FLOAT, "Magnitude of event MetPx corrected for OOT photons" );
     selMet.makeBranch( "cmetPy", "selCMetPy", FLOAT, "Magnitude of event MetPy corrected for OOT photons" );
     selMet.makeBranch( "met", "selMet", FLOAT, "Magnitude of event Met" );
     selMet.makeBranch( "metPx", "selMetPx", FLOAT, "Magnitude of event MetPx" );
     selMet.makeBranch( "metPy", "selMetPy", FLOAT, "Magnitude of event MetPy" );
 
-	selMet.attachBranches( fOutTree );
+    selMet.attachBranches( fOutTree );
 
-	selGenPart.makeBranch( "genPartEnergy", VFLOAT );
+    selGenPart.makeBranch( "genPartEnergy", VFLOAT );
     selGenPart.makeBranch( "genPartEta", VFLOAT );
     selGenPart.makeBranch( "genPartPhi", VFLOAT );
     selGenPart.makeBranch( "genPartPt", VFLOAT );
@@ -2306,9 +2301,9 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     selGenPart.makeBranch( "genLSPMass", VFLOAT );   //! 
     selGenPart.makeBranch( "genGrvtinoMass", VFLOAT );   //! 
 
-	selGenPart.attachBranches( fOutTree );
+    selGenPart.attachBranches( fOutTree );
 
-	selElectrons.makeBranch( "nElectrons", UINT );
+    selElectrons.makeBranch( "nElectrons", UINT );
     selElectrons.makeBranch( "nSelIsoElectrons", UINT );
     selElectrons.makeBranch( "epDrMatch", VFLOAT );
     selElectrons.makeBranch( "epSeedIdMatch", VFLOAT );
@@ -2332,7 +2327,7 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     selPhotons.makeBranch( "selPhoEnergy", VFLOAT );
     selPhotons.makeBranch( "selPhoEta", VFLOAT ); 
     selPhotons.makeBranch( "selPhoPhi", VFLOAT );     
-	selPhotons.makeBranch( "selPhoPt", VFLOAT ); 
+    selPhotons.makeBranch( "selPhoPt", VFLOAT ); 
     selPhotons.makeBranch( "selPhoSCx", VFLOAT );
     selPhotons.makeBranch( "selPhoSCy", VFLOAT );
     selPhotons.makeBranch( "selPhoSCz", VFLOAT );
@@ -2400,6 +2395,25 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
 
     selPhotons.attachBranches( fOutTree );
 
+    selSV.makeBranch( "SV_nTracks", VINT);
+    selSV.makeBranch( "SV_pOverE", VFLOAT);
+    selSV.makeBranch( "SV_decayAngle", VFLOAT);
+    selSV.makeBranch( "SV_cosTheta", VFLOAT);
+    selSV.makeBranch( "SV_mass", VFLOAT);
+    selSV.makeBranch( "SV_massOverNtracks", VFLOAT);
+    selSV.makeBranch( "SV_dxy", VFLOAT);
+    selSV.makeBranch( "SV_dxySig", VFLOAT);
+
+    selSV.makeBranch( "SV_nLeptonic", INT );
+    selSV.makeBranch( "SV_nHadronic", INT );
+    selSV.makeBranch( "SV_nElectron", INT );
+    selSV.makeBranch( "SV_nMuon", INT );
+
+    selSV.makeBranch( "SV_passMaterialVeto", VBOOL );
+    selSV.makeBranch( "SV_tightZWindowSelection", VBOOL );
+    
+    selSV.attachBranches( fOutTree );
+    
     selMuons.makeBranch( "nLooseMuons", UINT );
     selMuons.makeBranch( "nMuons", UINT );
     selMuons.makeBranch( "muonIsLoose", VBOOL );
