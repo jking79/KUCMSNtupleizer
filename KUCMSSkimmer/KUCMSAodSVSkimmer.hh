@@ -28,6 +28,11 @@
 #include "KUCMSNtuple_base_v30.h"
 //#include "KUCMSNtuple_base_noSV_v30.h"
 
+#include "../interface/MaterialVeto.h"
+
+#include<Math/Vector3D.h>
+#include<Math/Vector3Dfwd.h>
+
 #ifndef KUCMSAodSkimmer_header
 #define KUCMSAodSkimmer_header
 //--------------------------------------------------------------------------------------------------------------------------------------
