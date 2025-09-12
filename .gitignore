@@ -33,3 +33,4 @@ test/*WorkSpace/
 *.png
 *.pdf
 __*
+!KUCMSSkimmer/fullMask60cm_Data.root

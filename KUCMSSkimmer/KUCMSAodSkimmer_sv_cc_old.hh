@@ -494,10 +494,11 @@ void KUCMSAodSkimmer::processSV(){
       const float etaOrigin(vec3D.eta());
 
       // baseline selection
-      const bool failBaseline(dxy < 2 || (dxy < 15 && fabs(z) > 15) || (dxy > 15 && fabs(etaOrigin) > 1.) || cosTheta > 0.995);
+      if(dxy < 2 || (dxy < 15 && fabs(z) > 15) || (dxy > 15 && fabs(etaOrigin) > 1.) || cosTheta > 0.995)
+	continue;
 
       MaterialVeto vetoTool("fullMask60cm_Data.root");
-      const bool tightOnZSelection((peleid && mass > 60) || (pmuonid && mass > 70) || (ntracks >= 5 && mass > 20 && mass/ntracks > 1));
+      const bool tightOnZSelection(ntracks == 2? (peleid && mass > 60) || (pmuonid && mass > 70) : ntracks >= 5 && mass > 20 && mass/ntracks > 1);
       
       if(ntracks == 2) {
 	if( peleid || pmuonid ) nLsv++;
@@ -505,13 +506,7 @@ void KUCMSAodSkimmer::processSV(){
 	if(pmuonid) nMuon++;
       }
       if( ( ntracks >= 5 ) && ( mass/ntracks > 1 ) ) nHsv++;
-
-      if( doGenInfo ){
-        const float matchRatio((*Vertex_matchRatio)[svit]);
-        const bool isGold((*Vertex_isGold)[svit]);
-        selSV.fillBranch( "SV_matchRatio", matchRatio);
-        selSV.fillBranch( "SV_isGold", isGold);
-      }
+      
       const float p((*Vertex_p)[svit]), dxyError((*Vertex_dxyError)[svit]), decayAngle((*Vertex_decayAngle)[svit]);
       
       selSV.fillBranch( "SV_nTracks", int(ntracks));
@@ -520,12 +515,8 @@ void KUCMSAodSkimmer::processSV(){
       selSV.fillBranch( "SV_decayAngle", decayAngle);
       selSV.fillBranch( "SV_cosTheta", cosTheta);
       selSV.fillBranch( "SV_massOverNtracks", mass/ntracks);
-      selSV.fillBranch( "SV_x", x);
-      selSV.fillBranch( "SV_y", y);
-      selSV.fillBranch( "SV_z", z);
       selSV.fillBranch( "SV_dxy", dxy);
       selSV.fillBranch( "SV_dxySig", dxy/dxyError);
-      selSV.fillBranch( "SV_passBaseline",  !failBaseline);
       selSV.fillBranch( "SV_passMaterialVeto",  vetoTool.PassVeto(x, y));
       selSV.fillBranch( "SV_tightZWindowSelection", tightOnZSelection);
     }//<<>>for( svit = 0; svit < nSVs; scit++ )
@@ -728,10 +719,7 @@ void KUCMSAodSkimmer::processRechits(){
 		hist1d[8]->Fill(nSCRhids);
 
 	}//<<>>for( int it = 0; it < nSCs; it++ )
-	if( checkRHs ){ 
-		float rhpsc = ( nSCs > 0 ) ? nRechitsPerSC/nSCs : 0 ;
-		std::cout << " Ave# rechits/SC : " << rhpsc << std::endl; 
-	}//<<>>if( checkRHs )
+	if( checkRHs ){ std::cout << " Ave. # rechits/SC : " << nRechitsPerSC/nSCs << std::endl; }
 	if( nMissingRechits > 0 ) std::cout << " !! ------ !! Missing " << nMissingRechits << " rechits in " << nSCs << " SCs " << std::endl;
 	// fill
     auto nETs = Track_pt->size();
@@ -2421,9 +2409,6 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     selSV.makeBranch( "SV_cosTheta", VFLOAT);
     selSV.makeBranch( "SV_mass", VFLOAT);
     selSV.makeBranch( "SV_massOverNtracks", VFLOAT);
-    selSV.makeBranch( "SV_x", VFLOAT);
-    selSV.makeBranch( "SV_y", VFLOAT);
-    selSV.makeBranch( "SV_z", VFLOAT);
     selSV.makeBranch( "SV_dxy", VFLOAT);
     selSV.makeBranch( "SV_dxySig", VFLOAT);
 
@@ -2432,13 +2417,7 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     selSV.makeBranch( "SV_nElectron", INT );
     selSV.makeBranch( "SV_nMuon", INT );
 
-    if( doGenInfo ){
-      selSV.makeBranch( "SV_matchRatio", VFLOAT);
-      selSV.makeBranch( "SV_isGold", VBOOL);
-    }
-
     selSV.makeBranch( "SV_passMaterialVeto", VBOOL );
-    selSV.makeBranch( "SV_passBaseline", VBOOL );
     selSV.makeBranch( "SV_tightZWindowSelection", VBOOL );
     
     selSV.attachBranches( fOutTree );

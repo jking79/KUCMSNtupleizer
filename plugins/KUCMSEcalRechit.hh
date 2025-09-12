@@ -633,6 +633,7 @@ void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
 
     if( ERHODEBUG ) std::cout << " - enetering SuperCluster loop" << std::endl;
 
+	rhIdGroup usedscrhids;
 	float nNpSupClstrs( 0 );//# of non-prompt super clusters
     int nSupClstrs = fsupclstrs.size();
     Branches.fillBranch("zscnSC",nSupClstrs);
@@ -679,7 +680,7 @@ void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
         Branches.fillBranch("zscrhids",scRhIdsGroup);
         Branches.fillBranch("zscrhfracs",fracList);
         //Branches.fillBranch("zscmissrhfracs",missFracList);
-        setRecHitUsed(scRhIdsGroup); // now done above
+        setRecHitUsed(scRhIdsGroup); //
         //setRecHitUsed(scRhIdsGroup, isOOT, scenergy, fracList );
         uInt sc_rhg_size = scRhIdsGroup.size();
         uInt sc_hfl_size = (supclstr.hitsAndFractions()).size();
@@ -691,6 +692,17 @@ void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
         Branches.fillBranch("zscbcsize",bcsize);
 
  		Branches.fillBranch("zsctrackindx",fscTrackIndx[it]);
+
+		if( ERHODEBUG ){
+		//if( true ){
+
+			std::cout << " --- Finding SC rhIds for : eta " << sceta << " with e " << scenergy << std::endl;
+			std::cout << " ---- ids :";
+			for( auto ids : scRhIdsGroup ){ std::cout << " " << ids; usedscrhids.push_back(ids); } 
+			std::cout << std::endl;			
+			std::cout << " --------------------------------------------------------------- " << std::endl;			
+
+		}//<<>>if( ERHODEBUG ) 
 
         const float scEnergyRaw = supclstr.rawEnergy();
         const bool isScEtaEB = abs(supclstr.eta()) < 1.4442;
@@ -861,6 +873,19 @@ void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
 	float pUsed = nUsed/float(nRecHits); 
     Branches.fillBranch("pused",pUsed);
 	if( ERHODEBUG ) std::cout << " -- % rechits used : " << pUsed << std::endl;
+	if( ERHODEBUG ){
+	//if( true ){
+		for( auto scid : usedscrhids ){
+			bool found( false ); 
+			for( auto ecid : frechits ){ 
+				if( scid ==  getRawID(ecid) ){ 
+					found = true; 
+					break; 
+				}//<<>>if( scid ==  getRawID(ecid) )
+			}//<<>>for( auto ecid : frechits )
+			if( not found ) std::cout << " SC rechit ID not found in ECAL rechit Collection !!!!!!!!!!!!!!! : " << scid << std::endl;	
+		}//<<>>for( auto scid : usedscrhids )
+	}//<<>>if( ERHODEBUG )
 
 }//<<>>void KUCMSEcalRecHit::ProcessEvent()
 

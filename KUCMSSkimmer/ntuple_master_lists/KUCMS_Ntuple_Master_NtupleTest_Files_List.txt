@@ -1,0 +1,2 @@
+#KUCMSNtuple/kucmsntuple_TTJets_AOD_v5/ kuntuple_TTJets_v5.txt TTJets 831.76 0.0 0.0 1 0
+test/ kucmsntuple_ntuple_test.txt test 1.0 0.0 0.0 1 0
