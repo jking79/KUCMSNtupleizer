@@ -436,6 +436,7 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
   processMuons();
   processJets();
   processSV();
+  processTracks();
   if( doGenInfo ){ processGenParticles(); }
   
   // select events to process and store
@@ -461,6 +462,12 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
 //		Fill out branch varibles
 //
 //}//<<>>void KUCMSAodSkimmer::processTemplate()
+
+void KUCMSAodSkimmer::processTracks(){
+
+    selTracks.fillBranch( "Trk_nIsoTrack", Track_nIsoTracks);
+
+}//<<>>void KUCMSAodSkimmer::processTracks()
 
 void KUCMSAodSkimmer::processSV(){
 
@@ -608,8 +615,8 @@ void KUCMSAodSkimmer::processRechits(){
 
 	// initilize
     //selECALRecHit.clearBranches(); // <<<<<<<   must do
-	//bool checkRHs = false;
-    bool checkRHs = true;
+	bool checkRHs = false;
+    //bool checkRHs = true;
 
 	// calc
     if( DEBUG ) std::cout << "Finding rechits" << std::endl;
@@ -1779,7 +1786,6 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     selRjrVars.fillBranch( "rjrPTS", m_PTS );
     selRjrVars.fillBranch( "rjrPZS", m_PZS );
 
-
 	std::vector< TLorentzVector > hp4;
     std::vector< TLorentzVector > hxp4;
 	
@@ -1800,6 +1806,26 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     hp4.push_back(S->GetFourVector(pJetSideSum4Vec[1]));//1 J2a
     hp4.push_back(S->GetFourVector(pJetSideSum4Vec[2]));//2 J1b
     hp4.push_back(S->GetFourVector(pJetSideSum4Vec[3]));//3 J2b
+
+    selRjrVars.fillBranch( "rjr_sJ1a_px", float(hp4[0].Px()) );
+    selRjrVars.fillBranch( "rjr_sJ1a_py", float(hp4[0].Py()) );
+    selRjrVars.fillBranch( "rjr_sJ1a_pz", float(hp4[0].Pz()) );
+    selRjrVars.fillBranch( "rjr_sJ1a_e", float(hp4[0].E()) );
+
+    selRjrVars.fillBranch( "rjr_sJ2a_px", float(hp4[1].Px()) );
+    selRjrVars.fillBranch( "rjr_sJ2a_py", float(hp4[1].Py()) );
+    selRjrVars.fillBranch( "rjr_sJ1a_pz", float(hp4[1].Pz()) );
+    selRjrVars.fillBranch( "rjr_sJ1a_e", float(hp4[1].E()) );
+
+    selRjrVars.fillBranch( "rjr_sJ1b_px", float(hp4[2].Px()) );
+    selRjrVars.fillBranch( "rjr_sJ1b_py", float(hp4[2].Py()) );
+    selRjrVars.fillBranch( "rjr_sJ1b_pz", float(hp4[2].Pz()) );
+    selRjrVars.fillBranch( "rjr_sJ1b_e", float(hp4[2].E()) );
+
+    selRjrVars.fillBranch( "rjr_sJ2b_px", float(hp4[3].Px()) );
+    selRjrVars.fillBranch( "rjr_sJ2b_py", float(hp4[3].Py()) );
+    selRjrVars.fillBranch( "rjr_sJ2b_pz", float(hp4[3].Pz()) );
+    selRjrVars.fillBranch( "rjr_sJ2b_e", float(hp4[3].E()) );
 
 	float x1sp = ( X1a->GetFourVector(*S) + X1b->GetFourVector(*S) ).P();
 	float x1asp = ( X1a->GetFourVector(*S) ).P();
@@ -2415,6 +2441,11 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
 
     selPhotons.attachBranches( fOutTree );
 
+
+	selTracks.makeBranch( "Trk_nIsoTrack", INT);
+
+    selTracks.attachBranches( fOutTree );
+
     selSV.makeBranch( "SV_nTracks", VINT);
     selSV.makeBranch( "SV_pOverE", VFLOAT);
     selSV.makeBranch( "SV_decayAngle", VFLOAT);
@@ -2597,6 +2628,25 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     selRjrVars.makeBranch( "rjr_Rxa", VFLOAT );
     selRjrVars.makeBranch( "rjr_Rxb", VFLOAT );
 
+    selRjrVars.makeBranch( "rjr_sJ1a_px", VFLOAT );
+    selRjrVars.makeBranch( "rjr_sJ1a_py", VFLOAT );
+    selRjrVars.makeBranch( "rjr_sJ1a_pz", VFLOAT );
+    selRjrVars.makeBranch( "rjr_sJ1a_e", VFLOAT );
+
+    selRjrVars.makeBranch( "rjr_sJ2a_px", VFLOAT );
+    selRjrVars.makeBranch( "rjr_sJ2a_py", VFLOAT );
+    selRjrVars.makeBranch( "rjr_sJ1a_pz", VFLOAT );
+    selRjrVars.makeBranch( "rjr_sJ1a_e", VFLOAT );
+
+    selRjrVars.makeBranch( "rjr_sJ1b_px", VFLOAT );
+    selRjrVars.makeBranch( "rjr_sJ1b_py", VFLOAT );
+    selRjrVars.makeBranch( "rjr_sJ1b_pz", VFLOAT );
+    selRjrVars.makeBranch( "rjr_sJ1b_e", VFLOAT );
+
+    selRjrVars.makeBranch( "rjr_sJ2b_px", VFLOAT );
+    selRjrVars.makeBranch( "rjr_sJ2b_py", VFLOAT );
+    selRjrVars.makeBranch( "rjr_sJ2b_pz", VFLOAT );
+    selRjrVars.makeBranch( "rjr_sJ2b_e", VFLOAT );
 
     selRjrVars.makeBranch( "rjr_Mva", VFLOAT );
     selRjrVars.makeBranch( "rjr_Mvb", VFLOAT );

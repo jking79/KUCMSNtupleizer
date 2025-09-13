@@ -18,10 +18,10 @@ int main ( int argc, char *argv[] ){
     //else {
                 const std::string listdir = "ntuple_master_lists/";
                 //const string KUCMSAodSkimmer::eosdir = "root://cmseos.fnal.gov//store/user/jaking/";
-                //const std::string eosdir = "root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/";
+                const std::string eosdir = "root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/";
                 //const std::string eosdir = "root://cmseos.fnal.gov//store/user/lpcsusylep/anazario/";
                 //const std::string eosdir = "root://cmseos.fnal.gov//store/user/janguian/";
-				const std::string eosdir = "/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/";				
+				//const std::string eosdir = "/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/";				
 
 				bool useEvtGenWgt = true;
                 //bool useEvtGenWgt = false;
@@ -39,8 +39,8 @@ int main ( int argc, char *argv[] ){
 				//const std::string infilename = "KUCMS_Ntuple_Master_SMS_Sig_Files_List_untracked.txt";
                 //no//const std::string infilename = "KUCMS_Ntuple_Master_GoGoZ_Files_List.txt";
                 //no//const std::string infilename = "KUCMS_Ntuple_Master_SqSqG_Files_List.txt";
-                //const std::string infilename = "KUCMS_Ntuple_Master_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
-				const std::string infilename = "KUCMS_Ntuple_Master_NtupleTest_Files_List.txt"; hasGenInfo = false;
+                const std::string infilename = "KUCMS_Ntuple_Master_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
+				//const std::string infilename = "KUCMS_Ntuple_Master_NtupleTest_Files_List.txt"; hasGenInfo = false;
 
                 //const std::string outfilename = "_LLPGskim_v21_rjrvars.root"; // skim v21 use new process_name tags 
                 //const std::string outfilename = "_LLPGskim_v22_rjrvars.root"; // skim v22 keeps 0 pho events 
