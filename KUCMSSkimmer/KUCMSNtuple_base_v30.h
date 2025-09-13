@@ -1362,9 +1362,11 @@ void llpgtree::Init( TChain *tree, bool doGenInfo ){
 
    fChain->SetBranchAddress("VertexTrack_SCDR", &VertexTrack_SCDR, &b_VertexTrack_SCDR);
    fChain->SetBranchAddress("VertexTrack_energySC", &VertexTrack_energySC, &b_VertexTrack_energySC);
+   if( doGenInfo ){
    fChain->SetBranchAddress("VertexTrack_isSignalElectron", &VertexTrack_isSignalElectron, &b_VertexTrack_isSignalElectron);
    fChain->SetBranchAddress("VertexTrack_isSignalMuon", &VertexTrack_isSignalMuon, &b_VertexTrack_isSignalMuon);
    fChain->SetBranchAddress("VertexTrack_isSignalTrack", &VertexTrack_isSignalTrack, &b_VertexTrack_isSignalTrack);
+   }//<<>>if( doGenInfo )
    fChain->SetBranchAddress("VertexTrack_ratioPToEnergySC", &VertexTrack_ratioPToEnergySC, &b_VertexTrack_ratioPToEnergySC);
    fChain->SetBranchAddress("VertexTrack_shift3DAfterTrackRemoval", &VertexTrack_shift3DAfterTrackRemoval, &b_VertexTrack_shift3DAfterTrackRemoval);
    fChain->SetBranchAddress("VertexTrack_shiftDzAfterTrackRemoval", &VertexTrack_shiftDzAfterTrackRemoval, &b_VertexTrack_shiftDzAfterTrackRemoval);
@@ -1386,14 +1388,18 @@ void llpgtree::Init( TChain *tree, bool doGenInfo ){
    fChain->SetBranchAddress("Vertex_dxy", &Vertex_dxy, &b_Vertex_dxy);
    fChain->SetBranchAddress("Vertex_dxyError", &Vertex_dxyError, &b_Vertex_dxyError);
    fChain->SetBranchAddress("Vertex_eta", &Vertex_eta, &b_Vertex_eta);
-   if( doGenInfo ) fChain->SetBranchAddress("Vertex_genVertexIndex", &Vertex_genVertexIndex, &b_Vertex_genVertexIndex);
+   if( doGenInfo ){
+   fChain->SetBranchAddress("Vertex_genVertexIndex", &Vertex_genVertexIndex, &b_Vertex_genVertexIndex);
    fChain->SetBranchAddress("Vertex_isBronze", &Vertex_isBronze, &b_Vertex_isBronze);
    fChain->SetBranchAddress("Vertex_isGold", &Vertex_isGold, &b_Vertex_isGold);
    fChain->SetBranchAddress("Vertex_isSilver", &Vertex_isSilver, &b_Vertex_isSilver);
+   }//<<>>if( doGenInfo )
    fChain->SetBranchAddress("Vertex_isUnique", &Vertex_isUnique, &b_Vertex_isUnique);
    fChain->SetBranchAddress("Vertex_mass", &Vertex_mass, &b_Vertex_mass);
+   if( doGenInfo ){
    fChain->SetBranchAddress("Vertex_matchRatio", &Vertex_matchRatio, &b_Vertex_matchRatio);
    fChain->SetBranchAddress("Vertex_min3D", &Vertex_min3D, &b_Vertex_min3D);
+   }//<<>>if( doGenInfo )
    fChain->SetBranchAddress("Vertex_nTotal", &Vertex_nTotal, &b_Vertex_nTotal);
    fChain->SetBranchAddress("Vertex_nTracks", &Vertex_nTracks, &b_Vertex_nTracks);
    fChain->SetBranchAddress("Vertex_ndof", &Vertex_ndof, &b_Vertex_ndof);
@@ -1712,7 +1718,7 @@ void llpgtree::Init( TChain *tree, bool doGenInfo ){
    if( doGenInfo ) fChain->SetBranchAddress("Muon_isLWZP", &Muon_isLWZP, &b_Muon_isLWZP);
    fChain->SetBranchAddress("Muon_isLoose", &Muon_isLoose, &b_Muon_isLoose);
    fChain->SetBranchAddress("Muon_isMedium", &Muon_isMedium, &b_Muon_isMedium);
-   fChain->SetBranchAddress("Muon_nGenMatch", &Muon_nGenMatch, &b_Muon_nGenMatch);
+   if( doGenInfo ) fChain->SetBranchAddress("Muon_nGenMatch", &Muon_nGenMatch, &b_Muon_nGenMatch);
    fChain->SetBranchAddress("Muon_nMuons", &Muon_nMuons, &b_Muon_nMuons);
    fChain->SetBranchAddress("Muon_nPrompt", &Muon_nPrompt, &b_Muon_nPrompt);
    fChain->SetBranchAddress("Muon_nSelMuons", &Muon_nSelMuons, &b_Muon_nSelMuons);
@@ -1852,9 +1858,11 @@ void llpgtree::getBranches( Long64_t entry, bool doGenInfo ){
 
    b_VertexTrack_SCDR->GetEntry(entry);   //!
    b_VertexTrack_energySC->GetEntry(entry);   //!
+   if( doGenInfo ){
    b_VertexTrack_isSignalElectron->GetEntry(entry);   //!
    b_VertexTrack_isSignalMuon->GetEntry(entry);   //!
    b_VertexTrack_isSignalTrack->GetEntry(entry);   //!
+   }//<<>>if( doGenInfo )
    b_VertexTrack_ratioPToEnergySC->GetEntry(entry);   //!
    b_VertexTrack_shift3DAfterTrackRemoval->GetEntry(entry);   //!
    b_VertexTrack_shiftDzAfterTrackRemoval->GetEntry(entry);   //!
@@ -1876,14 +1884,18 @@ void llpgtree::getBranches( Long64_t entry, bool doGenInfo ){
    b_Vertex_dxy->GetEntry(entry);   //!
    b_Vertex_dxyError->GetEntry(entry);   //!
    b_Vertex_eta->GetEntry(entry);   //!
-   if( doGenInfo ) b_Vertex_genVertexIndex->GetEntry(entry);   //!
+   if( doGenInfo ){
+   b_Vertex_genVertexIndex->GetEntry(entry);   //!
    b_Vertex_isBronze->GetEntry(entry);   //!
    b_Vertex_isGold->GetEntry(entry);   //!
    b_Vertex_isSilver->GetEntry(entry);   //!
+   }//<<>>if( doGenInfo )
    b_Vertex_isUnique->GetEntry(entry);   //!
    b_Vertex_mass->GetEntry(entry);   //!
+   if( doGenInfo ){
    b_Vertex_matchRatio->GetEntry(entry);   //!
    b_Vertex_min3D->GetEntry(entry);   //!
+   }//<<>>if( doGenInfo )
    b_Vertex_nTotal->GetEntry(entry);   //!
    b_Vertex_nTracks->GetEntry(entry);   //!
    b_Vertex_ndof->GetEntry(entry);   //!
@@ -2195,7 +2207,7 @@ void llpgtree::getBranches( Long64_t entry, bool doGenInfo ){
    if( doGenInfo ) b_Muon_isLWZP->GetEntry(entry);   //!
    b_Muon_isLoose->GetEntry(entry);   //!
    b_Muon_isMedium->GetEntry(entry);   //!
-   b_Muon_nGenMatch->GetEntry(entry);   //!
+   if( doGenInfo ) b_Muon_nGenMatch->GetEntry(entry);   //!
    b_Muon_nMuons->GetEntry(entry);   //!
    b_Muon_nPrompt->GetEntry(entry);   //!
    b_Muon_nSelMuons->GetEntry(entry);   //!

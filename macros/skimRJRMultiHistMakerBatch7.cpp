@@ -530,10 +530,18 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     float rm = (*rjr_Rm)[cs]; // float m_MVab = std::sqrt(sq2(m_MVa)+sq2(m_MVb))/phs40;  ? good in less compressed 
     float rs = (*rjr_Rs)[cs]; // float Rs = (phxa11+phxb11)/pHs22;   NEW !!!!!!!!
     float rx = (*rjr_Rx)[cs]/std::sqrt(2); // float Rx = hypo(phxa11/phxa21,phxb11/phxb21); NEW !!!!!!!!
-    float rx1b = (*rjr_Rxa)[cs]; // float Rxa = phxa10/phxa20;
-    float rx1a = (*rjr_Rxb)[cs]; // float Rxb = phxb10/phxb20;
+    float rx0b = (*rjr_Rxa)[cs]; // float Rxa = phxa10/phxa20;
+    float rx0a = (*rjr_Rxb)[cs]; // float Rxb = phxb10/phxb20;
 	float rxb = (*rjr_pHxb11)[cs]/(*rjr_pHxb21)[cs];
     float rxa = (*rjr_pHxa11)[cs]/(*rjr_pHxa21)[cs];
+
+	float rx0 = std::sqrt( rx0a*rx0a + rx0b*rx0b)/std::sqrt(2); 
+	float rxmin = std::min( rxb, rxa );
+
+	float phs2040 = (*rjr_pHs20)[cs]/(*rjr_pHs40)[cs];
+    float phs2141 = (*rjr_pHs21)[cs]/(*rjr_pHs41)[cs];
+    float phts2040 = (*rjr_pHts20)[cs]/(*rjr_pHts40)[cs];
+    float phts2141 = (*rjr_pHts21)[cs]/(*rjr_pHts41)[cs];
 
     //float NormMBetaEql = (*selPhoMBetaEql)[0]/mr;
     //float NormMBetaPmt = (*selPhoMBetaPmt)[0]/mr;
@@ -556,37 +564,47 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 
 	//var hist fill
 
-
-	if( nRjrPhos == 0 ){
+    if( nRjrPhos == 0 ){
+        if( rjrNPhotons->at(cs) < 1 ) continue;
+	}//<<>>if( nRjrPhos == 1 )
+	if( nRjrPhos == 1 ){
 		if( rjrNPhotons->at(cs) < 1 ) continue;
 		if( rxa == 1 ) continue;
 		if( rxb == 1 ) continue;
 	}//<<>>if( nRjrPhos == 0 )
-	if( nRjrPhos == 1 ){
-		if( ms < 2000 ) continue;
+	if( nRjrPhos == 2 ){
+		if( ms < 1250 ) continue;
 		if( rxa == 1 ) continue;
     	if( rxb == 1 ) continue;
     	if( rjrNPhotons->at(cs) < 1 ) continue;
 	}//<<>>if( nRjrPhos == 1 )
-    if( nRjrPhos == 2 ){
-        if( ms < 2000 ) continue;
+    if( nRjrPhos == 3 ){
+        if( ms < 1250 ) continue;
         if( rxa == 1 ) continue;
         if( rxb == 1 ) continue;
         if( rjrNPhotons->at(cs) < 1 ) continue;
-		if( rs < 0.25 ) continue;
+		if( rs < 0.30 ) continue;
 	}//<<>>if( nRjrPhos == 1 )
 
-    if( nRjrPhos == 90 ){
+    if( nRjrPhos == 4 ){
         if( rjrNPhotons->at(cs) > 0 ) continue;
     }//<<>>if( nRjrPhos == 0 )
-    if( nRjrPhos == 91 ){
+    if( nRjrPhos == 5 ){
 		if( rjrNPhotons->at(cs) < 1 ) continue;
         if( rjr_p1Ptxb ->at(cs) > 0 ) continue;  // selects for photon on a side
     }//<<>>if( nRjrPhos == 0 )
-    if( nRjrPhos == 92 ){
+    if( nRjrPhos == 6 ){
 		if( rjrNPhotons->at(cs) < 1 ) continue;
         if( rjr_p1Ptxa ->at(cs) > 0 ) continue;  // selects for photon of b side
     }//<<>>if( nRjrPhos == 0 )
+    if( nRjrPhos == 7 ){
+        //if( ms < 1250 ) continue;
+        if( rxa == 1 ) continue;
+        if( rxb == 1 ) continue;
+        if( rjrNPhotons->at(cs) < 1 ) continue;
+        if( rs < 0.30 ) continue;
+    }//<<>>if( nRjrPhos == 1 )
+
 
 	hist1d[0]->Fill(mr,fillwt);
     hist1d[1]->Fill(ms,fillwt);
@@ -612,6 +630,19 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     hist2d[12]->Fill(rx,rm,fillwt);
 	hist2d[13]->Fill(rxa,rxb,fillwt);
 
+    hist1d[18]->Fill(rx0,fillwt); // = new TH1D("Rx0", addstr(ht,"Rx0").c_str(), 120, 0, 1.2);
+    hist1d[19]->Fill(rxmin,fillwt); // = new TH1D("Rxmin", addstr(ht,"Rxmin").c_str(), 120, 0, 1.2);
+
+    hist1d[20]->Fill(rx0a,fillwt); //  = new TH1D("Rx0a", addstr(ht,"Rx0a").c_str(), 120, 0, 1.2);
+    hist1d[21]->Fill(rx0b,fillwt); //  = new TH1D("Rx0b", addstr(ht,"Rx0b").c_str(), 120, 0, 1.2);
+
+    hist1d[22]->Fill(phs2040,fillwt); //  = new TH1D("phs2040", addstr(ht,"phs2040").c_str(), 120, 0, 1.2);
+    hist1d[23]->Fill(phs2141,fillwt); //  = new TH1D("phts2141", addstr(ht,"phts2141").c_str(), 120, 0, 1.2);
+    hist1d[24]->Fill(phts2040,fillwt); //  = new TH1D("phs2040", addstr(ht,"phs2040").c_str(), 120, 0, 1.2);
+    hist1d[25]->Fill(phts2141,fillwt); //  = new TH1D("phts2141", addstr(ht,"phts2141").c_str(), 120, 0, 1.2);
+
+    hist2d[14]->Fill(rx0a,rx0b,fillwt);
+
 	//if( not( ML && RL && RvM ) ) continue;
 
 
@@ -625,6 +656,7 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 
 void HistMaker::endJobs(){
 
+    for( int it = 10; it < n1dHists; it++ ){ if(hist1d[it]) smoothTH1D(hist1d[it]);}
 
 }//<<>>void HistMaker::endJobs()
 
@@ -692,39 +724,49 @@ void HistMaker::initHists( std::string ht ){
 
     std::cout << " title test : " << addstr(ht,"varTitle") << std::endl;
 
-    hist1d[0] = new TH1D("Mr", addstr(ht,"Mr").c_str(), 120, 0, 12000);
-    hist1d[1] = new TH1D("Ms", addstr(ht,"Ms").c_str(), 120, 0, 12000);
-    hist1d[2] = new TH1D("Mva", addstr(ht,"Mva").c_str(), 60, 0, 6000);
-    hist1d[3] = new TH1D("Mvb", addstr(ht,"Mvb").c_str(), 60, 0, 6000);
+    hist1d[0] = new TH1D("Mr", addstr(ht," Mr;Mr").c_str(), 120, 0, 12000);
+    hist1d[1] = new TH1D("Ms", addstr(ht," Ms;Ms").c_str(), 120, 0, 12000);
+    hist1d[2] = new TH1D("Mva", addstr(ht," Mva;Mva").c_str(), 80, 0, 4000);
+    hist1d[3] = new TH1D("Mvb", addstr(ht," Mvb;Mvb").c_str(), 80, 0, 4000);
 
-    hist1d[10] = new TH1D("R", addstr(ht,"R").c_str(), 120, 0, 1.2);
-    hist1d[13] = new TH1D("Rv", addstr(ht,"Rv").c_str(), 120, 0, 1.2);
+    hist1d[10] = new TH1D("R", addstr(ht," R;R").c_str(), 120, 0, 1.2);
+    hist1d[13] = new TH1D("Rv", addstr(ht," Rv'Rv").c_str(), 120, 0, 1.2);
 
-    hist1d[11] = new TH1D("Rm", addstr(ht,"Rm").c_str(), 120, 0, 1.2);
-    hist1d[12] = new TH1D("Rs", addstr(ht,"Rs").c_str(), 120, 0, 1.2);
-    hist1d[14] = new TH1D("Rx", addstr(ht,"Rx").c_str(), 120, 0, 1.2);
+    hist1d[11] = new TH1D("Rm", addstr(ht," Rm;Rm").c_str(), 120, 0, 1.2);
+    hist1d[12] = new TH1D("Rs", addstr(ht," Rs;Rs").c_str(), 120, 0, 1.2);
+    hist1d[14] = new TH1D("Rx", addstr(ht," Rx;Rx").c_str(), 120, 0, 1.2);
 
-    hist1d[15] = new TH1D("Rxa", addstr(ht,"Rxa").c_str(), 120, 0, 1.2);
-    hist1d[16] = new TH1D("Rxb", addstr(ht,"Rxb").c_str(), 120, 0, 1.2);
-    hist1d[17] = new TH1D("Rxa_Rxb1", addstr(ht,"Rxa : Rxb = 1").c_str(), 120, 0, 1.2);
+    hist1d[15] = new TH1D("Rxa", addstr(ht," Rxa;Rxa").c_str(), 120, 0, 1.2);
+    hist1d[16] = new TH1D("Rxb", addstr(ht," Rxb;Rxb").c_str(), 120, 0, 1.2);
+    hist1d[17] = new TH1D("Rxa_Rxb1", addstr(ht," Rxa : Rxb = 1;Rxa").c_str(), 120, 0, 1.2);
 	
+    hist1d[18] = new TH1D("Rx0", addstr(ht," Rx0;Rx0").c_str(), 120, 0, 1.2);
+    hist1d[19] = new TH1D("Rxmin", addstr(ht," Rxmin;Rxmin").c_str(), 120, 0, 1.2);
+
+    hist1d[20] = new TH1D("Rx0a", addstr(ht," Rx0a;Rx0a").c_str(), 120, 0, 1.2);
+    hist1d[21] = new TH1D("Rx0b", addstr(ht," Rx0b;Rx0b").c_str(), 120, 0, 1.2);
+
+    hist1d[22] = new TH1D("phs2040", addstr(ht," phs2040;phs2040").c_str(), 120, 0, 1.2);
+    hist1d[23] = new TH1D("phs2141", addstr(ht," phts2141;phts2141").c_str(), 120, 0, 1.2);
+    hist1d[24] = new TH1D("phts2040", addstr(ht," phs2040;phs2040").c_str(), 120, 0, 1.2);
+    hist1d[25] = new TH1D("phts2141", addstr(ht," phts2141;phts2141").c_str(), 120, 0, 1.2);
+
 
     for( int it = 0; it < n1dHists; it++ ){ if(hist1d[it]) hist1d[it]->Sumw2();}
 
 	//------------------------------------------------------------------------------------------
     //------ 2D Hists --------------------------------------------------------------------------
 
-    hist2d[0] = new TH2D("Ms_v_Rs", addstr(ht,"Ms_v_Rs;M_{s} [GeV];R_{s}").c_str(), 120, 0, 12000, 120, 0, 1.2 );
-    hist2d[1] = new TH2D("Ms_v_Rx", addstr(ht,"Ms_v_Rx;M_{s} [GeV];R_{x}").c_str(), 120, 0, 12000, 120, 0, 1.2 );
-    hist2d[2] = new TH2D("Ms_v_Rm", addstr(ht,"Ms_v_Rm;M_{s} [GeV];R_{m}").c_str(), 120, 0, 12000, 120, 0, 1.2 );
-    hist2d[3] = new TH2D("Mva_v_Mvb", addstr(ht,"Mva_v_Mvb;M_{va} [GeV];M_{vb} [GeV]").c_str(), 120, 0, 12000, 120, 0, 12000 );
+    hist2d[0] = new TH2D("Ms_v_Rs", addstr(ht," Ms_v_Rs;M_{s} [GeV];R_{s}").c_str(), 120, 0, 12000, 120, 0, 1.2 );
+    hist2d[1] = new TH2D("Ms_v_Rx", addstr(ht," Ms_v_Rx;M_{s} [GeV];R_{x}").c_str(), 120, 0, 12000, 120, 0, 1.2 );
+    hist2d[2] = new TH2D("Ms_v_Rm", addstr(ht," Ms_v_Rm;M_{s} [GeV];R_{m}").c_str(), 120, 0, 12000, 120, 0, 1.2 );
+    hist2d[3] = new TH2D("Mva_v_Mvb", addstr(ht," Mva_v_Mvb;M_{va} [GeV];M_{vb} [GeV]").c_str(), 80, 0, 4000, 80, 0, 4000 );
 
-
-    hist2d[10] = new TH2D("Rs_v_Rx", addstr(ht,"Rs_v_Rx;R_{s};R_{x}").c_str(), 120, 0, 1.2, 120, 0, 1.2 );
-    hist2d[11] = new TH2D("Rs_v_Rm", addstr(ht,"Rs_v_Rm;R_{s};R_{m}").c_str(), 120, 0, 1.2, 120, 0, 1.2 );
-    hist2d[12] = new TH2D("Rx_v_Rm", addstr(ht,"Rx_v_Rm;R_{x};R_{m}").c_str(), 120, 0, 1.2, 120, 0, 1.2 );
-    hist2d[13] = new TH2D("Rxa_v_Rxb", addstr(ht,"Rxa_v_Rxb;R_{xa};R_{xb}").c_str(), 120, 0, 1.2, 120, 0, 1.2 );
-
+    hist2d[10] = new TH2D("Rs_v_Rx", addstr(ht," Rs_v_Rx;R_{s};R_{x}").c_str(), 120, 0, 1.2, 120, 0, 1.2 );
+    hist2d[11] = new TH2D("Rs_v_Rm", addstr(ht," Rs_v_Rm;R_{s};R_{m}").c_str(), 120, 0, 1.2, 120, 0, 1.2 );
+    hist2d[12] = new TH2D("Rx_v_Rm", addstr(ht," Rx_v_Rm;R_{x};R_{m}").c_str(), 120, 0, 1.2, 120, 0, 1.2 );
+    hist2d[13] = new TH2D("Rxa_v_Rxb", addstr(ht," Rxa_v_Rxb;R_{xa};R_{xb}").c_str(), 120, 0, 1.2, 120, 0, 1.2 );
+    hist2d[14] = new TH2D("Rx0a_v_Rx0b", addstr(ht," Rx0a_v_Rx0b;R_{x0a};R_{x0b}").c_str(), 120, 0, 1.2, 120, 0, 1.2 );
 
 	//------- jets ( time ) 0-49 ------------------------------
 
@@ -793,7 +835,8 @@ int main ( int argc, char *argv[] ){
  
 				//int nj = 1;
 				//int np = 1;
-                for( int np = 90; np < 93; np++ ){
+				// 0 - 7 now
+                for( int np = 0; np < 8; np++ ){
                 for( int nj = 0; nj < 1; nj++ ){
 
 				//std::string subdir = "cf_" + std::to_string(np) + "pho_" + std::to_string(nj) + "jet/";
@@ -819,7 +862,7 @@ int main ( int argc, char *argv[] ){
                 //std::vector<float> rv_vec{0.1,0.175,0.25}; // L-M-T
 
 				std::string isoline = "mj" + std::to_string( nj ) + "_";
-				isoline += "rp" + std::to_string( np ) + "_" ;
+				isoline += "rp" + std::to_string( np ) + "_";
                 std::string outfilenameJ = outdir + ofnstart + htitleJ + isoline;
 				std::string htitlefullJ =  htitleJ + isoline;
 				base.histMaker( listdir, infilenameJ, outfilenameJ, htitlefullJ, np, nj, m_vec, r_vec, rv_vec );

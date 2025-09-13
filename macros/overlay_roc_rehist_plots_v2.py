@@ -101,10 +101,13 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
                 bkgpass = rval2
             h1[n].SetPoint(bn,sigpass,bkgpass)
             #print( " set point : ", bn, sigpass, bkgpass,  )
+        ms = [26,25,26,25,26,25,26,25,26,25]
+        #ms = [24,25,26,30,28]
         h1[n].UseCurrentStyle()
-        h1[n].SetMarkerStyle(n+25)
+        h1[n].SetMarkerStyle(ms[n])
         #k = [kMagenta+2,kGreen+2,kYellow+1,kBlue+2,kRed+2,kAzure+4,kBlack,kViolet+7,kOrange+7,kGreen+3,kRed+4,kBlue+4,kGreen+2,kAzure+4,kMagenta+2,kGreen+2]
-        k = [kMagenta+2,kGreen+2,kBlue+2,kRed+2,kAzure+4,kViolet+7,kOrange+7,kGreen+3,kRed+4,kBlue+4,kGreen+2,kAzure+4,kMagenta+2,kGreen+2,kBlack]
+        #k = [kMagenta+2,kGreen+2,kBlue+2,kRed+2,kAzure+4,kViolet+7,kOrange+7,kGreen+3,kRed+4,kBlue+4,kGreen+2,kAzure+4,kMagenta+2,kGreen+2,kBlack]
+        k = [kMagenta+2,kMagenta+2,kGreen+2,kGreen+2,kBlue+2,kBlue+2,kRed+2,kRed+2,kAzure+4,kAzure+4]
         #k = [kBlue+4,kBlue+1,kGreen+4,kYellow+3,kAzure+4,kViolet+7,kOrange+7,kGreen+3]
         #k = [kSpring-7,kSpring+3,kAzure+3,kAzure-7]
         #k = [kBlack]
@@ -180,7 +183,7 @@ legtitle = ''
 
 rtitle = 'Run2UL AODSIM'
 #Ic_legtitle = ''
-xtitle = 'Signal Eff.'
+xtitle = 'Signal Acc'
 #xtitle = '#Delta_{Run}'
 #xtitle = 'GeV'
 #xtitle = '[ns]'
@@ -190,12 +193,12 @@ xtitle = 'Signal Eff.'
 #ytitle = '#occupancy(t_{1}-t_{2}) '
 #xtitle = 'HcalTowerSumEtBcConeDR04 [GeV]'
 #ytitle = 'a.u.'
-ytitle = 'Bkg Eff.'
+ytitle = 'Bkg Acc'
 htitle = ''
-#islogx = True
-islogx = False
-#islogy = True
-islogy = False
+islogx = True
+#islogx = False
+islogy = True
+#islogy = False
 
 #---------------------------------------------------------------
 #hl_mc_fms_loc = [
@@ -208,22 +211,30 @@ islogy = False
 #l = [ 0.7,0.7,0.925,0.9 ] # legend position top right
 l = [ 0.2,0.60,0.4,0.90 ] # legend position top left
 #l = [ 0.25,0.20,0.52,0.525 ] # legend position bottom left
-t = [0.2,0.48,0.23,0.175,0.22] # titles position
+#t = [0.2,0.48,0.23,0.175,0.22] # titles position
+t = [0.45,0.80,0.23,0.175,0.22] # titles position
 
-x = [ 0.0, 1.1 ]
-y = [ 0.0, 0.4 ]
+#x = [ 0.0, 1.05 ]
+#y = [ 0.0, 1.05 ]
+#x = [ 0.0, 0.8 ]
+#y = [ 0.001, 10.0 ]
+y = [ 0.0001, 100.0 ]
+x = [ 0.01, 0.4 ]
+#y = [ 0.2, 0.8 ]
 
 #title = ' GGG 20-15-5'
 title = ' GGG Tot BG ( GJ+WJ+ZJ )'
 #isocut = 'splitline{#splitline{}{R_{xa} && R_{xb} != 1}}{nSigPho > 0}'
-isocut = '#splitline{#splitline{M_{s} > 2000}{R_{xa} && R_{xb} != 1}}{nSigPho > 0}'
+#isocut = '#splitline{#splitline{M_{s} > 1250}{R_{xa} && R_{xb} != 1}}{nSigPho > 0}'
+#isocut = '#splitline{#splitline{R_{s} > 0.3}{R_{xa} && R_{xb} != 1}}{nSigPho > 0}'
+isocut = '#splitline{#splitline{M_{s} > 1250, R_{s} > 0.3}{R_{xa} && R_{xb} != 1}}{nSigPho > 0}'
 #isocut = '#splitline{#splitline{M_{s} > 2000}{R_{xa} && R_{xb} != 1}}{nSigPho > 0, Rs > 0.2}'
 ptitle=[ title, "", isocut ]
 bkgrd1 = 'GJets '
 bkgrd2 = 'WJets '
 bkgrd3 = 'ZJets '
 
-outname = 'llpa_met150_multiroc_sms'
+outname = 'llpa_met150_multiroc'
 layout = { 'xtitle' : xtitle, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'legtitle' : legtitle }
 
 rhnamel = [ 'Rs', 'R' ]
@@ -232,39 +243,85 @@ rhnamel = [ 'Rs', 'R' ]
 cut1 = '>'
 cut2 = '<'
 
-#rfbg1 = 'KUCMS_BG_llpana_v36_mj0_rp2_GJets_RjrSkim_Hists.root'
-#rfbg2 = 'KUCMS_BG_llpana_v36_mj0_rp2_WJetsLNU_RjrSkim_Hists.root'
-#rfbg3 = 'KUCMS_BG_llpana_v36_mj0_rp2_ZJetsNuNu_RjrSkim_Hists.root' 
-#rfbg = 'KUCMS_BG_llpana_v36_mj0_rp2_TotBG_RjrSkim_Hists.root'
-#rfsig1 = 'KUCMS_llpana_v36_mj0_rp2_PG2kN15dN5dC1_RjrSkim_Hists.root'
-#rfsig2 = 'KUCMS_llpana_v36_mj0_rp2_PG2kN19dN5dC1_RjrSkim_Hists.root'
-#rfsig3 = 'KUCMS_llpana_v36_mj0_rp2_PG2kN19dN15dC1_RjrSkim_Hists.root'
-#rfsig4 = 'KUCMS_llpana_v36_mj0_rp2_PG2kN1950N19dC1_RjrSkim_Hists.root'
+rfbg10 = 'KUCMS_BG_llpana_v36_mj0_rp0_TotBG_RjrSkim_Hists.root' 
+rfbg11 = 'KUCMS_BG_llpana_v36_mj0_rp1_TotBG_RjrSkim_Hists.root' 
+rfbg12 = 'KUCMS_BG_llpana_v36_mj0_rp2_TotBG_RjrSkim_Hists.root' 
+rfbg13 = 'KUCMS_BG_llpana_v36_mj0_rp3_TotBG_RjrSkim_Hists.root' 
+rfbg14 = 'KUCMS_BG_llpana_v36_mj0_rp4_TotBG_RjrSkim_Hists.root' 
+rfbg15 = 'KUCMS_BG_llpana_v36_mj0_rp5_TotBG_RjrSkim_Hists.root' 
+rfbg16 = 'KUCMS_BG_llpana_v36_mj0_rp6_TotBG_RjrSkim_Hists.root' 
+rfbg17 = 'KUCMS_BG_llpana_v36_mj0_rp7_TotBG_RjrSkim_Hists.root' 
 
-rfbg1 = 'KUCMS_BG_llpana_v36_mj0_rp1_GJets_RjrSkim_Hists.root'
-rfbg2 = 'KUCMS_BG_llpana_v36_mj0_rp1_WJetsLNU_RjrSkim_Hists.root'
-rfbg3 = 'KUCMS_BG_llpana_v36_mj0_rp1_ZJetsNuNu_RjrSkim_Hists.root'
-rfbg = 'KUCMS_BG_llpana_v36_mj0_rp1_TotBG_RjrSkim_Hists.root'
-rfsig1 = 'KUCMS_llpana_v36_mj0_rp1_PG2kN15dN5dC1_RjrSkim_Hists.root'
-rfsig2 = 'KUCMS_llpana_v36_mj0_rp1_PG2kN19dN5dC1_RjrSkim_Hists.root'
-rfsig3 = 'KUCMS_llpana_v36_mj0_rp1_PG2kN19dN15dC1_RjrSkim_Hists.root'
-rfsig4 = 'KUCMS_llpana_v36_mj0_rp1_PG2kN1950N19dC1_RjrSkim_Hists.root'
 
-sig1 = '20-15-5'
-sig2 = '20-19-5'
-sig3 = '20-19-15'
-sig4 = '20-195-19'
+rfsig01 = 'KUCMS_llpana_v36_mj0_rp0_PG2kN15dN5dC1_RjrSkim_Hists.root' 
+rfsig02 = 'KUCMS_llpana_v36_mj0_rp0_PG2kN1950N19dC1_RjrSkim_Hists.root' 
+rfsig03 = 'KUCMS_llpana_v36_mj0_rp0_PG2kN19dN15dC1_RjrSkim_Hists.root' 
+rfsig04 = 'KUCMS_llpana_v36_mj0_rp0_PG2kN19dN5dC1_RjrSkim_Hists.root' 
+rfsig05 = 'KUCMS_llpana_v36_mj0_rp0_PG2kN5dN250C1_RjrSkim_Hists.root' 
+rfsig11 = 'KUCMS_llpana_v36_mj0_rp1_PG2kN15dN5dC1_RjrSkim_Hists.root' 
+rfsig12 = 'KUCMS_llpana_v36_mj0_rp1_PG2kN1950N19dC1_RjrSkim_Hists.root' 
+rfsig13 = 'KUCMS_llpana_v36_mj0_rp1_PG2kN19dN15dC1_RjrSkim_Hists.root' 
+rfsig14 = 'KUCMS_llpana_v36_mj0_rp1_PG2kN19dN5dC1_RjrSkim_Hists.root' 
+rfsig15 = 'KUCMS_llpana_v36_mj0_rp1_PG2kN5dN250C1_RjrSkim_Hists.root' 
+rfsig21 = 'KUCMS_llpana_v36_mj0_rp2_PG2kN15dN5dC1_RjrSkim_Hists.root' 
+rfsig22 = 'KUCMS_llpana_v36_mj0_rp2_PG2kN1950N19dC1_RjrSkim_Hists.root' 
+rfsig23 = 'KUCMS_llpana_v36_mj0_rp2_PG2kN19dN15dC1_RjrSkim_Hists.root' 
+rfsig24 = 'KUCMS_llpana_v36_mj0_rp2_PG2kN19dN5dC1_RjrSkim_Hists.root' 
+rfsig25 = 'KUCMS_llpana_v36_mj0_rp2_PG2kN5dN250C1_RjrSkim_Hists.root' 
+rfsig31 = 'KUCMS_llpana_v36_mj0_rp3_PG2kN15dN5dC1_RjrSkim_Hists.root' 
+rfsig32 = 'KUCMS_llpana_v36_mj0_rp3_PG2kN1950N19dC1_RjrSkim_Hists.root' 
+rfsig33 = 'KUCMS_llpana_v36_mj0_rp3_PG2kN19dN15dC1_RjrSkim_Hists.root' 
+rfsig34 = 'KUCMS_llpana_v36_mj0_rp3_PG2kN19dN5dC1_RjrSkim_Hists.root' 
+rfsig35 = 'KUCMS_llpana_v36_mj0_rp3_PG2kN5dN250C1_RjrSkim_Hists.root' 
+rfsig41 = 'KUCMS_llpana_v36_mj0_rp4_PG2kN15dN5dC1_RjrSkim_Hists.root' 
+rfsig42 = 'KUCMS_llpana_v36_mj0_rp4_PG2kN1950N19dC1_RjrSkim_Hists.root' 
+rfsig43 = 'KUCMS_llpana_v36_mj0_rp4_PG2kN19dN15dC1_RjrSkim_Hists.root' 
+rfsig44 = 'KUCMS_llpana_v36_mj0_rp4_PG2kN19dN5dC1_RjrSkim_Hists.root' 
+rfsig45 = 'KUCMS_llpana_v36_mj0_rp4_PG2kN5dN250C1_RjrSkim_Hists.root' 
+rfsig51 = 'KUCMS_llpana_v36_mj0_rp5_PG2kN15dN5dC1_RjrSkim_Hists.root' 
+rfsig52 = 'KUCMS_llpana_v36_mj0_rp5_PG2kN1950N19dC1_RjrSkim_Hists.root' 
+rfsig53 = 'KUCMS_llpana_v36_mj0_rp5_PG2kN19dN15dC1_RjrSkim_Hists.root' 
+rfsig54 = 'KUCMS_llpana_v36_mj0_rp5_PG2kN19dN5dC1_RjrSkim_Hists.root' 
+rfsig55 = 'KUCMS_llpana_v36_mj0_rp5_PG2kN5dN250C1_RjrSkim_Hists.root' 
+rfsig61 = 'KUCMS_llpana_v36_mj0_rp6_PG2kN15dN5dC1_RjrSkim_Hists.root' 
+rfsig62 = 'KUCMS_llpana_v36_mj0_rp6_PG2kN1950N19dC1_RjrSkim_Hists.root' 
+rfsig63 = 'KUCMS_llpana_v36_mj0_rp6_PG2kN19dN15dC1_RjrSkim_Hists.root' 
+rfsig64 = 'KUCMS_llpana_v36_mj0_rp6_PG2kN19dN5dC1_RjrSkim_Hists.root' 
+rfsig65 = 'KUCMS_llpana_v36_mj0_rp6_PG2kN5dN250C1_RjrSkim_Hists.root' 
+rfsig71 = 'KUCMS_llpana_v36_mj0_rp7_PG2kN15dN5dC1_RjrSkim_Hists.root' 
+rfsig72 = 'KUCMS_llpana_v36_mj0_rp7_PG2kN1950N19dC1_RjrSkim_Hists.root' 
+rfsig73 = 'KUCMS_llpana_v36_mj0_rp7_PG2kN19dN15dC1_RjrSkim_Hists.root' 
+rfsig74 = 'KUCMS_llpana_v36_mj0_rp7_PG2kN19dN5dC1_RjrSkim_Hists.root' 
+rfsig75 = 'KUCMS_llpana_v36_mj0_rp7_PG2kN5dN250C1_RjrSkim_Hists.root' 
 
-rh1 = " Rs"
-rh2 = " R"
+bg = 'TotBG' 
+sig1 = '2-1.5-0.5 ' 
+sig2 = '2-1.95-1.9 ' 
+sig3 = '2-1.9-1.5 ' 
+sig4 = '2-1.9-0.5 ' 
+sig5 = '2-0.5-0.25 '  
 
-rfsigl = [ rfsig1, rfsig2, rfsig3, rfsig4 ]
+rhname1 = 'Rs' 
+rhname2 = 'R' 
+rhname3 = 'Ms'  
+rhname4 = 'Mr'   
+rhname5 = 'Rx'  
+rhname6 = 'Rm'  
+
 lint = [ '_' ]
-ncomp = 'Rs_v_R'
+ncomp = 'roc'
 
-rhname1 = 'Rs'
-rhname2 = 'R'
-rfsig = rfsig2
+rfbg = rfbg13
+rha = rhname5 
+rhb = rhname6
+rfsig1 = rfsig31
+rfsig2 = rfsig32
+rfsig3 = rfsig33
+rfsig4 = rfsig34
+rfsig5 = rfsig35
+
+rhnamea = rha
+rhnameb = rhb
 
 for thing in lint :
 
@@ -273,14 +330,28 @@ for thing in lint :
     inhistlist = [
   
         #[ rhname1, "", base1-sig, base2-bkgrd, rfgmsbroc1-sig, rfgmsbroc2-bkgrd, rhname1, cut1, usebase1 ],
-        [ rhname1, "", rfsig1, rfbg, rfsig1, rfbg, sig1+rh1, cut1 ],
-        [ rhname1, "", rfsig2, rfbg, rfsig2, rfbg, sig2+rh1, cut1 ],
-        [ rhname1, "", rfsig3, rfbg, rfsig3, rfbg, sig3+rh1, cut1 ],  
-        [ rhname1, "", rfsig4, rfbg, rfsig4, rfbg, sig4+rh1, cut1 ],
-        [ rhname2, "", rfsig1, rfbg, rfsig1, rfbg, sig1+rh2, cut1 ],
-        [ rhname2, "", rfsig2, rfbg, rfsig2, rfbg, sig2+rh2, cut1 ],
-        [ rhname2, "", rfsig3, rfbg, rfsig3, rfbg, sig3+rh2, cut1 ],             
-        [ rhname2, "", rfsig4, rfbg, rfsig4, rfbg, sig4+rh2, cut1 ],
+        [ rhnamea, "", rfsig1, rfbg, rfsig1, rfbg, sig1+rha, cut1 ],
+        [ rhnameb, "", rfsig1, rfbg, rfsig1, rfbg, sig1+rhb, cut1 ],
+        [ rhnamea, "", rfsig2, rfbg, rfsig2, rfbg, sig2+rha, cut1 ],
+        [ rhnameb, "", rfsig2, rfbg, rfsig2, rfbg, sig2+rhb, cut1 ],
+        [ rhnamea, "", rfsig3, rfbg, rfsig3, rfbg, sig3+rha, cut1 ],  
+        [ rhnameb, "", rfsig3, rfbg, rfsig3, rfbg, sig3+rhb, cut1 ],
+        [ rhnamea, "", rfsig4, rfbg, rfsig4, rfbg, sig4+rha, cut1 ],
+        [ rhnameb, "", rfsig4, rfbg, rfsig4, rfbg, sig4+rhb, cut1 ],
+        [ rhnamea, "", rfsig5, rfbg, rfsig5, rfbg, sig5+rha, cut1 ], 
+        [ rhnameb, "", rfsig5, rfbg, rfsig5, rfbg, sig5+rhb, cut1 ],
+
+        #[ rhnamea, "", rfsig1, rfbg, rfsig1, rfbg, sig1+rha, cut1 ],
+        #[ rhnamea, "", rfsig2, rfbg, rfsig2, rfbg, sig2+rha, cut1 ],
+        #[ rhnamea, "", rfsig3, rfbg, rfsig3, rfbg, sig3+rha, cut1 ],
+        #[ rhnamea, "", rfsig4, rfbg, rfsig4, rfbg, sig4+rha, cut1 ],
+        #[ rhnamea, "", rfsig5, rfbg, rfsig5, rfbg, sig5+rha, cut1 ],
+
+        #[ rhnameb, "", rfsig1, rfbg, rfsig1, rfbg, sig1+rhb, cut1 ],
+        #[ rhnameb, "", rfsig2, rfbg, rfsig2, rfbg, sig2+rhb, cut1 ],
+        #[ rhnameb, "", rfsig3, rfbg, rfsig3, rfbg, sig3+rhb, cut1 ],             
+        #[ rhnameb, "", rfsig4, rfbg, rfsig4, rfbg, sig4+rhb, cut1 ],
+        #[ rhnameb, "", rfsig5, rfbg, rfsig5, rfbg, sig5+rhb, cut1 ], 
 
         #[ rhname2, "", rfsig, rfbg, rfsig, rfbg, sig2, cut1 ],
         #[ rhname2, "", rfsig, rfbg, rfsig, rfbg, sig2, cut1 ], 

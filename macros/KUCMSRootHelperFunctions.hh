@@ -147,6 +147,52 @@ void normTH1D(TH1D* hist){
 
 }//<<>>void NormTH1D(TH1D* hist)
 
+void smoothTH1D(TH1D* hist){
+
+    std::cout << "Smoothing " << " hist: " << hist->GetName() << std::endl;
+	float smp = 1.25;
+    const auto nBins = hist->GetNbinsX() -1;
+    for (auto ibinX = 2; ibinX < nBins; ibinX++){
+        // get content/error
+        float ep = hist->GetBinError(ibinX-1);
+        //float e = hist->GetBinError(ibinX);
+        float en = hist->GetBinError(ibinX+1);
+        float vp = hist->GetBinContent(ibinX-1);
+        float v = hist->GetBinContent(ibinX);
+        float vn = hist->GetBinContent(ibinX+1);
+		float vnn = ( ibinX+2 <= nBins ) ? hist->GetBinContent(ibinX+2) : vn;	
+        // set new contents
+        bool checkp( v > smp*vp );
+		bool checkn( v > smp*vn );
+		bool checknn( v > smp*vnn );
+        if( checkp && ( checkn || checknn ) ){
+		//if( e > smp*ep || e > smp*en ){
+			float content = v;
+			//float error = e;
+			float c = hist->GetBinCenter(ibinX);
+            float cp = hist->GetBinCenter(ibinX-1);  
+			float vt = vn;
+			float et = en;   
+			float ct = hist->GetBinCenter(ibinX+1); 
+ 			if( et > 1.2*ep ){
+				int bint = ibinX+1;
+				for (auto xbins = ibinX+2; xbins <= nBins; xbins++){
+					auto vs = hist->GetBinContent(xbins);
+        			auto es = hist->GetBinError(xbins);
+					float cs = hist->GetBinCenter(xbins);
+					if( es < 1.2*ep ){ bint = xbins; vt = vs; et = es; ct = cs; break; } 
+				}//<<>>for (auto ibinX = 2; ibinX <= nBins; ibinXs++) 
+			}//<<>if( en > 5*ep )
+			float slope = ( vt - vp ) / ( ct - cp );
+			content = vp + slope*(c-cp);
+			//error = ep;
+        	hist->SetBinContent(ibinX,content);
+        	hist->SetBinError(ibinX,ep);
+		}//<<>>if( e > 10*ep || e > 10*en )
+    }//<<>>for (auto ibinX = 1; ibinX <= nBins; ibinX++)
+
+}//<<>>void smoothTH1D(TH1D* hist)
+
 void profileTH2D(TH2D* nhist, TH1D* prof, TH1D* fithist, float range = 0.2 ){
 
     std::cout << "Profile " << " hist: " << nhist->GetName() << std::endl;

@@ -168,7 +168,7 @@ xtitle = ''
 #ytitle = '#occupancy(t_{1}-t_{2}) '
 #xtitle = 'HcalTowerSumEtBcConeDR04 [GeV]'
 #ytitle = 'a.u.'
-ytitle = 'Sig Acceptance / BG Rejection'
+ytitle = 'Sig(Acc) or  BG(1-Acc)'
 #ytitle = 'Acceptance'
 htitle = ''
 #islogx = True
@@ -184,77 +184,111 @@ islogy = False
 #     #["Data_sigma","",mc_single_loc+pcal+lstfr,"Single"],
 #]
 
-l = [ 0.7,0.7,0.925,0.9 ] # legend position top right
-#l = [ 0.2,0.60,0.4,0.90 ] # legend position top left
-#l = [ 0.25,0.20,0.52,0.525 ] # legend position bottom left
-t = [0.7,0.6,0.23,0.175,0.22] # titles position
+#l = [ 0.7,0.6,0.925,0.85 ] # legend position top right
+l = [ 0.2,0.6,0.4,0.85 ] # legend position top left 
+##l = [ 0.2,0.60,0.4,0.90 ] # legend position top left
+##l = [ 0.25,0.20,0.52,0.525 ] # legend position bottom left
+#t = [0.7,0.5,0.23,0.175,0.22] # titles position right
+t = [0.2,0.5,0.23,0.175,0.22] # titles position left
 
-#x = [ 0.0, 1.1 ]
-x = [ 0.0, 0.4 ]
-#y = [ 0.0, 1.0 ]
-y = [ 0.5, 1.0 ]
+x = [ 0.0, 1.0 ]
+#x = [ 0.0, 0.6 ]
+#x = [ 0.0, 10000 ] 
+#x = [ 0.0, 7000 ]
+y = [ 0.0, 1.05 ]
+#y = [ 0.6, 1.01 ]
 
 #title = ' GGG 20-15-5'
 #title = ' GGG Tot BG ( GJ+WJ+ZJ )'
 #isocut = 'splitline{#splitline{}{R_{xa} && R_{xb} != 1}}{nSigPho > 0}'
 title = ' Cut Efficency'
-isocut = '#splitline{#splitline{M_{s} > 2000}{R_{xa} && R_{xb} != 1}}{nSigPho > 0}'
+#isocut = '#splitline{#splitline{M_{s} > 1250}{R_{xa} && R_{xb} != 1}}{nSigPho > 0}'
+#isocut = '#splitline{#splitline{R_{s} > 0.3}{R_{xa} && R_{xb} != 1}}{nSigPho > 0}' 
+isocut = '#splitline{#splitline{M_{s} > 1250, R_{s} > 0.3}{R_{xa} && R_{xb} != 1}}{nSigPho > 0}' 
 #isocut = '#splitline{#splitline{M_{s} > 2000}{R_{xa} && R_{xb} != 1}}{nSigPho > 0, Rs > 0.2}'
 ptitle=[ title, "", isocut ]
 bkgrd1 = 'GJets '
 bkgrd2 = 'WJets '
 bkgrd3 = 'ZJets '
 
-rhnamel = [ 'Rs', 'R' ]
-#rhnamel = [ 'Rx', 'Rm' ]
-
 cutb1 = 'b>'
 cut1 = 's>'
 cutb2 = 'b<'
 cut2 = 's<'
 
-#rfbg1 = 'KUCMS_BG_llpana_v36_mj0_rp2_GJets_RjrSkim_Hists.root'
-#rfbg2 = 'KUCMS_BG_llpana_v36_mj0_rp2_WJetsLNU_RjrSkim_Hists.root'
-#rfbg3 = 'KUCMS_BG_llpana_v36_mj0_rp2_ZJetsNuNu_RjrSkim_Hists.root' 
-#rfbg = 'KUCMS_BG_llpana_v36_mj0_rp2_TotBG_RjrSkim_Hists.root'
-#rfsig1 = 'KUCMS_llpana_v36_mj0_rp2_PG2kN15dN5dC1_RjrSkim_Hists.root'
-#rfsig2 = 'KUCMS_llpana_v36_mj0_rp2_PG2kN19dN5dC1_RjrSkim_Hists.root'
-#rfsig3 = 'KUCMS_llpana_v36_mj0_rp2_PG2kN19dN15dC1_RjrSkim_Hists.root'
-#rfsig4 = 'KUCMS_llpana_v36_mj0_rp2_PG2kN1950N19dC1_RjrSkim_Hists.root'
+rfbg10 = 'KUCMS_BG_llpana_v36_mj0_rp0_TotBG_RjrSkim_Hists.root'
+rfbg11 = 'KUCMS_BG_llpana_v36_mj0_rp1_TotBG_RjrSkim_Hists.root'
+rfbg12 = 'KUCMS_BG_llpana_v36_mj0_rp2_TotBG_RjrSkim_Hists.root'
+rfbg13 = 'KUCMS_BG_llpana_v36_mj0_rp3_TotBG_RjrSkim_Hists.root'
+rfbg14 = 'KUCMS_BG_llpana_v36_mj0_rp4_TotBG_RjrSkim_Hists.root'
+rfbg15 = 'KUCMS_BG_llpana_v36_mj0_rp5_TotBG_RjrSkim_Hists.root'
+rfbg16 = 'KUCMS_BG_llpana_v36_mj0_rp6_TotBG_RjrSkim_Hists.root'
+rfbg17 = 'KUCMS_BG_llpana_v36_mj0_rp7_TotBG_RjrSkim_Hists.root'
 
-rfbg1 = 'KUCMS_BG_llpana_v36_mj0_rp1_GJets_RjrSkim_Hists.root'
-rfbg2 = 'KUCMS_BG_llpana_v36_mj0_rp1_WJetsLNU_RjrSkim_Hists.root'
-rfbg3 = 'KUCMS_BG_llpana_v36_mj0_rp1_ZJetsNuNu_RjrSkim_Hists.root'
-rfbg = 'KUCMS_BG_llpana_v36_mj0_rp1_TotBG_RjrSkim_Hists.root'
-rfsig1 = 'KUCMS_llpana_v36_mj0_rp1_PG2kN15dN5dC1_RjrSkim_Hists.root'
-rfsig2 = 'KUCMS_llpana_v36_mj0_rp1_PG2kN19dN5dC1_RjrSkim_Hists.root'
-rfsig3 = 'KUCMS_llpana_v36_mj0_rp1_PG2kN19dN15dC1_RjrSkim_Hists.root'
-rfsig4 = 'KUCMS_llpana_v36_mj0_rp1_PG2kN1950N19dC1_RjrSkim_Hists.root'
+
+rfsig01 = 'KUCMS_llpana_v36_mj0_rp0_PG2kN15dN5dC1_RjrSkim_Hists.root'
+rfsig02 = 'KUCMS_llpana_v36_mj0_rp0_PG2kN1950N19dC1_RjrSkim_Hists.root'
+rfsig03 = 'KUCMS_llpana_v36_mj0_rp0_PG2kN19dN15dC1_RjrSkim_Hists.root'
+rfsig04 = 'KUCMS_llpana_v36_mj0_rp0_PG2kN19dN5dC1_RjrSkim_Hists.root'
+rfsig05 = 'KUCMS_llpana_v36_mj0_rp0_PG2kN5dN250C1_RjrSkim_Hists.root'
+rfsig11 = 'KUCMS_llpana_v36_mj0_rp1_PG2kN15dN5dC1_RjrSkim_Hists.root'
+rfsig12 = 'KUCMS_llpana_v36_mj0_rp1_PG2kN1950N19dC1_RjrSkim_Hists.root'
+rfsig13 = 'KUCMS_llpana_v36_mj0_rp1_PG2kN19dN15dC1_RjrSkim_Hists.root'
+rfsig14 = 'KUCMS_llpana_v36_mj0_rp1_PG2kN19dN5dC1_RjrSkim_Hists.root'
+rfsig15 = 'KUCMS_llpana_v36_mj0_rp1_PG2kN5dN250C1_RjrSkim_Hists.root'
+rfsig21 = 'KUCMS_llpana_v36_mj0_rp2_PG2kN15dN5dC1_RjrSkim_Hists.root'
+rfsig22 = 'KUCMS_llpana_v36_mj0_rp2_PG2kN1950N19dC1_RjrSkim_Hists.root'
+rfsig23 = 'KUCMS_llpana_v36_mj0_rp2_PG2kN19dN15dC1_RjrSkim_Hists.root'
+rfsig24 = 'KUCMS_llpana_v36_mj0_rp2_PG2kN19dN5dC1_RjrSkim_Hists.root'
+rfsig25 = 'KUCMS_llpana_v36_mj0_rp2_PG2kN5dN250C1_RjrSkim_Hists.root'
+rfsig31 = 'KUCMS_llpana_v36_mj0_rp3_PG2kN15dN5dC1_RjrSkim_Hists.root'
+rfsig32 = 'KUCMS_llpana_v36_mj0_rp3_PG2kN1950N19dC1_RjrSkim_Hists.root'
+rfsig33 = 'KUCMS_llpana_v36_mj0_rp3_PG2kN19dN15dC1_RjrSkim_Hists.root'
+rfsig34 = 'KUCMS_llpana_v36_mj0_rp3_PG2kN19dN5dC1_RjrSkim_Hists.root'
+rfsig35 = 'KUCMS_llpana_v36_mj0_rp3_PG2kN5dN250C1_RjrSkim_Hists.root'
+rfsig41 = 'KUCMS_llpana_v36_mj0_rp4_PG2kN15dN5dC1_RjrSkim_Hists.root'
+rfsig42 = 'KUCMS_llpana_v36_mj0_rp4_PG2kN1950N19dC1_RjrSkim_Hists.root'
+rfsig43 = 'KUCMS_llpana_v36_mj0_rp4_PG2kN19dN15dC1_RjrSkim_Hists.root'
+rfsig44 = 'KUCMS_llpana_v36_mj0_rp4_PG2kN19dN5dC1_RjrSkim_Hists.root'
+rfsig45 = 'KUCMS_llpana_v36_mj0_rp4_PG2kN5dN250C1_RjrSkim_Hists.root'
+rfsig51 = 'KUCMS_llpana_v36_mj0_rp5_PG2kN15dN5dC1_RjrSkim_Hists.root'
+rfsig52 = 'KUCMS_llpana_v36_mj0_rp5_PG2kN1950N19dC1_RjrSkim_Hists.root'
+rfsig53 = 'KUCMS_llpana_v36_mj0_rp5_PG2kN19dN15dC1_RjrSkim_Hists.root'
+rfsig54 = 'KUCMS_llpana_v36_mj0_rp5_PG2kN19dN5dC1_RjrSkim_Hists.root'
+rfsig55 = 'KUCMS_llpana_v36_mj0_rp5_PG2kN5dN250C1_RjrSkim_Hists.root'
+rfsig61 = 'KUCMS_llpana_v36_mj0_rp6_PG2kN15dN5dC1_RjrSkim_Hists.root'
+rfsig62 = 'KUCMS_llpana_v36_mj0_rp6_PG2kN1950N19dC1_RjrSkim_Hists.root'
+rfsig63 = 'KUCMS_llpana_v36_mj0_rp6_PG2kN19dN15dC1_RjrSkim_Hists.root'
+rfsig64 = 'KUCMS_llpana_v36_mj0_rp6_PG2kN19dN5dC1_RjrSkim_Hists.root'
+rfsig65 = 'KUCMS_llpana_v36_mj0_rp6_PG2kN5dN250C1_RjrSkim_Hists.root'
+rfsig71 = 'KUCMS_llpana_v36_mj0_rp7_PG2kN15dN5dC1_RjrSkim_Hists.root'
+rfsig72 = 'KUCMS_llpana_v36_mj0_rp7_PG2kN1950N19dC1_RjrSkim_Hists.root'
+rfsig73 = 'KUCMS_llpana_v36_mj0_rp7_PG2kN19dN15dC1_RjrSkim_Hists.root'
+rfsig74 = 'KUCMS_llpana_v36_mj0_rp7_PG2kN19dN5dC1_RjrSkim_Hists.root'
+rfsig75 = 'KUCMS_llpana_v36_mj0_rp7_PG2kN5dN250C1_RjrSkim_Hists.root'
 
 bg = 'TotBG'
-sig1 = '20-15-5'
-sig2 = '20-19-5'
-sig3 = '20-19-15'
-sig4 = '20-195-19'
-
-rh1 = " Rs"
-rh2 = " R"
-
-
-
-rfsigl = [ rfsig1, rfsig2, rfsig3, rfsig4 ]
-lint = [ '_' ]
-ncomp = 'Rs_v_R'
+sig1 = '2-1.5-0.5'
+sig2 = '2-1.95-1.9'
+sig3 = '2-1.9-1.5'
+sig4 = '2-1.9-0.5'
+sig5 = '2-0.5-0.25' 
 
 rhname1 = 'Rs'
 rhname2 = 'R'
+rhname3 = 'Mr' 
+rhname4 = 'Ms'  
+rhname5 = 'Rm' 
+rhname6 = 'Rx' 
 
-rhname = rhname2
-xtitle = rhname2
+rhname = rhname6
+xtitle = rhname
 
-outname = 'llpa_met150_multiroc_sms'
+outname = 'llpa_met150_multiroc_'
 layout = { 'xtitle' : xtitle, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'legtitle' : legtitle }
 
+lint = ['cuteff_']
+ncomp = rhname
 for thing in lint :
 
     outname = outname+ thing + ncomp
@@ -262,11 +296,12 @@ for thing in lint :
     inhistlist = [
   
         #[ rhname1, "", base1-sig, base2-bkgrd, rfgmsbroc1-sig, rfgmsbroc2-bkgrd, rhname1, cut1, usebase1 ],
-        [ rhname, "", rfbg, bg, cutb1 ],
-        [ rhname, "", rfsig1, sig1, cut1 ],
-        [ rhname, "", rfsig2, sig2, cut1 ],
-        [ rhname, "", rfsig3, sig3, cut1 ],  
-        [ rhname, "", rfsig4, sig4, cut1 ],
+        [ rhname, "", rfbg13, bg, cutb1 ],
+        [ rhname, "", rfsig31, sig1, cut1 ],
+        [ rhname, "", rfsig32, sig2, cut1 ],
+        [ rhname, "", rfsig33, sig3, cut1 ],  
+        [ rhname, "", rfsig34, sig4, cut1 ],
+        [ rhname, "", rfsig35, sig5, cut1 ], 
         #[ rhname2, "", rfsig1, rfbg, rfsig1, rfbg, sig1+rh2, cut1 ],
         #[ rhname2, "", rfsig2, rfbg, rfsig2, rfbg, sig2+rh2, cut1 ],
         #[ rhname2, "", rfsig3, rfbg, rfsig3, rfbg, sig3+rh2, cut1 ],             
