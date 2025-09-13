@@ -64,8 +64,8 @@ def docrab( dataset ):
         #inputJSON    = 'Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt'
         ##inputJSON    = 'Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON.txt'
         ##inputJSON    = 'Cert_314472-325175_13TeV_PromptReco_Collisions18_JSON.txt'
-        inputJSON    = 'Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt'
-        #inputJSON    = 'Cert_Collisions2022_355100_362760_Golden.json'	
+        #inputJSON    = 'Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt'
+        inputJSON    = 'Cert_Collisions2022_355100_362760_Golden.json'	
 
         filespjob = int(dataset[1])
 
@@ -88,7 +88,7 @@ def docrab( dataset ):
 
         config.Data.partialDataset = True
         config.Data.inputDataset   = None
-        #config.Data.lumiMask       = inputJSON    # Comment out for MC only set for data !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        config.Data.lumiMask       = inputJSON    # Comment out for MC only set for data !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         #config.Data.splitting     = 'Automatic' # data
         config.Data.splitting = 'FileBased' # Justin
         config.Data.unitsPerJob  =  filespjob
@@ -130,8 +130,8 @@ def docrab( dataset ):
             #primaryDataset = (inDO[0].split('/')[1]).split('-sherpa')[0]
             print( primaryDataset )
             #runEra         = (inDO[0].split('/')[2]) # justin
-            #runEra         = (inDO[0].split('/')[2]).split('-')[0]
-            runEra         = (inDO[0].split('/')[2]).split('RECO')[0]
+            runEra         = (inDO[0].split('/')[2]).split('-')[0]
+            #runEra         = (inDO[0].split('/')[2]).split('RECO')[0]
             print( runEra )
             dataset        = inDO[0].split('/')[3]
             print( dataset )
@@ -146,12 +146,13 @@ def docrab( dataset ):
             # 30 consoladated Track objects in single Tracks object w/ SC matching
             # 31 reduced track pt min to 5 unless SC match, ? fixed SC rechit ID bug ?
 
+            trial          = "kucmsntuple_MET_R22_AL1NpSC" + version #
             #trial          = "kucmsntuple_MET_R18_AL1NpSC_DEOnly" + version #
             ##trial          = "kucmsntuple_MET_R18_AL1SelPho_DEOnly" + version #
             ##trial          = "kucmsntuple_MET_R18_AL1SelEle_DEOnly" + version #
             ##trial          = "kucmsntuple_EGamma_R18_AL1SelEle_DEOnly" + version #
 
-            trial          = "kucmsntuple_TTXJets_R18_SVIPM100" + version #
+            #trial          = "kucmsntuple_TTXJets_R18_SVIPM100" + version #
             #trial          = "kucmsntuple_GJets_R18_SVIPM100" + version
             #trial          = "kucmsntuple_QCD_R18_SVIPM100" + version
             #trial          = "kucmsntuple_ZJets_R18_SVIPM100" + version
@@ -182,11 +183,11 @@ def docrab( dataset ):
             mDoDEle = 'doDisEle=true'
             mDoETOnly = 'doECALTrackOnly=true'
 
-            #efilter = fNpSC
+            efilter = fNpSC
             ##efilter = fM100
             ##efilter = fIPM100
             ##efilter = fAL1E
-            efilter = fSVIPM100 #!!!!!!!!!!!!!!!!
+            #efilter = fSVIPM100 #!!!!!!!!!!!!!!!!
             print( 'using :', efilter )
             print( 'using :', geninfo )
             print( 'with files/job :', filespjob )
@@ -197,18 +198,18 @@ def docrab( dataset ):
 #>>>>>>>>>>>>>>>>>>>     #2017UL #globalTag=106X_dataRun2_v20
             #config.JobType.pyCfgParams   = ['globalTag=106X_dataRun2_v20','multicrab=True']
 #>>>>>>>>>>>>>>>>>>>     #2018UL #globalTag=106X_dataRun2_v36
-            #gt = 'globalTag=106X_dataRun2_v36'
-            #config.JobType.pyCfgParams   = [gt,mcrab,efilter]
-            #config.JobType.pyCfgParams   = [gt,mcrab,efilter,mDoETOnly]
+            gt = 'globalTag=106X_dataRun2_v36'
+            config.JobType.pyCfgParams   = [gt,mcrab,efilter]
+            ###config.JobType.pyCfgParams   = [gt,mcrab,efilter,mDoETOnly]
 #>>>>>>>>>>>>>>>>>>>        #2022 #globalTag=124X_dataRun3_v15
             #gt = 'globalTag=124X_dataRun3_v15'
-            #config.JobType.pyCfgParams   = [gt,mcrab,efilter,mDoETOnly]
+            ###config.JobType.pyCfgParams   = [gt,mcrab,efilter,mDoETOnly]
 
 #---MC--------------------------------------------------------------------------------------------------------------------------
 #>>>>>      #MC RunIISummer20UL18RECO
-            gt = 'globalTag=106X_upgrade2018_realistic_v11_L1v1'
+            #gt = 'globalTag=106X_upgrade2018_realistic_v11_L1v1'
             ##config.JobType.pyCfgParams   = ['globalTag=106X_upgrade2018_realistic_v11_L1v1','multicrab=True','hasGenInfo=True']
-            config.JobType.pyCfgParams   = [gt,mcrab,geninfo,efilter]
+            #config.JobType.pyCfgParams   = [gt,mcrab,geninfo,efilter]
             ##config.JobType.pyCfgParams   = ['globalTag=106X_upgrade2018_realistic_v11_L1v1','multicrab=True','hasGenInfo=True','eventSkim=AL1IsoPho']
 #>>>>>      #MC GMSB RunIIFall17DRPremix  #globalTag=94X_mc2017_realistic_v14  #  <<< comment/uncomment lumi mask when using/!using MC
             ##config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v14','multicrab=True','hasGenInfo=True']
@@ -265,6 +266,10 @@ def run_multi():
         #['/MET/Run2018C-15Feb2022_UL2018-v1/AOD'],
         #['/MET/Run2018D-15Feb2022_UL2018-v1/AOD'],
 
+        #['/MET/Run2022A-27Jun2023-v1/AOD',1],
+        #['/MET/Run2022B-27Jun2023-v2/AOD',1],
+        ['/MET/Run2022C-27Jun2023-v2/AOD',1],
+
         #['/EGamma/Run2018B-15Feb2022_UL2018-v1/AOD'],#72500 eventsperlumi ( 36.5K per file - 4268 files )
         #['/EGamma/Run2018C-15Feb2022_UL2018-v1/AOD'],#72500 eventsperlumi   ( 36.1K per file - 4051 files )
         #['/EGamma/Run2018D-15Feb2022_UL2018-v1/AOD'],#72500 eventsperlumi
@@ -290,7 +295,7 @@ def run_multi():
         #['/TGJets_TuneCP5_13TeV-amcatnlo-madspin-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v1/AODSIM',1],
         #['/TTGJets_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v1/AODSIM',1],
         #['/ttWJets_TuneCP5_13TeV_madgraphMLM_pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v1/AODSIM',2],
-        ['/ttZJets_TuneCP5_13TeV_madgraphMLM_pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v1/AODSIM',1],
+        #['/ttZJets_TuneCP5_13TeV_madgraphMLM_pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v1/AODSIM',1],
 
         #['/GJets_HT-40To100_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
         #['/GJets_HT-100To200_'+TuneCP5MP+'/RunIISummer20UL18RECO-4cores5k_106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM'],

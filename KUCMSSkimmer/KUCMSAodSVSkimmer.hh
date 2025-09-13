@@ -76,6 +76,7 @@ class KUCMSAodSkimmer : public llpgtree {
     void setOutputBranches( TTree* fOutTree );
 
 	// object processing & selection
+    void processTracks();
 	void processEvntVars();
 	void processRechits();
     void processRechitsHist();
@@ -184,6 +185,7 @@ class KUCMSAodSkimmer : public llpgtree {
 	KUCMSBranchManager selRjrVars;
     KUCMSBranchManager selGenPart;
     KUCMSBranchManager selSV;
+    KUCMSBranchManager selTracks;
 
    std::vector<float>   *OSuperCluster_diffEnergy;
    std::vector<float>   *OSuperCluster_dR;
