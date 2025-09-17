@@ -568,7 +568,8 @@ void KUCMSAodSkimmer::processEvntVars(){
   //sumEvtGenWgt += Evt_genWgt;
   selEvtVars.fillBranch( "evtXSection", xsctn );
   
-  float fillWgt = ( ( xsctn * 1000 ) * evtGenWgt  ) / configWgts["sumEvtWgt"];
+  float fillWgt = 1;
+  if( doGenInfo ) fillWgt = ( ( xsctn * 1000 ) * evtGenWgt  ) / configWgts["sumEvtWgt"];
 
   selEvtVars.fillBranch( "evtFillWgt", fillWgt );
   selEvtVars.fillBranch( "Flag_BadChargedCandidateFilter", Flag_BadChargedCandidateFilter );//not suggested

@@ -1,2 +1,4 @@
 #KUCMSNtuple/kucmsntuple_TTJets_AOD_v5/ kuntuple_TTJets_v5.txt TTJets 831.76 0.0 0.0 1 0
-test/ kucmsntuple_ntuple_test.txt test 1.0 0.0 0.0 1 0
+#KUCMSNtuple/kucmsntuple_MET_R22_AL1NpSC_v31/ kucmsntuple_MET_R22_AL1NpSC_v31_MET_AOD_Run2022C_v29.txt MET22C 1 0 0 1 0
+KUCMSNtuple/kucmsntuple_DisJet_R18_SVIPMet100_v31/ DisJet_R18_SVIPM100_v31_DisplacedJet_AOD_Run2018D-15Feb2022_UL2018-v1_v29.txt DJet18D 1 0 0 1 0
+#test/ kucmsntuple_ntuple_test.txt test 1.0 0.0 0.0 1 0

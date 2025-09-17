@@ -396,23 +396,37 @@ dlmet22 = [
 
 ]
 
+dlbosun = [
+
+    '/WW_TuneCP5_13TeV-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',
+    '/WWG_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',
+    '/WWW_4F_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v2/AODSIM',
+    '/WWZ_4F_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v2/AODSIM',
+    '/WZ_TuneCP5_13TeV-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',
+    '/WZG_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',
+    '/WZZ_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v2/AODSIM',
+    '/WGG_5f_TuneCP5_13TeV_amcatnlo-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',
+    '/ZZ_TuneCP5_13TeV-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',
+    '/ZZZ_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v2/AODSIM',
+]
+
 query = 'dasgoclient --json -query=\'dataset='
 
-datalist = dlmet22
+datalist = dlbosun
 
 for data in datalist :
     
     command = query + data + '\''
     #output = bashout( command ).splitlines()
-    #output = bashout( command ).split('size":')
+    output = bashout( command ).split('size":')
     #output = bashout( command ).split('num_lumi":')
-    output = bashout( command ).split('files":')
+    #output = bashout( command ).split('files":')
     #output = bashout( command ).split('events":')
     #fir = output[1].split('size":')[0]
     #sec = output[1].split('size":')[1] 
     #.split('}],')[0]
-    #size = int(output[1].split('}]')[0])/1000000000000
-    size = output[1].split('}]')[0]
+    size = int(output[1].split('}]')[0])/1000000000000
+    #size = output[1].split('}]')[0]
     print( data,  size )
     #print( data, '\n',  fir, '\n', sec )
 
