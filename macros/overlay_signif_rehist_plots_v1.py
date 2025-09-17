@@ -77,8 +77,12 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
             if cutside == "b<" : sigpass = 1 - lval1
             if cutside == "b>" : sigpass = 1 - rval1
             #h1[n].SetPoint(bn,sigpass,cutv)
-            h1[n].SetPoint(bn,cutv,sigpass)
-            #print( " set point : ", bn, sigpass, bkgpass,  )
+            tau = 1.0/(0.1*0.1*bkgpass)
+            noff = bkgpass*tau
+            pbi = BetaIncomplete(1.0/(1.0+tau),sigpass,noff+1)
+            zbi = sqrt(2)*ErfInverse(1 - 2*pbi)
+            h1[n].SetPoint(bn,cutv,zbi)
+            print( " set point : ", bn, sigpass, bkgpass, tau, noff, pbi, zbi)
         h1[n].UseCurrentStyle()
         h1[n].SetMarkerStyle(n+25)
         #k = [kMagenta+2,kGreen+2,kYellow+1,kBlue+2,kRed+2,kAzure+4,kBlack,kViolet+7,kOrange+7,kGreen+3,kRed+4,kBlue+4,kGreen+2,kAzure+4,kMagenta+2,kGreen+2]
@@ -287,6 +291,7 @@ xtitle = rhname
 outname = 'llpa_met150_multiroc_'
 layout = { 'xtitle' : xtitle, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'legtitle' : legtitle }
 
+indir = 'rjr_skim_files/'
 lint = ['cuteff_']
 ncomp = rhname
 for thing in lint :
@@ -296,12 +301,12 @@ for thing in lint :
     inhistlist = [
   
         #[ rhname1, "", base1-sig, base2-bkgrd, rfgmsbroc1-sig, rfgmsbroc2-bkgrd, rhname1, cut1, usebase1 ],
-        [ rhname, "", rfbg13, bg, cutb1 ],
-        [ rhname, "", rfsig31, sig1, cut1 ],
-        [ rhname, "", rfsig32, sig2, cut1 ],
-        [ rhname, "", rfsig33, sig3, cut1 ],  
-        [ rhname, "", rfsig34, sig4, cut1 ],
-        [ rhname, "", rfsig35, sig5, cut1 ], 
+        #[ rhname, "", indir+rfbg13, bg, cutb1 ],
+        [ rhname, "", indir+rfsig31, sig1, cut1 ],
+        [ rhname, "", indir+rfsig32, sig2, cut1 ],
+        [ rhname, "", indir+rfsig33, sig3, cut1 ],  
+        [ rhname, "", indir+rfsig34, sig4, cut1 ],
+        [ rhname, "", indir+rfsig35, sig5, cut1 ], 
         #[ rhname2, "", rfsig1, rfbg, rfsig1, rfbg, sig1+rh2, cut1 ],
         #[ rhname2, "", rfsig2, rfbg, rfsig2, rfbg, sig2+rh2, cut1 ],
         #[ rhname2, "", rfsig3, rfbg, rfsig3, rfbg, sig3+rh2, cut1 ],             

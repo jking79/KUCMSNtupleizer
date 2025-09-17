@@ -88,7 +88,7 @@ def docrab( dataset ):
 
         config.Data.partialDataset = True
         config.Data.inputDataset   = None
-        config.Data.lumiMask       = inputJSON    # Comment out for MC only set for data !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        #config.Data.lumiMask       = inputJSON    # Comment out for MC only set for data !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         #config.Data.splitting     = 'Automatic' # data
         config.Data.splitting = 'FileBased' # Justin
         config.Data.unitsPerJob  =  filespjob
@@ -146,18 +146,18 @@ def docrab( dataset ):
             # 30 consoladated Track objects in single Tracks object w/ SC matching
             # 31 reduced track pt min to 5 unless SC match, ? fixed SC rechit ID bug ?
 
-            trial          = "kucmsntuple_MET_R22_AL1NpSC" + version #
+            #trial          = "kucmsntuple_MET_R22_AL1NpSC" + version #
             #trial          = "kucmsntuple_MET_R18_AL1NpSC_DEOnly" + version #
             ##trial          = "kucmsntuple_MET_R18_AL1SelPho_DEOnly" + version #
             ##trial          = "kucmsntuple_MET_R18_AL1SelEle_DEOnly" + version #
             ##trial          = "kucmsntuple_EGamma_R18_AL1SelEle_DEOnly" + version #
 
             #trial          = "kucmsntuple_TTXJets_R18_SVIPM100" + version #
-            #trial          = "kucmsntuple_GJets_R18_SVIPM100" + version
+            trial          = "kucmsntuple_GJets_R18_SVIPM100" + version
             #trial          = "kucmsntuple_QCD_R18_SVIPM100" + version
             #trial          = "kucmsntuple_ZJets_R18_SVIPM100" + version
             #trial          = "kucmsntuple_WJets_R18_SVIPM100" + version
-            #trial          = "kucmsntuple_WZDYX_R18_SVIPM100"  + version
+            #trial          = "kucmsntuple_DTBoson_R18_SVIPM100"  + version
             #trial          = "kucmsntuple_DiPJBox_R18_SVIPM100" + version
 
             print( 'processing for : ',trial )
@@ -183,11 +183,11 @@ def docrab( dataset ):
             mDoDEle = 'doDisEle=true'
             mDoETOnly = 'doECALTrackOnly=true'
 
-            efilter = fNpSC
+            #efilter = fNpSC
             ##efilter = fM100
             ##efilter = fIPM100
             ##efilter = fAL1E
-            #efilter = fSVIPM100 #!!!!!!!!!!!!!!!!
+            efilter = fSVIPM100 #!!!!!!!!!!!!!!!!
             print( 'using :', efilter )
             print( 'using :', geninfo )
             print( 'with files/job :', filespjob )
@@ -198,8 +198,8 @@ def docrab( dataset ):
 #>>>>>>>>>>>>>>>>>>>     #2017UL #globalTag=106X_dataRun2_v20
             #config.JobType.pyCfgParams   = ['globalTag=106X_dataRun2_v20','multicrab=True']
 #>>>>>>>>>>>>>>>>>>>     #2018UL #globalTag=106X_dataRun2_v36
-            gt = 'globalTag=106X_dataRun2_v36'
-            config.JobType.pyCfgParams   = [gt,mcrab,efilter]
+            #gt = 'globalTag=106X_dataRun2_v36'
+            #config.JobType.pyCfgParams   = [gt,mcrab,efilter]
             ###config.JobType.pyCfgParams   = [gt,mcrab,efilter,mDoETOnly]
 #>>>>>>>>>>>>>>>>>>>        #2022 #globalTag=124X_dataRun3_v15
             #gt = 'globalTag=124X_dataRun3_v15'
@@ -207,9 +207,9 @@ def docrab( dataset ):
 
 #---MC--------------------------------------------------------------------------------------------------------------------------
 #>>>>>      #MC RunIISummer20UL18RECO
-            #gt = 'globalTag=106X_upgrade2018_realistic_v11_L1v1'
+            gt = 'globalTag=106X_upgrade2018_realistic_v11_L1v1'
             ##config.JobType.pyCfgParams   = ['globalTag=106X_upgrade2018_realistic_v11_L1v1','multicrab=True','hasGenInfo=True']
-            #config.JobType.pyCfgParams   = [gt,mcrab,geninfo,efilter]
+            config.JobType.pyCfgParams   = [gt,mcrab,geninfo,efilter]
             ##config.JobType.pyCfgParams   = ['globalTag=106X_upgrade2018_realistic_v11_L1v1','multicrab=True','hasGenInfo=True','eventSkim=AL1IsoPho']
 #>>>>>      #MC GMSB RunIIFall17DRPremix  #globalTag=94X_mc2017_realistic_v14  #  <<< comment/uncomment lumi mask when using/!using MC
             ##config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v14','multicrab=True','hasGenInfo=True']
@@ -268,7 +268,7 @@ def run_multi():
 
         #['/MET/Run2022A-27Jun2023-v1/AOD',1],
         #['/MET/Run2022B-27Jun2023-v2/AOD',1],
-        ['/MET/Run2022C-27Jun2023-v2/AOD',1],
+        #['/MET/Run2022C-27Jun2023-v2/AOD',1],
 
         #['/EGamma/Run2018B-15Feb2022_UL2018-v1/AOD'],#72500 eventsperlumi ( 36.5K per file - 4268 files )
         #['/EGamma/Run2018C-15Feb2022_UL2018-v1/AOD'],#72500 eventsperlumi   ( 36.1K per file - 4051 files )
@@ -297,11 +297,11 @@ def run_multi():
         #['/ttWJets_TuneCP5_13TeV_madgraphMLM_pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v1/AODSIM',2],
         #['/ttZJets_TuneCP5_13TeV_madgraphMLM_pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v1/AODSIM',1],
 
-        #['/GJets_HT-40To100_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
-        #['/GJets_HT-100To200_'+TuneCP5MP+'/RunIISummer20UL18RECO-4cores5k_106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM'],
-        #['/GJets_HT-200To400_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
-        #['/GJets_HT-400To600_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
-        #['/GJets_HT-600ToInf_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
+        ['/GJets_HT-40To100_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM',2],
+        ['/GJets_HT-100To200_'+TuneCP5MP+'/RunIISummer20UL18RECO-4cores5k_106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',2],
+        #['/GJets_HT-200To400_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM',4],
+        #['/GJets_HT-400To600_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM',2],
+        ['/GJets_HT-600ToInf_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM',2],
 
         #['/QCD_HT2000toInf_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
         #['/QCD_HT1500to2000_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
@@ -315,6 +315,15 @@ def run_multi():
         #['/DiPhotonJetsBox_MGG-80toInf_13TeV-sherpa/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',2],
         #['/DiPhotonJetsBox_MGG-0to40_13TeV-sherpa/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v1/AODSIM',1],
         #['/DiPhotonJetsBox_M40_80-sherpa/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',1],
+
+        #['/WW_TuneCP5_13TeV-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',1],
+        #['/WWG_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',1],
+        #['/WWW_4F_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v2/AODSIM',1],
+        #['/WWZ_4F_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v2/AODSIM',1],
+        #['/WZ_TuneCP5_13TeV-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',1],
+        #['/WZG_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',1],
+        #['/WZZ_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v2/AODSIM',1],
+        #['/WGG_5f_TuneCP5_13TeV_amcatnlo-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',1],
 
     ] 
 
