@@ -215,8 +215,8 @@ l = [ 0.2,0.60,0.4,0.90 ] # legend position top left
 #t = [0.2,0.48,0.23,0.175,0.22] # titles position
 t = [0.45,0.825,0.23,0.175,0.22] # titles position
 
-#x = [ 0.0, 1.05 ]
-x = [ 0.0, 0.3 ]
+x = [ 0.0, 1.05 ]
+#x = [ 0.0, 0.3 ]
 #x = [ 0.8, 1.05 ]
 #x = [ 0.0, 8000 ]
 #y = [ 0.001, 10.0 ]
@@ -224,10 +224,10 @@ x = [ 0.0, 0.3 ]
 #y = [ -0.3, 0.5 ]
 #y = [ -0.3, 0.75 ]
 #y = [ -0.3, 1.0 ]
-y = [ -0.3, 2.0 ]
+#y = [ -0.3, 2.0 ]
 #y = [ -1.0, 5.0 ]
 #y = [ -1.0, 15.0 ]
-#y = [ -1.0, 25.0 ]
+y = [ -1.0, 25.0 ]
 #x = [ 0.0, 0.8 ]
 #y = [ 0.001, 10.0 ]
 #y = [ 0.0001, 100.0 ]
@@ -242,6 +242,7 @@ title = ' GGG Tot BG'
 #isocut = '#splitline{ #splitline{nSigPho > 0, phoTime > -0.6}{R_{xa} < 1 && R_{xb} < 1, Min(R_{xa},R_{xb}) > 0.3} }{M_{s} > 3400}'
 isocut = '#splitline{ #splitline{nSigPho > 0, phoTime > -0.6}{R_{xa} < 1 && R_{xb} < 1, Min(R_{xa},R_{xb}) > 0.3} }{M_{s} > 2200}'
 #isocut = '#splitline{ #splitline{nSigPho > 0, phoTime > -0.6}{R_{xa} < 1 && R_{xb} < 1, Min(R_{xa},R_{xb}) > 0.3} }{M_{s} > 750}'
+#isocut = '#splitline{ #splitline{nSigPho > 0, phoTime > -0.6}{R_{xa} < 1 && R_{xb} < 1, Min(R_{xa},R_{xb}) > 0.3} }{M_{s} > 750, R_{xb} = 1 w/ R_{xa} > 0.7}'
 #isocut = '#splitline{#splitline{M_{s} > 1250}{R_{xa} && R_{xb} != 1}}{nSigPho > 0}'
 #isocut = '#splitline{#splitline{R_{s} > 0.3}{R_{xa} && R_{xb} != 1}}{nSigPho > 0}'
 #isocut = '#splitline{#splitline{M_{s} > 1250, R_{s} > 0.3}{R_{xa} && R_{xb} != 1}}{nSigPho > 0}'
@@ -261,34 +262,57 @@ v37tbg002 = 'KUCMS_BG_llpana_v37_tm06_cv2_TotBG_RjrSkim_Hists.root'
 v37tbg003 = 'KUCMS_BG_llpana_v37_tm06_cv3_TotBG_RjrSkim_Hists.root'
 v37tbg004 = 'KUCMS_BG_llpana_v37_tm06_cv4_TotBG_RjrSkim_Hists.root'
 v37tbg005 = 'KUCMS_BG_llpana_v37_tm06_cv5_TotBG_RjrSkim_Hists.root'
+v37tbg006 = 'KUCMS_BG_llpana_v37_tm06_cv6_TotBG_RjrSkim_Hists.root'
+v37tbg007 = 'KUCMS_BG_llpana_v37_tm06_cv7_TotBG_RjrSkim_Hists.root'
+v37tbg008 = 'KUCMS_BG_llpana_v37_tm06_cv8_TotBG_RjrSkim_Hists.root'
 
 v37tsig101 = 'KUCMS_llpana_v37_tm06_cv1_PG15dN5dN1dC1_RjrSkim_Hists.root'
 v37tsig201 = 'KUCMS_llpana_v37_tm06_cv1_PG25dN15dN1kC1_RjrSkim_Hists.root'
 
 v37tsig301 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN15dN1C1_RjrSkim_Hists.root'
+v37tsig304 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN15dN1C1_RjrSkim_Hists.root'
 v37tsig401 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN15dN1kC1_RjrSkim_Hists.root'
+v37tsig403 = 'KUCMS_llpana_v37_tm06_cv3_PG2kN15dN1kC1_RjrSkim_Hists.root'
 v37tsig501 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN15dN250C1_RjrSkim_Hists.root'
+v37tsig504 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN15dN250C1_RjrSkim_Hists.root'
 v37tsig601 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN15dN5dC1_RjrSkim_Hists.root'
+v37tsig604 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN15dN5dC1_RjrSkim_Hists.root'
 
 v37tsig701 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN1950N15dC1_RjrSkim_Hists.root'
+v37tsig702 = 'KUCMS_llpana_v37_tm06_cv2_PG2kN1950N15dC1_RjrSkim_Hists.root'
 v37tsig801 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN1950N19dC1_RjrSkim_Hists.root'
+v37tsig802 = 'KUCMS_llpana_v37_tm06_cv2_PG2kN1950N19dC1_RjrSkim_Hists.root'
 v37tsig901 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN1950N1C1_RjrSkim_Hists.root'
+v37tsig904 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN1950N1C1_RjrSkim_Hists.root'
 v37tsig1001 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN1950N1kC1_RjrSkim_Hists.root'
+v37tsig1003 = 'KUCMS_llpana_v37_tm06_cv3_PG2kN1950N1kC1_RjrSkim_Hists.root'
 v37tsig1101 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN1950N250C1_RjrSkim_Hists.root'
+v37tsig1104 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN1950N250C1_RjrSkim_Hists.root'
 v37tsig1201 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN1950N5dC1_RjrSkim_Hists.root'
+v37tsig1204 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN1950N5dC1_RjrSkim_Hists.root'
 
 v37tsig1301 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN19dN15dC1_RjrSkim_Hists.root'
+v37tsig1302 = 'KUCMS_llpana_v37_tm06_cv2_PG2kN19dN15dC1_RjrSkim_Hists.root'
 v37tsig1401 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN19dN1C1_RjrSkim_Hists.root'
+v37tsig1404 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN19dN1C1_RjrSkim_Hists.root'
 v37tsig1501 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN19dN1kC1_RjrSkim_Hists.root'
+v37tsig1503 = 'KUCMS_llpana_v37_tm06_cv3_PG2kN19dN1kC1_RjrSkim_Hists.root'
 v37tsig1601 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN19dN250C1_RjrSkim_Hists.root'
+v37tsig1604 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN19dN250C1_RjrSkim_Hists.root'
 v37tsig1701 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN19dN5dC1_RjrSkim_Hists.root'
+v37tsig1704 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN19dN5dC1_RjrSkim_Hists.root'
 
 v37tsig1801 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN1kN1C1_RjrSkim_Hists.root'
+v37tsig1804 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN1kN1C1_RjrSkim_Hists.root'
 v37tsig1901 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN1kN250C1_RjrSkim_Hists.root'
+v37tsig1904 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN1kN250C1_RjrSkim_Hists.root'
 v37tsig2001 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN1kN5dC1_RjrSkim_Hists.root'
+v37tsig2004 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN1kN5dC1_RjrSkim_Hists.root'
 
 v37tsig2101 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN5dN1C1_RjrSkim_Hists.root'
+v37tsig2104 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN5dN1C1_RjrSkim_Hists.root'
 v37tsig2201 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN5dN250C1_RjrSkim_Hists.root'
+v37tsig2204 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN5dN250C1_RjrSkim_Hists.root'
 
 # ------- sqsqG -----------------
 v37tqsig100 = 'KUCMS_llpana_v37_tm06_cv0_QG17dN15dN1C1_RjrSkim_Hists.root'
@@ -343,6 +367,10 @@ v37tsig1302 = 'KUCMS_llpana_v37_tm06_cv2_PG2kN19dN15dC1_RjrSkim_Hists.root'
 v37tsig702 = 'KUCMS_llpana_v37_tm06_cv2_PG2kN1950N15dC1_RjrSkim_Hists.root'
 v37tsig802 = 'KUCMS_llpana_v37_tm06_cv2_PG2kN1950N19dC1_RjrSkim_Hists.root'
 
+v37tsig1306 = 'KUCMS_llpana_v37_tm06_cv6_PG2kN19dN15dC1_RjrSkim_Hists.root'
+v37tsig706 = 'KUCMS_llpana_v37_tm06_cv6_PG2kN1950N15dC1_RjrSkim_Hists.root'
+v37tsig806 = 'KUCMS_llpana_v37_tm06_cv6_PG2kN1950N19dC1_RjrSkim_Hists.root'
+
 
 bg = 'TotBG' 
 sig1 = '1.5-0.5-0.001 ' 
@@ -389,17 +417,18 @@ rhname4 = 'Mr'
 rhname5 = 'Rx'  
 rhname6 = 'Rm'  
 rhname7 = 'phoPtsH41'
+rhname8 = 'Rxa'
 
 lint = [ '_' ]
 ncomp = 'roc'
 
-rha = rhname7
+rha = rhname1
 rhnamea = rha
 xtitle = rhnamea
 
 #indir = 'rjr_roc_hist_files/'
-indir = 'rjr_zbi_hists/'
-
+#indir = 'rjr_91725_zbi_hists/'
+indir = 'rjr_91825_zbi_hists/'
 
 outname = 'llpa_met150_multizbi'
 layout = { 'xtitle' : xtitle, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'legtitle' : legtitle }
@@ -411,38 +440,45 @@ for thing in lint :
     inhistlist = [
   
         ##[ rhname1, "", base1-sig, base2-bkgrd, rfgmsbroc1-sig, rfgmsbroc2-bkgrd, rhname1, cut1, usebase1 ],
-        #[ rhnamea, "", indir+v37tsig1301, indir+v37tbg001, sig13, cut1 ], 
-        #[ rhnamea, "", indir+v37tsig701, indir+v37tbg001, sig7, cut1 ],
-        #[ rhnamea, "", indir+v37tsig801, indir+v37tbg001, sig8, cut1 ],
 
-        #[ rhnamea, "", indir+v37tsig401, indir+v37tbg001, sig4, cut1 ],
-        #[ rhnamea, "", indir+v37tsig1501, indir+v37tbg001, sig15, cut1 ],
-        #[ rhnamea, "", indir+v37tsig1001, indir+v37tbg001, sig10, cut1 ],
+        # very comp
+        #[ rhnamea, "", indir+v37tsig1302, indir+v37tbg002, sig13, cut1 ], 
+        #[ rhnamea, "", indir+v37tsig702, indir+v37tbg002, sig7, cut1 ],
+        #[ rhnamea, "", indir+v37tsig802, indir+v37tbg002, sig8, cut1 ],
+
+        # 1000
+        [ rhnamea, "", indir+v37tsig403, indir+v37tbg003, sig4, cut1 ],
+        [ rhnamea, "", indir+v37tsig1503, indir+v37tbg003, sig15, cut1 ],
+        [ rhnamea, "", indir+v37tsig1003, indir+v37tbg003, sig10, cut1 ],
         ##[ rhnamea, "", indir+v37tsig201, indir+v37tbg001, sig2, cut1 ],
 
-        #[ rhnamea, "", indir+v37tsig2001, indir+v37tbg001, sig20, cut1 ],
-        #[ rhnamea, "", indir+v37tsig601, indir+v37tbg001, sig6, cut1 ],
-        #[ rhnamea, "", indir+v37tsig1701, indir+v37tbg001, sig17, cut1 ],
-        #[ rhnamea, "", indir+v37tsig1201, indir+v37tbg001, sig12, cut1 ],
+        # 500
+        #[ rhnamea, "", indir+v37tsig2004, indir+v37tbg004, sig20, cut1 ],
+        #[ rhnamea, "", indir+v37tsig604, indir+v37tbg004, sig6, cut1 ],
+        #[ rhnamea, "", indir+v37tsig1704, indir+v37tbg004, sig17, cut1 ],
+        #[ rhnamea, "", indir+v37tsig1204, indir+v37tbg004, sig12, cut1 ],
 
-        #[ rhnamea, "", indir+v37tsig2201, indir+v37tbg001, sig22, cut1 ],
-        #[ rhnamea, "", indir+v37tsig1901, indir+v37tbg001, sig19, cut1 ],
-        #[ rhnamea, "", indir+v37tsig501, indir+v37tbg001, sig5, cut1 ],  
-        #[ rhnamea, "", indir+v37tsig1601, indir+v37tbg001, sig16, cut1 ],
-        #[ rhnamea, "", indir+v37tsig1101, indir+v37tbg001, sig11, cut1 ],
+        # 250
+        #[ rhnamea, "", indir+v37tsig2204, indir+v37tbg004, sig22, cut1 ],
+        #[ rhnamea, "", indir+v37tsig1904, indir+v37tbg004, sig19, cut1 ],
+        #[ rhnamea, "", indir+v37tsig504, indir+v37tbg004, sig5, cut1 ],  
+        #[ rhnamea, "", indir+v37tsig1604, indir+v37tbg004, sig16, cut1 ],
+        #[ rhnamea, "", indir+v37tsig1104, indir+v37tbg004, sig11, cut1 ],
 
-        ##[ rhnamea, "", indir+v37tsig101, indir+v37tbg001, sig1, cut1 ],
-        #[ rhnamea, "", indir+v37tsig2101, indir+v37tbg001, sig21, cut1 ],
-        #[ rhnamea, "", indir+v37tsig1801, indir+v37tbg001, sig18, cut1 ],
-        #[ rhnamea, "", indir+v37tsig301, indir+v37tbg001, sig3, cut1 ],
-        #[ rhnamea, "", indir+v37tsig1401, indir+v37tbg001, sig14, cut1 ],
-        #[ rhnamea, "", indir+v37tsig901, indir+v37tbg001, sig9, cut1 ],
+        # 001
+        #[ rhnamea, "", indir+v37tsig2104, indir+v37tbg004, sig21, cut1 ],
+        #[ rhnamea, "", indir+v37tsig1804, indir+v37tbg004, sig18, cut1 ],
+        #[ rhnamea, "", indir+v37tsig304, indir+v37tbg004, sig3, cut1 ],
+        #[ rhnamea, "", indir+v37tsig1404, indir+v37tbg004, sig14, cut1 ],
+        #[ rhnamea, "", indir+v37tsig904, indir+v37tbg004, sig9, cut1 ],
 
+        # glue mass spread
         #[ rhnamea, "", indir+v37tsig1904, indir+v37tbg004, sig19, cut1 ],
         #[ rhnamea, "", indir+v37tsig504, indir+v37tbg004, sig5, cut1 ],
         #[ rhnamea, "", indir+v37tsig1604, indir+v37tbg004, sig16, cut1 ],
         #[ rhnamea, "", indir+v37tsig204, indir+v37tbg004, sig2, cut1 ],
 
+        # comp
         #[ rhnamea, "", indir+v37tsig1302, indir+v37tbg002, sig13, cut1 ],
         #[ rhnamea, "", indir+v37tsig802, indir+v37tbg002, sig8, cut1 ],
 
@@ -452,13 +488,13 @@ for thing in lint :
         #[ rhnamea, "", indir+v37tsig604, indir+v37tbg004, sig6, cut1 ],
         #[ rhnamea, "", indir+v37tsig1704, indir+v37tbg004, sig17, cut1 ],
         #  Mn1 1.0 - 1.5 TeV
-        [ rhnamea, "", indir+v37tsig403, indir+v37tbg003, sig4, cut1 ],
-        [ rhnamea, "", indir+v37tsig1503, indir+v37tbg003, sig15, cut1 ],
-        [ rhnamea, "", indir+v37tsig1003, indir+v37tbg003, sig10, cut1 ],
+        #[ rhnamea, "", indir+v37tsig403, indir+v37tbg003, sig4, cut1 ],
+        #[ rhnamea, "", indir+v37tsig1503, indir+v37tbg003, sig15, cut1 ],
+        #[ rhnamea, "", indir+v37tsig1003, indir+v37tbg003, sig10, cut1 ],
         # Mn1 > 1.5
-        #[ rhnamea, "", indir+v37tsig1301, indir+v37tbg001, sig13, cut1 ],
-        #[ rhnamea, "", indir+v37tsig701, indir+v37tbg001, sig7, cut1 ],
-        #[ rhnamea, "", indir+v37tsig801, indir+v37tbg001, sig8, cut1 ],
+        #[ rhnamea, "", indir+v37tsig1306, indir+v37tbg006, sig13, cut1 ],
+        #[ rhnamea, "", indir+v37tsig706, indir+v37tbg006, sig7, cut1 ],
+        #[ rhnamea, "", indir+v37tsig806, indir+v37tbg006, sig8, cut1 ],
 
         # sqsq-g
         #[ rhnamea, "", indir+v37tqsig101, indir+v37tbg001, sigz1, cut1 ],

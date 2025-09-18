@@ -547,16 +547,26 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     float phts2141 = (*rjr_pHts21)[cs]/(*rjr_pHts41)[cs];
 
 	float pho1pts = (*rjr_p1Pts)[cs];
-    float pho2pts = (*rjr_p2Pts)[cs];
-    float pho1ptxa = (*rjr_p1Ptxa)[cs];
+	float pho1ptxa = (*rjr_p1Ptxa)[cs];
     float pho1ptxb = (*rjr_p1Ptxb)[cs];
+    float pho2pts = (*rjr_p2Pts)[cs];
     float pho2ptxa = (*rjr_p2Ptxa)[cs];
     float pho2ptxb = (*rjr_p2Ptxb)[cs];
 
-	float phoPtsH41 = ( pho1pts + pho2pts )/(*rjr_pHs41)[cs];
-	float phoPtxaH21 = ( pho1ptxa + pho2ptxa )/(*rjr_pHxa21)[cs];
-    float phoPtxbH21 = ( pho1ptxb + pho2ptxb )/(*rjr_pHxb21)[cs];
-	float phoPtxH21 = phoPtxaH21 + phoPtxbH21;
+	float pho1PtsH41 = pho1pts/(*rjr_pHs41)[cs];
+    float pho2PtsH41 = pho2pts/(*rjr_pHs41)[cs];
+    float pho1PtsH21 = pho1pts/(*rjr_pHs21)[cs];
+    float pho2PtsH21 = pho2pts/(*rjr_pHs21)[cs];
+	float minPhoPtsH41 = std::min( pho1PtsH41, pho2PtsH41 );
+    float minPhoPtsH21 = std::min( pho1PtsH21, pho2PtsH21 );
+
+	float pho1PtxaH21 = pho1ptxa/(*rjr_pHxa21)[cs];
+    float pho2PtxaH21 = pho2ptxa/(*rjr_pHxa21)[cs];
+    float pho1PtxbH21 = pho1ptxb/(*rjr_pHxb21)[cs];
+    float pho2PtxbH21 = pho2ptxb/(*rjr_pHxb21)[cs];
+	float pho1PtxH21 = pho1PtxaH21 + pho1PtxbH21;
+    float pho2PtxH21 = pho2PtxaH21 + pho2PtxbH21;
+	float minPhoPtxH21 = std::min( pho1PtxH21, pho2PtxH21 );
 
     //float NormMBetaEql = (*selPhoMBetaEql)[0]/mr;
     //float NormMBetaPmt = (*selPhoMBetaPmt)[0]/mr;
@@ -565,36 +575,27 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 	//(*rjrAX2NQSum)[cs] -- R
 	//rjrNVSum -- Rv
 
-	bool MT =  mr > m_vec[2];
-    bool MM =  mr > m_vec[1];
-    bool ML =  mr > m_vec[0];
-
-	bool RT = r > r_vec[2];
-    bool RM = r > r_vec[1];
-    bool RL = r > r_vec[0];
-
-    bool RvT = rv > rv_vec[2];
-    bool RvM = rv > rv_vec[1];
-    bool RvL = rv > rv_vec[0];
+    fillwt = fillwt * m_vec[0];
 
 	//var hist fill
 
     if( nRjrPhos == 0 ){
         if( rjrNPhotons->at(cs) < 1 ) continue;
+        if( rxa == 1 ) continue;
+        if( rxb == 1 ) continue;
 		if( gtime < -0.6 )  continue;
 	}//<<>>if( nRjrPhos == 0 )
 	if( nRjrPhos == 1 ){
+        if( rs < 0.3 ) continue;
 		if( rjrNPhotons->at(cs) < 1 ) continue;
 		if( rxa == 1 ) continue;
 		if( rxb == 1 ) continue;
-		if( rxmin < 0.3 ) continue;
         if( gtime < -0.6 )  continue;
 	}//<<>>if( nRjrPhos == 1 )
     if( nRjrPhos == 2 ){
         if( ms < 750 ) continue;
         if( rxa == 1 ) continue;
         if( rxb == 1 ) continue;
-        if( rxmin < 0.3 ) continue;
         if( gtime < -0.6 )  continue;
         if( rjrNPhotons->at(cs) < 1 ) continue;
     }//<<>>if( nRjrPhos == 5 )
@@ -602,7 +603,6 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 		if( ms < 2200 ) continue;
 		if( rxa == 1 ) continue;
     	if( rxb == 1 ) continue;
-        if( rxmin < 0.3 ) continue;
         if( gtime < -0.6 )  continue;
     	if( rjrNPhotons->at(cs) < 1 ) continue;
 	}//<<>>if( nRjrPhos == 2 )
@@ -610,15 +610,32 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
         if( ms < 3400 ) continue;
         if( rxa == 1 ) continue;
         if( rxb == 1 ) continue;
-        if( rxmin < 0.3 ) continue;
         if( gtime < -0.6 )  continue;
         if( rjrNPhotons->at(cs) < 1 ) continue;
     }//<<>>if( nRjrPhos == 3 )
     if( nRjrPhos == 5 ){
-        if( ms < 3800 ) continue;
+        if( ms < 750 ) continue;
         if( rxa == 1 ) continue;
-        if( rxb == 1 ) continue;
-        if( rxmin < 0.3 ) continue;
+        if( rxb == 1 && rxa < 0.7 ) continue;
+        if( gtime < -0.6 )  continue;
+        if( rjrNPhotons->at(cs) < 1 ) continue;
+    }//<<>>if( nRjrPhos == 4 )
+    if( nRjrPhos == 6 ){
+        if( ms < 2200 ) continue;
+        if( rxa == 1 ) continue;
+        if( rxb == 1 && rxa < 0.7 ) continue;
+        if( gtime < -0.6 )  continue;
+        if( rjrNPhotons->at(cs) < 1 ) continue;
+    }//<<>>if( nRjrPhos == 4 )
+    if( nRjrPhos == 7 ){
+        if( rs < 0.3 ) continue;
+        if( rxa == 1 ) continue;
+        if( rxb == 1 && rxa < 0.7 ) continue;
+        if( gtime < -0.6 )  continue;
+        if( rjrNPhotons->at(cs) < 1 ) continue;
+    }//<<>>if( nRjrPhos == 4 )
+    if( nRjrPhos == 8 ){
+        if( ms < 750 ) continue;
         if( gtime < -0.6 )  continue;
         if( rjrNPhotons->at(cs) < 1 ) continue;
     }//<<>>if( nRjrPhos == 4 )
@@ -684,13 +701,21 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 
     hist2d[14]->Fill(rx0a,rx0b,fillwt);
 
-	//if( not( ML && RL && RvM ) ) continue;
-	hist1d[31]->Fill(phoPtsH41,fillwt);
-    hist1d[32]->Fill(phoPtxaH21,fillwt);
-    hist1d[33]->Fill(phoPtxbH21,fillwt);
-    hist1d[34]->Fill(phoPtxH21,fillwt);
+	//if( not( ML && RL && RvM ) ) continue;    
+	
+	hist1d[31]->Fill(pho1PtsH41,fillwt);
+    hist1d[32]->Fill(pho2PtsH41,fillwt);
+    hist1d[33]->Fill(pho1PtsH21,fillwt);
+    hist1d[34]->Fill(pho2PtsH21,fillwt);
+    hist1d[35]->Fill(minPhoPtsH41,fillwt);
+    hist1d[36]->Fill(minPhoPtsH21,fillwt);
 
-    hist2d[20]->Fill(phoPtxaH21,phoPtxbH21,fillwt);
+    hist1d[37]->Fill(pho1PtxH21,fillwt);
+    hist1d[38]->Fill(pho2PtxH21,fillwt);
+    hist1d[39]->Fill(minPhoPtxH21,fillwt);
+
+    hist2d[20]->Fill(minPhoPtsH41,ms,fillwt);
+    hist2d[21]->Fill(minPhoPtsH41,rs,fillwt);
 
 	}//<<>>for( int i = 0; i < 1; i++ ) -- continue loop
 
@@ -798,10 +823,18 @@ void HistMaker::initHists( std::string ht ){
     hist1d[24] = new TH1D("phts2040", addstr(ht," phs2040;phs2040").c_str(), 120, 0, 1.2);
     hist1d[25] = new TH1D("phts2141", addstr(ht," phts2141;phts2141").c_str(), 120, 0, 1.2);
 
-    hist1d[31] = new TH1D("phoPtsH41", addstr(ht," phoPtsH41;phoPtsH41").c_str(), 120, 0, 1.2);
-    hist1d[32] = new TH1D("phoPtxaH21", addstr(ht," phoPtxaH21;phoPtxaH21").c_str(), 120, 0, 1.2);
-    hist1d[33] = new TH1D("phoPtxbH21", addstr(ht," phoPtxbH21;phoPtxbH21").c_str(), 120, 0, 1.2);
-    hist1d[34] = new TH1D("phoPtxH21", addstr(ht," phoPtxH21;phoPtxH21").c_str(), 120, 0, 1.2);
+
+
+    hist1d[31] = new TH1D("pho1PtsH41", addstr(ht," pho1PtsH41;pho1PtsH41").c_str(), 120, 0, 1.2);
+    hist1d[32] = new TH1D("pho2PtsH41", addstr(ht," pho2PtsH41;pho2PtsH41").c_str(), 120, 0, 1.2);
+    hist1d[33] = new TH1D("pho1PtsH21", addstr(ht," pho1PtsH21;pho1PtsH21").c_str(), 120, 0, 1.2);
+    hist1d[34] = new TH1D("pho2PtsH21", addstr(ht," pho2PtsH21;pho2PtsH21").c_str(), 120, 0, 1.2);
+    hist1d[35] = new TH1D("minPhoPtsH41", addstr(ht," minPhoPtsH41;minPhoPtsH41").c_str(), 120, 0, 1.2);
+    hist1d[36] = new TH1D("minPhoPtsH21", addstr(ht," minPhoPtsH21;minPhoPtsH21").c_str(), 120, 0, 1.2);
+
+    hist1d[37] = new TH1D("pho1PtxH21", addstr(ht," pho1PtxH21;pho1PtxH21").c_str(), 120, 0, 1.2);
+    hist1d[38] = new TH1D("pho2PtxH21", addstr(ht," pho2PtxH21;pho2PtxH21").c_str(), 120, 0, 1.2);
+    hist1d[39] = new TH1D("minPhoPtxH21", addstr(ht," minPhoPtxH21;minPhoPtxH21").c_str(), 120, 0, 1.2);
 
     for( int it = 0; it < n1dHists; it++ ){ if(hist1d[it]) hist1d[it]->Sumw2();}
 
@@ -819,7 +852,9 @@ void HistMaker::initHists( std::string ht ){
     hist2d[13] = new TH2D("Rxa_v_Rxb", addstr(ht," Rxa_v_Rxb;R_{xa};R_{xb}").c_str(), 120, 0, 1.2, 120, 0, 1.2 );
     hist2d[14] = new TH2D("Rx0a_v_Rx0b", addstr(ht," Rx0a_v_Rx0b;R_{x0a};R_{x0b}").c_str(), 120, 0, 1.2, 120, 0, 1.2 );
 
-    hist2d[20] = new TH2D("gptxa_v_gptxb", addstr(ht," gptxa_v_gptxb;pho1ptxb;phoPtxbH21").c_str(), 120, 0, 1.2, 120, 0, 1.2 );
+    hist2d[20] = new TH2D("gpts_v_ms", addstr(ht," gpts_v_ms;minPhoPtsH41;Ms [GeV]").c_str(), 120, 0, 1.2, 120, 0, 12000 );
+    hist2d[21] = new TH2D("gpts_v_rs", addstr(ht," gpts_v_rs;minPhoPtsH41;Rs").c_str(), 120, 0, 1.2, 120, 0, 1.2 );
+
 
 	//------- jets ( time ) 0-49 ------------------------------
 
@@ -877,51 +912,29 @@ int main ( int argc, char *argv[] ){
 
                 HistMaker base;
 
-                //float metcut = 150;  // cmet > 150
-    			// rjr var cuts
-    			//cutvc = vc; ax2nq
-    			//cutvd = vd; nvsum
-    			// ve   asmass
-    			// vf vdiff
-   
 				// new rjr ken studies w/ H vats  -----------------------------------------------------------------------------
- 
+
 				//int nj = 1;
 				//int np = 1;
 				// 0 - 7 now
-                for( int np = 0; np < 6; np++ ){
+                for( int np = 0; np < 9; np++ ){
                 for( int nj = 0; nj < 1; nj++ ){
 
 				//std::string subdir = "cf_" + std::to_string(np) + "pho_" + std::to_string(nj) + "jet/";
 				std::string subdir = "";
 
-				// 1-1
-				//std::vector<float> m_vec{1000,2000,3000}; // L-M-T
-				std::vector<float> m_vec{2000,2750,3500}; // L-M-T
-				//std::vector<float> m_vec{0,0,0}; // L-M-T
-                std::vector<float> r_vec{0.2,0.275,0.35}; // L-M-T
-                ////std::vector<float> rv_vec{0.1,0.25,0.4}; // L-M-T
-				//std::vector<float> r_vec{0,0,0};
-				std::vector<float> rv_vec{0.0,0.15,0.3}; // L-M-T
-				//std::vector<float> rv_vec{0,0,0};
-				//std::string outdir = "cf_1-2-3_2-275-35_1-25-40/" + subdir;
-                //std::string outdir = "cf_2-275-35_2-275-35_1-25-40/" + subdir;
-                //std::string outdir = "cf_2-275-35_2-275-35_0-15-3/" + subdir;
-                //std::string outdir = "cf_0_0_0/" + subdir;
+                std::vector<float> r_vec{1.0}; // BG scaling
+				std::vector<float> rv_vec{0.2}; // Sig scaling
                 std::string outdir = "";
-				// 2-2   cf_1pho_4jet
-                //std::vector<float> m_vec{1000,1500,2000}; // L-M-T
-                //std::vector<float> r_vec{0.15,0.225,0.3}; // L-M-T
-                //std::vector<float> rv_vec{0.1,0.175,0.25}; // L-M-T
 
 				std::string isoline = "tm06_";
 				isoline += "cv" + std::to_string( np ) + "_";
                 std::string outfilenameJ = outdir + ofnstart + htitleJ + isoline;
 				std::string htitlefullJ =  htitleJ + isoline;
-				base.histMaker( listdir, infilenameJ, outfilenameJ, htitlefullJ, np, nj, m_vec, r_vec, rv_vec );
+				base.histMaker( listdir, infilenameJ, outfilenameJ, htitlefullJ, np, nj, rv_vec, r_vec, rv_vec );
                 std::string outfilenameBG = outdir + ofnstart + htitleBG + isoline;
                 std::string htitlefullBG =  htitleBG + isoline;
-                base.histMaker( listdir, infilenameBG, outfilenameBG, htitlefullBG, np, nj, m_vec, r_vec, rv_vec );
+                base.histMaker( listdir, infilenameBG, outfilenameBG, htitlefullBG, np, nj, r_vec, r_vec, rv_vec );
 
 				}}
 
