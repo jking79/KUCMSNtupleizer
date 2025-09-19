@@ -557,8 +557,8 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     float pho2PtsH41 = pho2pts/(*rjr_pHs41)[cs];
     float pho1PtsH21 = pho1pts/(*rjr_pHs21)[cs];
     float pho2PtsH21 = pho2pts/(*rjr_pHs21)[cs];
-	float minPhoPtsH41 = std::min( pho1PtsH41, pho2PtsH41 );
-    float minPhoPtsH21 = std::min( pho1PtsH21, pho2PtsH21 );
+	float minPhoPtsH41 = ( pho2PtsH41 > 0 ) ? std::min( pho1PtsH41, pho2PtsH41 ) : pho1PtsH41;
+    float minPhoPtsH21 = ( pho2PtsH21 > 0 ) ? std::min( pho1PtsH21, pho2PtsH21 ) : pho1PtsH21;
 
 	float pho1PtxaH21 = pho1ptxa/(*rjr_pHxa21)[cs];
     float pho2PtxaH21 = pho2ptxa/(*rjr_pHxa21)[cs];
@@ -566,7 +566,7 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     float pho2PtxbH21 = pho2ptxb/(*rjr_pHxb21)[cs];
 	float pho1PtxH21 = pho1PtxaH21 + pho1PtxbH21;
     float pho2PtxH21 = pho2PtxaH21 + pho2PtxbH21;
-	float minPhoPtxH21 = std::min( pho1PtxH21, pho2PtxH21 );
+	float minPhoPtxH21 = ( pho2PtxH21 > 0 ) ? std::min( pho1PtxH21, pho2PtxH21 ) : pho1PtxH21;
 
     //float NormMBetaEql = (*selPhoMBetaEql)[0]/mr;
     //float NormMBetaPmt = (*selPhoMBetaPmt)[0]/mr;
@@ -825,16 +825,16 @@ void HistMaker::initHists( std::string ht ){
 
 
 
-    hist1d[31] = new TH1D("pho1PtsH41", addstr(ht," pho1PtsH41;pho1PtsH41").c_str(), 120, 0, 1.2);
-    hist1d[32] = new TH1D("pho2PtsH41", addstr(ht," pho2PtsH41;pho2PtsH41").c_str(), 120, 0, 1.2);
-    hist1d[33] = new TH1D("pho1PtsH21", addstr(ht," pho1PtsH21;pho1PtsH21").c_str(), 120, 0, 1.2);
-    hist1d[34] = new TH1D("pho2PtsH21", addstr(ht," pho2PtsH21;pho2PtsH21").c_str(), 120, 0, 1.2);
-    hist1d[35] = new TH1D("minPhoPtsH41", addstr(ht," minPhoPtsH41;minPhoPtsH41").c_str(), 120, 0, 1.2);
-    hist1d[36] = new TH1D("minPhoPtsH21", addstr(ht," minPhoPtsH21;minPhoPtsH21").c_str(), 120, 0, 1.2);
+    hist1d[31] = new TH1D("pho1PtsH41", addstr(ht," pho1PtsH41;pho1PtsH41").c_str(), 200, 0, 2.0);
+    hist1d[32] = new TH1D("pho2PtsH41", addstr(ht," pho2PtsH41;pho2PtsH41").c_str(), 200, 0, 2.0);
+    hist1d[33] = new TH1D("pho1PtsH21", addstr(ht," pho1PtsH21;pho1PtsH21").c_str(), 200, 0, 2.0);
+    hist1d[34] = new TH1D("pho2PtsH21", addstr(ht," pho2PtsH21;pho2PtsH21").c_str(), 200, 0, 2.0);
+    hist1d[35] = new TH1D("minPhoPtsH41", addstr(ht," minPhoPtsH41;minPhoPtsH41").c_str(), 200, 0, 2.0);
+    hist1d[36] = new TH1D("minPhoPtsH21", addstr(ht," minPhoPtsH21;minPhoPtsH21").c_str(), 200, 0, 2.0);
 
-    hist1d[37] = new TH1D("pho1PtxH21", addstr(ht," pho1PtxH21;pho1PtxH21").c_str(), 120, 0, 1.2);
-    hist1d[38] = new TH1D("pho2PtxH21", addstr(ht," pho2PtxH21;pho2PtxH21").c_str(), 120, 0, 1.2);
-    hist1d[39] = new TH1D("minPhoPtxH21", addstr(ht," minPhoPtxH21;minPhoPtxH21").c_str(), 120, 0, 1.2);
+    hist1d[37] = new TH1D("pho1PtxH21", addstr(ht," pho1PtxH21;pho1PtxH21").c_str(), 200, 0, 2.0);
+    hist1d[38] = new TH1D("pho2PtxH21", addstr(ht," pho2PtxH21;pho2PtxH21").c_str(), 200, 0, 2.0);
+    hist1d[39] = new TH1D("minPhoPtxH21", addstr(ht," minPhoPtxH21;minPhoPtxH21").c_str(), 200, 0, 2.0);
 
     for( int it = 0; it < n1dHists; it++ ){ if(hist1d[it]) hist1d[it]->Sumw2();}
 
@@ -852,9 +852,8 @@ void HistMaker::initHists( std::string ht ){
     hist2d[13] = new TH2D("Rxa_v_Rxb", addstr(ht," Rxa_v_Rxb;R_{xa};R_{xb}").c_str(), 120, 0, 1.2, 120, 0, 1.2 );
     hist2d[14] = new TH2D("Rx0a_v_Rx0b", addstr(ht," Rx0a_v_Rx0b;R_{x0a};R_{x0b}").c_str(), 120, 0, 1.2, 120, 0, 1.2 );
 
-    hist2d[20] = new TH2D("gpts_v_ms", addstr(ht," gpts_v_ms;minPhoPtsH41;Ms [GeV]").c_str(), 120, 0, 1.2, 120, 0, 12000 );
-    hist2d[21] = new TH2D("gpts_v_rs", addstr(ht," gpts_v_rs;minPhoPtsH41;Rs").c_str(), 120, 0, 1.2, 120, 0, 1.2 );
-
+    hist2d[20] = new TH2D("gpts_v_ms", addstr(ht," gpts_v_ms;minPhoPtsH41;Ms [GeV]").c_str(), 200, 0, 2.0, 120, 0, 12000 );
+    hist2d[21] = new TH2D("gpts_v_rs", addstr(ht," gpts_v_rs;minPhoPtsH41;Rs").c_str(), 200, 0, 2.0, 120, 0, 1.2 );
 
 	//------- jets ( time ) 0-49 ------------------------------
 
@@ -917,7 +916,7 @@ int main ( int argc, char *argv[] ){
 				//int nj = 1;
 				//int np = 1;
 				// 0 - 7 now
-                for( int np = 0; np < 9; np++ ){
+                for( int np = 1; np < 5; np++ ){
                 for( int nj = 0; nj < 1; nj++ ){
 
 				//std::string subdir = "cf_" + std::to_string(np) + "pho_" + std::to_string(nj) + "jet/";
@@ -927,14 +926,14 @@ int main ( int argc, char *argv[] ){
 				std::vector<float> rv_vec{0.2}; // Sig scaling
                 std::string outdir = "";
 
-				std::string isoline = "tm06_";
+				std::string isoline = "sc02_";
 				isoline += "cv" + std::to_string( np ) + "_";
                 std::string outfilenameJ = outdir + ofnstart + htitleJ + isoline;
 				std::string htitlefullJ =  htitleJ + isoline;
 				base.histMaker( listdir, infilenameJ, outfilenameJ, htitlefullJ, np, nj, rv_vec, r_vec, rv_vec );
                 std::string outfilenameBG = outdir + ofnstart + htitleBG + isoline;
                 std::string htitlefullBG =  htitleBG + isoline;
-                base.histMaker( listdir, infilenameBG, outfilenameBG, htitlefullBG, np, nj, r_vec, r_vec, rv_vec );
+                //base.histMaker( listdir, infilenameBG, outfilenameBG, htitlefullBG, np, nj, r_vec, r_vec, rv_vec );
 
 				}}
 
