@@ -1706,20 +1706,21 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 	if( DEBUG ) std::cout << " - Getting RJR varibles." << std::endl;
 	// ---------  Finished Processing RJR varibles --------------------------------------------------------------------
 
-	uInt firstObject = 0;
-	if( ( type == 1 ) && ( nRJRPhos > 0 ) ) firstObject = ( nRJRPhos == 2 ) ? 2 : 1 ;
+	uInt firstJet = 0;
+	if( ( type == 1 ) && ( nRJRPhos > 0 ) ) firstJet = ( nRJRPhos == 2 ) ? 2 : 1 ;
 	int nJetsJa = 0;
 	int nJetsJb = 0;
 	bool isALeadPhoSide = true;	
 	int subPhoLocation = 0;
+    int leadPhoLocation = ( type == 1 ) ? 1 : 0;
 	int nVisObjects = jetID.size();
 	if( nVisObjects != ( (type == 0 ) ? nSelJets : nRJRPhos + nSelJets ) ){ 
 		std::cout << " !!!!!!    nVisObjects != ( nRJRPhos + nSelJets )  !!!!!!!!! " << std::endl;
 		std::cout << " !!!!!!    " << nVisObjects << " != ( " << nRJRPhos << " + " << nSelJets << " )  !!!!!!!!! " << std::endl;
 	}//<<>>if( nVisObjects != ( nRJRPhos + nSelJets ) )
-	if( COMB_J->GetFrame(jetID[0]) == *J1b || COMB_J->GetFrame(jetID[0]) == *J2b ) isALeadPhoSide = false;
-	//  -- redifine A & B side for jets to be : is jet on lead pho side -> A ; is not on lead pho side -> B 
-    for( uInt it = firstObject; it < nVisObjects; it++ ){	
+	if( COMB_J->GetFrame(jetID[0]) == *J1b || COMB_J->GetFrame(jetID[0]) == *J2b ){ isALeadPhoSide = false; if( type == 1 ) leadPhoLocation = 2; }
+	//  -- redifine A & B side for jets to be : is jet on lead pho side -> A ; is not on lead pho side -> B // done
+    for( uInt it = firstJet; it < nVisObjects; it++ ){	
 
         if( COMB_J->GetFrame(jetID[it]) == *J1a || COMB_J->GetFrame(jetID[it]) == *J2a  ){ isALeadPhoSide ? nJetsJa++ : nJetsJb++; } // one for each frame 
 		else { isALeadPhoSide ? nJetsJb++ : nJetsJa++; }
@@ -1735,6 +1736,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     selRjrVars.fillBranch( "rjrNJets", int(geCnts("nSelJets")) );
     selRjrVars.fillBranch( "rjrNPhotons", nRJRPhos );
     selRjrVars.fillBranch( "rjrNVisObjects", nVisObjects );
+    selRjrVars.fillBranch( "rjrLeadPhoLocation", leadPhoLocation );
     selRjrVars.fillBranch( "rjrSubPhoLocation", subPhoLocation );
 
 	std::vector<int> phoside;
@@ -1744,14 +1746,14 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 
 			bool onAside = true;
 			int whichside = -1;
-			//if( COMB_J->GetFrame(jetID[it]) == *J1b || COMB_J->GetFrame(jetID[it]) == *J2b  ) onAside = false;
+			////if( COMB_J->GetFrame(jetID[it]) == *J1b || COMB_J->GetFrame(jetID[it]) == *J2b  ) onAside = false;
 			if( COMB_J->GetFrame(jetID[it]) == *J1a ) whichside = 0;
             if( COMB_J->GetFrame(jetID[it]) == *J2a ) whichside = 1;
             if( COMB_J->GetFrame(jetID[it]) == *J1b ) whichside = 2;
             if( COMB_J->GetFrame(jetID[it]) == *J2b ) whichside = 3;
 			if( whichside < 0 ) std::cout << " !!!!!!!  Visible object is not on a side !!!!!!! " << std::endl;
 			if( whichside > 1 ) onAside = false;
-			if( it < firstObject ){ 
+			if( it < firstJet ){ 
     			selRjrVars.fillBranch( "rjrVisPhoSide", onAside );
 				phoside.push_back(whichside);
 			} else { 
@@ -1960,7 +1962,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 		else phopt1xb = X2b->GetTransverseMomentum( pho4vec[0] );
 	}//<<>>if( nPhov > 0 )
     if( nPhov > 1 ){ 
-		if( phoside[0] < 2 ) phopt2xa = X2a->GetTransverseMomentum( pho4vec[1] );
+		if( phoside[1] < 2 ) phopt2xa = X2a->GetTransverseMomentum( pho4vec[1] );
         else phopt2xb = X2b->GetTransverseMomentum( pho4vec[1] );
 	}//<<>>if( nPhov > 1 )
 /*
@@ -1969,7 +1971,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
         else phopt1xb = X2b->GetFourVector( pho4vec[0] ).P();
     }//<<>>if( nPhov > 0 )
     if( nPhov > 1 ){
-        if( phoside[0] < 2 ) phopt2xa = X2a->GetFourVector( pho4vec[1] ).P();
+        if( phoside[1] < 2 ) phopt2xa = X2a->GetFourVector( pho4vec[1] ).P();
         else phopt2xb = X2b->GetFourVector( pho4vec[1] ).P();
     }//<<>>if( nPhov > 1 )
 */
@@ -2555,6 +2557,7 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     selRjrVars.makeBranch( "rjrNPhotons", VINT );
     selRjrVars.makeBranch( "rjrMET", VFLOAT );
     selRjrVars.makeBranch( "rjrNJets", VINT );
+    selRjrVars.makeBranch( "rjrLeadPhoLocation", VINT);
     selRjrVars.makeBranch( "rjrSubPhoLocation", VINT);
     selRjrVars.makeBranch( "rjrNVisObjects", VINT );
     selRjrVars.makeBranch( "rjrABSide", VBOOL );
