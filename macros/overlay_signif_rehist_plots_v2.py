@@ -256,120 +256,118 @@ cut1 = '>'
 cut2 = '<'
 
 
-v37tbg000 = 'KUCMS_BG_llpana_v37_tm06_cv0_TotBG_RjrSkim_Hists.root'
-v37tbg001 = 'KUCMS_BG_llpana_v37_tm06_cv1_TotBG_RjrSkim_Hists.root'
-v37tbg002 = 'KUCMS_BG_llpana_v37_tm06_cv2_TotBG_RjrSkim_Hists.root'
-v37tbg003 = 'KUCMS_BG_llpana_v37_tm06_cv3_TotBG_RjrSkim_Hists.root'
-v37tbg004 = 'KUCMS_BG_llpana_v37_tm06_cv4_TotBG_RjrSkim_Hists.root'
-v37tbg005 = 'KUCMS_BG_llpana_v37_tm06_cv5_TotBG_RjrSkim_Hists.root'
-v37tbg006 = 'KUCMS_BG_llpana_v37_tm06_cv6_TotBG_RjrSkim_Hists.root'
-v37tbg007 = 'KUCMS_BG_llpana_v37_tm06_cv7_TotBG_RjrSkim_Hists.root'
-v37tbg008 = 'KUCMS_BG_llpana_v37_tm06_cv8_TotBG_RjrSkim_Hists.root'
+v37tbg000 = 'KUCMS_BG_llpana_v37_sc10_cv0_TotBG_RjrSkim_Hists.root'
+v37tbg001 = 'KUCMS_BG_llpana_v37_sc10_cv1_TotBG_RjrSkim_Hists.root'
+v37tbg002 = 'KUCMS_BG_llpana_v37_sc10_cv2_TotBG_RjrSkim_Hists.root'
+v37tbg003 = 'KUCMS_BG_llpana_v37_sc10_cv3_TotBG_RjrSkim_Hists.root'
+v37tbg004 = 'KUCMS_BG_llpana_v37_sc10_cv4_TotBG_RjrSkim_Hists.root'
+v37tbg005 = 'KUCMS_BG_llpana_v37_sc10_cv5_TotBG_RjrSkim_Hists.root'
+v37tbg006 = 'KUCMS_BG_llpana_v37_sc10_cv6_TotBG_RjrSkim_Hists.root'
+v37tbg007 = 'KUCMS_BG_llpana_v37_sc10_cv7_TotBG_RjrSkim_Hists.root'
+v37tbg008 = 'KUCMS_BG_llpana_v37_sc10_cv8_TotBG_RjrSkim_Hists.root'
 
-v37tsig101 = 'KUCMS_llpana_v37_tm06_cv1_PG15dN5dN1dC1_RjrSkim_Hists.root'
-v37tsig201 = 'KUCMS_llpana_v37_tm06_cv1_PG25dN15dN1kC1_RjrSkim_Hists.root'
+v37tsig101 = 'KUCMS_llpana_v37_sc10_cv1_PG15dN5dN1dC1_RjrSkim_Hists.root'
+v37tsig201 = 'KUCMS_llpana_v37_sc10_cv1_PG25dN15dN1kC1_RjrSkim_Hists.root'
 
-v37tsig301 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN15dN1C1_RjrSkim_Hists.root'
-v37tsig304 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN15dN1C1_RjrSkim_Hists.root'
-v37tsig401 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN15dN1kC1_RjrSkim_Hists.root'
-v37tsig403 = 'KUCMS_llpana_v37_tm06_cv3_PG2kN15dN1kC1_RjrSkim_Hists.root'
-v37tsig501 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN15dN250C1_RjrSkim_Hists.root'
-v37tsig504 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN15dN250C1_RjrSkim_Hists.root'
-v37tsig601 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN15dN5dC1_RjrSkim_Hists.root'
-v37tsig604 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN15dN5dC1_RjrSkim_Hists.root'
+v37tsig301 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN15dN1C1_RjrSkim_Hists.root'
+v37tsig304 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN15dN1C1_RjrSkim_Hists.root'
+v37tsig401 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN15dN1kC1_RjrSkim_Hists.root'
+v37tsig403 = 'KUCMS_llpana_v37_sc10_cv3_PG2kN15dN1kC1_RjrSkim_Hists.root'
+v37tsig501 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN15dN250C1_RjrSkim_Hists.root'
+v37tsig504 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN15dN250C1_RjrSkim_Hists.root'
+v37tsig601 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN15dN5dC1_RjrSkim_Hists.root'
+v37tsig604 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN15dN5dC1_RjrSkim_Hists.root'
 
-v37tsig701 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN1950N15dC1_RjrSkim_Hists.root'
-v37tsig702 = 'KUCMS_llpana_v37_tm06_cv2_PG2kN1950N15dC1_RjrSkim_Hists.root'
-v37tsig801 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN1950N19dC1_RjrSkim_Hists.root'
-v37tsig802 = 'KUCMS_llpana_v37_tm06_cv2_PG2kN1950N19dC1_RjrSkim_Hists.root'
-v37tsig901 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN1950N1C1_RjrSkim_Hists.root'
-v37tsig904 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN1950N1C1_RjrSkim_Hists.root'
-v37tsig1001 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN1950N1kC1_RjrSkim_Hists.root'
-v37tsig1003 = 'KUCMS_llpana_v37_tm06_cv3_PG2kN1950N1kC1_RjrSkim_Hists.root'
-v37tsig1101 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN1950N250C1_RjrSkim_Hists.root'
-v37tsig1104 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN1950N250C1_RjrSkim_Hists.root'
-v37tsig1201 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN1950N5dC1_RjrSkim_Hists.root'
-v37tsig1204 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN1950N5dC1_RjrSkim_Hists.root'
+v37tsig701 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN1950N15dC1_RjrSkim_Hists.root'
+v37tsig702 = 'KUCMS_llpana_v37_sc10_cv2_PG2kN1950N15dC1_RjrSkim_Hists.root'
+v37tsig801 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN1950N19dC1_RjrSkim_Hists.root'
+v37tsig802 = 'KUCMS_llpana_v37_sc10_cv2_PG2kN1950N19dC1_RjrSkim_Hists.root'
+v37tsig901 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN1950N1C1_RjrSkim_Hists.root'
+v37tsig904 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN1950N1C1_RjrSkim_Hists.root'
+v37tsig1001 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN1950N1kC1_RjrSkim_Hists.root'
+v37tsig1003 = 'KUCMS_llpana_v37_sc10_cv3_PG2kN1950N1kC1_RjrSkim_Hists.root'
+v37tsig1101 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN1950N250C1_RjrSkim_Hists.root'
+v37tsig1104 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN1950N250C1_RjrSkim_Hists.root'
+v37tsig1201 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN1950N5dC1_RjrSkim_Hists.root'
+v37tsig1204 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN1950N5dC1_RjrSkim_Hists.root'
 
-v37tsig1301 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN19dN15dC1_RjrSkim_Hists.root'
-v37tsig1302 = 'KUCMS_llpana_v37_tm06_cv2_PG2kN19dN15dC1_RjrSkim_Hists.root'
-v37tsig1401 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN19dN1C1_RjrSkim_Hists.root'
-v37tsig1404 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN19dN1C1_RjrSkim_Hists.root'
-v37tsig1501 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN19dN1kC1_RjrSkim_Hists.root'
-v37tsig1503 = 'KUCMS_llpana_v37_tm06_cv3_PG2kN19dN1kC1_RjrSkim_Hists.root'
-v37tsig1601 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN19dN250C1_RjrSkim_Hists.root'
-v37tsig1604 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN19dN250C1_RjrSkim_Hists.root'
-v37tsig1701 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN19dN5dC1_RjrSkim_Hists.root'
-v37tsig1704 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN19dN5dC1_RjrSkim_Hists.root'
+v37tsig1301 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN19dN15dC1_RjrSkim_Hists.root'
+v37tsig1302 = 'KUCMS_llpana_v37_sc10_cv2_PG2kN19dN15dC1_RjrSkim_Hists.root'
+v37tsig1401 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN19dN1C1_RjrSkim_Hists.root'
+v37tsig1404 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN19dN1C1_RjrSkim_Hists.root'
+v37tsig1501 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN19dN1kC1_RjrSkim_Hists.root'
+v37tsig1503 = 'KUCMS_llpana_v37_sc10_cv3_PG2kN19dN1kC1_RjrSkim_Hists.root'
+v37tsig1601 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN19dN250C1_RjrSkim_Hists.root'
+v37tsig1604 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN19dN250C1_RjrSkim_Hists.root'
+v37tsig1701 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN19dN5dC1_RjrSkim_Hists.root'
+v37tsig1704 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN19dN5dC1_RjrSkim_Hists.root'
 
-v37tsig1801 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN1kN1C1_RjrSkim_Hists.root'
-v37tsig1804 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN1kN1C1_RjrSkim_Hists.root'
-v37tsig1901 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN1kN250C1_RjrSkim_Hists.root'
-v37tsig1904 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN1kN250C1_RjrSkim_Hists.root'
-v37tsig2001 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN1kN5dC1_RjrSkim_Hists.root'
-v37tsig2004 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN1kN5dC1_RjrSkim_Hists.root'
+v37tsig1801 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN1kN1C1_RjrSkim_Hists.root'
+v37tsig1804 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN1kN1C1_RjrSkim_Hists.root'
+v37tsig1901 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN1kN250C1_RjrSkim_Hists.root'
+v37tsig1904 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN1kN250C1_RjrSkim_Hists.root'
+v37tsig2001 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN1kN5dC1_RjrSkim_Hists.root'
+v37tsig2004 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN1kN5dC1_RjrSkim_Hists.root'
 
-v37tsig2101 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN5dN1C1_RjrSkim_Hists.root'
-v37tsig2104 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN5dN1C1_RjrSkim_Hists.root'
-v37tsig2201 = 'KUCMS_llpana_v37_tm06_cv1_PG2kN5dN250C1_RjrSkim_Hists.root'
-v37tsig2204 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN5dN250C1_RjrSkim_Hists.root'
+v37tsig2101 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN5dN1C1_RjrSkim_Hists.root'
+v37tsig2104 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN5dN1C1_RjrSkim_Hists.root'
+v37tsig2201 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN5dN250C1_RjrSkim_Hists.root'
+v37tsig2204 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN5dN250C1_RjrSkim_Hists.root'
 
 # ------- sqsqG -----------------
-v37tqsig100 = 'KUCMS_llpana_v37_tm06_cv0_QG17dN15dN1C1_RjrSkim_Hists.root'
-v37tqsig200 = 'KUCMS_llpana_v37_tm06_cv0_QG17dN3dN1C1_RjrSkim_Hists.root'
+v37tqsig100 = 'KUCMS_llpana_v37_sc10_cv0_QG17dN15dN1C1_RjrSkim_Hists.root'
+v37tqsig200 = 'KUCMS_llpana_v37_sc10_cv0_QG17dN3dN1C1_RjrSkim_Hists.root'
 
-v37tqsig300 = 'KUCMS_llpana_v37_tm06_cv0_QG1850N1650N1C1_RjrSkim_Hists.root'
-v37tqsig400 = 'KUCMS_llpana_v37_tm06_cv0_QG1850N3dN1C1_RjrSkim_Hists.root'
+v37tqsig300 = 'KUCMS_llpana_v37_sc10_cv0_QG1850N1650N1C1_RjrSkim_Hists.root'
+v37tqsig400 = 'KUCMS_llpana_v37_sc10_cv0_QG1850N3dN1C1_RjrSkim_Hists.root'
 
-v37tqsig500 = 'KUCMS_llpana_v37_tm06_cv0_QG2kN18dN1C1_RjrSkim_Hists.root'
-v37tqsig600 = 'KUCMS_llpana_v37_tm06_cv0_QG2kN3dN1C1_RjrSkim_Hists.root'
+v37tqsig500 = 'KUCMS_llpana_v37_sc10_cv0_QG2kN18dN1C1_RjrSkim_Hists.root'
+v37tqsig600 = 'KUCMS_llpana_v37_sc10_cv0_QG2kN3dN1C1_RjrSkim_Hists.root'
 
-v37tqsig700 = 'KUCMS_llpana_v37_tm06_cv0_QG2150N1950N1C1_RjrSkim_Hists.root'
-v37tqsig800 = 'KUCMS_llpana_v37_tm06_cv0_QG2150N3dN1C1_RjrSkim_Hists.root'
+v37tqsig700 = 'KUCMS_llpana_v37_sc10_cv0_QG2150N1950N1C1_RjrSkim_Hists.root'
+v37tqsig800 = 'KUCMS_llpana_v37_sc10_cv0_QG2150N3dN1C1_RjrSkim_Hists.root'
 
-v37tqsig101 = 'KUCMS_llpana_v37_tm06_cv1_QG17dN15dN1C1_RjrSkim_Hists.root'
-v37tqsig201 = 'KUCMS_llpana_v37_tm06_cv1_QG17dN3dN1C1_RjrSkim_Hists.root'
+v37tqsig101 = 'KUCMS_llpana_v37_sc10_cv1_QG17dN15dN1C1_RjrSkim_Hists.root'
+v37tqsig201 = 'KUCMS_llpana_v37_sc10_cv1_QG17dN3dN1C1_RjrSkim_Hists.root'
 
-v37tqsig301 = 'KUCMS_llpana_v37_tm06_cv1_QG1850N1650N1C1_RjrSkim_Hists.root'
-v37tqsig401 = 'KUCMS_llpana_v37_tm06_cv1_QG1850N3dN1C1_RjrSkim_Hists.root'
+v37tqsig301 = 'KUCMS_llpana_v37_sc10_cv1_QG1850N1650N1C1_RjrSkim_Hists.root'
+v37tqsig401 = 'KUCMS_llpana_v37_sc10_cv1_QG1850N3dN1C1_RjrSkim_Hists.root'
 
-v37tqsig501 = 'KUCMS_llpana_v37_tm06_cv1_QG2kN18dN1C1_RjrSkim_Hists.root'
-v37tqsig601 = 'KUCMS_llpana_v37_tm06_cv1_QG2kN3dN1C1_RjrSkim_Hists.root'
+v37tqsig501 = 'KUCMS_llpana_v37_sc10_cv1_QG2kN18dN1C1_RjrSkim_Hists.root'
+v37tqsig601 = 'KUCMS_llpana_v37_sc10_cv1_QG2kN3dN1C1_RjrSkim_Hists.root'
 
-v37tqsig701 = 'KUCMS_llpana_v37_tm06_cv1_QG2150N1950N1C1_RjrSkim_Hists.root'
-v37tqsig801 = 'KUCMS_llpana_v37_tm06_cv1_QG2150N3dN1C1_RjrSkim_Hists.root'
+v37tqsig701 = 'KUCMS_llpana_v37_sc10_cv1_QG2150N1950N1C1_RjrSkim_Hists.root'
+v37tqsig801 = 'KUCMS_llpana_v37_sc10_cv1_QG2150N3dN1C1_RjrSkim_Hists.root'
 
 #///////////////////////
-v37tsig1904 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN1kN250C1_RjrSkim_Hists.root'
-v37tsig504 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN15dN250C1_RjrSkim_Hists.root'
-v37tsig1604 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN19dN250C1_RjrSkim_Hists.root'
-v37tsig204 = 'KUCMS_llpana_v37_tm06_cv4_PG25dN15dN1kC1_RjrSkim_Hists.root'
+v37tsig1904 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN1kN250C1_RjrSkim_Hists.root'
+v37tsig504 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN15dN250C1_RjrSkim_Hists.root'
+v37tsig1604 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN19dN250C1_RjrSkim_Hists.root'
+v37tsig204 = 'KUCMS_llpana_v37_sc10_cv4_PG25dN15dN1kC1_RjrSkim_Hists.root'
 
-v37tsig1302 = 'KUCMS_llpana_v37_tm06_cv2_PG2kN19dN15dC1_RjrSkim_Hists.root'
-v37tsig802 = 'KUCMS_llpana_v37_tm06_cv2_PG2kN1950N19dC1_RjrSkim_Hists.root'
+v37tsig1302 = 'KUCMS_llpana_v37_sc10_cv2_PG2kN19dN15dC1_RjrSkim_Hists.root'
+v37tsig802 = 'KUCMS_llpana_v37_sc10_cv2_PG2kN1950N19dC1_RjrSkim_Hists.root'
 
-v37tsig1305 = 'KUCMS_llpana_v37_tm06_cv5_PG2kN19dN15dC1_RjrSkim_Hists.root'
-v37tsig805 = 'KUCMS_llpana_v37_tm06_cv5_PG2kN1950N19dC1_RjrSkim_Hists.root'
+v37tsig1305 = 'KUCMS_llpana_v37_sc10_cv5_PG2kN19dN15dC1_RjrSkim_Hists.root'
+v37tsig805 = 'KUCMS_llpana_v37_sc10_cv5_PG2kN1950N19dC1_RjrSkim_Hists.root'
 #////////////////////////
 
-v37tbg004 = 'KUCMS_BG_llpana_v37_tm06_cv4_TotBG_RjrSkim_Hists.root'
+G1bg = 'KUCMS_BG_llpana_v37_sc10_cv4_TotBG_RjrSkim_Hists.root'
+G1bg = 'KUCMS_BG_llpana_v37_sc10_cv4_TotBG_RjrSkim_Hists.root'
+G1bg = 'KUCMS_BG_llpana_v37_sc10_cv4_TotBG_RjrSkim_Hists.root'
 # Mn1 < 1.0 TeV
-v37tsig2104 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN15dN1C1_RjrSkim_Hists.root'
-v37tsig1904 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN1kN250C1_RjrSkim_Hists.root'
-v37tsig604 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN15dN5dC1_RjrSkim_Hists.root'
-v37tsig1704 = 'KUCMS_llpana_v37_tm06_cv4_PG2kN19dN5dC1_RjrSkim_Hists.root'
+G1sig21 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN15dN1C1_RjrSkim_Hists.root'
+G1sig19 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN1kN250C1_RjrSkim_Hists.root'
+G1sig6 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN15dN5dC1_RjrSkim_Hists.root'
+G1sig17 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN19dN5dC1_RjrSkim_Hists.root'
 # Mn1 1.0 - 1.5
-v37tsig403 = 'KUCMS_llpana_v37_tm06_cv3_PG2kN15dN1kC1_RjrSkim_Hists.root'
-v37tsig1503 = 'KUCMS_llpana_v37_tm06_cv3_PG2kN19dN1kC1_RjrSkim_Hists.root'
-v37tsig1003 = 'KUCMS_llpana_v37_tm06_cv3_PG2kN1950N1kC1_RjrSkim_Hists.root'
+G2sig4 = 'KUCMS_llpana_v37_sc10_cv3_PG2kN15dN1kC1_RjrSkim_Hists.root'
+G2sig15 = 'KUCMS_llpana_v37_sc10_cv3_PG2kN19dN1kC1_RjrSkim_Hists.root'
+G2sig10 = 'KUCMS_llpana_v37_sc10_cv3_PG2kN1950N1kC1_RjrSkim_Hists.root'
 # Mn1 > 1.5
-v37tsig1302 = 'KUCMS_llpana_v37_tm06_cv2_PG2kN19dN15dC1_RjrSkim_Hists.root'
-v37tsig702 = 'KUCMS_llpana_v37_tm06_cv2_PG2kN1950N15dC1_RjrSkim_Hists.root'
-v37tsig802 = 'KUCMS_llpana_v37_tm06_cv2_PG2kN1950N19dC1_RjrSkim_Hists.root'
-
-v37tsig1306 = 'KUCMS_llpana_v37_tm06_cv6_PG2kN19dN15dC1_RjrSkim_Hists.root'
-v37tsig706 = 'KUCMS_llpana_v37_tm06_cv6_PG2kN1950N15dC1_RjrSkim_Hists.root'
-v37tsig806 = 'KUCMS_llpana_v37_tm06_cv6_PG2kN1950N19dC1_RjrSkim_Hists.root'
+G3sig13 = 'KUCMS_llpana_v37_sc10_cv2_PG2kN19dN15dC1_RjrSkim_Hists.root'
+G3sig7 = 'KUCMS_llpana_v37_sc10_cv2_PG2kN1950N15dC1_RjrSkim_Hists.root'
+G3sig8 = 'KUCMS_llpana_v37_sc10_cv2_PG2kN1950N19dC1_RjrSkim_Hists.root'
 
 
 bg = 'TotBG' 
@@ -483,18 +481,18 @@ for thing in lint :
         #[ rhnamea, "", indir+v37tsig802, indir+v37tbg002, sig8, cut1 ],
 
         #  Mn1 > 1.0 TeV
-        #[ rhnamea, "", indir+v37tsig2104, indir+v37tbg004, sig21, cut1 ],
-        #[ rhnamea, "", indir+v37tsig1904, indir+v37tbg004, sig19, cut1 ],
-        #[ rhnamea, "", indir+v37tsig604, indir+v37tbg004, sig6, cut1 ],
-        #[ rhnamea, "", indir+v37tsig1704, indir+v37tbg004, sig17, cut1 ],
+        #[ rhnamea, "", indir+G1sig21, indir+G1bg, sig21, cut1 ],
+        #[ rhnamea, "", indir+G1sig19, indir+G1bg, sig19, cut1 ],
+        #[ rhnamea, "", indir+G1sig6, indir+G1bg, sig6, cut1 ],
+        #[ rhnamea, "", indir+G1sig17, indir+G1bg, sig17, cut1 ],
         #  Mn1 1.0 - 1.5 TeV
-        #[ rhnamea, "", indir+v37tsig403, indir+v37tbg003, sig4, cut1 ],
-        #[ rhnamea, "", indir+v37tsig1503, indir+v37tbg003, sig15, cut1 ],
-        #[ rhnamea, "", indir+v37tsig1003, indir+v37tbg003, sig10, cut1 ],
+        #[ rhnamea, "", indir+G2sig4, indir+G2bg, sig4, cut1 ],
+        #[ rhnamea, "", indir+G2sig15, indir+G2bg, sig15, cut1 ],
+        #[ rhnamea, "", indir+G2sig10, indir+G2bg, sig10, cut1 ],
         # Mn1 > 1.5
-        #[ rhnamea, "", indir+v37tsig1306, indir+v37tbg006, sig13, cut1 ],
-        #[ rhnamea, "", indir+v37tsig706, indir+v37tbg006, sig7, cut1 ],
-        #[ rhnamea, "", indir+v37tsig806, indir+v37tbg006, sig8, cut1 ],
+        #[ rhnamea, "", indir+G3sig13, indir+G3bg, sig13, cut1 ],
+        #[ rhnamea, "", indir+G3sig7, indir+G3bg, sig7, cut1 ],
+        #[ rhnamea, "", indir+G3sig8, indir+G3bg, sig8, cut1 ],
 
         # sqsq-g
         #[ rhnamea, "", indir+v37tqsig101, indir+v37tbg001, sigz1, cut1 ],
