@@ -697,6 +697,7 @@ void KUCMSAodSkimmer::processRechits(){
 		bool exc = (*SuperCluster_excluded)[it];
 		bool orig = (*SuperCluster_original)[it];
 		float sce = (*SuperCluster_energyRaw)[it];
+		float sceta = (*SuperCluster_eta)[it];
 		hist1d[6]->Fill( (*SuperCluster_energyRaw)[it], 1 );
     	//hist1d[3] = new TH1D("sctype","SC !Orig, Orig, OOT, Excl",4,0,4);
     	//hist1d[4] = new TH1D("scorigtype","Orig+OOT, Orig+!OOT, Orig+Exc, !Orig+OOT, !Orig+Exc, !Orig+!OOT",6,0,6);
@@ -734,6 +735,7 @@ void KUCMSAodSkimmer::processRechits(){
 		    std::cout << " rechits in SC " << it << " w/ OOT" << oot << " && ORG " << orig << " rawE " << sce  << std::endl;
 		}//<<>>if( nMissingRhInSC > 0 )
 		hist1d[8]->Fill(nSCRhids);
+        hist1d[9]->Fill(sceta);
 
 	}//<<>>for( int it = 0; it < nSCs; it++ )
 	if( checkRHs ){ 
@@ -1965,21 +1967,31 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 		if( phoside[1] < 2 ) phopt2xa = X2a->GetTransverseMomentum( pho4vec[1] );
         else phopt2xb = X2b->GetTransverseMomentum( pho4vec[1] );
 	}//<<>>if( nPhov > 1 )
-/*
+
+    float phop1xa = 0;
+    float phop1xb = 0;
+    float phop2xa = 0;
+    float phop2xb = 0;
+
     if( nPhov > 0 ){
-        if( phoside[0] < 2 ) phopt1xa = X2a->GetFourVector( pho4vec[0] ).P();
-        else phopt1xb = X2b->GetFourVector( pho4vec[0] ).P();
+        if( phoside[0] < 2 ) phop1xa = X2a->GetFourVector( pho4vec[0] ).P();
+        else phop1xb = X2b->GetFourVector( pho4vec[0] ).P();
     }//<<>>if( nPhov > 0 )
     if( nPhov > 1 ){
-        if( phoside[1] < 2 ) phopt2xa = X2a->GetFourVector( pho4vec[1] ).P();
-        else phopt2xb = X2b->GetFourVector( pho4vec[1] ).P();
+        if( phoside[1] < 2 ) phop2xa = X2a->GetFourVector( pho4vec[1] ).P();
+        else phop2xb = X2b->GetFourVector( pho4vec[1] ).P();
     }//<<>>if( nPhov > 1 )
-*/
+
 
     selRjrVars.fillBranch( "rjr_p1Ptxa", phopt1xa );
     selRjrVars.fillBranch( "rjr_p1Ptxb", phopt1xb );
     selRjrVars.fillBranch( "rjr_p2Ptxa", phopt2xa );
     selRjrVars.fillBranch( "rjr_p2Ptxb", phopt2xb );
+
+    selRjrVars.fillBranch( "rjr_p1Pxa", phop1xa );
+    selRjrVars.fillBranch( "rjr_p1Pxb", phop1xb );
+    selRjrVars.fillBranch( "rjr_p2Pxa", phop2xa );
+    selRjrVars.fillBranch( "rjr_p2Pxb", phop2xb );
 
 	std::vector< TLorentzVector > p4;
 	p4.push_back(Ja->GetFourVector(*S));
@@ -2620,6 +2632,11 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     selRjrVars.makeBranch( "rjr_p2Ptxa", VFLOAT );
     selRjrVars.makeBranch( "rjr_p2Ptxb", VFLOAT );
 
+    selRjrVars.makeBranch( "rjr_p1Pxa", VFLOAT );
+    selRjrVars.makeBranch( "rjr_p1Pxb", VFLOAT );
+    selRjrVars.makeBranch( "rjr_p2Pxa", VFLOAT );
+    selRjrVars.makeBranch( "rjr_p2Pxb", VFLOAT );
+
     selRjrVars.makeBranch( "rjrAX2Diff","rjr_Rdiff", VFLOAT );
 
     selRjrVars.makeBranch( "rjr_Mr", VFLOAT );
@@ -2735,6 +2752,7 @@ void KUCMSAodSkimmer::initHists(){
     hist1d[6] = new TH1D("scenergy","SC rawEnergy;energy [GeV]",200,0,1000);
     hist1d[7] = new TH1D("trckpt","Track pt;Track pt [GeV]",500,0,1000);
     hist1d[8] = new TH1D("NRecHitsInSCs","NRecHitsInSCs;NRecHitsInSCs",100,0,100);
+    hist1d[9] = new TH1D("sceta","SC Eta;Eta",200,-10,10);
 
 	hist1d[10] = new TH1D("elept","Electron Pt [GeV];Electron Pt [GeV];a.u.",100,0,1000);
     hist1d[11] = new TH1D("elept_lv","LooseVeto;Electron Pt [GeV];Eff",100,0,1000);

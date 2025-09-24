@@ -410,9 +410,39 @@ dlbosun = [
     '/ZZZ_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v2/AODSIM',
 ]
 
+dl2025 = [
+
+    '/JetMET0/Run2025B-EXODelayedJetMET-PromptReco-v1/AOD',
+    '/JetMET0/Run2025C-EXODelayedJetMET-PromptReco-v1/AOD',
+    '/JetMET0/Run2025C-EXODelayedJetMET-PromptReco-v2/AOD',
+    '/JetMET0/Run2025D-EXODelayedJetMET-PromptReco-v1/AOD',
+    '/JetMET0/Run2025E-EXODelayedJetMET-PromptReco-v1/AOD',
+    '/JetMET0/Run2025F-EXODelayedJetMET-PromptReco-v1/AOD',
+    '/JetMET1/Run2025B-EXODelayedJetMET-PromptReco-v1/AOD',
+    '/JetMET1/Run2025C-EXODelayedJetMET-PromptReco-v1/AOD',
+    '/JetMET1/Run2025C-EXODelayedJetMET-PromptReco-v2/AOD',
+    '/JetMET1/Run2025D-EXODelayedJetMET-PromptReco-v1/AOD',
+    '/JetMET1/Run2025E-EXODelayedJetMET-PromptReco-v1/AOD',
+    '/JetMET1/Run2025F-EXODelayedJetMET-PromptReco-v1/AOD',
+
+    '/JetMET0/Run2025B-PromptReco-v1/AOD',
+    '/JetMET0/Run2025C-PromptReco-v1/AOD',
+    '/JetMET0/Run2025C-PromptReco-v2/AOD',
+    '/JetMET0/Run2025D-PromptReco-v1/AOD',
+    '/JetMET0/Run2025E-PromptReco-v1/AOD',
+    '/JetMET0/Run2025F-PromptReco-v1/AOD',
+    '/JetMET1/Run2025B-PromptReco-v1/AOD',
+    '/JetMET1/Run2025C-PromptReco-v1/AOD',
+    '/JetMET1/Run2025C-PromptReco-v2/AOD',
+    '/JetMET1/Run2025D-PromptReco-v1/AOD',
+    '/JetMET1/Run2025E-PromptReco-v1/AOD',
+    '/JetMET1/Run2025F-PromptReco-v1/AOD',
+
+]
+
 query = 'dasgoclient --json -query=\'dataset='
 
-datalist = dlbosun
+datalist = dl2025
 
 for data in datalist :
     

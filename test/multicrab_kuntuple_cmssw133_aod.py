@@ -125,13 +125,13 @@ def docrab( dataset ):
             #print( inDO )
             # inDO[0] is of the form /A/B/C. Since A+B is unique for each inDS, use this in the CRAB request name.
             #primaryDataset = (inDO[0].split('/')[1])
-            primaryDataset = (inDO[0].split('/')[1]).split('_13T')[0]
-            #primaryDataset = (inDO[0].split('/')[1]).split('_Tune')[0]
+            #primaryDataset = (inDO[0].split('/')[1]).split('_13T')[0]
+            primaryDataset = (inDO[0].split('/')[1]).split('_Tune')[0]
             #primaryDataset = (inDO[0].split('/')[1]).split('-sherpa')[0]
             print( primaryDataset )
             #runEra         = (inDO[0].split('/')[2]) # justin
-            runEra         = (inDO[0].split('/')[2]).split('-')[0]
-            #runEra         = (inDO[0].split('/')[2]).split('RECO')[0]
+            #runEra         = (inDO[0].split('/')[2]).split('-')[0]
+            runEra         = (inDO[0].split('/')[2]).split('RECO')[0]
             print( runEra )
             dataset        = inDO[0].split('/')[3]
             print( dataset )
@@ -153,9 +153,9 @@ def docrab( dataset ):
             ##trial          = "kucmsntuple_EGamma_R18_AL1SelEle_DEOnly" + version #
 
             #trial          = "kucmsntuple_TTXJets_R18_SVIPM100" + version #
-            trial          = "kucmsntuple_GJets_R18_SVIPM100" + version
+            #trial          = "kucmsntuple_GJets_R18_SVIPM100" + version
             #trial          = "kucmsntuple_QCD_R18_SVIPM100" + version
-            #trial          = "kucmsntuple_ZJets_R18_SVIPM100" + version
+            trial          = "kucmsntuple_ZJets_R18_SVIPM100" + version
             #trial          = "kucmsntuple_WJets_R18_SVIPM100" + version
             #trial          = "kucmsntuple_DTBoson_R18_SVIPM100"  + version
             #trial          = "kucmsntuple_DiPJBox_R18_SVIPM100" + version
@@ -283,13 +283,13 @@ def run_multi():
         #['/WJetsToLNu_HT-1200To2500_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext2-v3/AODSIM',2],
         #['/WJetsToLNu_HT-2500ToInf_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext2-v3/AODSIM',2],
 
-        #['/ZJetsToNuNu_HT-100To200_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM'],
-        #['/ZJetsToNuNu_HT-200To400_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM'],
-        #['/ZJetsToNuNu_HT-400To600_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM'],
-        #['/ZJetsToNuNu_HT-600To800_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM'],
-        #['/ZJetsToNuNu_HT-800To1200_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM'],
-        #['/ZJetsToNuNu_HT-1200To2500_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM'],
-        #['/ZJetsToNuNu_HT-2500ToInf_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM'],
+        #['/ZJetsToNuNu_HT-100To200_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM',1],
+        #['/ZJetsToNuNu_HT-200To400_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM',1],
+        #['/ZJetsToNuNu_HT-400To600_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM',1],
+        #['/ZJetsToNuNu_HT-600To800_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM',1],
+        ['/ZJetsToNuNu_HT-800To1200_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM',1],
+        ['/ZJetsToNuNu_HT-1200To2500_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM',1],
+        ['/ZJetsToNuNu_HT-2500ToInf_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM',1],
 
         #['/TTJets_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',1],
         #['/TGJets_TuneCP5_13TeV-amcatnlo-madspin-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v1/AODSIM',1],
@@ -299,8 +299,8 @@ def run_multi():
 
         #['/GJets_HT-40To100_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM',2],
         #['/GJets_HT-100To200_'+TuneCP5MP+'/RunIISummer20UL18RECO-4cores5k_106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',2],
-        ['/GJets_HT-200To400_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM',4],
-        ['/GJets_HT-400To600_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM',2],
+        #['/GJets_HT-200To400_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM',4],
+        #['/GJets_HT-400To600_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM',2],
         #['/GJets_HT-600ToInf_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM',2],
 
         #['/QCD_HT2000toInf_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
@@ -322,8 +322,10 @@ def run_multi():
         #['/WWZ_4F_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v2/AODSIM',1],
         #['/WZ_TuneCP5_13TeV-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',1],
         #['/WZG_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',1],
-        #['/WZZ_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v2/AODSIM',1],
+        #?#['/WZZ_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v2/AODSIM',1],
         #['/WGG_5f_TuneCP5_13TeV_amcatnlo-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',1],
+        #['/ZZ_TuneCP5_13TeV-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',1],
+        #['/ZZZ_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v2/AODSIM',1],
 
     ] 
 
