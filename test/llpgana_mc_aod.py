@@ -231,7 +231,7 @@ if options.multicrab == True : makeTrigList = False
 
 print( "Using options : mutlicrab = ",options.multicrab," geninfo = ",genInfo," filter = ",filterselect )
 print( "Using options : momChase = ",genMomChase," trgiList = ",makeTrigList," probeout = ",probeout ) 
-print( "Using options : doDisEle = ",dode," doSVs = ",dosv," doECALTrackOnly = ",doet )
+print( "Using options : doDisEle = (NU) ",dode," doSVs = ",dosv," doECALTrackOnly = (NU) ",doet )
 print( "Using options : globalTag = ",options.globalTag )
 print( "With output file name : ",options.outputFileName )
 
