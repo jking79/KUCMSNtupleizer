@@ -276,9 +276,13 @@ public :
    std::vector<float>   *rjr_p1Pts;
    std::vector<float>   *rjr_p1Ptxa;
    std::vector<float>   *rjr_p1Ptxb;
+   std::vector<float>   *rjr_p1Pxa;
+   std::vector<float>   *rjr_p1Pxb;
    std::vector<float>   *rjr_p2Pts;
    std::vector<float>   *rjr_p2Ptxa;
    std::vector<float>   *rjr_p2Ptxb;
+   std::vector<float>   *rjr_p2Pxa;
+   std::vector<float>   *rjr_p2Pxb;
    std::vector<float>   *rjr_pHs11;
    std::vector<float>   *rjr_pHs11a;
    std::vector<float>   *rjr_pHs11b;
@@ -565,9 +569,13 @@ public :
    TBranch        *b_rjr_p1Pts;   //!
    TBranch        *b_rjr_p1Ptxa;   //!
    TBranch        *b_rjr_p1Ptxb;   //!
+   TBranch        *b_rjr_p1Pxa;   //!
+   TBranch        *b_rjr_p1Pxb;   //!
    TBranch        *b_rjr_p2Pts;   //!
    TBranch        *b_rjr_p2Ptxa;   //!
    TBranch        *b_rjr_p2Ptxb;   //!
+   TBranch        *b_rjr_p2Pxa;   //!
+   TBranch        *b_rjr_p2Pxb;   //!
    TBranch        *b_rjr_pHs11;   //!
    TBranch        *b_rjr_pHs11a;   //!
    TBranch        *b_rjr_pHs11b;   //!
@@ -867,9 +875,13 @@ void skimtuple_v36::Init( TChain *tree, bool doGenInfo ){
    rjr_p1Pts = 0;
    rjr_p1Ptxa = 0;
    rjr_p1Ptxb = 0;
+   rjr_p1Pxa = 0;
+   rjr_p1Pxb = 0;
    rjr_p2Pts = 0;
    rjr_p2Ptxa = 0;
    rjr_p2Ptxb = 0;
+   rjr_p2Pxa = 0;
+   rjr_p2Pxb = 0;
    rjr_pHs11 = 0;
    rjr_pHs11a = 0;
    rjr_pHs11b = 0;
@@ -1161,9 +1173,13 @@ void skimtuple_v36::Init( TChain *tree, bool doGenInfo ){
    fChain->SetBranchAddress("rjr_p1Pts", &rjr_p1Pts, &b_rjr_p1Pts);
    fChain->SetBranchAddress("rjr_p1Ptxa", &rjr_p1Ptxa, &b_rjr_p1Ptxa);
    fChain->SetBranchAddress("rjr_p1Ptxb", &rjr_p1Ptxb, &b_rjr_p1Ptxb);
+   //fChain->SetBranchAddress("rjr_p1Pxa", &rjr_p1Pxa, &b_rjr_p1Pxa);
+   //fChain->SetBranchAddress("rjr_p1Pxb", &rjr_p1Pxb, &b_rjr_p1Pxb);
    fChain->SetBranchAddress("rjr_p2Pts", &rjr_p2Pts, &b_rjr_p2Pts);
    fChain->SetBranchAddress("rjr_p2Ptxa", &rjr_p2Ptxa, &b_rjr_p2Ptxa);
    fChain->SetBranchAddress("rjr_p2Ptxb", &rjr_p2Ptxb, &b_rjr_p2Ptxb);
+   //fChain->SetBranchAddress("rjr_p2Pxa", &rjr_p2Pxa, &b_rjr_p2Pxa);
+   //fChain->SetBranchAddress("rjr_p2Pxb", &rjr_p2Pxb, &b_rjr_p2Pxb);
    fChain->SetBranchAddress("rjr_pHs11", &rjr_pHs11, &b_rjr_pHs11);
    fChain->SetBranchAddress("rjr_pHs11a", &rjr_pHs11a, &b_rjr_pHs11a);
    fChain->SetBranchAddress("rjr_pHs11b", &rjr_pHs11b, &b_rjr_pHs11b);
@@ -1454,9 +1470,13 @@ void skimtuple_v36::getBranches( Long64_t entry, bool doGenInfo ){
    b_rjr_p1Pts->GetEntry(entry);  //   rjr_p1Pts, &b_rjr_p1Pts);
    b_rjr_p1Ptxa->GetEntry(entry);  //   rjr_p1Ptxa, &b_rjr_p1Ptxa);
    b_rjr_p1Ptxb->GetEntry(entry);  //   rjr_p1Ptxb, &b_rjr_p1Ptxb);
+   //b_rjr_p1Pxa->GetEntry(entry);  //   rjr_p1Ptxa, &b_rjr_p1Ptxa);
+   //b_rjr_p1Pxb->GetEntry(entry);  //   rjr_p1Ptxb, &b_rjr_p1Ptxb);
    b_rjr_p2Pts->GetEntry(entry);  //   rjr_p2Pts, &b_rjr_p2Pts);
    b_rjr_p2Ptxa->GetEntry(entry);  //   rjr_p2Ptxa, &b_rjr_p2Ptxa);
    b_rjr_p2Ptxb->GetEntry(entry);  //   rjr_p2Ptxb, &b_rjr_p2Ptxb);
+   //b_rjr_p2Pxa->GetEntry(entry);  //   rjr_p2Ptxa, &b_rjr_p2Ptxa);
+   //b_rjr_p2Pxb->GetEntry(entry);  //   rjr_p2Ptxb, &b_rjr_p2Ptxb);
    b_rjr_pHs11->GetEntry(entry);  //   rjr_pHs11, &b_rjr_pHs11);
    b_rjr_pHs11a->GetEntry(entry);  //   rjr_pHs11a, &b_rjr_pHs11a);
    b_rjr_pHs11b->GetEntry(entry);  //   rjr_pHs11b, &b_rjr_pHs11b);

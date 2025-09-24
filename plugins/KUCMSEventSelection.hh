@@ -63,7 +63,7 @@ const bool KUCMSEventSelection::selectEvent( ItemManager<float>& geVar ){
     bool hasDSVAl1IsoPhoPlusMinMet100 = ( hasAL1DisSV || hasAL1IsoPhoton ) && hasMinMet100;
     bool hasDSVAl1IsoPhoPlusMinMet125 = ( hasAL1DisSV || hasAL1IsoPhoton ) && hasMinMet125;
 
-	selectionMap["None"] = true;
+	selectionMap["none"] = true;
 	selectionMap["MET150"] = hasMinMet150;
     selectionMap["MET100"] = hasMinMet100;
     selectionMap["MET75"] = hasMinMet75;
@@ -79,8 +79,9 @@ const bool KUCMSEventSelection::selectEvent( ItemManager<float>& geVar ){
 	phoFilter = hasAL1DisSV || hasAL1DisSV;
 
 	//std::cout << "Event select for ntuple with " << eventSelectionTag << " w/ result " << selectionMap[eventSelectionTag] << std::endl;
-	return selectionMap[eventSelectionTag];
-	
+	if( selectionMap.find(eventSelectionTag) != selectionMap.end() ){ return selectionMap[eventSelectionTag]; }
+	else return false;	
+
 }//<<>>const bool KUCMSEventSelection::selectEvent( ItemManager<float>& geVar )
 
 #endif
