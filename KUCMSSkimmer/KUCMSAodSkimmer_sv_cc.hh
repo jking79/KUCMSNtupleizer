@@ -485,6 +485,10 @@ void KUCMSAodSkimmer::processSV(){
   int nHsv = 0;
   int nEle = 0;
   int nMuon = 0;
+  //Z-Window Count
+  int nHadPassZWindow(0);
+  int nElePassZWindow(0);
+  int nMuPassZWindow(0);
   
   if( doEVSVs ){
     for( int svit = 0; svit < nSVs; svit++ ){
@@ -514,10 +518,14 @@ void KUCMSAodSkimmer::processSV(){
 	if(peleid) {
 	  nEle++;
 	  selSV.fillBranch("LeptonicSV_electronIndex", int(svit));
+	  if(tightOnZSelection)
+	    nElePassZWindow++;
 	}
 	if(pmuonid) {
 	  nMuon++;
 	  selSV.fillBranch("LeptonicSV_muonIndex", int(svit));
+	  if(tightOnZSelection)
+            nMuPassZWindow++;
 	}
 
 	selSV.fillBranch("LeptonicSV_passMuonID", pmuonid);
@@ -532,6 +540,9 @@ void KUCMSAodSkimmer::processSV(){
 	selSV.fillBranch( "HadronicSV_massOverNtracks", mass/ntracks);
 	if(doGenInfo)
 	  selSV.fillBranch( "HadronicSV_matchRatio", (*Vertex_matchRatio)[svit]);
+	if(tightOnZSelection)
+	  nHadPassZWindow++;
+
       }
       else continue;
 
@@ -556,6 +567,11 @@ void KUCMSAodSkimmer::processSV(){
   selSV.fillBranch( "SV_nHadronic", nHsv );
   selSV.fillBranch( "SV_nElectron", nEle );
   selSV.fillBranch( "SV_nMuon", nMuon );
+
+  selSV.fillBranch( "SV_nLeptonPassZWindow", unsigned(nMuPassZWindow + nElePassZWindow) );
+  selSV.fillBranch( "SV_nHadronPassZWindow", unsigned(nHadPassZWindow) );
+  selSV.fillBranch( "SV_nElectronPassZWindow", unsigned(nElePassZWindow) );
+  selSV.fillBranch( "SV_nMuonPassZWindow", unsigned(nMuPassZWindow) );
   
   geVars.set("nSVLep", nLsv );
   geVars.set("nSVHad", nHsv );
@@ -2504,6 +2520,11 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
   selSV.makeBranch( "SV_nElectron", INT );
   selSV.makeBranch( "SV_nMuon", INT );
 
+  selSV.makeBranch( "SV_nLeptonPassZWindow", UINT );
+  selSV.makeBranch( "SV_nHadronPassZWindow", UINT );
+  selSV.makeBranch( "SV_nElectronPassZWindow", UINT );
+  selSV.makeBranch( "SV_nMuonPassZWindow", UINT );
+  
   if( doGenInfo ){
     selSV.makeBranch( "HadronicSV_matchRatio", VFLOAT);
     selSV.makeBranch( "LeptonicSV_isGold", VBOOL);
