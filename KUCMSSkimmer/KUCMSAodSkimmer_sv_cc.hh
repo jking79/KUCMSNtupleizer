@@ -628,136 +628,138 @@ void KUCMSAodSkimmer::processMet(){
 
 void KUCMSAodSkimmer::processRechits(){
 
-  // initilize
-  //selECALRecHit.clearBranches(); // <<<<<<<   must do
-  bool checkRHs = false;
-  //bool checkRHs = true;
+	// initilize
+    //selECALRecHit.clearBranches(); // <<<<<<<   must do
+	bool checkRHs = false;
+    //bool checkRHs = true;
 
-  // calc
-  if( DEBUG ) std::cout << "Finding rechits" << std::endl;
-  //------------ rechits -------------------------
+	// calc
+    if( DEBUG ) std::cout << "Finding rechits" << std::endl;
+	//------------ rechits -------------------------
 
-  BayesPoint vtx(1);	
+	BayesPoint vtx(1);	
 
-  std::vector<Jet> jetrhs;
-  auto nRecHits = ECALRecHit_ID->size();
-  if( DEBUG ) std::cout << " -- Looping over " << nRecHits << " rechits" << std::endl;
-  for( int it = 0; it < nRecHits; it++ ){
+	std::vector<Jet> jetrhs;
+    auto nRecHits = ECALRecHit_ID->size();
+    if( DEBUG ) std::cout << " -- Looping over " << nRecHits << " rechits" << std::endl;
+    for( int it = 0; it < nRecHits; it++ ){
 
-    //auto id = (*ECALRecHit_ID)[it];
-    //auto idinfo = DetIDMap[id];
-    //if( idinfo.ecal == ECAL::EB ){
-    if( true ){
+		//auto id = (*ECALRecHit_ID)[it];
+		//auto idinfo = DetIDMap[id];
+		//if( idinfo.ecal == ECAL::EB ){
+        if( true ){
 
-      hist1d[0]->Fill( (*ECALRecHit_energy)[it], 1 );
-      hist1d[1]->Fill( (*ECALRecHit_energy)[it], 1 );
-      hist1d[2]->Fill( (*ECALRecHit_energy)[it], 1 );
-      hist1d[5]->Fill( (*ECALRecHit_time)[it], 1 );
-      //auto radius = hypo( (*rhPosX)[it], (*rhPosY)[it] );
+			hist1d[0]->Fill( (*ECALRecHit_energy)[it], 1 );
+            hist1d[1]->Fill( (*ECALRecHit_energy)[it], 1 );
+            hist1d[2]->Fill( (*ECALRecHit_energy)[it], 1 );
+            hist1d[5]->Fill( (*ECALRecHit_time)[it], 1 );
+			//auto radius = hypo( (*rhPosX)[it], (*rhPosY)[it] );
 
-    }//<<>>if( (*rhSubdet)[it] == 0 )
-    /*
-      float rhe = (*ECALRecHit_energy)[it];
-      float rhx = (*ECALRecHit_rhx)[it];
-      float rhy = (*ECALRecHit_rhy)[it];
-      float rhz = (*ECALRecHit_rhz)[it];
-      float rht = (*ECALRecHit_time)[it];
-      float rheta = (*ECALRecHit_eta)[it];
-      float rhphi = (*ECALRecHit_phi)[it];
-      uInt rhid = (*ECALRecHit_ID)[it];
-      //auto idinfo = timeCali->getDetIdInfo(rhid);
-      //std::cout << " -- TimeCali DetIDInfo : " << idinfo.i2 << " " << idinfo.i1 << " " << idinfo.ecal << std::endl;
-      */
+		}//<<>>if( (*rhSubdet)[it] == 0 )
+/*
+		float rhe = (*ECALRecHit_energy)[it];
+		float rhx = (*ECALRecHit_rhx)[it];
+        float rhy = (*ECALRecHit_rhy)[it];
+        float rhz = (*ECALRecHit_rhz)[it];
+		float rht = (*ECALRecHit_time)[it];
+		float rheta = (*ECALRecHit_eta)[it];
+        float rhphi = (*ECALRecHit_phi)[it];
+		uInt rhid = (*ECALRecHit_ID)[it];
+		//auto idinfo = timeCali->getDetIdInfo(rhid);
+		//std::cout << " -- TimeCali DetIDInfo : " << idinfo.i2 << " " << idinfo.i1 << " " << idinfo.ecal << std::endl;
+*/
 
-    /*
-      JetPoint jrh( rhx, rhy, rhz, rht ); //in nutple units
-      //I also do a cut on rh time to only keep rhs with -20 ns < rh time < 20 ns
-      jrh.SetEnergy(rhe);
-      jrh.SetEta(rheta);
-      jrh.SetPhi(rhphi);
-      jrh.SetWeight(rhe*0.25); //where _gev is some fraction (I have it at 0.25 for now)
-      jrh.SetRecHitId(rhid);
-      //can add to a larger, Jet object (like a photon or supercluster) and call photon.GetJets(rhs) to get these rhs as “Jet” objects
-      //or can recast them here as Jets with the line below
-      Jet jet( jrh, vtx );
-      jetrhs.push_back(jet);
-    */
+/*
+		JetPoint jrh( rhx, rhy, rhz, rht ); //in nutple units
+		//I also do a cut on rh time to only keep rhs with -20 ns < rh time < 20 ns
+		jrh.SetEnergy(rhe);
+		jrh.SetEta(rheta);
+		jrh.SetPhi(rhphi);
+		jrh.SetWeight(rhe*0.25); //where _gev is some fraction (I have it at 0.25 for now)
+		jrh.SetRecHitId(rhid);
+		//can add to a larger, Jet object (like a photon or supercluster) and call photon.GetJets(rhs) to get these rhs as “Jet” objects
+		//or can recast them here as Jets with the line below
+		Jet jet( jrh, vtx );
+		jetrhs.push_back(jet);
+*/
 
-  }//<<>>for( int it = 0; it < nRecHits; it++ )
+	}//<<>>for( int it = 0; it < nRecHits; it++ )
 
-  /*
-  //std::cout << " -- Running BayesCluster :" << std::endl;
-  BayesCluster *algo = new BayesCluster(jetrhs);
-  GaussianMixture* gmm = algo->SubCluster();
-  int nclusters = gmm->GetNClusters();
-  for(int k = 0; k < nclusters; k++){
-  map<string, Matrix> params = gmm->GetLHPosteriorParameters(k);
-  double ec = params["mean"].at(0,0); //eta center of subcluster
-  double pc = params["mean"].at(1,0); //phi center of subcluster
-  double tc = params["mean"].at(2,0); //time center of subcluster
-  Matrix cov = params["cov"]; //3x3 covariance matrix of subcluster 
-  //std::cout << " --- BayesCluster " << k << " ec " << ec << " pc " << pc << " tc " << tc << std::endl;
-  }//<<>>for(int k = 0; k < nclusters; k++)
-  delete algo;
-  */
+/*
+	//std::cout << " -- Running BayesCluster :" << std::endl;
+	BayesCluster *algo = new BayesCluster(jetrhs);
+	GaussianMixture* gmm = algo->SubCluster();
+	int nclusters = gmm->GetNClusters();
+	for(int k = 0; k < nclusters; k++){
+		map<string, Matrix> params = gmm->GetLHPosteriorParameters(k);
+		double ec = params["mean"].at(0,0); //eta center of subcluster
+		double pc = params["mean"].at(1,0); //phi center of subcluster
+		double tc = params["mean"].at(2,0); //time center of subcluster
+		Matrix cov = params["cov"]; //3x3 covariance matrix of subcluster 
+		//std::cout << " --- BayesCluster " << k << " ec " << ec << " pc " << pc << " tc " << tc << std::endl;
+	}//<<>>for(int k = 0; k < nclusters; k++)
+	delete algo;
+*/
 
-  int nMissingRechits = 0;
-  int nRechitsPerSC = 0;
-  auto nSCs = SuperCluster_nSuperCluster;
-  for( int it = 0; it < nSCs; it++ ){
+    int nMissingRechits = 0;
+	int nRechitsPerSC = 0;
+	auto nSCs = SuperCluster_nSuperCluster;
+	for( int it = 0; it < nSCs; it++ ){
 
-    int nMissingRhInSC = 0;
-    bool oot = (*SuperCluster_isOot)[it];
-    bool exc = (*SuperCluster_excluded)[it];
-    bool orig = (*SuperCluster_original)[it];
-    float sce = (*SuperCluster_energyRaw)[it];
-    hist1d[6]->Fill( (*SuperCluster_energyRaw)[it], 1 );
-    //hist1d[3] = new TH1D("sctype","SC !Orig, Orig, OOT, Excl",4,0,4);
-    //hist1d[4] = new TH1D("scorigtype","Orig+OOT, Orig+!OOT, Orig+Exc, !Orig+OOT, !Orig+Exc, !Orig+!OOT",6,0,6);
-    if( orig ) hist1d[3]->Fill(1); else hist1d[3]->Fill(0);
-    if( oot ) hist1d[3]->Fill(2);
-    if( exc ) hist1d[3]->Fill(3);
-    if( orig && oot ) hist1d[4]->Fill(0);
-    if( orig && not oot ) hist1d[4]->Fill(1);
-    if( orig && exc ) hist1d[4]->Fill(2);
-    if( not orig && oot ) hist1d[4]->Fill(3);
-    if( not orig && not oot ) hist1d[4]->Fill(5);
-    if( not orig && exc ) hist1d[4]->Fill(4);
-    int xfill = orig ? 1 : 0;
-    int yfill = oot ? 1 : exc ? 2 : 0;
-    hist2d[1]->Fill(xfill,yfill);
+		int nMissingRhInSC = 0;
+		bool oot = (*SuperCluster_isOot)[it];
+		bool exc = (*SuperCluster_excluded)[it];
+		bool orig = (*SuperCluster_original)[it];
+		float sce = (*SuperCluster_energyRaw)[it];
+		float sceta = (*SuperCluster_eta)[it];
+		hist1d[6]->Fill( (*SuperCluster_energyRaw)[it], 1 );
+    	//hist1d[3] = new TH1D("sctype","SC !Orig, Orig, OOT, Excl",4,0,4);
+    	//hist1d[4] = new TH1D("scorigtype","Orig+OOT, Orig+!OOT, Orig+Exc, !Orig+OOT, !Orig+Exc, !Orig+!OOT",6,0,6);
+		if( orig ) hist1d[3]->Fill(1); else hist1d[3]->Fill(0);
+        if( oot ) hist1d[3]->Fill(2);
+        if( exc ) hist1d[3]->Fill(3);
+		if( orig && oot ) hist1d[4]->Fill(0);
+        if( orig && not oot ) hist1d[4]->Fill(1);
+        if( orig && exc ) hist1d[4]->Fill(2);
+        if( not orig && oot ) hist1d[4]->Fill(3);
+        if( not orig && not oot ) hist1d[4]->Fill(5);
+        if( not orig && exc ) hist1d[4]->Fill(4);
+		int xfill = orig ? 1 : 0;
+		int yfill = oot ? 1 : exc ? 2 : 0;
+		hist2d[1]->Fill(xfill,yfill);
 
-    std::vector<unsigned int> scrhids = (*SuperCluster_rhIds)[it];
-    int nSCRhids = scrhids.size();
-    if( checkRHs ){
-      bool found = false;
-      nRechitsPerSC += nSCRhids;
-      std::cout << " -- Checking : " << it << " of " << nSCs << " SCs with " << nSCRhids << " rechits. " << std::endl;
-      for( int sciter = 0; sciter < nSCRhids; sciter++  ){ 
-	auto scrhid = scrhids[sciter];
-	for( int iter = 0; iter < nRecHits; iter++ ){
-	  auto rhid = (*ECALRecHit_ID)[iter];
-	  //std::cout << " -- Checking : " << rhid << " == " << scrhid << std::endl;
-	  if( scrhid == rhid ){ found = true; break; } 
-	}//<<>>for( int iter = 0; iter < nRecHits; it++ )
-	if( not found ){ nMissingRechits++; nMissingRhInSC++; }// std::cout << " ---- !!!!!!  Rechit in SC and not in Rechits !!!!!!! " << std::endl;
-      }//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
-    }//<<>>if( checkRHs )		
-    if( nMissingRhInSC > 0 ){
-      std::cout << " -- !! Missing " << nMissingRhInSC << " of " << nSCRhids;
-      std::cout << " rechits in SC " << it << " w/ OOT" << oot << " && ORG " << orig << " rawE " << sce  << std::endl;
-    }//<<>>if( nMissingRhInSC > 0 )
-    hist1d[8]->Fill(nSCRhids);
+        std::vector<unsigned int> scrhids = (*SuperCluster_rhIds)[it];
+		int nSCRhids = scrhids.size();
+		if( checkRHs ){
+		bool found = false;
+		nRechitsPerSC += nSCRhids;
+		std::cout << " -- Checking : " << it << " of " << nSCs << " SCs with " << nSCRhids << " rechits. " << std::endl;
+		for( int sciter = 0; sciter < nSCRhids; sciter++  ){ 
+			auto scrhid = scrhids[sciter];
+			for( int iter = 0; iter < nRecHits; iter++ ){
+				auto rhid = (*ECALRecHit_ID)[iter];
+				//std::cout << " -- Checking : " << rhid << " == " << scrhid << std::endl;
+				if( scrhid == rhid ){ found = true; break; } 
+			}//<<>>for( int iter = 0; iter < nRecHits; it++ )
+			if( not found ){ nMissingRechits++; nMissingRhInSC++; }// std::cout << " ---- !!!!!!  Rechit in SC and not in Rechits !!!!!!! " << std::endl;
+		}//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
+		}//<<>>if( checkRHs )		
+		if( nMissingRhInSC > 0 ){
+			std::cout << " -- !! Missing " << nMissingRhInSC << " of " << nSCRhids;
+		    std::cout << " rechits in SC " << it << " w/ OOT" << oot << " && ORG " << orig << " rawE " << sce  << std::endl;
+		}//<<>>if( nMissingRhInSC > 0 )
+		hist1d[8]->Fill(nSCRhids);
+        hist1d[9]->Fill(sceta);
 
-  }//<<>>for( int it = 0; it < nSCs; it++ )
-  if( checkRHs ){ 
-    float rhpsc = ( nSCs > 0 ) ? nRechitsPerSC/nSCs : 0 ;
-    std::cout << " Ave# rechits/SC : " << rhpsc << std::endl; 
-  }//<<>>if( checkRHs )
-  if( nMissingRechits > 0 ) std::cout << " !! ------ !! Missing " << nMissingRechits << " rechits in " << nSCs << " SCs " << std::endl;
-  // fill
-  auto nETs = Track_pt->size();
-  for( int it = 0; it < nETs; it++ ){ hist1d[7]->Fill( (*Track_pt)[it], 1 ); }
+	}//<<>>for( int it = 0; it < nSCs; it++ )
+	if( checkRHs ){ 
+		float rhpsc = ( nSCs > 0 ) ? nRechitsPerSC/nSCs : 0 ;
+		std::cout << " Ave# rechits/SC : " << rhpsc << std::endl; 
+	}//<<>>if( checkRHs )
+	if( nMissingRechits > 0 ) std::cout << " !! ------ !! Missing " << nMissingRechits << " rechits in " << nSCs << " SCs " << std::endl;
+	// fill
+    auto nETs = Track_pt->size();
+    for( int it = 0; it < nETs; it++ ){ hist1d[7]->Fill( (*Track_pt)[it], 1 ); }
 
 }//<<>>void KUCMSAodSkimmer::processRechits()
 
@@ -1806,332 +1808,343 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
   std::vector< TLorentzVector > hp4;
   std::vector< TLorentzVector > hxp4;
 	
-  int nPhov = pho4vec.size();
-  if( nPhov != phoside.size() ) std::cout << " !!!!!!!  pho4vec - phoside count mismatch !!!!!!!" << std::endl; 
-  int nJetv = jet4vec.size();
-  if( nJetv != jetside.size() ) std::cout << " !!!!!!!  jet4vec - jetside count mismatch !!!!!!!" << std::endl;
-  //std::cout << " nPhov " << nPhov << " phoside " << phoside.size() << " nJetv " << nJetv << " jetside " << jetside.size() << std::endl; 
 
-  TLorentzVector nulltv(0,0,0,0);
-  std::vector< TLorentzVector > pJetSideSum4Vec{nulltv,nulltv,nulltv,nulltv};
-  std::vector< TLorentzVector > phoSideSum4Vec{nulltv,nulltv,nulltv,nulltv};
-  for ( int pit = 0; pit < nPhov; pit++ ){ phoSideSum4Vec[phoside[pit]] += pho4vec[pit]; pJetSideSum4Vec[phoside[pit]] += pho4vec[pit];}
-  std::vector< TLorentzVector > jetSideSum4Vec{nulltv,nulltv,nulltv,nulltv};
-  for ( int jit = 0; jit < nJetv; jit++ ){ jetSideSum4Vec[jetside[jit]] += jet4vec[jit]; pJetSideSum4Vec[jetside[jit]] += jet4vec[jit];}
+	int nPhov = pho4vec.size();
+	if( nPhov != phoside.size() ) std::cout << " !!!!!!!  pho4vec - phoside count mismatch !!!!!!!" << std::endl; 
+	int nJetv = jet4vec.size();
+    if( nJetv != jetside.size() ) std::cout << " !!!!!!!  jet4vec - jetside count mismatch !!!!!!!" << std::endl;
+	//std::cout << " nPhov " << nPhov << " phoside " << phoside.size() << " nJetv " << nJetv << " jetside " << jetside.size() << std::endl; 
 
-  hp4.push_back(S->GetFourVector(pJetSideSum4Vec[0]));//0 J1a
-  hp4.push_back(S->GetFourVector(pJetSideSum4Vec[1]));//1 J2a
-  hp4.push_back(S->GetFourVector(pJetSideSum4Vec[2]));//2 J1b
-  hp4.push_back(S->GetFourVector(pJetSideSum4Vec[3]));//3 J2b
+	TLorentzVector nulltv(0,0,0,0);
+	std::vector< TLorentzVector > pJetSideSum4Vec{nulltv,nulltv,nulltv,nulltv};
+	std::vector< TLorentzVector > phoSideSum4Vec{nulltv,nulltv,nulltv,nulltv};
+	for ( int pit = 0; pit < nPhov; pit++ ){ phoSideSum4Vec[phoside[pit]] += pho4vec[pit]; pJetSideSum4Vec[phoside[pit]] += pho4vec[pit];}
+    std::vector< TLorentzVector > jetSideSum4Vec{nulltv,nulltv,nulltv,nulltv};
+    for ( int jit = 0; jit < nJetv; jit++ ){ jetSideSum4Vec[jetside[jit]] += jet4vec[jit]; pJetSideSum4Vec[jetside[jit]] += jet4vec[jit];}
 
-  selRjrVars.fillBranch( "rjr_sJ1a_px", float(hp4[0].Px()) );
-  selRjrVars.fillBranch( "rjr_sJ1a_py", float(hp4[0].Py()) );
-  selRjrVars.fillBranch( "rjr_sJ1a_pz", float(hp4[0].Pz()) );
-  selRjrVars.fillBranch( "rjr_sJ1a_e", float(hp4[0].E()) );
+    hp4.push_back(S->GetFourVector(pJetSideSum4Vec[0]));//0 J1a
+    hp4.push_back(S->GetFourVector(pJetSideSum4Vec[1]));//1 J2a
+    hp4.push_back(S->GetFourVector(pJetSideSum4Vec[2]));//2 J1b
+    hp4.push_back(S->GetFourVector(pJetSideSum4Vec[3]));//3 J2b
 
-  selRjrVars.fillBranch( "rjr_sJ2a_px", float(hp4[1].Px()) );
-  selRjrVars.fillBranch( "rjr_sJ2a_py", float(hp4[1].Py()) );
-  selRjrVars.fillBranch( "rjr_sJ1a_pz", float(hp4[1].Pz()) );
-  selRjrVars.fillBranch( "rjr_sJ1a_e", float(hp4[1].E()) );
+    selRjrVars.fillBranch( "rjr_sJ1a_px", float(hp4[0].Px()) );
+    selRjrVars.fillBranch( "rjr_sJ1a_py", float(hp4[0].Py()) );
+    selRjrVars.fillBranch( "rjr_sJ1a_pz", float(hp4[0].Pz()) );
+    selRjrVars.fillBranch( "rjr_sJ1a_e", float(hp4[0].E()) );
 
-  selRjrVars.fillBranch( "rjr_sJ1b_px", float(hp4[2].Px()) );
-  selRjrVars.fillBranch( "rjr_sJ1b_py", float(hp4[2].Py()) );
-  selRjrVars.fillBranch( "rjr_sJ1b_pz", float(hp4[2].Pz()) );
-  selRjrVars.fillBranch( "rjr_sJ1b_e", float(hp4[2].E()) );
+    selRjrVars.fillBranch( "rjr_sJ2a_px", float(hp4[1].Px()) );
+    selRjrVars.fillBranch( "rjr_sJ2a_py", float(hp4[1].Py()) );
+    selRjrVars.fillBranch( "rjr_sJ2a_pz", float(hp4[1].Pz()) );
+    selRjrVars.fillBranch( "rjr_sJ2a_e", float(hp4[1].E()) );
 
-  selRjrVars.fillBranch( "rjr_sJ2b_px", float(hp4[3].Px()) );
-  selRjrVars.fillBranch( "rjr_sJ2b_py", float(hp4[3].Py()) );
-  selRjrVars.fillBranch( "rjr_sJ2b_pz", float(hp4[3].Pz()) );
-  selRjrVars.fillBranch( "rjr_sJ2b_e", float(hp4[3].E()) );
+    selRjrVars.fillBranch( "rjr_sJ1b_px", float(hp4[2].Px()) );
+    selRjrVars.fillBranch( "rjr_sJ1b_py", float(hp4[2].Py()) );
+    selRjrVars.fillBranch( "rjr_sJ1b_pz", float(hp4[2].Pz()) );
+    selRjrVars.fillBranch( "rjr_sJ1b_e", float(hp4[2].E()) );
 
-  float x1sp = ( X1a->GetFourVector(*S) + X1b->GetFourVector(*S) ).P();
-  float x1asp = ( X1a->GetFourVector(*S) ).P();
-  float x1bsp = ( X1b->GetFourVector(*S) ).P();
+    selRjrVars.fillBranch( "rjr_sJ2b_px", float(hp4[3].Px()) );
+    selRjrVars.fillBranch( "rjr_sJ2b_py", float(hp4[3].Py()) );
+    selRjrVars.fillBranch( "rjr_sJ2b_pz", float(hp4[3].Pz()) );
+    selRjrVars.fillBranch( "rjr_sJ2b_e", float(hp4[3].E()) );
 
-  hp4.push_back( hp4[0] + hp4[1] );//4 Ja
-  hp4.push_back( hp4[2] + hp4[3] );//5 Jb
+	float x1sp = ( X1a->GetFourVector(*S) + X1b->GetFourVector(*S) ).P();
+	float x1asp = ( X1a->GetFourVector(*S) ).P();
+    float x1bsp = ( X1b->GetFourVector(*S) ).P();
 
-  float phs20 = hp4[4].P() + hp4[5].P();
-  float phs40 = hp4[0].P() + hp4[1].P() + hp4[2].P() + hp4[3].P();
-  float phs21 = phs20 + x1sp;
-  float phs41 = phs40 + x1sp;
+    hp4.push_back( hp4[0] + hp4[1] );//4 Ja
+    hp4.push_back( hp4[2] + hp4[3] );//5 Jb
 
-  float phs21a = hp4[0].P() + hp4[1].P() + x1asp;
-  float phs21b = hp4[2].P() + hp4[3].P() + x1bsp;
-  float phs11a = hp4[4].P() + x1asp;
-  float phs11b = hp4[5].P() + x1bsp;
+    float phs20 = hp4[4].P() + hp4[5].P();
+    float phs40 = hp4[0].P() + hp4[1].P() + hp4[2].P() + hp4[3].P();
+    float phs21 = phs20 + x1sp;
+    float phs41 = phs40 + x1sp;
 
-  selRjrVars.fillBranch( "rjr_pHs20", phs20 );
-  selRjrVars.fillBranch( "rjr_pHs40", phs40 );
-  selRjrVars.fillBranch( "rjr_pHs21", phs21 );
-  selRjrVars.fillBranch( "rjr_pHs41", phs41 );
-  selRjrVars.fillBranch( "rjr_pHs21a", phs21a );
-  selRjrVars.fillBranch( "rjr_pHs21b", phs21b );
-  selRjrVars.fillBranch( "rjr_pHs11a", phs11a );
-  selRjrVars.fillBranch( "rjr_pHs11b", phs11b );
+    float phs21a = hp4[0].P() + hp4[1].P() + x1asp;
+    float phs21b = hp4[2].P() + hp4[3].P() + x1bsp;
+    float phs11a = hp4[4].P() + x1asp;
+    float phs11b = hp4[5].P() + x1bsp;
 
-  hxp4.push_back(X2a->GetFourVector(pJetSideSum4Vec[0]));//0
-  hxp4.push_back(X2a->GetFourVector(pJetSideSum4Vec[1]));//1
-  hxp4.push_back(X1a->GetFourVector(*X2a));//2
-  hxp4.push_back(X2b->GetFourVector(pJetSideSum4Vec[2]));//3
-  hxp4.push_back(X2b->GetFourVector(pJetSideSum4Vec[3]));//4
-  hxp4.push_back(X1b->GetFourVector(*X2b));//5
+    selRjrVars.fillBranch( "rjr_pHs20", phs20 );
+    selRjrVars.fillBranch( "rjr_pHs40", phs40 );
+    selRjrVars.fillBranch( "rjr_pHs21", phs21 );
+    selRjrVars.fillBranch( "rjr_pHs41", phs41 );
+    selRjrVars.fillBranch( "rjr_pHs21a", phs21a );
+    selRjrVars.fillBranch( "rjr_pHs21b", phs21b );
+    selRjrVars.fillBranch( "rjr_pHs11a", phs11a );
+    selRjrVars.fillBranch( "rjr_pHs11b", phs11b );
 
-  hxp4.push_back( hxp4[0] + hxp4[1] );//6
-  hxp4.push_back( hxp4[3] + hxp4[4] );//7
+    hxp4.push_back(X2a->GetFourVector(pJetSideSum4Vec[0]));//0
+    hxp4.push_back(X2a->GetFourVector(pJetSideSum4Vec[1]));//1
+    hxp4.push_back(X1a->GetFourVector(*X2a));//2
+    hxp4.push_back(X2b->GetFourVector(pJetSideSum4Vec[2]));//3
+    hxp4.push_back(X2b->GetFourVector(pJetSideSum4Vec[3]));//4
+    hxp4.push_back(X1b->GetFourVector(*X2b));//5
 
-  float phxa20 = hxp4[0].P() + hxp4[1].P();
-  float phxb20 = hxp4[3].P() + hxp4[4].P();
-  float phxa21 = phxa20 + hxp4[2].P();
-  float phxb21 = phxb20 + hxp4[5].P();
-  float phxa10 = hxp4[6].P();
-  float phxb10 = hxp4[7].P();
-  float phxa11 = hxp4[6].P() + hxp4[2].P();
-  float phxb11 = hxp4[7].P() + hxp4[5].P();
+    hxp4.push_back( hxp4[0] + hxp4[1] );//6
+    hxp4.push_back( hxp4[3] + hxp4[4] );//7
 
-  selRjrVars.fillBranch( "rjr_pHxa20", phxa20 );
-  selRjrVars.fillBranch( "rjr_pHxb20", phxb20 );
-  selRjrVars.fillBranch( "rjr_pHxa21", phxa21 );
-  selRjrVars.fillBranch( "rjr_pHxb21", phxb21 );
-  selRjrVars.fillBranch( "rjr_pHxa10", phxa10 );
-  selRjrVars.fillBranch( "rjr_pHxb10", phxb10 );
-  selRjrVars.fillBranch( "rjr_pHxa11", phxa11 );
-  selRjrVars.fillBranch( "rjr_pHxb11", phxb11 );
+    float phxa20 = hxp4[0].P() + hxp4[1].P();
+    float phxb20 = hxp4[3].P() + hxp4[4].P();
+    float phxa21 = phxa20 + hxp4[2].P();
+    float phxb21 = phxb20 + hxp4[5].P();
+    float phxa10 = hxp4[6].P();
+    float phxb10 = hxp4[7].P();
+    float phxa11 = hxp4[6].P() + hxp4[2].P();
+    float phxb11 = hxp4[7].P() + hxp4[5].P();
 
-  float pj1apt = S->GetTransverseMomentum(pJetSideSum4Vec[0]);
-  float pj2apt = S->GetTransverseMomentum(pJetSideSum4Vec[1]);
-  float pj1bpt = S->GetTransverseMomentum(pJetSideSum4Vec[2]);
-  float pj2bpt = S->GetTransverseMomentum(pJetSideSum4Vec[3]);
-  float pjapt = S->GetTransverseMomentum(pJetSideSum4Vec[0]+pJetSideSum4Vec[1]);
-  float pjbpt = S->GetTransverseMomentum(pJetSideSum4Vec[2]+pJetSideSum4Vec[3]);
+    selRjrVars.fillBranch( "rjr_pHxa20", phxa20 );
+    selRjrVars.fillBranch( "rjr_pHxb20", phxb20 );
+    selRjrVars.fillBranch( "rjr_pHxa21", phxa21 );
+    selRjrVars.fillBranch( "rjr_pHxb21", phxb21 );
+    selRjrVars.fillBranch( "rjr_pHxa10", phxa10 );
+    selRjrVars.fillBranch( "rjr_pHxb10", phxb10 );
+    selRjrVars.fillBranch( "rjr_pHxa11", phxa11 );
+    selRjrVars.fillBranch( "rjr_pHxb11", phxb11 );
 
-  float x1spt = S->GetTransverseMomentum( X1a->GetFourVector(*LAB) + X1b->GetFourVector(*LAB) );
-  float x1aspt = S->GetTransverseMomentum( X1a->GetFourVector(*LAB) );
-  float x1bspt = S->GetTransverseMomentum( X1b->GetFourVector(*LAB) );
+    float pj1apt = S->GetTransverseMomentum(pJetSideSum4Vec[0]);
+    float pj2apt = S->GetTransverseMomentum(pJetSideSum4Vec[1]);
+    float pj1bpt = S->GetTransverseMomentum(pJetSideSum4Vec[2]);
+    float pj2bpt = S->GetTransverseMomentum(pJetSideSum4Vec[3]);
+    float pjapt = S->GetTransverseMomentum(pJetSideSum4Vec[0]+pJetSideSum4Vec[1]);
+    float pjbpt = S->GetTransverseMomentum(pJetSideSum4Vec[2]+pJetSideSum4Vec[3]);
 
-  float phts20 = pjapt + pjbpt;
-  float phts40 = pj1apt + pj2apt + pj1bpt + pj2bpt;
-  float phts21 = phts20 + x1spt;
-  float phts41 = phts40 + x1spt;
+	float x1spt = S->GetTransverseMomentum( X1a->GetFourVector(*LAB) + X1b->GetFourVector(*LAB) );
+    float x1aspt = S->GetTransverseMomentum( X1a->GetFourVector(*LAB) );
+    float x1bspt = S->GetTransverseMomentum( X1b->GetFourVector(*LAB) );
 
-  float phts21a = pj1apt + pj2apt + x1aspt;
-  float phts21b = pj1bpt + pj2bpt + x1bspt;
-  float phts11a = pjapt + x1aspt;
-  float phts11b = pjbpt + x1bspt;
+    float phts20 = pjapt + pjbpt;
+    float phts40 = pj1apt + pj2apt + pj1bpt + pj2bpt;
+    float phts21 = phts20 + x1spt;
+    float phts41 = phts40 + x1spt;
 
-  selRjrVars.fillBranch( "rjr_pHts20", pjapt + pjbpt );
-  selRjrVars.fillBranch( "rjr_pHts40", pj1apt + pj2apt + pj1bpt + pj2bpt );
-  selRjrVars.fillBranch( "rjr_pHts21", phts21 );
-  selRjrVars.fillBranch( "rjr_pHts41", phts41 );
-  selRjrVars.fillBranch( "rjr_pHts21a", phts21a );
-  selRjrVars.fillBranch( "rjr_pHts21b", phts21b );
-  selRjrVars.fillBranch( "rjr_pHts11a", phts11a );
-  selRjrVars.fillBranch( "rjr_pHts11b", phts11b );
+    float phts21a = pj1apt + pj2apt + x1aspt;
+    float phts21b = pj1bpt + pj2bpt + x1bspt;
+    float phts11a = pjapt + x1aspt;
+    float phts11b = pjbpt + x1bspt;
 
-  float ptj1apt = X2a->GetTransverseMomentum(pJetSideSum4Vec[0]);
-  float ptj2apt = X2a->GetTransverseMomentum(pJetSideSum4Vec[1]);
-  float ptx1apt = X2a->GetTransverseMomentum(X1a->GetFourVector(*LAB));
-  float ptj1bpt = X2b->GetTransverseMomentum(pJetSideSum4Vec[2]);
-  float ptj2bpt = X2b->GetTransverseMomentum(pJetSideSum4Vec[3]);
-  float ptx1bpt = X2b->GetTransverseMomentum(X1b->GetFourVector(*LAB));
-  float ptj12apt = X2a->GetTransverseMomentum(pJetSideSum4Vec[0]+pJetSideSum4Vec[1]);
-  float ptj12bpt = X2b->GetTransverseMomentum(pJetSideSum4Vec[2]+pJetSideSum4Vec[3]);
+    selRjrVars.fillBranch( "rjr_pHts20", pjapt + pjbpt );
+    selRjrVars.fillBranch( "rjr_pHts40", pj1apt + pj2apt + pj1bpt + pj2bpt );
+    selRjrVars.fillBranch( "rjr_pHts21", phts21 );
+    selRjrVars.fillBranch( "rjr_pHts41", phts41 );
+    selRjrVars.fillBranch( "rjr_pHts21a", phts21a );
+    selRjrVars.fillBranch( "rjr_pHts21b", phts21b );
+    selRjrVars.fillBranch( "rjr_pHts11a", phts11a );
+    selRjrVars.fillBranch( "rjr_pHts11b", phts11b );
 
-  float phtxa20 = ptj1apt + ptj2apt;
-  float phtxb20 = ptj1bpt + ptj2bpt;
-  float phtxa21 = phtxa20 + ptx1apt;
-  float phtxb21 = phtxb20 + ptx1bpt;
-  float phtxa10 = ptj12apt;
-  float phtxb10 = ptj12bpt;
-  float phtxa11 = ptj12apt + ptx1apt;
-  float phtxb11 = ptj12bpt + ptx1bpt;
+    float ptj1apt = X2a->GetTransverseMomentum(pJetSideSum4Vec[0]);
+    float ptj2apt = X2a->GetTransverseMomentum(pJetSideSum4Vec[1]);
+    float ptx1apt = X2a->GetTransverseMomentum(X1a->GetFourVector(*LAB));
+    float ptj1bpt = X2b->GetTransverseMomentum(pJetSideSum4Vec[2]);
+    float ptj2bpt = X2b->GetTransverseMomentum(pJetSideSum4Vec[3]);
+    float ptx1bpt = X2b->GetTransverseMomentum(X1b->GetFourVector(*LAB));
+    float ptj12apt = X2a->GetTransverseMomentum(pJetSideSum4Vec[0]+pJetSideSum4Vec[1]);
+    float ptj12bpt = X2b->GetTransverseMomentum(pJetSideSum4Vec[2]+pJetSideSum4Vec[3]);
 
-  selRjrVars.fillBranch( "rjr_pHtxa20", phtxa20 );
-  selRjrVars.fillBranch( "rjr_pHtxb20", phtxb20 );
-  selRjrVars.fillBranch( "rjr_pHtxa21", phtxa21 );
-  selRjrVars.fillBranch( "rjr_pHtxb21", phtxb21 );
-  selRjrVars.fillBranch( "rjr_pHtxa10", phtxa10 );
-  selRjrVars.fillBranch( "rjr_pHtxb10", phtxb10 );
-  selRjrVars.fillBranch( "rjr_pHtxa11", phtxa11 );
-  selRjrVars.fillBranch( "rjr_pHtxb11", phtxb11 );
+    float phtxa20 = ptj1apt + ptj2apt;
+    float phtxb20 = ptj1bpt + ptj2bpt;
+    float phtxa21 = phtxa20 + ptx1apt;
+    float phtxb21 = phtxb20 + ptx1bpt;
+    float phtxa10 = ptj12apt;
+    float phtxb10 = ptj12bpt;
+    float phtxa11 = ptj12apt + ptx1apt;
+    float phtxb11 = ptj12bpt + ptx1bpt;
 
-  float phopt1 = 0;
-  float phopt2 = 0;
+    selRjrVars.fillBranch( "rjr_pHtxa20", phtxa20 );
+    selRjrVars.fillBranch( "rjr_pHtxb20", phtxb20 );
+    selRjrVars.fillBranch( "rjr_pHtxa21", phtxa21 );
+    selRjrVars.fillBranch( "rjr_pHtxb21", phtxb21 );
+    selRjrVars.fillBranch( "rjr_pHtxa10", phtxa10 );
+    selRjrVars.fillBranch( "rjr_pHtxb10", phtxb10 );
+    selRjrVars.fillBranch( "rjr_pHtxa11", phtxa11 );
+    selRjrVars.fillBranch( "rjr_pHtxb11", phtxb11 );
 
-  if( nPhov > 0 ) phopt1 = S->GetTransverseMomentum( pho4vec[0] );
-  if( nPhov > 1 ) phopt2 = S->GetTransverseMomentum( pho4vec[1] );
-  //if( nPhov > 0 ) phopt1 = S->GetFourVector( pho4vec[0] ).P();
-  //if( nPhov > 1 ) phopt2 = S->GetFourVector( pho4vec[1] ).P();
+	float phopt1 = 0;
+    float phopt2 = 0;
 
-  selRjrVars.fillBranch( "rjr_p1Pts", phopt1 );
-  selRjrVars.fillBranch( "rjr_p2Pts", phopt2 );
+	if( nPhov > 0 ) phopt1 = S->GetTransverseMomentum( pho4vec[0] );
+    if( nPhov > 1 ) phopt2 = S->GetTransverseMomentum( pho4vec[1] );
+    //if( nPhov > 0 ) phopt1 = S->GetFourVector( pho4vec[0] ).P();
+    //if( nPhov > 1 ) phopt2 = S->GetFourVector( pho4vec[1] ).P();
 
-  float phopt1xa = 0;
-  float phopt1xb = 0;
-  float phopt2xa = 0;
-  float phopt2xb = 0;
+    selRjrVars.fillBranch( "rjr_p1Pts", phopt1 );
+    selRjrVars.fillBranch( "rjr_p2Pts", phopt2 );
 
-  if( nPhov > 0 ){ 
-    if( phoside[0] < 2 ) phopt1xa = X2a->GetTransverseMomentum( pho4vec[0] );
-    else phopt1xb = X2b->GetTransverseMomentum( pho4vec[0] );
-  }//<<>>if( nPhov > 0 )
-  if( nPhov > 1 ){ 
-    if( phoside[1] < 2 ) phopt2xa = X2a->GetTransverseMomentum( pho4vec[1] );
-    else phopt2xb = X2b->GetTransverseMomentum( pho4vec[1] );
-  }//<<>>if( nPhov > 1 )
-  /*
+    float phopt1xa = 0;
+    float phopt1xb = 0;
+    float phopt2xa = 0;
+    float phopt2xb = 0;
+
+    if( nPhov > 0 ){ 
+		if( phoside[0] < 2 ) phopt1xa = X2a->GetTransverseMomentum( pho4vec[0] );
+		else phopt1xb = X2b->GetTransverseMomentum( pho4vec[0] );
+	}//<<>>if( nPhov > 0 )
+    if( nPhov > 1 ){ 
+		if( phoside[1] < 2 ) phopt2xa = X2a->GetTransverseMomentum( pho4vec[1] );
+        else phopt2xb = X2b->GetTransverseMomentum( pho4vec[1] );
+	}//<<>>if( nPhov > 1 )
+
+    float phop1xa = 0;
+    float phop1xb = 0;
+    float phop2xa = 0;
+    float phop2xb = 0;
+
     if( nPhov > 0 ){
-    if( phoside[0] < 2 ) phopt1xa = X2a->GetFourVector( pho4vec[0] ).P();
-    else phopt1xb = X2b->GetFourVector( pho4vec[0] ).P();
+        if( phoside[0] < 2 ) phop1xa = X2a->GetFourVector( pho4vec[0] ).P();
+        else phop1xb = X2b->GetFourVector( pho4vec[0] ).P();
     }//<<>>if( nPhov > 0 )
     if( nPhov > 1 ){
-    if( phoside[1] < 2 ) phopt2xa = X2a->GetFourVector( pho4vec[1] ).P();
-    else phopt2xb = X2b->GetFourVector( pho4vec[1] ).P();
+        if( phoside[1] < 2 ) phop2xa = X2a->GetFourVector( pho4vec[1] ).P();
+        else phop2xb = X2b->GetFourVector( pho4vec[1] ).P();
     }//<<>>if( nPhov > 1 )
-  */
 
-  selRjrVars.fillBranch( "rjr_p1Ptxa", phopt1xa );
-  selRjrVars.fillBranch( "rjr_p1Ptxb", phopt1xb );
-  selRjrVars.fillBranch( "rjr_p2Ptxa", phopt2xa );
-  selRjrVars.fillBranch( "rjr_p2Ptxb", phopt2xb );
 
-  std::vector< TLorentzVector > p4;
-  p4.push_back(Ja->GetFourVector(*S));
-  p4.push_back(Jb->GetFourVector(*S));
-  p4.push_back(X1a->GetFourVector(*S));
-  p4.push_back(X1b->GetFourVector(*S));
+    selRjrVars.fillBranch( "rjr_p1Ptxa", phopt1xa );
+    selRjrVars.fillBranch( "rjr_p1Ptxb", phopt1xb );
+    selRjrVars.fillBranch( "rjr_p2Ptxa", phopt2xa );
+    selRjrVars.fillBranch( "rjr_p2Ptxb", phopt2xb );
 
-  float pHs22 = p4[0].P() + p4[1].P() + p4[2].P() + p4[3].P();
-  float pHs11 =  ( p4[0] + p4[1] ).P() + ( p4[2] + p4[3] ).P();
+    selRjrVars.fillBranch( "rjr_p1Pxa", phop1xa );
+    selRjrVars.fillBranch( "rjr_p1Pxb", phop1xb );
+    selRjrVars.fillBranch( "rjr_p2Pxa", phop2xa );
+    selRjrVars.fillBranch( "rjr_p2Pxb", phop2xb );
 
-  float pHJas = Ja->GetTransverseMomentum(*S);
-  float pHJbs = Jb->GetTransverseMomentum(*S);
-  float pHX1as = X1a->GetTransverseMomentum(*S);
-  float pHX1bs = X1b->GetTransverseMomentum(*S);
-  float pHJs = S->GetTransverseMomentum( Ja->GetFourVector(*LAB) + Jb->GetFourVector(*LAB) );
-  float pHX1s = S->GetTransverseMomentum( X1a->GetFourVector(*LAB) + X1b->GetFourVector(*LAB) );
+	std::vector< TLorentzVector > p4;
+	p4.push_back(Ja->GetFourVector(*S));
+    p4.push_back(Jb->GetFourVector(*S));
+    p4.push_back(X1a->GetFourVector(*S));
+    p4.push_back(X1b->GetFourVector(*S));
 
-  float pHts22 = pHJas + pHJbs + pHX1as + pHX1bs;
-  float pHts11 = pHJs + pHX1s;
+	float pHs22 = p4[0].P() + p4[1].P() + p4[2].P() + p4[3].P();
+    float pHs11 =  ( p4[0] + p4[1] ).P() + ( p4[2] + p4[3] ).P();
 
-  float Rs = (phxa11+phxb11)/pHs22;
-  float Rxa = phxa10/phxa20;
-  float Rxb = phxb10/phxb20;
-  float Rx = hypo(phxa11/phxa21,phxb11/phxb21);
+    float pHJas = Ja->GetTransverseMomentum(*S);
+    float pHJbs = Jb->GetTransverseMomentum(*S);
+    float pHX1as = X1a->GetTransverseMomentum(*S);
+    float pHX1bs = X1b->GetTransverseMomentum(*S);
+	float pHJs = S->GetTransverseMomentum( Ja->GetFourVector(*LAB) + Jb->GetFourVector(*LAB) );
+    float pHX1s = S->GetTransverseMomentum( X1a->GetFourVector(*LAB) + X1b->GetFourVector(*LAB) );
 
-  selRjrVars.fillBranch( "rjr_pHs22", pHs22 );
-  selRjrVars.fillBranch( "rjr_pHs11", pHs11 );
-  selRjrVars.fillBranch( "rjr_pHts22", pHts22 );
-  selRjrVars.fillBranch( "rjr_pHts11", pHts11 );
+	float pHts22 = pHJas + pHJbs + pHX1as + pHX1bs;
+	float pHts11 = pHJs + pHX1s;
 
-  for( int i = 0; i < 4; i++ ){
+	float Rs = (phxa11+phxb11)/pHs22;
+	float Rxa = phxa10/phxa20;
+    float Rxb = phxb10/phxb20;
+	float Rx = hypo(phxa11/phxa21,phxb11/phxb21);
 
-    float px = p4[i].Px();
-    float py = p4[i].Py(); 
-    float pz = p4[i].Pz(); 
-    float e = sqrt( px*px + py*py + pz*pz );
-    p4[i].SetPxPyPzE(px,py,pz,e);	
+    selRjrVars.fillBranch( "rjr_pHs22", pHs22 );
+    selRjrVars.fillBranch( "rjr_pHs11", pHs11 );
+    selRjrVars.fillBranch( "rjr_pHts22", pHts22 );
+    selRjrVars.fillBranch( "rjr_pHts11", pHts11 );
 
-  }//<<>>for( int i = 0; i < 4; i++ )
+	for( int i = 0; i < 4; i++ ){
 
-  float a_MX2a = ( p4[0] + p4[2] ).M();
-  float a_MX2b = ( p4[1] + p4[3] ).M();
-  float a_MS = ( p4[0] + p4[2] + p4[1] + p4[3] ).M();// -- !! Mr	
+		float px = p4[i].Px();
+		float py = p4[i].Py(); 
+		float pz = p4[i].Pz(); 
+		float e = sqrt( px*px + py*py + pz*pz );
+		p4[i].SetPxPyPzE(px,py,pz,e);	
 
-  float AX2QSum = std::sqrt((sq2(a_MX2a)+sq2(a_MX2b))/2);
-  float AX2NQSum = 2*AX2QSum/a_MS;//*2 -- !! R
-  float AX2Diff = abDiffSide*(a_MX2a-a_MX2b)/(a_MX2a+a_MX2b);
+	}//<<>>for( int i = 0; i < 4; i++ )
 
-  float pf_pX2a = X2a->GetMomentum(*S);
-  float pf_pX2b = X2b->GetMomentum(*S);
+	float a_MX2a = ( p4[0] + p4[2] ).M();
+	float a_MX2b = ( p4[1] + p4[3] ).M();
+	float a_MS = ( p4[0] + p4[2] + p4[1] + p4[3] ).M();// -- !! Mr	
 
-  selRjrVars.fillBranch( "rjr_Mr", a_MS );
-  selRjrVars.fillBranch( "rjr_R", AX2NQSum );
-  selRjrVars.fillBranch( "rjrAX2Diff", AX2Diff );
+    float AX2QSum = std::sqrt((sq2(a_MX2a)+sq2(a_MX2b))/2);
+    float AX2NQSum = 2*AX2QSum/a_MS;//*2 -- !! R
+    float AX2Diff = abDiffSide*(a_MX2a-a_MX2b)/(a_MX2a+a_MX2b);
 
-  selRjrVars.fillBranch( "rjr_Ms", phs41 );
-  selRjrVars.fillBranch( "rjr_Rs", Rs );
-  selRjrVars.fillBranch( "rjr_Rx", Rx );
-  selRjrVars.fillBranch( "rjr_Rxa", Rxa );
-  selRjrVars.fillBranch( "rjr_Rxb", Rxb );
+    float pf_pX2a = X2a->GetMomentum(*S);
+    float pf_pX2b = X2b->GetMomentum(*S);
 
-  selRjrVars.fillBranch( "rjrX2aPs", pf_pX2a );
-  selRjrVars.fillBranch( "rjrX2bPs", pf_pX2b );
+    selRjrVars.fillBranch( "rjr_Mr", a_MS );
+    selRjrVars.fillBranch( "rjr_R", AX2NQSum );
+    selRjrVars.fillBranch( "rjrAX2Diff", AX2Diff );
 
-  float m_EVa = X2a->GetListVisibleFrames().GetFourVector(*X2a).E();
-  float m_EVb = X2b->GetListVisibleFrames().GetFourVector(*X2b).E();
-  float m_PVa = X2a->GetListVisibleFrames().GetFourVector(*X2a).P();
-  float m_PVb = X2b->GetListVisibleFrames().GetFourVector(*X2b).P();
+    selRjrVars.fillBranch( "rjr_Ms", phs41 );
+    selRjrVars.fillBranch( "rjr_Rs", Rs );
+    selRjrVars.fillBranch( "rjr_Rx", Rx );
+    selRjrVars.fillBranch( "rjr_Rxa", Rxa );
+    selRjrVars.fillBranch( "rjr_Rxb", Rxb );
 
-  float m_MX1a = X1a->GetMass();
-  float m_cosX1a = X1a->GetCosDecayAngle();
-  float m_MX1b = X1b->GetMass();
-  float m_cosX1b = X1b->GetCosDecayAngle();  
-  float x1a_pt = X1a->GetFourVector().Pt();
-  float x1a_eta = X1a->GetFourVector().Eta();
-  float x1a_phi = X1a->GetFourVector().Phi();
-  float x1b_pt = X1b->GetFourVector().Pt();
-  float x1b_eta = X1b->GetFourVector().Eta();
-  float x1b_phi = X1b->GetFourVector().Phi();
+    selRjrVars.fillBranch( "rjrX2aPs", pf_pX2a );
+    selRjrVars.fillBranch( "rjrX2bPs", pf_pX2b );
 
-  float m_MVa = Ja->GetMass();
-  float m_MVb = Jb->GetMass();
+  	float m_EVa = X2a->GetListVisibleFrames().GetFourVector(*X2a).E();
+  	float m_EVb = X2b->GetListVisibleFrames().GetFourVector(*X2b).E();
+  	float m_PVa = X2a->GetListVisibleFrames().GetFourVector(*X2a).P();
+  	float m_PVb = X2b->GetListVisibleFrames().GetFourVector(*X2b).P();
 
-  float m_MVSum = std::sqrt((sq2(m_MVa)+sq2(m_MVb))/2);
-  float m_MVNSum = 2*m_MVSum/a_MS;// -- !! Rv
-  float m_MVab = std::sqrt(sq2(m_MVa)+sq2(m_MVb))/phs40;
+  	float m_MX1a = X1a->GetMass();
+  	float m_cosX1a = X1a->GetCosDecayAngle();
+  	float m_MX1b = X1b->GetMass();
+  	float m_cosX1b = X1b->GetCosDecayAngle();  
+    float x1a_pt = X1a->GetFourVector().Pt();
+    float x1a_eta = X1a->GetFourVector().Eta();
+    float x1a_phi = X1a->GetFourVector().Phi();
+    float x1b_pt = X1b->GetFourVector().Pt();
+    float x1b_eta = X1b->GetFourVector().Eta();
+    float x1b_phi = X1b->GetFourVector().Phi();
 
-  selRjrVars.fillBranch( "rjr_Rv", m_MVNSum );
-  selRjrVars.fillBranch( "rjr_Mva", m_MVa );
-  selRjrVars.fillBranch( "rjr_Mvb", m_MVb );
-  selRjrVars.fillBranch( "rjr_Rm", m_MVab );
+    float m_MVa = Ja->GetMass();
+    float m_MVb = Jb->GetMass();
 
-  float m_PV_lab    = S->GetListVisibleFrames().GetFourVector().P();
-  float m_dphiMET_V = S->GetListVisibleFrames().GetFourVector().Vect().DeltaPhi(ETMiss);
+    float m_MVSum = std::sqrt((sq2(m_MVa)+sq2(m_MVb))/2);
+	float m_MVNSum = 2*m_MVSum/a_MS;// -- !! Rv
+    float m_MVab = std::sqrt(sq2(m_MVa)+sq2(m_MVb))/phs40;
 
-  selRjrVars.fillBranch( "rjrX1aMass", m_MX1a );
-  selRjrVars.fillBranch( "rjrX1aCosA", m_cosX1a );
-  selRjrVars.fillBranch( "rjrX1bMass", m_MX1b );
-  selRjrVars.fillBranch( "rjrX1bCosA", m_cosX1b );
-  selRjrVars.fillBranch( "rjrX1a_Pt", x1a_pt );
-  selRjrVars.fillBranch( "rjrX1a_Eta", x1a_eta );
-  selRjrVars.fillBranch( "rjrX1a_Phi", x1a_phi );
-  selRjrVars.fillBranch( "rjrX1b_Pt", x1b_pt );
-  selRjrVars.fillBranch( "rjrX1b_Eta", x1b_eta );
-  selRjrVars.fillBranch( "rjrX1b_Phi", x1b_phi );
+    selRjrVars.fillBranch( "rjr_Rv", m_MVNSum );
+    selRjrVars.fillBranch( "rjr_Mva", m_MVa );
+    selRjrVars.fillBranch( "rjr_Mvb", m_MVb );
+    selRjrVars.fillBranch( "rjr_Rm", m_MVab );
 
-  selRjrVars.fillBranch( "rjrEVa", m_EVa );
-  selRjrVars.fillBranch( "rjrEVb", m_EVb );
-  selRjrVars.fillBranch( "rjrPVa", m_PVa );
-  selRjrVars.fillBranch( "rjrPVb", m_PVb );
+  	float m_PV_lab    = S->GetListVisibleFrames().GetFourVector().P();
+  	float m_dphiMET_V = S->GetListVisibleFrames().GetFourVector().Vect().DeltaPhi(ETMiss);
 
-  selRjrVars.fillBranch( "rjrPVlab", m_PV_lab );
-  selRjrVars.fillBranch( "rjrDphiMETV", m_dphiMET_V );
+    selRjrVars.fillBranch( "rjrX1aMass", m_MX1a );
+    selRjrVars.fillBranch( "rjrX1aCosA", m_cosX1a );
+    selRjrVars.fillBranch( "rjrX1bMass", m_MX1b );
+    selRjrVars.fillBranch( "rjrX1bCosA", m_cosX1b );
+    selRjrVars.fillBranch( "rjrX1a_Pt", x1a_pt );
+    selRjrVars.fillBranch( "rjrX1a_Eta", x1a_eta );
+    selRjrVars.fillBranch( "rjrX1a_Phi", x1a_phi );
+    selRjrVars.fillBranch( "rjrX1b_Pt", x1b_pt );
+    selRjrVars.fillBranch( "rjrX1b_Eta", x1b_eta );
+    selRjrVars.fillBranch( "rjrX1b_Phi", x1b_phi );
 
-  float rjrMet = hypo(phoRMetCPx,phoRMetCPy);
+    selRjrVars.fillBranch( "rjrEVa", m_EVa );
+    selRjrVars.fillBranch( "rjrEVb", m_EVb );
+    selRjrVars.fillBranch( "rjrPVa", m_PVa );
+    selRjrVars.fillBranch( "rjrPVb", m_PVb );
 
-  selRjrVars.fillBranch( "rjrMET", rjrMet ); 
+    selRjrVars.fillBranch( "rjrPVlab", m_PV_lab );
+    selRjrVars.fillBranch( "rjrDphiMETV", m_dphiMET_V );
 
-  // attempt to use RJR to guess p vector of N2
-  TLorentzVector x1alab = X1a->GetFourVector(*LAB);
-  TLorentzVector x1blab = X1b->GetFourVector(*LAB);
-  float n2apx = x1alab.Px();
-  float n2apy = x1alab.Py();
-  float n2apz = x1alab.Pz();
-  float n2bpx = x1blab.Px();
-  float n2bpy = x1blab.Py();
-  float n2bpz = x1blab.Pz();
-  float n2ap = hypo( n2apx, n2apy, n2apz );
-  float n2bp = hypo( n2bpx, n2bpy, n2bpz );
-  bool aorb = true;
-  //bool aorb = n2ap > n2bp;
-  //bool aorb = isALeadPhoSide;
-  float n2px = ( aorb ) ? n2apx : n2bpx;
-  float n2py = ( aorb ) ? n2apy : n2bpy;
-  float n2pz = ( aorb ) ? n2apz : n2bpz;
-  selRjrVars.fillBranch( "rjrN2Px", n2px );
-  selRjrVars.fillBranch( "rjrN2Py", n2py );
-  selRjrVars.fillBranch( "rjrN2Pz", n2pz );
+	float rjrMet = hypo(phoRMetCPx,phoRMetCPy);
+
+    selRjrVars.fillBranch( "rjrMET", rjrMet ); 
+
+	// attempt to use RJR to guess p vector of N2
+    TLorentzVector x1alab = X1a->GetFourVector(*LAB);
+    TLorentzVector x1blab = X1b->GetFourVector(*LAB);
+	float n2apx = x1alab.Px();
+    float n2apy = x1alab.Py();
+    float n2apz = x1alab.Pz();
+	float n2bpx = x1blab.Px();
+    float n2bpy = x1blab.Py();
+    float n2bpz = x1blab.Pz();
+	float n2ap = hypo( n2apx, n2apy, n2apz );
+    float n2bp = hypo( n2bpx, n2bpy, n2bpz );
+	bool aorb = true;
+	//bool aorb = n2ap > n2bp;
+	//bool aorb = isALeadPhoSide;
+	float n2px = ( aorb ) ? n2apx : n2bpx;
+    float n2py = ( aorb ) ? n2apy : n2bpy;
+    float n2pz = ( aorb ) ? n2apz : n2bpz;
+    selRjrVars.fillBranch( "rjrN2Px", n2px );
+    selRjrVars.fillBranch( "rjrN2Py", n2py );
+    selRjrVars.fillBranch( "rjrN2Pz", n2pz );
 
 }//<<>>void KUCMSAodSkimmer::processRJR( int type, bool newEvent )
 
@@ -2497,189 +2510,195 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
   }
   selSV.attachBranches( fOutTree );
     
-  selMuons.makeBranch( "nLooseMuons", UINT );
-  selMuons.makeBranch( "nMuons", UINT );
-  selMuons.makeBranch( "muonIsLoose", VBOOL );
-  selMuons.makeBranch( "muonIsMedium", VBOOL );
-  //selMuons.makeBranch( "muonHasSVMatch", VBOOL );
-  selMuons.makeBranch( "nMuonSVMatched", INT );
 
-  selMuons.attachBranches( fOutTree );
+    selMuons.makeBranch( "nLooseMuons", UINT );
+    selMuons.makeBranch( "nMuons", UINT );
+    selMuons.makeBranch( "muonIsLoose", VBOOL );
+    selMuons.makeBranch( "muonIsMedium", VBOOL );
+    //selMuons.makeBranch( "muonHasSVMatch", VBOOL );
+    selMuons.makeBranch( "nMuonSVMatched", INT );
 
-  //selJets.makeBranch( "JetHt", &JetHt );
-  selJets.makeBranch( "nJets", UINT );
-  selJets.makeBranch( "nSelJets", UINT );
-  selJets.makeBranch( "selJetGenLlpId", VINT ); 
-  selJets.makeBranch( "selJetQrkLlpId", VINT );
-  selJets.makeBranch( "selJetQuality", VINT ); 
-  selJets.makeBranch( "selJetPt", VFLOAT ); 
-  selJets.makeBranch( "selJetEnergy", VFLOAT );
-  selJets.makeBranch( "selJetEta", VFLOAT ); 
-  selJets.makeBranch( "selJetPhi", VFLOAT );
-  selJets.makeBranch( "selJetTime", VFLOAT ); 
-  selJets.makeBranch( "selJetMass", VFLOAT );
+    selMuons.attachBranches( fOutTree );
 
-  selJets.makeBranch( "selJetArea", VFLOAT ); //*Jet_area)[it]; 
-  selJets.makeBranch( "selJetChEmEF", VFLOAT ); //*Jet_chEmEF)[it]; 
-  selJets.makeBranch( "selJetchHEF", VFLOAT ); //*Jet_chHEF)[it]; 
-  selJets.makeBranch( "selJetChHM", VFLOAT ); //*Jet_chHM)[it]; 
-  selJets.makeBranch( "selJetMuEF", VFLOAT ); //*Jet_muEF)[it]; 
-  selJets.makeBranch( "selJetNeEmEF", VFLOAT ); //*Jet_neEmEF)[it]; 
-  selJets.makeBranch( "selJetNeHEF", VFLOAT ); //*Jet_neHEF)[it]; 
-  selJets.makeBranch( "selJetNeHM", VFLOAT ); //*Jet_neHM)[it]; 
+    //selJets.makeBranch( "JetHt", &JetHt );
+    selJets.makeBranch( "nJets", UINT );
+    selJets.makeBranch( "nSelJets", UINT );
+    selJets.makeBranch( "selJetGenLlpId", VINT ); 
+    selJets.makeBranch( "selJetQrkLlpId", VINT );
+    selJets.makeBranch( "selJetQuality", VINT ); 
+    selJets.makeBranch( "selJetPt", VFLOAT ); 
+    selJets.makeBranch( "selJetEnergy", VFLOAT );
+    selJets.makeBranch( "selJetEta", VFLOAT ); 
+    selJets.makeBranch( "selJetPhi", VFLOAT );
+    selJets.makeBranch( "selJetTime", VFLOAT ); 
+    selJets.makeBranch( "selJetMass", VFLOAT );
 
-  selJets.makeBranch( "selGenJetDpt", VFLOAT ); //*Jet_genDptMatch)[it]; 
-  selJets.makeBranch( "selGenJetdr", VFLOAT ); //*Jet_genDrMatch)[it]; 
-  selJets.makeBranch( "selGenJetEnergy", VFLOAT ); //*Jet_genEnergy)[it]; 
-  selJets.makeBranch( "selGenJeteta", VFLOAT ); //*Jet_genEta)[it]; 
-  selJets.makeBranch( "selGenJetImpAng", VFLOAT ); //*Jet_genImpactAngle)[it]; 
-  selJets.makeBranch( "selJetLlpDp", VFLOAT ); //*Jet_genLlpDp)[it]; 
-  selJets.makeBranch( "selJetLlpDr", VFLOAT ); //*Jet_genLlpDr)[it]; 
-  selJets.makeBranch( "selGenJetPt", VFLOAT ); //*Jet_genPt)[it]; 
-  selJets.makeBranch( "selGenJetTof", VFLOAT ); //*Jet_genTOF)[it]; 
-  selJets.makeBranch( "selGenJetTime", VFLOAT ); // (*Jet_genTime)[it]; 
-  selJets.makeBranch( "selGenJetLlpTime", VFLOAT ); //*Jet_genTimeLLP)[it]; 
+    selJets.makeBranch( "selJetArea", VFLOAT ); //*Jet_area)[it]; 
+    selJets.makeBranch( "selJetChEmEF", VFLOAT ); //*Jet_chEmEF)[it]; 
+    selJets.makeBranch( "selJetchHEF", VFLOAT ); //*Jet_chHEF)[it]; 
+    selJets.makeBranch( "selJetChHM", VFLOAT ); //*Jet_chHM)[it]; 
+    selJets.makeBranch( "selJetMuEF", VFLOAT ); //*Jet_muEF)[it]; 
+    selJets.makeBranch( "selJetNeEmEF", VFLOAT ); //*Jet_neEmEF)[it]; 
+    selJets.makeBranch( "selJetNeHEF", VFLOAT ); //*Jet_neHEF)[it]; 
+    selJets.makeBranch( "selJetNeHM", VFLOAT ); //*Jet_neHM)[it]; 
 
-  selJets.attachBranches( fOutTree );
+    selJets.makeBranch( "selGenJetDpt", VFLOAT ); //*Jet_genDptMatch)[it]; 
+    selJets.makeBranch( "selGenJetdr", VFLOAT ); //*Jet_genDrMatch)[it]; 
+    selJets.makeBranch( "selGenJetEnergy", VFLOAT ); //*Jet_genEnergy)[it]; 
+    selJets.makeBranch( "selGenJeteta", VFLOAT ); //*Jet_genEta)[it]; 
+    selJets.makeBranch( "selGenJetImpAng", VFLOAT ); //*Jet_genImpactAngle)[it]; 
+    selJets.makeBranch( "selJetLlpDp", VFLOAT ); //*Jet_genLlpDp)[it]; 
+    selJets.makeBranch( "selJetLlpDr", VFLOAT ); //*Jet_genLlpDr)[it]; 
+    selJets.makeBranch( "selGenJetPt", VFLOAT ); //*Jet_genPt)[it]; 
+    selJets.makeBranch( "selGenJetTof", VFLOAT ); //*Jet_genTOF)[it]; 
+    selJets.makeBranch( "selGenJetTime", VFLOAT ); // (*Jet_genTime)[it]; 
+    selJets.makeBranch( "selGenJetLlpTime", VFLOAT ); //*Jet_genTimeLLP)[it]; 
 
-  selRjrVars.makeBranch( "rjrType", VINT );
+    selJets.attachBranches( fOutTree );
 
-  selRjrVars.makeBranch( "rjrX1aMass", VFLOAT );
-  selRjrVars.makeBranch( "rjrX1aCosA", VFLOAT );
-  selRjrVars.makeBranch( "rjrX1bMass", VFLOAT );
-  selRjrVars.makeBranch( "rjrX1bCosA", VFLOAT );
-  selRjrVars.makeBranch( "rjrX1a_Pt", VFLOAT );
-  selRjrVars.makeBranch( "rjrX1a_Eta", VFLOAT );
-  selRjrVars.makeBranch( "rjrX1a_Phi", VFLOAT );
-  selRjrVars.makeBranch( "rjrX1b_Pt", VFLOAT );
-  selRjrVars.makeBranch( "rjrX1b_Eta", VFLOAT );
-  selRjrVars.makeBranch( "rjrX1b_Phi", VFLOAT );
+    selRjrVars.makeBranch( "rjrType", VINT );
 
-  selRjrVars.makeBranch( "rjrX2aMass", VFLOAT );
-  selRjrVars.makeBranch( "rjrX2aCosA", VFLOAT );
-  selRjrVars.makeBranch( "rjrX2aPs", VFLOAT );
-  selRjrVars.makeBranch( "rjrX2bMass", VFLOAT );
-  selRjrVars.makeBranch( "rjrX2bCosA", VFLOAT );
-  selRjrVars.makeBranch( "rjrX2bPs", VFLOAT );
+    selRjrVars.makeBranch( "rjrX1aMass", VFLOAT );
+    selRjrVars.makeBranch( "rjrX1aCosA", VFLOAT );
+    selRjrVars.makeBranch( "rjrX1bMass", VFLOAT );
+    selRjrVars.makeBranch( "rjrX1bCosA", VFLOAT );
+    selRjrVars.makeBranch( "rjrX1a_Pt", VFLOAT );
+    selRjrVars.makeBranch( "rjrX1a_Eta", VFLOAT );
+    selRjrVars.makeBranch( "rjrX1a_Phi", VFLOAT );
+    selRjrVars.makeBranch( "rjrX1b_Pt", VFLOAT );
+    selRjrVars.makeBranch( "rjrX1b_Eta", VFLOAT );
+    selRjrVars.makeBranch( "rjrX1b_Phi", VFLOAT );
 
-  selRjrVars.makeBranch( "rjrSMass", VFLOAT );
-  selRjrVars.makeBranch( "rjrSCosA", VFLOAT );
-  selRjrVars.makeBranch( "rjrSdphiDA", VFLOAT );
-  selRjrVars.makeBranch( "rjrSdphiBV", VFLOAT );
-  selRjrVars.makeBranch( "rjrPTS", VFLOAT );
-  selRjrVars.makeBranch( "rjrPZS", VFLOAT );
+    selRjrVars.makeBranch( "rjrX2aMass", VFLOAT );
+    selRjrVars.makeBranch( "rjrX2aCosA", VFLOAT );
+    selRjrVars.makeBranch( "rjrX2aPs", VFLOAT );
+    selRjrVars.makeBranch( "rjrX2bMass", VFLOAT );
+    selRjrVars.makeBranch( "rjrX2bCosA", VFLOAT );
+    selRjrVars.makeBranch( "rjrX2bPs", VFLOAT );
 
-  selRjrVars.makeBranch( "rjrEVa", VFLOAT );
-  selRjrVars.makeBranch( "rjrEVb", VFLOAT );
-  selRjrVars.makeBranch( "rjrPVa", VFLOAT );
-  selRjrVars.makeBranch( "rjrPVb", VFLOAT );
+    selRjrVars.makeBranch( "rjrSMass", VFLOAT );
+    selRjrVars.makeBranch( "rjrSCosA", VFLOAT );
+    selRjrVars.makeBranch( "rjrSdphiDA", VFLOAT );
+    selRjrVars.makeBranch( "rjrSdphiBV", VFLOAT );
+    selRjrVars.makeBranch( "rjrPTS", VFLOAT );
+    selRjrVars.makeBranch( "rjrPZS", VFLOAT );
 
-  selRjrVars.makeBranch( "rjrNPhotons", VINT );
-  selRjrVars.makeBranch( "rjrMET", VFLOAT );
-  selRjrVars.makeBranch( "rjrNJets", VINT );
-  selRjrVars.makeBranch( "rjrLeadPhoLocation", VINT);
-  selRjrVars.makeBranch( "rjrSubPhoLocation", VINT);
-  selRjrVars.makeBranch( "rjrNVisObjects", VINT );
-  selRjrVars.makeBranch( "rjrABSide", VBOOL );
+    selRjrVars.makeBranch( "rjrEVa", VFLOAT );
+    selRjrVars.makeBranch( "rjrEVb", VFLOAT );
+    selRjrVars.makeBranch( "rjrPVa", VFLOAT );
+    selRjrVars.makeBranch( "rjrPVb", VFLOAT );
 
-  selRjrVars.makeBranch( "rjrVisPhoSide", VBOOL );
-  selRjrVars.makeBranch( "rjrVisJetSide", VBOOL );
+    selRjrVars.makeBranch( "rjrNPhotons", VINT );
+    selRjrVars.makeBranch( "rjrMET", VFLOAT );
+    selRjrVars.makeBranch( "rjrNJets", VINT );
+    selRjrVars.makeBranch( "rjrLeadPhoLocation", VINT);
+    selRjrVars.makeBranch( "rjrSubPhoLocation", VINT);
+    selRjrVars.makeBranch( "rjrNVisObjects", VINT );
+    selRjrVars.makeBranch( "rjrABSide", VBOOL );
 
-  selRjrVars.makeBranch( "rjrPVlab", VFLOAT );
-  selRjrVars.makeBranch( "rjrDphiMETV", VFLOAT );
+    selRjrVars.makeBranch( "rjrVisPhoSide", VBOOL );
+    selRjrVars.makeBranch( "rjrVisJetSide", VBOOL );
 
-  selRjrVars.makeBranch( "rjrNJetsJb", VINT );
-  selRjrVars.makeBranch( "rjrNJetsJa", VINT );
+    selRjrVars.makeBranch( "rjrPVlab", VFLOAT );
+    selRjrVars.makeBranch( "rjrDphiMETV", VFLOAT );
 
-  selRjrVars.makeBranch( "rjr_pHts20", VFLOAT );
-  selRjrVars.makeBranch( "rjr_pHts40", VFLOAT );
-  selRjrVars.makeBranch( "rjr_pHts21", VFLOAT );
-  selRjrVars.makeBranch( "rjr_pHts41", VFLOAT );
-  selRjrVars.makeBranch( "rjr_pHts21a", VFLOAT );
-  selRjrVars.makeBranch( "rjr_pHts21b", VFLOAT );
-  selRjrVars.makeBranch( "rjr_pHts11a", VFLOAT );
-  selRjrVars.makeBranch( "rjr_pHts11b", VFLOAT );
+    selRjrVars.makeBranch( "rjrNJetsJb", VINT );
+    selRjrVars.makeBranch( "rjrNJetsJa", VINT );
 
-  selRjrVars.makeBranch( "rjr_pHs20", VFLOAT );
-  selRjrVars.makeBranch( "rjr_pHs40", VFLOAT );
-  selRjrVars.makeBranch( "rjr_pHs21", VFLOAT );
-  selRjrVars.makeBranch( "rjr_pHs41", VFLOAT );
-  selRjrVars.makeBranch( "rjr_pHs21a", VFLOAT );
-  selRjrVars.makeBranch( "rjr_pHs21b", VFLOAT );
-  selRjrVars.makeBranch( "rjr_pHs11a", VFLOAT );
-  selRjrVars.makeBranch( "rjr_pHs11b", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHts20", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHts40", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHts21", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHts41", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHts21a", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHts21b", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHts11a", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHts11b", VFLOAT );
 
-  selRjrVars.makeBranch( "rjr_pHxa20", VFLOAT );
-  selRjrVars.makeBranch( "rjr_pHxb20", VFLOAT );
-  selRjrVars.makeBranch( "rjr_pHxa21", VFLOAT );
-  selRjrVars.makeBranch( "rjr_pHxb21", VFLOAT );
-  selRjrVars.makeBranch( "rjr_pHxa10", VFLOAT );
-  selRjrVars.makeBranch( "rjr_pHxb10", VFLOAT );
-  selRjrVars.makeBranch( "rjr_pHxa11", VFLOAT );
-  selRjrVars.makeBranch( "rjr_pHxb11", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHs20", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHs40", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHs21", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHs41", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHs21a", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHs21b", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHs11a", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHs11b", VFLOAT );
 
-  selRjrVars.makeBranch( "rjr_pHtxa20", VFLOAT );
-  selRjrVars.makeBranch( "rjr_pHtxb20", VFLOAT );
-  selRjrVars.makeBranch( "rjr_pHtxa21", VFLOAT );
-  selRjrVars.makeBranch( "rjr_pHtxb21", VFLOAT );
-  selRjrVars.makeBranch( "rjr_pHtxa10", VFLOAT );
-  selRjrVars.makeBranch( "rjr_pHtxb10", VFLOAT );
-  selRjrVars.makeBranch( "rjr_pHtxa11", VFLOAT );
-  selRjrVars.makeBranch( "rjr_pHtxb11", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHxa20", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHxb20", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHxa21", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHxb21", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHxa10", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHxb10", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHxa11", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHxb11", VFLOAT );
 
-  selRjrVars.makeBranch( "rjr_pHs22", VFLOAT );
-  selRjrVars.makeBranch( "rjr_pHs11", VFLOAT );
-  selRjrVars.makeBranch( "rjr_pHts22", VFLOAT );
-  selRjrVars.makeBranch( "rjr_pHts11", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHtxa20", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHtxb20", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHtxa21", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHtxb21", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHtxa10", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHtxb10", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHtxa11", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHtxb11", VFLOAT );
 
-  selRjrVars.makeBranch( "rjr_p1Pts", VFLOAT );
-  selRjrVars.makeBranch( "rjr_p2Pts", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHs22", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHs11", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHts22", VFLOAT );
+    selRjrVars.makeBranch( "rjr_pHts11", VFLOAT );
 
-  selRjrVars.makeBranch( "rjr_p1Ptxa", VFLOAT );
-  selRjrVars.makeBranch( "rjr_p1Ptxb", VFLOAT );
-  selRjrVars.makeBranch( "rjr_p2Ptxa", VFLOAT );
-  selRjrVars.makeBranch( "rjr_p2Ptxb", VFLOAT );
+    selRjrVars.makeBranch( "rjr_p1Pts", VFLOAT );
+    selRjrVars.makeBranch( "rjr_p2Pts", VFLOAT );
 
-  selRjrVars.makeBranch( "rjrAX2Diff","rjr_Rdiff", VFLOAT );
+    selRjrVars.makeBranch( "rjr_p1Ptxa", VFLOAT );
+    selRjrVars.makeBranch( "rjr_p1Ptxb", VFLOAT );
+    selRjrVars.makeBranch( "rjr_p2Ptxa", VFLOAT );
+    selRjrVars.makeBranch( "rjr_p2Ptxb", VFLOAT );
 
-  selRjrVars.makeBranch( "rjr_Mr", VFLOAT );
-  selRjrVars.makeBranch( "rjr_R", VFLOAT );
-  selRjrVars.makeBranch( "rjr_Rv", VFLOAT );
-  selRjrVars.makeBranch( "rjr_Ms", VFLOAT );
-  selRjrVars.makeBranch( "rjr_Rs", VFLOAT );
-  selRjrVars.makeBranch( "rjr_Rx", VFLOAT );
-  selRjrVars.makeBranch( "rjr_Rm", VFLOAT );
-  selRjrVars.makeBranch( "rjr_Rxa", VFLOAT );
-  selRjrVars.makeBranch( "rjr_Rxb", VFLOAT );
+    selRjrVars.makeBranch( "rjr_p1Pxa", VFLOAT );
+    selRjrVars.makeBranch( "rjr_p1Pxb", VFLOAT );
+    selRjrVars.makeBranch( "rjr_p2Pxa", VFLOAT );
+    selRjrVars.makeBranch( "rjr_p2Pxb", VFLOAT );
 
-  selRjrVars.makeBranch( "rjr_sJ1a_px", VFLOAT );
-  selRjrVars.makeBranch( "rjr_sJ1a_py", VFLOAT );
-  selRjrVars.makeBranch( "rjr_sJ1a_pz", VFLOAT );
-  selRjrVars.makeBranch( "rjr_sJ1a_e", VFLOAT );
+    selRjrVars.makeBranch( "rjrAX2Diff","rjr_Rdiff", VFLOAT );
 
-  selRjrVars.makeBranch( "rjr_sJ2a_px", VFLOAT );
-  selRjrVars.makeBranch( "rjr_sJ2a_py", VFLOAT );
-  selRjrVars.makeBranch( "rjr_sJ1a_pz", VFLOAT );
-  selRjrVars.makeBranch( "rjr_sJ1a_e", VFLOAT );
+    selRjrVars.makeBranch( "rjr_Mr", VFLOAT );
+    selRjrVars.makeBranch( "rjr_R", VFLOAT );
+    selRjrVars.makeBranch( "rjr_Rv", VFLOAT );
+    selRjrVars.makeBranch( "rjr_Ms", VFLOAT );
+    selRjrVars.makeBranch( "rjr_Rs", VFLOAT );
+    selRjrVars.makeBranch( "rjr_Rx", VFLOAT );
+    selRjrVars.makeBranch( "rjr_Rm", VFLOAT );
+    selRjrVars.makeBranch( "rjr_Rxa", VFLOAT );
+    selRjrVars.makeBranch( "rjr_Rxb", VFLOAT );
 
-  selRjrVars.makeBranch( "rjr_sJ1b_px", VFLOAT );
-  selRjrVars.makeBranch( "rjr_sJ1b_py", VFLOAT );
-  selRjrVars.makeBranch( "rjr_sJ1b_pz", VFLOAT );
-  selRjrVars.makeBranch( "rjr_sJ1b_e", VFLOAT );
+    selRjrVars.makeBranch( "rjr_sJ1a_px", VFLOAT );
+    selRjrVars.makeBranch( "rjr_sJ1a_py", VFLOAT );
+    selRjrVars.makeBranch( "rjr_sJ1a_pz", VFLOAT );
+    selRjrVars.makeBranch( "rjr_sJ1a_e", VFLOAT );
 
-  selRjrVars.makeBranch( "rjr_sJ2b_px", VFLOAT );
-  selRjrVars.makeBranch( "rjr_sJ2b_py", VFLOAT );
-  selRjrVars.makeBranch( "rjr_sJ2b_pz", VFLOAT );
-  selRjrVars.makeBranch( "rjr_sJ2b_e", VFLOAT );
+    selRjrVars.makeBranch( "rjr_sJ2a_px", VFLOAT );
+    selRjrVars.makeBranch( "rjr_sJ2a_py", VFLOAT );
+    selRjrVars.makeBranch( "rjr_sJ2a_pz", VFLOAT );
+    selRjrVars.makeBranch( "rjr_sJ2a_e", VFLOAT );
 
-  selRjrVars.makeBranch( "rjr_Mva", VFLOAT );
-  selRjrVars.makeBranch( "rjr_Mvb", VFLOAT );
+    selRjrVars.makeBranch( "rjr_sJ1b_px", VFLOAT );
+    selRjrVars.makeBranch( "rjr_sJ1b_py", VFLOAT );
+    selRjrVars.makeBranch( "rjr_sJ1b_pz", VFLOAT );
+    selRjrVars.makeBranch( "rjr_sJ1b_e", VFLOAT );
 
-  selRjrVars.makeBranch( "rjrN2Px", VFLOAT );
-  selRjrVars.makeBranch( "rjrN2Py", VFLOAT );
-  selRjrVars.makeBranch( "rjrN2Pz", VFLOAT );
+    selRjrVars.makeBranch( "rjr_sJ2b_px", VFLOAT );
+    selRjrVars.makeBranch( "rjr_sJ2b_py", VFLOAT );
+    selRjrVars.makeBranch( "rjr_sJ2b_pz", VFLOAT );
+    selRjrVars.makeBranch( "rjr_sJ2b_e", VFLOAT );
 
-  selRjrVars.attachBranches( fOutTree );
+    selRjrVars.makeBranch( "rjr_Mva", VFLOAT );
+    selRjrVars.makeBranch( "rjr_Mvb", VFLOAT );
+
+    selRjrVars.makeBranch( "rjrN2Px", VFLOAT );
+    selRjrVars.makeBranch( "rjrN2Py", VFLOAT );
+    selRjrVars.makeBranch( "rjrN2Pz", VFLOAT );
+
+    selRjrVars.attachBranches( fOutTree );
 
 }//<<>>void KUCMSAodSkimmer::setBranches( TTree& fOutTree )
 
@@ -2739,60 +2758,61 @@ void KUCMSAodSkimmer::fillConfigTree( TTree* fConfigTree ){
 
 void KUCMSAodSkimmer::initHists(){
 
-  for( int it = 0; it < n1dHists; it++ ){ hist1d[it] = NULL; }
-  for( int it = 0; it < n2dHists; it++ ){ hist2d[it] = NULL; }
-  for( int it = 0; it < n3dHists; it++ ){ hist3d[it] = NULL; }
+	for( int it = 0; it < n1dHists; it++ ){ hist1d[it] = NULL; }
+    for( int it = 0; it < n2dHists; it++ ){ hist2d[it] = NULL; }
+    for( int it = 0; it < n3dHists; it++ ){ hist3d[it] = NULL; }
 
-  //------------------------------------------------------------------------------------------
-  //------ 1D Hists --------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------
+    //------ 1D Hists --------------------------------------------------------------------------
 
-  hist1d[0] = new TH1D("ecalrhenergy0", "RecHit Energy;rechit E [GeV]",1000,0,1000);
-  hist1d[1] = new TH1D("ecalrhenergy1", "RecHit Energy;rechit E [GeV]",200,0,20);
-  hist1d[2] = new TH1D("ecalrhenergy2", "RecHit Energy;rechit E [GeV]",200,0,2);
-  hist1d[3] = new TH1D("sctype","SC !Orig, Orig, OOT, Excl",4,0,4);
-  hist1d[4] = new TH1D("scorigtype","Orig+OOT, Orig+!OOT, Orig+Exc, !Orig+OOT, !Orig+Exc, !Orig+!OOT",6,0,6);
-  hist1d[5] = new TH1D("ecalrhtime", "RecHit Time;rechit t [ns]",200,-10,10);
-  hist1d[6] = new TH1D("scenergy","SC rawEnergy;energy [GeV]",200,0,1000);
-  hist1d[7] = new TH1D("trckpt","Track pt;Track pt [GeV]",500,0,1000);
-  hist1d[8] = new TH1D("NRecHitsInSCs","NRecHitsInSCs;NRecHitsInSCs",100,0,100);
+	hist1d[0] = new TH1D("ecalrhenergy0", "RecHit Energy;rechit E [GeV]",1000,0,1000);
+    hist1d[1] = new TH1D("ecalrhenergy1", "RecHit Energy;rechit E [GeV]",200,0,20);
+    hist1d[2] = new TH1D("ecalrhenergy2", "RecHit Energy;rechit E [GeV]",200,0,2);
+    hist1d[3] = new TH1D("sctype","SC !Orig, Orig, OOT, Excl",4,0,4);
+    hist1d[4] = new TH1D("scorigtype","Orig+OOT, Orig+!OOT, Orig+Exc, !Orig+OOT, !Orig+Exc, !Orig+!OOT",6,0,6);
+    hist1d[5] = new TH1D("ecalrhtime", "RecHit Time;rechit t [ns]",200,-10,10);
+    hist1d[6] = new TH1D("scenergy","SC rawEnergy;energy [GeV]",200,0,1000);
+    hist1d[7] = new TH1D("trckpt","Track pt;Track pt [GeV]",500,0,1000);
+    hist1d[8] = new TH1D("NRecHitsInSCs","NRecHitsInSCs;NRecHitsInSCs",100,0,100);
+    hist1d[9] = new TH1D("sceta","SC Eta;Eta",200,-10,10);
 
-  hist1d[10] = new TH1D("elept","Electron Pt [GeV];Electron Pt [GeV];a.u.",100,0,1000);
-  hist1d[11] = new TH1D("elept_lv","LooseVeto;Electron Pt [GeV];Eff",100,0,1000);
-  hist1d[12] = new TH1D("elept_v","Veto;Electron Pt [GeV];Eff",100,0,1000);
-  hist1d[13] = new TH1D("elept_l","Loose;Electron Pt [GeV];Eff",100,0,1000);
-  hist1d[14] = new TH1D("elept_m","Medium;Electron Pt [GeV];Eff",100,0,1000);
+	hist1d[10] = new TH1D("elept","Electron Pt [GeV];Electron Pt [GeV];a.u.",100,0,1000);
+    hist1d[11] = new TH1D("elept_lv","LooseVeto;Electron Pt [GeV];Eff",100,0,1000);
+    hist1d[12] = new TH1D("elept_v","Veto;Electron Pt [GeV];Eff",100,0,1000);
+    hist1d[13] = new TH1D("elept_l","Loose;Electron Pt [GeV];Eff",100,0,1000);
+    hist1d[14] = new TH1D("elept_m","Medium;Electron Pt [GeV];Eff",100,0,1000);
 
-  ////hist1d[100] = new TH1D("genPhoPt", "genPhoPt;Pt [GeV]",500,0,1000);
+    ////hist1d[100] = new TH1D("genPhoPt", "genPhoPt;Pt [GeV]",500,0,1000);
 
-  for( int it = 0; it < n1dHists; it++ ){ if(hist1d[it]) hist1d[it]->Sumw2();}
+    for( int it = 0; it < n1dHists; it++ ){ if(hist1d[it]) hist1d[it]->Sumw2();}
 
-  //------------------------------------------------------------------------------------------
-  //------ 2D Hists --------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------
+    //------ 2D Hists --------------------------------------------------------------------------
 
-  ////hist2d[1] = new TH2D("jetDrMuTime_pt", "jetDrMuTime_pt", jtdiv, -1*jtran, jtran, 500, 0, 500);
-  hist2d[1] = new TH2D("scorigcross", "SC Types;Mian-Orig;Std-OOT-Excluded", 2, 0, 2, 3, 0, 3); 
+    ////hist2d[1] = new TH2D("jetDrMuTime_pt", "jetDrMuTime_pt", jtdiv, -1*jtran, jtran, 500, 0, 500);
+	hist2d[1] = new TH2D("scorigcross", "SC Types;Mian-Orig;Std-OOT-Excluded", 2, 0, 2, 3, 0, 3); 
 
-  //------------------------------------------------------------------------------------------
-  //------ 3D Hists --------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------
+    //------ 3D Hists --------------------------------------------------------------------------
 
-  //hist3d[0] = new TH3D("phoNRH_ClR9_phoID","Photon nClRecHits v clR9 v phoId;nRecHits;ClusterR9;PhotonID(fake1,loose2,tight3)",200,0,200,100,0,1,8,0,4);
+    //hist3d[0] = new TH3D("phoNRH_ClR9_phoID","Photon nClRecHits v clR9 v phoId;nRecHits;ClusterR9;PhotonID(fake1,loose2,tight3)",200,0,200,100,0,1,8,0,4);
 
-  //------------------------------------------------------------------------------------
-  // Cluster maps -----------------------------------------------------------------------
+	//------------------------------------------------------------------------------------
+    // Cluster maps -----------------------------------------------------------------------
 
-  if( CLSTRMAPS ){
-    nMaps = 0;
-    for(int it=0; it<nEBEEMaps; it++){
-      fMap[it] = false;
-      std::string label(";iEta;iPhi");
-      std::string stt1("ebeeMapPhoCluster_"+std::to_string(it));
-      ebeeMapP[it] = new TH2D( stt1.c_str(), (stt1+label).c_str(), 361, -90, 90, 721, 0, 360);
-      std::string stt2("ebeeMapPhoClusterTime_"+std::to_string(it));
-      ebeeMapT[it] = new TH2D( stt2.c_str(), (stt2+label).c_str(), 361, -90, 90, 721, 0, 360);
-      std::string stt3("ebeeMapPhoClusterRes_"+std::to_string(it));
-      ebeeMapR[it] = new TH2D( stt3.c_str(), (stt3+label).c_str(), 361, -90, 90, 721, 0, 360);
-    }//<<>>for(int it=0; it<nEBEEMaps; it++)
-  }//<<>>if( CLSTRMAPS )
+    if( CLSTRMAPS ){
+		nMaps = 0;
+		for(int it=0; it<nEBEEMaps; it++){
+			fMap[it] = false;
+			std::string label(";iEta;iPhi");
+    	    std::string stt1("ebeeMapPhoCluster_"+std::to_string(it));
+    	    ebeeMapP[it] = new TH2D( stt1.c_str(), (stt1+label).c_str(), 361, -90, 90, 721, 0, 360);
+    	    std::string stt2("ebeeMapPhoClusterTime_"+std::to_string(it));
+    	    ebeeMapT[it] = new TH2D( stt2.c_str(), (stt2+label).c_str(), 361, -90, 90, 721, 0, 360);
+			std::string stt3("ebeeMapPhoClusterRes_"+std::to_string(it));
+    	    ebeeMapR[it] = new TH2D( stt3.c_str(), (stt3+label).c_str(), 361, -90, 90, 721, 0, 360);
+		}//<<>>for(int it=0; it<nEBEEMaps; it++)
+	}//<<>>if( CLSTRMAPS )
 
 }//<<>>void KUCMSAodSkimmer::initHists()
 
