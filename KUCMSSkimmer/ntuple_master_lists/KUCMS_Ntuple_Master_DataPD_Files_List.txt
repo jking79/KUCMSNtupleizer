@@ -1,0 +1,8 @@
+# ------------------------------------
+# Master Filelist : GMSB
+# -------------------------------------
+
+KUCMSNtuple/kucmsntuple_MET_R22_AL1NpSC_v31/ kucmsntuple_MET_R22_AL1NpSC_v31_MET_AOD_Run2022C-27Jun2023-v2_v29.txt METR22C 1 0 0 0 0
+#KUCMSNtuple/kucmsntuple_MET_R18_MRL_MET100_v24/ kucmsntuple_MET_R18_MRL_MET100_v24_filelist.txt METR18 1 0 0 0 0
+#KUCMSNtuple/kucmsntuple_MET_R17_AL1IsoPho_v22/ kuntuple_MET_AL1IsoPho_R17_v22.txt METR17 1 0 0 0 0 
+#KUCMSNtuple/kucmsntuple_MET_R17_AL1IsoPho_v22/ kuntuple_MET_AL1IsoPho_R17_v22.txt METR17 1 0 0 0 0

@@ -4,7 +4,7 @@ This is a small script that does the equivalent of multicrab.
 """
 import os
 from optparse import OptionParser
-
+import CRABClient
 from CRABAPI.RawCommand import crabCommand
 
 
@@ -57,8 +57,8 @@ def main():
             except :
                     print ("Command not executed")
         else :
-            print ("Executing (the equivalent of): crab %s %s %s" %(options.crabCmd, task, options.crabCmdOptions))
-            os.system('crab resubmit ' + task + ' --maxjobruntime 2500' )
+            print ("Executing ( runtime 2800 ): crab %s %s %s" %(options.crabCmd, task, options.crabCmdOptions))
+            os.system('crab resubmit ' + task + ' --maxjobruntime 2800' )
 
 if __name__ == '__main__':
     main()   

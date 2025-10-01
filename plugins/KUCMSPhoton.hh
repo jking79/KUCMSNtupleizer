@@ -48,10 +48,13 @@
 #include "KUCMSElectron.hh"
 #include "KUCMSGenObjects.hh"
 
+#include <TLorentzVector.h>
+#include "TMathBase.h"  
+
 #ifndef KUCMSPhotonObjectHeader
 #define KUCMSPhotonObjectHeader
 
-//#define PhotonEBUG true
+//#define PhotonDEBUG true
 #define PhotonDEBUG false
 
 using namespace edm; 
@@ -73,7 +76,7 @@ class KUCMSPhotonObject : public KUCMSObjectBase {
     void InitObject( TTree* fOutTree ); 
     // new function needed for crosstalk - EXAMPLE CLASS USED HERE FOR REFRENCE ONLY -
     void LoadRecHitObject( KUCMSEcalRecHitObject* rhObj_ ){ rhObj = rhObj_; }; // define with specific KUCMS object(s) needed 
-    void LoadGenObject( KUCMSGenObject*  genObjs_ ){ genObjs = genObjs_; };
+    void LoadGenObject( KUCMSGenObject*  genObj_ ){ genObj = genObj_; };
     void LoadElectronObject( KUCMSElectronObject* electronObj_ ){ electronObj = electronObj_; };
 
     // object processing : 1) LoadEvent prior to event loop 2) ProcessEvent during event loop via objectManager
@@ -81,7 +84,7 @@ class KUCMSPhotonObject : public KUCMSObjectBase {
     void LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar );
     // do cross talk jobs with other objects, do event processing, and load branches
     void ProcessEvent( ItemManager<float>& geVar );
-    void PostProcessEvent( ItemManager<float>& geVar ){};
+    void PostProcessEvent( ItemManager<float>& geVar );
 
     // if there are any final tasks be to done after the event loop via objectManager
     void EndJobs(); // do any jobs that need to be done after main event loop
@@ -90,6 +93,7 @@ class KUCMSPhotonObject : public KUCMSObjectBase {
     // void answerCrossTalk(); // define functions that will be called in another object - this is an example
     // ect ...
     int getIndex( float kideta, float kidphi );
+	bool passPhoQuality( const reco::Photon & photon );
     float getPhotonSeedTime( pat::Photon photon );
     float getPhotonSeedTime( reco::Photon photon );
 	void correctMet( float & CSumEt, float & CPx, float & CPy );
@@ -117,7 +121,7 @@ class KUCMSPhotonObject : public KUCMSObjectBase {
 
     // Other object(s) need by this object - BASE CLASS USED HERE FOR REFRENCE ONLY -
     KUCMSEcalRecHitObject* rhObj;
-    KUCMSGenObject*  genObjs;
+    KUCMSGenObject*  genObj;
     KUCMSElectronObject* electronObj;
 
 };//<<>>class KUCMSPhoton : public KUCMSObjectBase
@@ -125,11 +129,11 @@ class KUCMSPhotonObject : public KUCMSObjectBase {
 KUCMSPhotonObject::KUCMSPhotonObject( const edm::ParameterSet& iConfig ){   
 // ---- end constructor initilizations  --------------------------
 
-    cfPrm.set( "minPhoE", iConfig.existsAs<double>("minPhoE") ? iConfig.getParameter<double>("minPhoE") : 0.0 );
+    cfPrm.set( "minPhoE", iConfig.existsAs<double>("minPhoE") ? iConfig.getParameter<double>("minPhoE") : 2.0 );
     cfPrm.set( "phoMinPt", iConfig.existsAs<double>("phoMinPt") ? iConfig.getParameter<double>("phoMinPt") : 0.0 );
-    cfPrm.set( "phoMinSeedTime", iConfig.existsAs<double>("phoMinSeedTime") ? iConfig.getParameter<double>("phoMinSeedTime") : -25.0 );
-    cfFlag.set( "onlyEB", iConfig.existsAs<bool>("onlyEB") ? iConfig.getParameter<bool>("onlyEB") : true );
-    cfFlag.set( "hasGenInfo", iConfig.existsAs<bool>("hasGenInfo") ? iConfig.getParameter<bool>("hasGenInfo") : true );
+    cfPrm.set( "phoMinSeedTime", iConfig.existsAs<double>("phoMinSeedTime") ? iConfig.getParameter<double>("phoMinSeedTime") : 30.0 );
+    cfFlag.set( "onlyEB", iConfig.existsAs<bool>("onlyEB") ? iConfig.getParameter<bool>("onlyEB") : false );
+    cfFlag.set( "hasGenInfo", iConfig.existsAs<bool>("hasGenInfo") ? iConfig.getParameter<bool>("hasGenInfo") : false );
 
 }//<<>>KUCMSPhoton::KUCMSPhoton( const edm::ParameterSet& iConfig, const ItemManager<bool>& cfFlag )
 
@@ -144,6 +148,7 @@ void KUCMSPhotonObject::InitObject( TTree* fOutTree ){
 
     Branches.makeBranch("IsOotPho","Photon_isOot",VBOOL);
     Branches.makeBranch("Excluded","Photon_excluded",VBOOL);
+    //Branches.makeBranch("hasSC","Photon_hasSC",VBOOL);
 
     Branches.makeBranch("Pt","Photon_pt",VFLOAT);
     Branches.makeBranch("Energy","Photon_energy",VFLOAT);
@@ -152,20 +157,26 @@ void KUCMSPhotonObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("Px","Photon_px",VFLOAT);
     Branches.makeBranch("Py","Photon_py",VFLOAT);
     Branches.makeBranch("Pz","Photon_pz",VFLOAT);
+    Branches.makeBranch("nPho","Photon_nPhoton",INT);
 
     Branches.makeBranch("EnergyErr","Photon_energyErr",VFLOAT,"energy error of the cluster from regression");//
-    Branches.makeBranch("EnergyRaw","Photon_energyRaw",VFLOAT,"raw energy of photon supercluster");//
+    //Branches.makeBranch("EnergyRaw","Photon_energyRaw",VFLOAT,"raw energy of photon supercluster");//
 
-    //Branches.makeBranch("JetIdx",VUINT);// index of matching jet/ele -> can do at skimmer
-    //Branches.makeBranch("eleIdx",VUINT);// index of matching jet/ele -> can do at skimmer
+    //Branches.makeBranch("JetIdx",VUINT);// index of matching jet/ele -> can do at skimmer ..
+    //Branches.makeBranch("eleIdx",VUINT);// index of matching jet/ele -> can do at skimmer ..
+    // superclusterEta  = Var("superCluster().eta()",float,doc="supercluster eta",precision=10),
 
     Branches.makeBranch("SeedTOFTime","Photon_seedTOFTime",VFLOAT,"time of flight from PV to photon seed crystal");
-    Branches.makeBranch("RhIds","Photon_rhIds",VVUINT,"list of rechit raw ids in hits and fractions list from supercluster");
+    //Branches.makeBranch("RhIds","Photon_rhIds",VVUINT,"list of rechit raw ids in hits and fractions list from supercluster");
+    Branches.makeBranch("scIndex","Photon_scIndex",VINT,"index of supercluster");
     Branches.makeBranch("hasPixelSeed","Photon_pixelSeed",VBOOL,"has pixel seed");
     Branches.makeBranch("eleVeto","Photon_electronVeto",VBOOL,"pass electron veto");//
-    Branches.makeBranch("isEB","Photon_seedIsEB",VBOOL,"photon supercluster seed crystal is in ecal barrel");
+    //Branches.makeBranch("isEB","Photon_seedIsEB",VBOOL,"photon supercluster seed crystal is in ecal barrel");
+    Branches.makeBranch("hasConversionTracks", VBOOL, "Variable specifying if photon has associated conversion tracks (one-legged or two-legged)");
+	// hasConversionTracks = Var("hasConversionTracks()",bool,doc="Variable specifying if photon has associated conversion tracks (one-legged or two-legged)"
 
     Branches.makeBranch("R9","Photon_r9",VFLOAT,"R9 of the supercluster, calculated with full 5x5 region");
+    Branches.makeBranch("SigmaIEtaIEta","Photon_SigmaIEtaIEta",VFLOAT);
     Branches.makeBranch("sieie","Photon_sieie",VFLOAT,"sigma_IetaIeta of supercluster, calc w/ full 5x5 region");
     Branches.makeBranch("sieip","Photon_sieip",VFLOAT,"sigmaIphiIphi of supercluster");//
     Branches.makeBranch("sipip","Photon_sipip",VFLOAT,"sigma_IetaIphi of supercluster, calc w/ full 5x5 region");//
@@ -174,47 +185,78 @@ void KUCMSPhotonObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("HadTowOverEM","Photon_hadTowOverEM",VFLOAT);
     Branches.makeBranch("HadOverEM","Photon_hadOverEM",VFLOAT);//
     Branches.makeBranch("EcalRHSumEtConeDR04","Photon_ecalRHSumEtConeDR04",VFLOAT);
+    Branches.makeBranch("HcalTowerSumEtConeDR04","Photon_hcalTowerSumEtConeDR04",VFLOAT);
     Branches.makeBranch("HcalTowerSumEtBcConeDR04","Photon_hcalTowerSumEtBcConeDR04",VFLOAT);
     Branches.makeBranch("TrkSumPtSolidConeDR04","Photon_trkSumPtSolidConeDR04",VFLOAT);
     Branches.makeBranch("TrkSumPtHollowConeDR04","Photon_trkSumPtHollowConeDR04",VFLOAT);
     Branches.makeBranch("TrkSumPtHollowConeDR03","Photon_trkSumPtHollowConeDR03",VFLOAT,"Sum of track pT in a hollow cone of outer radius, inner radius");// nano -> DR03?
+    Branches.makeBranch("NTrkSolidConeDR04","Photon_nTrkSolidConeDR04",VFLOAT);
+    Branches.makeBranch("NTrkHollowConeDR04","Photon_nTrkHollowConeDR04",VFLOAT);
 
+    Branches.makeBranch("ecalPFClusterIso","Photon_ecalPFClusterIso",VFLOAT);//
+    Branches.makeBranch("hcalPFClusterIso","Photon_hcalPFClusterIso",VFLOAT);//
+	// ecalPFClusterIso = Var("ecalPFClusterIso()",float,doc="sum pt of ecal clusters, vetoing clusters part of photon", precision=8),
+	// hcalPFClusterIso = Var("hcalPFClusterIso()",float,doc="sum pt of hcal clusters, vetoing clusters part of photon", precision=8), 
+	// two above are : //backwards compat functions for pat::Photon not filled in AOD
+
+	Branches.makeBranch("pfChargedIso", "Photon_pfChargedIso", VFLOAT, "PF absolute isolation dR=0.3, charged component with dxy,dz match to PV");
+	// pfChargedIso = Var("chargedHadronIso()",float,doc="PF absolute isolation dR=0.3, charged component with dxy,dz match to PV", precision=8),  
     Branches.makeBranch("pfPhoIso03","Photon_pfPhoIso03",VFLOAT,"PF abs iso dR=0.3, photon component (uncorrected)");//
     Branches.makeBranch("pfChargedIsoPFPV","Photon_pfChargedIsoPFPV",VFLOAT,"PF abs iso dR=0.3, charged component (PF PV only)");//
     Branches.makeBranch("pfChargedIsoWorstVtx","Photon_pfChargedIsoWorstVtx",VFLOAT,"PF abs iso dR=0.3, charged component (Vertex w/ largest iso)");//
-    //Branches.makeBranch("pfRelIso03_chg_quadratic",VFLOAT);//
-    //Branches.makeBranch("pfRelIso03_all_quadratic",VFLOAT);//
-    //Branches.makeBranch("hoe_PUcorr","Photon_Hoe_PUcorr",VFLOAT,
-    //                        "PU corrected H/E (cone-based with quadraticEA*rho*rho + linearEA*rho Winter22V1 corrections)");// userFloat
-    Branches.makeBranch("isScEtaEB","Photon_isScEtaEB",VBOOL,"is supercluster eta within barrel acceptance");//
-    Branches.makeBranch("isScEtaEE","Photon_isScEtaEE",VBOOL,"is supercluster eta within endcap acceptance");//
+    Branches.makeBranch("pfRelIso03_chg_quadratic",VFLOAT);//
+    Branches.makeBranch("pfRelIso03_all_quadratic",VFLOAT);//
+    Branches.makeBranch("hoe_PUcorr","Photon_Hoe_PUcorr",VFLOAT, "PU crt H/E (cone-based w/ quadraticEA*rho*rho + linearEA*rho Winter22V1 corts)");//UF
+
+    //Branches.makeBranch("isScEtaEB","Photon_isScEtaEB",VBOOL,"is supercluster eta within barrel acceptance");//
+    //Branches.makeBranch("isScEtaEE","Photon_isScEtaEE",VBOOL,"is supercluster eta within endcap acceptance");//
 
     //Branches.makeBranch("seedGain",VINT);// ? can find through rh collection if needed
-    Branches.makeBranch("seediEtaOriX","Photon_seediEtaOriX",VINT,"iEta or iX of seed crystal. iEta is barrel-only, iX is endcap-only. iEta runs from -85 to +85, with no crystal at iEta=0. iX runs from 1 to 100.");//
-    Branches.makeBranch("seediPhiOriY","Photon_seediPhiOriY",VINT,"iPhi or iY of seed crystal. iPhi is barrel-only, iY is endcap-only. iPhi runs from 1 to 360. iY runs from 1 to 100.");//
-    Branches.makeBranch("x_calo","Photon_x_calo",VFLOAT,"photon supercluster position on calorimeter, x coordinate (cm)");//
-    Branches.makeBranch("y_calo","Photon_y_calo",VFLOAT,"photon supercluster position on calorimeter, y coordinate (cm)");//
-    Branches.makeBranch("z_calo","Photon_z_calo",VFLOAT,"photon supercluster position on calorimeter, z coordinate (cm)");//
+    //Branches.makeBranch("seediEtaOriX","Photon_seediEtaOriX",VINT,"iEta or iX of seed crystal. iEta is barrel-only, iX is endcap-only. iEta runs from -85 to +85, with no crystal at iEta=0. iX runs from 1 to 100.");//
+    //Branches.makeBranch("seediPhiOriY","Photon_seediPhiOriY",VINT,"iPhi or iY of seed crystal. iPhi is barrel-only, iY is endcap-only. iPhi runs from 1 to 360. iY runs from 1 to 100.");//
+    //Branches.makeBranch("x_calo","Photon_x_calo",VFLOAT,"photon supercluster position on calorimeter, x coordinate (cm)");//
+    //Branches.makeBranch("y_calo","Photon_y_calo",VFLOAT,"photon supercluster position on calorimeter, y coordinate (cm)");//
+    //Branches.makeBranch("z_calo","Photon_z_calo",VFLOAT,"photon supercluster position on calorimeter, z coordinate (cm)");//
 
-    Branches.makeBranch("esEffSigmaRR","Photon_esEffSigmaRR",VFLOAT,"preshower sigmaRR");//
-    Branches.makeBranch("esEnergyOverRawE","Photon_esEnergyOverRawE",VFLOAT,"ratio of preshower energy to raw supercluster energy");
-    Branches.makeBranch("haloTaggerMVAVal","Photon_haloTaggerMVAVal",VFLOAT,"Value of MVA based beam halo tagger in the Ecal endcap (valid for pT > 200 GeV)");//
+    //Branches.makeBranch("esEffSigmaRR","Photon_esEffSigmaRR",VFLOAT,"preshower sigmaRR");//
+    //Branches.makeBranch("esEnergyOverRawE","Photon_esEnergyOverRawE",VFLOAT,"ratio of preshower energy to raw supercluster energy");
+    //Branches.makeBranch("haloTaggerMVAVal","Photon_haloTaggerMVAVal",VFLOAT,"Value of MVA based beam halo tagger in the Ecal endcap (valid for pT > 200 GeV)");//
+
+    //Branches.makeBranch("gloResRHs","Photon_gloResRhId",VVUINT);
+    //Branches.makeBranch("locResRHs","Photon_locResRhId",VVUINT);
 
     Branches.makeBranch("GenIdx","Photon_genIdx",VINT);
-    Branches.makeBranch("GenDr","Photon_genDr",VFLOAT);
-    Branches.makeBranch("GenDp","Photon_genDp",VFLOAT);
-    Branches.makeBranch("GenSIdx","Photon_genSIdx",VINT);
-    Branches.makeBranch("GenSDr","Photon_genSDr",VFLOAT);
-    Branches.makeBranch("GenSDp","Photon_genSDp",VFLOAT);
+    //Branches.makeBranch("GenDr","Photon_genDr",VFLOAT);
+    //Branches.makeBranch("GenDp","Photon_genDp",VFLOAT);
+    //Branches.makeBranch("GenSIdx","Photon_genSIdx",VINT);
+    //Branches.makeBranch("GenSDr","Photon_genSDr",VFLOAT);
+    //Branches.makeBranch("GenSDp","Photon_genSDp",VFLOAT);
+    //Branches.makeBranch("GenLlpId","Photon_genLlpId",VFLOAT);
+    //Branches.makeBranch("GenSLlpId","Photon_genSLlpId",VFLOAT);
+    Branches.makeBranch("GenXMomIdx","Photon_genSigXMomId",VINT);
+    //Branches.makeBranch("ninovx","Photon_genSigMomVx",VFLOAT);
+    //Branches.makeBranch("ninovy","Photon_genSigMomVy",VFLOAT);
+    //Branches.makeBranch("ninovz","Photon_genSigMomVz",VFLOAT);
+    //Branches.makeBranch("ninopx","Photon_genSigMomPx",VFLOAT);
+    //Branches.makeBranch("ninopy","Photon_genSigMomPy",VFLOAT);
+    //Branches.makeBranch("ninopz","Photon_genSigMomPz",VFLOAT);
+    //Branches.makeBranch("ninoeta","Photon_genSigMomEta",VFLOAT);
+    //Branches.makeBranch("ninophi","Photon_genSigMomPhi",VFLOAT);
+    //Branches.makeBranch("ninoe","Photon_genSigMomEnergy",VFLOAT);
+    //Branches.makeBranch("ninom","Photon_genSigMomMass",VFLOAT);
+    //Branches.makeBranch("ninopt","Photon_genSigMomPt",VFLOAT);
 
-    Branches.makeBranch("etaWidth","Photon_etaWidth",VFLOAT,"Width of the photon supercluster in eta");//
-    Branches.makeBranch("phiWidth","Photon_phiWidth",VFLOAT,"Width of the photon supercluster in phi");//
-    Branches.makeBranch("SMaj","Photon_smaj",VFLOAT);
-    Branches.makeBranch("SMin","Photon_smin",VFLOAT);
-    Branches.makeBranch("SAlp","Photon_salp",VFLOAT);
-    Branches.makeBranch("CovEtaEta","Photon_covEtaEta",VFLOAT);
-    Branches.makeBranch("CovEtaPhi","Photon_covEtaPhi",VFLOAT);
-    Branches.makeBranch("CovPhiPhi","Photon_covPhiPhi",VFLOAT);
+
+    //Branches.makeBranch("etaWidth","Photon_etaWidth",VFLOAT,"Width of the photon supercluster in eta");//
+    //Branches.makeBranch("phiWidth","Photon_phiWidth",VFLOAT,"Width of the photon supercluster in phi");//
+    //Branches.makeBranch("SMaj","Photon_smaj",VFLOAT);
+    //Branches.makeBranch("SMin","Photon_smin",VFLOAT);
+    //Branches.makeBranch("SAlp","Photon_salp",VFLOAT);
+    //Branches.makeBranch("CovEtaEta","Photon_covEtaEta",VFLOAT);
+    //Branches.makeBranch("CovEtaPhi","Photon_covEtaPhi",VFLOAT);
+    //Branches.makeBranch("CovPhiPhi","Photon_covPhiPhi",VFLOAT);
+    Branches.makeBranch("passQuality","Photon_isSelect",VBOOL,"photon passes base selection");
+
 
     Branches.attachBranches(fOutTree);
 
@@ -227,73 +269,136 @@ void KUCMSPhotonObject::LoadEvent( const edm::Event& iEvent, const edm::EventSet
     //iEvent.getByToken(phoCBIDLooseMapToken_, phoCBIDLooseMap_);
     iEvent.getByToken(ootPhotonsToken_, ootPhotons_);
 
-    if( PhotonDEBUG ) std::cout << "Collecting Photons/OOTPhotons" << std::endl;
     fphotons.clear();
     phoExcluded.clear();
     phoIsOotPho.clear();
-    phoIds.clear();// indexed by pho index ( 0,1,2 ) * number of ids ( 1 current, 6? possible ) + index of ID wanted
+	phoIds.clear();
+
+    if( PhotonDEBUG ) std::cout << "Collecting Photons/OOTPhotons" << std::endl;
+    std::vector<reco::Photon> fphotons_temp;
+    std::vector<bool> phoExcluded_temp;
+    std::vector<bool> phoIsOotPho_temp;
+    //std::vector<int> phoIds_temp;// indexed by pho index ( 0,1,2 ) * number of ids ( 1 current, 6? possible ) + index of ID wanted
     for (edm::View<reco::Photon>::const_iterator itPhoton = ootPhotons_->begin(); itPhoton != ootPhotons_->end(); itPhoton++) {
         //auto idx = itPhoton - ootPhotons_->begin();//unsigned int
         //auto ootPhoRef = ootPhotons_->refAt(idx);//edm::RefToBase<reco::GsfElectron> 
         auto &ootPho = (*itPhoton);
-        if( cfFlag("onlyEB") && ootPho.isEE() ) continue;
-        auto minPhoPt = ootPho.pt() < cfPrm("phoMinPt");
+        //if( cfFlag("onlyEB") && ootPho.isEE() ) continue;
+        auto minPhoPt = ootPho.pt() < 0.0; //cfPrm("phoMinPt");
         auto phoSeedTime = getPhotonSeedTime(ootPho);
-        auto minTime = phoSeedTime < cfPrm("phoMinSeedTime");
+        auto minTime = std::abs(phoSeedTime) > cfPrm("phoMinSeedTime");
         auto minEnergy = ootPho.energy() < cfPrm("minPhoE");
         if( minPhoPt || minTime || minEnergy ) continue;
-        double minDr(0.5);
+        fphotons_temp.push_back(ootPho);
+        phoIsOotPho_temp.push_back(true);
+        //phoIdBools.push_back((*phoCBIDLooseMap_)[ootPhoRef]);// not implimented 
+/*
+		// Set photon excluded via dr and pt critera
+		//
+        double minDr(1.0);
         double dRmatch(10.0);
         float matchpt(0);
         auto oEta = ootPho.eta();
         auto oPhi = ootPho.phi();
         auto oPt = ootPho.pt();
         for( const auto &gedPho : *gedPhotons_ ){
-            if( cfFlag("onlyEB") && gedPho.isEE() ) continue;
+            //if( cfFlag("onlyEB") && gedPho.isEE() ) continue;
             auto pEta = gedPho.eta();
             auto pPhi = gedPho.phi();
             auto pPt = gedPho.pt();
-            dRmatch = deltaR( pEta, oEta, pPhi, oPhi );
+            dRmatch = std::sqrt(reco::deltaR2( pEta, pPhi, oEta, oPhi ));
+			Branches.fillBranch("zscnOExDr",dRmatch);
+			Branches.fillBranch("zscnOExDr",dRmatch);
+			Branches.fillBranch("zscnOExDr",dRmatch);
+			Branches.fillBranch("zscnOExDr",dRmatch);
             if( dRmatch < minDr ){ minDr = dRmatch; matchpt = pPt; }
         }//<<>>for( int ip; ip < nPhotons; ip++ )
-        fphotons.push_back(ootPho);
-        phoIsOotPho.push_back(true);
-        //phoIdBools.push_back((*phoCBIDLooseMap_)[ootPhoRef]);// not implimented 
-        if( dRmatch < 0.1 && oPt < matchpt ) phoExcluded.push_back(true);
-        else phoExcluded.push_back(false);
+        if( dRmatch < 0.3 && oPt < matchpt ) phoExcluded_temp.push_back(true);
+        else phoExcluded_temp.push_back(false);
+		////////////////////////////////////
+*/
+		// Set photon excluded false always
+		//
+		phoExcluded_temp.push_back(false);
+		///////////////////////////////////
     }//<<>>for( int io = 0; io < nOotPhotons; io++ )
     for (edm::View<reco::Photon>::const_iterator itPhoton = gedPhotons_->begin(); itPhoton != gedPhotons_->end(); itPhoton++) {
         //auto idx = itPhoton - gedPhotons_->begin();//unsigned int
         //auto gedPhoRef = gedPhotons_->refAt(idx);//edm::RefToBase<reco::GsfElectron> 
         auto &gedPho = (*itPhoton);
         if( cfFlag("onlyEB") && gedPho.isEE() ) continue;
-        auto minPt = gedPho.pt() < cfPrm("phoMinPt");
+        auto minPt = gedPho.pt() < 0; //cfPrm("phoMinPt");
         auto phoSeedTime = getPhotonSeedTime(gedPho);
-        auto minTime = phoSeedTime < cfPrm("phoMinSeedTime");
+        auto minTime = std::abs(phoSeedTime) > cfPrm("phoMinSeedTime");
         auto minEnergy = gedPho.energy() < cfPrm("minPhoE");
         if( minPt || minTime || minEnergy ) continue;
-        double minDr(0.5);
+        fphotons_temp.push_back(gedPho);
+        phoIsOotPho_temp.push_back(false);
+        //phoIdBools.push_back((*phoCBIDLooseMap_)[gedPhoRef]);
+/*
+		// Set photon excluded via dr and pt critera
+		//
+        double minDr(1.0);
         double dRmatch(10.0);
         float matchpt(0);
         auto pEta = gedPho.eta();
         auto pPhi = gedPho.phi();
         auto pPt = gedPho.pt();
         for( const auto &ootPho : *ootPhotons_ ){
-            if( cfFlag("onlyEB") && ootPho.isEE() ) continue;
+            //if( cfFlag("onlyEB") && ootPho.isEE() ) continue;
             auto oEta = ootPho.eta();
             auto oPhi = ootPho.phi();
             auto oPt = ootPho.pt();
-            dRmatch = deltaR( pEta, oEta, pPhi, oPhi );
+            dRmatch = std::sqrt(reco::deltaR2( pEta, pPhi, oEta, oPhi ));
             if( dRmatch < minDr ){ minDr = dRmatch; matchpt = oPt; }
         }//<<>>for( int ip; ip < nPhotons; ip++ )
-        fphotons.push_back(gedPho);
-        phoIsOotPho.push_back(false);
-        //phoIdBools.push_back((*phoCBIDLooseMap_)[gedPhoRef]);
-        if( dRmatch < 0.1 && pPt < matchpt ) phoExcluded.push_back(true);
-        else phoExcluded.push_back(false);
+        if( dRmatch < 0.3 && pPt < matchpt ) phoExcluded_temp.push_back(true);
+        else phoExcluded_temp.push_back(false);
+		/////////////////////////////////////////
+*/
+        // Set photon excluded if dr match to oot photon
+        //
+        double minDr(1.0);
+        double dRmatch(10.0);
+        //float matchpt(0);
+        auto pEta = gedPho.eta();
+        auto pPhi = gedPho.phi();
+        for( const auto &ootPho : *ootPhotons_ ){
+            //if( cfFlag("onlyEB") && ootPho.isEE() ) continue;
+            auto oEta = ootPho.eta();
+            auto oPhi = ootPho.phi();
+            dRmatch = std::sqrt(reco::deltaR2( pEta, pPhi, oEta, oPhi ));
+            if( dRmatch < minDr ){ minDr = dRmatch; }
+        }//<<>>for( int ip; ip < nPhotons; ip++ )
+        if( dRmatch < 0.3 ) phoExcluded_temp.push_back(true);
+        else phoExcluded_temp.push_back(false);
+		///////////////////////////////////////
+
     }//<<>>for( int io = 0; io < nOotPhotons; io++ )
 
+	std::map< float,int > phoOrderIndx;
+	int it = 0;
+	for( auto pho : fphotons_temp ){ 
+		float ordpt = pho.pt();
+		float iordpt = ordpt;
+		float nordpt = ordpt - 0.00002;
+		while( phoOrderIndx.count(ordpt) > 0 ){ nordpt = ( iordpt + nordpt ) / 2.0; ordpt = nordpt; }
+		phoOrderIndx[ordpt] = it;
+		it++;
+	}//<<>>for( auto pho : fphotons_temp ){
+
+	for( auto phoptit = phoOrderIndx.crbegin(); phoptit != phoOrderIndx.crend(); phoptit++ ){
+
+		fphotons.push_back(fphotons_temp[phoptit->second]);
+        phoExcluded.push_back(phoExcluded_temp[phoptit->second]);
+        phoIsOotPho.push_back(phoIsOotPho_temp[phoptit->second]);
+
+	}//<<>>for( auto phoptit = phoOrderIndx.crbegin(); phoptit != phoOrderIndx.crend(); phoptit++ )
+
+
 }//<<>>void KUCMSPhoton::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
+
+void KUCMSPhotonObject::PostProcessEvent( ItemManager<float>& geVar ){}
 
 void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
 
@@ -303,13 +408,28 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
 
     if( PhotonDEBUG ) std::cout << " - enetering Photon loop" << std::endl;
 
-    uInt phoIdx = 0;
+	float nIsoPhotons = 0;
+    int phoIdx = 0;
+	//scGroup scptrs;
+    std::vector<v3fPoint> scvertex;
+	std::vector<float> scptres;
+	//std::vector<int> scmatched;
+    std::vector<uInt> locRHCands;
+    std::vector<reco::Photon> gloPhotons;
+    //std::vector<reco::Photon> locPhotons;
+    //std::vector<reco::Photon> selPhotons;
+    //std::vector<int> selPhoType;
+    //std::vector<uInt> locSeedRHs{0,0};
+    //std::vector<uInt> gloSeedRHs{0,0};
+    //std::vector<uInt> gloAllSeedRHs;
+    //float gloDiMass(-1), gloDiAngle(-1), gloDiDr(-1), gloDiPhi(-1), gloDiEta(-1);
     for( const auto &photon : fphotons ){
 
         Branches.fillBranch("IsOotPho",phoIsOotPho[phoIdx]);
         Branches.fillBranch("Excluded",phoExcluded[phoIdx]);
 
         const float phoPt = photon.pt();
+		if( PhotonDEBUG ) std::cout << " -- Pho# " << phoIdx << " Pt: " << phoPt << " oot: " << phoIsOotPho[phoIdx]  << std::endl;
         const float phoEnergy = photon.energy();
         const float phoPhi = photon.phi();
         const float phoEta = photon.eta();
@@ -318,39 +438,48 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
         const float phoPz = photon.pz();
 
         const float phoEnergyErr = photon.getCorrectedEnergyError(reco::Photon::regression2);
-        const float haloTaggerMVAVal = photon.haloTaggerMVAVal();
+        //const float haloTaggerMVAVal = photon.haloTaggerMVAVal();
         const bool phoHasPixelSeed = photon.hasPixelSeed();
+        const bool hasConversionTracks = photon.hasConversionTracks();
 
-        //const float phoHadOverEM = photon.hadronicOverEm();
+        const float phoHadOverEM = photon.hadronicOverEm();
         //const float phoHadOverEMVaid = photon.hadronicOverEmValid();
         const float phoHadTowOverEM = photon.hadTowOverEm();
         //const float phoHadTowOverEMValid = photon.hadTowOverEmValid();
+        const float hoe_PUcorr = 0;//UF needs PhoHoverEValueMapProducer slimmedPhotons, hasConversionTracks ( not in AOD ), 
         //const float phoMaxEnergyXtal = photon.maxEnergyXtal();
-        //const float phoSigmaEtaEta = photon.sigmaEtaEta();
-        //const float phoSigmaIEtaIEta = photon.sigmaIetaIeta();
-        const float sieie = photon.full5x5_sigmaIetaIeta();
-        const float sieip = photon.full5x5_showerShapeVariables().sigmaIetaIphi;
+        const float phoSigmaIEtaIEta = photon.sigmaIetaIeta();
+        const float sieie = photon.showerShapeVariables().sigmaIetaIeta;
+        const float sieip = photon.showerShapeVariables().sigmaIetaIphi;
         const float sipip = photon.showerShapeVariables().sigmaIphiIphi;
         const float s4 = photon.full5x5_showerShapeVariables().e2x2/photon.full5x5_showerShapeVariables().e5x5;
-        const float esEffSigmaRR = photon.full5x5_showerShapeVariables().effSigmaRR;
+    	//const float smaj = photon.showerShapeVariables().smMajor;
+        //const float smin = photon.showerShapeVariables().smMinor;
+        //const float salpha = photon.showerShapeVariables().smAlpha;
+    	//const float esEffSigmaRR = photon.showerShapeVariables().effSigmaRR;
 
         //const float phoR1x5 = photon.r1x5();
         //const float phoR2x5 = photon.r2x5();
         const float phoR9 = photon.r9();
 
-        const float hadronicOverEm = photon.hadronicOverEm();
         const float phoEcalRHSumEtConeDR04 = photon.ecalRecHitSumEtConeDR04();
-        //const float phoHcalTwrSumEtConeDR04 = photon.hcalTowerSumEtConeDR04();
+        const float phoHcalTwrSumEtConeDR04 = photon.hcalTowerSumEtConeDR04();
         const float phoHcalTowerSumEtBcConeDR04 = photon.hcalTowerSumEtBcConeDR04();
         const float phoTrkSumPtSolidConeDR04 = photon.trkSumPtSolidConeDR04();
         const float phoTrkSumPtHollowConeDR04 = photon.trkSumPtHollowConeDR04();
-        //const float phoNTrkSolidConeDR04 = photon.nTrkSolidConeDR04();
-        //const float phoNTrkHollowConeDR04 = photon.nTrkHollowConeDR04();
+        const float phoNTrkSolidConeDR04 = photon.nTrkSolidConeDR04();
+        const float phoNTrkHollowConeDR04 = photon.nTrkHollowConeDR04();
         const float phoTrkSumPtHollowConeDR03 = photon.trkSumPtHollowConeDR03();
 
+        const float pfPhoIso = photon.chargedHadronIso();
         const float pfPhoIso03 = photon.photonIso();
         const float pfChargedIsoPFPV = photon.chargedHadronPFPVIso();
         const float pfChargedIsoWorstVtx = photon.chargedHadronWorstVtxIso();
+        const float pfRelIso03_chg_quadratic = 0;//UF needs  isoForPho producer : effAreaPhotons_cone03_pfChargedHadrons_90percentBased_V2.txt
+        const float pfRelIso03_all_quadratic = 0;//UF needs  isoForPho producer : w/ _pfNeutralHadrons_ && _pfPhotons_ variates for both
+        const float ecalPFClusterIso = photon.ecalPFClusterIso();
+        const float hcalPFClusterIso = photon.hcalPFClusterIso();
+        //const float hoe_PUcorr = 0;//UF needs PhoHoverEValueMapProducer slimmedPhotons, hasConversionTracks ( not in AOD ),  QuadraticEAFile_HoverE 
 
         Branches.fillBranch("Pt",phoPt);
         Branches.fillBranch("Energy",phoEnergy);
@@ -361,42 +490,55 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
         Branches.fillBranch("Pz",phoPz);
 
         Branches.fillBranch("S4",s4);
-        Branches.fillBranch("esEffSigmaRR",esEffSigmaRR);
-        //Branches.fillBranch("SigmaEtaEta",phoSigmaEtaEta);
+        //Branches.fillBranch("esEffSigmaRR",esEffSigmaRR);
+        Branches.fillBranch("SigmaIEtaIEta",phoSigmaIEtaIEta);
         Branches.fillBranch("sieie",sieie);
         Branches.fillBranch("sieip",sieip);
         Branches.fillBranch("sipip",sipip);
-        Branches.fillBranch("EnergyErr",phoEnergyErr);
-        Branches.fillBranch("haloTaggerMVAVal",haloTaggerMVAVal);
-        Branches.fillBranch("hasPixelSeed",phoHasPixelSeed);
+        //Branches.fillBranch("SMaj",smaj);
+        //Branches.fillBranch("SMin",smin);
+        //Branches.fillBranch("SAlp",salpha);
 
-        Branches.fillBranch("HadOverEM",hadronicOverEm);
+        Branches.fillBranch("EnergyErr",phoEnergyErr);
+        //Branches.fillBranch("haloTaggerMVAVal",haloTaggerMVAVal);
+        Branches.fillBranch("hasPixelSeed",phoHasPixelSeed);
+        Branches.fillBranch("hasConversionTracks",hasConversionTracks);
+
+        Branches.fillBranch("HadOverEM",phoHadOverEM);
         //Branches.fillBranch("HadOverEMVaid",phoHadOverEmValid);
         Branches.fillBranch("HadTowOverEM",phoHadTowOverEM);
         //Branches.fillBranch("hadTowOverEMValid",phoHadTowOverEmValid);
         //Branches.fillBranch("MaxEnergyXtal",phoMaxEnergyXtal);
+        Branches.fillBranch("hoe_PUcorr",hoe_PUcorr);
 
         //Branches.fillBranch("R1x5",phoR1x5);
         //Branches.fillBranch("R2x5",phoR2x5);
         Branches.fillBranch("R9",phoR9);
 
         Branches.fillBranch("EcalRHSumEtConeDR04",phoEcalRHSumEtConeDR04);
-        //Branches.fillBranch("HcalTwrSumEtConeDR04",phoHcalTwrSumEtConeDR04);
+        Branches.fillBranch("HcalTowerSumEtConeDR04",phoHcalTwrSumEtConeDR04);
         Branches.fillBranch("HcalTowerSumEtBcConeDR04",phoHcalTowerSumEtBcConeDR04);
         Branches.fillBranch("TrkSumPtSolidConeDR04",phoTrkSumPtSolidConeDR04);
         Branches.fillBranch("TrkSumPtHollowConeDR04",phoTrkSumPtHollowConeDR04);
         Branches.fillBranch("TrkSumPtHollowConeDR03",phoTrkSumPtHollowConeDR03);
-        //Branches.fillBranch("NTrkSolidConeDR04",phoNTrkSolidConeDR04);
-        //Branches.fillBranch("NTrkHollowConeDR04",phoNTrkHollowConeDR04);
+        Branches.fillBranch("NTrkSolidConeDR04",phoNTrkSolidConeDR04);
+        Branches.fillBranch("NTrkHollowConeDR04",phoNTrkHollowConeDR04);
 
+        Branches.fillBranch("ecalPFClusterIso",ecalPFClusterIso);
+        Branches.fillBranch("hcalPFClusterIso",hcalPFClusterIso);
+
+        Branches.fillBranch("pfChargedIso",pfPhoIso);
         Branches.fillBranch("pfPhoIso03",pfPhoIso03);
         Branches.fillBranch("pfChargedIsoPFPV",pfChargedIsoPFPV);
         Branches.fillBranch("pfChargedIsoWorstVtx",pfChargedIsoWorstVtx);
+        Branches.fillBranch("pfRelIso03_chg_quadratic",pfRelIso03_chg_quadratic);
+        Branches.fillBranch("pfRelIso03_all_quadratic",pfRelIso03_all_quadratic);
+
 
         if( PhotonDEBUG ) std::cout << " --- Proccesssing : " << photon << std::endl;
         const auto &phosc = photon.superCluster().isNonnull() ? photon.superCluster() : photon.parentSuperCluster();
         const auto scptr = phosc.get();
-
+/*
         const float phoEnergyRaw = scptr->rawEnergy();
         const bool isScEtaEB = abs(scptr->eta()) < 1.4442;
         const bool isScEtaEE = abs(scptr->eta()) > 1.566 && abs(scptr->eta()) < 2.5;
@@ -405,7 +547,7 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
         const float x_calo = scptr->seed()->position().x();
         const float y_calo = scptr->seed()->position().y();
         const float z_calo = scptr->seed()->position().z();
-        const float esEnergyOverRawE = scptr->preshowerEnergy()/phoEnergyRaw;
+        //const float esEnergyOverRawE = scptr->preshowerEnergy()/phoEnergyRaw;
         const float etaWidth = scptr->etaWidth();
         const float phiWidth = scptr->phiWidth();
 
@@ -432,7 +574,7 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
         Branches.fillBranch("x_calo",x_calo);
         Branches.fillBranch("y_calo",y_calo);
         Branches.fillBranch("z_calo",z_calo);
-        Branches.fillBranch("esEnergyOverRawE",esEnergyOverRawE);
+        //Branches.fillBranch("esEnergyOverRawE",esEnergyOverRawE);
         Branches.fillBranch("etaWidth",etaWidth);
         Branches.fillBranch("phiWidth",phiWidth);
 
@@ -442,18 +584,23 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
         Branches.fillBranch("CovEtaEta",phoCovEtaEta);
         Branches.fillBranch("CovEtaPhi",phoCovEtaPhi);
         Branches.fillBranch("CovPhiPhi",phoCovPhiPhi);
-
+*/
 
 		auto passelectronveto = electronObj->getElectronVeto( phosc ); 
         Branches.fillBranch("eleVeto",passelectronveto);
 
         if( PhotonDEBUG ) std::cout << " --- Gathering SC info : " << scptr << std::endl;
-        const scGroup phoSCGroup{*scptr};
-        const auto phoRhGroup = rhObj->getRHGroup( phoSCGroup, 0.5 );
-        const auto phoRhIdsGroup = rhObj->getRhGrpIDs( phoRhGroup );
-        Branches.fillBranch("RhIds",phoRhIdsGroup);
-        rhObj->setRecHitUsed(phoRhIdsGroup);
-        if( PhotonDEBUG ) std::cout << " -- gedPhotons : " << scptr << " #: " << phoRhGroup.size() << std::endl;
+		//int encIndx = int(phoIdx)*100;
+		const auto scIndex = rhObj->getSuperClusterIndex(scptr,22,phoIdx);
+		Branches.fillBranch("scIndex",scIndex);
+		//scmatched.push_back(scIndex);
+//if( scIndex == -1 ) std::cout << " - phoSC: " << scIndex << " - " << phoEnergyRaw << " - " << " - " << seedDetId.rawId() << std::endl;   
+        //const scGroup phoSCGroup{*scptr};
+        //const auto phoRhGroup = rhObj->getRHGroup( phoSCGroup, 0.2 );
+        //const auto phoRhIdsGroup = rhObj->getRhGrpIDs( phoRhGroup );
+        //Branches.fillBranch("RhIds",phoRhIdsGroup);
+        //rhObj->setRecHitUsed(phoRhIdsGroup);
+        //if( PhotonDEBUG ) std::cout << " -- gedPhotons : " << scptr << " #: " << phoRhGroup.size() << std::endl;
         //auto tofTimes = rhObj->getLeadTofRhTime( phoRhGroup, geVar("vtxX"), geVar("vtxY"), geVar("vtxZ") );
         //auto timeStats = getTimeDistStats( tofTimes, phoRhGroup );
         const auto seedTOFTime = rhObj->getSeedTofTime( *scptr, geVar("vtxX"), geVar("vtxY"), geVar("vtxZ") );
@@ -463,33 +610,182 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
 
         // GenParticle Info for photon  -------------------------------------------------------------------
         if( cfFlag("hasGenInfo") ){
-
-            auto genInfo = genObjs->getGenPartMatch( scptr, phoPt );
-            int idx = genInfo[0];
-            int sidx = genInfo[3];
-            Branches.fillBranch("GenIdx",idx);
-            Branches.fillBranch("GenDr",genInfo[1]);
-            Branches.fillBranch("GenDp",genInfo[2]);
-            Branches.fillBranch("GenSIdx",sidx);
-            Branches.fillBranch("GenSDr",genInfo[4]);
-            Branches.fillBranch("GenSDp",genInfo[5]);
-            if( PhotonDEBUG) std::cout << " Photon Match ------------------------- " << std::endl;
-
+			//scptrs.push_back(*scptr);
+            v3fPoint scv( scptr->x(), scptr->y(), scptr->z() );
+            scvertex.push_back( scv );
+			scptres.push_back(phoEnergy);
         }//<<>>if( hasGenInfo )
+
+		bool isSelect = passPhoQuality( photon );
+		if( isSelect ) nIsoPhotons++;
+		Branches.fillBranch("passQuality",isSelect);
+
+/*
+        // get time resolution information
+
+        // select global photons
+        bool hasPixSeed = photon.hasPixelSeed();
+		bool hasMinSelEnergy = phoEnergy > 5.0;
+		bool isSelPho = not ( phoIsOotPho[phoIdx] or phoExcluded[phoIdx] );
+        if ( hasPixSeed && hasMinSelEnergy && isSelPho ){
+			float elTrackZ = electronObj->getEleTrackZMatch( photon );
+            auto eleMatch = elTrackZ < 1000.0;
+            auto dz = abs( elTrackZ - geVar("vtxZ") );
+            auto trackMatch = dz < 1.0;
+            if( eleMatch && trackMatch ){
+                gloPhotons.push_back(photon);
+                if( PhotonDEBUG ) std::cout << " Electron track match for Glo photon with " << dz << " dz" << std::endl;
+            }//<<<>>if( eleMatch && trackMatch )
+        }//<<>>if (not inpho.hasPixSeed)
+
+        // select local photons rechit+neighbor crystals 
+        const auto &seedDetId = scptr->seed()->seed();// seed detid
+        const auto isEB = (seedDetId.subdetId() == EcalBarrel);// which subdet
+        const auto & ph2ndMoments = rhObj->getCluster2ndMoments( scptr );
+        const auto smaj  = ph2ndMoments.sMaj;
+        const auto smin  = ph2ndMoments.sMin;
+		bool passSMajMin = ( smin < 0.3 ) && ( smaj < 0.5 );
+        if(  passSMajMin && hasMinSelEnergy && isSelPho){
+			const scGroup phoSCGroup{*scptr};
+            auto phoRhGroup = rhObj->getRHGroup( phoSCGroup, 0.0 );
+            if( PhotonDEBUG ) std::cout << " Examining Photon with " << phoRhGroup.size() << " rechits." << std::endl;
+            for( auto & rechit : phoRhGroup ){
+                const auto rhDetId = rechit.detid();
+                const auto lrhEnergy = rechit.energy(); ///ecHitE( rhDetId, phoRecHits );
+				const std::vector<std::vector<int>> offsets{{1,0},{-1,0},{0,1},{0,-1},{1,1},{1,-1},{-1,1},{-1,-1}};
+                for( auto & offset : offsets ){
+                    const auto nbDetId = ( isEB ) ? EBDetId::offsetBy( rhDetId, offset[0], offset[1] ) 
+												  : EEDetId::offsetBy( rhDetId, offset[0], offset[1] );
+                    auto neighborEnergy = rhObj->getRecHitEnergy( nbDetId.rawId() );
+                    auto ordered = lrhEnergy > neighborEnergy;
+                    auto close = lrhEnergy < 1.20 * neighborEnergy;
+					bool minRhE = ( lrhEnergy > 0.5 ) && ( neighborEnergy > 0.5 );
+                    if( ordered && close && minRhE ){  // need to be within 20% of energy
+                        if( PhotonDEBUG ) std::cout << " Matching loc rechit pair with e: " << lrhEnergy << " : " << neighborEnergy;
+                        if( PhotonDEBUG ) std::cout << " (" << lrhEnergy/neighborEnergy << ")";
+                        if( PhotonDEBUG ) std::cout << " for lead rh id: " << rhDetId.rawId() <<std::endl;
+                        //locPhotons.push_back( photon );
+                        locRHCands.push_back( rhDetId.rawId() );
+                        locRHCands.push_back( nbDetId.rawId() );
+                    }//<<>>if( high < 1.20*low )
+                }//<<>>for( auto offset : offsets )
+            }//<<>>for( rechit : phoRhGroup )
+
+        }//<<>>if ( smin < 0.3 && smaj < 0.5)
+*/
 
         phoIdx++;
     }//<<>>for( const auto &photon : fPhotons 
+	Branches.fillBranch("nPho",phoIdx);
+
+	if( cfFlag("hasGenInfo") ){
+		auto genInfo = genObj->getGenPhoMatch( scvertex, scptres );
+		//std::cout << " - genmatched - scmatched comp : " << std::endl;
+		//std::cout << " Photon Gen Match ------------------------- " << std::endl;
+		//for( uInt i = 0; i < genInfo.size(); i++ ){ std::cout << " -- gen: " << genInfo[i] << " sc: " << scmatched[i] << std::endl; }
+		//if( PhotonDEBUG) std::cout << " Photon Match ------------------------- " << std::endl;
+		for( auto genidx : genInfo ){
+			//std::cout << " -- Filling genindex : " << genidx << std::endl;  
+			Branches.fillBranch("GenIdx",genidx);
+			if( genidx > -1 ){ 
+			 	int genXMomIndx = genObj->getGenSigPhoXMother( genidx );
+                Branches.fillBranch("GenXMomIdx",genXMomIndx);
+
+				//int genLlpId = genObj->getGenLlpId( genidx );
+				//int genMotherIndx = genObj->getGenMomIdx( genidx );
+                //int momPdgId = genObj->getGenPdgId( genMotherIndx );
+                //if( genLlpId == 22 ){ 
+				//	std::cout << " -- Photon Match : level 1 : genidx: " << genidx << " Mom: " << genMotherIndx;
+				//	std::cout << " llpId: " << genLlpId << " XMomIdx: " << genXMomIndx << " mom pdg : "<< momPdgId << std::endl;	
+				//}//<<>>if( genMotherIndx < 0 )	
+
+			} else { Branches.fillBranch("GenXMomIdx",-5); }//<<>>if( genidx > -1 )
+			//std::cout << " --- next photon -------------------------- " << std::endl;
+		}//<<>>for( auto genidx : genInfo )
+		//std::cout << " Photon Gen Match Finished ------------------------- " << std::endl;
+	}//<<>>if( cfFlag("hasGenInfo") )
+
+/*
+    // Process time resolution rechits/photons
+    // select rhs for global
+    //gloAllSeedRHs.clear();
+    std::vector<uInt> gloAllSeedRHs;
+    int nGloPhos = gloPhotons.size();
+    std::vector<float> zMassDiff;
+	std::vector<int> phoIndx1;
+    std::vector<int> phoIndx2;
+    if( nGloPhos > 1 ){
+        float zMassMatch(35.00);
+        float zMass(91.1876);
+        //vector<int> phoIndx;
+        for( int first(0); first < nGloPhos; first++ ){
+            auto pho1Eta = gloPhotons[first].eta();
+            auto pho1Phi = gloPhotons[first].phi();
+            auto pho1Pt = gloPhotons[first].pt();
+            auto pho1E = gloPhotons[first].energy();
+            TLorentzVector pho1vec;
+            pho1vec.SetPtEtaPhiE(pho1Pt, pho1Eta, pho1Phi, pho1E);
+            for( int second(first+1); second < nGloPhos; second++ ){
+                auto pho2Eta = gloPhotons[second].eta();
+                auto pho2Phi = gloPhotons[second].phi();
+                auto pho2Pt = gloPhotons[second].pt();
+                auto pho2E = gloPhotons[second].energy();
+                TLorentzVector pho2vec;
+                TVector3 pho2vec3(pho2Pt, pho2Eta, pho2Phi);
+                pho2vec.SetPtEtaPhiE(pho2Pt, pho2Eta, pho2Phi, pho2E);
+                //const auto dr12 = pho1vec.DeltaR(pho2vec);
+                //const auto ang12 = pho1vec.Angle(pho2vec3);
+                //const auto dphi12 = pho1vec.DeltaPhi(pho2vec);
+                //const auto deta12 = std::abs(pho1Eta - pho2Eta);
+                pho1vec += pho2vec;
+                auto pairMass = pho1vec.M();
+                if( pairMass > 60.0 && pairMass < 120.0 ){
+                    auto diff = std::abs(pairMass-zMass);
+					zMassDiff.push_back(diff);
+					phoIndx1.push_back(first);
+					phoIndx2.push_back(second);
+                    //if( zMassDiff < zMassMatch ){
+                    //    phoIndx[0] = first; phoIndx[1] = second; zMassMatch = zMassDiff;
+                    //    //gloDiMass = pairMass; gloDiAngle = ang12; gloDiDr = dr12; gloDiPhi = dphi12; gloDiEta = deta12;
+                    //    if( PhotonDEBUG ) std::cout << " Matching glo pho pair with " << zMassDiff << " mass diff" << std::endl;
+                    //}//<<>>if( zMassDiff < zMassMatch )}
+                }//<<>>if( pairMass > 60.0 && pairMass < 120.0 )
+            }//<<>>for( int second(first+1); second < nGloPhos; second++ )
+        }//<<>>for( int first(0); first < nGloPhos; first++ )
+		int nMassMatches = zMassDiff.size();
+		for( int idx = 0; idx < nMassMatches; idx++ ){
+        	if( zMassDiff[idx] < zMassMatch ){
+
+            	//selPhoIndx[1] = phoIndx[0];
+            	auto pho0 = gloPhotons[phoIndx1[idx]];
+            	//selPhotons.push_back(pho0);
+            	//selPhoType.push_back(1);
+            	//selPhoIndx[2] = phoIndx[1];
+            	auto pho1 = gloPhotons[phoIndx2[idx]];
+            	//selPhotons.push_back(pho1);
+            	//selPhoType.push_back(2);
+            	const auto &phosc0 = pho0.superCluster().isNonnull() ? pho0.superCluster() : pho0.parentSuperCluster();
+            	const auto &phosc1 = pho1.superCluster().isNonnull() ? pho1.superCluster() : pho1.parentSuperCluster();
+            	const uInt id1 = ((phosc0.get())->seed()->seed()).rawId();
+            	gloAllSeedRHs.push_back(id1);
+            	const uInt id2 = ((phosc1.get())->seed()->seed()).rawId();
+            	gloAllSeedRHs.push_back(id2);
+            	//if( PhotonDEBUG ) std::cout << " Selecting matching glo photon pair with : " << id1  << " & " << id2;
+            	//if( PhotonDEBUG ) std::cout << " and dZmass : " << zMassDiff[idx] << std::endl;
+
+        	}//<<>>if( zMassMatch < 35.00 )
+		}//<<>>for( int idx = 0; idx < nMassMatches; idx++ )
+    }//<<>>if( gloPhotons.size() > 1 )
+*/
+
+	geVar.set("nIsoPhos",nIsoPhotons);
+	
+    //Branches.fillBranch("gloResRHs",gloAllSeedRHs);
+    //Branches.fillBranch("locResRHs",locRHCands);
 
 }//<<>>void KUCMSPhoton::ProcessEvent()
 
 void KUCMSPhotonObject::EndJobs(){}
-
-float KUCMSPhotonObject::getPhotonSeedTime( pat::Photon photon ){
-
-    const auto & phosc = photon.superCluster().isNonnull() ? photon.superCluster() : photon.parentSuperCluster();
-    return rhObj->getSuperClusterSeedTime( phosc );
-
-}//<<>>float KUCMSPhotonObject::getPhotonSeedTime( pat::Photon photon )
 
 float KUCMSPhotonObject::getPhotonSeedTime( reco::Photon photon ){
 
@@ -497,6 +793,13 @@ float KUCMSPhotonObject::getPhotonSeedTime( reco::Photon photon ){
     return rhObj->getSuperClusterSeedTime( phosc );
 
 }//<<>>float KUCMSPhotonObject::getPhotonSeedTime( reco::Photon photon )
+
+float KUCMSPhotonObject::getPhotonSeedTime( pat::Photon photon ){
+
+    const auto & phosc = photon.superCluster().isNonnull() ? photon.superCluster() : photon.parentSuperCluster();
+    return rhObj->getSuperClusterSeedTime( phosc );
+
+}//<<>>float KUCMSPhotonObject::getPhotonSeedTime( pat::Photon photon )
 
 int KUCMSPhotonObject::getIndex( float kideta, float kidphi ){
 
@@ -535,5 +838,25 @@ void KUCMSPhotonObject::correctMet( float & CSumEt, float & CPx, float & CPy ){
     }//<<>>for( auto phidx = 0; phidx < fphotons.size(); phidx++ )
 
 }//<<>>void KUCMSPhotonObject::correctMet( float & CSumEt, float & CPx, float & CPy )
+
+bool KUCMSPhotonObject::passPhoQuality( const reco::Photon & photon ){
+
+    // determine pog quality class
+    // -----------------------------------------------------
+
+    bool rhIso = photon.ecalRecHitSumEtConeDR04() < 10.0;
+    bool hcTrkIso = photon.trkSumPtSolidConeDR04() < 6.0;
+    bool hadOverE = photon.hadTowOverEm()  < 0.02;
+    bool passPhoIso = rhIso && hcTrkIso && hadOverE;
+
+    bool noPixSeed = not photon.hasPixelSeed();
+    bool overMinPt = photon.pt() > 30;
+    auto underMaxEta = std::abs(photon.eta()) < 1.479;
+
+    bool passPhoQuality = noPixSeed && underMaxEta && overMinPt && passPhoIso;
+
+    return passPhoQuality;
+
+}//<<>>int KUCMSAodSkimmer::getPhoQuality( int iter )
 
 #endif

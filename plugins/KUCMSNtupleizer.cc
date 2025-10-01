@@ -21,22 +21,26 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "KUCMSNtupleizer.hh"
-#include "KUCMSHelperFunctions.hh"
-#include "KUCMSRootHelperFunctions.hh"
+//#include "KUCMSHelperFunctions.hh"
+//#include "KUCMSRootHelperFunctions.hh"
 
 #include "KUCMSEventInfo.hh"
 #include "KUCMSEcalRechit.hh"
 #include "KUCMSPhoton.hh"
 #include "KUCMSAK4Jet.hh"
 #include "KUCMSPFMet.hh"
+#include "KUCMSECALTracks.hh"
 #include "KUCMSElectron.hh"
+#include "KUCMSMuon.hh"
+#include "KUCMSDisplacedElectron.hh"
 #include "KUCMSGenObjects.hh"
-#include "KUCMSEventFilterObject.hh"
+#include "KUCMSDisplacedVertex.hh"
+#include "KUCMSTrack.hh"
 
 using namespace std;
 
-//#define DEBUG true
-#define DEBUG false
+//#define NTDEBUG true
+#define NTDEBUG false
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // constructor
@@ -61,88 +65,227 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
     // accuire input values form python config master file ( the one we use cmsRun with interactivilly )
 
     cfFlag.set( "hasGenInfo", iConfig.existsAs<bool>("hasGenInfo") ? iConfig.getParameter<bool>("hasGenInfo") : true );
-    cfFlag.set( "onlyEB", iConfig.existsAs<bool>("onlyEB") ? iConfig.getParameter<bool>("onlyEB") : true );
-    cfPrm.set( "ebMaxEta",iConfig.existsAs<double>("ebMaxEta")? iConfig.getParameter<double>("ebMaxEta") : 1.479 );
-    cfPrm.set( "minEvtMet", iConfig.existsAs<double>("minEvtMet") ? iConfig.getParameter<double>("minEvtMet") : 150.0 );
+    cfFlag.set( "doSVModule", iConfig.existsAs<bool>("doSVModule") ? iConfig.getParameter<bool>("doSVModule") : true );
+    cfFlag.set( "doDisEleModule", iConfig.existsAs<bool>("doDisEleModule") ? iConfig.getParameter<bool>("doDisEleModule") : false );
+    cfFlag.set( "doECALTrackOnly", iConfig.existsAs<bool>("doECALTrackOnly") ? iConfig.getParameter<bool>("doECALTrackOnly") : false );
+
+    //cfFlag.set( "onlyEB", iConfig.existsAs<bool>("onlyEB") ? iConfig.getParameter<bool>("onlyEB") : false );
+    //cfFlag.set( "motherChase", iConfig.existsAs<bool>("doGenMotherChase") ? iConfig.getParameter<bool>("doGenMotherChase") : false );
+    //cfPrm.set( "ebMaxEta",iConfig.existsAs<double>("ebMaxEta")? iConfig.getParameter<double>("ebMaxEta") : 1.479 );
 
     // -- consume tags ------------------------------------------------------------
     // creats "token" for all collections that we wish to process
     
-    //if( DEBUG ) std::cout << "In constructor for KUCMSNtupilizer - tag and tokens" << std::endl;
+    //if( NTDEBUG ) 
+    std::cout << "In constructor for KUCMSNtupilizer - tag and tokens" << std::endl;
+
+	// -----  set event skim selection ----------------------------------------------------------------
+	std::string filterSelect( iConfig.existsAs<std::string>("fltrSelection") ? iConfig.getParameter<std::string>("fltrSelection") : "None" );
+	ntupleFilter.setEventSelectionTag( filterSelect );
 
     // Triggers
-    //triggerResultsToken_ = consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("triggerResults"));
-    //triggerObjectsToken_ = consumes<std::vector<pat::TriggerObjectStandAlone>>(iConfig.getParameter<edm::InputTag>("triggerObjects"));
-    // tracks 
-    //tracksToken_ = consumes<std::vector<reco::Track>>(iConfig.getParameter<edm::InputTag>("tracks"));
-    // rho
-    //rhoToken_ = consumes<double>(iConfig.getParameter<edm::InputTag>("rho"));
+    //auto triggerObjectsToken = consumes<std::vector<pat::TriggerObjectStandAlone>>(iConfig.getParameter<edm::InputTag>("triggerObjects"));
 
-	if( DEBUG ) std::cout << "Create Object Classes" << std::endl;
+	if( NTDEBUG ) std::cout << "Create Object Classes" << std::endl;
+	// note : objects stored in a map - the order in which the objects are called is set by the alphanumeric order of the object names
 
+
+	//Event Info
     auto eventInfoObj = new KUCMSEventInfoObject(  iConfig ); 
     auto vertexToken = consumes<std::vector<reco::Vertex>>(iConfig.getParameter<edm::InputTag>("vertices"));
-	eventInfoObj->LoadVertexTokens( vertexToken );
+    auto triggerResultsToken = consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("triggerResults"));
+    auto triggerEventToken = consumes<trigger::TriggerEvent>(iConfig.getParameter<edm::InputTag>("triggerEvent"));
+	//auto rhoToken = consumes<double>(iConfig.getParameter<edm::InputTag>("Rho"));
+    eventInfoObj->LoadVertexTokens( vertexToken );
+    eventInfoObj->LoadTriggerTokens( triggerResultsToken, triggerEventToken );
+    ObjMan.Load( "EventInfo", eventInfoObj );
 
+    //Rechits ECAL
     auto recHitsObj = new KUCMSEcalRecHitObject( iConfig );
     auto rhEBtoken = consumes<recHitCol>(iConfig.getParameter<edm::InputTag>("recHitsEB"));
     auto rhEEtoken = consumes<recHitCol>(iConfig.getParameter<edm::InputTag>("recHitsEE"));
-	recHitsObj->LoadRecHitTokens( rhEBtoken, rhEEtoken );
-	auto sctoken = consumes<reco::SuperClusterCollection>(iConfig.getParameter<edm::InputTag>("superClusters"));
+    recHitsObj->LoadRecHitTokens( rhEBtoken, rhEEtoken );
+    auto sctoken  = consumes<reco::SuperClusterCollection>(iConfig.getParameter<edm::InputTag>("superClusters"));
     auto ootsctoken = consumes<reco::SuperClusterCollection>(iConfig.getParameter<edm::InputTag>("ootSuperClusters"));
-    recHitsObj->LoadSCTokens( sctoken, ootsctoken );
+    auto othersctoken = consumes<reco::SuperClusterCollection>(iConfig.getParameter<edm::InputTag>("otherSuperClusters"));
+    //if( cfFlag("doSVModule") ) recHitsObj->LoadSCTokens( sctoken, ootsctoken ); else recHitsObj->LoadSCTokens( othersctoken, ootsctoken );
+	recHitsObj->LoadSCTokens( sctoken, ootsctoken );
+    recHitsObj->LoadSCTokens( othersctoken );
     auto ccltoken = consumes<std::vector<reco::CaloCluster>>(iConfig.getParameter<edm::InputTag>("caloClusters"));
     recHitsObj->LoadClusterTokens( ccltoken );
+    auto beamLineToken = consumes<reco::BeamSpot>(iConfig.getParameter<edm::InputTag>("beamSpot"));
+    recHitsObj->LoadBeamSpotTokens( beamLineToken );
+    //ObjMan.Load( "ECALRecHits", recHitsObj );// loaded last to process feedback from other objects
 
+    //Track General + GSF
+    auto TrackObj = new KUCMSTrackObject( iConfig );
+    edm::EDGetTokenT<edm::View<reco::Candidate>> pfcandToken = consumes<edm::View<reco::Candidate>>(iConfig.getParameter<edm::InputTag>("pfcandidates"));
+    TrackObj->LoadPfcandTokens( pfcandToken );
+    auto parameters = iConfig.getParameter<edm::ParameterSet>("TrackAssociatorParameters");
+	TrackAssociatorParameters trackAssocParameters;
+	edm::ConsumesCollector iC = consumesCollector();
+	trackAssocParameters.loadParameters(parameters, iC);
+	TrackObj->LoadAssociationParameters(trackAssocParameters);
+    auto transientTrackBuilderToken = esConsumes<TransientTrackBuilder,TransientTrackRecord>(edm::ESInputTag("","TransientTrackBuilder"));
+    TrackObj->LoadTTrackBuilder(transientTrackBuilderToken);
+    auto ogGeneralTracksToken = consumes<edm::View<reco::Track>>(iConfig.getParameter<edm::InputTag>("ogGeneralTracks"));
+    TrackObj->LoadGeneralTrackTokens(ogGeneralTracksToken);
+    auto ogGsfTracksToken = consumes<edm::View<reco::GsfTrack>>(iConfig.getParameter<edm::InputTag>("ogGsfTracks"));
+    TrackObj->LoadGsfTrackTokens(ogGsfTracksToken);
+	auto magneticFieldToken = esConsumes<MagneticField, IdealMagneticFieldRecord>();
+	TrackObj->LoadMagneticField(magneticFieldToken);
+    TrackObj->LoadBeamSpotTokens( beamLineToken );
+    TrackObj->LoadVertexTokens( vertexToken );
+    TrackObj->LoadRecHitObject( recHitsObj );
+    ObjMan.Load( "Tracks", TrackObj );
+
+    //Electrons 
     auto electronsObj = new KUCMSElectronObject( iConfig );
+    auto rhoToken = consumes<double>(iConfig.getParameter<edm::InputTag>("rho"));
+    electronsObj->LoadRhoTokens( rhoToken );
     auto electronToken = consumes<edm::View<reco::GsfElectron>>(iConfig.getParameter<edm::InputTag>("electrons"));
     electronsObj->LoadElectronTokens( electronToken );
     auto conversionsToken = consumes<reco::ConversionCollection>(iConfig.getParameter<edm::InputTag>("conversions"));
     electronsObj->LoadConversionTokens( conversionsToken );
-	auto beamLineToken = consumes<reco::BeamSpot>(iConfig.getParameter<edm::InputTag>("beamSpot"));
+    //auto beamLineToken = consumes<reco::BeamSpot>(iConfig.getParameter<edm::InputTag>("beamSpot"));
+    //auto transientTrackBuilderToken = esConsumes<TransientTrackBuilder,TransientTrackRecord>(edm::ESInputTag("","TransientTrackBuilder"));
+    //edm::EDGetTokenT<edm::View<reco::Candidate>> pfcandToken = consumes<edm::View<reco::Candidate>>(iConfig.getParameter<edm::InputTag>("pfcandidates"));
+    electronsObj->LoadPfcandTokens( pfcandToken );
+	electronsObj->LoadTTrackBuilder(transientTrackBuilderToken);
+    //auto ogGeneralTracksToken = consumes<edm::View<reco::Track>>(iConfig.getParameter<edm::InputTag>("ogGeneralTracks"));
+    electronsObj->LoadGeneralTrackTokens(ogGeneralTracksToken);
+    //auto ogGsfTracksToken = consumes<edm::View<reco::GsfTrack>>(iConfig.getParameter<edm::InputTag>("ogGsfTracks"));
+    electronsObj->LoadGsfTrackTokens(ogGsfTracksToken);
     electronsObj->LoadBeamSpotTokens( beamLineToken );
+    electronsObj->LoadVertexTokens( vertexToken );
     electronsObj->LoadRecHitObject( recHitsObj );
+    ObjMan.Load( "Electrons", electronsObj );
 
-	auto photonsObj = new KUCMSPhotonObject( iConfig );
-	auto photonToken = consumes<edm::View<reco::Photon>>(iConfig.getParameter<edm::InputTag>("gedPhotons"));
+    //Muons    
+    auto muonObj = new KUCMSMuonObject( iConfig );
+    auto muonToken = consumes<edm::View<reco::Muon>>(iConfig.getParameter<edm::InputTag>("muons"));
+    muonObj->LoadVertexTokens( vertexToken );
+    muonObj->LoadMuonTokens( muonToken );
+	muonObj->LoadTTrackBuilder(transientTrackBuilderToken);
+    ObjMan.Load( "Muons", muonObj );
+
+	//KUCMSECALTracks* ecalTracksObj = NULL;
+	//KUCMSDisplacedElectron* displacedElectronObj = NULL;
+    KUCMSDisplacedVertex* displacedVertexObj = NULL;
+	//if( cfFlag("doSVModule") || cfFlag("doDisEleModule") || cfFlag("doECALTrackOnly") ){
+    if( cfFlag("doSVModule") ){
+
+	
+	    //ECAL Tracks
+	    //ecalTracksObj = new KUCMSECALTracks(iConfig);
+	    //auto ecalTracksToken = consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("ecalTracks"));
+	    //auto generalTracksToken = consumes<edm::View<reco::Track>>(iConfig.getParameter<edm::InputTag>("tracks"));
+	    //auto gsfTracksToken = consumes<edm::View<reco::GsfTrack>>(iConfig.getParameter<edm::InputTag>("gsfTracksSrc"));
+	    //auto parameters = iConfig.getParameter<edm::ParameterSet>("TrackAssociatorParameters");
+	    //auto magneticFieldToken = esConsumes<MagneticField, IdealMagneticFieldRecord>();
+		//auto transientTrackBuilderToken = esConsumes<TransientTrackBuilder,TransientTrackRecord>(edm::ESInputTag("","TransientTrackBuilder"));
+		auto mergedSCToken = consumes<reco::SuperClusterCollection>(iConfig.getParameter<edm::InputTag>("displacedSCs"));
+			
+    
+	    // Setup the track associator
+	    //TrackAssociatorParameters trackAssocParameters;
+	    //edm::ConsumesCollector iC = consumesCollector();
+	    //trackAssocParameters.loadParameters(parameters, iC);
+	
+	    //ecalTracksObj->LoadECALTracksToken(ecalTracksToken);
+	    //ecalTracksObj->LoadGeneralTrackTokens(generalTracksToken);
+	    //ecalTracksObj->LoadGsfTrackTokens(gsfTracksToken);
+	    //ecalTracksObj->LoadMergedSCs(mergedSCToken);
+	    //ecalTracksObj->LoadAssociationParameters(trackAssocParameters);
+	    //ecalTracksObj->LoadMagneticField(magneticFieldToken);
+	    //ecalTracksObj->LoadBeamSpot(beamLineToken);
+
+        //ObjMan.Load( "ECALTracks", ecalTracksObj );
+
+
+		//if( cfFlag("doSVModule") ){
+
+	    	// Displaced Vertices
+	    	auto combinedMuonTracks = consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("combinedMuonTracks"));
+	    	auto muonEnhancedTracks = consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("sip2DMuonEnhancedTracks"));
+
+	    	displacedVertexObj = new KUCMSDisplacedVertex(iConfig);
+	    	displacedVertexObj->LoadMuonTracks(combinedMuonTracks);
+	    	displacedVertexObj->LoadMuonEnhancedTracksToken(muonEnhancedTracks);
+	    	displacedVertexObj->LoadPrimaryVertex(vertexToken);
+	    	displacedVertexObj->LoadTTrackBuilder(transientTrackBuilderToken);
+	    	displacedVertexObj->LoadMagneticField(magneticFieldToken);
+	    	displacedVertexObj->LoadAssociationParameters(trackAssocParameters);
+	    	displacedVertexObj->LoadMergedSCs(mergedSCToken);
+  	
+			ObjMan.Load( "DisplacedVertex", displacedVertexObj );
+
+			electronsObj->LoadDisplacedVertexObject( displacedVertexObj );
+			muonObj->LoadDisplacedVertexObject( displacedVertexObj );
+
+    	//}//<<>>if( cfFlag("doSVModule") )
+
+/*
+		if( cfFlag("doDisEleModule") ){
+
+        	//Displaced Electrons
+        	displacedElectronObj = new KUCMSDisplacedElectron(iConfig);
+        	auto gsfTracksToken = consumes<edm::View<reco::GsfTrack>>(iConfig.getParameter<edm::InputTag>("gsfTracksSrc"));
+        	auto displacedElectronToken = consumes<reco::ElectronCollection>(iConfig.getParameter<edm::InputTag>("displacedElectrons"));
+			auto displacedSCToken = consumes<edm::View<reco::SuperCluster>>(iConfig.getParameter<edm::InputTag>("displacedSCs"));
+			auto ootSuperClusterToken = consumes<edm::View<reco::SuperCluster>>(iConfig.getParameter<edm::InputTag>("ootSuperClusters"));
+
+        	displacedElectronObj->LoadECALTracksToken(ecalTracksToken);
+        	displacedElectronObj->LoadGeneralTrackTokens(generalTracksToken);
+        	displacedElectronObj->LoadGsfTrackTokens(gsfTracksToken);
+        	displacedElectronObj->LoadSuperClusterTokens(displacedSCToken);
+        	displacedElectronObj->LoadOotSuperClusterTokens(ootSuperClusterToken);
+        	displacedElectronObj->LoadDisplacedElectrons(displacedElectronToken);
+        	displacedElectronObj->LoadAssociationParameters(trackAssocParameters);
+        	displacedElectronObj->LoadMagneticField(magneticFieldToken);
+        	displacedElectronObj->LoadTTrackBuilder(transientTrackBuilderToken);
+
+        	ObjMan.Load( "DisplacedElectrons", displacedElectronObj );
+
+		}//<<>>if( cfFlag("doDisEleModule") )
+*/
+
+    }//<<>>if( cfFlag("doSVModule") )
+	if( not cfFlag("doSVModule") ) geVar.set("nDisSVs",0.f);
+
+	//Photons
+    auto photonsObj = new KUCMSPhotonObject( iConfig );
+    auto photonToken = consumes<edm::View<reco::Photon>>(iConfig.getParameter<edm::InputTag>("gedPhotons"));
     auto ootPhotonToken = consumes<edm::View<reco::Photon>>(iConfig.getParameter<edm::InputTag>("ootPhotons"));
-	photonsObj->LoadPhotonTokens( photonToken, ootPhotonToken );
+    photonsObj->LoadPhotonTokens( photonToken, ootPhotonToken );
     photonsObj->LoadRecHitObject( recHitsObj );
     photonsObj->LoadElectronObject( electronsObj );
+    ObjMan.Load( "Photons", photonsObj );
 
+	//Jets
     auto ak4jetObj = new KUCMSAK4JetObject( iConfig );
     auto jetsToken = consumes<std::vector<reco::PFJet>>(iConfig.getParameter<edm::InputTag>("jets"));
     ak4jetObj->LoadAK4JetTokens( jetsToken );
-    edm::EDGetTokenT<edm::View<reco::Candidate>> pfcandToken = consumes<CandidateView>(iConfig.getParameter<edm::InputTag>("pfcandidates"));
+    //edm::EDGetTokenT<edm::View<reco::Candidate>> pfcandToken = consumes<CandidateView>(iConfig.getParameter<edm::InputTag>("pfcandidates"));
     ak4jetObj->LoadPfcandTokens( pfcandToken );
     ak4jetObj->LoadRecHitObject( recHitsObj );
     ak4jetObj->LoadPhotonObject( photonsObj );
     ak4jetObj->LoadElectronObject( electronsObj );
-
-	auto pfmetObj = new KUCMSPFMetObject( iConfig );
-	auto pfmetToken = consumes<std::vector<reco::PFMET>>(iConfig.getParameter<edm::InputTag>("mets")); 
-	pfmetObj->LoadPFMetTokens( pfmetToken );
-	pfmetObj->LoadPhotonObject( photonsObj );
-
-
-    auto eventfilterObj = new KUCMSEventFilterObject( iConfig );
-    auto hcalNoiseSummaryToken = consumes<HcalNoiseSummary>(iConfig.getParameter<edm::InputTag>("noiselabel"));
-    eventfilterObj->LoadHcalNoiseToken(hcalNoiseSummaryToken);
-    auto bunchSpacingVal = consumes<unsigned int>(edm::InputTag("bunchSpacingProducer"));
-    eventfilterObj->LoadBunchSpacing(bunchSpacingVal);
-    if( DEBUG ) std::cout << "Loading Object Manager" << std::endl;
-
-    ObjMan.Load( "EventInfo", eventInfoObj );
-    ObjMan.Load( "Electrons", electronsObj );
-    ObjMan.Load( "Photons", photonsObj );
     ObjMan.Load( "JetsAK4", ak4jetObj );
+
+	//MET
+    auto pfmetObj = new KUCMSPFMetObject( iConfig );
+    auto pfmetToken = consumes<std::vector<reco::PFMET>>(iConfig.getParameter<edm::InputTag>("mets")); 
+    pfmetObj->LoadPFMetTokens( pfmetToken );
+    pfmetObj->LoadPhotonObject( photonsObj );
     ObjMan.Load( "PFMet", pfmetObj );
-    ObjMan.Load( "ECALRecHits", recHitsObj );
-    ObjMan.Load( "EventFilters", eventfilterObj);
+
+	if( NTDEBUG ) std::cout << "Loading Final Objects" << std::endl;
+    ObjMan.Load( "ECALRecHits", recHitsObj );// loaded last to process feedback from other objects
 
     if( cfFlag("hasGenInfo") ){
 
-        if( DEBUG ) std::cout << "Create & Load Gen Information" << std::endl;
+        if( NTDEBUG ) std::cout << "Create & Load Gen Information" << std::endl;
 
         auto genObjs = new KUCMSGenObject( iConfig );
         auto genEvtInfoToken = consumes<GenEventInfoProduct>(iConfig.getParameter<edm::InputTag>("genEvt"));
@@ -159,9 +302,13 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
         genObjs->LoadGenJetsTokens( genJetsToken );
 
         // Load gen object into other collections
-		electronsObj->LoadGenObject( genObjs );
+	    electronsObj->LoadGenObject( genObjs );
+		muonObj->LoadGenObject( genObjs );
         photonsObj->LoadGenObject( genObjs );
         ak4jetObj->LoadGenObject( genObjs );
+		//if( cfFlag("doSVModule") || cfFlag("doDisEleModule") ){ ecalTracksObj->LoadGenObject( genObjs ); }
+		if( cfFlag("doSVModule") ){ displacedVertexObj->LoadGenParticlesToken(genPartToken); }
+	    //if( cfFlag("doDisEleModule") ){	displacedElectronObj->LoadGenObject( genObjs ); }
 
         // Load gen object into objman last, should be no dependence with other objects
         ObjMan.Load( "GenObjects", genObjs );
@@ -170,178 +317,6 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
 
 // ---------------------------------------------------------------------------------
 }//>>>>KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig)
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ------------ Event Selection   -----------------------------
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-bool KUCMSNtupilizer::selectedEvent(){
-
-    bool hasMinMet = geVar("evtMET") > cfPrm("minEvtMet");
-
-    bool selected = hasMinMet;
-    return selected;
-
-}//<<>>bool KUCMSNtupilizer::selectedEvent()
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//   -------------------  Normally nothing needs to be modified below this point  --------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ------------ Destructor -----------------------------
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////i
-
-KUCMSNtupilizer::~KUCMSNtupilizer(){
-
-    ///////////////////////////////////////////////////////////////////
-    // do anything here that needs to be done at desctruction time   //
-    // (e.g. close files, deallocate resources etc.)                 //
-    ///////////////////////////////////////////////////////////////////
-
-}//>>>>KUCMSNtupilizer::~KUCMSNtupilizer()
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ------------ Analyzer Inherited Class Functions ------------
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
-
-    using namespace edm;
-
-    // -- Consume Tokens --------------------------------------------
-    // gets pointer to the collections from cmssw using the "token" for that collection
-
-    //if( DEBUG ) std::cout << "Consume Tokens -------------------------------------------- " << std::endl;
-
-    // TRIGGER
-    //iEvent.getByToken(triggerResultsToken_,triggerResults_);
-    //iEvent.getByToken(triggerObjectsToken_,triggerObjects_);
-    // TRACKS
-    //iEvent.getByToken(tracksToken_, tracks_);
-    // RHO
-    //iEvent.getByToken(rhoToken_, rho_);
-
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // ---  Collecting objests ( preprocessing object pruning ) ---------------------------------------
-    // -------------------------------------------------------------------------------------------------
-    // -- Process Event  ---------------------------------------    
-    // ** extracted from disphoana : starting point **** not all functios/varibles defined ***************
-    // ** for example only -- convert to nano?, use ewkino varibles for output, find rechit information ** 
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    if( DEBUG ) std::cout << "***********************************************************************************************" << std::endl;
-
-    // clear global event varibles 
-    geVar.clear(); // floats
-
-    // -------------------------------------------------------------------------------------------------
-    // ---  Collecting objects ( preprocessing object pruning & fill global object vectors )------------
-    // -------------------------------------------------------------------------------------------------
-
-    if( DEBUG ) std::cout << "LoadEvent ObjMan" << std::endl;
-	ObjMan.LoadEvent( iEvent, iSetup, geVar );
-
-    //------------------------------------------------------------------------------------
-    // ----   Object processing ----------------------------------------------------------
-    //------------------------------------------------------------------------------------
-    // call functions to process collections and fill tree varibles to be saved
-    // varibles to be saved to ttree are declared in the header
-    // use LoadEvent() for any processing that must be done before crosstalk 
-    // use PostProcessEvent() for any processing that must be done after crosstalk
-
-    if( DEBUG ) std::cout << "ProcessEvent ObjMan" << std::endl;
-	ObjMan.ProcessEvent( geVar );
-    ObjMan.PostProcessEvent( geVar );
-
-    //------------------------------------------------------------------------------------
-    //---- Object processing Completed ----------------------------------------------------------
-    //------------------------------------------------------------------------------------
-
-    // -- Fill output trees ------------------------------------------
-
-    if( DEBUG ) std::cout << "Select Event and Fill Tree" << std::endl;
-    if( selectedEvent() ) outTree->Fill();
-
-    // -- EOFun ------------------------------------------------------
-    //     #ifdef THIS_IS_AN_EVENTSETUP_EXAMPLE
-    //     ESHandle<SetupData> pSetup;
-    //     iSetup.get<SetupRecord>().get(pSetup);
-    //     #endif
-
-}//>>>>void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ------------ beginJob/endJob methods called once each job just before/after starting event loop    ------------
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-void KUCMSNtupilizer::beginJob(){
-
-    // Global Varibles
-
-    // Book output files and trees
-    edm::Service<TFileService> fs;
-    outTree = fs->make<TTree>("llpgtree","KUCMSNtuple");
-
-    // Book //histograms ( if any )
-    
-    std::cout << "Services Booked" << std::endl;
-
-    if( DEBUG ) std::cout << "Init ObjMan" << std::endl;
-	ObjMan.Init( outTree );
-
-}//>>>>void KUCMSNtupilizer::beginJob()
-
-
-// ------------ method called once each job just after ending the event loop    ------------
-void KUCMSNtupilizer::endJob(){ 
-
-    if( DEBUG ) std::cout << "ObjMan EndJobs" << std::endl;
-    ObjMan.EndJobs(); 
-
-}//>>>>void KUCMSNtupilizer::endJob()
-
-// ------------ method fills 'descriptions' with the allowed parameters for the module    ------------
-void KUCMSNtupilizer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
-
-    //The following says we do not know what parameters are allowed so do no validation
-    // Please change this to state exactly what you do use, even if it is no parameters
-    edm::ParameterSetDescription desc;
-    desc.setUnknown();
-    descriptions.addDefault(desc);
-
-    //Specify that only 'tracks' is allowed
-    //To use, remove the default given above and uncomment below
-    //ParameterSetDescription desc;
-    //desc.addUntracked<edm::InputTag>("tracks","ctfWithMaterialTracks");
-    //descriptions.addDefault(desc);
-
-}//>>>>void KUCMSNtupilizer::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// ---------------- CMSSW Ana Helper Functions ---------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/*  Not need at this level
-vector<float> KUCMSNtupilizer::getTimeDistStats( vector<float> times, rhGroup rechits ){
-
-    //if( rechits.size() == 0 ){ vector<float> result{-99.0}; return result; }
-
-    // N 3.64, C 0.3000  s^2 = (N/(rhe))^2 + 2C^2
-    float N(3.64);
-    float C(0.3000);
-
-    vector<float> wts;
-    for( uInt it(0); it < rechits.size(); it++ ){
-    //auto wt = 1/std::sqrt(sq2(N/rechits[it].energy())+2*sq2(C)); 
-        auto wt = 1/(sq2(N/rechits[it].energy())+2*sq2(C));
-        wts.push_back(wt);
-    }//<<>>for( uInt it(0); it < rechits.size(); it++ )
-
-    return getDistStats( times, wts );
-
-}//>>>>vector<float> KUCMSNtupilizer::getTimeDistStats( vector<float> times, rhGroup rechits ){
-*/
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ------------ define this as a plug-in --------------------------------------------------------------------------------

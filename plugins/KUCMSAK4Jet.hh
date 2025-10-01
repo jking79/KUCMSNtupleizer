@@ -57,7 +57,7 @@
 #ifndef KUCMSAK4JetObjectHeader
 #define KUCMSAK4JetObjectHeader
 
-//#define AK4JetEBUG true
+//#define AK4JetDEBUG true
 #define AK4JetDEBUG false
 
 using namespace edm; 
@@ -88,7 +88,7 @@ class KUCMSAK4JetObject : public KUCMSObjectBase {
     void LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar );
     // do cross talk jobs with other objects, do event processing, and load branches
     void ProcessEvent( ItemManager<float>& geVar );
-    void PostProcessEvent( ItemManager<float>& geVar ){};
+    void PostProcessEvent( ItemManager<float>& geVar );
 
     // if there are any final tasks be to done after the event loop via objectManager
     void EndJobs(); // do any jobs that need to be done after main event loop
@@ -138,11 +138,11 @@ class KUCMSAK4JetObject : public KUCMSObjectBase {
 KUCMSAK4JetObject::KUCMSAK4JetObject( const edm::ParameterSet& iConfig ){   
 // ---- end constructor initilizations  --------------------------
 
-    cfFlag.set( "hasGenInfo", iConfig.existsAs<bool>("hasGenInfo") ? iConfig.getParameter<bool>("hasGenInfo") : true );
-    cfFlag.set( "onlyEB", iConfig.existsAs<bool>("onlyEB") ? iConfig.getParameter<bool>("onlyEB") : true );
-    cfPrm.set( "jetPTmin", iConfig.existsAs<double>("jetPTmin") ? iConfig.getParameter<double>("jetPTmin") : 15.0 );
-    cfPrm.set( "jetEtaMax", iConfig.existsAs<double>("jetEtaMax") ? iConfig.getParameter<double>("jetEtaMax") : 3.0 );
-    cfPrm.set( "ebMaxEta",iConfig.existsAs<double>("ebMaxEta")? iConfig.getParameter<double>("ebMaxEta") : 1.479 );
+    cfFlag.set( "hasGenInfo", iConfig.existsAs<bool>("hasGenInfo") ? iConfig.getParameter<bool>("hasGenInfo") : false );
+    cfFlag.set( "onlyEB", iConfig.existsAs<bool>("onlyEB") ? iConfig.getParameter<bool>("onlyEB") : false );
+    cfPrm.set( "jetPTmin", iConfig.existsAs<double>("jetPTmin") ? iConfig.getParameter<double>("jetPTmin") : 10.0 );
+    cfPrm.set( "jetEtaMax", iConfig.existsAs<double>("jetEtaMax") ? iConfig.getParameter<double>("jetEtaMax") : 3.5 );
+    cfPrm.set( "ebMaxEta",iConfig.existsAs<double>("ebMaxEta")? iConfig.getParameter<double>("ebMaxEta") : 1.44 );
 
 }//<<>>KUCMSAK4Jet::KUCMSAK4Jet( const edm::ParameterSet& iConfig, const ItemManager<bool>& cfFlag )
 
@@ -167,18 +167,30 @@ void KUCMSAK4JetObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("Parts","Jet_egIndxs",VVUINT);
     Branches.makeBranch("DrRhIds","Jet_drRhIds",VVUINT);
 
-    Branches.makeBranch("GenImpactAngle","Jet_genImpactAngle",VFLOAT);
-    Branches.makeBranch("GenTime","Jet_genTime",VFLOAT);
-    Branches.makeBranch("GenPt","Jet_genPt",VFLOAT);
-    Branches.makeBranch("GenEta","Jet_genEta",VFLOAT);
-    Branches.makeBranch("GenPhi","Jet_genPhi",VFLOAT);
-    Branches.makeBranch("GenEnergy","Jet_genEnergy",VFLOAT);
-    Branches.makeBranch("GenDrMatch","Jet_genDrMatch",VFLOAT);
-    Branches.makeBranch("GenDptMatch","Jet_genDptMatch",VFLOAT);
-    Branches.makeBranch("GenTimeLLP","Jet_genTimeLLP",VFLOAT);
-    Branches.makeBranch("GenTOF","Jet_genTOF",VFLOAT);
+	if( cfFlag("hasGenInfo") ){
 
-    Branches.attachBranches(fOutTree);
+    	Branches.makeBranch("GenImpactAngle","Jet_genImpactAngle",VFLOAT);
+    	Branches.makeBranch("GenTime","Jet_genTime",VFLOAT);
+    	Branches.makeBranch("GenPt","Jet_genPt",VFLOAT);
+    	Branches.makeBranch("GenEta","Jet_genEta",VFLOAT);
+    	Branches.makeBranch("GenPhi","Jet_genPhi",VFLOAT);
+    	Branches.makeBranch("GenEnergy","Jet_genEnergy",VFLOAT);
+    	Branches.makeBranch("GenDrMatch","Jet_genDrMatch",VFLOAT);
+    	Branches.makeBranch("GenDptMatch","Jet_genDptMatch",VFLOAT);
+    	Branches.makeBranch("GenTimeLLP","Jet_genTimeLLP",VFLOAT);
+    	Branches.makeBranch("GenTOF","Jet_genTOF",VFLOAT);
+
+    	Branches.makeBranch("GenQrkLlpDr","Jet_genQrkLlpDr",VFLOAT);
+    	Branches.makeBranch("GenQrkLlpRp","Jet_genQrkLlpRp",VFLOAT);
+    	Branches.makeBranch("GenQrkLlpId","Jet_genQrkLlpId",VINT);
+
+    	Branches.makeBranch("GejJetDr","Jet_genJetLlpDr",VFLOAT);
+    	Branches.makeBranch("GenJetRp","Jet_genJetLlpRp",VFLOAT);
+    	Branches.makeBranch("GenJetLlpId","Jet_genJetLlpId",VINT);
+
+	}//<<>>if( cfFlag("hasGenInfo") )
+
+	Branches.attachBranches(fOutTree);
 
 }//<<>>void KUCMSAK4Jet::InitObject( TTree* fOutTree )
 
@@ -194,10 +206,10 @@ void KUCMSAK4JetObject::LoadEvent( const edm::Event& iEvent, const edm::EventSet
     for(const auto &jet : *jets_ ){ // Filters jet collection & sorts by pt
 
         if( jet.pt() < cfPrm("jetPTmin") ) continue;
-          if( cfFlag("onlyEB") && std::abs(jet.eta()) > cfPrm("ebMaxEta") ) continue;
+        if( cfFlag("onlyEB") && std::abs(jet.eta()) > cfPrm("ebMaxEta") ) continue;
         if( std::abs(jet.eta()) > cfPrm("jetEtaMax") ) continue;
-          // save the jets, and then store the ID
-          fjets.emplace_back(jet);
+        // save the jets, and then store the ID
+        fjets.emplace_back(jet);
         auto jetID = 0;
         jetIds.push_back(jetID);
 
@@ -206,6 +218,8 @@ void KUCMSAK4JetObject::LoadEvent( const edm::Event& iEvent, const edm::EventSet
 
 
 }//<<>>void KUCMSAK4Jet::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
+
+void KUCMSAK4JetObject::PostProcessEvent( ItemManager<float>& geVar ){}
 
 void KUCMSAK4JetObject::ProcessEvent( ItemManager<float>& geVar ){
 
@@ -304,7 +318,7 @@ void KUCMSAK4JetObject::ProcessEvent( ItemManager<float>& geVar ){
 
         if( cfFlag("hasGenInfo") ){
 
-			auto genJetInfo = genObjs->getGenJetInfo( jetEta, jetPhi, jetPt );
+			auto genJetInfo = genObjs->getGenJetInfo( jetEta, jetPhi, jetE );
             // load event level vectors for this jet with gen info
 
             Branches.fillBranch("GenImpactAngle",genJetInfo[0]);
@@ -313,10 +327,17 @@ void KUCMSAK4JetObject::ProcessEvent( ItemManager<float>& geVar ){
             Branches.fillBranch("GenEta",genJetInfo[3]);
             Branches.fillBranch("GenPhi",genJetInfo[4]);
             Branches.fillBranch("GenEnergy",genJetInfo[5]);
+            //Branches.fillBranch("genEMFrac",genJetInfo[6]);
             Branches.fillBranch("GenDrMatch",genJetInfo[7]);
             Branches.fillBranch("GenDptMatch",genJetInfo[8]);
             Branches.fillBranch("GenTimeLLP",genJetInfo[9]);
             Branches.fillBranch("GenTOF",genJetInfo[10]);
+            Branches.fillBranch("GejJetDr",genJetInfo[11]);
+            Branches.fillBranch("GenJetRp",genJetInfo[12]);
+            Branches.fillBranch("GenJetLlpId",int(genJetInfo[13]));
+            Branches.fillBranch("GenQrkLlpDr",genJetInfo[14]);
+            Branches.fillBranch("GenQrkLlpRp",genJetInfo[15]);
+            Branches.fillBranch("GenQrkLlpId",int(genJetInfo[16]));
 
         }//<<>>if( hasGenInfo )
         if(AK4JetDEBUG ) std::cout << "Next Jet .......................... " << std::endl;

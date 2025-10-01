@@ -39,6 +39,7 @@
 #include "FWCore/Common/interface/TriggerNames.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "DataFormats/HLTReco/interface/TriggerObject.h"
+#include "DataFormats/HLTReco/interface/TriggerEvent.h"
 
 // Gen Info
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
@@ -102,12 +103,16 @@
 #include "KUCMSItemManager.hh"
 #include "KUCMSBranchManager.hh"
 #include "KUCMSObjectBase.hh"
+#include "KUCMSEventSelection.hh"
 
 #ifndef KUCMSNtupilizerHeader
 #define KUCMSNtupilizerHeader
 
 using namespace std;
 using namespace edm;
+
+//#define NTHDEBUG true
+#define NTHDEBUG false
 
 //
 // In class declaration :
@@ -169,7 +174,12 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
         virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
         virtual void endJob() override;
 
-        bool selectedEvent();
+		// setup config tree
+		void InitConfigTree( TTree* fConfigTree );
+
+        //bool selectedEvent();
+		//ntple event selection
+		KUCMSEventSelection ntupleFilter;
 
         ////////////////////////////////////////////////////
         // ----------member data ---------------------------
@@ -188,8 +198,14 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
         // global event varibles
         ItemManager<float> geVar;
 
+		// config - event count and wgt info
+		KUCMSBranchManager ConfigBranches;
+    	int nTotEvts, nFltrdEvts, metFltrdEvts, phoFltrdEvts;
+    	float sumEvtWgt, sumFltrdEvtWgt;
+
         // oputput tree
         TTree *outTree;
+        TTree *configTree;
 
         // histograms
         TH1D *hist1d[nHists];
@@ -283,7 +299,217 @@ class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
         edm::ESGetToken<EcalPedestals, EcalPedestalsRcd> EcalPedestalsToken_;
         edm::ESHandle<EcalPedestals> pedestals_;
 
+
+
+
 };//<<>>class KUCMSNtupilizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//   -------------------  Normally nothing needs to be modified below this point  --------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ------------ Destructor -----------------------------
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////i
+
+KUCMSNtupilizer::~KUCMSNtupilizer(){
+ 
+    ///////////////////////////////////////////////////////////////////
+    // do anything here that needs to be done at desctruction time   //
+    // (e.g. close files, deallocate resources etc.)                 //
+    ///////////////////////////////////////////////////////////////////
+ 
+}//>>>>KUCMSNtupilizer::~KUCMSNtupilizer()
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ------------ Analyzer Inherited Class Functions ------------
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
+
+    using namespace edm;
+
+    // -- Consume Tokens --------------------------------------------
+    // gets pointer to the collections from cmssw using the "token" for that collection
+
+    if( NTHDEBUG ) std::cout << "Consume Tokens -------------------------------------------- " << std::endl;
+
+    // TRIGGER
+    //iEvent.getByToken(triggerResultsToken_,triggerResults_);
+    //iEvent.getByToken(triggerObjectsToken_,triggerObjects_);
+    // TRACKS
+    //iEvent.getByToken(tracksToken_, tracks_);
+    // RHO
+    //iEvent.getByToken(rhoToken_, rho_);
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // ---  Collecting objests ( preprocessing object pruning ) ---------------------------------------
+    // -------------------------------------------------------------------------------------------------
+    // -- Process Event  ---------------------------------------    
+    // ** extracted from disphoana : starting point **** not all functios/varibles defined ***************
+    // ** for example only -- convert to nano?, use ewkino varibles for output, find rechit information ** 
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    if( NTHDEBUG ) std::cout << "********************************************************************************************" << std::endl;
+
+    // clear global event varibles 
+    geVar.clear(); // floats
+
+	// increment event counts and wgts
+	int single = 1;
+	geVar.set("genWgt",single);
+    nTotEvts++;;
+
+    // -------------------------------------------------------------------------------------------------
+    // ---  Collecting objects ( preprocessing object pruning & fill global object vectors )------------
+    // -------------------------------------------------------------------------------------------------
+
+    if( NTHDEBUG ) std::cout << "LoadEvent ObjMan" << std::endl;
+    ObjMan.LoadEvent( iEvent, iSetup, geVar );
+
+    //------------------------------------------------------------------------------------
+    // ----   Object processing ----------------------------------------------------------
+    //------------------------------------------------------------------------------------
+    // call functions to process collections and fill tree varibles to be saved
+    // varibles to be saved to ttree are declared in the header
+    // use LoadEvent() for any processing that must be done before crosstalk 
+    // use PostProcessEvent() for any processing that must be done after crosstalk <<<  Most work should be done now.
+
+
+    if( NTHDEBUG ) std::cout << "ProcessEvent ObjMan" << std::endl;
+    ObjMan.ProcessEvent( geVar );
+    ObjMan.PostProcessEvent( geVar );
+
+    //------------------------------------------------------------------------------------
+    //---- Object processing Completed ----------------------------------------------------------
+    //------------------------------------------------------------------------------------
+
+    // -- Fill output trees ------------------------------------------
+
+    if( NTHDEBUG ) std::cout << "Select Event and Fill Tree" << std::endl;
+    if( ntupleFilter.selectEvent( geVar ) ){
+ 
+		outTree->Fill();
+		nFltrdEvts++;
+		sumFltrdEvtWgt += geVar("genWgt");
+
+	}//<<>>if( ntupleSkim.selectEvent( geVar ) )
+
+	metFltrdEvts += ntupleFilter.trackMetFilter() ? 1 : 0;
+	phoFltrdEvts += ntupleFilter.trackPhoFilter() ? 1 : 0;
+	sumEvtWgt += geVar("genWgt");
+
+    // -- EOFun ------------------------------------------------------
+    //     #ifdef THIS_IS_AN_EVENTSETUP_EXAMPLE
+    //     ESHandle<SetupData> pSetup;
+    //     iSetup.get<SetupRecord>().get(pSetup);
+    //     #endif
+
+}//>>>>void KUCMSNtupilizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ------------ beginJob/endJob methods called once each job just before/after starting event loop    ------------
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+void KUCMSNtupilizer::beginJob(){
+ 
+    // Global Varibles
+ 
+    // Book output files and trees
+    edm::Service<TFileService> fs;
+    outTree = fs->make<TTree>("llpgtree","KUCMSNtuple");
+    configTree = fs->make<TTree>("configtree","KUCMSNtuple");
+ 
+	InitConfigTree( configTree );
+
+    // Book //histograms ( if any )
+ 
+    std::cout << "Services Booked" << std::endl;
+ 
+    if( NTHDEBUG ) std::cout << "Init ObjMan" << std::endl;
+    ObjMan.Init( outTree );
+
+    nTotEvts = 0; 
+	nFltrdEvts = 0;
+	sumEvtWgt = 0;
+    sumFltrdEvtWgt = 0;
+	metFltrdEvts = 0;
+	phoFltrdEvts = 0;
+ 
+}//>>>>void KUCMSNtupilizer::beginJob()
+
+void KUCMSNtupilizer::InitConfigTree( TTree* fConfigTree ){
+
+    ConfigBranches.makeBranch("nTotEvts","nTotEvts",INT);
+    ConfigBranches.makeBranch("nFltrdEvts","nFltrdEvts",INT);
+    ConfigBranches.makeBranch("sumEvtWgt","sumEvtWgt",FLOAT);
+    ConfigBranches.makeBranch("sumFltrdEvtWgt","sumFltrdEvtWgt",FLOAT);
+    ConfigBranches.makeBranch("nMetFltrdEvts","nMetFltrdEvts",INT);
+    ConfigBranches.makeBranch("nPhoFltrdEvts","nPhoFltrdEvts",INT);
+
+    ConfigBranches.attachBranches(fConfigTree);
+
+}//<<>>void KUCMSNtupilizer::InitConfigTree( TTree* fConfigTree )
+
+// ------------ method called once each job just after ending the event loop    ------------
+void KUCMSNtupilizer::endJob(){
+ 
+    if( NTHDEBUG ) std::cout << "ObjMan EndJobs" << std::endl;
+    ObjMan.EndJobs();
+
+	ConfigBranches.clearBranches();
+	ConfigBranches.fillBranch("nTotEvts",nTotEvts);
+	ConfigBranches.fillBranch("nFltrdEvts",nFltrdEvts);
+	ConfigBranches.fillBranch("sumEvtWgt",sumEvtWgt);
+    ConfigBranches.fillBranch("sumFltrdEvtWgt",sumFltrdEvtWgt);
+    ConfigBranches.fillBranch("nMetFltrdEvts",metFltrdEvts);
+    ConfigBranches.fillBranch("nPhoFltrdEvts",phoFltrdEvts);
+	configTree->Fill();
+ 
+}//>>>>void KUCMSNtupilizer::endJob()
+
+// ------------ method fills 'descriptions' with the allowed parameters for the module    ------------
+void KUCMSNtupilizer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+ 
+    //The following says we do not know what parameters are allowed so do no validation
+    // Please change this to state exactly what you do use, even if it is no parameters
+    edm::ParameterSetDescription desc;
+    desc.setUnknown();
+    descriptions.addDefault(desc);
+ 
+    //Specify that only 'tracks' is allowed
+    //To use, remove the default given above and uncomment below
+    //ParameterSetDescription desc;
+    //desc.addUntracked<edm::InputTag>("tracks","ctfWithMaterialTracks");
+    //descriptions.addDefault(desc);
+ 
+}//>>>>void KUCMSNtupilizer::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// ---------------- CMSSW Ana Helper Functions ---------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*  Not need at this level
+vector<float> KUCMSNtupilizer::getTimeDistStats( vector<float> times, rhGroup rechits ){
+
+    //if( rechits.size() == 0 ){ vector<float> result{-99.0}; return result; }
+
+    // N 3.64, C 0.3000  s^2 = (N/(rhe))^2 + 2C^2
+    float N(3.64);
+    float C(0.3000);
+
+    vector<float> wts;
+    for( uInt it(0); it < rechits.size(); it++ ){
+    //auto wt = 1/std::sqrt(sq2(N/rechits[it].energy())+2*sq2(C)); 
+        auto wt = 1/(sq2(N/rechits[it].energy())+2*sq2(C));
+        wts.push_back(wt);
+    }//<<>>for( uInt it(0); it < rechits.size(); it++ )
+
+    return getDistStats( times, wts );
+
+}//>>>>vector<float> KUCMSNtupilizer::getTimeDistStats( vector<float> times, rhGroup rechits ){
+*/
     
 #endif
 

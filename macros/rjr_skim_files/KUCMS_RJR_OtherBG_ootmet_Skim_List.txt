@@ -1,0 +1,6 @@
+#TTJets_R18_IPM100_v24_LLPGskim_v21_rjrvars.root
+#WZ_R18_IPM100_v24_LLPGskim_v21_rjrvars.root
+#TGJets_R18_IPM100_v24_LLPGskim_v21_rjrvars.root
+#TTGJets_R18_IPM100_v24_LLPGskim_v21_rjrvars.root
+#ttWJets_R18_IPM100_v24_LLPGskim_v21_rjrvars.root
+ttZJets_R18_IPM100_v24_LLPGskim_v21_rjrvars.root

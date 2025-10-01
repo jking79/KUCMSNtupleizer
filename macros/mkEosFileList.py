@@ -21,21 +21,48 @@ def doCommand( command ):
 
 mspc = '/store/user/jaking/'
 mdis = '/store/user/lpcsusylep/jaking/'
+justin = '/store/user/janguian/'
 eosll = 'eos root://cmseos.fnal.gov ls '
 #command = eosll+mspc+'LLPGamma/llpga_GMSB_AOD_v48/'
 #command = eosll+mspc+'A/'
 #command = eosll+mdis+'LLPGamma/llpga_GMSB_AOD_v58/'
 #command = eosll+mdis+'/ecalTiming/tt_KUCCRes_126_Test/EGamma/'
 #command = eosll+mdis+'LLPGamma/llpga_GJets_AOD_v57/'
-command = eosll+mdis+'LLPGamma/llpga_GMSB_AOD_v59/'
+#command = eosll+mdis+'LLPGamma/llpga_GMSB_AOD_v59/'
 #command = eosll+mspc+'ecalTiming/'
 #command = eosll+mdis+'ecalTiming/EGamma/'
 #command = eosll+mspc+'EGamma/'
+#command = eosll+mdis+'KUCMSNtuple/GMSB_AOD_v1/'
+#command = eosll+mdis+'/KUCMSNtuple/kucmsntuple_GJETS_AOD_v5/'
+#command = eosll+mdis+'/KUCMSNtuple/WJETS_AOD_v1/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_QCD_AOD_v2/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_GMSB_AOD_v5/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_DYTT_AOD_v2/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_SMS-GlGl_1900/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_WJetsToLNu_R18_IPM100_v24/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_gogoG_Sig_IPM100_v24/CRAB_UserFiles/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_TTXJets_R18_IPM100_v24/'
+#command = eosll+mdis+'KUCMSNtuple/ZNu_IPM100/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_WJetsToLNu_R18_IPM100_v24/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_WZ_R18_IPM100_v24/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_TTJets_R18_IPM100_v24/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_MET_R18_MRL_MET100_v24/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_GJETS_R18_IPM100_v24/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_GJETS_R18_IPM100_v25/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_gogoG_Sig_IPM100_v26/'
+command = eosll+mdis+'KUCMSNtuple/kucmsntuple_ZJets_R18_SVIPM100_v29/'
+
 version = ''
 #version = '_v11_'
 #version = '_noOOTAmp_'
 #version = '_wthOOTAmp_'
+#version = 'SMS'
+#version = 'WJetsToLNu'
+#version = 'ZJetsToNuNu'
+#version = 'kucmsntuple_gogoG_Sig2_IPM100_v24_SMS-GlGl_AODSIM_mGl-2000_mN2-1500_mN1-1'
+
 rootfile = '.root'
+
 #dirselect = 'HTo2LongLivedTo4b'
 #dirselect = '_newRtParams4_v26b_'
 #dirselect = '_newRtParams3_test_v26_'
@@ -45,10 +72,22 @@ rootfile = '.root'
 #dirselect = '22eraC_CCstc0_EGamma_MINIAOD_Run2022C-PromptReco-v1_357328-357331'
 #dirselect = 'noOOTCC_kustc0_EGamma_MINIAOD_Run2022C-PromptReco-v1_357101-357268'
 #dirselect = 'CCstc0_EGamma_MINIAOD_Run2022C-PromptReco-v1_357101-357268'
-dirselect = ''
 
-#debug = True
-debug = False
+#dirselect = 'CRAB_UserFiles'
+#dirselect = 'WJetsToLNu'
+#dirselect = 'QCD'
+#dirselect = 'TTJets'
+#dirselect = 'TTGJets'
+#dirselect = 'ttZJets'
+#dirselect = 'ttWJets'
+#dirselect = 'GJets_HT-200To400'
+#dirselect = 'MET'
+dirselect = 'ZJetsToNuNu_HT-600To800'
+
+#dirselect = ''
+
+debug = True
+#debug = False
 
 #deep = True
 deep = False
@@ -65,7 +104,10 @@ if debug : print( '-------------------------------------------------')
 for line in dirls:
 	#print( line )
 	if dirselect in line : targdirs.append( line )
+    #targdirs.append( line )
+
 if debug : print( targdirs )
+
 if deep :
 	for mydir in targdirs:
 		command1 = command+mydir+'/'
@@ -90,17 +132,47 @@ for thesubdir in subdirlist1 :
 		command3 = command+thesubdir+subdir+'/'
 		subdir3 = bashout( command3 ).rstrip().splitlines()
 		for subsubdir in subdir3 : 
-			subdirlist2.append(thesubdir+subdir+'/'+subsubdir+'/0000/')
+			subdirlist2.append(thesubdir+subdir+'/'+subsubdir)
+done = False
+for thesubdir2 in subdirlist2 :
+    command4 = command+thesubdir2+'/'
+    subdir4 = bashout( command4 ).rstrip().splitlines()
+    #print( thesubdir+subdir2+'/0000/' )
+    for subdir in subdir4 :
+        if rootfile in subdir : 
+            filelist.append(thesubdir2+'/'+subdir)
+            done = True
+        else : subdirlist3.append(thesubdir2+'/'+subdir+'/')
+        #command5 = command+thesubdir+subdir+'/'
+        #subdir5 = bashout( command5 ).rstrip().splitlines()
+        #for subsubdir in subdir5 :
+            #subdirlist3.append(thesubdir+subdir+'/'+subsubdir+'/')
 
 
-if debug : print( subdirlist2 )
-for subdir2 in subdirlist2:
-	lists = bashout( command+subdir2 ).rstrip().splitlines()
-	for line in lists :
-		if rootfile in line : filelist.append(subdir2+line)
+if debug : 
+    if not done : print( subdirlist3 )
+    if done : print( filelist )
+if not done :
+    for subdir2 in subdirlist3:
+        lists = bashout( command+subdir2 ).rstrip().splitlines()
+        for line in lists :
+            if rootfile in line : filelist.append(subdir2+line)
 
+
+#for thefile in filelist:
+
+        #print( thefile )
+
+
+#print( filelist )
+select =  filelist[0].split("/")
+outfile = select[0] + '_v29.txt'
+print( outfile )
+outf = open( outfile, 'w' )
 for thefile in filelist:
-	print( thefile )
+    outf.write( thefile + '\n' )
+outf.close()
+
 
 	#filename = 'tmp_'+subdir2.split('/')[1]+'.root '
 	#print( filename )

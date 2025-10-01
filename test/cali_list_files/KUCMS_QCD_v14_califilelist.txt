@@ -1,0 +1,9 @@
+ntuple_master_lists/kuntuple_QCD_HT1000to1500_v14.txt 0 999999
+ntuple_master_lists/kuntuple_QCD_HT100to200_v14.txt 0 999999
+ntuple_master_lists/kuntuple_QCD_HT1500to2000_v14.txt 0 999999
+ntuple_master_lists/kuntuple_QCD_HT2000toInf_v14.txt 0 999999
+ntuple_master_lists/kuntuple_QCD_HT200to300_v14.txt 0 999999
+ntuple_master_lists/kuntuple_QCD_HT300to500_v14.txt 0 999999
+ntuple_master_lists/kuntuple_QCD_HT500to700_v14.txt 0 999999
+ntuple_master_lists/kuntuple_QCD_HT50to100_v14.txt 0 999999
+ntuple_master_lists/kuntuple_QCD_HT700to1000_v14.txt 0 999999

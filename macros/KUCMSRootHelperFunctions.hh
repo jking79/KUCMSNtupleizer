@@ -9,29 +9,15 @@
 //--------------------   hh file -------------------------------------------------------------
 //---------------------------------------------------------------------------------------------
 
-#include "KUCMSHelperFunctions.hh"
+#include "./KUCMSHelperFunctions.hh"
 
-// ROOT includes
-#include "TFile.h"
-#include "TTree.h"
-#include "TH1F.h"
-#include "TH1D.h"
-#include "TH2F.h"
-#include "TGraphAsymmErrors.h"
-#include "TMath.h"
-#include "TCanvas.h"
-#include "TROOT.h"
-#include "TStyle.h"
-#include "TString.h"
-#include "TColor.h"
-#include "TPaveText.h"
-#include "TText.h"
-#include "TChain.h"
+// ROOT
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
-#include "TF1.h"
 #include "TFormula.h"
+#include "TF1.h"
+#include "TTree.h"
 #include "Math/PositionVector3D.h"
 #include "TMatrixD.h"
 #include "TVectorD.h"
@@ -64,6 +50,27 @@ void fillTH1( float val, TH1D* hist ){
 
 }//<<>>void fillTH1( float val, TH1D* hist )
 
+void fillRatioHist(TH1D* numi, TH1D* denom, TH1D* result ){
+
+    const auto nbins = numi->GetNbinsX();
+    for (auto ibin = 0; ibin <= nbins; ibin++){
+        auto nc = numi->GetBinContent(ibin);
+        auto ncer = numi->GetBinError(ibin);
+        auto dc = denom->GetBinContent(ibin);
+        auto dcer = denom->GetBinError(ibin);
+        auto ratio(0.0);
+        auto rerr(0.0);
+        if( dc > 0 ){
+            ratio = nc/dc;
+            rerr = std::sqrt( sq2(ncer/dc) - (sq2(ratio)/dc) );
+            //rerr = std::sqrt((sq2(ncer/dc)+sq2((nc/sq2(dc))*dcer))/dc);
+        }//<<>>if( dc > 0 )
+        result->SetBinContent(ibin,ratio);
+        result->SetBinError(ibin,rerr);
+    }//<<>>for (auto ibinX = 1; ibinX <= nXbins; ibinX++)
+
+}//<<>>fillRatioHist(TH1F* numi, TH1F* denom, TH1F* result )
+
 void normTH2D(TH2D* hist){
 
     std::cout << "Normilizing " << " hist: " << hist->GetName() << std::endl;
@@ -91,6 +98,33 @@ void normTH2D(TH2D* hist){
 
 }//<<>>void NormTH2D(TH2D* hist){
 
+void normTH2F(TH2F* hist){
+
+    std::cout << "Normilizing " << " hist: " << hist->GetName() << std::endl;
+
+    const auto nXbins = hist->GetNbinsX();
+    const auto nYbins = hist->GetNbinsY();
+
+    for (auto ibinX = 1; ibinX <= nXbins; ibinX++){
+
+        const auto norm = hist->Integral(ibinX,ibinX,1,nYbins);
+        if( norm == 0.0 ) continue;
+        for (auto ibinY = 1; ibinY <= nYbins; ibinY++){
+
+            // get content/error
+            auto content = hist->GetBinContent(ibinX,ibinY);
+            auto error   = hist->GetBinError  (ibinX,ibinY);
+            // set new contents
+            content /= norm;
+            error /= norm;
+            hist->SetBinContent(ibinX,ibinY,content);
+            hist->SetBinError  (ibinX,ibinY,error);
+
+        }//<<>>for (auto ibinY = 1; ibinY <= nXbins; ibinY++){
+    }//<<>>for (auto ibinX = 1; ibinX <+ nYbins; ibinX++){
+
+}//<<>>void NormTH2F(TH2F* hist){
+
 void normTH1D(TH1D* hist){
 
     std::cout << "Normilizing " << " hist: " << hist->GetName() << std::endl;
@@ -113,7 +147,53 @@ void normTH1D(TH1D* hist){
 
 }//<<>>void NormTH1D(TH1D* hist)
 
-void profileTH2D(TH2D* nhist, TH1D* prof, TH1D* fithist){
+void smoothTH1D(TH1D* hist){
+
+    std::cout << "Smoothing " << " hist: " << hist->GetName() << std::endl;
+	float smp = 1.25;
+    const auto nBins = hist->GetNbinsX() -1;
+    for (auto ibinX = 2; ibinX < nBins; ibinX++){
+        // get content/error
+        float ep = hist->GetBinError(ibinX-1);
+        //float e = hist->GetBinError(ibinX);
+        float en = hist->GetBinError(ibinX+1);
+        float vp = hist->GetBinContent(ibinX-1);
+        float v = hist->GetBinContent(ibinX);
+        float vn = hist->GetBinContent(ibinX+1);
+		float vnn = ( ibinX+2 <= nBins ) ? hist->GetBinContent(ibinX+2) : vn;	
+        // set new contents
+        bool checkp( v > smp*vp );
+		bool checkn( v > smp*vn );
+		bool checknn( v > smp*vnn );
+        if( checkp && ( checkn || checknn ) ){
+		//if( e > smp*ep || e > smp*en ){
+			float content = v;
+			//float error = e;
+			float c = hist->GetBinCenter(ibinX);
+            float cp = hist->GetBinCenter(ibinX-1);  
+			float vt = vn;
+			float et = en;   
+			float ct = hist->GetBinCenter(ibinX+1); 
+ 			if( et > 1.2*ep ){
+				int bint = ibinX+1;
+				for (auto xbins = ibinX+2; xbins <= nBins; xbins++){
+					auto vs = hist->GetBinContent(xbins);
+        			auto es = hist->GetBinError(xbins);
+					float cs = hist->GetBinCenter(xbins);
+					if( es < 1.2*ep ){ bint = xbins; vt = vs; et = es; ct = cs; break; } 
+				}//<<>>for (auto ibinX = 2; ibinX <= nBins; ibinXs++) 
+			}//<<>if( en > 5*ep )
+			float slope = ( vt - vp ) / ( ct - cp );
+			content = vp + slope*(c-cp);
+			//error = ep;
+        	hist->SetBinContent(ibinX,content);
+        	hist->SetBinError(ibinX,ep);
+		}//<<>>if( e > 10*ep || e > 10*en )
+    }//<<>>for (auto ibinX = 1; ibinX <= nBins; ibinX++)
+
+}//<<>>void smoothTH1D(TH1D* hist)
+
+void profileTH2D(TH2D* nhist, TH1D* prof, TH1D* fithist, float range = 0.2 ){
 
     std::cout << "Profile " << " hist: " << nhist->GetName() << std::endl;
 
@@ -124,9 +204,9 @@ void profileTH2D(TH2D* nhist, TH1D* prof, TH1D* fithist){
         auto mean = phist->GetMean();
         auto stdv = phist->GetStdDev();
         auto norm = phist->GetBinContent(phist->GetMaximumBin());
-        auto high = mean + 0.2*stdv;
-        auto low = mean - 0.2*stdv;
-        if( abs(stdv) > 0.01 && abs(norm) > 1 ){
+        auto high = mean + range*stdv;
+        auto low = mean - range*stdv;
+        if( abs(stdv) > 0.0 && abs(norm) > 1 ){
             auto tmp_form = new TFormula("tmp_formula","[0]*exp(-0.5*((x-[1])/[2])**2)");
             auto tmp_fit  = new TF1("tmp_fit",tmp_form->GetName(),low,high);
             tmp_fit->SetParameter(0,norm); //tmp_fit->SetParLimits(0,norm/2,norm*2);
@@ -137,10 +217,12 @@ void profileTH2D(TH2D* nhist, TH1D* prof, TH1D* fithist){
             auto error = tmp_fit->GetParError(1);
             auto fNdf = tmp_fit->GetNDF();
             auto fProb = tmp_fit->GetProb();
+			auto fChi2 = tmp_fit->GetChisquare();
             // set new contents
-            if( fNdf > 0 && fProb > 0.05 && error < 1.0 ){
-                //auto fChi2Ndf = fChi2/fNdf;
-                fithist->SetBinContent( ibinX, fProb );
+            //if( fNdf > 0 && fProb > 0.001 && error < fmean ){
+            if( fNdf > 0 && error < stdv ){
+                auto fChi2Ndf = fChi2/fNdf;
+                fithist->SetBinContent( ibinX, fChi2Ndf );
                 fithist->SetBinError( ibinX, 0 );
                 prof->SetBinContent( ibinX, fmean );
                 prof->SetBinError( ibinX, error );
@@ -152,6 +234,34 @@ void profileTH2D(TH2D* nhist, TH1D* prof, TH1D* fithist){
     }//<<>>for (auto ibinX = 1; ibinX <= nBins; ibinX++)
 
 }//<<>>void profileTH2D(TH2D* hist, TH1D* prof)
+
+void scaleHist(TH2F *& hist, const Bool_t isUp, const Bool_t varBinsX, const Bool_t varBinsY){
+
+    std::cout << "Scaling " << (isUp?"up":"down") << " hist: " << hist->GetName() << std::endl;
+
+    const auto nXbins = hist->GetNbinsX();
+    const auto nYbins = hist->GetNbinsY();
+    for (auto ibinX = 1; ibinX <= nXbins; ibinX++){
+        const auto binwidthX = hist->GetXaxis()->GetBinWidth(ibinX);
+        for (auto ibinY = 1; ibinY <= nYbins; ibinY++){
+
+            const auto binwidthY = hist->GetYaxis()->GetBinWidth(ibinY);
+            // get multiplier/divisor
+            auto multiplier = 1.f;
+            if( varBinsX ) multiplier *= binwidthX;
+            if( varBinsY ) multiplier *= binwidthY;
+            auto scale = ( not isUp ) ? multiplier : 1/multiplier;
+            // get content/error
+            auto content = hist->GetBinContent(ibinX,ibinY)*scale;
+            auto error = hist->GetBinError(ibinX,ibinY)*scale;
+            // set new contents
+            hist->SetBinContent(ibinX,ibinY,content);
+            hist->SetBinError  (ibinX,ibinY,error);
+
+        }//<<>>for (auto ibinY = 1; ibinY <= hist->GetYaxis()->GetNbins(); ibinY++)
+    }//<<>>for (auto ibinX = 1; ibinX <= hist->GetXaxis()->GetNbins(); ibinX++)
+
+}//<<>>void scaleHist(TH2D *& hist, const Bool_t isUp, const Bool_t varBinsX, const Bool_t varBinsY)
 
 void thresDivTH2D(TH2D* numi, TH2D* denom, float thres){
 
@@ -302,7 +412,7 @@ std::vector<float> getDistStats( std::vector<float> values, std::vector<float> w
     results[2] = results[6] - results[10];
 
     return results;
-}//>>>>std::vector<float> getDistStats( std::vector<float> values, std::vector<float> weights )
+}//>>>>vector<float> getDistStats( std::vector<float> values, std::vector<float> weights )
 
 std::vector<float> getRhGrpEigen( std::vector<float> xs, std::vector<float> wts ){
 //spherical
@@ -336,7 +446,7 @@ std::vector<float> getRhGrpEigen( std::vector<float> xs, std::vector<float> wts 
     results.push_back(ev);
 
     return results;
-}//<<>>std::vector<float> getRhGrpEigen2D( std::vector<float> xs, std::vector<float> ys, std::vector<float> zs, std::vector<float> wts )
+}//<<>>vector<float> getRhGrpEigen2D( std::vector<float> xs, std::vector<float> ys, std::vector<float> zs, std::vector<float> wts )
 
 std::vector<float> getRhGrpEigen( std::vector<float> xs, std::vector<float> ys, std::vector<float> wts ){
 
@@ -344,7 +454,7 @@ std::vector<float> getRhGrpEigen( std::vector<float> xs, std::vector<float> ys, 
 
     auto mean_x = mean( xs, wts );
     auto mean_y = mean( ys, wts );
-    auto swts = accum( wts );
+    auto swts = vfsum( wts );
     auto var_x = var( xs, mean_x, wts, swts );
     auto var_y = var( ys, mean_y, wts, swts );
     auto var_xy = cvar( xs, mean_x, ys, mean_y, wts, swts );
@@ -378,7 +488,7 @@ std::vector<float> getRhGrpEigen( std::vector<float> xs, std::vector<float> ys, 
     results.push_back(ev);
 
     return results;
-}//<<>>std::vector<float> = getRhGrpEigen2D( std::vector<float> xs, std::vector<float> ys, std::vector<float> zs, std::vector<float> wts )
+}//<<>>vector<float> = getRhGrpEigen2D( std::vector<float> xs, std::vector<float> ys, std::vector<float> zs, std::vector<float> wts )
 
 std::vector<float> getRhGrpEigen( std::vector<float> xs, std::vector<float> ys, std::vector<float> zs, std::vector<float> wts ){
 // ieipt
@@ -388,7 +498,7 @@ std::vector<float> getRhGrpEigen( std::vector<float> xs, std::vector<float> ys, 
     auto mean_x = mean( xs, wts );
     auto mean_y = mean( ys, wts );
     auto mean_z = mean( zs, wts );
-    auto swts = accum( wts );
+    auto swts = vfsum( wts );
     auto var_x = var( xs, mean_x, wts, swts );
     auto var_y = var( ys, mean_y, wts, swts );
     auto var_z = var( zs, mean_z, wts, swts );
@@ -437,7 +547,7 @@ std::vector<float> getRhGrpEigen( std::vector<float> xs, std::vector<float> ys, 
     results.push_back(ev);//3
 
     return results;
-}//<<>>std::vector<float> getRhGrpEigen3D( std::vector<float> xs, std::vector<float> ys, std::vector<float> zs, std::vector<float> wts )
+}//<<>>vector<float> getRhGrpEigen3D( std::vector<float> xs, std::vector<float> ys, std::vector<float> zs, std::vector<float> wts )
 
 #endif
 //----------------------------------------------------------------------------------------------------------------------
