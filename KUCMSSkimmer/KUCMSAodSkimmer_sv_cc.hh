@@ -138,7 +138,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
   std::string r2Fall17MINIAOD( "RunIIFall17MiniAODv2" ); 
   std::string r2UL( "UL_R2_MINI" ); 
 
-  timeCali = new KUCMSTimeCalibration();
+  timeCali = new KUCMS_TimeCalibration();
   timeCali->setTag(r2UL);
 
 }//<<>>KUCMSAodSkimmer::KUCMSAodSkimmer()
@@ -429,7 +429,7 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
   // counts events and saves event varibles
   // --------------------------------------
   processEvntVars();	
-  processRechits();
+  processRechits();// must be done before rechitID to Iter map used
   processMet();
   processPhotons();
   processElectrons();
@@ -437,6 +437,7 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
   processJets();
   processSV();
   processTracks();
+  processMLPhotons();// must be done after processPhotons()
   if( doGenInfo ){ processGenParticles(); }
   
   // select events to process and store
@@ -462,6 +463,184 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
 //		Fill out branch varibles
 //
 //}//<<>>void KUCMSAodSkimmer::processTemplate()
+
+
+void KUCMSAodSkimmer::processMLPhotons(){
+
+	if( DEBUG ) std::cout << "Finding BC information for photons" << std::endl;
+
+    BayesPoint vtx(1); // PV_x, PV_y, PV_z are x,y,z of primary vertex
+    std::vector<Jet> jetrhs;
+	uInt nPhotons = Photon_excluded->size();
+	if( DEBUG ) std::cout << " - Looping over for " << nPhotons << " photons to get BC info" << std::endl;
+	for( uInt it = 0; it < nPhotons; it++ ){
+		if( not isSelPho[it] ) continue;
+
+        auto scIndx = (*Photon_scIndex)[it];
+        auto rhids = (*SuperCluster_rhIds)[scIndx];
+		int nSCRecHits = rhids.size();
+        auto nRecHits = ECALRecHit_ID->size();
+        for( int sciter = 0; sciter < nSCRecHits; sciter++  ){
+            auto scrhid = rhids[sciter];
+			int erhiter = ( rhIDtoIterMap.find(scrhid) != rhIDtoIterMap.end() ) ? rhIDtoIterMap[scrhid] : -1;
+			if( erhiter != -1 ){
+                float erhe = (*ECALRecHit_energy)[erhiter];
+                bool hasGainSwitch = (*ECALRecHit_hasGS1)[erhiter] || (*ECALRecHit_hasGS6)[erhiter];
+				float erht = erh_corTime[erhiter];
+				float rhx = (*ECALRecHit_rhx)[erhiter];
+                float rhy = (*ECALRecHit_rhy)[erhiter];
+                float rhz = (*ECALRecHit_rhz)[erhiter];
+
+				if( DEBUG ) std::cout << erhe << " " << erht << " " << hasGainSwitch;
+                if( DEBUG ) std::cout << " " << erht << " " << rhx << " " << rhy << " " << rhz << std::endl;
+
+				//
+				// call to BayesCluster to load rechit info for this photon
+				//
+
+                // --------------------------------------------------------------------------------------------
+                //  for Baysian Clustering Algo use testing
+                /*
+                        JetPoint jrh( rhx, rhy, rhz, rht ); //in nutple units
+                        //I also do a cut on rh time to only keep rhs with -20 ns < rh time < 20 ns
+                        jrh.SetEnergy(rhe);
+                        jrh.SetEta(rheta);
+                        jrh.SetPhi(rhphi);
+                        jrh.SetWeight(rhe*0.25); //where _gev is some fraction (I have it at 0.25 for now)
+                        jrh.SetRecHitId(rhid);
+                        //can add to a larger, Jet object (like a photon or supercluster) and 
+                        //call photon.GetJets(rhs) to get these rhs as ?~@~\Jet?~@~] objects
+                        //or can recast them here as Jets with the line below
+                        Jet jet( jrh, vtx );
+                        jetrhs.push_back(jet);
+                */
+                //--------------------------------------------------------------------------------------------
+
+
+
+            }//<<>>if( ecalrhiter != -1 )
+        }//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
+		
+		//
+		//  call to BayesCluster to process photon information 
+		//
+
+        //--------------------------------------------------------------------------------------------
+        //  Tesing the substantiation of the Baysian Clustering Class 
+        /*
+            //std::cout << " -- Running BayesCluster :" << std::endl;
+            BayesCluster *algo = new BayesCluster(jetrhs);
+            GaussianMixture* gmm = algo->SubCluster();
+            int nclusters = gmm->GetNClusters();
+            for(int k = 0; k < nclusters; k++){
+                map<string, Matrix> params = gmm->GetLHPosteriorParameters(k);
+                double ec = params["mean"].at(0,0); //eta center of subcluster
+                double pc = params["mean"].at(1,0); //phi center of subcluster
+                double tc = params["mean"].at(2,0); //time center of subcluster
+                Matrix cov = params["cov"]; //3x3 covariance matrix of subcluster 
+                //std::cout << " --- BayesCluster " << k << " ec " << ec << " pc " << pc << " tc " << tc << std::endl;
+            }//<<>>for(int k = 0; k < nclusters; k++)
+            delete algo;
+        */
+        //--------------------------------------------------------------------------------------------
+
+		// save to branches :
+		// selPhotons.fillBranch( "yourvarname", yourvarible );    
+
+        // branches created strating on 2546 in  void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree )
+        // on line 2709 and below make a selPhotons branch : selPhotons.makeBranch( "yourvarname", VFLOAT );		
+
+	}//<<>>for( uInt it = 0; it < nPhotons; it++ )
+
+}//<<>>void KUCMSAodSkimmer::processMLPhotons()
+
+void KUCMSAodSkimmer::processMLJets(){
+
+    if( DEBUG ) std::cout << "Finding BC information for jets" << std::endl;
+
+    BayesPoint vtx(1); // PV_x, PV_y, PV_z are x,y,z of primary vertex
+    std::vector<Jet> jetrhs;
+  	uInt nJets = Jet_energy->size();
+    if( DEBUG ) std::cout << " - Looping over for " << nJets << " photons to get BC info" << std::endl;
+  	for( uInt it = 0; it < nJets; it++ ){
+        if( not isSelJet[it] ) continue;
+
+    	auto rhids = (*Jet_drRhIds)[it];
+        int nJetRecHits = rhids.size();
+        for( int jiter = 0; jiter < nJetRecHits; jiter++  ){
+            auto jrhid = rhids[jiter];
+            int erhiter = ( rhIDtoIterMap.find(jrhid) != rhIDtoIterMap.end() ) ? rhIDtoIterMap[jrhid] : -1;
+            if( erhiter != -1 ){
+                float erhe = (*ECALRecHit_energy)[erhiter];
+                bool hasGainSwitch = (*ECALRecHit_hasGS1)[erhiter] || (*ECALRecHit_hasGS6)[erhiter];
+                float erht = erh_corTime[erhiter];
+                float rhx = (*ECALRecHit_rhx)[erhiter];
+                float rhy = (*ECALRecHit_rhy)[erhiter];
+                float rhz = (*ECALRecHit_rhz)[erhiter];
+
+                if( DEBUG ) std::cout << erhe << " " << erht << " " << hasGainSwitch;
+                if( DEBUG ) std::cout << " " << erht << " " << rhx << " " << rhy << " " << rhz << std::endl;
+
+                //
+                // call to BayesCluster to load rechit info for this photon
+                //
+
+                // --------------------------------------------------------------------------------------------
+                //  for Baysian Clustering Algo use testing
+                /*
+                        JetPoint jrh( rhx, rhy, rhz, rht ); //in nutple units
+                        //I also do a cut on rh time to only keep rhs with -20 ns < rh time < 20 ns
+                        jrh.SetEnergy(rhe);
+                        jrh.SetEta(rheta);
+                        jrh.SetPhi(rhphi);
+                        jrh.SetWeight(rhe*0.25); //where _gev is some fraction (I have it at 0.25 for now)
+                        jrh.SetRecHitId(rhid);
+                        //can add to a larger, Jet object (like a photon or supercluster) and 
+                        //call photon.GetJets(rhs) to get these rhs as ?~@~\Jet?~@~] objects
+                        //or can recast them here as Jets with the line below
+                        Jet jet( jrh, vtx );
+                        jetrhs.push_back(jet);
+                */
+                //--------------------------------------------------------------------------------------------
+
+
+
+            }//<<>>if( ecalrhiter != -1 )
+        }//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
+
+        //
+        //  call to BayesCluster to process photon information 
+        //
+
+        //--------------------------------------------------------------------------------------------
+        //  Tesing the substantiation of the Baysian Clustering Class 
+        /*
+            //std::cout << " -- Running BayesCluster :" << std::endl;
+            BayesCluster *algo = new BayesCluster(jetrhs);
+            GaussianMixture* gmm = algo->SubCluster();
+            int nclusters = gmm->GetNClusters();
+            for(int k = 0; k < nclusters; k++){
+                map<string, Matrix> params = gmm->GetLHPosteriorParameters(k);
+                double ec = params["mean"].at(0,0); //eta center of subcluster
+                double pc = params["mean"].at(1,0); //phi center of subcluster
+                double tc = params["mean"].at(2,0); //time center of subcluster
+                Matrix cov = params["cov"]; //3x3 covariance matrix of subcluster 
+                //std::cout << " --- BayesCluster " << k << " ec " << ec << " pc " << pc << " tc " << tc << std::endl;
+            }//<<>>for(int k = 0; k < nclusters; k++)
+            delete algo;
+        */
+        //--------------------------------------------------------------------------------------------
+
+        // save to branches :
+        // selJets.fillBranch( "yourvarname", yourvarible ); 
+		
+		// branches created strating on 2546 in  void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree )
+		// on line 2801 make a selJets branch : selJets.makeBranch( "yourvarname", VFLOAT );
+
+
+    }//<<>>for( uInt it = 0; it < nPhotons; it++ )
+
+}//<<>>void KUCMSAodSkimmer::processMLJets()
 
 void KUCMSAodSkimmer::processTracks(){
 
@@ -605,7 +784,7 @@ void KUCMSAodSkimmer::processEvntVars(){
   selEvtVars.fillBranch( "Flag_BadChargedCandidateFilter", Flag_BadChargedCandidateFilter );//not suggested
   selEvtVars.fillBranch( "Flag_BadPFMuonDzFilter", Flag_BadPFMuonDzFilter );//suggested
   selEvtVars.fillBranch( "Flag_BadPFMuonFilter", Flag_BadPFMuonFilter );//suggested
-  //selEvtVars.fillBranch( "Flag_EcalDeadCellTriggerPrimitiveFilter", Flag_EcalDeadCellTriggerPrimitiveFilter );//suggested
+  selEvtVars.fillBranch( "Flag_EcalDeadCellTriggerPrimitiveFilter", Flag_EcalDeadCellTriggerPrimitiveFilter );//suggested
   selEvtVars.fillBranch( "Flag_HBHENoiseFilter", Flag_HBHENoiseFilter );//suggested
   selEvtVars.fillBranch( "Flag_HBHENoiseIsoFilter", Flag_HBHENoiseIsoFilter );//suggested
   selEvtVars.fillBranch( "Flag_ecalBadCalibFilter", Flag_ecalBadCalibFilter );//suggested
@@ -613,8 +792,8 @@ void KUCMSAodSkimmer::processEvntVars(){
   selEvtVars.fillBranch( "Flag_globalSuperTightHalo2016Filter", Flag_globalSuperTightHalo2016Filter );//suggested
   selEvtVars.fillBranch( "Flag_goodVertices", Flag_goodVertices );//suggested
   selEvtVars.fillBranch( "Flag_hfNoisyHitsFilter", Flag_hfNoisyHitsFilter );//optional
-  //bool metfilter = Flag_BadPFMuonDzFilter && Flag_BadPFMuonFilter && Flag_EcalDeadCellTriggerPrimitiveFilter && Flag_HBHENoiseFilter;
-  bool metfilter = Flag_BadPFMuonDzFilter && Flag_BadPFMuonFilter && Flag_HBHENoiseFilter;
+  bool metfilter = Flag_BadPFMuonDzFilter && Flag_BadPFMuonFilter && Flag_EcalDeadCellTriggerPrimitiveFilter && Flag_HBHENoiseFilter;
+  ////bool metfilter = Flag_BadPFMuonDzFilter && Flag_BadPFMuonFilter && Flag_HBHENoiseFilter;
   metfilter = metfilter && Flag_HBHENoiseIsoFilter && Flag_ecalBadCalibFilter && Flag_eeBadScFilter && Flag_goodVertices;
   selEvtVars.fillBranch( "Flag_MetFilter",metfilter);
   
@@ -645,7 +824,7 @@ void KUCMSAodSkimmer::processMet(){
 void KUCMSAodSkimmer::processRechits(){
 
 	// initilize
-    //selECALRecHit.clearBranches(); // <<<<<<<   must do
+    //selECALRecHit.clearBranches(); // <<<<<<<   must do ( but there are no rechit branches right now )
 	bool checkRHs = false;
     //bool checkRHs = true;
 
@@ -653,26 +832,33 @@ void KUCMSAodSkimmer::processRechits(){
     if( DEBUG ) std::cout << "Finding rechits" << std::endl;
 	//------------ rechits -------------------------
 
-	BayesPoint vtx(1);	
-
-	std::vector<Jet> jetrhs;
+	rhIDtoIterMap.clear();
+	erh_corTime.clear();
     auto nRecHits = ECALRecHit_ID->size();
     if( DEBUG ) std::cout << " -- Looping over " << nRecHits << " rechits" << std::endl;
     for( int it = 0; it < nRecHits; it++ ){
 
-		//auto id = (*ECALRecHit_ID)[it];
-		//auto idinfo = DetIDMap[id];
-		//if( idinfo.ecal == ECAL::EB ){
+		auto rhid = (*ECALRecHit_ID)[it];
+		rhIDtoIterMap[rhid] = it;
+		auto idinfo = timeCali->getDetIdInfo(rhid);
+    	if( DEBUG ) std::cout << " -- TimeCali DetIDInfo : " << idinfo.i2 << " " << idinfo.i1 << " " << idinfo.ecal << std::endl;
+		float rht = (*ECALRecHit_time)[it];
+		float rhe = (*ECALRecHit_energy)[it];
+		float rha = (*ECALRecHit_ampres)[it]; // instead of energy ?
+		float corrht = timeCali->getCorrectedTime( rht, rha, rhid, Evt_run, dataSetKey );
+		erh_corTime.push_back( corrht );
         if( true ){
 
-			hist1d[0]->Fill( (*ECALRecHit_energy)[it], 1 );
-            hist1d[1]->Fill( (*ECALRecHit_energy)[it], 1 );
-            hist1d[2]->Fill( (*ECALRecHit_energy)[it], 1 );
-            hist1d[5]->Fill( (*ECALRecHit_time)[it], 1 );
+			hist1d[0]->Fill( rhe, 1 );
+            hist1d[1]->Fill( rhe, 1 );
+            hist1d[2]->Fill( rhe, 1 );
+            hist1d[5]->Fill( rht, 1 );
 			//auto radius = hypo( (*rhPosX)[it], (*rhPosY)[it] );
 
 		}//<<>>if( (*rhSubdet)[it] == 0 )
-/*
+
+		/*  ECAL Rechit information --  not saved currenty
+ 
 		float rhe = (*ECALRecHit_energy)[it];
 		float rhx = (*ECALRecHit_rhx)[it];
         float rhy = (*ECALRecHit_rhy)[it];
@@ -681,41 +867,12 @@ void KUCMSAodSkimmer::processRechits(){
 		float rheta = (*ECALRecHit_eta)[it];
         float rhphi = (*ECALRecHit_phi)[it];
 		uInt rhid = (*ECALRecHit_ID)[it];
-		//auto idinfo = timeCali->getDetIdInfo(rhid);
-		//std::cout << " -- TimeCali DetIDInfo : " << idinfo.i2 << " " << idinfo.i1 << " " << idinfo.ecal << std::endl;
-*/
 
-/*
-		JetPoint jrh( rhx, rhy, rhz, rht ); //in nutple units
-		//I also do a cut on rh time to only keep rhs with -20 ns < rh time < 20 ns
-		jrh.SetEnergy(rhe);
-		jrh.SetEta(rheta);
-		jrh.SetPhi(rhphi);
-		jrh.SetWeight(rhe*0.25); //where _gev is some fraction (I have it at 0.25 for now)
-		jrh.SetRecHitId(rhid);
-		//can add to a larger, Jet object (like a photon or supercluster) and call photon.GetJets(rhs) to get these rhs as “Jet” objects
-		//or can recast them here as Jets with the line below
-		Jet jet( jrh, vtx );
-		jetrhs.push_back(jet);
-*/
+		*/ // ECAL Rechit information --  not saved currenty
 
 	}//<<>>for( int it = 0; it < nRecHits; it++ )
-
-/*
-	//std::cout << " -- Running BayesCluster :" << std::endl;
-	BayesCluster *algo = new BayesCluster(jetrhs);
-	GaussianMixture* gmm = algo->SubCluster();
-	int nclusters = gmm->GetNClusters();
-	for(int k = 0; k < nclusters; k++){
-		map<string, Matrix> params = gmm->GetLHPosteriorParameters(k);
-		double ec = params["mean"].at(0,0); //eta center of subcluster
-		double pc = params["mean"].at(1,0); //phi center of subcluster
-		double tc = params["mean"].at(2,0); //time center of subcluster
-		Matrix cov = params["cov"]; //3x3 covariance matrix of subcluster 
-		//std::cout << " --- BayesCluster " << k << " ec " << ec << " pc " << pc << " tc " << tc << std::endl;
-	}//<<>>for(int k = 0; k < nclusters; k++)
-	delete algo;
-*/
+	if( DEBUG ) std::cout << "Finished w/ rechit loop" << std::endl;
+	//  ---  End of RecHit Loop ----------------------------------------------------------------------------------------
 
     int nMissingRechits = 0;
 	int nRechitsPerSC = 0;
@@ -986,6 +1143,7 @@ void KUCMSAodSkimmer::processPhotons(){
 
   // intilize
   selPhotons.clearBranches(); // <<<<<<<   must do
+  isSelPho.clear();
 
   // calc
   if( DEBUG ) std::cout << "Finding photons" << std::endl;
@@ -1057,8 +1215,10 @@ void KUCMSAodSkimmer::processPhotons(){
     //if( geVars("genSigPerfect") == 1 && isGenSig ) std::cout << " -- pho sel: phoskip " << phoskip <<  " isGenSig " << isGenSig << std::endl;  
     //if( geVars("genSigPerfect") == 1 &&  phoskip && isGenSig  ){ 
     //		std::cout << "   -- xsepji: " << isExcluded  << hasPixSeed << overMaxEta << underMinPt << isJetPhoton << failPhoIso << std::endl; }
-    if( ( geVars("genSigPerfect") != 1 ) && phoskip ) continue;		
-    if( ( geVars("genSigPerfect") == 1 ) &&  ( not isGenSig ) ) continue;
+	
+    if( ( geVars("genSigPerfect") != 1 ) && phoskip ){ isSelPho.push_back(false); continue; }		
+    if( ( geVars("genSigPerfect") == 1 ) &&  ( not isGenSig ) ){ isSelPho.push_back(false);  continue; }
+	isSelPho.push_back(true);
 
     ///////////  pho selection ////////////////////////////////////////////////////////////////////
 
@@ -1106,23 +1266,26 @@ void KUCMSAodSkimmer::processPhotons(){
     float ctau = -10;
 
     if( doGenInfo ){
+
       genIdx = (*Photon_genIdx)[it];
       momIdx = (*Gen_motherIdx)[genIdx];
       //momIdx = (*Photon_genSigXMomId)[it];
       susId = (*Gen_susId)[genIdx];
 
       if( momIdx > -1.0 ){
-	momEnergy = (*Gen_energy)[momIdx];   //!
-	momEta = (*Gen_eta)[momIdx];   //!
-	momMass = (*Gen_mass)[momIdx];   //!
-	momPhi = (*Gen_phi)[momIdx];   //!
-	momPt = (*Gen_pt)[momIdx];   //!
-	momPx = (*Gen_px)[momIdx];   //!
-	momPy = (*Gen_py)[momIdx];   //!
-	momPz = (*Gen_pz)[momIdx];   //!
-	momVx = (*Gen_vx)[momIdx];   //!
-	momVy = (*Gen_vy)[momIdx];   //!
-	momVz = (*Gen_vz)[momIdx];   //!
+
+		momEnergy = (*Gen_energy)[momIdx];   //!
+		momEta = (*Gen_eta)[momIdx];   //!
+		momMass = (*Gen_mass)[momIdx];   //!
+		momPhi = (*Gen_phi)[momIdx];   //!
+		momPt = (*Gen_pt)[momIdx];   //!
+		momPx = (*Gen_px)[momIdx];   //!
+		momPy = (*Gen_py)[momIdx];   //!
+		momPz = (*Gen_pz)[momIdx];   //!
+		momVx = (*Gen_vx)[momIdx];   //!
+		momVy = (*Gen_vy)[momIdx];   //!
+		momVz = (*Gen_vz)[momIdx];   //!
+
       }//<<>>if( momIdx > -1.0 )
 
     }//if( doGenInfo )
@@ -1148,8 +1311,9 @@ void KUCMSAodSkimmer::processPhotons(){
     float calcor = cms000/SOL;
     float tofPVtoRH = hypo(scx-PV_x,scy-PV_y,scz-PV_z);
     float pvtof = tofPVtoRH/SOL;
-    float crtime = rtime + calcor - pvtof;
-    float tmeasured = rtime*SOL+tofPVtoRH;
+	float tofcor = calcor - pvtof;
+    float crtime = rtime - pvtof;
+    float tmeasured = rtime*SOL;
     float m1 = std::sqrt(sq2(tofPVtoRH)+8*sq2(tmeasured));
     float m2 = (tofPVtoRH+m1)*(tofPVtoRH/(4*sq2(tmeasured)));
     float m3 = tofPVtoRH/tmeasured;
@@ -1159,6 +1323,56 @@ void KUCMSAodSkimmer::processPhotons(){
     //float MBetaEqual = 2*ce*m2_phys;
     float MBetaPrompt = 2*ce*std::sqrt(1-sq2(m3_phys));
     //float MBetaPrompt = 2*ce*m3_phys;
+
+
+    //Branches.makeBranch("amplitude","ECALRecHit_amplitude",VFLOAT);
+    //Branches.makeBranch("ampres","ECALRecHit_ampres",VFLOAT);
+    //auto rhids = (*SuperCluster_rhIds)[scIndx];
+    //uInt nrh = rhids.size();
+
+    //int nSCRhids = scrhids.size();
+    //float seedE = 0;
+    //float seedT = -99;
+    //float seedar = 0;
+    float setw = 0;
+	float serw = 0;
+    float sew = 0;
+    float leadE = 0;
+    float leadEtime = -99;
+    float leadEar = 0;
+    //auto nRecHits = ECALRecHit_ID->size();
+    for( int sciter = 0; sciter < nrh; sciter++  ){
+        auto scrhid = rhids[sciter];
+		int erhiter = ( rhIDtoIterMap.find(scrhid) != rhIDtoIterMap.end() ) ? rhIDtoIterMap[scrhid] : -1;
+        if( erhiter != -1 ){
+			float gainwt = 1;
+            float erhe = (*ECALRecHit_energy)[erhiter];
+            float erht = (*ECALRecHit_time)[erhiter];
+            float erhar = (*ECALRecHit_ampres)[erhiter];
+			float ertoftime = erht - calcor + pvtof;
+			float erres = std::sqrt( (sq2( 24.0/erhar ) + (sq2(2.5)/erhar) + 2*sq2(0.099))/2.0 );
+			bool hasGainSwitch = (*ECALRecHit_hasGS1)[erhiter] || (*ECALRecHit_hasGS6)[erhiter];
+			if( hasGainSwitch ) gainwt = 0;
+            setw += erhe*ertoftime*gainwt;
+			serw += erhe*erres*gainwt;
+            sew += erhe;
+            if( erhe > leadE ){ leadE = erhe; leadEtime = ertoftime; leadEar = erhar; }
+			//if( ertoftime == time ){ seedE = erhe; seedT = ertoftime; seedar = erhar; } 
+        }//<<>>if( scrhid == rhid )
+    }//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
+	//if( seedE == 0 ){ seedE = leadE; seedar = leadEar; }
+	//if( seedT != time ) std::cout << " Pho - SC seed time wrong !!!!!! " << time << " v " << leadEtime << std::endl;
+    //if( seedE != leadE ) std::cout << " Pho - SC seed time wrong !!!!!! " << time << " v " << leadEtime << std::endl;
+    float phoWTime = setw/sew;
+	float phoWRes = serw/sew;
+    float timeres = std::sqrt( (sq2( 24.0/leadEar ) + (sq2(2.5)/leadEar) + 2*sq2(0.099))/2.0 );
+	//float timeres = std::sqrt( sq2( 24.0/seedar ) + (sq2(2.5)/seedar) + 2*(0.099) );
+	float leadtimesig = leadEtime/timeres;
+    float seedtimesig = time/timeres;
+	float wttimesig = phoWTime/phoWRes;
+	//std::cout << " Pho Time Sig " << time << " let " << leadEtime << " wt " << phoWTime;
+	//std::cout << " le " << leadE << " ampres " << leadEar << " res " << timeres;
+    //std::cout << " lsg " << leadtimesig << " ssg " << seedtimesig << " wsg " << wttimesig << std::endl;
 
     auto htsebcdr4 = (*Photon_hcalTowerSumEtBcConeDR04)[it];
     auto tsphcdr3 = (*Photon_trkSumPtHollowConeDR03)[it];
@@ -1233,6 +1447,12 @@ void KUCMSAodSkimmer::processPhotons(){
     selPhotons.fillBranch( "selPhoSCx", scx );
     selPhotons.fillBranch( "selPhoSCy", scy );
     selPhotons.fillBranch( "selPhoSCz", scz );
+    //float leadtimesig = leadEtime/leadtimeres;
+    //float seedtimesig = crtime/timeres;
+    //float timesigw = phoWTime/timeres;
+	selPhotons.fillBranch( "selPhoLTimeSig", leadtimesig );
+    selPhotons.fillBranch( "selPhoSTimeSig", seedtimesig );
+    selPhotons.fillBranch( "selPhoWTimeSig", wttimesig );
 
     selPhotons.fillBranch( "selPhoCorEnergy", ce );
     selPhotons.fillBranch( "selPhoCorPt", cpt );
@@ -1502,6 +1722,7 @@ void KUCMSAodSkimmer::processJets(){
   // calc
   //if( DEBUG ) std::cout << "Finding jets" << std::endl;
   //--------- jets --------------------------
+  isSelJet.clear(); 
 
   uInt nSelJets = 0;
   uInt nJets = Jet_energy->size();
@@ -1577,7 +1798,8 @@ void KUCMSAodSkimmer::processJets(){
     bool isNotPhoJet = not phoJetVeto[it];
 
     auto jetSelected = underMaxEta && isMinQuality && overMinPt && isNotPhoJet;
-    if( not jetSelected ) continue;
+    if( not jetSelected ){ isSelJet.push_back(false); continue; }
+	isSelJet.push_back(true);
     nSelJets++;
 
     seljetpt.push_back(pt);
@@ -2044,8 +2266,8 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 	float pHts11 = pHJs + pHX1s;
 
 	float Rs = (phxa11+phxb11)/pHs22;
-	float Rxa = phxa10/phxa20;
-    float Rxb = phxb10/phxb20;
+	float Rxa = phxa11/phxa21;
+    float Rxb = phxb11/phxb21;
 	float Rx = hypo(phxa11/phxa21,phxb11/phxb21);
 
     selRjrVars.fillBranch( "rjr_pHs22", pHs22 );
@@ -2188,6 +2410,7 @@ bool KUCMSAodSkimmer::eventSelection(){
   bool hasHadSV = geVars("nSVHad") > 0;
   bool hasSV = hasLepSV || hasHadSV;
 
+  bool met100 = evtMet >= 100;
   bool met150 = evtMet >= 150;
   bool gt1phos = nSelPhotons >= 1;
   bool gt2jets = nSelJets >= 2;
@@ -2196,7 +2419,7 @@ bool KUCMSAodSkimmer::eventSelection(){
   bool leadPhoPt30 = leadPhoPt >= 30;
   bool subLeadPhoPt40 = subLeadPhoPt >= 40; 
 
-  bool basesel = met150 && gt2jets;
+  bool basesel = met100 && gt2jets;
   //bool svsel = basesel && hasSV;	
   bool phosel = basesel && ( ( gt1phos && leadPhoPt30 ) || hasSV );
   //auto evtSelected = leadPhoPt70 && subLeadPhoPt40 && gt2jets && gt2phos;
@@ -2415,6 +2638,9 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
   selPhotons.makeBranch( "selPhoSusyId", VFLOAT );
   selPhotons.makeBranch( "selPhoQuality", VINT ); 
   selPhotons.makeBranch( "selPhoTime", VFLOAT ); 
+  selPhotons.makeBranch( "selPhoLTimeSig", VFLOAT );
+  selPhotons.makeBranch( "selPhoSTimeSig", VFLOAT );
+  selPhotons.makeBranch( "selPhoWTimeSig", VFLOAT );
 
   selPhotons.makeBranch( "selPhoEnergy", VFLOAT );
   selPhotons.makeBranch( "selPhoEta", VFLOAT ); 
@@ -2485,6 +2711,10 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
   selPhotons.makeBranch( "selPhoGenSigMomVy", VFLOAT );   //!
   selPhotons.makeBranch( "selPhoGenSigMomVz", VFLOAT );   //!
 
+  //  add new photon branches below 
+
+
+  // add new photon branches above
   selPhotons.attachBranches( fOutTree );
 
 
@@ -2575,6 +2805,10 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     selJets.makeBranch( "selGenJetTime", VFLOAT ); // (*Jet_genTime)[it]; 
     selJets.makeBranch( "selGenJetLlpTime", VFLOAT ); //*Jet_genTimeLLP)[it]; 
 
+    //  add new jet branches below 
+
+
+    // add new jet branches above
     selJets.attachBranches( fOutTree );
 
     selRjrVars.makeBranch( "rjrType", VINT );

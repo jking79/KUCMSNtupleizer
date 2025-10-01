@@ -181,6 +181,9 @@ public :
    std::vector<float>   *selPhoTrkSumPtHollowConeDR03;
    std::vector<float>   *selPhoTrkSumPtHollowConeDR04;
    std::vector<float>   *selPhoTrkSumPtSolidConeDR04;
+   std::vector<float>   *selPhoSTimeSig;
+   std::vector<float>   *selPhoLTimeSig;
+   std::vector<float>   *selPhoWTimeSig;
 
    std::vector<bool>    *muonIsLoose;
    std::vector<bool>    *muonIsMedium;
@@ -474,6 +477,9 @@ public :
    TBranch        *b_selPhoTrkSumPtHollowConeDR03;   //!
    TBranch        *b_selPhoTrkSumPtHollowConeDR04;   //!
    TBranch        *b_selPhoTrkSumPtSolidConeDR04;   //!
+   TBranch        *b_selPhoSTimeSig;   //!
+   TBranch        *b_selPhoLTimeSig;   //!
+   TBranch        *b_selPhoWTimeSig;   //!
 
    TBranch        *b_muonIsLoose;   //!
    TBranch        *b_muonIsMedium;   //!
@@ -785,6 +791,9 @@ void skimtuple_v36::Init( TChain *tree, bool doGenInfo ){
    selPhoSipip = 0;
    selPhoSusyId = 0;
    selPhoTime = 0;
+   selPhoSTimeSig = 0;
+   selPhoWTimeSig = 0;
+   selPhoLTimeSig = 0;
    selPhoTrkSumPtHollowConeDR03 = 0;
    selPhoTrkSumPtHollowConeDR04 = 0;
    selPhoTrkSumPtSolidConeDR04 = 0;
@@ -942,6 +951,7 @@ void skimtuple_v36::Init( TChain *tree, bool doGenInfo ){
    fChain->SetBranchAddress("PVy", &PVy, &b_PVy);
    fChain->SetBranchAddress("PVz", &PVz, &b_PVz);
 
+/*
    fChain->SetBranchAddress("SV_cosTheta", &SV_cosTheta, &b_SV_cosTheta);
    fChain->SetBranchAddress("SV_decayAngle", &SV_decayAngle, &b_SV_decayAngle);
    fChain->SetBranchAddress("SV_dxy", &SV_dxy, &b_SV_dxy);
@@ -954,6 +964,7 @@ void skimtuple_v36::Init( TChain *tree, bool doGenInfo ){
    fChain->SetBranchAddress("SV_nMuon", &SV_nMuon, &b_SV_nMuon);
    fChain->SetBranchAddress("SV_nTracks", &SV_nTracks, &b_SV_nTracks);
    fChain->SetBranchAddress("SV_pOverE", &SV_pOverE, &b_SV_pOverE);
+*/
 
    fChain->SetBranchAddress("DataSetKey", &DataSetKey, &b_DataSetKey);
    fChain->SetBranchAddress("evtFillWgt", &evtFillWgt, &b_evtFillWgt);
@@ -1078,6 +1089,10 @@ void skimtuple_v36::Init( TChain *tree, bool doGenInfo ){
    fChain->SetBranchAddress("selPhoTrkSumPtHollowConeDR03", &selPhoTrkSumPtHollowConeDR03, &b_selPhoTrkSumPtHollowConeDR03);
    fChain->SetBranchAddress("selPhoTrkSumPtHollowConeDR04", &selPhoTrkSumPtHollowConeDR04, &b_selPhoTrkSumPtHollowConeDR04);
    fChain->SetBranchAddress("selPhoTrkSumPtSolidConeDR04", &selPhoTrkSumPtSolidConeDR04, &b_selPhoTrkSumPtSolidConeDR04);
+   fChain->SetBranchAddress("selPhoSTimeSig", &selPhoSTimeSig, &b_selPhoSTimeSig);
+   fChain->SetBranchAddress("selPhoLTimeSig", &selPhoLTimeSig, &b_selPhoLTimeSig);
+   fChain->SetBranchAddress("selPhoWTimeSig", &selPhoWTimeSig, &b_selPhoWTimeSig);
+
 
    fChain->SetBranchAddress("muonIsLoose", &muonIsLoose, &b_muonIsLoose);
    fChain->SetBranchAddress("muonIsMedium", &muonIsMedium, &b_muonIsMedium);
@@ -1239,6 +1254,7 @@ void skimtuple_v36::getBranches( Long64_t entry, bool doGenInfo ){
    b_PVy->GetEntry(entry);  //   PVy, &b_PVy);
    b_PVz->GetEntry(entry);  //   PVz, &b_PVz);
 
+/*
    b_SV_cosTheta->GetEntry(entry);  //   SV_cosTheta, &b_SV_cosTheta);
    b_SV_decayAngle->GetEntry(entry);  //   SV_decayAngle, &b_SV_decayAngle);
    b_SV_dxy->GetEntry(entry);  //   SV_dxy, &b_SV_dxy);
@@ -1251,6 +1267,7 @@ void skimtuple_v36::getBranches( Long64_t entry, bool doGenInfo ){
    b_SV_nMuon->GetEntry(entry);  //   SV_nMuon, &b_SV_nMuon);
    b_SV_nTracks->GetEntry(entry);  //   SV_nTracks, &b_SV_nTracks);
    b_SV_pOverE->GetEntry(entry);  //   SV_pOverE, &b_SV_pOverE);
+*/
 
    b_DataSetKey->GetEntry(entry);  //   DataSetKey, &b_DataSetKey);
    b_evtFillWgt->GetEntry(entry);  //   evtFillWgt, &b_evtFillWgt);
@@ -1375,6 +1392,9 @@ void skimtuple_v36::getBranches( Long64_t entry, bool doGenInfo ){
    b_selPhoTrkSumPtHollowConeDR03->GetEntry(entry);  //   selPhoTrkSumPtHollowConeDR03, &b_selPhoTrkSumPtHollowConeDR03);
    b_selPhoTrkSumPtHollowConeDR04->GetEntry(entry);  //   selPhoTrkSumPtHollowConeDR04, &b_selPhoTrkSumPtHollowConeDR04);
    b_selPhoTrkSumPtSolidConeDR04->GetEntry(entry);  //   selPhoTrkSumPtSolidConeDR04, &b_selPhoTrkSumPtSolidConeDR04);
+   b_selPhoSTimeSig->GetEntry(entry);  //   selPhoSTimeSig, &b_selPhoSTimeSig);
+   b_selPhoLTimeSig->GetEntry(entry);  //   selPhoLTimeSig, &b_selPhoLTimeSig);
+   b_selPhoWTimeSig->GetEntry(entry);  //   selPhoWTimeSig, &b_selPhoWTimeSig);
 
    b_muonIsLoose->GetEntry(entry);  //   muonIsLoose, &b_muonIsLoose);
    b_muonIsMedium->GetEntry(entry);  //   muonIsMedium, &b_muonIsMedium);

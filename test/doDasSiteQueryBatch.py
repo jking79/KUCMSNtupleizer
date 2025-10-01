@@ -404,13 +404,29 @@ dlbosun = [
     '/ZZZ_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v2/AODSIM',
 ]
 
+dlDisJet18 = [
+
+    '/DisplacedJet/Run2018A-15Feb2022_UL2018-v1/AOD',
+    '/DisplacedJet/Run2018B-15Feb2022_UL2018-v1/AOD',
+    '/DisplacedJet/Run2018C-15Feb2022_UL2018-v1/AOD',
+    '/DisplacedJet/Run2018D-15Feb2022_UL2018-v1/AOD',
+
+]
+
+dlEGAOD18 = [
+
+    '/EGamma/Run2018B-15Feb2022_UL2018-v1/AOD',
+    '/EGamma/Run2018C-15Feb2022_UL2018-v1/AOD',
+    '/EGamma/Run2018D-15Feb2022_UL2018-v1/AOD',
+
+]
 
 dl22 = [ '/MET/Run2022C-27Jun2023-v2/AOD' ]
 
 #query = 'dasgoclient --json -query=\'dataset='
 query = 'dasgoclient --json -query=\'site dataset=' 
 
-datalist = dl2018ZJets
+datalist = dlEGAOD18
 
 for data in datalist :
     

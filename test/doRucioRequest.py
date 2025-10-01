@@ -157,16 +157,19 @@ jetht18 = [ 'cms:/JetHT/Run2018C-15Feb2022_UL2018-v1/AOD' ]
 
 dy_list = [ 'cms:/DY1JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17DRPremix-PU2017_94X_mc2017_realistic_v11-v1/AODSIM' ]
 
+egamma = [ 'cms:/EGamma/Run2018C-15Feb2022_UL2018-v1/AOD' ]
+
 #runlist = qcd_list
 #runlist = gjets_list
 #runlist = met_list
 #runlist = met18UL
 #runlist = WjetsToLNU
 #runlist = TandJets
-runlist = ZjetsToNuNU
+#runlist = ZjetsToNuNU
 #runlist = jetmetexo22
 #runlist = dipho
 #runlist = bosun
+runlist = egamma
 
 for thefile in runlist :
 

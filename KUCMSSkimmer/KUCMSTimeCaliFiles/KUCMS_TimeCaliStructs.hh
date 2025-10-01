@@ -7,18 +7,18 @@
 // 
 ////////////////////////////////////////////////////////////////////// 
  
-#ifndef KUCMSTimeCalibrationStructs 
-#define KUCMSTimeCalibrationStructs 
+#ifndef KUCMS_TimeCalibrationStructs 
+#define KUCMS_TimeCalibrationStructs 
  
 //--------------------   hh file ------------------------------------------------------------- 
 //--------------------------------------------------------------------------------------------- 
 
 //--------------------------------------------------------------------------------------------------------------------- 
 
-struct lumiRunStruct { 
+struct kucms_lumiRunStruct { 
  
-    lumiRunStruct(){} 
-    lumiRunStruct( int trun, int tfill, float tlumi ) 
+    kucms_lumiRunStruct(){} 
+    kucms_lumiRunStruct( int trun, int tfill, float tlumi ) 
         : run(trun), fill(tfill), lumi(tlumi) {} 
  
     int run; 
@@ -29,10 +29,10 @@ struct lumiRunStruct {
 
 //--------------------------------------------------------------------------------------------------------------------- 
 
-struct smearTagStruct { 
+struct kucms_smearTagStruct { 
  
-    smearTagStruct(){} 
-    smearTagStruct( float tnoise, float tstoch, float tstant ) 
+    kucms_smearTagStruct(){} 
+    kucms_smearTagStruct( float tnoise, float tstoch, float tstant ) 
         : noise(tnoise), stoch(tstoch), stant(tstant) {} 
  
     float noise; 
@@ -43,12 +43,12 @@ struct smearTagStruct {
 
 //--------------------------------------------------------------------------------------------------------------------- 
 
-struct caliHistStruct { 
+struct kucms_caliHistStruct { 
      
-    caliHistStruct(){} 
-    caliHistStruct( TH2F* thist, std::string histname, bool isnew, bool reshist ) 
+    kucms_caliHistStruct(){} 
+    kucms_caliHistStruct( TH2F* thist, std::string histname, bool isnew, bool reshist ) 
         : h2f(thist), histName(histname), isNew(isnew), isResHist(reshist) { h1f = NULL; } 
-    caliHistStruct( TH1F* thist, std::string histname, bool isnew, bool reshist ) 
+    kucms_caliHistStruct( TH1F* thist, std::string histname, bool isnew, bool reshist ) 
         : h1f(thist), histName(histname), isNew(isnew), isResHist(reshist) { h2f = NULL; } 
  
     TH2F* h2f; 
@@ -62,7 +62,7 @@ struct caliHistStruct {
 //---------------------------------------------------------------------------------------------------------------------  
 
 // fit result struct 
-struct TimeFitResult { 
+struct kucms_TimeFitResult { 
 
     float mu; 
     float emu; 
@@ -80,7 +80,7 @@ struct TimeFitResult {
 
 //---------------------------------------------------------------------------------------------------------------------   
 
-struct SigmaFitResult { 
+struct kucms_SigmaFitResult { 
 
     float noise;//noise 
     float enoise; 
