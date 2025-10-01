@@ -30,15 +30,15 @@
 #include <sys/stat.h>
 #include <cmath>
 
-#ifndef KUCMSEcalDetIDFunctions
-#define KUCMSEcalDetIDFunctions
+#ifndef KUCMS_EcalDetIDFunctions
+#define KUCMS_EcalDetIDFunctions
 
-enum ECAL {EB, EM, EP, NONE};
+struct kucms_DetIDStruct {
 
-struct DetIDStruct {
+	enum ECAL {EB, EM, EP, NONE};
 
-    DetIDStruct() {}
-    DetIDStruct( const int ni1, const int ni2, const int nTT, const int & necal, const float nphi, const float neta ) 
+    kucms_DetIDStruct() {}
+    kucms_DetIDStruct( const int ni1, const int ni2, const int nTT, const int & necal, const float nphi, const float neta ) 
 		: i1(ni1), i2(ni2), TT(nTT), ecal(necal), phi(nphi), eta(neta) {}
 
     int i1; // EB: iphi, EE: ix
@@ -50,6 +50,7 @@ struct DetIDStruct {
 
 };//<<>>struct DetIDStruct
 
+/*
 inline void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap ){
 
 	const std::string inDir("/uscms/home/jaking/nobackup/el8/ecaltiming/CMSSW_14_0_11/src/GammaResTool/GammaResTool/macros/ecal_config/");
@@ -89,6 +90,7 @@ inline void SetupDetIDsEE( std::map<UInt_t,DetIDStruct> &DetIDMap ){
     }//<<>>while (infile >>
 
 }//<<>>void SetupDetIDsEE( std::map<UInt_t,DetIDStruct> &DetIDMap )
+*/
 
 #endif
 //-------------------------------------------------------------------------------------------------------------------

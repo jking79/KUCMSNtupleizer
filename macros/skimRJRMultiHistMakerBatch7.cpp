@@ -519,13 +519,35 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 
     if( DEBUG ) std::cout << "RJR info " << std::endl;
 	float gtime = -99;
+    float gpt = -99;
+	float gstsig = -99;
+	float gltsig = -99;
+	float gwtsig = -99;
+	float genergy = -99;
+    float gcenergy = -99;
+
     float sgtime = 99;
-	if( selPhoTime->size() > 0 ) gtime = (*selPhoTime)[0];
-    if( selPhoTime->size() > 1 ) sgtime = (*selPhoTime)[1];
+    float sgpt = -99;
+	if( selPhoTime->size() > 0 ){
+		gtime = (*selPhoTime)[0];
+		gpt = (*selPhoPt)[0];
+		gstsig = (*selPhoSTimeSig)[0];
+        gwtsig = (*selPhoWTimeSig)[0];
+        gltsig = (*selPhoLTimeSig)[0];
+        genergy = (*selPhoEnergy)[0];
+        gcenergy = (*selPhoCorEnergy)[0];
+	}//<<>>if( selPhoTime->size() > 0 )
+	if( selPhoTime->size() > 1 ){
+		sgtime = (*selPhoTime)[1];
+		sgpt = (*selPhoPt)[1];
+	}//<<>>if( selPhoTime->size() > 1 )
 
 	int nPho = (*rjrNPhotons)[cs];
     int nAJets = (*rjrNJetsJa)[cs];
     int nBJets = (*rjrNJetsJb)[cs];
+	int nVis = (*rjrNVisObjects)[cs];
+
+	if( ( nPho + nAJets + nBJets ) != nVis ) std::cout << "Vis Object counting Wrong !!!!!!!!!!" << std::endl;
 
     float mr = (*rjr_Mr)[cs];
     float rv = (*rjr_Rv)[cs];
@@ -539,8 +561,8 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     float rm = (*rjr_Rm)[cs]; // float m_MVab = std::sqrt(sq2(m_MVa)+sq2(m_MVb))/phs40;  ? good in less compressed 
     float rs = (*rjr_Rs)[cs]; // float Rs = (phxa11+phxb11)/pHs22;   NEW !!!!!!!!
     float rx = (*rjr_Rx)[cs]/std::sqrt(2); // float Rx = hypo(phxa11/phxa21,phxb11/phxb21); NEW !!!!!!!!
-    float rx0a = (*rjr_Rxa)[cs]; // float Rxa = phxa10/phxa20;
-    float rx0b = (*rjr_Rxb)[cs]; // float Rxb = phxb10/phxb20;
+    float rx0a = (*rjr_pHxa10)[cs]/(*rjr_pHxa20)[cs]; //(*rjr_Rxa)[cs]; // float Rxa = phxa10/phxa20;
+    float rx0b = (*rjr_pHxb10)[cs]/(*rjr_pHxb20)[cs]; //(*rjr_Rxb)[cs]; // float Rxb = phxb10/phxb20;
     float rxa = (*rjr_pHxa11)[cs]/(*rjr_pHxa21)[cs];
     float rxb = (*rjr_pHxb11)[cs]/(*rjr_pHxb21)[cs];
 
@@ -584,32 +606,37 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 	//(*rjrAX2NQSum)[cs] -- R
 	//rjrNVSum -- Rv
 
+
     fillwt = fillwt * m_vec[0];
 
 	//var hist fill
-	bool timecust( ( gtime < -0.6 ) || ( sgtime < -0.6 ) );
+	bool timecust( ( gtime < -0.5 ) || ( sgtime < -0.5 ) );
 
 	bool rxabcust( rxa == 1 || rxb == 1 );
     bool rxab7cust( rxa == 1 || ( rxb == 1 && rxa < 0.7 ) );
-	bool jabcust( nAJets < 2 && nBJets < 2 );
+	bool jab1cust( nAJets < 1 && nBJets < 1 );
+    bool jab2cust( nAJets < 2 && nBJets < 2 );
 
 
 	bool nphocust( rjrNPhotons->at(cs) < 1 );
     bool n1phocust( rjrNPhotons->at(cs) != 1 );
     bool n2phocust( rjrNPhotons->at(cs) < 2 );
 
-	if( timecust )  continue;
+	//if( timecust )  continue;
 
 	// GGG cut sets
-	if( nRjrPhos < 20 && ( rxabcust || nphocust ) ) continue;  
+	if( nRjrPhos < 20 && nphocust ) continue;  
     if( nRjrPhos == 0 ){
-		//none
+        //if( ms < 1000 ) continue;
+        //if( rs < 0.25 ) continue;
 	}//<<>>if( nRjrPhos == 0 )
 	if( nRjrPhos == 1 ){
-        if( rs < 0.2 ) continue;
+		//if( pho1PtsH21 < 0.1  ) continue;
+		if( ms < 1000 ) continue;
+        if( rs < 0.25 ) continue;
 	}//<<>>if( nRjrPhos == 1 )
     if( nRjrPhos == 2 ){
-        if( ms < 1000 ) continue;
+        if( ms < 1200 ) continue;
     }//<<>>if( nRjrPhos == 2 )
 	if( nRjrPhos == 3 ){
 		if( ms < 2000 ) continue;
@@ -624,7 +651,7 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
         if( rs < 0.35 ) continue;
     }//<<>>if( nRjrPhos == 6 )
     if( nRjrPhos == 7 ){
-        if( rs < 0.4 ) continue;
+        if( rs < 0.45 ) continue;
     }//<<>>if( nRjrPhos == 7 )
     if( nRjrPhos == 8 ){
         if( ms < 3000 ) continue;
@@ -635,14 +662,14 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
         if( rs < 0.35 ) continue;
     }//<<>>if( nRjrPhos == 9 )
     if( nRjrPhos == 10 ){
-        if( ms < 1000 ) continue;
-        if( rs < 0.40 ) continue;
+        if( ms < 1200 ) continue;
+        if( rs < 0.45 ) continue;
     }//<<>>if( nRjrPhos == 10 )
 
 
     if( ( nRjrPhos > 19 && nRjrPhos < 30 ) && ( rxab7cust || nphocust ) ) continue;
     if( nRjrPhos == 25 ){
-        if( ms < 750 ) continue;
+        if( ms < 1000 ) continue;
     }//<<>>if( nRjrPhos == 4 )
     if( nRjrPhos == 26 ){
         if( ms < 2200 ) continue;
@@ -652,22 +679,19 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     }//<<>>if( nRjrPhos == 4 )
 
 
-
+	//if( nphocust ) continue;
+    if( nRjrPhos == 30 ){
+        if( ms < 1000 ) continue;
+        if( rs < 0.25 ) continue;
+    }//<<>>if( nRjrPhos == 10 )
     if( nRjrPhos == 31 ){
-		if( rjrNPhotons->at(cs) < 1 ) continue;
-        if( rjr_p1Ptxb ->at(cs) > 0 ) continue;  // selects for photon on a side
+        if( ms < 3000 ) continue;
+        if( rs < 0.30 ) continue;
+		//if( jabcust ) continue;
     }//<<>>if( nRjrPhos == 11 )
     if( nRjrPhos == 32 ){
-		if( rjrNPhotons->at(cs) < 1 ) continue;
-        if( rjr_p1Ptxa ->at(cs) > 0 ) continue;  // selects for photon of b side
     }//<<>>if( nRjrPhos == 12 )
     if( nRjrPhos == 33 ){
-        //if( ms < 1250 ) continue;
-        if( rxa == 1 ) continue;
-        if( rxb == 1 ) continue;
-        if( rjrNPhotons->at(cs) < 1 ) continue;
-        if( rxmin < 0.3 ) continue;
-        if( rs < 0.36 ) continue;
     }//<<>>if( nRjrPhos == 13 )
 
 
@@ -676,6 +700,10 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     hist1d[2]->Fill(mva,fillwt);
     hist1d[3]->Fill(mvb,fillwt);
     hist1d[4]->Fill(gtime,fillwt);
+    hist1d[5]->Fill(sgtime,fillwt);
+    hist1d[6]->Fill(gpt,fillwt);
+    hist1d[7]->Fill(sgpt,fillwt);
+    hist1d[8]->Fill(msq,fillwt);
 
     hist1d[10]->Fill(r,fillwt);
     hist1d[11]->Fill(rm,fillwt);
@@ -708,6 +736,9 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     hist1d[25]->Fill(phts2141,fillwt); //  = new TH1D("phts2141", addstr(ht,"phts2141").c_str(), 120, 0, 1.2);
 
     hist2d[14]->Fill(rx0a,rx0b,fillwt);
+    hist2d[15]->Fill(nAJets,nBJets,fillwt);
+    hist2d[16]->Fill(nAJets,rxa,fillwt);
+    hist2d[17]->Fill(nBJets,rxb,fillwt);
 
 	//if( not( ML && RL && RvM ) ) continue;    
 	
@@ -732,6 +763,20 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     hist2d[24]->Fill(pho1PxH21,pho2PxH21,fillwt);
     hist2d[25]->Fill(pho1pxa+pho1pxb,pho2pxa+pho2pxb,fillwt);
 
+
+	// Time Sig
+
+	hist1d[51]->Fill(gstsig,fillwt);
+    hist1d[52]->Fill(gwtsig,fillwt);
+    hist1d[53]->Fill(gltsig,fillwt);
+    hist1d[54]->Fill(gtime,fillwt);
+    hist1d[55]->Fill(genergy,fillwt);
+    hist1d[56]->Fill(gcenergy,fillwt);
+
+	hist2d[51]->Fill(gstsig,gtime,fillwt);
+    hist2d[52]->Fill(gstsig,genergy,fillwt);
+    hist2d[53]->Fill(genergy,gcenergy,fillwt);
+
 	}//<<>>for( int i = 0; i < 1; i++ ) -- continue loop
 
 	
@@ -742,7 +787,7 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 
 void HistMaker::endJobs(){
 
-    for( int it = 10; it < 30; it++ ){ if(hist1d[it]) smoothTH1D(hist1d[it]);}
+    for( int it = 10; it < 30; it++ ){ if(hist1d[it]) smoothTH1D_v2(hist1d[it]);}
 
 }//<<>>void HistMaker::endJobs()
 
@@ -814,7 +859,11 @@ void HistMaker::initHists( std::string ht ){
     hist1d[1] = new TH1D("Ms", addstr(ht," Ms;Ms [GeV]").c_str(), 120, 0, 12000);
     hist1d[2] = new TH1D("Mva", addstr(ht," Mva;Mva [GeV]").c_str(), 80, 0, 4000);
     hist1d[3] = new TH1D("Mvb", addstr(ht," Mvb;Mvb [GeV]").c_str(), 80, 0, 4000);
-    hist1d[4] = new TH1D("photime", addstr(ht," Photon Time;Photon Time [ns]").c_str(), 250, -25.0, 25.0);
+    hist1d[4] = new TH1D("photime", addstr(ht," Lead Photon Time;Lead Photon Time [ns]").c_str(), 800, -2.0, 8.0);
+    hist1d[5] = new TH1D("sphotime", addstr(ht," Second Photon Time;Second Photon Time [ns]").c_str(), 250, -25.0, 25.0);
+    hist1d[6] = new TH1D("phopt", addstr(ht," Lead Photon Pt;Lead Photon Pt [GeV]").c_str(), 800, 0, 4000);
+    hist1d[7] = new TH1D("sphopt", addstr(ht," Second Photon Pt;Second Photon Pt [GeV]").c_str(), 800, 0, 4000);
+    hist1d[8] = new TH1D("Msq", addstr(ht," Msq;Msq [GeV]").c_str(), 120, 0, 12000);
 
     hist1d[10] = new TH1D("R", addstr(ht," R;R").c_str(), 120, 0, 1.2);
     hist1d[13] = new TH1D("Rv", addstr(ht," Rv'Rv").c_str(), 120, 0, 1.2);
@@ -854,6 +903,14 @@ void HistMaker::initHists( std::string ht ){
     hist1d[40] = new TH1D("sumPhoPtsH41", addstr(ht," sumPhoPtsH41;sumPhoPtsH41").c_str(), 200, 0, 2.0);
     hist1d[41] = new TH1D("sumPhoPtsH21", addstr(ht," sumPhoPtsH21;sumPhoPtsH21").c_str(), 200, 0, 2.0);
 
+
+	hist1d[51] = new TH1D("selPhoSTimeSig", addstr(ht," selPhoSTimeSig;selPhoSTimeSig").c_str(), 800, -20, 60);
+    hist1d[52] = new TH1D("selPhoWTimeSig", addstr(ht," selPhoWTimeSig;selPhoWTimeSig").c_str(), 800, -20, 60);
+    hist1d[53] = new TH1D("selPhoLTimeSig", addstr(ht," selPhoLTimeSig;selPhoLTimeSig").c_str(), 800, -20, 60);
+    hist1d[54] = new TH1D("selPhoTOFTime", addstr(ht," selPhoTOFTime;selPhoTOFTime").c_str(), 200, -10, 10);
+    hist1d[55] = new TH1D("selPhoEnergy", addstr(ht," selPhoEnergy;selPhoEnergy").c_str(), 300, 0, 3000);
+    hist1d[56] = new TH1D("selPhoCEnergy", addstr(ht," selPhoCEnergy;selPhoCEnergy").c_str(), 300, 0, 3000);
+
     for( int it = 0; it < n1dHists; it++ ){ if(hist1d[it]) hist1d[it]->Sumw2();}
 
 	//------------------------------------------------------------------------------------------
@@ -869,6 +926,9 @@ void HistMaker::initHists( std::string ht ){
     hist2d[12] = new TH2D("Rx_v_Rm", addstr(ht," Rx_v_Rm;R_{x};R_{m}").c_str(), 120, 0, 1.2, 120, 0, 1.2 );
     hist2d[13] = new TH2D("Rxa_v_Rxb", addstr(ht," Rxa_v_Rxb;R_{xa};R_{xb}").c_str(), 120, 0, 1.2, 120, 0, 1.2 );
     hist2d[14] = new TH2D("Rx0a_v_Rx0b", addstr(ht," Rx0a_v_Rx0b;R_{x0a};R_{x0b}").c_str(), 120, 0, 1.2, 120, 0, 1.2 );
+    hist2d[15] = new TH2D("nAJets_v_nBJets", addstr(ht," nAJets_v_nBJets;nAJets;nBJets").c_str(), 20, 0, 20, 20, 0, 20 );
+    hist2d[16] = new TH2D("nAJets_v_Rxa", addstr(ht," nAJets_v_Rxa;nAJets;Rxa").c_str(), 20, 0, 20, 120, 0, 1.2 );
+    hist2d[17] = new TH2D("nBJets_v_Rxb", addstr(ht," nAJets_v_Rxb;nBJets;Rxb").c_str(), 20, 0, 20, 120, 0, 1.2 );
 
     hist2d[20] = new TH2D("gpts_v_ms", addstr(ht," gpts_v_ms;minPhoPtsH41;Ms [GeV]").c_str(), 200, 0, 2.0, 120, 0, 12000 );
     hist2d[21] = new TH2D("gpts_v_rs", addstr(ht," gpts_v_rs;minPhoPtsH41;Rs").c_str(), 200, 0, 2.0, 120, 0, 1.2 );
@@ -877,6 +937,11 @@ void HistMaker::initHists( std::string ht ){
 
     hist2d[24] = new TH2D("pho1PxH21_v_pho2PxH21", addstr(ht," pho1PxH21_v_pho2PxH21;pho1PxH21;pho2PxH21").c_str(), 500, 0, 5.0, 500, 0, 5.0 );
     hist2d[25] = new TH2D("pho1px_v_pho2px", addstr(ht," pho1px_v_pho2px;pho1px;pho2px").c_str(), 200, 0, 2000, 200, 0, 2000 );
+
+
+    hist2d[51] = new TH2D("Sig_v_Time", addstr(ht," Sig_v_Time;selPhoSTimeSig;selPhoTOFTime").c_str(), 800, -20, 60, 200, -10, 10);
+    hist2d[52] = new TH2D("Sig_v_Energy", addstr(ht," Sig_v_Energy;selPhoSTimeSig;selPhoEnergy").c_str(), 800, -20, 60, 300, 0, 3000);
+    hist2d[53] = new TH2D("Energy_v_CEnergy", addstr(ht," Energy_v_CEnergy;selPhoEnergy;selPhoCEnergy").c_str(), 300, 0, 3000, 300, 0, 3000);
 
 	//------- jets ( time ) 0-49 ------------------------------
 
@@ -915,16 +980,17 @@ int main ( int argc, char *argv[] ){
 
     //if( argc != 4 ) { std::cout << "Insufficent arguments." << std::endl; }
     //else {
-                std::string listdir = "/uscms/home/jaking/nobackup/llpana_skims/";
-            
+                //std::string listdir = "/uscms/home/jaking/nobackup/llpana_skims/";
+				std::string listdir = "/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/"; 
+
 				//std::string infilenameJ = "rjr_skim_files/KUCMS_RJR_GIGI_ootmet_Skim_List.txt";
                 //std::string infilenameJ = "rjr_skim_files/KUCMS_RJR_SMS_ootmet_Skim_List.txt";
-                std::string infilenameJ = "rjr_skim_files/KUCMS_RJR_SMS_v37_Skim_List.txt";
+                std::string infilenameJ = "rjr_skim_files/KUCMS_RJR_SMS_v38_Skim_List.txt";
 				//std::string infilenameBG = "rjr_skim_files/KUCMS_RJR_BG_ootmet_Skim_List.txt";
 				//std::string infilenameBG = "rjr_skim_files/KUCMS_RJR_BG_v28_ootmet_Skim_List.txt";
-                std::string infilenameBG = "rjr_skim_files/KUCMS_RJR_BG_v37_Skim_List.txt";
+                std::string infilenameBG = "rjr_skim_files/KUCMS_RJR_BG_v38_Skim_List.txt";
 
-				std::string version = "v37_";
+				std::string version = "v38_";
 				std::string sigtype = "llpana_";
 				std::string ofnstart = "KUCMS_";
 
@@ -937,8 +1003,8 @@ int main ( int argc, char *argv[] ){
 				// new rjr ken studies w/ H vats  -----------------------------------------------------------------------------
 
 				//int nj = 1;
-				//int np = 1;
-                for( int np = 1; np < 11; np++ ){
+				//int np = 1; : 2,7,10
+                for( int np = 0; np < 2; np++ ){
                 for( int nj = 0; nj < 1; nj++ ){
 
 				//std::string subdir = "cf_" + std::to_string(np) + "pho_" + std::to_string(nj) + "jet/";
@@ -948,7 +1014,7 @@ int main ( int argc, char *argv[] ){
 				std::vector<float> rv_vec{1.0}; // Sig scaling
                 std::string outdir = "";
 
-				std::string isoline = "sc10_ggg_";
+				std::string isoline = "sc10_TSig_";
 				isoline += "cv" + std::to_string( np ) + "_";
                 std::string outfilenameJ = outdir + ofnstart + htitleJ + isoline;
 				std::string htitlefullJ =  htitleJ + isoline;

@@ -23,7 +23,7 @@
 
 
 //#include "KUCMSEcalDetIDFunctions.hh"
-#include "KUCMSTimeCalibration.hh"
+#include "KUCMSTimeCaliFiles/KUCMS_TimeCalibration.hh"
 
 #include "KUCMSNtuple_base_v30.h"
 //#include "KUCMSNtuple_base_noSV_v30.h"
@@ -89,6 +89,8 @@ class KUCMSAodSkimmer : public llpgtree {
 	void processMet();
     void processSV();
 	void processRJR( int type, bool newEvent );
+	void processMLPhotons();
+    void processMLJets();
 
 	int getPhoQuality( int it );
     int getJetQuality( int it );	
@@ -111,7 +113,7 @@ class KUCMSAodSkimmer : public llpgtree {
     // aod skimmer helper functions & varibles
 
     //std::map<UInt_t,DetIDStruct> DetIDMap;
-	KUCMSTimeCalibration* timeCali;
+	KUCMS_TimeCalibration* timeCali;
 
     int getRhIdx( uInt rhDetID );
     uInt getLeadRhID( std::vector<uInt> recHitIds );
@@ -173,6 +175,12 @@ class KUCMSAodSkimmer : public llpgtree {
 	std::vector<bool> rhused;
     std::vector<float> rhispho;
     std::vector<float> rhisele;
+
+	// BC informaiton passing 
+    std::vector<float> erh_corTime;
+	std::vector<bool> isSelPho;
+    std::vector<bool> isSelJet;
+	std::map<unsigned int, int> rhIDtoIterMap;
 
     // Output Branch variables
 

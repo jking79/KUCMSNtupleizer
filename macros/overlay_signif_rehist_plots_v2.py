@@ -161,7 +161,7 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
     lat.SetTextFont(42);
     lat.DrawLatex(0.16,0.96,lat_cms);
     lat.DrawLatex((0.828-t[2]),0.93,lat_title);
-    lat.SetTextSize(0.03);
+    lat.SetTextSize(0.035);
     lat.DrawLatex(t[0],t[1],ptitle[2]);
     
     if layout['logx'] : c1.SetLogx()
@@ -218,7 +218,7 @@ t = [0.45,0.825,0.23,0.175,0.22] # titles position
 
 #x = [ 0.0, 1.05 ]
 #x = [ 0.0, 0.3 ]
-#x = [ 0.8, 1.05 ]
+#x = [ -1.0, 15.0 ]
 x = [ 0.0, 8000 ]
 #y = [ 0.001, 10.0 ]
 #y = [ -0.25, 0.1 ]
@@ -228,47 +228,51 @@ x = [ 0.0, 8000 ]
 #y = [ -1.0, 2.0 ]
 #y = [ -1.0, 3.0 ]
 #y = [ -1.0, 5.0 ]
-#y = [ -1.0, 10.0 ]
-y = [ -1.0, 15.0 ]
+y = [ -1.0, 10.0 ]
+#y = [ -1.0, 15.0 ]
+#y = [ -1.0, 20.0 ]
 #y = [ -1.0, 25.0 ]
+#y = [ -1.0, 30.0 ]
 #x = [ 0.0, 0.8 ]
 #y = [ 0.001, 10.0 ]
 #y = [ 0.0001, 100.0 ]
 #x = [ 0.01, 0.4 ]
 #y = [ 0.2, 0.8 ]
 
-#title = ' GGG Tot BG'
+title = ' GGG Tot BG'
 #title = ' GGG Tot BG Scale 0.05 M_{g} = 2650'
 #title = ' GGG Tot BG Scale 0.1 M_{g} = 2500'
 #title = ' GGG Tot BG Scale 0.2 M_{g} = 2345'
-title = ' QQG Tot BG'
-#isocut = '#splitline{#splitline{nSigPho > 0, phoTime > -0.6}{R_{s} > 0.3}}{}'
-#isocut = '#splitline{#splitline{nSigPho > 0, phoTime > -0.6}{R_{xa} < 1 && R_{xb} < 1}}{}'
-#isocut = '#splitline{ #splitline{nSigPho > 0, phoTime > -0.6}{R_{xa} < 1 && R_{xb} < 1} }{R_{s} > 0.34}'
-#isocut = '#splitline{ #splitline{nSigPho > 0, phoTime > -0.6}{R_{xa} < 1 && R_{xb} < 1} }{R_{s} > 0.40}'
-#isocut = '#splitline{ #splitline{nSigPho > 0, phoTime > -0.6}{R_{xa} < 1 && R_{xb} < 1} }{R_{s} > 0.50}'
-#isocut = '#splitline{ #splitline{nSigPho > 0, phoTime > -0.6}{R_{xa} < 1 && R_{xb} < 1} }{M_{s} > 3400}'
-#isocut = '#splitline{ #splitline{nSigPho > 0, phoTime > -0.6}{R_{xa} < 1 && R_{xb} < 1} }{M_{s} > 2200}'
-#isocut = '#splitline{ #splitline{nSigPho > 0, phoTime > -0.6}{R_{xa} < 1 && R_{xb} < 1} }{M_{s} > 1400}'
-#isocut = '#splitline{ #splitline{nSigPho > 0, phoTime > -0.6}{R_{xa} < 1 && R_{xb} < 1} }{M_{s} > 750}'
-isocut = '#splitline{ #splitline{nSigPho > 0, phoTime > -0.6}{R_{xa} < 1 && R_{xb} < 1} }{M_{s} > 3400, R_{s} > 0.34}'
-#isocut = '#splitline{ #splitline{nSigPho > 0, phoTime > -0.6}{R_{xa} < 1 && R_{xb} < 1} }{M_{s} > 2200, R_{s} > 0.40}'
-#isocut = '#splitline{ #splitline{nSigPho > 0, phoTime > -0.6}{R_{xa} < 1 && R_{xb} < 1} }{M_{s} > 1400, R_{s} > 0.50}'
-#isocut = '#splitline{ #splitline{nSigPho > 0, phoTime > -0.6}{R_{xa} < 1 && R_{xb} < 1} }{M_{s} > 750, R_{xb} = 1 w/ R_{xa} > 0.7}'
-#isocut = '#splitline{#splitline{M_{s} > 1250}{R_{xa} && R_{xb} != 1}}{nSigPho > 0}'
-#isocut = '#splitline{#splitline{R_{s} > 0.3}{R_{xa} && R_{xb} != 1}}{nSigPho > 0}'
-#isocut = '#splitline{#splitline{M_{s} > 1250, R_{s} > 0.3}{R_{xa} && R_{xb} != 1}}{nSigPho > 0}'
-#isocut = '#splitline{#splitline{M_{s} > 2000}{R_{xa} && R_{xb} != 1}}{nSigPho > 0, Rs > 0.2}'
+#title = ' QQG Tot BG'
+#isocut = '#splitline{ #splitline{nSigPho > 0}{}}{}'
+#isocut = '#splitline{ #splitline{nSigPho > 0 }{}R_{s} > 0.2}{}'
+#isocut = '#splitline{ #splitline{nSigPho > 0 }{M_{s} > 1000, R_{s} > 0.25}}{}'
+#isocut = '#splitline{ #splitline{nSigPho > 0 }{R_{s} > 0.30} }{}'
+#isocut = '#splitline{ #splitline{nSigPho > 0 }{R_{s} > 0.35} }{}'
+#isocut = '#splitline{ #splitline{nSigPho > 0 }{R_{s} > 0.45} }{}'
+#isocut = '#splitline{ #splitline{nSigPho > 0 }{M_{s} > 3000} }{}'
+#isocut = '#splitline{ #splitline{nSigPho > 0 }{M_{s} > 2000} }{}'
+#isocut = '#splitline{ #splitline{nSigPho > 0 }{M_{s} > 1200} }{}'
+#isocut = '#splitline{ #splitline{nSigPho > 0 }{} }{M_{s} > 750}'
+#isocut = '#splitline{ #splitline{nSigPho > 0 }{M_{s} > 3000, R_{s} > 0.30} }{}'
+isocut = '#splitline{ #splitline{nSigPho > 0 }{M_{s} > 2000, R_{s} > 0.35} }{}'
+#isocut = '#splitline{ #splitline{nSigPho > 0 }{M_{s} > 1200, R_{s} > 0.45} }{}'
+#isocut = '#splitline{ #splitline{nSigPho > 0 }{} }{M_{s} > 750, R_{xb} = 1 w/ R_{xa} > 0.7}'
+#isocut = '#splitline{ #splitline{M_{s} > 1250}{R_{xa} && R_{xb} != 1}}{nSigPho > 0}'
+#isocut = '#splitline{ #splitline{R_{s} > 0.3}{R_{xa} && R_{xb} != 1}}{nSigPho > 0}'
+#isocut = '#splitline{ #splitline{M_{s} > 1250, R_{s} > 0.3}{R_{xa} && R_{xb} != 1}}{nSigPho > 0}'
+#isocut = '#splitline{ #splitline{M_{s} > 2000}{R_{xa} && R_{xb} != 1}}{nSigPho > 0, Rs > 0.2}'
 ptitle=[ title, "", isocut ]
 bkgrd1 = 'GJets '
 bkgrd2 = 'WJets '
 bkgrd3 = 'ZJets '
 
-cut1 = '>'
-cut2 = '<'
+cutg = '>'
+cutl = '<'
+cut1 = cutg
 
 scale = 'sc10'
-cutset = 'cv13'
+cutset = 'cv9'
 
 Fbg000 = 'KUCMS_BG_llpana_v37_sc10_cv0_TotBG_RjrSkim_Hists.root'
 Fbg001 = 'KUCMS_BG_llpana_v37_sc10_cv1_TotBG_RjrSkim_Hists.root'
@@ -406,13 +410,19 @@ rhname3 = 'Ms'
 rhname4 = 'Mr'   
 rhname5 = 'Rx'  
 rhname6 = 'Rm'  
-rhname7 = 'sumPhoPtsH21'
+#rhname7 = 'sumPhoPtsH21'
+rhname7 = 'pho1PtsH21'
 rhname8 = 'Rxa'
+rhname9 = 'pho2PtsH21'
+rhname10 = 'phopt'
+rhname10 = 'photime'
+rhname11 = 'Rxmin'
+rhname12 = 'Msq'
 
 lint = [ '_' ]
 ncomp = 'roc'
 
-rha = rhname7
+rha = rhname1
 rhnamea = rha
 xtitle = rhnamea
 
@@ -421,7 +431,9 @@ xtitle = rhnamea
 #indir = 'rjr_91825_zbi_hists/'
 #indir = 'rjr_91925_zbi_hists/'
 #indir = 'rjr_92125_zbi_hists/'
-indir = 'rjr_92325_zbi_hists/'
+#indir = 'rjr_92325_zbi_hists/'
+#indir = 'rjr_92425_zbi_hists/'
+indir = 'rjr_92625_zbi_hists/'
 
 outname = 'llpa_met150_multizbi'
 layout = { 'xtitle' : xtitle, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'legtitle' : legtitle }
