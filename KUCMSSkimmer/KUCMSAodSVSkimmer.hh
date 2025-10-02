@@ -178,6 +178,7 @@ class KUCMSAodSkimmer : public llpgtree {
 
 	// BC informaiton passing 
     std::vector<float> erh_corTime;
+    std::vector<float> erh_timeRes;
 	std::vector<bool> isSelPho;
     std::vector<bool> isSelJet;
 	std::map<unsigned int, int> rhIDtoIterMap;

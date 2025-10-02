@@ -150,6 +150,8 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
     // --------------------------------------------------------------------------
 
 	float getCorrectedTime( float time, float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey ); 
+    float getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey );
+
 	float getCalibration( uInt rhid, int run, std::string tag  ); // tag indicates which calibration set to use
     float getCalibration( uInt rhid, int run )
 			{ return getCalibration( rhid, run, curTag ); };
@@ -1293,6 +1295,12 @@ float KUCMS_TimeCalibration::getSmrdCalibTime( float rhtime, float rhamp, uInt r
 }//<<>>float KUCMS_TimeCalibration::getSmearedTime( std::string tag , float time, uInt rhid )
 
 //**************  main calibrate &/or smearing function based on tag + info ********************************************************************
+
+float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey ){
+
+	return std::sqrt( (sq2( 24.0/amplitude ) + (sq2(2.5)/amplitude) + 2*sq2(0.099))/2.0 );
+
+}//<<>>float getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey )
 
 float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey ){
 
