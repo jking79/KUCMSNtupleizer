@@ -438,6 +438,7 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
   processSV();
   processTracks();
   processMLPhotons();// must be done after processPhotons()
+  processMLJets();// must be done after processJets()
   if( doGenInfo ){ processGenParticles(); }
   
   // select events to process and store
@@ -476,6 +477,7 @@ void KUCMSAodSkimmer::processMLPhotons(){
 	for( uInt it = 0; it < nPhotons; it++ ){
 		if( not isSelPho[it] ) continue;
 
+		std::map< unsigned int, float > rhtresmap;
         auto scIndx = (*Photon_scIndex)[it];
         auto rhids = (*SuperCluster_rhIds)[scIndx];
 		int nSCRecHits = rhids.size();
@@ -490,6 +492,7 @@ void KUCMSAodSkimmer::processMLPhotons(){
 				float rhx = (*ECALRecHit_rhx)[erhiter];
                 float rhy = (*ECALRecHit_rhy)[erhiter];
                 float rhz = (*ECALRecHit_rhz)[erhiter];
+				rhtresmap[scrhid] = erh_timeRes[erhiter]; 
 
 				if( DEBUG ) std::cout << erhe << " " << erht << " " << hasGainSwitch;
                 if( DEBUG ) std::cout << " " << erht << " " << rhx << " " << rhy << " " << rhz << std::endl;
@@ -565,6 +568,7 @@ void KUCMSAodSkimmer::processMLJets(){
   	for( uInt it = 0; it < nJets; it++ ){
         if( not isSelJet[it] ) continue;
 
+    	std::map< unsigned int, float > rhtresmap;
     	auto rhids = (*Jet_drRhIds)[it];
         int nJetRecHits = rhids.size();
         for( int jiter = 0; jiter < nJetRecHits; jiter++  ){
@@ -577,8 +581,9 @@ void KUCMSAodSkimmer::processMLJets(){
                 float rhx = (*ECALRecHit_rhx)[erhiter];
                 float rhy = (*ECALRecHit_rhy)[erhiter];
                 float rhz = (*ECALRecHit_rhz)[erhiter];
-
-                if( DEBUG ) std::cout << erhe << " " << erht << " " << hasGainSwitch;
+                rhtresmap[jrhid] = erh_timeRes[erhiter];
+    
+            	if( DEBUG ) std::cout << erhe << " " << erht << " " << hasGainSwitch;
                 if( DEBUG ) std::cout << " " << erht << " " << rhx << " " << rhy << " " << rhz << std::endl;
 
                 //
@@ -834,6 +839,7 @@ void KUCMSAodSkimmer::processRechits(){
 
 	rhIDtoIterMap.clear();
 	erh_corTime.clear();
+	erh_timeRes.clear();
     auto nRecHits = ECALRecHit_ID->size();
     if( DEBUG ) std::cout << " -- Looping over " << nRecHits << " rechits" << std::endl;
     for( int it = 0; it < nRecHits; it++ ){
@@ -844,9 +850,11 @@ void KUCMSAodSkimmer::processRechits(){
     	if( DEBUG ) std::cout << " -- TimeCali DetIDInfo : " << idinfo.i2 << " " << idinfo.i1 << " " << idinfo.ecal << std::endl;
 		float rht = (*ECALRecHit_time)[it];
 		float rhe = (*ECALRecHit_energy)[it];
-		float rha = (*ECALRecHit_ampres)[it]; // instead of energy ?
+		float rha = (*ECALRecHit_ampres)[it]; // instead of energy ? ( this is the ADC amplitude in units of the pedistal rms for this rechit )
 		float corrht = timeCali->getCorrectedTime( rht, rha, rhid, Evt_run, dataSetKey );
+		float rhtres = timeCali->getTimeResoltuion( rha, rhid, Evt_run, dataSetKey );
 		erh_corTime.push_back( corrht );
+        erh_timeRes.push_back( rhtres );
         if( true ){
 
 			hist1d[0]->Fill( rhe, 1 );
@@ -1447,12 +1455,11 @@ void KUCMSAodSkimmer::processPhotons(){
     selPhotons.fillBranch( "selPhoSCx", scx );
     selPhotons.fillBranch( "selPhoSCy", scy );
     selPhotons.fillBranch( "selPhoSCz", scz );
-    //float leadtimesig = leadEtime/leadtimeres;
-    //float seedtimesig = crtime/timeres;
-    //float timesigw = phoWTime/timeres;
+
 	selPhotons.fillBranch( "selPhoLTimeSig", leadtimesig );
     selPhotons.fillBranch( "selPhoSTimeSig", seedtimesig );
     selPhotons.fillBranch( "selPhoWTimeSig", wttimesig );
+    selPhotons.fillBranch( "selPhoWTime", phoWTime );
 
     selPhotons.fillBranch( "selPhoCorEnergy", ce );
     selPhotons.fillBranch( "selPhoCorPt", cpt );
@@ -2641,6 +2648,7 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
   selPhotons.makeBranch( "selPhoLTimeSig", VFLOAT );
   selPhotons.makeBranch( "selPhoSTimeSig", VFLOAT );
   selPhotons.makeBranch( "selPhoWTimeSig", VFLOAT );
+  selPhotons.makeBranch( "selPhoWTime", VFLOAT );
 
   selPhotons.makeBranch( "selPhoEnergy", VFLOAT );
   selPhotons.makeBranch( "selPhoEta", VFLOAT ); 
