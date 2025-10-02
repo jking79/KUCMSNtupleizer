@@ -94,6 +94,10 @@ def docrab( dataset ):
         #config.Data.unitsPerJob  =  50000 # MC TTJet
         #config.Data.unitsPerJob  =  750 # MC DiPhoBox (DPB)
 
+        #config.section_("Site")
+        config.Site.whitelist = ['T1_*','T2_US_*','T2_IT_*','T2_DE_*','T2_ES_*','T2_FR_*','T2_UK_*']
+        config.Site.blacklist = ['T2_CH_CSCS','T2_ES_CIEMAT']
+
         config.JobType.allowUndistributedCMSSW = True
         config.Data.publication    = False
         config.Site.storageSite    = 'T3_US_FNALLPC'
@@ -124,13 +128,13 @@ def docrab( dataset ):
             print( dataset )
 
             print( 'with : ',inDO[1] )
-            print( 'current KUCMSNtuple version : 30' )            
+            print( 'current KUCMSNtuple version : 31' )            
 
             #trial          = "kucmsntuple_gogoG_Sig_IPM100_v26" #
             #trial          = "kucmsntuple_gogoZ_Sig_IPM100_v27" # 
             #trial          = "kucmsntuple_gogoZ_Sig_SVIPM100_v27" # filter on #SVs( lep or had ) - redefinded loose electron
             #trial          = "kucmsntuple_sqsqG_Sig_SVIPM100_v27" #
-            trial          = "kucmsntuple_SMS_Sig_SVIPM100_v30" #
+            trial          = "kucmsntuple_SMS_Sig_SVIPM100_v31" #
 
             # set trial name - used in output path ?
 

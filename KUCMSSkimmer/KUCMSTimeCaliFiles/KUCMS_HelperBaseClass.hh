@@ -35,8 +35,8 @@
 #include <algorithm>
 #include <random>
 
-#ifndef KUCMSHelperBaseClass
-#define KUCMSHelperBaseClass
+#ifndef KUCMS_HelperBaseClass_new
+#define KUCMS_HelperBaseClass_new
 
 typedef unsigned int uInt;
 typedef unsigned long int ulInt;
@@ -52,7 +52,7 @@ typedef const std::vector<double> CVDbl;
 // Helper functions ( single line function defs, mostly )
 //
 
-class KUCMSHelperBaseClass {
+class KUCMS_HelperBaseClass {
 
 	private :
 
@@ -61,7 +61,7 @@ class KUCMSHelperBaseClass {
 
 	public :
 
-	KUCMSHelperBaseClass(){ helperUsed = true; };
+	KUCMS_HelperBaseClass(){ helperUsed = true; };
 	//~KUCMSHelperBaseClass(){};
 
 	//auto sortByPt = [](auto & obj1, auto & obj2) {return obj1.pt() > obj2.pt();};

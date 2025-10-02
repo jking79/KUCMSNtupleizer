@@ -1521,10 +1521,6 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 	//if( type == 1 ){ if( COMB_J->GetFrame(jetID[it]) == *Jb ) isALeadPhoSide = false; } //else 
 	//
 	//
-	//  !!!!!!!!!!!  fix counting for 1a 2a 2b 2a
-	//
-	//	!!!!!!!!     save 4 vect info for phi/jets in all frames
-	//					then get mometum iwth rjr function for 4 vects
 	//
 	if( COMB_J->GetFrame(jetID[0]) == *Jb ) isALeadPhoSide = false;
 	//  -- redifine A & B side for jets to be : is jet on lead pho side -> A ; is not on lead pho side -> B 
