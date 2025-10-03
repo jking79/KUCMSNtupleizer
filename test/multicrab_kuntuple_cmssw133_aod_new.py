@@ -182,8 +182,10 @@ def docrab( dataset, options ):
     #print("dataset",dataset)
 
     evt_filter = ""
-    if "M100" in trialtag:
+    if "M100" in trialtag and "skimIP" not in trialtag:
         evt_filter = 'MET100'
+    if "100M" in trialtag:
+        evt_filter = '100MET'
     if "50M75" in trialtag:
         evt_filter = '50MET75'
     elif "AL1IsoPho" in trialtag:
@@ -292,7 +294,7 @@ def run_multi():
                       default = '',
                       help = "options for crab command CMD")
     parser.add_argument('-o','--output',help='output tag for ntuples',default='')
-    parser.add_argument('--filter',help='specify event filter',choices=['50M75','M100','AL1IsoPho','AL1NpSC'],default='')
+    parser.add_argument('--filter',help='specify event filter',choices=['50M75','100M','M100','AL1IsoPho','AL1NpSC'],default='')
     args = parser.parse_args()
 
     outfilter = args.output
