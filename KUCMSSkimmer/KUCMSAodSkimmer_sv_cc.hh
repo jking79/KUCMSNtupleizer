@@ -469,10 +469,14 @@ void KUCMSAodSkimmer::processMLPhotons(){
 
 	if( DEBUG ) std::cout << "Finding BC information for photons" << std::endl;
 
-    BayesPoint vtx(1); // PV_x, PV_y, PV_z are x,y,z of primary vertex
-    std::vector<Jet> jetrhs;
 	uInt nPhotons = Photon_excluded->size();
 	if( DEBUG ) std::cout << " - Looping over for " << nPhotons << " photons to get BC info" << std::endl;
+	
+	ClusterAnalyzer ca;
+	//ca.SetDetectorCenter(x, y, z); //set to beamspot center
+	ca.SetPrimaryVertex(PV_x, PV_y, PV_z); //set to PV coords (assuming these are global vars)
+	ca.SetTransferFactor(0.25);
+	
 	for( uInt it = 0; it < nPhotons; it++ ){
 		if( not isSelPho[it] ) continue;
 
@@ -486,38 +490,15 @@ void KUCMSAodSkimmer::processMLPhotons(){
 			if( erhiter != -1 ){
                 float erhe = (*ECALRecHit_energy)[erhiter];
                 bool hasGainSwitch = (*ECALRecHit_hasGS1)[erhiter] || (*ECALRecHit_hasGS6)[erhiter];
-				float erht = erh_corTime[erhiter];
-				float rhx = (*ECALRecHit_rhx)[erhiter];
+		float erht = erh_corTime[erhiter];
+		float rhx = (*ECALRecHit_rhx)[erhiter];
                 float rhy = (*ECALRecHit_rhy)[erhiter];
                 float rhz = (*ECALRecHit_rhz)[erhiter];
 
 				if( DEBUG ) std::cout << erhe << " " << erht << " " << hasGainSwitch;
                 if( DEBUG ) std::cout << " " << erht << " " << rhx << " " << rhy << " " << rhz << std::endl;
 
-				//
-				// call to BayesCluster to load rechit info for this photon
-				//
-
-                // --------------------------------------------------------------------------------------------
-                //  for Baysian Clustering Algo use testing
-                /*
-                        JetPoint jrh( rhx, rhy, rhz, rht ); //in nutple units
-                        //I also do a cut on rh time to only keep rhs with -20 ns < rh time < 20 ns
-                        jrh.SetEnergy(rhe);
-                        jrh.SetEta(rheta);
-                        jrh.SetPhi(rhphi);
-                        jrh.SetWeight(rhe*0.25); //where _gev is some fraction (I have it at 0.25 for now)
-                        jrh.SetRecHitId(rhid);
-                        //can add to a larger, Jet object (like a photon or supercluster) and 
-                        //call photon.GetJets(rhs) to get these rhs as ?~@~\Jet?~@~] objects
-                        //or can recast them here as Jets with the line below
-                        Jet jet( jrh, vtx );
-                        jetrhs.push_back(jet);
-                */
-                //--------------------------------------------------------------------------------------------
-
-
-
+		ca.AddRecHit(rhx, rhy, rhz, erhe, erht);
             }//<<>>if( ecalrhiter != -1 )
         }//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
 		
@@ -525,28 +506,18 @@ void KUCMSAodSkimmer::processMLPhotons(){
 		//  call to BayesCluster to process photon information 
 		//
 
-        //--------------------------------------------------------------------------------------------
-        //  Tesing the substantiation of the Baysian Clustering Class 
-        /*
-            //std::cout << " -- Running BayesCluster :" << std::endl;
-            BayesCluster *algo = new BayesCluster(jetrhs);
-            GaussianMixture* gmm = algo->SubCluster();
-            int nclusters = gmm->GetNClusters();
-            for(int k = 0; k < nclusters; k++){
-                map<string, Matrix> params = gmm->GetLHPosteriorParameters(k);
-                double ec = params["mean"].at(0,0); //eta center of subcluster
-                double pc = params["mean"].at(1,0); //phi center of subcluster
-                double tc = params["mean"].at(2,0); //time center of subcluster
-                Matrix cov = params["cov"]; //3x3 covariance matrix of subcluster 
-                //std::cout << " --- BayesCluster " << k << " ec " << ec << " pc " << pc << " tc " << tc << std::endl;
-            }//<<>>for(int k = 0; k < nclusters; k++)
-            delete algo;
-        */
-        //--------------------------------------------------------------------------------------------
+		ClusterObj phoobj = ca.RunClustering();
+		phoobj.CalculateObjTimes();
+		phoobj.CalculatePUScores();
+		phoobj.CalculateDetBkgScores();
 
+		double photime = phoobj.GetObjTime_Det();
+		//double photime_pv = phoobj.GetObjTime_PV();
+		selPhotons.fillBranch( "selPhoTime_GMM", photime);
 		// save to branches :
 		// selPhotons.fillBranch( "yourvarname", yourvarible );    
 
+		ca.ClearRecHistList();
         // branches created strating on 2546 in  void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree )
         // on line 2709 and below make a selPhotons branch : selPhotons.makeBranch( "yourvarname", VFLOAT );		
 
@@ -2641,6 +2612,7 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
   selPhotons.makeBranch( "selPhoLTimeSig", VFLOAT );
   selPhotons.makeBranch( "selPhoSTimeSig", VFLOAT );
   selPhotons.makeBranch( "selPhoWTimeSig", VFLOAT );
+  selPhotons.makeBranch( "selPhoTime_GMM", VFLOAT );
 
   selPhotons.makeBranch( "selPhoEnergy", VFLOAT );
   selPhotons.makeBranch( "selPhoEta", VFLOAT ); 
