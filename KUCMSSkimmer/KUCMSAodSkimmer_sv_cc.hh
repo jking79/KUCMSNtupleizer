@@ -9,7 +9,7 @@
 
 
 #include "KUCMSAodSVSkimmer.hh"
-
+#include "KUCMSHelperFunctions.hh"
 //-----------------------------------------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------------------------------------
 //// KUCMSAodSkimmer class ----------------------------------------------------------------------------------------------------
@@ -327,6 +327,8 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
     if(DEBUG){ nEntries = 1000; loopCounter = 100; }
     std::cout << "Proccessing " << nEntries << " entries." << std::endl;
     nEvents = nEntries;
+    //DEBUG
+    nEntries = 100;
     for (Long64_t centry = 0; centry < nEntries; centry++){
 
       if( centry%loopCounter == 0 ) std::cout << "Proccessed " << centry << " of " << nEntries << " entries." << std::endl;
@@ -438,6 +440,7 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
   processSV();
   processTracks();
   processMLPhotons();// must be done after processPhotons()
+  processMLJets();// must be done after processJets()
   if( doGenInfo ){ processGenParticles(); }
   
   // select events to process and store
@@ -473,13 +476,14 @@ void KUCMSAodSkimmer::processMLPhotons(){
 	if( DEBUG ) std::cout << " - Looping over for " << nPhotons << " photons to get BC info" << std::endl;
 	
 	ClusterAnalyzer ca;
-	//ca.SetDetectorCenter(x, y, z); //set to beamspot center
-	ca.SetPrimaryVertex(PV_x, PV_y, PV_z); //set to PV coords (assuming these are global vars)
-	ca.SetTransferFactor(0.25);
+	//ca.SetDetectorCenter(x, y, z); //set to beamspot center, defaults to (0,0,0)
+	ca.SetPV(PV_x, PV_y, PV_z); //set to PV coords (assuming these are global vars)
+	ca.SetTransferFactor(1/30.); //set to 1/min photon pt
 	
 	for( uInt it = 0; it < nPhotons; it++ ){
 		if( not isSelPho[it] ) continue;
 
+		std::map< unsigned int, float > rhtresmap;
         auto scIndx = (*Photon_scIndex)[it];
         auto rhids = (*SuperCluster_rhIds)[scIndx];
 		int nSCRecHits = rhids.size();
@@ -494,11 +498,12 @@ void KUCMSAodSkimmer::processMLPhotons(){
 		float rhx = (*ECALRecHit_rhx)[erhiter];
                 float rhy = (*ECALRecHit_rhy)[erhiter];
                 float rhz = (*ECALRecHit_rhz)[erhiter];
+				rhtresmap[scrhid] = erh_timeRes[erhiter]; 
 
 				if( DEBUG ) std::cout << erhe << " " << erht << " " << hasGainSwitch;
                 if( DEBUG ) std::cout << " " << erht << " " << rhx << " " << rhy << " " << rhz << std::endl;
 
-		ca.AddRecHit(rhx, rhy, rhz, erhe, erht);
+		ca.AddRecHit(rhx, rhy, rhz, erhe, erht, scrhid);
             }//<<>>if( ecalrhiter != -1 )
         }//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
 		
@@ -506,18 +511,20 @@ void KUCMSAodSkimmer::processMLPhotons(){
 		//  call to BayesCluster to process photon information 
 		//
 
-		ClusterObj phoobj = ca.RunClustering();
+		ClusterAnalyzer::ClusterObj phoobj = ca.RunClustering();
 		phoobj.CalculateObjTimes();
 		phoobj.CalculatePUScores();
 		phoobj.CalculateDetBkgScores();
 
-		double photime = phoobj.GetObjTime_Det();
+		float photime = phoobj.GetObjTime_Det();
 		//double photime_pv = phoobj.GetObjTime_PV();
 		selPhotons.fillBranch( "selPhoTime_GMM", photime);
-		// save to branches :
-		// selPhotons.fillBranch( "yourvarname", yourvarible );    
+		//add photon subcluster observables (vector<float> obs with obs[k] is for subcluster k in photon)
+		//add PV time for TOF resolution
+		//do for jets (see below)
 
-		ca.ClearRecHistList();
+
+		ca.ClearRecHitList();
         // branches created strating on 2546 in  void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree )
         // on line 2709 and below make a selPhotons branch : selPhotons.makeBranch( "yourvarname", VFLOAT );		
 
@@ -536,6 +543,7 @@ void KUCMSAodSkimmer::processMLJets(){
   	for( uInt it = 0; it < nJets; it++ ){
         if( not isSelJet[it] ) continue;
 
+    	std::map< unsigned int, float > rhtresmap;
     	auto rhids = (*Jet_drRhIds)[it];
         int nJetRecHits = rhids.size();
         for( int jiter = 0; jiter < nJetRecHits; jiter++  ){
@@ -548,8 +556,9 @@ void KUCMSAodSkimmer::processMLJets(){
                 float rhx = (*ECALRecHit_rhx)[erhiter];
                 float rhy = (*ECALRecHit_rhy)[erhiter];
                 float rhz = (*ECALRecHit_rhz)[erhiter];
-
-                if( DEBUG ) std::cout << erhe << " " << erht << " " << hasGainSwitch;
+                rhtresmap[jrhid] = erh_timeRes[erhiter];
+    
+            	if( DEBUG ) std::cout << erhe << " " << erht << " " << hasGainSwitch;
                 if( DEBUG ) std::cout << " " << erht << " " << rhx << " " << rhy << " " << rhz << std::endl;
 
                 //
@@ -805,6 +814,7 @@ void KUCMSAodSkimmer::processRechits(){
 
 	rhIDtoIterMap.clear();
 	erh_corTime.clear();
+	erh_timeRes.clear();
     auto nRecHits = ECALRecHit_ID->size();
     if( DEBUG ) std::cout << " -- Looping over " << nRecHits << " rechits" << std::endl;
     for( int it = 0; it < nRecHits; it++ ){
@@ -815,9 +825,11 @@ void KUCMSAodSkimmer::processRechits(){
     	if( DEBUG ) std::cout << " -- TimeCali DetIDInfo : " << idinfo.i2 << " " << idinfo.i1 << " " << idinfo.ecal << std::endl;
 		float rht = (*ECALRecHit_time)[it];
 		float rhe = (*ECALRecHit_energy)[it];
-		float rha = (*ECALRecHit_ampres)[it]; // instead of energy ?
+		float rha = (*ECALRecHit_ampres)[it]; // instead of energy ? ( this is the ADC amplitude in units of the pedistal rms for this rechit )
 		float corrht = timeCali->getCorrectedTime( rht, rha, rhid, Evt_run, dataSetKey );
+		float rhtres = timeCali->getTimeResoltuion( rha, rhid, Evt_run, dataSetKey );
 		erh_corTime.push_back( corrht );
+        erh_timeRes.push_back( rhtres );
         if( true ){
 
 			hist1d[0]->Fill( rhe, 1 );
@@ -1418,12 +1430,11 @@ void KUCMSAodSkimmer::processPhotons(){
     selPhotons.fillBranch( "selPhoSCx", scx );
     selPhotons.fillBranch( "selPhoSCy", scy );
     selPhotons.fillBranch( "selPhoSCz", scz );
-    //float leadtimesig = leadEtime/leadtimeres;
-    //float seedtimesig = crtime/timeres;
-    //float timesigw = phoWTime/timeres;
+
 	selPhotons.fillBranch( "selPhoLTimeSig", leadtimesig );
     selPhotons.fillBranch( "selPhoSTimeSig", seedtimesig );
     selPhotons.fillBranch( "selPhoWTimeSig", wttimesig );
+    selPhotons.fillBranch( "selPhoWTime", phoWTime );
 
     selPhotons.fillBranch( "selPhoCorEnergy", ce );
     selPhotons.fillBranch( "selPhoCorPt", cpt );
@@ -2613,6 +2624,7 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
   selPhotons.makeBranch( "selPhoSTimeSig", VFLOAT );
   selPhotons.makeBranch( "selPhoWTimeSig", VFLOAT );
   selPhotons.makeBranch( "selPhoTime_GMM", VFLOAT );
+  selPhotons.makeBranch( "selPhoWTime", VFLOAT );
 
   selPhotons.makeBranch( "selPhoEnergy", VFLOAT );
   selPhotons.makeBranch( "selPhoEta", VFLOAT ); 

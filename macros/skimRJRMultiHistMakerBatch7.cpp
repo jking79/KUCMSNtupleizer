@@ -980,8 +980,8 @@ int main ( int argc, char *argv[] ){
 
     //if( argc != 4 ) { std::cout << "Insufficent arguments." << std::endl; }
     //else {
-                //std::string listdir = "/uscms/home/jaking/nobackup/llpana_skims/";
-				std::string listdir = "/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/"; 
+                std::string listdir = "/uscms/home/jaking/nobackup/llpana_skims/";
+				//std::string listdir = "/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/"; 
 
 				//std::string infilenameJ = "rjr_skim_files/KUCMS_RJR_GIGI_ootmet_Skim_List.txt";
                 //std::string infilenameJ = "rjr_skim_files/KUCMS_RJR_SMS_ootmet_Skim_List.txt";
@@ -1004,7 +1004,7 @@ int main ( int argc, char *argv[] ){
 
 				//int nj = 1;
 				//int np = 1; : 2,7,10
-                for( int np = 0; np < 2; np++ ){
+                for( int np = 0; np < 1; np++ ){
                 for( int nj = 0; nj < 1; nj++ ){
 
 				//std::string subdir = "cf_" + std::to_string(np) + "pho_" + std::to_string(nj) + "jet/";
