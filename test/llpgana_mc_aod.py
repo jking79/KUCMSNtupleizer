@@ -187,17 +187,18 @@ ecalIsoInputsF17 = 'RecoEgamma/ElectronIdentification/data/Fall17/effAreaElectro
 ecalruneraIsoInputsW22 = 'RecoEgamma/ElectronIdentification/data/Run3_Winter22/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_122X.txt'
 
 #filterselect = 'None'
-filterselect = 'AL1NpSC'
+#filterselect = 'InvMet100IP'
+#filterselect = 'AL1NpSC'
 #filterselect = 'AL1DisSV'
-#filterselect = 'SVIPMet100'
+filterselect = 'SVIPMet100'
 #filterselect = 'MET100'
 #filterselect = 'AL1IsoPho'
 #filterselect = 'IsoPhoMet100'
 #filterselect = 'AL1SelEle'
 if options.multicrab == True : filterselect = options.eventFilter
 
-runera = "Run3"  # current siganl model
-#runera = "Run2" # BG models
+#runera = "Run3"  # current siganl model
+runera = "Run2" # BG models
 if options.multicrab == True : runera = options.runera
 
 dosv = True
@@ -231,7 +232,7 @@ if options.multicrab == True : makeTrigList = False
 
 print( "Using options : mutlicrab = ",options.multicrab," geninfo = ",genInfo," filter = ",filterselect )
 print( "Using options : momChase = ",genMomChase," trgiList = ",makeTrigList," probeout = ",probeout ) 
-print( "Using options : doDisEle = ",dode," doSVs = ",dosv," doECALTrackOnly = ",doet )
+print( "Using options : doDisEle = (NU) ",dode," doSVs = ",dosv," doECALTrackOnly = (NU) ",doet )
 print( "Using options : globalTag = ",options.globalTag )
 print( "With output file name : ",options.outputFileName )
 

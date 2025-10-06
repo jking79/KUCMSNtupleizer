@@ -9,7 +9,7 @@
 //--------------------   hh file -------------------------------------------------------------
 //---------------------------------------------------------------------------------------------
 
-#include "KUCMSHelperBaseClass.hh"
+#include "KUCMS_HelperBaseClass.hh"
 
 // ROOT/
 
@@ -46,10 +46,10 @@
 #include "TMatrixDSymEigen.h"
 #include "TMathBase.h"
 
-#ifndef KUCMSRootHelperBaseClass
-#define KUCMSRootHelperBaseClass
+#ifndef KUCMS_RootHelperBaseClass_new
+#define KUCMS_RootHelperBaseClass_new
 
-class KUCMSRootHelperBaseClass : public KUCMSHelperBaseClass {
+class KUCMS_RootHelperBaseClass : public KUCMS_HelperBaseClass {
 
 	private:
 
@@ -58,7 +58,7 @@ class KUCMSRootHelperBaseClass : public KUCMSHelperBaseClass {
 
 	public:
 
-	KUCMSRootHelperBaseClass(){ rootHelperUsed = true; };
+	KUCMS_RootHelperBaseClass(){ rootHelperUsed = true; };
 	//~KUCMSRootHelperBaseClass(){};
 
 	void fillTH1( float val, TH1F* hist ){

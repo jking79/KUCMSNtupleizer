@@ -80,11 +80,13 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
                 sigpass = rint1
                 bkgpass = rint2
 
+            #if bkgpass == 0 : bkgpass = sigpass*0.001
             non = sigpass+bkgpass
             muoff = bkgpass
             #non = 140
             #muoff = 83.33
             #noff = 100
+            #print( "input:",sigpass,bkgpass,non,muoff)
             if muoff != 0 :
                 sigma = 0.1
                 #tau = muoff/(muoff*sigma*muoff*sigma)
@@ -133,8 +135,7 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
     #mg.UseCurrentStyle()
     #mg.SetMarkerStyle(n+25)
     #mg.SetMarkerStyle(6)
-    mg.SetTitle(layout['title'])
-#+';X axis '+layout['xtitle']+';Y Axis '+layout['ytitle']+';')
+    mg.SetTitle(layout['title']) #+';X axis '+layout['xtitle']+';Y Axis '+layout['ytitle']+';')
     mg.GetXaxis().CenterTitle(True)
     mg.GetXaxis().SetTitle(layout['xtitle'])
     mg.GetYaxis().CenterTitle(True)
@@ -160,7 +161,7 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
     lat.SetTextFont(42);
     lat.DrawLatex(0.16,0.96,lat_cms);
     lat.DrawLatex((0.828-t[2]),0.93,lat_title);
-    lat.SetTextSize(0.03);
+    lat.SetTextSize(0.035);
     lat.DrawLatex(t[0],t[1],ptitle[2]);
     
     if layout['logx'] : c1.SetLogx()
@@ -209,165 +210,160 @@ islogy = False
 #     #["Data_sigma","",mc_single_loc+pcal+lstfr,"Single"],
 #]
 
-#l = [ 0.7,0.7,0.925,0.9 ] # legend position top right
-l = [ 0.2,0.60,0.4,0.90 ] # legend position top left
+l = [ 0.7,0.6,0.925,0.90 ] # legend position top right
+#l = [ 0.2,0.60,0.4,0.90 ] # legend position top left
 #l = [ 0.25,0.20,0.52,0.525 ] # legend position bottom left
 #t = [0.2,0.48,0.23,0.175,0.22] # titles position
 t = [0.45,0.825,0.23,0.175,0.22] # titles position
 
-x = [ 0.0, 1.05 ]
+#x = [ 0.0, 1.05 ]
 #x = [ 0.0, 0.3 ]
-#x = [ 0.8, 1.05 ]
-#x = [ 0.0, 8000 ]
+#x = [ -1.0, 15.0 ]
+x = [ 0.0, 8000 ]
 #y = [ 0.001, 10.0 ]
-#y = [ -0.3, 0.25 ]
-#y = [ -0.3, 0.5 ]
-#y = [ -0.3, 0.75 ]
-#y = [ -0.3, 1.0 ]
-#y = [ -0.3, 2.0 ]
+#y = [ -0.25, 0.1 ]
+#y = [ -0.25, 0.5 ]
+#y = [ -0.25, 0.75 ]
+#y = [ -1.0, 1.0 ]
+#y = [ -1.0, 2.0 ]
+#y = [ -1.0, 3.0 ]
 #y = [ -1.0, 5.0 ]
+y = [ -1.0, 10.0 ]
 #y = [ -1.0, 15.0 ]
-y = [ -1.0, 25.0 ]
+#y = [ -1.0, 20.0 ]
+#y = [ -1.0, 25.0 ]
+#y = [ -1.0, 30.0 ]
 #x = [ 0.0, 0.8 ]
 #y = [ 0.001, 10.0 ]
 #y = [ 0.0001, 100.0 ]
 #x = [ 0.01, 0.4 ]
 #y = [ 0.2, 0.8 ]
 
-#title = ' GGG 20-15-5'
 title = ' GGG Tot BG'
+#title = ' GGG Tot BG Scale 0.05 M_{g} = 2650'
+#title = ' GGG Tot BG Scale 0.1 M_{g} = 2500'
+#title = ' GGG Tot BG Scale 0.2 M_{g} = 2345'
 #title = ' QQG Tot BG'
-#isocut = '#splitline{#splitline{nSigPho > 0, phoTime > -0.6}{}}{}'
-#isocut = '#splitline{#splitline{nSigPho > 0, phoTime > -0.6}{R_{xa} < 1 && R_{xb} < 1, Min(R_{xa},R_{xb}) > 0.3}}{}'
-#isocut = '#splitline{ #splitline{nSigPho > 0, phoTime > -0.6}{R_{xa} < 1 && R_{xb} < 1, Min(R_{xa},R_{xb}) > 0.3} }{M_{s} > 3400}'
-isocut = '#splitline{ #splitline{nSigPho > 0, phoTime > -0.6}{R_{xa} < 1 && R_{xb} < 1, Min(R_{xa},R_{xb}) > 0.3} }{M_{s} > 2200}'
-#isocut = '#splitline{ #splitline{nSigPho > 0, phoTime > -0.6}{R_{xa} < 1 && R_{xb} < 1, Min(R_{xa},R_{xb}) > 0.3} }{M_{s} > 750}'
-#isocut = '#splitline{ #splitline{nSigPho > 0, phoTime > -0.6}{R_{xa} < 1 && R_{xb} < 1, Min(R_{xa},R_{xb}) > 0.3} }{M_{s} > 750, R_{xb} = 1 w/ R_{xa} > 0.7}'
-#isocut = '#splitline{#splitline{M_{s} > 1250}{R_{xa} && R_{xb} != 1}}{nSigPho > 0}'
-#isocut = '#splitline{#splitline{R_{s} > 0.3}{R_{xa} && R_{xb} != 1}}{nSigPho > 0}'
-#isocut = '#splitline{#splitline{M_{s} > 1250, R_{s} > 0.3}{R_{xa} && R_{xb} != 1}}{nSigPho > 0}'
-#isocut = '#splitline{#splitline{M_{s} > 2000}{R_{xa} && R_{xb} != 1}}{nSigPho > 0, Rs > 0.2}'
+#isocut = '#splitline{ #splitline{nSigPho > 0}{}}{}'
+#isocut = '#splitline{ #splitline{nSigPho > 0 }{}R_{s} > 0.2}{}'
+#isocut = '#splitline{ #splitline{nSigPho > 0 }{M_{s} > 1000, R_{s} > 0.25}}{}'
+#isocut = '#splitline{ #splitline{nSigPho > 0 }{R_{s} > 0.30} }{}'
+#isocut = '#splitline{ #splitline{nSigPho > 0 }{R_{s} > 0.35} }{}'
+#isocut = '#splitline{ #splitline{nSigPho > 0 }{R_{s} > 0.45} }{}'
+#isocut = '#splitline{ #splitline{nSigPho > 0 }{M_{s} > 3000} }{}'
+#isocut = '#splitline{ #splitline{nSigPho > 0 }{M_{s} > 2000} }{}'
+#isocut = '#splitline{ #splitline{nSigPho > 0 }{M_{s} > 1200} }{}'
+#isocut = '#splitline{ #splitline{nSigPho > 0 }{} }{M_{s} > 750}'
+#isocut = '#splitline{ #splitline{nSigPho > 0 }{M_{s} > 3000, R_{s} > 0.30} }{}'
+isocut = '#splitline{ #splitline{nSigPho > 0 }{M_{s} > 2000, R_{s} > 0.35} }{}'
+#isocut = '#splitline{ #splitline{nSigPho > 0 }{M_{s} > 1200, R_{s} > 0.45} }{}'
+#isocut = '#splitline{ #splitline{nSigPho > 0 }{} }{M_{s} > 750, R_{xb} = 1 w/ R_{xa} > 0.7}'
+#isocut = '#splitline{ #splitline{M_{s} > 1250}{R_{xa} && R_{xb} != 1}}{nSigPho > 0}'
+#isocut = '#splitline{ #splitline{R_{s} > 0.3}{R_{xa} && R_{xb} != 1}}{nSigPho > 0}'
+#isocut = '#splitline{ #splitline{M_{s} > 1250, R_{s} > 0.3}{R_{xa} && R_{xb} != 1}}{nSigPho > 0}'
+#isocut = '#splitline{ #splitline{M_{s} > 2000}{R_{xa} && R_{xb} != 1}}{nSigPho > 0, Rs > 0.2}'
 ptitle=[ title, "", isocut ]
 bkgrd1 = 'GJets '
 bkgrd2 = 'WJets '
 bkgrd3 = 'ZJets '
 
-cut1 = '>'
-cut2 = '<'
+cutg = '>'
+cutl = '<'
+cut1 = cutg
 
+scale = 'sc10'
+cutset = 'cv9'
 
-v37tbg000 = 'KUCMS_BG_llpana_v37_sc10_cv0_TotBG_RjrSkim_Hists.root'
-v37tbg001 = 'KUCMS_BG_llpana_v37_sc10_cv1_TotBG_RjrSkim_Hists.root'
-v37tbg002 = 'KUCMS_BG_llpana_v37_sc10_cv2_TotBG_RjrSkim_Hists.root'
-v37tbg003 = 'KUCMS_BG_llpana_v37_sc10_cv3_TotBG_RjrSkim_Hists.root'
-v37tbg004 = 'KUCMS_BG_llpana_v37_sc10_cv4_TotBG_RjrSkim_Hists.root'
-v37tbg005 = 'KUCMS_BG_llpana_v37_sc10_cv5_TotBG_RjrSkim_Hists.root'
-v37tbg006 = 'KUCMS_BG_llpana_v37_sc10_cv6_TotBG_RjrSkim_Hists.root'
-v37tbg007 = 'KUCMS_BG_llpana_v37_sc10_cv7_TotBG_RjrSkim_Hists.root'
-v37tbg008 = 'KUCMS_BG_llpana_v37_sc10_cv8_TotBG_RjrSkim_Hists.root'
+Fbg000 = 'KUCMS_BG_llpana_v37_sc10_cv0_TotBG_RjrSkim_Hists.root'
+Fbg001 = 'KUCMS_BG_llpana_v37_sc10_cv1_TotBG_RjrSkim_Hists.root'
+Fbg002 = 'KUCMS_BG_llpana_v37_sc10_cv2_TotBG_RjrSkim_Hists.root'
+Fbg003 = 'KUCMS_BG_llpana_v37_sc10_cv3_TotBG_RjrSkim_Hists.root'
+Fbg004 = 'KUCMS_BG_llpana_v37_sc10_cv4_TotBG_RjrSkim_Hists.root'
+Fbg005 = 'KUCMS_BG_llpana_v37_sc10_cv5_TotBG_RjrSkim_Hists.root'
+Fbg006 = 'KUCMS_BG_llpana_v37_sc10_cv6_TotBG_RjrSkim_Hists.root'
+Fbg007 = 'KUCMS_BG_llpana_v37_sc10_cv7_TotBG_RjrSkim_Hists.root'
+Fbg008 = 'KUCMS_BG_llpana_v37_sc10_cv8_TotBG_RjrSkim_Hists.root'
 
-v37tsig101 = 'KUCMS_llpana_v37_sc10_cv1_PG15dN5dN1dC1_RjrSkim_Hists.root'
-v37tsig201 = 'KUCMS_llpana_v37_sc10_cv1_PG25dN15dN1kC1_RjrSkim_Hists.root'
+Fbg = 'KUCMS_BG_llpana_v37_sc10_'+cutset+'_TotBG_RjrSkim_Hists.root'
 
-v37tsig301 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN15dN1C1_RjrSkim_Hists.root'
-v37tsig304 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN15dN1C1_RjrSkim_Hists.root'
-v37tsig401 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN15dN1kC1_RjrSkim_Hists.root'
-v37tsig403 = 'KUCMS_llpana_v37_sc10_cv3_PG2kN15dN1kC1_RjrSkim_Hists.root'
-v37tsig501 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN15dN250C1_RjrSkim_Hists.root'
-v37tsig504 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN15dN250C1_RjrSkim_Hists.root'
-v37tsig601 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN15dN5dC1_RjrSkim_Hists.root'
-v37tsig604 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN15dN5dC1_RjrSkim_Hists.root'
+Fsig1 = 'KUCMS_llpana_v37_'+scale+'_'+cutset+'_PG15dN5dN1dC1_RjrSkim_Hists.root'
+Fsig2 = 'KUCMS_llpana_v37_'+scale+'_'+cutset+'_PG25dN15dN1kC1_RjrSkim_Hists.root'
 
-v37tsig701 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN1950N15dC1_RjrSkim_Hists.root'
-v37tsig702 = 'KUCMS_llpana_v37_sc10_cv2_PG2kN1950N15dC1_RjrSkim_Hists.root'
-v37tsig801 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN1950N19dC1_RjrSkim_Hists.root'
-v37tsig802 = 'KUCMS_llpana_v37_sc10_cv2_PG2kN1950N19dC1_RjrSkim_Hists.root'
-v37tsig901 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN1950N1C1_RjrSkim_Hists.root'
-v37tsig904 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN1950N1C1_RjrSkim_Hists.root'
-v37tsig1001 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN1950N1kC1_RjrSkim_Hists.root'
-v37tsig1003 = 'KUCMS_llpana_v37_sc10_cv3_PG2kN1950N1kC1_RjrSkim_Hists.root'
-v37tsig1101 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN1950N250C1_RjrSkim_Hists.root'
-v37tsig1104 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN1950N250C1_RjrSkim_Hists.root'
-v37tsig1201 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN1950N5dC1_RjrSkim_Hists.root'
-v37tsig1204 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN1950N5dC1_RjrSkim_Hists.root'
+Fsig3 = 'KUCMS_llpana_v37_'+scale+'_'+cutset+'_PG2kN15dN1C1_RjrSkim_Hists.root'
+Fsig304 = 'KUCMS_llpana_v37_'+scale+'_cv4_PG2kN15dN1C1_RjrSkim_Hists.root'
+Fsig4 = 'KUCMS_llpana_v37_'+scale+'_'+cutset+'_PG2kN15dN1kC1_RjrSkim_Hists.root'
+Fsig403 = 'KUCMS_llpana_v37_'+scale+'_cv3_PG2kN15dN1kC1_RjrSkim_Hists.root'
+Fsig5 = 'KUCMS_llpana_v37_'+scale+'_'+cutset+'_PG2kN15dN250C1_RjrSkim_Hists.root'
+Fsig504 = 'KUCMS_llpana_v37_'+scale+'_cv4_PG2kN15dN250C1_RjrSkim_Hists.root'
+Fsig6 = 'KUCMS_llpana_v37_'+scale+'_'+cutset+'_PG2kN15dN5dC1_RjrSkim_Hists.root'
+Fsig604 = 'KUCMS_llpana_v37_'+scale+'_cv4_PG2kN15dN5dC1_RjrSkim_Hists.root'
 
-v37tsig1301 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN19dN15dC1_RjrSkim_Hists.root'
-v37tsig1302 = 'KUCMS_llpana_v37_sc10_cv2_PG2kN19dN15dC1_RjrSkim_Hists.root'
-v37tsig1401 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN19dN1C1_RjrSkim_Hists.root'
-v37tsig1404 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN19dN1C1_RjrSkim_Hists.root'
-v37tsig1501 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN19dN1kC1_RjrSkim_Hists.root'
-v37tsig1503 = 'KUCMS_llpana_v37_sc10_cv3_PG2kN19dN1kC1_RjrSkim_Hists.root'
-v37tsig1601 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN19dN250C1_RjrSkim_Hists.root'
-v37tsig1604 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN19dN250C1_RjrSkim_Hists.root'
-v37tsig1701 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN19dN5dC1_RjrSkim_Hists.root'
-v37tsig1704 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN19dN5dC1_RjrSkim_Hists.root'
+Fsig7 = 'KUCMS_llpana_v37_'+scale+'_'+cutset+'_PG2kN1950N15dC1_RjrSkim_Hists.root'
+Fsig702 = 'KUCMS_llpana_v37_'+scale+'_cv2_PG2kN1950N15dC1_RjrSkim_Hists.root'
+Fsig8 = 'KUCMS_llpana_v37_'+scale+'_'+cutset+'_PG2kN1950N19dC1_RjrSkim_Hists.root'
+Fsig802 = 'KUCMS_llpana_v37_'+scale+'_cv2_PG2kN1950N19dC1_RjrSkim_Hists.root'
+Fsig9 = 'KUCMS_llpana_v37_'+scale+'_'+cutset+'_PG2kN1950N1C1_RjrSkim_Hists.root'
+Fsig904 = 'KUCMS_llpana_v37_'+scale+'_cv4_PG2kN1950N1C1_RjrSkim_Hists.root'
+Fsig10 = 'KUCMS_llpana_v37_'+scale+'_'+cutset+'_PG2kN1950N1kC1_RjrSkim_Hists.root'
+Fsig1003 = 'KUCMS_llpana_v37_'+scale+'_cv3_PG2kN1950N1kC1_RjrSkim_Hists.root'
+Fsig11 = 'KUCMS_llpana_v37_'+scale+'_'+cutset+'_PG2kN1950N250C1_RjrSkim_Hists.root'
+Fsig1104 = 'KUCMS_llpana_v37_'+scale+'_cv4_PG2kN1950N250C1_RjrSkim_Hists.root'
+Fsig12 = 'KUCMS_llpana_v37_'+scale+'_'+cutset+'_PG2kN1950N5dC1_RjrSkim_Hists.root'
+Fsig1204 = 'KUCMS_llpana_v37_'+scale+'_cv4_PG2kN1950N5dC1_RjrSkim_Hists.root'
 
-v37tsig1801 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN1kN1C1_RjrSkim_Hists.root'
-v37tsig1804 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN1kN1C1_RjrSkim_Hists.root'
-v37tsig1901 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN1kN250C1_RjrSkim_Hists.root'
-v37tsig1904 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN1kN250C1_RjrSkim_Hists.root'
-v37tsig2001 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN1kN5dC1_RjrSkim_Hists.root'
-v37tsig2004 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN1kN5dC1_RjrSkim_Hists.root'
+Fsig13 = 'KUCMS_llpana_v37_'+scale+'_'+cutset+'_PG2kN19dN15dC1_RjrSkim_Hists.root'
+Fsig1302 = 'KUCMS_llpana_v37_'+scale+'_cv2_PG2kN19dN15dC1_RjrSkim_Hists.root'
+Fsig14 = 'KUCMS_llpana_v37_'+scale+'_'+cutset+'_PG2kN19dN1C1_RjrSkim_Hists.root'
+Fsig1404 = 'KUCMS_llpana_v37_'+scale+'_cv4_PG2kN19dN1C1_RjrSkim_Hists.root'
+Fsig15 = 'KUCMS_llpana_v37_'+scale+'_'+cutset+'_PG2kN19dN1kC1_RjrSkim_Hists.root'
+Fsig1503 = 'KUCMS_llpana_v37_'+scale+'_cv3_PG2kN19dN1kC1_RjrSkim_Hists.root'
+Fsig16 = 'KUCMS_llpana_v37_'+scale+'_'+cutset+'_PG2kN19dN250C1_RjrSkim_Hists.root'
+Fsig1604 = 'KUCMS_llpana_v37_'+scale+'_cv4_PG2kN19dN250C1_RjrSkim_Hists.root'
+Fsig17 = 'KUCMS_llpana_v37_'+scale+'_'+cutset+'_PG2kN19dN5dC1_RjrSkim_Hists.root'
+Fsig1704 = 'KUCMS_llpana_v37_'+scale+'_cv4_PG2kN19dN5dC1_RjrSkim_Hists.root'
 
-v37tsig2101 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN5dN1C1_RjrSkim_Hists.root'
-v37tsig2104 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN5dN1C1_RjrSkim_Hists.root'
-v37tsig2201 = 'KUCMS_llpana_v37_sc10_cv1_PG2kN5dN250C1_RjrSkim_Hists.root'
-v37tsig2204 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN5dN250C1_RjrSkim_Hists.root'
+Fsig18 = 'KUCMS_llpana_v37_'+scale+'_'+cutset+'_PG2kN1kN1C1_RjrSkim_Hists.root'
+Fsig1804 = 'KUCMS_llpana_v37_'+scale+'_cv4_PG2kN1kN1C1_RjrSkim_Hists.root'
+Fsig19 = 'KUCMS_llpana_v37_'+scale+'_'+cutset+'_PG2kN1kN250C1_RjrSkim_Hists.root'
+Fsig1904 = 'KUCMS_llpana_v37_'+scale+'_cv4_PG2kN1kN250C1_RjrSkim_Hists.root'
+Fsig20 = 'KUCMS_llpana_v37_'+scale+'_'+cutset+'_PG2kN1kN5dC1_RjrSkim_Hists.root'
+Fsig2004 = 'KUCMS_llpana_v37_'+scale+'_cv4_PG2kN1kN5dC1_RjrSkim_Hists.root'
+
+Fsig21 = 'KUCMS_llpana_v37_'+scale+'_'+cutset+'_PG2kN5dN1C1_RjrSkim_Hists.root'
+Fsig2104 = 'KUCMS_llpana_v37_'+scale+'_cv4_PG2kN5dN1C1_RjrSkim_Hists.root'
+Fsig22 = 'KUCMS_llpana_v37_'+scale+'_'+cutset+'_PG2kN5dN250C1_RjrSkim_Hists.root'
+Fsig2204 = 'KUCMS_llpana_v37_'+scale+'_cv4_PG2kN5dN250C1_RjrSkim_Hists.root'
 
 # ------- sqsqG -----------------
-v37tqsig100 = 'KUCMS_llpana_v37_sc10_cv0_QG17dN15dN1C1_RjrSkim_Hists.root'
-v37tqsig200 = 'KUCMS_llpana_v37_sc10_cv0_QG17dN3dN1C1_RjrSkim_Hists.root'
+Fqsig1 = 'KUCMS_llpana_v37_'+scale+'_'+cutset+'_QG17dN15dN1C1_RjrSkim_Hists.root'
+Fqsig2 = 'KUCMS_llpana_v37_'+scale+'_'+cutset+'_QG17dN3dN1C1_RjrSkim_Hists.root'
 
-v37tqsig300 = 'KUCMS_llpana_v37_sc10_cv0_QG1850N1650N1C1_RjrSkim_Hists.root'
-v37tqsig400 = 'KUCMS_llpana_v37_sc10_cv0_QG1850N3dN1C1_RjrSkim_Hists.root'
+Fqsig3 = 'KUCMS_llpana_v37_'+scale+'_'+cutset+'_QG1850N1650N1C1_RjrSkim_Hists.root'
+Fqsig4 = 'KUCMS_llpana_v37_'+scale+'_'+cutset+'_QG1850N3dN1C1_RjrSkim_Hists.root'
 
-v37tqsig500 = 'KUCMS_llpana_v37_sc10_cv0_QG2kN18dN1C1_RjrSkim_Hists.root'
-v37tqsig600 = 'KUCMS_llpana_v37_sc10_cv0_QG2kN3dN1C1_RjrSkim_Hists.root'
+Fqsig5 = 'KUCMS_llpana_v37_'+scale+'_'+cutset+'_QG2kN18dN1C1_RjrSkim_Hists.root'
+Fqsig6 = 'KUCMS_llpana_v37_'+scale+'_'+cutset+'_QG2kN3dN1C1_RjrSkim_Hists.root'
 
-v37tqsig700 = 'KUCMS_llpana_v37_sc10_cv0_QG2150N1950N1C1_RjrSkim_Hists.root'
-v37tqsig800 = 'KUCMS_llpana_v37_sc10_cv0_QG2150N3dN1C1_RjrSkim_Hists.root'
+Fqsig7 = 'KUCMS_llpana_v37_'+scale+'_'+cutset+'_QG2150N1950N1C1_RjrSkim_Hists.root'
+Fqsig8 = 'KUCMS_llpana_v37_'+scale+'_'+cutset+'_QG2150N3dN1C1_RjrSkim_Hists.root'
 
-v37tqsig101 = 'KUCMS_llpana_v37_sc10_cv1_QG17dN15dN1C1_RjrSkim_Hists.root'
-v37tqsig201 = 'KUCMS_llpana_v37_sc10_cv1_QG17dN3dN1C1_RjrSkim_Hists.root'
-
-v37tqsig301 = 'KUCMS_llpana_v37_sc10_cv1_QG1850N1650N1C1_RjrSkim_Hists.root'
-v37tqsig401 = 'KUCMS_llpana_v37_sc10_cv1_QG1850N3dN1C1_RjrSkim_Hists.root'
-
-v37tqsig501 = 'KUCMS_llpana_v37_sc10_cv1_QG2kN18dN1C1_RjrSkim_Hists.root'
-v37tqsig601 = 'KUCMS_llpana_v37_sc10_cv1_QG2kN3dN1C1_RjrSkim_Hists.root'
-
-v37tqsig701 = 'KUCMS_llpana_v37_sc10_cv1_QG2150N1950N1C1_RjrSkim_Hists.root'
-v37tqsig801 = 'KUCMS_llpana_v37_sc10_cv1_QG2150N3dN1C1_RjrSkim_Hists.root'
-
-#///////////////////////
-v37tsig1904 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN1kN250C1_RjrSkim_Hists.root'
-v37tsig504 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN15dN250C1_RjrSkim_Hists.root'
-v37tsig1604 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN19dN250C1_RjrSkim_Hists.root'
-v37tsig204 = 'KUCMS_llpana_v37_sc10_cv4_PG25dN15dN1kC1_RjrSkim_Hists.root'
-
-v37tsig1302 = 'KUCMS_llpana_v37_sc10_cv2_PG2kN19dN15dC1_RjrSkim_Hists.root'
-v37tsig802 = 'KUCMS_llpana_v37_sc10_cv2_PG2kN1950N19dC1_RjrSkim_Hists.root'
-
-v37tsig1305 = 'KUCMS_llpana_v37_sc10_cv5_PG2kN19dN15dC1_RjrSkim_Hists.root'
-v37tsig805 = 'KUCMS_llpana_v37_sc10_cv5_PG2kN1950N19dC1_RjrSkim_Hists.root'
-#////////////////////////
 
 G1bg = 'KUCMS_BG_llpana_v37_sc10_cv4_TotBG_RjrSkim_Hists.root'
-G1bg = 'KUCMS_BG_llpana_v37_sc10_cv4_TotBG_RjrSkim_Hists.root'
-G1bg = 'KUCMS_BG_llpana_v37_sc10_cv4_TotBG_RjrSkim_Hists.root'
+G2bg = 'KUCMS_BG_llpana_v37_sc10_cv3_TotBG_RjrSkim_Hists.root'
+G3bg = 'KUCMS_BG_llpana_v37_sc10_cv2_TotBG_RjrSkim_Hists.root'
 # Mn1 < 1.0 TeV
-G1sig21 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN15dN1C1_RjrSkim_Hists.root'
-G1sig19 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN1kN250C1_RjrSkim_Hists.root'
-G1sig6 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN15dN5dC1_RjrSkim_Hists.root'
-G1sig17 = 'KUCMS_llpana_v37_sc10_cv4_PG2kN19dN5dC1_RjrSkim_Hists.root'
+G1sig21 = 'KUCMS_llpana_v37_'+scale+'_cv4_PG2kN15dN1C1_RjrSkim_Hists.root'
+G1sig19 = 'KUCMS_llpana_v37_'+scale+'_cv4_PG2kN1kN250C1_RjrSkim_Hists.root'
+G1sig6 = 'KUCMS_llpana_v37_'+scale+'_cv4_PG2kN15dN5dC1_RjrSkim_Hists.root'
+G1sig17 = 'KUCMS_llpana_v37_'+scale+'_cv4_PG2kN19dN5dC1_RjrSkim_Hists.root'
 # Mn1 1.0 - 1.5
-G2sig4 = 'KUCMS_llpana_v37_sc10_cv3_PG2kN15dN1kC1_RjrSkim_Hists.root'
-G2sig15 = 'KUCMS_llpana_v37_sc10_cv3_PG2kN19dN1kC1_RjrSkim_Hists.root'
-G2sig10 = 'KUCMS_llpana_v37_sc10_cv3_PG2kN1950N1kC1_RjrSkim_Hists.root'
+G2sig4 = 'KUCMS_llpana_v37_'+scale+'_cv3_PG2kN15dN1kC1_RjrSkim_Hists.root'
+G2sig15 = 'KUCMS_llpana_v37_'+scale+'_cv3_PG2kN19dN1kC1_RjrSkim_Hists.root'
+G2sig10 = 'KUCMS_llpana_v37_'+scale+'_cv3_PG2kN1950N1kC1_RjrSkim_Hists.root'
 # Mn1 > 1.5
-G3sig13 = 'KUCMS_llpana_v37_sc10_cv2_PG2kN19dN15dC1_RjrSkim_Hists.root'
-G3sig7 = 'KUCMS_llpana_v37_sc10_cv2_PG2kN1950N15dC1_RjrSkim_Hists.root'
-G3sig8 = 'KUCMS_llpana_v37_sc10_cv2_PG2kN1950N19dC1_RjrSkim_Hists.root'
+G3sig13 = 'KUCMS_llpana_v37_'+scale+'_cv2_PG2kN19dN15dC1_RjrSkim_Hists.root'
+G3sig7 = 'KUCMS_llpana_v37_'+scale+'_cv2_PG2kN1950N15dC1_RjrSkim_Hists.root'
+G3sig8 = 'KUCMS_llpana_v37_'+scale+'_cv2_PG2kN1950N19dC1_RjrSkim_Hists.root'
 
 
 bg = 'TotBG' 
@@ -414,8 +410,14 @@ rhname3 = 'Ms'
 rhname4 = 'Mr'   
 rhname5 = 'Rx'  
 rhname6 = 'Rm'  
-rhname7 = 'phoPtsH41'
+#rhname7 = 'sumPhoPtsH21'
+rhname7 = 'pho1PtsH21'
 rhname8 = 'Rxa'
+rhname9 = 'pho2PtsH21'
+rhname10 = 'phopt'
+rhname10 = 'photime'
+rhname11 = 'Rxmin'
+rhname12 = 'Msq'
 
 lint = [ '_' ]
 ncomp = 'roc'
@@ -426,7 +428,12 @@ xtitle = rhnamea
 
 #indir = 'rjr_roc_hist_files/'
 #indir = 'rjr_91725_zbi_hists/'
-indir = 'rjr_91825_zbi_hists/'
+#indir = 'rjr_91825_zbi_hists/'
+#indir = 'rjr_91925_zbi_hists/'
+#indir = 'rjr_92125_zbi_hists/'
+#indir = 'rjr_92325_zbi_hists/'
+#indir = 'rjr_92425_zbi_hists/'
+indir = 'rjr_92625_zbi_hists/'
 
 outname = 'llpa_met150_multizbi'
 layout = { 'xtitle' : xtitle, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'legtitle' : legtitle }
@@ -440,69 +447,82 @@ for thing in lint :
         ##[ rhname1, "", base1-sig, base2-bkgrd, rfgmsbroc1-sig, rfgmsbroc2-bkgrd, rhname1, cut1, usebase1 ],
 
         # very comp
-        #[ rhnamea, "", indir+v37tsig1302, indir+v37tbg002, sig13, cut1 ], 
-        #[ rhnamea, "", indir+v37tsig702, indir+v37tbg002, sig7, cut1 ],
-        #[ rhnamea, "", indir+v37tsig802, indir+v37tbg002, sig8, cut1 ],
+        #[ rhnamea, "", indir+Fsig13, indir+Fbg, sig13, cut1 ], 
+        #[ rhnamea, "", indir+Fsig7, indir+Fbg, sig7, cut1 ],
+        #[ rhnamea, "", indir+Fsig8, indir+Fbg, sig8, cut1 ],
 
         # 1000
-        [ rhnamea, "", indir+v37tsig403, indir+v37tbg003, sig4, cut1 ],
-        [ rhnamea, "", indir+v37tsig1503, indir+v37tbg003, sig15, cut1 ],
-        [ rhnamea, "", indir+v37tsig1003, indir+v37tbg003, sig10, cut1 ],
-        ##[ rhnamea, "", indir+v37tsig201, indir+v37tbg001, sig2, cut1 ],
+        #[ rhnamea, "", indir+Fsig4, indir+Fbg, sig4, cut1 ],
+        #[ rhnamea, "", indir+Fsig15, indir+Fbg, sig15, cut1 ],
+        #[ rhnamea, "", indir+Fsig10, indir+Fbg, sig10, cut1 ],
+        ##[ rhnamea, "", indir+Fsig2, indir+Fbg, sig2, cut1 ],
 
         # 500
-        #[ rhnamea, "", indir+v37tsig2004, indir+v37tbg004, sig20, cut1 ],
-        #[ rhnamea, "", indir+v37tsig604, indir+v37tbg004, sig6, cut1 ],
-        #[ rhnamea, "", indir+v37tsig1704, indir+v37tbg004, sig17, cut1 ],
-        #[ rhnamea, "", indir+v37tsig1204, indir+v37tbg004, sig12, cut1 ],
+        #[ rhnamea, "", indir+Fsig20, indir+Fbg, sig20, cut1 ],
+        #[ rhnamea, "", indir+Fsig6, indir+Fbg, sig6, cut1 ],
+        #[ rhnamea, "", indir+Fsig17, indir+Fbg, sig17, cut1 ],
+        #[ rhnamea, "", indir+Fsig12, indir+Fbg, sig12, cut1 ],
 
         # 250
-        #[ rhnamea, "", indir+v37tsig2204, indir+v37tbg004, sig22, cut1 ],
-        #[ rhnamea, "", indir+v37tsig1904, indir+v37tbg004, sig19, cut1 ],
-        #[ rhnamea, "", indir+v37tsig504, indir+v37tbg004, sig5, cut1 ],  
-        #[ rhnamea, "", indir+v37tsig1604, indir+v37tbg004, sig16, cut1 ],
-        #[ rhnamea, "", indir+v37tsig1104, indir+v37tbg004, sig11, cut1 ],
+        #[ rhnamea, "", indir+Fsig22, indir+Fbg, sig22, cut1 ],
+        #[ rhnamea, "", indir+Fsig19, indir+Fbg, sig19, cut1 ],
+        #[ rhnamea, "", indir+Fsig5, indir+Fbg, sig5, cut1 ],  
+        #[ rhnamea, "", indir+Fsig16, indir+Fbg, sig16, cut1 ],
+        #[ rhnamea, "", indir+Fsig11, indir+Fbg, sig11, cut1 ],
 
         # 001
-        #[ rhnamea, "", indir+v37tsig2104, indir+v37tbg004, sig21, cut1 ],
-        #[ rhnamea, "", indir+v37tsig1804, indir+v37tbg004, sig18, cut1 ],
-        #[ rhnamea, "", indir+v37tsig304, indir+v37tbg004, sig3, cut1 ],
-        #[ rhnamea, "", indir+v37tsig1404, indir+v37tbg004, sig14, cut1 ],
-        #[ rhnamea, "", indir+v37tsig904, indir+v37tbg004, sig9, cut1 ],
+        #[ rhnamea, "", indir+Fsig21, indir+Fbg, sig21, cut1 ],
+        #[ rhnamea, "", indir+Fsig18, indir+Fbg, sig18, cut1 ],
+        #[ rhnamea, "", indir+Fsig3, indir+Fbg, sig3, cut1 ],
+        #[ rhnamea, "", indir+Fsig14, indir+Fbg, sig14, cut1 ],
+        #[ rhnamea, "", indir+Fsig9, indir+Fbg, sig9, cut1 ],
 
         # glue mass spread
-        #[ rhnamea, "", indir+v37tsig1904, indir+v37tbg004, sig19, cut1 ],
-        #[ rhnamea, "", indir+v37tsig504, indir+v37tbg004, sig5, cut1 ],
-        #[ rhnamea, "", indir+v37tsig1604, indir+v37tbg004, sig16, cut1 ],
-        #[ rhnamea, "", indir+v37tsig204, indir+v37tbg004, sig2, cut1 ],
+        #[ rhnamea, "", indir+Fsig19, indir+Fbg, sig19, cut1 ],
+        #[ rhnamea, "", indir+Fsig5, indir+Fbg, sig5, cut1 ],
+        #[ rhnamea, "", indir+Fsig16, indir+Fbg, sig16, cut1 ],
+        #[ rhnamea, "", indir+Fsig2, indir+Fbg, sig2, cut1 ],
 
         # comp
-        #[ rhnamea, "", indir+v37tsig1302, indir+v37tbg002, sig13, cut1 ],
-        #[ rhnamea, "", indir+v37tsig802, indir+v37tbg002, sig8, cut1 ],
+        #[ rhnamea, "", indir+Fsig13, indir+Fbg, sig13, cut1 ],
+        #[ rhnamea, "", indir+Fsig8, indir+Fbg, sig8, cut1 ],
 
-        #  Mn1 > 1.0 TeV
+        #  Mn1 < 1.0 TeV
         #[ rhnamea, "", indir+G1sig21, indir+G1bg, sig21, cut1 ],
         #[ rhnamea, "", indir+G1sig19, indir+G1bg, sig19, cut1 ],
         #[ rhnamea, "", indir+G1sig6, indir+G1bg, sig6, cut1 ],
         #[ rhnamea, "", indir+G1sig17, indir+G1bg, sig17, cut1 ],
+        #[ rhnamea, "", indir+Fsig21, indir+Fbg, sig21, cut1 ],
+        #[ rhnamea, "", indir+Fsig19, indir+Fbg, sig19, cut1 ],
+        #[ rhnamea, "", indir+Fsig6, indir+Fbg, sig6, cut1 ],
+        #[ rhnamea, "", indir+Fsig17, indir+Fbg, sig17, cut1 ],
+
         #  Mn1 1.0 - 1.5 TeV
         #[ rhnamea, "", indir+G2sig4, indir+G2bg, sig4, cut1 ],
         #[ rhnamea, "", indir+G2sig15, indir+G2bg, sig15, cut1 ],
         #[ rhnamea, "", indir+G2sig10, indir+G2bg, sig10, cut1 ],
+        #[ rhnamea, "", indir+Fsig4, indir+Fbg, sig4, cut1 ],
+        #[ rhnamea, "", indir+Fsig15, indir+Fbg, sig15, cut1 ],
+        #[ rhnamea, "", indir+Fsig10, indir+Fbg, sig10, cut1 ],
+
         # Mn1 > 1.5
         #[ rhnamea, "", indir+G3sig13, indir+G3bg, sig13, cut1 ],
         #[ rhnamea, "", indir+G3sig7, indir+G3bg, sig7, cut1 ],
         #[ rhnamea, "", indir+G3sig8, indir+G3bg, sig8, cut1 ],
+        #[ rhnamea, "", indir+Fsig13, indir+Fbg, sig13, cut1 ], 
+        #[ rhnamea, "", indir+Fsig7, indir+Fbg, sig7, cut1 ],
+        #[ rhnamea, "", indir+Fsig8, indir+Fbg, sig8, cut1 ],
 
         # sqsq-g
-        #[ rhnamea, "", indir+v37tqsig101, indir+v37tbg001, sigz1, cut1 ],
-        #[ rhnamea, "", indir+v37tqsig201, indir+v37tbg001, sigz2, cut1 ],
-        #[ rhnamea, "", indir+v37tqsig301, indir+v37tbg001, sigz3, cut1 ],
-        #[ rhnamea, "", indir+v37tqsig401, indir+v37tbg001, sigz4, cut1 ],
-        #[ rhnamea, "", indir+v37tqsig501, indir+v37tbg001, sigz5, cut1 ],
-        #[ rhnamea, "", indir+v37tqsig601, indir+v37tbg001, sigz6, cut1 ],
-        #[ rhnamea, "", indir+v37tqsig701, indir+v37tbg001, sigz7, cut1 ],
-        #[ rhnamea, "", indir+v37tqsig801, indir+v37tbg001, sigz8, cut1 ],
+        #[ rhnamea, "", indir+Fqsig1, indir+Fbg, sigz1, cut1 ],
+        #[ rhnamea, "", indir+Fqsig3, indir+Fbg, sigz3, cut1 ],
+        #[ rhnamea, "", indir+Fqsig5, indir+Fbg, sigz5, cut1 ],
+        #[ rhnamea, "", indir+Fqsig7, indir+Fbg, sigz7, cut1 ],
+
+        [ rhnamea, "", indir+Fqsig2, indir+Fbg, sigz2, cut1 ],
+        [ rhnamea, "", indir+Fqsig4, indir+Fbg, sigz4, cut1 ],
+        [ rhnamea, "", indir+Fqsig6, indir+Fbg, sigz6, cut1 ],
+        [ rhnamea, "", indir+Fqsig8, indir+Fbg, sigz8, cut1 ],
 
     ]
   

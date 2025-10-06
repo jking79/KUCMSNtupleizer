@@ -7,24 +7,24 @@
 // 
 ////////////////////////////////////////////////////////////////////// 
  
-#include "KUCMSRootHelperBaseClass.hh" 
-#include "KUCMSEcalDetIDFunctions.hh" 
-#include "KUCMSTimeCaliStructs.hh" 
+#include "KUCMS_RootHelperBaseClass.hh" 
+#include "KUCMS_EcalDetIDFunctions.hh" 
+#include "KUCMS_TimeCaliStructs.hh" 
  
 #include <TRandom.h> 
 #include "TChain.h" 
 #include "TGraphErrors.h" 
 #include "TMultiGraph.h" 
  
-#ifndef KUCMSProfileTimeFit 
-#define KUCMSProfileTimeFit
+#ifndef KUCMS_ProfileTimeFit 
+#define KUCMS_ProfileTimeFit
 
-class ProfileTimeFit { 
+class kucms_ProfileTimeFit { 
 
     public: 
      
-    ProfileTimeFit(){ profileHist = NULL; form = NULL; fit = NULL; }; 
-    ProfileTimeFit( TH1F* hist ) : profileHist(hist) { form = NULL; fit = NULL; }; 
+    kucms_ProfileTimeFit(){ profileHist = NULL; form = NULL; fit = NULL; }; 
+    kucms_ProfileTimeFit( TH1F* hist ) : profileHist(hist) { form = NULL; fit = NULL; }; 
     //~ProfileTimeFit(){ if( profileHist ) delete profileHist; if( form ) delete form; if( fit ) delete fit; };   
  
     // internal data members 
@@ -33,17 +33,17 @@ class ProfileTimeFit {
     TF1* fit; 
     TF1* fitHigh; 
     TF1* fitLow; 
-    TimeFitResult results; 
+    kucms_TimeFitResult results; 
  
     // helper functions for making fits to variables 
     //bool isEmpty(){ std::cout << " -- ?  is empty " << profileHist << std::endl; return ( profileHist ) ? profileHist->GetEntries() == 0 : true; }; 
     void DoFit(); 
-    TimeFitResult GetFitResult(){ return results; }; 
+    kucms_TimeFitResult GetFitResult(){ return results; }; 
     void deleteHists(){ if( profileHist ) delete profileHist; if( form ) delete form; if( fit ) delete fit; }; 
  
 };//<<>>class ProfileTimeFit 
 
-inline void ProfileTimeFit::DoFit(){ 
+void kucms_ProfileTimeFit::DoFit(){ 
 
     std::cout << " -- ProfileTimeFit DoFit " << std::endl; 
     //if( isEmpty() ){ std::cout << " --- No such profile hist !!!!!!! " << std::endl; return; } 

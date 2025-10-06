@@ -7,20 +7,20 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#include "KUCMSHelperBaseClass.hh"
-#include "KUCMSRootHelperBaseClass.hh"
-#include "KUCMSEcalDetIDFunctions.hh"
-#include "KUCMSCaliRunClass.hh"
-#include "KUCMSTimeCaliStructs.hh"
-#include "KUCMSProfileTimeFit.hh"
+//#include "KUCMS_HelperBaseClass.hh"
+#include "KUCMS_RootHelperBaseClass.hh"
+#include "KUCMS_EcalDetIDFunctions.hh"
+#include "KUCMS_CaliRunClass.hh"
+#include "KUCMS_TimeCaliStructs.hh"
+#include "KUCMS_ProfileTimeFit.hh"
 
 #include <TRandom.h>
 #include "TChain.h"
 #include "TGraphErrors.h"
 #include "TMultiGraph.h"
 
-#ifndef KUCMSTimeCalibrationClass
-#define KUCMSTimeCalibrationClass
+#ifndef KUCMS_TimeCalibrationClass
+#define KUCMS_TimeCalibrationClass
 
 //--------------------   hh file -------------------------------------------------------------
 //---------------------------------------------------------------------------------------------
@@ -41,12 +41,12 @@
 //
 /////////////////////////////////////////////////////////////////////////////////////////
 
-class KUCMSTimeCalibration : public KUCMSRootHelperBaseClass {
+class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 
 	public:
 
-    KUCMSTimeCalibration( bool stayOpen = false, bool makeNew = false  );
-	~KUCMSTimeCalibration();
+    KUCMS_TimeCalibration( bool stayOpen = false, bool makeNew = false  );
+	~KUCMS_TimeCalibration();
 
 
 	private:
@@ -86,19 +86,19 @@ class KUCMSTimeCalibration : public KUCMSRootHelperBaseClass {
 
 	std::vector<std::string> maptypes;
 
-    std::map<UInt_t,DetIDStruct> DetIDMap; // map of information by detid for each crystal
+    std::map<UInt_t,kucms_DetIDStruct> DetIDMap; // map of information by detid for each crystal
     std::map<int,std::map<int,std::map<int,uInt>>> InvDetIDMap;
 
 	// do we need TT and X verions ?  yes for set and no for hist maps ?
-	std::map<std::string,std::map<int,CaliRunClass>> CaliRunMapSet; // str is tag, int is internal iov/era number  - final cali map
-    std::map<std::string,std::map<int,CaliRunClass>> TTCaliRunMapSet; // str is tag, int is internal iov/era number  - final cali map
+	std::map<std::string,std::map<int,kucms_CaliRunClass>> CaliRunMapSet; // str is tag, int is internal iov/era number  - final cali map
+    std::map<std::string,std::map<int,kucms_CaliRunClass>> TTCaliRunMapSet; // str is tag, int is internal iov/era number  - final cali map
 
 	// interface between TFile and RunMapSet ?  off load to meanMap?
-	std::map<std::string,caliHistStruct> CaliHists; // str is label for specific calibration histogram - stored as ref in calirunmap
-    std::map<std::string,std::map<int,lumiRunStruct>> lumiRunMaps;// str is settag, int is run - ref for maps - give lumi by run
+	std::map<std::string,kucms_caliHistStruct> CaliHists; // str is label for specific calibration histogram - stored as ref in calirunmap
+    std::map<std::string,std::map<int,kucms_lumiRunStruct>> lumiRunMaps;// str is settag, int is run - ref for maps - give lumi by run
     std::map<std::string,std::map<int,int>> iovMaps; // < tag, < start run, end rn >>
 
-    std::map<std::string,smearTagStruct> SmearTagSet;
+    std::map<std::string,kucms_smearTagStruct> SmearTagSet;
 
 	bool updated;
 	bool lowEnergy;
@@ -109,6 +109,10 @@ class KUCMSTimeCalibration : public KUCMSRootHelperBaseClass {
     TRandom* getRandom;
 
 	public:
+
+    // -------------------------------------------------------------------------
+    // Setup and intilization functions --  primarially used internally 
+    // --------------------------------------------------------------------------
 
 	void SetupDetIDsEB();
 	void SetupDetIDsEE();
@@ -140,7 +144,14 @@ class KUCMSTimeCalibration : public KUCMSRootHelperBaseClass {
 	void makeCaliHists(); // make hists from updated maps
 	// ? void makeSmearMaps();
 
-	// accessors to utilize calibration information
+
+	// -------------------------------------------------------------------------
+	// accessors to utilize calibration information  ::  for use in KUSkimmer
+    // --------------------------------------------------------------------------
+
+	float getCorrectedTime( float time, float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey ); 
+    float getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey );
+
 	float getCalibration( uInt rhid, int run, std::string tag  ); // tag indicates which calibration set to use
     float getCalibration( uInt rhid, int run )
 			{ return getCalibration( rhid, run, curTag ); };
@@ -154,9 +165,14 @@ class KUCMSTimeCalibration : public KUCMSRootHelperBaseClass {
     float getSmrdCalibTime( float rhtime, float rhamp, uInt rhid, int run )
 			{ return getSmrdCalibTime( rhtime, rhamp, rhid, run, curTag, smearTag ); }; 
 
+
+	// --------------------------------------------------------------------------
+	// accessor function for use in fillTimeCali - Setup and processing functions
+	// --------------------------------------------------------------------------
+
 	float getTTCali( uInt rhid, int run, std::string tag );
 
-	DetIDStruct& getDetIdInfo( uInt rhid );
+	kucms_DetIDStruct& getDetIdInfo( uInt rhid );
 	uInt getDetIdInfo( int i1, int i2, int ecal );
 	uInt getTTId( uInt detId );
 	std::pair<int,int> getTTInfo( uInt ttid );
@@ -188,7 +204,7 @@ class KUCMSTimeCalibration : public KUCMSRootHelperBaseClass {
 
 	void plot2dResolutionEGR( std::string inputFileName, bool scale = true, bool usecali = true, bool smear = false, std::string ext = "" );
     void plot2dResbyIovForEGR( std::string inputFileName, bool scale = true, bool usecali = true, bool smear = false, std::string ext = "" );
-    SigmaFitResult runTimeFitter( TH2F* hist2D );
+    kucms_SigmaFitResult runTimeFitter( TH2F* hist2D );
 	void doResTimeFits( bool doLocal = false );
     void doResTimeFit( std::string histName );
 	void load2DResHist( std::string histName );
@@ -204,16 +220,16 @@ class KUCMSTimeCalibration : public KUCMSRootHelperBaseClass {
 	void useExtCali( bool ext ){ externalCali = ext; };
     void useGainSwitch( bool gs ){ useGSwitch = gs; };
 
-};//<<>>class KUCMSTimeCalibration : KUCMSRootHelperBaseClass
+};//<<>>class KUCMS_TimeCalibration : KUCMSRootHelperBaseClass
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //  Class Object code  --  yes yes this is easier for me, im weird, will divide into hh/cc at end 
 //  		--  i lied : leaving it all in one file - kinda of
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-inline KUCMSTimeCalibration::KUCMSTimeCalibration( bool stayOpen, bool makeNew ){
+KUCMS_TimeCalibration::KUCMS_TimeCalibration( bool stayOpen, bool makeNew ){
 
-    std::cout << "Initiating KUCMSTimeCalibrationClass" << std::endl;
+    std::cout << "Initiating KUCMS_TimeCalibrationClass" << std::endl;
 	// parameter and setup hardcoded in constructer - some of this needs moved to "run" code
 
     caliFileDir = "ecal_config/";// move
@@ -275,20 +291,20 @@ inline KUCMSTimeCalibration::KUCMSTimeCalibration( bool stayOpen, bool makeNew )
     //std::cout << " - loading cali hists " << std::endl;
 	LoadCaliHists( stayOpen, makeNew );
 
-}//<<>>KUCMSTimeCalibration()   
+}//<<>>KUCMS_TimeCalibration()   
 
 // move save functions external - iopen close TFile in read/save functions
-inline KUCMSTimeCalibration::~KUCMSTimeCalibration(){
+KUCMS_TimeCalibration::~KUCMS_TimeCalibration(){
 
-    std::cout << "Wrapping KUCMSTimeCalibrationClass" << std::endl;
+    std::cout << "Wrapping KUCMS_TimeCalibrationClass" << std::endl;
 
     delete getRandom;
 
-    //std::cout << "Finished Wrapping KUCMSTimeCalibrationClass" << std::endl;
+    //std::cout << "Finished Wrapping KUCMS_TimeCalibrationClass" << std::endl;
 
-}//<<>>KUCMSTimeCalibration::~KUCMSTimeCalibration()
+}//<<>>KUCMS_TimeCalibration::~KUCMS_TimeCalibration()
 
-inline void KUCMSTimeCalibration::SetupDetIDsEB(){
+void KUCMS_TimeCalibration::SetupDetIDsEB(){
 
     std::ifstream infile( detIDConfigEB, std::ios::in);
     unsigned int cmsswId, dbID;
@@ -306,7 +322,7 @@ inline void KUCMSTimeCalibration::SetupDetIDsEB(){
 
 }//<<>>void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap )
 
-inline void KUCMSTimeCalibration::SetupDetIDsEE(){
+void KUCMS_TimeCalibration::SetupDetIDsEE(){
 
     std::ifstream infile( detIDConfigEE, std::ios::in);
     unsigned int cmsswId, dbID;
@@ -326,7 +342,7 @@ inline void KUCMSTimeCalibration::SetupDetIDsEE(){
 
 }//<<>>void SetupDetIDsEE( std::map<UInt_t,DetIDStruct> &DetIDMap )
 
-inline void KUCMSTimeCalibration::SetupIovMaps(){
+void KUCMS_TimeCalibration::SetupIovMaps(){
 
 	//Prompt 
 	std::map<int,int> promptIovMap;
@@ -500,9 +516,9 @@ inline void KUCMSTimeCalibration::SetupIovMaps(){
 
 
 
-}//<<>>void KUCMSTimeCalibration::SetupEraIovMap()
+}//<<>>void KUCMS_TimeCalibration::SetupEraIovMap()
 
-inline void KUCMSTimeCalibration::SetupIovMap( std::string tag, float minLumi ){
+void KUCMS_TimeCalibration::SetupIovMap( std::string tag, float minLumi ){
 
 	bool newrange( true );
 	int start = 0;
@@ -565,9 +581,9 @@ inline void KUCMSTimeCalibration::SetupIovMap( std::string tag, float minLumi ){
 
 	for( auto& iov : theIovMap ){ std::cout << "Iov map " << tag << " : " << iov.first << " " << iov.second << std::endl; }
 
-}//<<>>void KUCMSTimeCalibration::makeTTIovMap()
+}//<<>>void KUCMS_TimeCalibration::makeTTIovMap()
 
-inline void KUCMSTimeCalibration::ReadLumiFile( std::string lumifile, std::string tag ){
+void KUCMS_TimeCalibration::ReadLumiFile( std::string lumifile, std::string tag ){
 
 	std::cout << " - Read LumiFile : " << lumifile << std::endl;
     std::ifstream infile( lumifile, std::ios::in);
@@ -597,9 +613,9 @@ inline void KUCMSTimeCalibration::ReadLumiFile( std::string lumifile, std::strin
 	}//<<>>while(std::getline(iflstream,infilestr))	
 	infile.close();
 
-}//<<>>void KUCMSTimeCalibration::upLoadLumiFile( std::string lumifile )
+}//<<>>void KUCMS_TimeCalibration::upLoadLumiFile( std::string lumifile )
 
-inline void KUCMSTimeCalibration::ReadCaliRunFile(){
+void KUCMS_TimeCalibration::ReadCaliRunFile(){
 
 	std::cout << " - Reading CaliRunFile " << caliRunConfig << std::endl;
     std::ifstream infile( caliRunConfig, std::ios::in);
@@ -623,7 +639,7 @@ inline void KUCMSTimeCalibration::ReadCaliRunFile(){
 
 }//<<>>void ReadTimeCaliTagFile()
 
-inline void KUCMSTimeCalibration::SaveCaliRunFile(){
+void KUCMS_TimeCalibration::SaveCaliRunFile(){
 
     std::cout << " - Saving CaliRunFile " << std::endl;
     std::ofstream outfile( caliRunConfig, std::ios::out | std::ios::trunc );
@@ -656,7 +672,7 @@ inline void KUCMSTimeCalibration::SaveCaliRunFile(){
 
 }//<<>>void ReadTimeCaliTagFile()
 
-inline void KUCMSTimeCalibration::ReadTTRunFile(){
+void KUCMS_TimeCalibration::ReadTTRunFile(){
 
     std::cout << " - Reading TTCaliRunFile " << caliTTConfig << std::endl;
     std::ifstream infile( caliTTConfig, std::ios::in);
@@ -671,11 +687,11 @@ inline void KUCMSTimeCalibration::ReadTTRunFile(){
     }//<<>>while (infile >>
 	infile.close();
 
-}//<<>>void KUCMSTimeCalibration::ReadTTRunFile()
+}//<<>>void KUCMS_TimeCalibration::ReadTTRunFile()
 
 //std::map<std::string,std::map<int,CaliRunStruct>> CaliRunMapSet;
 
-inline void KUCMSTimeCalibration::SaveTTRunFile(){
+void KUCMS_TimeCalibration::SaveTTRunFile(){
     
 	std::cout << " - Saving TTCaliRunFile " << std::endl;
     std::ofstream outfile( caliTTConfig, std::ios::out | std::ios::trunc );
@@ -700,7 +716,7 @@ inline void KUCMSTimeCalibration::SaveTTRunFile(){
 
 }//<<>>void ReadTimeCaliTagFile()
 
-inline void KUCMSTimeCalibration::ReadSmearFile(){
+void KUCMS_TimeCalibration::ReadSmearFile(){
 
     std::cout << " - Reading SmearFile " << caliSmearConfig << std::endl;
     std::ifstream infile( caliSmearConfig, std::ios::in);
@@ -713,9 +729,9 @@ inline void KUCMSTimeCalibration::ReadSmearFile(){
     }//<<>>while (infile >>
     infile.close();
 
-}//<<>>void KUCMSTimeCalibration::ReadSmearFile()
+}//<<>>void KUCMS_TimeCalibration::ReadSmearFile()
 
-inline void KUCMSTimeCalibration::SaveSmearFile(){
+void KUCMS_TimeCalibration::SaveSmearFile(){
 
     std::cout << " - Saving SmearFile " << std::endl;
     std::ofstream outfile( caliSmearConfig, std::ios::out | std::ios::trunc );
@@ -749,7 +765,7 @@ inline void KUCMSTimeCalibration::SaveSmearFile(){
 //            std::string mfilename = tfilename + "MeanMap";
 //            std::string efilename = tfilename + "ErrMap";
 
-inline void KUCMSTimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
+void KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
 
     std::cout << " - Loading CaliHists " << std::endl;
 
@@ -817,14 +833,14 @@ inline void KUCMSTimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
 
 	}//<<>>if( not stayOpen )
 
-}//<<>>void KUCMSTimeCalibration::SetupCaliHists()
+}//<<>>void KUCMS_TimeCalibration::SetupCaliHists()
 
 //    TH2F* h2f;
 //    std::string histName;
 //    bool isNew;
 
 // for updating and/or adding new info to califiles - do last - saving closes TCalifile and clears CaliHists
-inline void KUCMSTimeCalibration::SaveCaliHists(){
+void KUCMS_TimeCalibration::SaveCaliHists(){
 
     std::cout << " - Saving CaliHists " << std::endl;
 	caliTFile->cd();
@@ -858,7 +874,7 @@ inline void KUCMSTimeCalibration::SaveCaliHists(){
 	CaliHists.clear();
     caliTFile->Close();
 
-}///<<>>void KUCMSTimeCalibration::SaveCaliMaps()
+}///<<>>void KUCMS_TimeCalibration::SaveCaliMaps()
 
 //std::string ttfilename = ttHistMapName+name+std::to_string(run);
 //      MeanMap + pd/camp/tag name + start run  + TT/X ?
@@ -873,7 +889,7 @@ inline void KUCMSTimeCalibration::SaveCaliHists(){
 // DetIDStruct idinfo = DetIDMap[];
 
 
-inline void KUCMSTimeCalibration::makeCaliHists(){
+void KUCMS_TimeCalibration::makeCaliHists(){
 
 	// assumed : all current hists are cleared and we remake everything ( maps in runsets are primary )
 	// only process x & TT hists, ? only process updated ( new ) hists ?
@@ -947,18 +963,18 @@ inline void KUCMSTimeCalibration::makeCaliHists(){
 
 			//std::cout << " -- filling hists for " << tfilename << std::endl;
 			for( auto& entry : calirunsct.second.sumCntMap ){
-				DetIDStruct idinfo = DetIDMap[entry.first];
+				kucms_DetIDStruct idinfo = DetIDMap[entry.first];
 				CaliHists[sfilename].h2f->Fill( idinfo.i2, idinfo.i1, entry.second.sum );
                 CaliHists[s2filename].h2f->Fill( idinfo.i2, idinfo.i1, entry.second.sumsqr );
                 CaliHists[ofilename].h2f->Fill( idinfo.i2, idinfo.i1, entry.second.cnt );
 			}//<<>>for( auto& entry : calirunsct.second.sumCntMap )
             for( auto& entry : calirunsct.second.meanMap ){
-                DetIDStruct idinfo = DetIDMap[entry.first];
+                kucms_DetIDStruct idinfo = DetIDMap[entry.first];
                 CaliHists[mfilename].h2f->Fill( idinfo.i2, idinfo.i1, entry.second );
                 CaliHists[mdfilename].h1f->Fill( entry.second );
 			}//<<>>for( auto& entry : calirunsct.second.meanMap )
             for( auto& entry : calirunsct.second.errMap ){
-                DetIDStruct idinfo = DetIDMap[entry.first];
+                kucms_DetIDStruct idinfo = DetIDMap[entry.first];
                 CaliHists[efilename].h2f->Fill( idinfo.i2, idinfo.i1, entry.second );
             }//<<>>for( auto& entry : calirunsct.second.errMap )
         }//<<>>for( auto& calirunsct : calirunmap )
@@ -1030,9 +1046,9 @@ inline void KUCMSTimeCalibration::makeCaliHists(){
     }//<<>>for( auto& calirunmap : CaliRunMapSet )
 
 
-}//<<>>void KUCMSTimeCalibration::makeCaliHists()
+}//<<>>void KUCMS_TimeCalibration::makeCaliHists()
 
-inline void KUCMSTimeCalibration::makeCaliMaps(){
+void KUCMS_TimeCalibration::makeCaliMaps(){
 
     std::cout << " - Making CaliMaps " << std::endl;
 	//TH2F* hist = new TH2F(filename.c_str(),filename.c_str(),171,-85.5,85.5,360,0.5,360.5);
@@ -1111,9 +1127,9 @@ inline void KUCMSTimeCalibration::makeCaliMaps(){
         }//<<>>for( auto& calirunsct : calirunmap )
     }//<<>>for( auto& calirunmap : CaliRunMapSet )
 
-}//<<>>void KUCMSTimeCalibration::makeCaliMaps()
+}//<<>>void KUCMS_TimeCalibration::makeCaliMaps()
 
-inline void KUCMSTimeCalibration::LoadExtCali( std::string calihist, std::string mapname, std::string tag, int startr, int endr ){
+void KUCMS_TimeCalibration::LoadExtCali( std::string calihist, std::string mapname, std::string tag, int startr, int endr ){
 
     std::cout << " - Loading External Cali Map : " << mapname << std::endl;
 	//std::cout << " --- found : " << tfilename << std::endl;
@@ -1155,9 +1171,9 @@ inline void KUCMSTimeCalibration::LoadExtCali( std::string calihist, std::string
         }//<<>>for( int iphi = 1; iphi < 361; iphi++ )
     }//<<>>for( int ieta = 1; ieta < 172; ieta++ )
 
-}//<<>>void KUCMSTimeCalibration::LoadExtCali( std::string calihist, std::string mapname, std::string tag )
+}//<<>>void KUCMS_TimeCalibration::LoadExtCali( std::string calihist, std::string mapname, std::string tag )
 
-inline uInt KUCMSTimeCalibration::getTTId( uInt detId ){
+uInt KUCMS_TimeCalibration::getTTId( uInt detId ){
 
 	int ttphi = 1 + int( DetIDMap[detId].i1 - 1 )/5;
 	int tteta = 1 + int( std::abs( DetIDMap[detId].i2 ) - 1 )/5;
@@ -1166,9 +1182,9 @@ inline uInt KUCMSTimeCalibration::getTTId( uInt detId ){
     //std::cout << "  --> p " << ttphi << " e " << tteta << " = " << id <<std::endl;
 	return id;
 
-}//<<>>uInt KUCMSTimeCalibration::getTTId( uInt detId )
+}//<<>>uInt KUCMS_TimeCalibration::getTTId( uInt detId )
 
-inline std::pair<int,int> KUCMSTimeCalibration::getTTInfo( uInt ttid ){
+std::pair<int,int> KUCMS_TimeCalibration::getTTInfo( uInt ttid ){
 
 	int a = ( ttid > 2000 ) ? ttid - 2000 : ttid;
 	int t = a/100;
@@ -1176,29 +1192,29 @@ inline std::pair<int,int> KUCMSTimeCalibration::getTTInfo( uInt ttid ){
 	int	i1 = a - t*100;
 	return std::make_pair(i1,i2); 
 
-}//<<>>std::pair<int,int> KUCMSTimeCalibration::getTTInfo( uInt ttid )
+}//<<>>std::pair<int,int> KUCMS_TimeCalibration::getTTInfo( uInt ttid )
 
-inline uInt KUCMSTimeCalibration::getInvTTId( int i1, int i2 ){
+uInt KUCMS_TimeCalibration::getInvTTId( int i1, int i2 ){
 
 	return ( i2 < 0 ) ? (i1+std::abs(i2)*100)+2000 : (i1+i2*100);
 
-}//<<>>std::pair<int,int> KUCMSTimeCalibration::getTTInfo( uInt ttid )
+}//<<>>std::pair<int,int> KUCMS_TimeCalibration::getTTInfo( uInt ttid )
 
-inline DetIDStruct& KUCMSTimeCalibration::getDetIdInfo( uInt rhid ){
+kucms_DetIDStruct& KUCMS_TimeCalibration::getDetIdInfo( uInt rhid ){
 
 	return DetIDMap[rhid];
 
-}//<<>>DetIDStruct KUCMSTimeCalibration::getDetIdInfo( uInt rhid )
+}//<<>>DetIDStruct KUCMS_TimeCalibration::getDetIdInfo( uInt rhid )
 
-inline uInt KUCMSTimeCalibration::getDetIdInfo( int i1, int i2, int ecal ){
+uInt KUCMS_TimeCalibration::getDetIdInfo( int i1, int i2, int ecal ){
 
 	return InvDetIDMap[i1][i2][ecal];
 
-}//<<>>DetIDStruct KUCMSTimeCalibration::getDetIdInfo( uInt rhid )
+}//<<>>DetIDStruct KUCMS_TimeCalibration::getDetIdInfo( uInt rhid )
 
 //std::map<std::string,std::map<int,CaliRunStruct>> CaliRunMapSet;
 
-inline float KUCMSTimeCalibration::getCalibration( uInt rhid, int run, std::string tag ){
+float KUCMS_TimeCalibration::getCalibration( uInt rhid, int run, std::string tag ){
 
 	if( rhid == 0 ) return -999.f;
 	//if( not validCurrentTag ){ std::cout << "No current tag set." << std::endl; return 0.f; }
@@ -1220,9 +1236,9 @@ inline float KUCMSTimeCalibration::getCalibration( uInt rhid, int run, std::stri
 	if( xtaltime == -1000.f ){ std::cout << "XCalibration period not found for run " << run << std::endl; return 0.f; }
     return xtaltime + ttcali;// proper
 
-}//<<>>float KUCMSTimeCalibration::getCalibration( std::string tag )
+}//<<>>float KUCMS_TimeCalibration::getCalibration( std::string tag )
 
-inline float KUCMSTimeCalibration::getTTCali( uInt rhid, int run, std::string tag ){
+float KUCMS_TimeCalibration::getTTCali( uInt rhid, int run, std::string tag ){
 
     //if( not isEB ){ std::cout << "TTCalibration for EE is not supported." << std::endl; return 0.f; }
     if( DetIDMap[rhid].ecal != ECAL::EB ) return 999.f;
@@ -1241,7 +1257,7 @@ inline float KUCMSTimeCalibration::getTTCali( uInt rhid, int run, std::string ta
     if( xtaltime == -1000.f ){ std::cout << "TTCalibration period not found for run " << run << std::endl; return 0.f; }
     return xtaltime;
 
-}//<<>>float KUCMSTimeCalibration::getCalibration( std::string tag )
+}//<<>>float KUCMS_TimeCalibration::getCalibration( std::string tag )
 
 //struct smearTagStruct {
 //
@@ -1253,7 +1269,7 @@ inline float KUCMSTimeCalibration::getTTCali( uInt rhid, int run, std::string ta
 //std::map<std::string,smearTagStruct> SmearTagSet;
 //  do mutiple combos 
 
-inline float KUCMSTimeCalibration::getSmearedTime( float rhtime, float rhamp, std::string stag  ){
+float KUCMS_TimeCalibration::getSmearedTime( float rhtime, float rhamp, std::string stag  ){
 
     double stnoise = SmearTagSet[stag].noise;
     double ststoch = SmearTagSet[stag].stoch;
@@ -1268,15 +1284,31 @@ inline float KUCMSTimeCalibration::getSmearedTime( float rhtime, float rhamp, st
     float smearedtime = getRandom->Gaus( rhtime, resolution );
     return smearedtime;
 
-}//<<>>float KUCMSTimeCalibration::getSmearedTime( std::string tag , float time, uInt rhid )
+}//<<>>float KUCMS_TimeCalibration::getSmearedTime( std::string tag , float time, uInt rhid )
 
-inline float KUCMSTimeCalibration::getSmrdCalibTime( float rhtime, float rhamp, uInt rhid, int crun, std::string ctag, std::string stag ){
+float KUCMS_TimeCalibration::getSmrdCalibTime( float rhtime, float rhamp, uInt rhid, int crun, std::string ctag, std::string stag ){
 
     float crhtime = rhtime - getCalibration( rhid, crun, ctag );
     float smrdCalibTime = getSmearedTime( crhtime, rhamp, stag );
     return smrdCalibTime;
 
-}//<<>>float KUCMSTimeCalibration::getSmearedTime( std::string tag , float time, uInt rhid )
+}//<<>>float KUCMS_TimeCalibration::getSmearedTime( std::string tag , float time, uInt rhid )
+
+//**************  main calibrate &/or smearing function based on tag + info ********************************************************************
+
+float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey ){
+
+	return std::sqrt( (sq2( 24.0/amplitude ) + (sq2(2.5)/amplitude) + 2*sq2(0.099))/2.0 );
+
+}//<<>>float getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey )
+
+float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey ){
+
+	return time;
+
+}//<<>>float KUCMS_TimeCalibration::getCorrectedTime
+
+//*********************************************************************************************************************************************
 
 // assume full runs are present in input files
 // input file will give the name of a text file "list" of root files, the path to the root files, and the tag to use for those files 
@@ -1286,7 +1318,7 @@ inline float KUCMSTimeCalibration::getSmrdCalibTime( float rhtime, float rhamp, 
 //	- if started but not complete - is run needed ( lastrun )
 //	- if not started - start new cali map
 
-inline void KUCMSTimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doTT, bool small, bool doCali ){
+void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doTT, bool small, bool doCali ){
 
 	std::string whichstring = ( doTT ) ? "for TT " : "for Xtal ";
 	std::cout << "Creating calibration files from EgammaRes Ntuples " << whichstring << std::endl; 
@@ -1485,9 +1517,9 @@ inline void KUCMSTimeCalibration::makeCaliMapsEGR( std::string inputFileName, bo
 		}//<<>>for( auto& runrange : calirun.second )
 	}//<<>>for( auto& calirun : calirunset )
 
-}//<<>>void KUCMSTimeCalibration::makeTTCaliMap( std::string inputFileName )
+}//<<>>void KUCMS_TimeCalibration::makeTTCaliMap( std::string inputFileName )
 
-inline void KUCMSTimeCalibration::plot2dResbyIovForEGR( std::string inputFileName, bool scale, bool usecali, bool smear, std::string ext ){
+void KUCMS_TimeCalibration::plot2dResbyIovForEGR( std::string inputFileName, bool scale, bool usecali, bool smear, std::string ext ){
 
     std::cout << "Creating 2D Resolution Hist from EgammaRes Ntuples " << std::endl;
     if( not usecali ) std::cout << " -- NoCali " << std::endl;
@@ -1842,11 +1874,11 @@ inline void KUCMSTimeCalibration::plot2dResbyIovForEGR( std::string inputFileNam
 
 /*
 
-inline int KUCMSTimeCalibration::getGainId( unsigned int rhID ){
+int KUCMS_TimeCalibration::getGainId( unsigned int rhID ){
 }
 */
 
-inline void KUCMSTimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool scale, bool usecali, bool smear, std::string ext ){
+void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool scale, bool usecali, bool smear, std::string ext ){
 
     std::cout << "Creating 2D Resolution Hist from EgammaRes Ntuples " << std::endl;
     if( not usecali ) std::cout << " -- NoCali " << std::endl;
@@ -2216,7 +2248,7 @@ inline void KUCMSTimeCalibration::plot2dResolutionEGR( std::string inputFileName
 
 }//<<>> void plot2dResolution( std::string indir, std::string infilelistname, 
 
-inline SigmaFitResult KUCMSTimeCalibration::runTimeFitter( TH2F* hist2D ){
+kucms_SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D ){
 
   	std::string f2DHistName = hist2D->GetName();
 	std::cout << "Running time fitter : " << f2DHistName << std::endl;
@@ -2268,8 +2300,8 @@ inline SigmaFitResult KUCMSTimeCalibration::runTimeFitter( TH2F* hist2D ){
     ResultsMap["rms"] = new TH1F(rmsName.c_str(),rmsTitle.c_str(),nXbins,xbins);
     ResultsMap["rms"]->Sumw2();
 
-  	std::map<int,ProfileTimeFit> profileHists;
-	//std::vector<ProfileTimeFit> profileHists;
+  	std::map<int,kucms_ProfileTimeFit> profileHists;
+	//std::vector<kucms_ProfileTimeFit> profileHists;
   	// Project out 2D hists into map
   	//-------------TimeFitter::Project2Dto1DHists(FitInfo);
   	std::cout << "Projecting to 1D from 2D plot: " << f2DHistName << std::endl;
@@ -2280,7 +2312,7 @@ inline SigmaFitResult KUCMSTimeCalibration::runTimeFitter( TH2F* hist2D ){
 		TH1F* profilehist = (TH1F*)hist2D->ProjectionY(fullHistName.c_str(),ibinX,ibinX);
         profilehist->SetTitle(fullHistName.c_str());
 		std::cout << " -- saving to profileHists bin : " << ibinX << std::endl;
-		ProfileTimeFit thisprofile( profilehist );
+		kucms_ProfileTimeFit thisprofile( profilehist );
 		//auto intgral = thisprofile.profileHist->Integral();
     	profileHists[ibinX] = thisprofile;
 		//profileHists.push_back(thisprofile);
@@ -2312,7 +2344,7 @@ inline SigmaFitResult KUCMSTimeCalibration::runTimeFitter( TH2F* hist2D ){
 
 		auto& profile = profileHists[ibinX];
     	//if( profile.isEmpty() ) continue;
-    	TimeFitResult results = profile.GetFitResult();
+    	kucms_TimeFitResult results = profile.GetFitResult();
 
 		float herr = std::abs( results.sigmaHigh - results.sigma );
         float lerr = std::abs( results.sigmaLow - results.sigma ); 
@@ -2383,7 +2415,7 @@ inline SigmaFitResult KUCMSTimeCalibration::runTimeFitter( TH2F* hist2D ){
   	fit->SetLineColor(hist->GetLineColor());
   	hist->Fit(fit->GetName(),"RBQO");
 
-	SigmaFitResult sigmafit;
+	kucms_SigmaFitResult sigmafit;
     sigmafit.noise = fit->GetParameter(0);
     sigmafit.enoise = fit->GetParError (0);
     sigmafit.stant = fit->GetParameter(1);
@@ -2403,9 +2435,9 @@ inline SigmaFitResult KUCMSTimeCalibration::runTimeFitter( TH2F* hist2D ){
 
 	return sigmafit;
 
-}//<<>>SigmaFitResult KUCMSTimeCalibration::runTimeFitter( TH2F* hist2D )
+}//<<>>SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D )
 
-inline void KUCMSTimeCalibration::doResTimeFits( bool doLocal ){
+void KUCMS_TimeCalibration::doResTimeFits( bool doLocal ){
 
     std::cout << "Making Resolution Time Fits Auto : ";
 	if( doLocal ) std::cout << " Local " << std::endl;
@@ -2418,7 +2450,7 @@ inline void KUCMSTimeCalibration::doResTimeFits( bool doLocal ){
 				std::string histtype = doLocal ? lochist : globhist;
                 std::string fname = runmap.second.histMapName+histtype;
 				std::cout << " Opening : " << fname << std::endl;
-				SigmaFitResult results = runTimeFitter( CaliHists[fname].h2f );
+				kucms_SigmaFitResult results = runTimeFitter( CaliHists[fname].h2f );
                 //std::string gbfname = runmap.second.histMapName+globhist;
 				//SigmaFitResult results = runTimeFitter( CaliHists[gbfname].h2f );
 				if( not doLocal ){
@@ -2433,9 +2465,9 @@ inline void KUCMSTimeCalibration::doResTimeFits( bool doLocal ){
 	}//<<>>for( auto& runmaptag :  CaliRunMapSet )
 	if( cali2DResTFile != NULL ) cali2DResTFile->Close();
 
-}//<<>>void KUCMSTimeCalibration::doResTimeFits()
+}//<<>>void KUCMS_TimeCalibration::doResTimeFits()
 
-inline void KUCMSTimeCalibration::load2DResHist( std::string histName ){
+void KUCMS_TimeCalibration::load2DResHist( std::string histName ){
 
     std::cout << " --- Load hist from caliTFile: " << histName << std::endl;
 	cali2DResTFile = TFile::Open( cali2DResPlotsTFileName.c_str(), "READ" );
@@ -2444,21 +2476,21 @@ inline void KUCMSTimeCalibration::load2DResHist( std::string histName ){
     if( lhist ) CaliHists[histName] = { lhist, histName, false, true }; // histfile histname isnew isreshist
 	else std::cout << " --- No such hist found " << lhist << std::endl;
 
-}//<<>>void KUCMSTimeCalibration::load2DResHist( std::string histName )
+}//<<>>void KUCMS_TimeCalibration::load2DResHist( std::string histName )
 
-inline void KUCMSTimeCalibration::doResTimeFit( std::string histName ){
+void KUCMS_TimeCalibration::doResTimeFit( std::string histName ){
 
     std::cout << "Making Resolution Time Fits  : " << histName << std::endl;
 	if( CaliHists.find(histName) != CaliHists.end() ){
 		if( CaliHists[histName].h2f != NULL ){
-    		SigmaFitResult results = runTimeFitter( CaliHists[histName].h2f );
+    		kucms_SigmaFitResult results = runTimeFitter( CaliHists[histName].h2f );
 		} else std::cout << " -- No H2F present !! " << std::endl;
 	} else std::cout << " -- No Such hist entry !! " << std::endl;
 	if( cali2DResTFile != NULL ) cali2DResTFile->Close();
 
-}//<<>>void KUCMSTimeCalibration::doResTimeFit( std::string histName )
+}//<<>>void KUCMS_TimeCalibration::doResTimeFit( std::string histName )
 
-inline void KUCMSTimeCalibration::makeSmearTag( std::string sourceName, std::string destName, std::string smearTag ){
+void KUCMS_TimeCalibration::makeSmearTag( std::string sourceName, std::string destName, std::string smearTag ){
 
     std::cout << "Make Semar Tag : " << smearTag << std::endl;
     bool doSterm = true;
@@ -2576,9 +2608,9 @@ inline void KUCMSTimeCalibration::makeSmearTag( std::string sourceName, std::str
 	sourceTFile->Close();
 	destTFile->Close();
 
-}//<<>>void KUCMSTimeCalibration::makeSmearTag( std::string histName )
+}//<<>>void KUCMS_TimeCalibration::makeSmearTag( std::string histName )
 
-inline void KUCMSTimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int srun, int erun, bool usecali ){
+void KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int srun, int erun, bool usecali ){
 
     std::cout << "Creating Mean Run Time Hist from EgammaRes Ntuples " << std::endl;
 
@@ -2781,7 +2813,7 @@ inline void KUCMSTimeCalibration::plotMeanRunTimeEGR( std::string inputFileName,
 
 }//<<>> void plotMeanRunTimeEGR( std::string indir, std::string infilelistname, 
 
-inline void KUCMSTimeCalibration::makeTTDiffMaps( int srun, int erun ){
+void KUCMS_TimeCalibration::makeTTDiffMaps( int srun, int erun ){
 
     std::cout << " - Making TTCaliDiffMaps " << std::endl;
     //TH2F* hist = new TH2F(filename.c_str(),filename.c_str(),34,0,34,72,0,72);
@@ -2837,9 +2869,9 @@ inline void KUCMSTimeCalibration::makeTTDiffMaps( int srun, int erun ){
         }//<<>>for( auto& calirunsct : calirunmap )
     }//<<>>for( auto& calirunmap : CaliRunMapSet )
 
-}//<<>>void KUCMSTimeCalibration::makeTTDiffMaps()
+}//<<>>void KUCMS_TimeCalibration::makeTTDiffMaps()
 
-inline void KUCMSTimeCalibration::makeTTDriftMaps( std::string tag, int srun, int erun ){
+void KUCMS_TimeCalibration::makeTTDriftMaps( std::string tag, int srun, int erun ){
 
     std::cout << " - Making makeTTDriftMaps " << std::endl;
 	if( erun < srun ){ std::cout << " --- End Run less then Start Run : Exiting " << std::endl; return; }
@@ -2969,7 +3001,7 @@ inline void KUCMSTimeCalibration::makeTTDriftMaps( std::string tag, int srun, in
 
     std::cout << "Finished making TT Mean Drift Hists" << std::endl;
 
-}//<<>>void KUCMSTimeCalibration::makeTTDriftMaps()
+}//<<>>void KUCMS_TimeCalibration::makeTTDriftMaps()
 
 #endif
 //-------------------------------------------------------------------------------------------------------------------

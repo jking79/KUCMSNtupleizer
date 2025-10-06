@@ -7,22 +7,22 @@
 // 
 ////////////////////////////////////////////////////////////////////// 
  
-#include "KUCMSRootHelperBaseClass.hh" 
-#include "KUCMSEcalDetIDFunctions.hh" 
-#include "KUCMSTimeCaliStructs.hh" 
+#include "KUCMS_RootHelperBaseClass.hh" 
+#include "KUCMS_EcalDetIDFunctions.hh" 
+#include "KUCMS_TimeCaliStructs.hh" 
  
 #include <TRandom.h> 
 #include "TChain.h" 
 #include "TGraphErrors.h" 
 #include "TMultiGraph.h" 
  
-#ifndef KUCMSCaliRunClass 
-#define KUCMSCaliRunClass 
+#ifndef KUCMS_CaliRunClass 
+#define KUCMS_CaliRunClass 
 
-struct sumCnt { 
+struct kucms_sumCnt { 
 
-    sumCnt(){} 
-    sumCnt( float s, float s2, int c ) : sum(s), sumsqr(s2), cnt(c) {}  
+    kucms_sumCnt(){} 
+    kucms_sumCnt( float s, float s2, int c ) : sum(s), sumsqr(s2), cnt(c) {}  
  
     float sum; 
     float sumsqr; 
@@ -30,12 +30,12 @@ struct sumCnt {
  
 };//<<>>struct sumCnt 
 
-class CaliRunClass : public KUCMSRootHelperBaseClass { 
+class kucms_CaliRunClass : public KUCMS_RootHelperBaseClass { 
      
     public:  
  
-    CaliRunClass(){} 
-    CaliRunClass( std::string tmpxtalmap, int tstart, int tend, int last, float tlumi ); 
+    kucms_CaliRunClass(){} 
+    kucms_CaliRunClass( std::string tmpxtalmap, int tstart, int tend, int last, float tlumi ); 
     //~CaliRunClass();  
   
     std::string histMapName;  
@@ -54,7 +54,7 @@ class CaliRunClass : public KUCMSRootHelperBaseClass {
     bool hasResParams; 
     bool isExternal; 
  
-    std::map<uInt,sumCnt> sumCntMap; 
+    std::map<uInt,kucms_sumCnt> sumCntMap; 
     std::map<uInt,float> meanMap; 
     std::map<uInt,float> errMap; 
     std::map<uInt,TH1F*> detIdHists; 
@@ -65,11 +65,11 @@ class CaliRunClass : public KUCMSRootHelperBaseClass {
 
 };//<<>>TimeCaliTagStruct 
  
-inline CaliRunClass::CaliRunClass( std::string tmpxtalmap, int tstart, int tend, int last, float tlumi ) 
+inline kucms_CaliRunClass::kucms_CaliRunClass( std::string tmpxtalmap, int tstart, int tend, int last, float tlumi ) 
     : histMapName(tmpxtalmap), startRun(tstart), endRun(tend), lastRun(last), lumi(tlumi)  
     { isNew = true; isExternal = false; updated = false; has2DResMap = false; hasResParams = false; noise = 0; stoch = 0; stant = 0; } 
 
-inline void CaliRunClass::makeMeanMap( bool filter ){ 
+inline void kucms_CaliRunClass::makeMeanMap( bool filter ){ 
  
     meanMap.clear(); 
     errMap.clear(); 
@@ -99,7 +99,7 @@ inline void CaliRunClass::makeMeanMap( bool filter ){
  
 }//<<>>void CaliRunClass::makeMeanMap() 
  
-inline void CaliRunClass::fillSumCnt( uInt detid, float val, int cnt ){ 
+inline void kucms_CaliRunClass::fillSumCnt( uInt detid, float val, int cnt ){ 
  
     if( endRun == lastRun ) return; 
     //std::cout << "Filling " << detid << " with " << val << " " << cnt << std::endl; 
