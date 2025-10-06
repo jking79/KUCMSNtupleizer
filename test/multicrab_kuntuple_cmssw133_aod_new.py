@@ -98,15 +98,17 @@ def docrab( dataset, options ):
     config.Data.inputDataset   = None
     #config.Data.splitting    = 'LumiBased' # MC&Data Set unitsperjob correctly for dataset !!!!!!!!!!!!!!!!!!!!!!!!!!
     config.Data.splitting    = 'FileBased' # MC&Data Set unitsperjob correctly for dataset !!!!!!!!!!!!!!!!!!!!!!!!!!
-    if "SIM" not in dataset:
-        config.Data.lumiMask       = inputJSON    # Comment out for MC only set for data !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    if "SIM" not in dataset and options[3]: #applying after ntuple stage to check for correct # of event processed
+        print("Applying lumi mask",inputJSON)
+        config.Data.lumiMask       = inputJSON    
     #config.Data.unitsPerJob  =  10
     #config.Data.unitsPerJob   = 50000 # data  !!!!!! lumimask ?
     #config.Data.unitsPerJob  =  1500 # MC GMSB
     #config.Data.unitsPerJob  =  10000 # MC GJet
-    config.Data.unitsPerJob = 10000
-    if "QCD" in dataset:
-        config.Data.unitsPerJob  =  15000 # MC QCD - WJetsToLNu
+    #config.Data.unitsPerJob = 10000
+    config.Data.unitsPerJob = options[4]
+    #if "QCD" in dataset:
+    #    config.Data.unitsPerJob  =  15000 # MC QCD - WJetsToLNu
     #config.Data.unitsPerJob  =  50000 # MC TTJet
     #config.Data.unitsPerJob  =  750 # MC DiPhoBox (DPB)
     
@@ -184,12 +186,14 @@ def docrab( dataset, options ):
     evt_filter = ""
     if "M100" in trialtag and "skimIP" not in trialtag:
         evt_filter = 'MET100'
-    if "100M" in trialtag:
+    if "METl100" in trialtag:
         evt_filter = '100MET'
     if "50M75" in trialtag:
         evt_filter = '50MET75'
     elif "AL1IsoPho" in trialtag:
         evt_filter = 'AL1IsoPho'
+    elif "AL1SelEle" in trialtag:
+        evt_filter = 'AL1SelEle'
     elif "skimIPM100" in trialtag:
         evt_filter = 'IsoPhoMet100'
     elif "AL1NpSC" in trialtag:
@@ -263,6 +267,7 @@ def docrab( dataset, options ):
     #----------------------------------------------------------------------------------------------------------------------
     # Submit.
     print("trial",trial)
+    #exit()
     try:
         #print( "Submitting for input dataset %s" % primaryDataset + '_' + runEra + '_' + dataset )
         print( "Submitting for input dataset %s" % trial )
@@ -294,15 +299,23 @@ def run_multi():
                       default = '',
                       help = "options for crab command CMD")
     parser.add_argument('-o','--output',help='output tag for ntuples',default='')
-    parser.add_argument('--filter',help='specify event filter',choices=['50M75','100M','M100','AL1IsoPho','AL1NpSC'],default='')
+    parser.add_argument('--filter',help='specify event filter',choices=['50M75','METl100','M100','AL1IsoPho','AL1NpSC','AL1SelEle'],default='')
+    parser.add_argument('--maskLumi',help='apply lumi mask (default = off)',default=False,action='store_true')
+    parser.add_argument('--unitsPerJob',help='number of files to run per job',default=1)
     args = parser.parse_args()
 
     outfilter = args.output
     if args.output != "":
-        outfilter = args.filter+"_"+outfilter
+        if not args.maskLumi:
+            outfilter = args.filter+"_nolumimask_"+outfilter
+        else:
+            outfilter = args.filter+"_"+outfilter
     else:
-        outfilter = args.filter
-    options = [args.workArea, args.crabCmdOpts, outfilter]
+        if not args.maskLumi:
+            outfilter = args.filter+"_nolumimask"
+        else:
+            outfilter = args.filter
+    options = [args.workArea, args.crabCmdOpts, outfilter, args.maskLumi, args.unitsPerJob]
 
 
     Tune = 'TuneCP5_13TeV-madgraphMLM-pythia8'
