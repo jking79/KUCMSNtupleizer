@@ -284,9 +284,9 @@ def docrab( dataset, options ):
 
 def run_multi():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-inputSample','-i',help='datasets for PDs/MC',required=True,choices=['DisplacedJet','EGamma','GJets','QCD','MET','JetMET','JetMET0','JetMET1'])
+    parser.add_argument('-inputSample','-i',help='datasets for PDs/MC',required=True,choices=['DisplacedJet','EGamma','GJets','QCD','MET','JetMET','JetMET0','JetMET1','JetHT'])
 
-    parser.add_argument('--HT',help='ht bin for MCs',default='100to200')
+    parser.add_argument('--HT',help='ht bin for MCs',default='')
     parser.add_argument('--era',help='era (run) for PDs, default is set to \'MC\'',default='MC')
     parser.add_argument('--year',help='year',default='2018')
     
@@ -306,16 +306,28 @@ def run_multi():
     args = parser.parse_args()
 
     outfilter = args.output
-    if args.output != "":
-        if not args.maskLumi:
-            outfilter = args.filter+"_nolumimask_"+outfilter
+    if args.filter == "":
+        if args.output != "":
+            if not args.maskLumi and args.era != "MC":
+                outfilter = "nolumimask_"+outfilter
+            else:
+                outfilter = outfilter
         else:
-            outfilter = args.filter+"_"+outfilter
+            if not args.maskLumi and args.era != "MC":
+                outfilter = "nolumimask"
+            else:
+                outfilter = args.filter
     else:
-        if not args.maskLumi:
-            outfilter = args.filter+"_nolumimask"
+        if args.output != "":
+            if not args.maskLumi and args.era != "MC":
+                outfilter = args.filter+"_nolumimask_"+outfilter
+            else:
+                outfilter = args.filter+"_"+outfilter
         else:
-            outfilter = args.filter
+            if not args.maskLumi and args.era != "MC":
+                outfilter = args.filter+"_nolumimask"
+            else:
+                outfilter = args.filter
     options = [args.workArea, args.crabCmdOpts, outfilter, args.maskLumi, args.unitsPerJob]
 
 
@@ -355,10 +367,13 @@ def run_multi():
         elif args.year == "2023":
             reco = "19Dec2023"
         ver = "v1"
-        if args.year == "2022" and args.inputSample == "MET" and args.era != "A":
+        if args.year == "2018" and args.inputSample == "JetHT" and args.era == "A":
             ver = "v2"
-        if args.inputSample == "JetMET" and args.year == "2022" and args.era == "D":
-            ver = "v2"
+        if args.year == "2022":
+            args.inputSample == "MET" and args.era != "A":
+                ver = "v2"
+            if args.inputSample == "JetMET" and args.era == "D":
+                ver = "v2"
         if args.inputSample == "JetMET" and args.year == "2022":
             dataset += "-EXODelayedJetMET"
         dataset += "-"+reco
