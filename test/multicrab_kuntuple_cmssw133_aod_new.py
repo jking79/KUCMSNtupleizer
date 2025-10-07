@@ -71,7 +71,7 @@ def docrab( dataset, options ):
     if "SIM" not in dataset:
         if year == "2017":
             inputJSON    = 'Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt'
-        if year == "2018":
+        elif year == "2018":
             inputJSON    = 'Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt'
         elif year == "2022":
             inputJSON    = 'Cert_Collisions2022_355100_362760_Golden.json'
@@ -207,6 +207,7 @@ def docrab( dataset, options ):
     gt = ""
     #setting global tag
     #MC
+    print("dataset1",dataset1)
     if "SIM" in dataset1:
         if "RunIISummer20UL18RECO" in dataset1:
             gt = 'globalTag=106X_upgrade2018_realistic_v11_L1v1'
@@ -216,9 +217,9 @@ def docrab( dataset, options ):
             gt = ''
         geninfo = 'hasGenInfo=True'
     else: #data - TODO: check dataset1 match strings
-        if "2017UL" in dataset1:
+        if "UL2017" in dataset1:
             gt = 'globalTag=106X_dataRun2_v20'
-        elif "2018UL" in dataset1:
+        elif "UL2018" in dataset1:
             gt = 'globalTag=106X_dataRun2_v36'
         elif "2022" in dataset1:
             #TODO - update to Run3 tag when pCastorRecord issue is fixed (CMSSW)
@@ -343,7 +344,11 @@ def run_multi():
     else:
         dataset = args.inputSample+"/Run"+args.year+args.era
         #if args.inputSample == "MET" or args.inputSample == "EGamma":
-        if args.year == "2018":
+        if args.year == "2017":
+            reco = "09Aug2019_UL2017"
+            if args.inputSample == "MET":
+                reco += "_rsb"
+        elif args.year == "2018":
             reco = "15Feb2022"
         elif args.year == "2022":
             reco = "27Jun2023"
