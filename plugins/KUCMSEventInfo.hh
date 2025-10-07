@@ -252,12 +252,11 @@ void KUCMSEventInfoObject::ProcessEvent( ItemManager<float>& geVar ){
     for( auto filterName : metFilterList ){ fillFlagBranch( filterName ); }
 
 	//std::cout << " -------------------------- Trigger Event :" << std::endl;
-	std::vector<std::string> triggetList;
 	const unsigned sizeFilters(triggerEvent->sizeFilters());
     for (size_t iF = 0; iF < sizeFilters; ++iF){
     
 		const std::string nameFilter( triggerEvent->filterLabel(iF) );
-		//triggetList.push_back(nameFilter);
+		//std::cout << " nameFilter " << nameFilter << " tag " << triggerEvent->filterTagEncoded(iF) << std::endl;
 		//Branches.fillBranch("triggerList",nameFilter);
 		if( cfFlag("makeTriggerList") ){
 			if( std::find( fullTriggerList.begin(), fullTriggerList.end(), nameFilter ) == fullTriggerList.end() ){
@@ -282,7 +281,6 @@ void KUCMSEventInfoObject::ProcessEvent( ItemManager<float>& geVar ){
 	// this section access the actual trigger flags - move to load event section simular to flags with triggerResults
 
 	for( auto trigName : triggerList ){ Branches.fillBranch( trigName, trigFlags[trigName] ); }
-	//Branches.fillBranch("triggerList",triggetList);
 
 
 }//<<>>void KUCMSEventInfo::ProcessEvent()

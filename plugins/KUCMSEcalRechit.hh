@@ -365,6 +365,9 @@ void KUCMSEcalRecHitObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("amplitude","ECALRecHit_amplitude",VFLOAT);
     Branches.makeBranch("ampres","ECALRecHit_ampres",VFLOAT);
     Branches.makeBranch("pused","ECALRecHit_precentUsed",VFLOAT);
+    Branches.makeBranch("bsx","ECALRecHit_bsx",VFLOAT);
+    Branches.makeBranch("bsy","ECALRecHit_bsy",VFLOAT);
+    Branches.makeBranch("bsz","ECALRecHit_bsz",VFLOAT);
 
     Branches.makeBranch("zscnSC","SuperCluster_nSuperCluster",INT);
     Branches.makeBranch("zscOOT","SuperCluster_isOot",VBOOL,"This SC is from the out of time SC collection");
@@ -868,6 +871,10 @@ void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
         Branches.fillBranch("rhz",rhZ);
 		Branches.fillBranch("amplitude",amplitude);
 		Branches.fillBranch("ampres",ampres);
+        Branches.fillBranch("bsx",bsX);
+        Branches.fillBranch("bsy",bsY);
+        Branches.fillBranch("bsz",bsZ);
+
 
     }//<<>>for (const auto recHit : *recHitsEB_ )
 	float pUsed = nUsed/float(nRecHits); 

@@ -209,6 +209,8 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
     void doResTimeFit( std::string histName );
 	void load2DResHist( std::string histName );
 
+	TH1D* dressProfileHist( TH1D* hist );
+
     void makeSmearTag( std::string sourceName, std::string destName, std::string smearTag );
 
 	void plotMeanRunTimeEGR( std::string inputFileName, int srun, int erun, bool usecali = true );
@@ -356,6 +358,11 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
     promptIovMap[253984] = 273157;
     promptIovMap[273158] = 284044;
 
+//gldenjson
+//2016
+//273158
+//284044
+
 //2016C  	275657	275836
 //2016D  	276315	276775
 //2016E  	276831	277096
@@ -372,6 +379,11 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
     promptIovMap[301487] = 304475;
     promptIovMap[304476] = 306460;//05/10/2017
   
+//gldenjson
+//2017
+//297050
+//306460
+
 //2017B  	297114	297296
 //2017C  	299368	301417
 //2017D  	302031	302393
@@ -392,6 +404,11 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
     promptIovMap[323413] = 324305;
     promptIovMap[324306] = 325172;
     promptIovMap[327239] = 356513;//25/11/2018
+
+//gldenjson
+//2018
+//315257
+//325172
 
 //2018A		315257	316993
 //2018B		317435	317435
@@ -1897,7 +1914,7 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 
     float lB = 10; // lower and upper limits of energies for rechits used
     float uB = 120; // lower and upper limits of energies for rechits used
-    if( lowEnergy ){ lB = 1; uB = 120; }
+    if( lowEnergy ){ lB = 0.5; uB = 120; }
 
     std::cout << " -- use low energy : " << lowEnergy << std::endl;
     std::cout << " -- xbins : " << xBinStr << std::endl;
@@ -2261,7 +2278,8 @@ kucms_SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D ){
   	int fNBinsX = fXBins.size();
 	const auto xbins = &fXBins[0];
 
-	std::string outfilename = caliFileDir + f2DHistName + "_resfit.root";
+	std::string fittypename = ( doSterm ) ? "_NSC" : "_NC";
+	std::string outfilename = caliFileDir + f2DHistName + fittypename  + "_resfit.root";
     TFile* resTFile = TFile::Open( outfilename.c_str(), "UPDATE" );
     resTFile->cd();
 
@@ -2390,8 +2408,8 @@ kucms_SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D ){
   	//auto x_low = hist->GetXaxis()->GetBinLowEdge( hist->GetXaxis()->GetFirst() );
   	//auto x_up  = hist->GetXaxis()->GetBinUpEdge( hist->GetXaxis()->GetLast() );
 	float x_low = 75;
-	float x_up = 1800;
-	if( lowEnergy ){ x_low = 5; x_up = 1800; }
+	float x_up = 1600;
+	if( lowEnergy ){ x_low = 5; x_up = 1600; }
     if( lowEnergy && useEffEnergy ){ x_low = 1; x_up = 120; }
 
   	std::string histname = hist->GetName();
@@ -2436,6 +2454,40 @@ kucms_SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D ){
 	return sigmafit;
 
 }//<<>>SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D )
+
+TH1D* KUCMS_TimeCalibration::dressProfileHist( TH1D* hist ){
+
+
+    std::cout << "Dressing ProfileHist: " << hist->GetName() << std::endl;
+
+    int nBins = hist->GetNbinsX();
+    float norm = hist->Integral();
+	float sigma = hist->GetStdDev();	
+
+	float thres = 100;
+	int firstBin = -1;
+	int lastBin = -1;
+    for( int ibinX = 1; ibinX <= nBins; ibinX++ ){
+
+		auto content = hist->GetBinContent(ibinX);
+		
+
+
+
+        if( norm == 0.0 ) continue;
+        // get content/error
+        auto content = hist->GetBinContent(ibinX);
+        auto error   = hist->GetBinError(ibinX);
+        // set new contents
+        content /= norm;
+        error /= norm;
+        hist->SetBinContent(ibinX,content);
+        hist->SetBinError  (ibinX,error);
+
+    }//<<>>for (auto ibinX = 1; ibinX <= nBins; ibinX++)
+
+
+}//<<>>TH1D* KUCMS_TimeCalibration::dressProfileHist( TH1D* hist )
 
 void KUCMS_TimeCalibration::doResTimeFits( bool doLocal ){
 
@@ -2629,22 +2681,27 @@ void KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
 	std::string title_eb = hname + ";Run;EB Mean Time [ns]";
 	std::string hname_eb = hname + "_eb";
 	TH1F* hist_eb = new TH1F(hname_eb.c_str(),title_eb.c_str(),rrange,srun,erun);
-    std::string title_tt = hname + ";Run;TT 15:25 Mean Time [ns]";//ttid==1525
-    std::string hname_tt = hname + "_tt1";
-    TH1F* hist_tt = new TH1F(hname_tt.c_str(),title_eb.c_str(),rrange,srun,erun);
-    std::string title_xt = hname + ";Run;TT -15:50 Mean Time [ns]";
-    std::string hname_xt = hname + "_tt2";
-    TH1F* hist_xt = new TH1F(hname_xt.c_str(),title_eb.c_str(),rrange,srun,erun);
+
+	std::map< uInt, TH1F* > ttHistMap;
+    for( int ieta = 1; ieta < 37; ieta++ ){
+        for( int iphi = 1; iphi < 74; iphi++ ){
+            int i1 = ieta - 18;
+            if( i1 == 0 ) continue;
+            uInt detid = getInvTTId( iphi, i1 );
+            int index = ieta*100 + iphi;
+			std::string indexstr = std::to_string(index);
+    		std::string title_tt = hname + ";Run;TT " + indexstr + " Mean Time [ns]";//ttid==1525
+    		std::string hname_tt = hname + "_tt" + indexstr;
+    		ttHistMap[detid] = new TH1F(hname_tt.c_str(),title_eb.c_str(),rrange,srun,erun);
+        }//<<>>for( int iphi = 1; iphi < 361; iphi++ )
+    }//<<>>for( int ieta = 1; ieta < 172; ieta++ )
 
 	std::map<int,double> sum;
     std::map<int,double> sum2;
     std::map<int,long int> occ;
-    std::map<int,double> tsum;
-    std::map<int,double> tsum2;
-    std::map<int,long int> tocc;
-    std::map<int,double> xsum;
-    std::map<int,double> xsum2;
-    std::map<int,long int> xocc;
+    std::map< uInt, std::map<int,double> > ttsum;
+    std::map< uInt, std::map<int,double> > ttsum2;
+    std::map< uInt, std::map<int,long int> > ttocc;
 
     const std::string treename("tree/llpgtree");
 
@@ -2736,7 +2793,7 @@ void KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
 					double calibration = usecali ? getCalibration( rhID->at(idx), run, tag ) : 0;
 					double time = btime - calibration;
 					double time2 = time*time;
-                    //if( rhEnergy->at(idx) < 5.0 || rhEnergy->at(idx) > 150.0 ) continue;
+                    if( ( rhEnergy->at(idx) < 20.0 ) || ( rhEnergy->at(idx) > 250.0 ) ) continue;
                     //std::cout << " getCalibration : " << rhID->at(idx) << " " << run << " " << tag; 
                     //std::cout << " cali: " << getCalibration( rhID->at(idx), run, tag );
                     //std::cout << " time : " << btime << " caliTime: " << time << std::endl; 
@@ -2750,28 +2807,17 @@ void KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
                         sum2[run] = time2;
                         occ[run] = 1;
 					}//<<>>if( sum.find(run) != sum.end() )
-					if( getTTId(rhID->at(idx)) == 1525 ){
-                    	if( tsum.find(run) != tsum.end() ){
-                        	tsum[run] += time;
-                        	tsum2[run] += time2;
-                        	tocc[run] += 1;
-                    	} else {
-                        	tsum[run] = time;
-                        	tsum2[run] = time2;
-                        	tocc[run] = 1;
-                    	}//<<>>if( sum.find(run) != sum.end() )
+
+					auto ttindx = getTTId(rhID->at(idx));
+					if( ( ttsum.find(ttindx) != ttsum.end() )  && ( ttsum[ttindx].find(run) != ttsum[ttindx].end() ) ){
+						ttsum[ttindx][run] += time;
+                        ttsum2[ttindx][run] += time2;
+                        ttocc[ttindx][run] += 1;
+					} else {
+                        ttsum[ttindx][run] = time;
+                        ttsum2[ttindx][run] = time2;
+                        ttocc[ttindx][run] = 1;
 					}//<<>>if( DetIDMap[rhID->at(idx)].i1 == && DetIDMap[rhID->at(idx)].i2 == )
-                    if( getTTId(rhID->at(idx)) == 3550 ){
-                    	if( xsum.find(run) != xsum.end() ){
-                        	xsum[run] += time;
-                        	xsum2[run] += time2;
-                        	xocc[run] += 1;
-                    	} else {
-                        	xsum[run] = time;
-                        	xsum2[run] = time2;
-                        	xocc[run] = 1;
-                    	}//<<>>if( sum.find(run) != sum.end() )
-                    }//<<>>if( DetIDMap[rhID->at(idx)].i1 == && DetIDMap[rhID->at(idx)].i2 == )
 
 				}//<<>>for( int idx = 0; idx < nRecHits; idx++ )
 			}//<>>if( run > srun && run <= erun )
@@ -2791,23 +2837,31 @@ void KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
         std::cout << " mean: " << mean << " +/- " << err << std::endl;			
 		hist_eb->SetBinContent( bin, mean );
 		hist_eb->SetBinError( bin, err );
-        mean = tocc[run] > 0 ? tsum[run] / tocc[run] : -99;
-        err =  mean > -99 ? sqrt( (tsum2[run]/tocc[run] - mean*mean)/tocc[run] ) : 0;
-        hist_tt->SetBinContent( bin, mean );
-        hist_tt->SetBinError( bin, err );
-        mean = xocc[run] > 0 ? xsum[run] / xocc[run] : -99;
-        err = mean > -99  ? sqrt( (xsum2[run]/xocc[run] - mean*mean)/xocc[run] ) : 0;
-        hist_xt->SetBinContent( bin, mean );
-        hist_xt->SetBinError( bin, err );
+		for( int ieta = 1; ieta < 37; ieta++ ){
+            for( int iphi = 1; iphi < 74; iphi++ ){
+                int i1 = ieta - 18;
+                if( i1 == 0 ) continue;
+                uInt detid = getInvTTId( iphi, i1 );
+				mean = ttocc[detid][run] > 0 ? ttsum[detid][run] / ttocc[detid][run] : -99;
+				err =  mean > -99 ? sqrt( (ttsum2[detid][run]/ttocc[detid][run] - mean*mean)/ttocc[detid][run] ) : 0;
+				ttHistMap[detid]->SetBinContent( bin, mean );
+				ttHistMap[detid]->SetBinError( bin, err );
+            }//<<>>for( int iphi = 1; iphi < 361; iphi++ )
+        }//<<>>for( int ieta = 1; ieta < 172; ieta++ )
 
 	}//<<>>for( auto & runsum : sum )
 
 	hist_eb->Write( hist_eb->GetName(), TObject::kOverwrite );
 	delete hist_eb;
-    hist_tt->Write( hist_tt->GetName(), TObject::kOverwrite );
-    delete hist_tt;
-    hist_xt->Write( hist_xt->GetName(), TObject::kOverwrite );
-    delete hist_xt;
+    for( int ieta = 1; ieta < 37; ieta++ ){
+        for( int iphi = 1; iphi < 74; iphi++ ){
+            int i1 = ieta - 18;
+            if( i1 == 0 ) continue;
+            uInt detid = getInvTTId( iphi, i1 );
+			ttHistMap[detid]->Write( ttHistMap[detid]->GetName(), TObject::kOverwrite );
+			delete ttHistMap[detid];
+        }//<<>>for( int iphi = 1; iphi < 361; iphi++ )
+    }//<<>>for( int ieta = 1; ieta < 172; ieta++ )
 
 	mrTFile->Close();
 
@@ -2873,6 +2927,11 @@ void KUCMS_TimeCalibration::makeTTDiffMaps( int srun, int erun ){
 
 void KUCMS_TimeCalibration::makeTTDriftMaps( std::string tag, int srun, int erun ){
 
+	bool etaMod = true;
+	int etaModFac = 6;
+	bool phiMod = true;
+	int phiModFac = 12;
+
     std::cout << " - Making makeTTDriftMaps " << std::endl;
 	if( erun < srun ){ std::cout << " --- End Run less then Start Run : Exiting " << std::endl; return; }
 	if( not ( TTCaliRunMapSet.find(tag) == TTCaliRunMapSet.end() ) ){
@@ -2886,7 +2945,9 @@ void KUCMS_TimeCalibration::makeTTDriftMaps( std::string tag, int srun, int erun
         std::map<int,TGraph*> graphmap;
 		for( int ieta = 1; ieta < 37; ieta++ ){
 			if( ieta == 18 ) continue; 
+			if( etaMod && ieta%etaModFac != 0 ) continue;
 			for( int iphi = 1; iphi < 74; iphi++ ){
+				if( phiMod && iphi%phiModFac != 0 ) continue;
 				int index = ieta*100 + iphi;
 				int runrange = erun - srun + 2;
 				int erange = erun + 1;
@@ -2909,8 +2970,10 @@ void KUCMS_TimeCalibration::makeTTDriftMaps( std::string tag, int srun, int erun
 
             for( int ieta = 1; ieta < 37; ieta++ ){
                 for( int iphi = 1; iphi < 74; iphi++ ){
+					if( phiMod && iphi%phiModFac != 0 ) continue;
                     int i1 = ieta - 18;
                     if( i1 == 0 ) continue;
+					if( etaMod && ieta%etaModFac != 0 ) continue;
 					uInt detid = getInvTTId( iphi, i1 );
 					int index = ieta*100 + iphi;
 					int bin = first - srun + 1;
@@ -2939,10 +3002,12 @@ void KUCMS_TimeCalibration::makeTTDriftMaps( std::string tag, int srun, int erun
 		TMultiGraph* mg = new TMultiGraph();
         std::map<int,int> colors = {{0,kMagenta+2},{1,kRed+2},{2,kYellow+2},{3,kGreen+2},{4,kCyan+2},{5,kBlue+2},
 									{6,kViolet+2},{7,kPink+2},{8,kOrange+2},{9,kSpring+2},{10,kTeal+2},{11,kAzure+2},
-									{23,kAzure+7},{12,kMagenta-4},{13,kRed-4},{14,kYellow-4},{15,kGreen-4},{16,kCyan-4},
-									{17,kBlue-4},{18,kViolet+7},{19,kPink+7},{20,kOrange+7},{21,kSpring+7},{22,kTeal+7},
-                                    {34,kTeal-6},{35,kAzure-6},{24,kMagenta-6},{25,kRed-6},{26,kYellow-6},{27,kGreen-6},
-                                    {28,kCyan-6},{29,kBlue-6},{30,kViolet-6},{31,kPink-6},{32,kOrange-6},{33,kSpring-6}
+									{12,kAzure+7},{13,kMagenta-4},{14,kRed-4},{15,kYellow-4},{16,kGreen-4},{17,kCyan-4},
+									{16,kBlue-4},{19,kViolet+7},{20,kPink+7},{21,kOrange+7},{22,kSpring+7},{23,kTeal+7},
+                                    {24,kTeal-6},{25,kAzure-6},{26,kMagenta-6},{27,kRed-6},{28,kYellow-6},{29,kGreen-6},
+                                    {30,kCyan-6},{31,kBlue-6},{32,kViolet-6},{33,kPink-6},{34,kOrange-6},{35,kSpring-6},
+                                    {36,kSpring+4},{37,kTeal+4},{38,kAzure+4},{39,kMagenta+4},{40,kRed+4},{41,kYellow+4},
+                                    {42,kGreen+4},{43,kCyan+4},{44,kBlue+4},{45,kViolet+4},{46,kPink+4},{47,kOrange+4}
 									};
 		//std::map<int,int> markers = {{0,20},{1,21},{2,22},{3,23},{4,29},{5,33},{6,34},{7,39},{8,45},{9,47}};
         std::map<int,int> markers = {{0,29},{1,33},{2,34},{3,39},{4,41},{5,43},{6,45},{7,47},{8,48},{9,49},{10,22},{11,23}};	
@@ -2956,7 +3021,9 @@ void KUCMS_TimeCalibration::makeTTDriftMaps( std::string tag, int srun, int erun
         for( int ieta = sEta; ieta < eEta; ieta++ ){
         //for( int ieta = 32; ieta < 33; ieta++ ){
             if( ieta == 18 ) continue;
+			if( etaMod && ieta%etaModFac != 0 ) continue;
             for( int iphi = sPhi; iphi < ePhi; iphi++ ){
+				if( phiMod && iphi%phiModFac != 0 ) continue;
                 int index = ieta*100 + iphi;
                 graphmap[index]->SetMarkerStyle(markers[k]);
 				graphmap[index]->SetLineColor(colors[n]);
@@ -2974,7 +3041,8 @@ void KUCMS_TimeCalibration::makeTTDriftMaps( std::string tag, int srun, int erun
 		mg->GetXaxis()->SetRangeUser(srun,erun);
     	mg->GetXaxis()->CenterTitle(true);
     	mg->GetXaxis()->SetTitle("Run");
-        mg->GetYaxis()->SetRangeUser(-1.75,1.75);
+        mg->GetYaxis()->SetRangeUser(-0.4,0.1);
+        //mg->GetYaxis()->SetRangeUser(-1.75,1.75);
     	mg->GetYaxis()->CenterTitle(true);
     	mg->GetYaxis()->SetTitle("normlized TT mean time [ns]");
         //mg->GetXaxis()->SetNoExponent();
