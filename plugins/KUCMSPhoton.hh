@@ -410,6 +410,7 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
 
 	float nIsoPhotons = 0;
     int phoIdx = 0;
+	float leadPhoPt = -1;
 	//scGroup scptrs;
     std::vector<v3fPoint> scvertex;
 	std::vector<float> scptres;
@@ -436,6 +437,8 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
         const float phoPx = photon.px();
         const float phoPy = photon.py();
         const float phoPz = photon.pz();
+
+		if( phoPt > leadPhoPt ) leadPhoPt = phoPt;
 
         const float phoEnergyErr = photon.getCorrectedEnergyError(reco::Photon::regression2);
         //const float haloTaggerMVAVal = photon.haloTaggerMVAVal();
@@ -779,6 +782,7 @@ void KUCMSPhotonObject::ProcessEvent( ItemManager<float>& geVar ){
 */
 
 	geVar.set("nIsoPhos",nIsoPhotons);
+    geVar.set("leadPhoPt",leadPhoPt);
 	
     //Branches.fillBranch("gloResRHs",gloAllSeedRHs);
     //Branches.fillBranch("locResRHs",locRHCands);

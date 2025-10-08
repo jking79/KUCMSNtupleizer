@@ -1,0 +1,4 @@
+ecal_config/gammares_ul18_EGamma_MINIAOD_Run2018A-15Feb2022_UL2018-v1_v29.txt 315257 325172 r2_ul18
+ecal_config/gammares_ul18_EGamma_MINIAOD_Run2018B-15Feb2022_UL2018-v1_v29.txt 315257 325172 r2_ul18
+ecal_config/gammares_ul18_EGamma_MINIAOD_Run2018C-15Feb2022_UL2018-v1_v29.txt 315257 325172 r2_ul18
+ecal_config/gammares_ul18_EGamma_MINIAOD_Run2018D-15Feb2022_UL2018-v1_v29.txt 315257 325172 r2_ul18

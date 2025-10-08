@@ -31,7 +31,7 @@ options.register('runera','Run2',VarParsing.multiplicity.singleton,VarParsing.va
 ## GT to be used
 ##------------------ mc gt
 #options.register('globalTag','106X_mc2017_realistic_v6',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
-options.register('globalTag','106X_upgrade2018_realistic_v11_L1v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
+#options.register('globalTag','106X_upgrade2018_realistic_v11_L1v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','94X_mc2017_realistic_v11',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for sig22 MC');
 #options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
@@ -41,7 +41,7 @@ options.register('globalTag','106X_upgrade2018_realistic_v11_L1v1',VarParsing.mu
 ##options.register('globalTag','112X_mcRun3_2021_realistic_v16',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 
 ##------------------ data gt  
-#options.register('globalTag','106X_dataRun2_v36',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
+options.register('globalTag','106X_dataRun2_v36',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 ##options.register('globalTag','106X_dataRun2_v28',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 #options.register('globalTag','124X_dataRun3_v15',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2022');
 
@@ -197,12 +197,12 @@ filterselect = 'SVIPMet100'
 #filterselect = 'AL1SelEle'
 if options.multicrab == True : filterselect = options.eventFilter
 
-#runera = "Run3"  # current siganl model
-runera = "Run2" # BG models
+runera = "Run3"  # current siganl model
+#runera = "Run2" # BG models
 if options.multicrab == True : runera = options.runera
 
 dosv = True
-#dosv = False
+#dosv = False # with v30 this is the only SV flag that matters, doDisEle and doECALTrackOnly are depreciated
 if options.multicrab == True : dosv = options.doSV
 
 ############dode = True
@@ -210,7 +210,7 @@ dode = False # removed - only false with v30
 #if options.multicrab == True : dode = options.doDisEle
 
 doet = True ## with v30 no longer optional when using ( "ecalTracks", "displacedElectronSCs" ) for SCs collection
-#doet = False
+#####doet = False  ## leave true always for now
 #if options.multicrab == True : doet = options.doECALTrackOnly
 #if doet : 
 #    dosv = False

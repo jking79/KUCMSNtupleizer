@@ -797,11 +797,13 @@ void KUCMSAodSkimmer::processEvntVars(){
   selEvtVars.fillBranch( "Flag_globalSuperTightHalo2016Filter", Flag_globalSuperTightHalo2016Filter );//suggested
   selEvtVars.fillBranch( "Flag_goodVertices", Flag_goodVertices );//suggested
   selEvtVars.fillBranch( "Flag_hfNoisyHitsFilter", Flag_hfNoisyHitsFilter );//optional
-  bool metfilter = Flag_BadPFMuonDzFilter && Flag_BadPFMuonFilter && Flag_EcalDeadCellTriggerPrimitiveFilter && Flag_HBHENoiseFilter;
-  ////bool metfilter = Flag_BadPFMuonDzFilter && Flag_BadPFMuonFilter && Flag_HBHENoiseFilter;
-  metfilter = metfilter && Flag_HBHENoiseIsoFilter && Flag_ecalBadCalibFilter && Flag_eeBadScFilter && Flag_goodVertices;
-  selEvtVars.fillBranch( "Flag_MetFilter",metfilter);
-  
+
+  selEvtVars.fillBranch( "Trigger_hltPFMET120", Trigger_hltPFMET120 );
+  selEvtVars.fillBranch( "Trigger_hltPFMHTTightID120", Trigger_hltPFMET130 );
+  selEvtVars.fillBranch( "Trigger_hltPFMETNoMu120", Trigger_hltPFMET140 );
+  selEvtVars.fillBranch( "Trigger_hltPFMHTNoMuTightID120", Trigger_hltPFMET200 );
+
+ 
 }//<<>>void KUCMSAodSkimmer::processEvntVars()
 
 void KUCMSAodSkimmer::processMet(){
@@ -1358,7 +1360,8 @@ void KUCMSAodSkimmer::processPhotons(){
             float erht = (*ECALRecHit_time)[erhiter];
             float erhar = (*ECALRecHit_ampres)[erhiter];
 			float ertoftime = erht - calcor + pvtof;
-			float erres = std::sqrt( (sq2( 24.0/erhar ) + (sq2(2.5)/erhar) + 2*sq2(0.099))/2.0 );
+			//float erres = std::sqrt( (sq2( 24.0/erhar ) + (sq2(2.5)/erhar) + 2*sq2(0.099))/2.0 );
+			float erres = erhar;
 			bool hasGainSwitch = (*ECALRecHit_hasGS1)[erhiter] || (*ECALRecHit_hasGS6)[erhiter];
 			if( hasGainSwitch ) gainwt = 0;
             setw += erhe*ertoftime*gainwt;
@@ -1372,7 +1375,9 @@ void KUCMSAodSkimmer::processPhotons(){
 	//if( seedT != time ) std::cout << " Pho - SC seed time wrong !!!!!! " << time << " v " << leadEtime << std::endl;
     //if( seedE != leadE ) std::cout << " Pho - SC seed time wrong !!!!!! " << time << " v " << leadEtime << std::endl;
     float phoWTime = setw/sew;
-	float phoWRes = serw/sew;
+	//float phoWRes = serw/sew;
+	float phowamp = serw/sew;
+	float phoWRes = std::sqrt( (sq2( 24.0/phowamp ) + (sq2(2.5)/phowamp) + 2*sq2(0.099))/2.0 );
     float timeres = std::sqrt( (sq2( 24.0/leadEar ) + (sq2(2.5)/leadEar) + 2*sq2(0.099))/2.0 );
 	//float timeres = std::sqrt( sq2( 24.0/seedar ) + (sq2(2.5)/seedar) + 2*(0.099) );
 	float leadtimesig = leadEtime/timeres;
@@ -2053,7 +2058,6 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
   std::vector< TLorentzVector > hp4;
   std::vector< TLorentzVector > hxp4;
 	
-
 	int nPhov = pho4vec.size();
 	if( nPhov != phoside.size() ) std::cout << " !!!!!!!  pho4vec - phoside count mismatch !!!!!!!" << std::endl; 
 	int nJetv = jet4vec.size();
@@ -2366,6 +2370,8 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     selRjrVars.fillBranch( "rjrPVlab", m_PV_lab );
     selRjrVars.fillBranch( "rjrDphiMETV", m_dphiMET_V );
 
+	hist2d[2]->Fill(m_dphiMET_V,m_PTS);
+
 	float rjrMet = hypo(phoRMetCPx,phoRMetCPy);
 
     selRjrVars.fillBranch( "rjrMET", rjrMet ); 
@@ -2579,7 +2585,22 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
   selEvtVars.makeBranch( "Flag_globalSuperTightHalo2016Filter", BOOL );
   selEvtVars.makeBranch( "Flag_goodVertices", BOOL );
   selEvtVars.makeBranch( "Flag_hfNoisyHitsFilter", BOOL );
-  selEvtVars.makeBranch( "Flag_MetFilter", BOOL );
+  //selEvtVars.makeBranch( "Flag_MetFilter", BOOL );
+
+  //selEvtVars.makeBranch( "hltPFMET50", BOOL );
+  //selEvtVars.makeBranch( "hltPFMET70", BOOL );
+  //selEvtVars.makeBranch( "hltPFMET90", BOOL );
+  //selEvtVars.makeBranch( "hltPFMET100", BOOL );
+  //selEvtVars.makeBranch( "hltPFMET110", BOOL );
+  selEvtVars.makeBranch( "Trigger_hltPFMET120", BOOL );
+  //selEvtVars.makeBranch( "hltPFMET130", BOOL );
+  //selEvtVars.makeBranch( "hltPFMET140", BOOL );
+  //selEvtVars.makeBranch( "hltPFMET200", BOOL );
+  //selEvtVars.makeBranch( "hltPFMET250", BOOL );
+  //selEvtVars.makeBranch( "hltPFMET300", BOOL );
+  selEvtVars.makeBranch( "Trigger_hltPFMHTTightID120", BOOL );
+  selEvtVars.makeBranch( "Trigger_hltPFMETNoMu120", BOOL );
+  selEvtVars.makeBranch( "Trigger_hltPFMHTNoMuTightID120", BOOL );
 
   selEvtVars.attachBranches( fOutTree );
 
@@ -3054,6 +3075,7 @@ void KUCMSAodSkimmer::initHists(){
 
     ////hist2d[1] = new TH2D("jetDrMuTime_pt", "jetDrMuTime_pt", jtdiv, -1*jtran, jtran, 500, 0, 500);
 	hist2d[1] = new TH2D("scorigcross", "SC Types;Mian-Orig;Std-OOT-Excluded", 2, 0, 2, 3, 0, 3); 
+    hist2d[2] = new TH2D("rjrPst_v_rjrdPhiSX1", "rjrDphiMETV_v_rjrPst;rjrDphiMETV;rjrPst", 32, 0, 3.2, 200, 0, 2000);
 
 	//------------------------------------------------------------------------------------------
     //------ 3D Hists --------------------------------------------------------------------------

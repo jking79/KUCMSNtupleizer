@@ -103,7 +103,7 @@ def docrab( dataset ):
         #config.Data.unitsPerJob   = 14 # 14 for eg c 18ul ~ 2 files & 19 hours too much disk space -> 1 file worth & break up to keep under 2000 jobs
         #config.Data.unitsPerJob   =  24 # MET C 
         #config.Data.unitsPerJob   =  48 # MET D
-        config.Data.runRange = '319840-319910' # for EGAMMA 18C DATA with InvMet100 
+        config.Data.runRange = '320012-320038' # for EGAMMA 18C DATA with InvMet100 
 
         #config.JobType.allowUndistributedCMSSW = True
         #config.JobType.maxJobRuntimeMin = 1800
@@ -153,8 +153,9 @@ def docrab( dataset ):
             ##trial          = "kucmsntuple_MET_R18_AL1SelEle_DEOnly" + version #
             ##trial          = "kucmsntuple_EGamma_R18_AL1SelEle_DEOnly" + version #
            
-            trial          = "kucmsntuple_EGamma_R18_InvMet100IP_NoSv_319840" + version # 
+            trial          = "kucmsntuple_EGamma_R18_InvMet100IP_NoSv_320012" + version # 
             #trial          = "kucmsntuple_DisJet_R18_SVIPM100" + version #
+            #trial          = "kucmsntuple_DisJet_R18_SVIPM100_nolumimask" + version #
 
             #trial          = "kucmsntuple_TTXJets_R18_SVIPM100" + version #
             #trial          = "kucmsntuple_GJets_R18_SVIPM100" + version
@@ -200,9 +201,10 @@ def docrab( dataset ):
 #  -------  selsect PD/MC dependent paramters
 #---DATA--------------------------------------------------------------------------------------------------------------------------
 
+#>>>>>>>>>>>>>>>>>>>     #2016UL #globalTag=106X_dataRun2_v27
 #>>>>>>>>>>>>>>>>>>>     #2017UL #globalTag=106X_dataRun2_v20
             #config.JobType.pyCfgParams   = ['globalTag=106X_dataRun2_v20','multicrab=True']
-#>>>>>>>>>>>>>>>>>>>     #2018UL #globalTag=106X_dataRun2_v36
+#>>>>>>>>>>>>>>>>>>>     #2018UL #globalTag=106X_dataRun2_v24
             gt = 'globalTag=106X_dataRun2_v36'
             #config.JobType.pyCfgParams   = [gt,mcrab,efilter]
             ###config.JobType.pyCfgParams   = [gt,mcrab,efilter,mDoETOnly]

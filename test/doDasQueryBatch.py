@@ -451,7 +451,7 @@ dlEGAOD18 = [
 
 query = 'dasgoclient --json -query=\'dataset='
 
-datalist = dlEGAOD18
+datalist = dlmet22
 
 for data in datalist :
     
