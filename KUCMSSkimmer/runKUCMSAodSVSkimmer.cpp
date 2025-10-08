@@ -32,10 +32,10 @@ int main ( int argc, char *argv[] ){
                 //bool hasGenInfo = false;
                 bool hasGenInfo = true;
                 //no//const std::string infilename = "KUCMS_Ntuple_Master_BG_Files_List.txt";
-				//const std::string infilename = "KUCMS_Ntuple_Master_DataPD_Files_List.txt"; hasGenInfo = false;
+				const std::string infilename = "KUCMS_Ntuple_Master_DataPD_Files_List.txt"; hasGenInfo = false;
                 //no//const std::string infilename = "KUCMS_Ntuple_Master_DEG_Files_List.txt"; hasGenInfo = false;
                 //no//const std::string infilename = "KUCMS_Ntuple_Master_GoGoG_Files_List.txt";
-                const std::string infilename = "KUCMS_Ntuple_Master_BG_SVIPM100_Files_List.txt";
+                //const std::string infilename = "KUCMS_Ntuple_Master_BG_SVIPM100_Files_List.txt";
 				////const std::string infilename = "KUCMS_Ntuple_Master_SMS_Sig_Files_List_untracked.txt"; useEvtGenWgt = false;
                 //no//const std::string infilename = "KUCMS_Ntuple_Master_GoGoZ_Files_List.txt";
                 //no//const std::string infilename = "KUCMS_Ntuple_Master_SqSqG_Files_List.txt";

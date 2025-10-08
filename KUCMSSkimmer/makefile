@@ -37,7 +37,8 @@ TCFLAGS += -I/uscms/home/mlazarov/nobackup/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCM
 CC=g++
 
 p1=runKUCMSAodSVSkimmer
-p2=spaceholder
+p2=fillKUCMSTimeCalibration
+p3=spaceholder
 
 all: $(p1) 
 
@@ -45,4 +46,7 @@ $(p1): $(p1).cpp
 	$(CC) -o $(p1).obj $(p1).cpp $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS) $(BCGLIBS)  
 
 $(p2): $(p2).cpp
+	$(CC) -o $(p2).obj $(p2).cpp $(RTCFLAGS) $(RTGLIBS)
+
+$(p3): $(p3).cpp
 	$(CC) -o $(p2).obj $(p2).cpp $(RTCFLAGS) $(RTGLIBS)
