@@ -153,7 +153,7 @@ int main ( int argc, char *argv[] ){
     //theCali.setUseEffEnergy( true );
     //theCali.useGainSwitch( true );
 	//theCali.SetXBinStr( "VARIABLE 10 15 20 25 30 40 50 60 80 100 125 150 175 200 225 250 300 400 600" ); // : xr
-    //theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600" ); // : xa
+    //theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600" ); // : xa  llpana resfit
     //theCali.SetXBinStr( "VARIABLE 1.0 2.0 3.0 4.0 5.0 7.5 10.0 12.5 15.0 17.5 20.0 25.0 30.0 40.0 50.0 70.0 90.0" ); // xer
     //theCali.SetXBinStr( "VARIABLE 1.0 2.0 3.0 4.0 5.0 7.5 10.0 12.5 15.0 17.5 20.0 22.5 25.0 30.0 40.0 60.0 120.0" ); // xea
     //theCali.SetXBinStr( "VARIABLE 10 15 20 25 30 40 50 60 80 100 125 150 175 200 225 250 300 400 600" ); // : ecal real
@@ -191,7 +191,7 @@ int main ( int argc, char *argv[] ){
 	//theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_deg25bc_xa_pm6b480_v616" );
 	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_deg18c_xa_pm6b480_v521" );
 	//theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg24d_xa_pm6b480_v810" );
-	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18A_UL_xa_pm12b240_v106" );
+	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18A_UL_xa_pm24b1200_v107" );
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -222,7 +222,8 @@ int main ( int argc, char *argv[] ){
 	//std::string histName = "ResMap_0_999999__ZEE_Data_Hist_NoCali_eg24fcc_xa_pm6b480_v808";
 	//std::string histName = "ResMap_0_999999__ZEE_Data_Hist_NoCali_eg24d_xa_pm6b480_v810";
 	//std::string histName = "ResMap_315257_325172__DRO_Data_Hist_eg18Dul_xaext_pm6b180_v105";
-    std::string histName = "ResMap_315257_325172__SRO_Data_Hist_eg_18A_UL_xa_pm12b240_v106";
+    //std::string histName = "ResMap_315257_325172__SRO_Data_Hist_eg_18A_UL_xa_pm12b240_v106";
+	std::string histName = "ResMap_315257_325172__DRO_Data_Hist_eg_18A_UL_xa_pm24b1200_v107";
 
 	//
 	//theCali.Set2DResTFileName( "egres_DEGPD_AODSIM_R24_Fprompt_v3_14011_v12_resplots.root" );
@@ -240,7 +241,8 @@ int main ( int argc, char *argv[] ){
     //theCali.SetXBinStr( "VARIABLE 1.0 2.0 3.0 4.0 5.0 7.5 10.0 12.5 15.0 17.5 20.0 25.0 30.0 40.0 50.0 70.0 90.0" ); // xer
     //theCali.SetXBinStr( "VARIABLE 10 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1200 1600 2200" ); // : xgs ecal
 	//theCali.SetXBinStr( "VARIABLE 5 10 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 1200 1800 2200" );  // : xa ( xaext+ 2200 )
-	theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600" ); // : xa 2018UL DRO
+	//theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600" ); // : xa 2018UL DRO
+    theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600" ); // : xa  llpana resfit
 	theCali.doResTimeFit( histName );
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -184,6 +184,7 @@ class KUCMS_HelperBaseClass {
 	const auto vfsum    (CVFlt x){return std::accumulate(x.begin(),x.end(),0.0f);}
 	const auto max      (CVFlt x){float m(x[0]); for(auto ix : x ){ if( ix > m ) m = ix; } return m;}
 	const auto dR1		(CFlt e1, CFlt p1, CFlt e2, CFlt p2){auto de = e1-e2; auto dp = dPhi(p1,p2); return hypo(de,dp);}
+	const auto setdec	(CFlt n, int p){ int m = pow( 10.f, p ); int t  = n*m; return float(t)/float(m); } 
 
 	// stats functions
 	const auto mean     (CVFlt x){return std::accumulate(x.begin(),x.end(),0.0f)/x.size();}

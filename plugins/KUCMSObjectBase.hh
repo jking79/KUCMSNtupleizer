@@ -17,6 +17,7 @@
 #include <map>
 #include <string>
 #include <cmath>
+#include <regex>
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"

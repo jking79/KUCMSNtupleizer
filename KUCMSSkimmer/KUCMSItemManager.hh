@@ -122,6 +122,13 @@ void Item<std::vector<unsigned int>>::clear(){
 
 }//<<>>void Item<std::vector<unsigned int>>::clear()
 
+template <>
+void Item<std::vector<float>>::clear(){
+
+    iValue.clear();
+
+}//<<>>void Item<std::vector<unsigned int>>::clear()
+
 template <class T>
 void Item<T>::make( std::string name, std::string doc ){
 

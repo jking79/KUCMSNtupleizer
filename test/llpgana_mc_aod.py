@@ -84,6 +84,8 @@ process.load('TrackingTools.TransientTrack.TransientTrackBuilder_cfi')
 process.load("TrackingTools.TrackAssociator.DetIdAssociatorESProducer_cff")
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 
+process.load('PhysicsTools.PatAlgos.triggerLayer1.triggerProducer_cfi')
+
 ## Message Logger settings
 process.load("FWCore.MessageService.MessageLogger_cfi")
 #process.MessageLogger.destinations = ['cout', 'cerr']
@@ -146,12 +148,16 @@ process.source = cms.Source("PoolSource",
         #'root://cmsxrootd-site.fnal.gov//store/mc/RunIIFall17DRPremix/QCD_HT200to300_TuneCP5_13TeV-madgraph-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/110000/1E29BF8B-5F60-E811-AD1D-0663CE00010C.root',
 
         # AOD Data MET
-        #'file:Met_UL18B_AOD_973EEF0C-44AB-E94A-8591-04DCD00D8B4B.root',
+        'file:Met_UL18B_AOD_973EEF0C-44AB-E94A-8591-04DCD00D8B4B.root',
+        #'root://cms-xrd-global.cern.ch//store/data/Run2018B/MET/AOD/15Feb2022_UL2018-v1/25210000/CD3E4875-8B2E-ED4E-B1C9-43BB906B0555.root',
+        #'root://cms-xrd-global.cern.ch//store/data/Run2018B/MET/AOD/15Feb2022_UL2018-v1/2520000/F672D9DC-50E8-684C-BE01-8E73D82651FF.root',
+        #'root://cms-xrd-global.cern.ch//store/data/Run2018B/MET/AOD/15Feb2022_UL2018-v1/25210000/2325D400-4654-D64A-B3A3-9C96703D9207.root',
         #'file:/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/test/Met_UL18B_AOD_973EEF0C-44AB-E94A-8591-04DCD00D8B4B.root'      
         #'file:/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/test/MetPD_003A2484-A2DC-E711-9D0A-02163E019C46.root'
-        'root://cms-xrd-global.cern.ch//store/data/Run2022C/MET/AOD/27Jun2023-v2/2820000/35c49035-7557-4a77-99c8-065844b3649d.root'
+        #'root://cms-xrd-global.cern.ch//store/data/Run2022C/MET/AOD/27Jun2023-v2/2820000/35c49035-7557-4a77-99c8-065844b3649d.root'
         #'root://cmsxrootd-site.fnal.gov//store/data/Run2022E/JetMET/AOD/EXODelayedJetMET-27Jun2023-v1/40000/08fd72c7-1be9-4328-9a38-85979d340331.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2022E/JetMET/AOD/EXODelayedJetMET-27Jun2023-v1/40000/08fd72c7-1be9-4328-9a38-85979d340331.root',
+        #'root://cms-xrd-global.cern.ch//store/data/Run2018C/DisplacedJet/AOD/15Feb2022_UL2018-v1/60000/E11CE7E4-249F-0D42-AD15-344870056EF4.root',
 
          # AODSIM DPJB model
 
@@ -186,14 +192,14 @@ if options.multicrab == True : genInfo = options.hasGenInfo
 ecalIsoInputsF17 = 'RecoEgamma/ElectronIdentification/data/Fall17/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_94X.txt'
 ecalruneraIsoInputsW22 = 'RecoEgamma/ElectronIdentification/data/Run3_Winter22/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_122X.txt'
 
-#filterselect = 'None'
+#filterselect = 'none'
 #filterselect = 'InvMet100IP'
 #filterselect = 'AL1NpSC'
 #filterselect = 'AL1DisSV'
-filterselect = 'SVIPMet100'
+#filterselect = 'SVIPMet100'
 #filterselect = 'MET100'
 #filterselect = 'AL1IsoPho'
-#filterselect = 'IsoPhoMet100'
+filterselect = 'IsoPhoMet100'
 #filterselect = 'AL1SelEle'
 if options.multicrab == True : filterselect = options.eventFilter
 
@@ -236,7 +242,7 @@ print( "Using options : doDisEle = (NU) ",dode," doSVs = ",dosv," doECALTrackOnl
 print( "Using options : globalTag = ",options.globalTag )
 print( "With output file name : ",options.outputFileName )
 
-test = cms.vstring( "hltPFMET100", "hltMETClean100", "hltHIPhoton20Eta3p1" )
+#test = cms.vstring( "hltPFMET100", "hltMETClean100", "hltHIPhoton20Eta3p1" )
 
 # Make the tree 
 process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
@@ -298,8 +304,8 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
                               ## beamSpot
                               beamSpot = cms.InputTag("offlineBeamSpot"),
                               ## trigger
-                              triggerResults = cms.InputTag("TriggerResults"),
-                              #triggerObjects = cms.InputTag("TriggerResults"),
+                              triggerFlagResults = cms.InputTag("TriggerResults","","RECO"),
+                              triggerHLTResults = cms.InputTag("TriggerResults","","HLT"),
                               triggerEvent = cms.InputTag("hltTriggerSummaryAOD"),
                               ## METs
                               #mets = cms.InputTag("slimmedMETs"),
@@ -360,89 +366,18 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
 ## Trigger path list
 process.tree.triggerList = cms.vstring(  #"hltPFMET100", "hltMETClean100", "hltHIPhoton20Eta3p1" ),   
 
-    "hltL1sSingleEGNonIsoOrWithJetAndTauNoPS",
-    "hltEGL1SingleEGNonIsoOrWithJetAndTauNoPSFilter",
-    "hltEG60EtFilter",
-    "hltEG60HEFilter",
-    "hltEG60R9Id90CaloIdLIsoLR9IdFilter",
-    "hltEG60R9Id90CaloIdLIsoLClusterShapeFilter",
-    "hltEG60R9Id90CaloIdLIsoLEcalPFClusterIsoFilter",
-    "hltEG60R9Id90CaloIdLIsoLHcalPFClusterIsoFilter",
-    "hltEG60R9Id90CaloIdLIsoLHollowTrackIsoFilter",
-    "hltEG60R9Id90CaloIdLIsoLDisplacedIdFilter",
-    "hltHT175Jet10",
-    "hltPFHT350Jet15",
-    "hltL1sSingleAndDoubleEG",
-    "hltL1sSingleAndDoubleEGNonIsoOr",
-    "hltL1sSingleAndDoubleEGor",
-    "hltL1sSingleEG15",
-    "hltL1sSingleEG18",
-    "hltL1sSingleEG24",
-    "hltL1sSingleEG26",
-    "hltL1sSingleEG34to45",
-    "hltL1sSingleEG34to50",
-    "hltL1sSingleEG40to50",
-    "hltL1sSingleEGor",
-    "hltL1sTripleEGOrDoubleEGOrSingleEG",
-    "hltEG20EtFilterLooseHoverE",
-    "hltEG20EtL1TripleEGFilter",
-    "hltEG20HEFilterLooseHoverE",
-    "hltEG20HEL1TripleEGFilter",
-    "hltEG20L1SingleEGLowETOrEtFilter",
-    "hltEG20L1SingleEGLowETOrEtaREtFilter",
-    "hltEG30EBHE10R9Id50b80eHEFilter",
-    "hltEG30EBL1SingleAndDoubleEGOrEtFilter",
-    "hltEG30EBR9Id50b80eR9IdFilter",
-    "hltEG30EIso15HE30EcalIsoLastFilter",
-    "hltEG30EtFilterLooseHoverE",
-    "hltEG30EtL1TripleEGFilter",
-    "hltEG30HE30HEFilter",
-    "hltEG30HEFilterLooseHoverE",
-    "hltEG30HEL1TripleEGFilter",
-    "hltEG30L1IsoEGerJetC34drMin0p3EtFilter",
-    "hltEG30L1SingleAndDoubleEGOrEtFilter",
-    "hltEG30L1SingleAndDoubleEGWithTauWithJetEtFilter",
-    "hltEG30LHE12R9Id50b80eHEFilter",
-    "hltEG30LR9Id50b80eR9IdFilter",
-    "hltEG30PVHE10R9Id50b80eHEFilter",
-    "hltEG30PVR9Id50b80eR9IdFilter",
-    "hltEG30PVrealANDHE10R9Id50b80eHEFilter",
-    "hltEG30PVrealANDR9Id50b80eR9IdFilter",
-    "hltHT130Jet30",
-    "hltHT200Jet30",
-    "hltPFHT180Jet30",
-    "hltPFHT250Jet30",
-    "hltPFMET50",
-    "hltPFMET70",
-    "hltPFMET90",
-    "hltPFMET100",
-    "hltPFMET110",
-    "hltPFMET120",
-    "hltPFMET130",
-    "hltPFMET140",
-    "hltPFMET200",
-    "hltPFMET250",
-    "hltPFMET300",
-    "hltPFMHTNoMuTightID70",
-    "hltPFMHTNoMuTightID90",
-    "hltPFMHTNoMuTightID100",
-    "hltPFMHTNoMuTightID110",
-    "hltPFMHTTightID120",
-    "hltPFMHTNoMuTightID120",
-    "hltPFMHTNoMuTightID130",
-    "hltPFMHTNoMuTightID140",
-    "hltPFMHTTightID120",
-    "hltPFMHTTightID130",
-    "hltPFMHTTightID140",
-    "hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilter",
-    "hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilterLowPt",
-    "hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilterMidPt",
-    "hltPFMETNoMu60",
-    "hltPFMETNoMu100",
-    "hltPFMETNoMu110",
-    "hltPFMETNoMu120",
-    "hltPFMETNoMu130",
-    "hltPFMETNoMu140",
+    "HLT_PFMET90_PFMHT90_IDTight_v",
+    "HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_v",
+    "HLT_PFMET100_PFMHT100_IDTight_v",
+    "HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_v",
+    "HLT_PFMET120_PFMHT120_IDTight_v",
+    "HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_v",
+    "HLT_PFMET120_PFMHT120_IDTight_PFHT60_v",
+    "HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60_v",
+    "HLT_PFMET130_PFMHT130_IDTight_v",
+    "HLT_PFMETNoMu130_PFMHTNoMu130_IDTighti_v",
+    "HLT_PFMET140_PFMHT140_IDTight_v",
+    "HLT_PFMETNoMu140_PFMHTNoMu140_IDTight_v",
 
 )#triglist0 = cms.vstring(
 
@@ -489,6 +424,9 @@ process.kuSV = cms.Sequence( muonEnhancedTracks )
 process.kuDisplaced_path = cms.Path( process.kuEcalTracks )
 if ( dosv ) : process.kuDisplaced_path = cms.Path( process.kuEcalTracks + process.kuSV )
 
+
+process.pattriger = cms.Path( process.patTrigger )
+
 ## Set final paths and schedule
 
 #############3process.setFlags_path = cms.Path(process.setFlags)
@@ -510,6 +448,7 @@ process.schedule = cms.Schedule( process.kuDisplaced_path,
                                  process.Flag_BadChargedCandidateFilter,
                                  process.Flag_eeBadScFilter,
                                  process.Flag_ecalBadCalibFilter,
+                                 #process.pattriger,
                                  process.tree_step,
                                  process.endjob_step, )#process.schedule
 
