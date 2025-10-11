@@ -15,8 +15,8 @@
 //// KUCMSAodSkimmer class ----------------------------------------------------------------------------------------------------
 ////---------------------------------------------------------------------------------------------------------------------------
 
-//#define DEBUG true
-#define DEBUG false
+#define DEBUG true
+//#define DEBUG false
 
 //#define CLSTRMAPS true
 #define CLSTRMAPS false
@@ -231,6 +231,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
     if( key !=  "single" ){
       std::ifstream infile(listdir+infiles);
       while( std::getline( infile, str ) ){
+	      if(str.find("#") != string::npos) continue;
 	nfiles++;
 	//if( skipCnt != 0 && ( nfiles%skipCnt != 0 ) ) continue;
 	auto tfilename = eosdir + inpath + str;
@@ -273,7 +274,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
     TBranch *b_sumFltrdEvtWgt;
     TBranch *b_nMetFltrdEvts;
     TBranch *b_nPhoFltrdEvts;
-
+cout << "a" << endl;
     fInConfigTree->SetBranchAddress("nTotEvts", &nTotEvts, &b_nTotEvts);
     fInConfigTree->SetBranchAddress("nFltrdEvts", &nFltrdEvts, &b_nFltrdEvts);
     fInConfigTree->SetBranchAddress("sumEvtWgt", &sumEvtWgt, &b_sumEvtWgt);
@@ -281,7 +282,9 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
     fInConfigTree->SetBranchAddress("nMetFltrdEvts", &nMetFltrdEvts, &b_nMetFltrdEvts);
     fInConfigTree->SetBranchAddress("nPhoFltrdEvts", &nPhoFltrdEvts, &b_nPhoFltrdEvts);
 
+cout << "b" << endl;
     auto nConfigEntries = fInConfigTree->GetEntries();
+cout << "c" << endl;
     std::cout << "Proccessing " << nConfigEntries << " config entries." << std::endl;
     configCnts.clear();
     configWgts.clear();
@@ -328,7 +331,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
     std::cout << "Proccessing " << nEntries << " entries." << std::endl;
     nEvents = nEntries;
     //DEBUG
-    nEntries = 100;
+    nEntries = 1;
     for (Long64_t centry = 0; centry < nEntries; centry++){
 
       if( centry%loopCounter == 0 ) std::cout << "Proccessed " << centry << " of " << nEntries << " entries." << std::endl;
@@ -482,7 +485,7 @@ void KUCMSAodSkimmer::processMLPhotons(){
 	
 	for( uInt it = 0; it < nPhotons; it++ ){
 		if( not isSelPho[it] ) continue;
-
+cout << "photon #" << it << endl;
 		std::map< unsigned int, float > rhtresmap;
         auto scIndx = (*Photon_scIndex)[it];
         auto rhids = (*SuperCluster_rhIds)[scIndx];
@@ -499,7 +502,7 @@ void KUCMSAodSkimmer::processMLPhotons(){
                 float rhy = (*ECALRecHit_rhy)[erhiter];
                 float rhz = (*ECALRecHit_rhz)[erhiter];
 				rhtresmap[scrhid] = erh_timeRes[erhiter]; 
-
+cout << "rh id " << scrhid << " time res " << erh_timeRes[erhiter] << endl;
 				if( DEBUG ) std::cout << erhe << " " << erht << " " << hasGainSwitch;
                 if( DEBUG ) std::cout << " " << erht << " " << rhx << " " << rhy << " " << rhz << std::endl;
 
@@ -508,21 +511,148 @@ void KUCMSAodSkimmer::processMLPhotons(){
         }//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
 		
 		//
-		//  call to BayesCluster to process photon information 
-		//
+		//  call to BayesianClustering framework to process photon information 
+		//  runs BHC (NlnN) algorithm to cluster photon with subcluster regularization
+		//  returns lead (highest energy) cluster found
 
 		ClusterAnalyzer::ClusterObj phoobj = ca.RunClustering();
 		phoobj.CalculateObjTimes();
 		phoobj.CalculatePUScores();
 		phoobj.CalculateDetBkgScores();
+		phoobj.CalculateObjTimeSig(rhtresmap);
 
+
+		//do subcluster observables
+		int nk = phoobj.GetNSubclusters();
+		selPhotons.fillBranch( "selPhoBHC_nSubclusters", nk);
+		vector<Jet> subcls;
+		phoobj.GetSubclusters(subcls);
+
+		vector<bool> puscores;
+		phoobj.GetPUScores(puscores);
+		cout << "got pu scores " << puscores.size() << endl;
+		vector<pair<int, double>> detbkgscores;
+		phoobj.GetDetBkgScores(detbkgscores);
+		cout << "# subclusters " << nk << endl;
+		for(int k = 0; k < nk; k++){
+			cout << "cluster #" << k << endl;
+			float subcltime = subcls[k].t();
+			float subcleta = subcls[k].eta();
+			float subclphi = subcls[k].phi();
+			selPhotons.fillBranch( "selPhoBHCSubcl_time", subcltime);			
+			selPhotons.fillBranch( "selPhoBHCSubcl_eta", subcleta);			
+			selPhotons.fillBranch( "selPhoBHCSubcl_phi", subclphi);
+			Matrix subcl_cov = subcls[k].GetCovariance();
+			float etavar = subcl_cov.at(0,0);
+			float phivar = subcl_cov.at(1,1);
+			float etaphicov = subcl_cov.at(0,1);
+			selPhotons.fillBranch( "selPhoBHCSubcl_etaVar", etavar);			
+			selPhotons.fillBranch( "selPhoBHCSubcl_phiVar", phivar);			
+			selPhotons.fillBranch( "selPhoBHCSubcl_etaPhiCov", etaphicov);
+			//pu score
+			//CHECK
+			cout << "PU subcl score " << puscores[k] << endl;
+			selPhotons.fillBranch( "selPhoBHCsubcl_puScore", puscores[k]);
+		       	//det bkg score
+			selPhotons.fillBranch( "selPhoBHCsubcl_detBkgMaxClassScore", (float)detbkgscores[k].second);
+			selPhotons.fillBranch( "selPhoBHCsubcl_detBkgMaxClass", detbkgscores[k].first);	
+			selPhotons.fillBranch( "selPhoBHCsubcl_photonIndex", it);	
+		}
+		//center
+		float phoeta = phoobj.GetEtaCenter();
+		selPhotons.fillBranch( "selPhoBHC_eta", phoeta);
+		float phophi = phoobj.GetPhiCenter();
+		selPhotons.fillBranch( "selPhoBHC_phi", phophi);
+		//time at detector face
 		float photime = phoobj.GetObjTime_Det();
-		//double photime_pv = phoobj.GetObjTime_PV();
-		selPhotons.fillBranch( "selPhoTime_GMM", photime);
-		//add photon subcluster observables (vector<float> obs with obs[k] is for subcluster k in photon)
-		//add PV time for TOF resolution
-		//do for jets (see below)
+		selPhotons.fillBranch( "selPhoBHC_DetTime", photime);
+		//time at PV
+		float photime_pv = phoobj.GetObjTime_PV();
+		selPhotons.fillBranch( "selPhoBHC_PVTime", photime_pv);
+	
+		//covariance
+		float etavar = phoobj.GetEtaVar();
+		float phivar = phoobj.GetPhiVar();
+		float etaphicov = phoobj.GetEtaPhiCov();
+		double majlen, minlen;
+		majlen = -1;
+		minlen = -1;
+		phoobj.GetMajMinLengths(majlen, minlen); //space only
+		
+		selPhotons.fillBranch( "selPhoBHC_etaVar", etavar);
+		selPhotons.fillBranch( "selPhoBHC_phiVar", phivar);
+		selPhotons.fillBranch( "selPhoBHC_etaPhiCov", etaphicov);
+		selPhotons.fillBranch( "selPhoBHC_majlen", (float)majlen);
+		selPhotons.fillBranch( "selPhoBHC_minlen", (float)minlen);
+		//calculate time significance
+		//CHECK
+		float timeSignificance = phoobj.GetObjTimeSig();
+		cout << "photon time significance " << timeSignificance << endl;
+		selPhotons.fillBranch( "selPhoBHC_timeSignficance", timeSignificance);
 
+
+		//CHECK PU cleaning and det bkg cleaning
+		/*
+		phoobj.CleanOutPU();
+		//do PU-cleaned observables
+		//center
+		phoeta = phoobj.GetEtaCenter();
+		selPhotons.fillBranch( "selPhoBHCPUCleaned_eta", phoeta);
+		phophi = phoobj.GetPhiCenter();
+		selPhotons.fillBranch( "selPhoBHCPUCleaned_phi", phophi);
+		//time at detector face
+		photime = phoobj.GetObjTime_Det();
+		selPhotons.fillBranch( "selPhoBHCPUCleaned_DetTime", photime);
+		//time at PV
+		photime_pv = phoobj.GetObjTime_PV();
+		selPhotons.fillBranch( "selPhoBHCPUCleaned_PVTime", photime_pv);
+	
+		//covariance
+		etavar = phoobj.GetEtaVar();
+		phivar = phoobj.GetPhiVar();
+		etaphicov = phoobj.GetEtaPhiCov();
+		phoobj.GetMajMinLengths(majlen, minlen); //space only
+		
+		selPhotons.fillBranch( "selPhoBHCPUCleaned_etaVar", etavar);
+		selPhotons.fillBranch( "selPhoBHCPUCleaned_phiVar", phivar);
+		selPhotons.fillBranch( "selPhoBHCPUCleaned_etaPhiCov", etaphicov);
+		selPhotons.fillBranch( "selPhoBHCPUCleaned_majlen", (float)majlen);
+		selPhotons.fillBranch( "selPhoBHCPUCleaned_minlen", (float)minlen);
+		//calculate time significance
+		//CHECK
+		timeSignificance = phoobj.GetObjTimeSig();
+		selPhotons.fillBranch( "selPhoBHCPUCleaned_timeSignficance", timeSignificance);
+		//
+		double minscore = 0.9;
+		phoobj.CleanOutDetBkg(minscore);
+		//do PU-cleaned && det bkg-cleaned observables
+		//center
+		phoeta = phoobj.GetEtaCenter();
+		selPhotons.fillBranch( "selPhoBHCPUDetBkgCleaned_eta", phoeta);
+		phophi = phoobj.GetPhiCenter();
+		selPhotons.fillBranch( "selPhoBHCPUDetBkgCleaned_phi", phophi);
+		//time at detector face
+		photime = phoobj.GetObjTime_Det();
+		selPhotons.fillBranch( "selPhoBHCPUDetBkgCleaned_DetTime", photime);
+		//time at PV
+		photime_pv = phoobj.GetObjTime_PV();
+		selPhotons.fillBranch( "selPhoBHCPUDetBkgCleaned_PVTime", photime_pv);
+	
+		//covariance
+		etavar = phoobj.GetEtaVar();
+		phivar = phoobj.GetPhiVar();
+		etaphicov = phoobj.GetEtaPhiCov();
+		//phoobj.GetMajMinLengths(majlen, minlen); //space only
+		
+		selPhotons.fillBranch( "selPhoBHCPUDetBkgCleaned_etaVar", etavar);
+		selPhotons.fillBranch( "selPhoBHCPUDetBkgCleaned_phiVar", phivar);
+		selPhotons.fillBranch( "selPhoBHCPUDetBkgCleaned_etaPhiCov", etaphicov);
+		selPhotons.fillBranch( "selPhoBHCPUDetBkgCleaned_majlen", (float)majlen);
+		selPhotons.fillBranch( "selPhoBHCPUDetBkgCleaned_minlen", (float)minlen);
+		//calculate time significance
+		timeSignificance = phoobj.GetObjTimeSig();
+		selPhotons.fillBranch( "selPhoBHCPUDetBkgCleaned_timeSignficance", timeSignificance);
+		*/
 
 		ca.ClearRecHitList();
         // branches created strating on 2546 in  void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree )
@@ -536,9 +666,19 @@ void KUCMSAodSkimmer::processMLJets(){
 
     if( DEBUG ) std::cout << "Finding BC information for jets" << std::endl;
 
-    BayesPoint vtx(1); // PV_x, PV_y, PV_z are x,y,z of primary vertex
+	ClusterAnalyzer ca;
+	//ca.SetDetectorCenter(x, y, z); //set to beamspot center, defaults to (0,0,0)
+	ca.SetPV(PV_x, PV_y, PV_z); //set to PV coords (assuming these are global vars)
+	ca.SetTransferFactor(1/30.); //set to 1/min jet pt
+
     std::vector<Jet> jetrhs;
   	uInt nJets = Jet_energy->size();
+	float pvtime = 0;
+	float norm = 0;
+	float pvtime_PUcleaned = 0;
+	float norm_PUcleaned = 0;
+	float pvtime_PUdetBkgCleaned = 0;
+	float norm_PUdetBkgCleaned = 0;
     if( DEBUG ) std::cout << " - Looping over for " << nJets << " photons to get BC info" << std::endl;
   	for( uInt it = 0; it < nJets; it++ ){
         if( not isSelJet[it] ) continue;
@@ -561,64 +701,168 @@ void KUCMSAodSkimmer::processMLJets(){
             	if( DEBUG ) std::cout << erhe << " " << erht << " " << hasGainSwitch;
                 if( DEBUG ) std::cout << " " << erht << " " << rhx << " " << rhy << " " << rhz << std::endl;
 
-                //
-                // call to BayesCluster to load rechit info for this photon
-                //
-
-                // --------------------------------------------------------------------------------------------
-                //  for Baysian Clustering Algo use testing
-                /*
-                        JetPoint jrh( rhx, rhy, rhz, rht ); //in nutple units
-                        //I also do a cut on rh time to only keep rhs with -20 ns < rh time < 20 ns
-                        jrh.SetEnergy(rhe);
-                        jrh.SetEta(rheta);
-                        jrh.SetPhi(rhphi);
-                        jrh.SetWeight(rhe*0.25); //where _gev is some fraction (I have it at 0.25 for now)
-                        jrh.SetRecHitId(rhid);
-                        //can add to a larger, Jet object (like a photon or supercluster) and 
-                        //call photon.GetJets(rhs) to get these rhs as ?~@~\Jet?~@~] objects
-                        //or can recast them here as Jets with the line below
-                        Jet jet( jrh, vtx );
-                        jetrhs.push_back(jet);
-                */
-                //--------------------------------------------------------------------------------------------
-
+		ca.AddRecHit(rhx, rhy, rhz, erhe, erht, jrhid);
 
 
             }//<<>>if( ecalrhiter != -1 )
         }//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
 
-        //
-        //  call to BayesCluster to process photon information 
-        //
 
-        //--------------------------------------------------------------------------------------------
-        //  Tesing the substantiation of the Baysian Clustering Class 
-        /*
-            //std::cout << " -- Running BayesCluster :" << std::endl;
-            BayesCluster *algo = new BayesCluster(jetrhs);
-            GaussianMixture* gmm = algo->SubCluster();
-            int nclusters = gmm->GetNClusters();
-            for(int k = 0; k < nclusters; k++){
-                map<string, Matrix> params = gmm->GetLHPosteriorParameters(k);
-                double ec = params["mean"].at(0,0); //eta center of subcluster
-                double pc = params["mean"].at(1,0); //phi center of subcluster
-                double tc = params["mean"].at(2,0); //time center of subcluster
-                Matrix cov = params["cov"]; //3x3 covariance matrix of subcluster 
-                //std::cout << " --- BayesCluster " << k << " ec " << ec << " pc " << pc << " tc " << tc << std::endl;
-            }//<<>>for(int k = 0; k < nclusters; k++)
-            delete algo;
-        */
-        //--------------------------------------------------------------------------------------------
+		ClusterAnalyzer::ClusterObj jetobj = ca.RunClustering();
+		jetobj.CalculateObjTimes();
+		jetobj.CalculatePUScores();
+		jetobj.CalculateDetBkgScores();
+		jetobj.CalculateObjTimeSig(rhtresmap);
 
-        // save to branches :
-        // selJets.fillBranch( "yourvarname", yourvarible ); 
+
+		//do subcluster observables
+		int nk = jetobj.GetNSubclusters();
+		selJets.fillBranch( "selJetBHC_nSubclusters", nk);
+		vector<Jet> subcls;
+		jetobj.GetSubclusters(subcls);
+
+		vector<bool> puscores;
+		cout << "getting pu scores" << endl;
+		jetobj.GetPUScores(puscores);
+		cout << "got pu scores" << endl;
+		vector<pair<int, double>> detbkgscores;
+		jetobj.GetDetBkgScores(detbkgscores);
+		for(int k = 0; k < nk; k++){
+			float subcltime = subcls[k].t();
+			float subcleta = subcls[k].eta();
+			float subclphi = subcls[k].phi();
+			selJets.fillBranch( "selJetBHCSubcl_time", subcltime);			
+			selJets.fillBranch( "selJetBHCSubcl_eta", subcleta);			
+			selJets.fillBranch( "selJetBHCSubcl_phi", subclphi);
+			Matrix subcl_cov = subcls[k].GetCovariance();
+			float etavar = subcl_cov.at(0,0);
+			float phivar = subcl_cov.at(1,1);
+			float etaphicov = subcl_cov.at(0,1);
+			selJets.fillBranch( "selJetBHCSubcl_etaVar", etavar);			
+			selJets.fillBranch( "selJetBHCSubcl_phiVar", phivar);			
+			selJets.fillBranch( "selJetBHCSubcl_etaPhiCov", etaphicov);
+			//pu score
+			selJets.fillBranch( "selJetBHCsubcl_puScore", puscores[k]);
+		       	//det bkg score
+			selJets.fillBranch( "selJetBHCsubcl_detBkgMaxClassScore", (float)detbkgscores[k].second);
+			selJets.fillBranch( "selJetBHCsubcl_detBkgMaxClass", detbkgscores[k].first);	
+			selJets.fillBranch( "selJetBHCsubcl_jetIndex", it);	
+		}
+		//center
+		float jeteta = jetobj.GetEtaCenter();
+		selJets.fillBranch( "selJetBHC_eta", jeteta);
+		float jetphi = jetobj.GetPhiCenter();
+		selJets.fillBranch( "selJetBHC_phi", jetphi);
+		//time at detector face
+		float jettime = jetobj.GetObjTime_Det();
+		selJets.fillBranch( "selJetBHC_DetTime", jettime);
+		//time at PV
+		float jettime_pv = jetobj.GetObjTime_PV();
+		selJets.fillBranch( "selJetBHC_PVTime", jettime_pv);
+
+		pvtime += jettime_pv*jetobj.GetEnergy();
+		norm += jetobj.GetEnergy();
+
+		//covariance
+		float etavar = jetobj.GetEtaVar();
+		float phivar = jetobj.GetPhiVar();
+		float etaphicov = jetobj.GetEtaPhiCov();
+		double majlen, minlen;
+		majlen = -1;
+		minlen = -1;
+		//jetobj.GetMajMinLengths(majlen, minlen); //space only
 		
-		// branches created strating on 2546 in  void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree )
-		// on line 2801 make a selJets branch : selJets.makeBranch( "yourvarname", VFLOAT );
+		selJets.fillBranch( "selJetBHC_etaVar", etavar);
+		selJets.fillBranch( "selJetBHC_phiVar", phivar);
+		selJets.fillBranch( "selJetBHC_etaPhiCov", etaphicov);
+		selJets.fillBranch( "selJetBHC_majlen", (float)majlen);
+		selJets.fillBranch( "selJetBHC_minlen", (float)minlen);
+		//calculate time significance
+		float timeSignificance = jetobj.GetObjTimeSig();
+		selJets.fillBranch( "selJetBHC_timeSignficance", timeSignificance);
+
+
+		/////////CLEAN OUT PU/////////
+		jetobj.CleanOutPU();
+		//do PU-cleaned observables
+		//center
+		jeteta = jetobj.GetEtaCenter();
+		selJets.fillBranch( "selJetBHCPUCleaned_eta", jeteta);
+		jetphi = jetobj.GetPhiCenter();
+		selJets.fillBranch( "selJetBHCPUCleaned_phi", jetphi);
+		//time at detector face
+		jettime = jetobj.GetObjTime_Det();
+		selJets.fillBranch( "selJetBHCPUCleaned_DetTime", jettime);
+		//time at PV
+		jettime_pv = jetobj.GetObjTime_PV();
+		selJets.fillBranch( "selJetBHCPUCleaned_PVTime", jettime_pv);
+		
+		pvtime_PUcleaned += jettime_pv*jetobj.GetEnergy();
+		norm_PUcleaned += jetobj.GetEnergy();
+	
+		//covariance
+		etavar = jetobj.GetEtaVar();
+		phivar = jetobj.GetPhiVar();
+		etaphicov = jetobj.GetEtaPhiCov();
+		//jetobj.GetMajMinLengths(majlen, minlen); //space only
+		
+		selJets.fillBranch( "selJetBHCPUCleaned_etaVar", etavar);
+		selJets.fillBranch( "selJetBHCPUCleaned_phiVar", phivar);
+		selJets.fillBranch( "selJetBHCPUCleaned_etaPhiCov", etaphicov);
+		selJets.fillBranch( "selJetBHCPUCleaned_majlen", (float)majlen);
+		selJets.fillBranch( "selJetBHCPUCleaned_minlen", (float)minlen);
+		//calculate time significance
+		timeSignificance = jetobj.GetObjTimeSig();
+		selJets.fillBranch( "selJetBHCPUCleaned_timeSignficance", timeSignificance);
+		//
+		double minscore = 0.9;
+		jetobj.CleanOutDetBkg(minscore);
+
+
+		/////////CLEAN OUT DET BKG AND PU/////////
+		//do PU-cleaned && det bkg-cleaned observables
+		//center
+		jeteta = jetobj.GetEtaCenter();
+		selJets.fillBranch( "selJetBHCPUDetBkgCleaned_eta", jeteta);
+		jetphi = jetobj.GetPhiCenter();
+		selJets.fillBranch( "selJetBHCPUDetBkgCleaned_phi", jetphi);
+		//time at detector face
+		jettime = jetobj.GetObjTime_Det();
+		selJets.fillBranch( "selJetBHCPUDetBkgCleaned_DetTime", jettime);
+		//time at PV
+		jettime_pv = jetobj.GetObjTime_PV();
+		selJets.fillBranch( "selJetBHCPUDetBkgCleaned_PVTime", jettime_pv);
+		
+		pvtime_PUdetBkgCleaned += jettime_pv*jetobj.GetEnergy();
+		norm_PUdetBkgCleaned += jetobj.GetEnergy();
+	
+		//covariance
+		etavar = jetobj.GetEtaVar();
+		phivar = jetobj.GetPhiVar();
+		etaphicov = jetobj.GetEtaPhiCov();
+		//jetobj.GetMajMinLengths(majlen, minlen); //space only
+		
+		selJets.fillBranch( "selJetBHCPUDetBkgCleaned_etaVar", etavar);
+		selJets.fillBranch( "selJetBHCPUDetBkgCleaned_phiVar", phivar);
+		selJets.fillBranch( "selJetBHCPUDetBkgCleaned_etaPhiCov", etaphicov);
+		selJets.fillBranch( "selJetBHCPUDetBkgCleaned_majlen", (float)majlen);
+		selJets.fillBranch( "selJetBHCPUDetBkgCleaned_minlen", (float)minlen);
+		//calculate time significance
+		timeSignificance = jetobj.GetObjTimeSig();
+		selJets.fillBranch( "selJetBHCPUDetBkgCleaned_timeSignficance", timeSignificance);
+
+
+		ca.ClearRecHitList();
+		
 
 
     }//<<>>for( uInt it = 0; it < nPhotons; it++ )
+	pvtime /= norm;
+	pvtime_PUcleaned /= norm_PUcleaned;
+	pvtime_PUdetBkgCleaned /= norm_PUdetBkgCleaned;
+  selEvtVars.fillBranch( "PVtime", pvtime );
+  selEvtVars.fillBranch( "PVtime_PUcleaned", pvtime_PUcleaned );
+  selEvtVars.fillBranch( "PV_PUdetBkgCleaned", pvtime_PUdetBkgCleaned );
 
 }//<<>>void KUCMSAodSkimmer::processMLJets()
 
@@ -2548,6 +2792,7 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
   selEvtVars.makeBranch( "PVx", FLOAT );
   selEvtVars.makeBranch( "PVy", FLOAT );
   selEvtVars.makeBranch( "PVz", FLOAT );
+  
 
   selEvtVars.makeBranch( "Flag_BadChargedCandidateFilter", BOOL );
   selEvtVars.makeBranch( "Flag_BadPFMuonDzFilter", BOOL );
@@ -2644,7 +2889,6 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
   selPhotons.makeBranch( "selPhoLTimeSig", VFLOAT );
   selPhotons.makeBranch( "selPhoSTimeSig", VFLOAT );
   selPhotons.makeBranch( "selPhoWTimeSig", VFLOAT );
-  selPhotons.makeBranch( "selPhoTime_GMM", VFLOAT );
   selPhotons.makeBranch( "selPhoWTime", VFLOAT );
 
   selPhotons.makeBranch( "selPhoEnergy", VFLOAT );
@@ -2717,6 +2961,64 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
   selPhotons.makeBranch( "selPhoGenSigMomVz", VFLOAT );   //!
 
   //  add new photon branches below 
+
+	selPhotons.makeBranch( "selPhoBHC_nSubclusters", VINT);
+	selPhotons.makeBranch( "selPhoBHCSubcl_time", VFLOAT);			
+	selPhotons.makeBranch( "selPhoBHCSubcl_eta", VFLOAT);			
+	selPhotons.makeBranch( "selPhoBHCSubcl_phi", VFLOAT);
+	selPhotons.makeBranch( "selPhoBHCSubcl_etaVar", VFLOAT);			
+	selPhotons.makeBranch( "selPhoBHCSubcl_phiVar", VFLOAT);			
+	selPhotons.makeBranch( "selPhoBHCSubcl_etaPhiCov", VFLOAT);
+	//pu score
+	selPhotons.makeBranch( "selPhoBHCsubcl_puScore", VFLOAT);
+	//det bkg score
+	selPhotons.makeBranch( "selPhoBHCsubcl_detBkgMaxClassScore", VFLOAT);
+	selPhotons.makeBranch( "selPhoBHCsubcl_detBkgMaxClass", VINT);	
+	selPhotons.makeBranch( "selPhoBHCsubcl_photonIndex", VINT);	
+  for(const string cleanedType : {"BHC", "BHCPUCleaned", "BHCPUDetBkgCleaned"}) {
+	selPhotons.makeBranch( "selPho"+cleanedType+"_eta", VFLOAT);
+	selPhotons.makeBranch( "selPho"+cleanedType+"_phi", VFLOAT);
+	selPhotons.makeBranch( "selPho"+cleanedType+"_DetTime", VFLOAT);
+	selPhotons.makeBranch( "selPho"+cleanedType+"_PVTime", VFLOAT);
+
+	selPhotons.makeBranch( "selPho"+cleanedType+"_etaVar", VFLOAT);
+	selPhotons.makeBranch( "selPho"+cleanedType+"_phiVar", VFLOAT);
+	selPhotons.makeBranch( "selPho"+cleanedType+"_etaPhiCov", VFLOAT);
+	selPhotons.makeBranch( "selPho"+cleanedType+"_majlen", VFLOAT);
+	selPhotons.makeBranch( "selPho"+cleanedType+"_minlen", VFLOAT);
+	selPhotons.makeBranch( "selPho"+cleanedType+"_timeSignficance", VFLOAT);
+  }
+	selJets.makeBranch( "selJetBHC_nSubclusters", VINT);
+	selJets.makeBranch( "selJetBHCSubcl_time", VFLOAT);			
+	selJets.makeBranch( "selJetBHCSubcl_eta", VFLOAT);			
+	selJets.makeBranch( "selJetBHCSubcl_phi", VFLOAT);
+	selJets.makeBranch( "selJetBHCSubcl_etaVar", VFLOAT);			
+	selJets.makeBranch( "selJetBHCSubcl_phiVar", VFLOAT);			
+	selJets.makeBranch( "selJetBHCSubcl_etaPhiCov", VFLOAT);
+	//pu score
+	selJets.makeBranch( "selJetBHCsubcl_puScore", VFLOAT);
+	//det bkg score
+	selJets.makeBranch( "selJetBHCsubcl_detBkgMaxClassScore", VFLOAT);
+	selJets.makeBranch( "selJetBHCsubcl_detBkgMaxClass", VINT);	
+	selJets.makeBranch( "selJetBHCsubcl_jetIndex", VINT);	
+  for(const string cleanedType : {"BHC", "BHCPUCleaned", "BHCPUDetBkgCleaned"}) {
+	selJets.makeBranch( "selJet"+cleanedType+"_eta", VFLOAT);
+	selJets.makeBranch( "selJet"+cleanedType+"_phi", VFLOAT);
+	selJets.makeBranch( "selJet"+cleanedType+"_DetTime", VFLOAT);
+	selJets.makeBranch( "selJet"+cleanedType+"_PVTime", VFLOAT);
+
+	selJets.makeBranch( "selJet"+cleanedType+"_etaVar", VFLOAT);
+	selJets.makeBranch( "selJet"+cleanedType+"_phiVar", VFLOAT);
+	selJets.makeBranch( "selJet"+cleanedType+"_etaPhiCov", VFLOAT);
+	selJets.makeBranch( "selJet"+cleanedType+"_majlen", VFLOAT);
+	selJets.makeBranch( "selJet"+cleanedType+"_minlen", VFLOAT);
+	selJets.makeBranch( "selJet"+cleanedType+"_timeSignficance", VFLOAT);
+  }
+  selEvtVars.makeBranch( "PVtime", FLOAT );
+  selEvtVars.makeBranch( "PVtime_PUcleaned", FLOAT );
+  selEvtVars.makeBranch( "PV_PUdetBkgCleaned", FLOAT );
+
+
 
 
   // add new photon branches above
