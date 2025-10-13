@@ -53,7 +53,6 @@ const bool KUCMSEventSelection::selectEvent( ItemManager<float>& geVar ){
     bool hasMinMet150 = geVar("evtMET") > 150;
     bool hasMinMet125 = geVar("evtMET") > 125;
     bool hasMinMet100 = geVar("evtMET") > 100;	
-    bool hasMaxMet100 = geVar("evtMET") < 100;	
     bool hasMinMet75 = geVar("evtMET") > 75;
     bool hasMetgt50lt75 = (geVar("evtMET") > 50 && geVar("evtMET") < 75);
 	bool hasAL1SelElectron = geVar("nSelEle") > 0;
@@ -67,14 +66,13 @@ const bool KUCMSEventSelection::selectEvent( ItemManager<float>& geVar ){
     bool hasDSVAl1IsoPhoPlusMinMet100 = ( hasAL1DisSV || hasAL1IsoPhoton ) && hasMinMet100;
     bool hasDSVAl1IsoPhoPlusMinMet125 = ( hasAL1DisSV || hasAL1IsoPhoton ) && hasMinMet125;
 	bool hasInvMet100ALP = hasAL1IsoPhoton && not hasMinMet100;
-	bool hasInvMetHardPho = hasHardPho && hasMinMet100;
+	bool hasInvMetHardPho = hasHardPho && !hasMinMet100;
 
 	selectionMap["none"] = true;
 	selectionMap["MET150"] = hasMinMet150;
-    selectionMap["MET100"] = hasMinMet100;
     selectionMap["MET75"] = hasMinMet75;
     selectionMap["50MET75"] = hasMetgt50lt75;
-    selectionMap["100MET"] = hasMaxMet100;
+    selectionMap["MET100"] = hasMinMet100;
     selectionMap["AL1IsoPho"] = hasAL1IsoPhoton;
     selectionMap["IsoPhoMet100"] = hasAl1IsoPhoPlusMinMet100;
     selectionMap["AL1SelEle"] = hasAL1SelElectron;
