@@ -186,9 +186,13 @@ def docrab( dataset, options ):
     evt_filter = ""
     if "M100" in trialtag and "skimIP" not in trialtag:
         evt_filter = 'MET100'
-    if "METl100" in trialtag:
-        evt_filter = '100MET'
-    if "50M75" in trialtag:
+    elif "InvMET100" in trialtag:
+        evt_filter = 'InvMET100'
+    elif "Pho30" in trialtag and "InvMet" not in trialtag:
+        evt_filter = 'Pho30'
+    elif "InvMetPho30" in trialtag:
+        evt_filter = 'InvMetPho30'
+    elif "50M75" in trialtag:
         evt_filter = '50MET75'
     elif "AL1IsoPho" in trialtag:
         evt_filter = 'AL1IsoPho'
@@ -268,7 +272,8 @@ def docrab( dataset, options ):
     #----------------------------------------------------------------------------------------------------------------------
     # Submit.
     print("trial",trial)
-    #exit()
+    if(options[5]):
+        exit()
     try:
         #print( "Submitting for input dataset %s" % primaryDataset + '_' + runEra + '_' + dataset )
         print( "Submitting for input dataset %s" % trial )
@@ -284,7 +289,7 @@ def docrab( dataset, options ):
 
 def run_multi():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-inputSample','-i',help='datasets for PDs/MC',required=True,choices=['DisplacedJet','EGamma','GJets','QCD','MET','JetMET','JetMET0','JetMET1','JetHT'])
+    parser.add_argument('-inputSample','-i',help='datasets for PDs/MC',required=True,choices=['DisplacedJet','EGamma','DoubleEG','GJets','QCD','MET','JetMET','JetMET0','JetMET1','JetHT'])
 
     parser.add_argument('--HT',help='ht bin for MCs',default='')
     parser.add_argument('--era',help='era (run) for PDs, default is set to \'MC\'',default='MC')
@@ -300,9 +305,10 @@ def run_multi():
                       default = '',
                       help = "options for crab command CMD")
     parser.add_argument('-o','--output',help='output tag for ntuples',default='')
-    parser.add_argument('--filter',help='specify event filter',choices=['50M75','METl100','M100','AL1IsoPho','AL1NpSC','AL1SelEle'],default='')
+    parser.add_argument('--filter',help='specify event filter',choices=['50M75','InvMET100','Pho30','InvMetPho30','M100','AL1IsoPho','AL1NpSC','AL1SelEle'],default='')
     parser.add_argument('--maskLumi',help='apply lumi mask (default = off)',default=False,action='store_true')
     parser.add_argument('--unitsPerJob',help='number of files to run per job',default=1)
+    parser.add_argument('--dryRun',help='will show info about submissions (name of output path, etc) but won\'t submit',action='store_true',default=False)
     args = parser.parse_args()
 
     outfilter = args.output
@@ -328,7 +334,7 @@ def run_multi():
                 outfilter = args.filter+"_nolumimask"
             else:
                 outfilter = args.filter
-    options = [args.workArea, args.crabCmdOpts, outfilter, args.maskLumi, args.unitsPerJob]
+    options = [args.workArea, args.crabCmdOpts, outfilter, args.maskLumi, args.unitsPerJob, args.dryRun]
 
 
     Tune = 'TuneCP5_13TeV-madgraphMLM-pythia8'
@@ -370,7 +376,7 @@ def run_multi():
         if args.year == "2018" and args.inputSample == "JetHT" and args.era == "A":
             ver = "v2"
         if args.year == "2022":
-            args.inputSample == "MET" and args.era != "A":
+            if args.inputSample == "MET" and args.era != "A":
                 ver = "v2"
             if args.inputSample == "JetMET" and args.era == "D":
                 ver = "v2"
