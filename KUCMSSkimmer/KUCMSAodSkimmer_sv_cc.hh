@@ -15,8 +15,8 @@
 //// KUCMSAodSkimmer class ----------------------------------------------------------------------------------------------------
 ////---------------------------------------------------------------------------------------------------------------------------
 
-#define DEBUG true
-//#define DEBUG false
+//#define DEBUG true
+#define DEBUG false
 
 //#define CLSTRMAPS true
 #define CLSTRMAPS false
@@ -274,7 +274,6 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
     TBranch *b_sumFltrdEvtWgt;
     TBranch *b_nMetFltrdEvts;
     TBranch *b_nPhoFltrdEvts;
-cout << "a" << endl;
     fInConfigTree->SetBranchAddress("nTotEvts", &nTotEvts, &b_nTotEvts);
     fInConfigTree->SetBranchAddress("nFltrdEvts", &nFltrdEvts, &b_nFltrdEvts);
     fInConfigTree->SetBranchAddress("sumEvtWgt", &sumEvtWgt, &b_sumEvtWgt);
@@ -282,9 +281,7 @@ cout << "a" << endl;
     fInConfigTree->SetBranchAddress("nMetFltrdEvts", &nMetFltrdEvts, &b_nMetFltrdEvts);
     fInConfigTree->SetBranchAddress("nPhoFltrdEvts", &nPhoFltrdEvts, &b_nPhoFltrdEvts);
 
-cout << "b" << endl;
     auto nConfigEntries = fInConfigTree->GetEntries();
-cout << "c" << endl;
     std::cout << "Proccessing " << nConfigEntries << " config entries." << std::endl;
     configCnts.clear();
     configWgts.clear();
@@ -331,7 +328,7 @@ cout << "c" << endl;
     std::cout << "Proccessing " << nEntries << " entries." << std::endl;
     nEvents = nEntries;
     //DEBUG
-    nEntries = 1;
+    nEntries = 10;
     for (Long64_t centry = 0; centry < nEntries; centry++){
 
       if( centry%loopCounter == 0 ) std::cout << "Proccessed " << centry << " of " << nEntries << " entries." << std::endl;
@@ -477,50 +474,50 @@ void KUCMSAodSkimmer::processMLPhotons(){
 
 	uInt nPhotons = Photon_excluded->size();
 	if( DEBUG ) std::cout << " - Looping over for " << nPhotons << " photons to get BC info" << std::endl;
-	
 	ClusterAnalyzer ca;
 	//ca.SetDetectorCenter(x, y, z); //set to beamspot center, defaults to (0,0,0)
 	ca.SetPV(PV_x, PV_y, PV_z); //set to PV coords (assuming these are global vars)
 	ca.SetTransferFactor(1/30.); //set to 1/min photon pt
-	
 	for( uInt it = 0; it < nPhotons; it++ ){
+		cout << "nphoton #" << it << endl;
 		if( not isSelPho[it] ) continue;
-cout << "photon #" << it << endl;
 		std::map< unsigned int, float > rhtresmap;
-        auto scIndx = (*Photon_scIndex)[it];
-        auto rhids = (*SuperCluster_rhIds)[scIndx];
+		std::map< double, unsigned int > energyToId;
+        	auto scIndx = (*Photon_scIndex)[it];
+        	auto rhids = (*SuperCluster_rhIds)[scIndx];
 		int nSCRecHits = rhids.size();
-        auto nRecHits = ECALRecHit_ID->size();
-        for( int sciter = 0; sciter < nSCRecHits; sciter++  ){
-            auto scrhid = rhids[sciter];
+        	auto nRecHits = ECALRecHit_ID->size();
+        	for( int sciter = 0; sciter < nSCRecHits; sciter++  ){
+			auto scrhid = rhids[sciter];
 			int erhiter = ( rhIDtoIterMap.find(scrhid) != rhIDtoIterMap.end() ) ? rhIDtoIterMap[scrhid] : -1;
 			if( erhiter != -1 ){
-                float erhe = (*ECALRecHit_energy)[erhiter];
-                bool hasGainSwitch = (*ECALRecHit_hasGS1)[erhiter] || (*ECALRecHit_hasGS6)[erhiter];
-		float erht = erh_corTime[erhiter];
-		float rhx = (*ECALRecHit_rhx)[erhiter];
-                float rhy = (*ECALRecHit_rhy)[erhiter];
-                float rhz = (*ECALRecHit_rhz)[erhiter];
-				rhtresmap[scrhid] = erh_timeRes[erhiter]; 
-cout << "rh id " << scrhid << " time res " << erh_timeRes[erhiter] << endl;
-				if( DEBUG ) std::cout << erhe << " " << erht << " " << hasGainSwitch;
-                if( DEBUG ) std::cout << " " << erht << " " << rhx << " " << rhy << " " << rhz << std::endl;
-
-		ca.AddRecHit(rhx, rhy, rhz, erhe, erht, scrhid);
-            }//<<>>if( ecalrhiter != -1 )
-        }//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
+                		double erhe = (*ECALRecHit_energy)[erhiter];
+                		bool hasGainSwitch = (*ECALRecHit_hasGS1)[erhiter] || (*ECALRecHit_hasGS6)[erhiter];
+				float erht = erh_corTime[erhiter];
+				float rhx = (*ECALRecHit_rhx)[erhiter];
+                		float rhy = (*ECALRecHit_rhy)[erhiter];
+                		float rhz = (*ECALRecHit_rhz)[erhiter];
+				rhtresmap[scrhid] = erh_timeRes[erhiter];
+				energyToId[erhe] = scrhid;
+                		if( DEBUG ) std::cout << " " << erht << " " << rhx << " " << rhy << " " << rhz << std::endl;
+				//skip endcap rechits
+				if(fabs((*ECALRecHit_eta)[erhiter]) > 1.479) continue;
+				cout << "rh e " <<  erhe << " rh t " << erht << " rhid " << scrhid << " eta " << (*ECALRecHit_eta)[erhiter] << " phi " << (*ECALRecHit_phi)[erhiter] << endl;
+				//cout << "rh e " <<  erhe << " rh t " << erht << " rhid " << scrhid << " eta " << (*ECALRecHit_eta)[erhiter] << endl;
+				ca.AddRecHit(rhx, rhy, rhz, erhe, erht, scrhid, hasGainSwitch);
+			}//<<>>if( ecalrhiter != -1 )
+		}//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
 		
 		//
 		//  call to BayesianClustering framework to process photon information 
 		//  runs BHC (NlnN) algorithm to cluster photon with subcluster regularization
 		//  returns lead (highest energy) cluster found
 
-		ClusterAnalyzer::ClusterObj phoobj = ca.RunClustering();
+		ClusterObj phoobj = ca.RunClustering();
 		phoobj.CalculateObjTimes();
 		phoobj.CalculatePUScores();
 		phoobj.CalculateDetBkgScores();
 		phoobj.CalculateObjTimeSig(rhtresmap);
-
 
 		//do subcluster observables
 		int nk = phoobj.GetNSubclusters();
@@ -552,11 +549,12 @@ cout << "rh id " << scrhid << " time res " << erh_timeRes[erhiter] << endl;
 			//pu score
 			//CHECK
 			cout << "PU subcl score " << puscores[k] << endl;
-			selPhotons.fillBranch( "selPhoBHCsubcl_puScore", puscores[k]);
+			selPhotons.fillBranch( "selPhoBHCsubcl_puScore", (float)puscores[k]);
 		       	//det bkg score
 			selPhotons.fillBranch( "selPhoBHCsubcl_detBkgMaxClassScore", (float)detbkgscores[k].second);
 			selPhotons.fillBranch( "selPhoBHCsubcl_detBkgMaxClass", detbkgscores[k].first);	
-			selPhotons.fillBranch( "selPhoBHCsubcl_photonIndex", it);	
+			//CHECK
+			selPhotons.fillBranch( "selPhoBHCsubcl_photonIndex", (int)it);	
 		}
 		//center
 		float phoeta = phoobj.GetEtaCenter();
@@ -591,7 +589,7 @@ cout << "rh id " << scrhid << " time res " << erh_timeRes[erhiter] << endl;
 		selPhotons.fillBranch( "selPhoBHC_timeSignficance", timeSignificance);
 
 
-		//CHECK PU cleaning and det bkg cleaning
+		//TODO - CHECK PU cleaning and det bkg cleaning
 		/*
 		phoobj.CleanOutPU();
 		//do PU-cleaned observables
@@ -700,15 +698,18 @@ void KUCMSAodSkimmer::processMLJets(){
     
             	if( DEBUG ) std::cout << erhe << " " << erht << " " << hasGainSwitch;
                 if( DEBUG ) std::cout << " " << erht << " " << rhx << " " << rhy << " " << rhz << std::endl;
+		//skip endcap rechits
+		if(fabs((*ECALRecHit_eta)[erhiter]) > 1.479) continue;
+		//cout << "rh e " <<  erhe << " rh t " << erht << " rhid " << jrhid << " eta " << (*ECALRecHit_eta)[erhiter] << endl;
 
-		ca.AddRecHit(rhx, rhy, rhz, erhe, erht, jrhid);
+		ca.AddRecHit(rhx, rhy, rhz, erhe, erht, jrhid, hasGainSwitch);
 
 
             }//<<>>if( ecalrhiter != -1 )
         }//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
 
 
-		ClusterAnalyzer::ClusterObj jetobj = ca.RunClustering();
+		ClusterObj jetobj = ca.RunClustering();
 		jetobj.CalculateObjTimes();
 		jetobj.CalculatePUScores();
 		jetobj.CalculateDetBkgScores();
@@ -781,7 +782,8 @@ void KUCMSAodSkimmer::processMLJets(){
 		float timeSignificance = jetobj.GetObjTimeSig();
 		selJets.fillBranch( "selJetBHC_timeSignficance", timeSignificance);
 
-
+		//TODO - CHECK PU cleaning and det bkg cleaning
+		/*
 		/////////CLEAN OUT PU/////////
 		jetobj.CleanOutPU();
 		//do PU-cleaned observables
@@ -850,7 +852,7 @@ void KUCMSAodSkimmer::processMLJets(){
 		//calculate time significance
 		timeSignificance = jetobj.GetObjTimeSig();
 		selJets.fillBranch( "selJetBHCPUDetBkgCleaned_timeSignficance", timeSignificance);
-
+		*/
 
 		ca.ClearRecHitList();
 		
