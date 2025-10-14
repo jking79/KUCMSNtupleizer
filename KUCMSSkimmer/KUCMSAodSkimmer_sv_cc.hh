@@ -507,11 +507,16 @@ void KUCMSAodSkimmer::processMLPhotons(){
 				ca.AddRecHit(rhx, rhy, rhz, erhe, erht, scrhid, hasGainSwitch);
 			}//<<>>if( ecalrhiter != -1 )
 		}//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
-		
+	
+		//if not enough rechits to cluster, skip this object
+		if(ca.GetNRecHits() < 2) continue;
+
 		//
 		//  call to BayesianClustering framework to process photon information 
 		//  runs BHC (NlnN) algorithm to cluster photon with subcluster regularization
 		//  returns lead (highest energy) cluster found
+
+		//put safety in so that if there are < 2 rhs to cluster, skip
 
 		ClusterObj phoobj = ca.RunClustering();
 		phoobj.CalculateObjTimes();
@@ -709,6 +714,8 @@ void KUCMSAodSkimmer::processMLJets(){
             }//<<>>if( ecalrhiter != -1 )
         }//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
 
+		//if not enough rechits to cluster, skip this object
+		if(ca.GetNRecHits() < 2) continue;
 
 		ClusterObj jetobj = ca.RunClustering();
 		jetobj.CalculateObjTimes();
