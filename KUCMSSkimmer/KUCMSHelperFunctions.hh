@@ -30,8 +30,8 @@
 #include <sys/stat.h>
 #include <cmath>
 
-#ifndef KUCMSHelperHeader
-#define KUCMSHelperHeader
+#ifndef KUCMSHelperHeader2
+#define KUCMSHelperHeader2
 
 typedef unsigned int uInt;
 typedef unsigned long int ulInt;
