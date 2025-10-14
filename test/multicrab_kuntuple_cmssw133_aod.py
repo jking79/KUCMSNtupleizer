@@ -103,7 +103,7 @@ def docrab( dataset ):
         #config.Data.unitsPerJob   = 14 # 14 for eg c 18ul ~ 2 files & 19 hours too much disk space -> 1 file worth & break up to keep under 2000 jobs
         #config.Data.unitsPerJob   =  24 # MET C 
         #config.Data.unitsPerJob   =  48 # MET D
-        #config.Data.runRange = '320012-320038' # for EGAMMA 18C DATA with InvMet100 
+        config.Data.runRange = '320673-321295' # for EGAMMA 18C DATA with InvMet100 
 
         #config.JobType.allowUndistributedCMSSW = True
         #config.JobType.maxJobRuntimeMin = 1800
@@ -154,7 +154,8 @@ def docrab( dataset ):
             ##trial          = "kucmsntuple_EGamma_R18_AL1SelEle_DEOnly" + version #
          
             trial          = "kucmsntuple_MET_R18_SVIPM100" + version #  
-            #trial          = "kucmsntuple_EGamma_R18_InvMet100IP_NoSv_320012" + version # 
+            #trial          = "kucmsntuple_EGamma_R18_InvMetPho30_NoSV"
+            #trial          = "kucmsntuple_EGamma_R18_InvMet100IP_NoSv" + version # 
             #trial          = "kucmsntuple_DisJet_R18_SVIPM100" + version #
             #trial          = "kucmsntuple_DisJet_R18_SVIPM100_nolumimask" + version #
 
@@ -182,6 +183,7 @@ def docrab( dataset ):
             fAL1E = 'eventFilter=AL1SelEle'
             fNpSC = 'eventFilter=AL1NpSC'
             fInvMetALP = 'eventFilter=InvMet100IP'
+            fInvMetPho30 = 'eventFilter=InvMetPho30'
 
             geninfo = 'hasGenInfo=True'
             mcrab = 'multicrab=True'
@@ -215,6 +217,7 @@ def docrab( dataset ):
             config.JobType.pyCfgParams   = [gt,mcrab,efilter]
             ###config.JobType.pyCfgParams   = [gt,mcrab,efilter,mDoETOnly]
             #config.JobType.pyCfgParams   = [gt,mcrab,fInvMetALP,mNoSV]
+            #config.JobType.pyCfgParams   = [gt,mcrab,fInvMetPho30,mNoSV]
 #>>>>>>>>>>>>>>>>>>>        #2022 #globalTag=124X_dataRun3_v15
             #gt = 'globalTag=124X_dataRun3_v15'
             ###config.JobType.pyCfgParams   = [gt,mcrab,efilter,mDoETOnly]
@@ -275,18 +278,18 @@ def run_multi():
 
     runDataset = [
 
-        ['/MET/Run2018A-15Feb2022_UL2018-v1/AOD',1],
-        ['/MET/Run2018B-15Feb2022_UL2018-v1/AOD',1],
-        ['/MET/Run2018C-15Feb2022_UL2018-v1/AOD',1],
-        #['/MET/Run2018D-15Feb2022_UL2018-v1/AOD',1],
+        #['/MET/Run2018A-15Feb2022_UL2018-v1/AOD',1],
+        #['/MET/Run2018B-15Feb2022_UL2018-v1/AOD',1],
+        #['/MET/Run2018C-15Feb2022_UL2018-v1/AOD',1],
+        ['/MET/Run2018D-15Feb2022_UL2018-v1/AOD',1],
 
         #['/MET/Run2022A-27Jun2023-v1/AOD',1],
         #['/MET/Run2022B-27Jun2023-v2/AOD',1],
         #['/MET/Run2022C-27Jun2023-v2/AOD',1],
 
-        #['/EGamma/Run2018B-15Feb2022_UL2018-v1/AOD'],#72500 eventsperlumi ( 36.5K per file - 4268 files )
+        #['/EGamma/Run2018B-15Feb2022_UL2018-v1/AOD',1],#72500 eventsperlumi ( 36.5K per file - 4268 files )
         #['/EGamma/Run2018C-15Feb2022_UL2018-v1/AOD',1],#72500 eventsperlumi   ( 36.1K per file - 4051 files )
-        #['/EGamma/Run2018D-15Feb2022_UL2018-v1/AOD'],#72500 eventsperlumi
+        #['/EGamma/Run2018D-15Feb2022_UL2018-v1/AOD',1],#72500 eventsperlumi
 
         #['/DisplacedJet/Run2018A-15Feb2022_UL2018-v1/AOD',1],
         #['/DisplacedJet/Run2018B-15Feb2022_UL2018-v1/AOD',1],

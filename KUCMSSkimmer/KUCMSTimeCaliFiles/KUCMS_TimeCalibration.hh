@@ -1315,17 +1315,19 @@ float KUCMS_TimeCalibration::getSmrdCalibTime( float rhtime, float rhamp, uInt r
 
 float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey, int mctype ){
 
-	float res = 0;
+	float res = -1;
+
 	if( mctype == 1 ){ // data
 
-		res = std::sqrt( (sq2( 25.16/amplitude ) + 2*sq2(0.1013))/2.0 );
+		if( dataSetKey == "r2_ul18"  ) res = std::sqrt( (sq2( 25.16/amplitude ) + 2*sq2(0.1013))/2.0 );
 
 	} else { // MC
 
-		res = std::sqrt( (sq2( 28.1/amplitude ) + 2*sq2(0.1184))/2.0 );
+		if( dataSetKey == "r2_ul18_mc"  ) res = std::sqrt( (sq2( 28.1/amplitude ) + 2*sq2(0.1184))/2.0 );
 
 	}//<<>>if( mctype == 0 )
 
+	if( res == -1 ){ std::cout << " -- Resolution for dataSetKey " << dataSetKey << " not found !!!!!!" << std::endl; return 1.f; }
 	return res;
 
 }//<<>>float getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey )
