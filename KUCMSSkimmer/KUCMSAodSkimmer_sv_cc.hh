@@ -193,7 +193,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
     if( masterstr == " " ) continue;
     auto instrs = splitString( masterstr, " " );
     if( DEBUG ) std:: cout << instrs.size() << std::endl;
-    if( instrs.size() < 8 ) continue;
+    if( instrs.size() < 9 ) continue;
 
     auto inpath = instrs[0];
     auto infiles = instrs[1];
@@ -202,7 +202,9 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
     auto gmsbgm = std::stof( instrs[4] );
     auto gmsbxm = std::stof( instrs[5] );
     auto mcw = std::stof( instrs[6] );
-    auto mct = std::stoi( instrs[7] );		
+    auto mct = std::stoi( instrs[7] );
+	auto tct = instrs[8];
+		
     if( DEBUG ) std:: cout << "InPath: " << inpath << std::endl;
     if( DEBUG ) std:: cout << "InFile: " << infiles << std::endl;
     if( DEBUG ) std:: cout << "Key: " << key << std::endl;
@@ -211,13 +213,15 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
     if( DEBUG ) std:: cout << "XM: " << gmsbxm << std::endl;
     if( DEBUG ) std:: cout << "MCw: " << mcw << std::endl;
     if( DEBUG ) std:: cout << "MCt: " << mct << std::endl;
+    if( DEBUG ) std:: cout << "tcTag: " << tctag << std::endl;
 
     dataSetKey = key;
     xsctn = crossSection;
     gmass = gmsbgm; // = 0 if not gmsb
     xmass = gmsbxm; // = 0 if not gmsb
     mcwgt = mcw; // default 1
-    mctype = mct; // 0 = fullsim
+    mctype = mct; // 0 for MC, 1 for data
+	tctag = tct; // r2_ul18 Data, r2_ul18_mc MC
 
     std::cout << "Processing Events for : " << infiles << std::endl;
     TChain* fInTree = new TChain(disphotreename.c_str());
@@ -1075,8 +1079,12 @@ void KUCMSAodSkimmer::processRechits(){
 		float rht = (*ECALRecHit_time)[it];
 		float rhe = (*ECALRecHit_energy)[it];
 		float rha = (*ECALRecHit_ampres)[it]; // instead of energy ? ( this is the ADC amplitude in units of the pedistal rms for this rechit )
-		float corrht = timeCali->getCorrectedTime( rht, rha, rhid, Evt_run, dataSetKey );
-		float rhtres = timeCali->getTimeResoltuion( rha, rhid, Evt_run, dataSetKey );
+		float corrht = timeCali->getCorrectedTime( rht, rha, rhid, Evt_run, tctag, mctype );
+		float rhtres = timeCali->getTimeResoltuion( rha, rhid, Evt_run, tctag, mctype );
+		if( rhid < 840000000 ){
+			std::cout << " TC check : inputs : rhid " << rhid << " run " << Evt_run << " tag "  << tctag << " type " << mctype << std::endl;
+			std::cout << " TC check : time : " << rht << " -> " << corrht << " res : " << rha << " -> " << rhtres << std::endl;
+		}//<<>>if( rhid < 840000000 )
 		erh_corTime.push_back( corrht );
         erh_timeRes.push_back( rhtres );
         if( true ){
@@ -1556,12 +1564,6 @@ void KUCMSAodSkimmer::processPhotons(){
     float MBetaPrompt = 2*ce*std::sqrt(1-sq2(m3_phys));
     //float MBetaPrompt = 2*ce*m3_phys;
 
-
-    //Branches.makeBranch("amplitude","ECALRecHit_amplitude",VFLOAT);
-    //Branches.makeBranch("ampres","ECALRecHit_ampres",VFLOAT);
-    //auto rhids = (*SuperCluster_rhIds)[scIndx];
-    //uInt nrh = rhids.size();
-
     //int nSCRhids = scrhids.size();
     //float seedE = 0;
     //float seedT = -99;
@@ -1572,39 +1574,46 @@ void KUCMSAodSkimmer::processPhotons(){
     float leadE = 0;
     float leadEtime = -99;
     float leadEar = 0;
+	uInt leadRHID = 0;
     //auto nRecHits = ECALRecHit_ID->size();
     for( int sciter = 0; sciter < nrh; sciter++  ){
-        auto scrhid = rhids[sciter];
-		int erhiter = ( rhIDtoIterMap.find(scrhid) != rhIDtoIterMap.end() ) ? rhIDtoIterMap[scrhid] : -1;
+        uInt pscrhid = rhids[sciter];
+		int erhiter = ( rhIDtoIterMap.find(pscrhid) != rhIDtoIterMap.end() ) ? rhIDtoIterMap[pscrhid] : -1;
         if( erhiter != -1 ){
 			float gainwt = 1;
             float erhe = (*ECALRecHit_energy)[erhiter];
-            float erht = (*ECALRecHit_time)[erhiter];
+            float erht = erh_corTime[erhiter];
             float erhar = (*ECALRecHit_ampres)[erhiter];
 			float ertoftime = erht - calcor + pvtof;
 			//float erres = std::sqrt( (sq2( 24.0/erhar ) + (sq2(2.5)/erhar) + 2*sq2(0.099))/2.0 );
-			float erres = erhar;
+            //float erres = std::sqrt( sq2( 25.3/erhar ) + 2*sq2(0.085) );
+			float erres = erh_timeRes[erhiter];
 			bool hasGainSwitch = (*ECALRecHit_hasGS1)[erhiter] || (*ECALRecHit_hasGS6)[erhiter];
 			if( hasGainSwitch ) gainwt = 0;
-            setw += erhe*ertoftime*gainwt;
-			serw += erhe*erres*gainwt;
+			erhe = erhe*gainwt;
+            setw += erhe*ertoftime;
+			serw += erhe*erres;
             sew += erhe;
-            if( erhe > leadE ){ leadE = erhe; leadEtime = ertoftime; leadEar = erhar; }
+            if( erhe > leadE ){ leadE = erhe; leadEtime = ertoftime; leadEar = erhar; leadRHID = pscrhid; }
 			//if( ertoftime == time ){ seedE = erhe; seedT = ertoftime; seedar = erhar; } 
         }//<<>>if( scrhid == rhid )
     }//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
 	//if( seedE == 0 ){ seedE = leadE; seedar = leadEar; }
 	//if( seedT != time ) std::cout << " Pho - SC seed time wrong !!!!!! " << time << " v " << leadEtime << std::endl;
     //if( seedE != leadE ) std::cout << " Pho - SC seed time wrong !!!!!! " << time << " v " << leadEtime << std::endl;
+	if( sew == 0 ){ std::cout << "Photon Time Sig Division by Zero !!!!!!!!!!! " << std::endl; sew = -0.00000000000000000001; } 
     float phoWTime = setw/sew;
-	//float phoWRes = serw/sew;
-	float phowamp = serw/sew;
-	float phoWRes = std::sqrt( (sq2( 24.0/phowamp ) + (sq2(2.5)/phowamp) + 2*sq2(0.099))/2.0 );
-    float timeres = std::sqrt( (sq2( 24.0/leadEar ) + (sq2(2.5)/leadEar) + 2*sq2(0.099))/2.0 );
+	float phoWRes = serw/sew;
+	//float phowamp = serw/sew;
+	//float phoWRes = std::sqrt( (sq2( 24.0/phowamp ) + (sq2(2.5)/phowamp) + 2*sq2(0.099))/2.0 );
+    //float timeres = std::sqrt( (sq2( 24.0/leadEar ) + (sq2(2.5)/leadEar) + 2*sq2(0.099))/2.0 );
+    //float timeres = std::sqrt( sq2( 25.3/leadEar ) + 2*sq2(0.085) );
 	//float timeres = std::sqrt( sq2( 24.0/seedar ) + (sq2(2.5)/seedar) + 2*(0.099) );
-	float leadtimesig = leadEtime/timeres;
-    float seedtimesig = time/timeres;
-	float wttimesig = phoWTime/phoWRes;
+    float timeres = timeCali->getTimeResoltuion( leadEar, leadRHID, Evt_run, tctag, mctype );
+	float sqrt2 = std::sqrt(2);
+	float leadtimesig = sqrt2*leadEtime/timeres;
+    float seedtimesig = sqrt2*time/timeres;
+	float wttimesig = sqrt2*phoWTime/phoWRes;
 	//std::cout << " Pho Time Sig " << time << " let " << leadEtime << " wt " << phoWTime;
 	//std::cout << " le " << leadE << " ampres " << leadEar << " res " << timeres;
     //std::cout << " lsg " << leadtimesig << " ssg " << seedtimesig << " wsg " << wttimesig << std::endl;
@@ -1687,6 +1696,7 @@ void KUCMSAodSkimmer::processPhotons(){
     selPhotons.fillBranch( "selPhoSTimeSig", seedtimesig );
     selPhotons.fillBranch( "selPhoWTimeSig", wttimesig );
     selPhotons.fillBranch( "selPhoWTime", phoWTime );
+    selPhotons.fillBranch( "selPhoLTime", leadEtime );
 
     selPhotons.fillBranch( "selPhoCorEnergy", ce );
     selPhotons.fillBranch( "selPhoCorPt", cpt );
@@ -2893,6 +2903,7 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
   selPhotons.makeBranch( "selPhoSTimeSig", VFLOAT );
   selPhotons.makeBranch( "selPhoWTimeSig", VFLOAT );
   selPhotons.makeBranch( "selPhoWTime", VFLOAT );
+  selPhotons.makeBranch( "selPhoLTime", VFLOAT );
 
   selPhotons.makeBranch( "selPhoEnergy", VFLOAT );
   selPhotons.makeBranch( "selPhoEta", VFLOAT ); 

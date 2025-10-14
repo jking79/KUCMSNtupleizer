@@ -940,7 +940,7 @@ void skimtuple_v36::Init( TChain *tree, bool doGenInfo ){
    //fChain->SetBranchAddress("Flag_EcalDeadCellTriggerPrimitiveFilter", &Flag_EcalDeadCellTriggerPrimitiveFilter, &b_Flag_EcalDeadCellTriggerPrimitiveFilter);
    fChain->SetBranchAddress("Flag_HBHENoiseFilter", &Flag_HBHENoiseFilter, &b_Flag_HBHENoiseFilter);
    fChain->SetBranchAddress("Flag_HBHENoiseIsoFilter", &Flag_HBHENoiseIsoFilter, &b_Flag_HBHENoiseIsoFilter);
-   fChain->SetBranchAddress("Flag_MetFilter", &Flag_MetFilter, &b_Flag_MetFilter);
+   //fChain->SetBranchAddress("Flag_MetFilter", &Flag_MetFilter, &b_Flag_MetFilter);
    fChain->SetBranchAddress("Flag_ecalBadCalibFilter", &Flag_ecalBadCalibFilter, &b_Flag_ecalBadCalibFilter);
    fChain->SetBranchAddress("Flag_eeBadScFilter", &Flag_eeBadScFilter, &b_Flag_eeBadScFilter);
    fChain->SetBranchAddress("Flag_globalSuperTightHalo2016Filter", &Flag_globalSuperTightHalo2016Filter, &b_Flag_globalSuperTightHalo2016Filter);
@@ -1243,7 +1243,7 @@ void skimtuple_v36::getBranches( Long64_t entry, bool doGenInfo ){
    //b_Flag_EcalDeadCellTriggerPrimitiveFilter->GetEntry(entry);  //   Flag_EcalDeadCellTriggerPrimitiveFilter, &b_Flag_EcalDeadCellTriggerPrimitiveFilter);
    b_Flag_HBHENoiseFilter->GetEntry(entry);  //   Flag_HBHENoiseFilter, &b_Flag_HBHENoiseFilter);
    b_Flag_HBHENoiseIsoFilter->GetEntry(entry);  //   Flag_HBHENoiseIsoFilter, &b_Flag_HBHENoiseIsoFilter);
-   b_Flag_MetFilter->GetEntry(entry);  //   Flag_MetFilter, &b_Flag_MetFilter);
+   //b_Flag_MetFilter->GetEntry(entry);  //   Flag_MetFilter, &b_Flag_MetFilter);
    b_Flag_ecalBadCalibFilter->GetEntry(entry);  //   Flag_ecalBadCalibFilter, &b_Flag_ecalBadCalibFilter);
    b_Flag_eeBadScFilter->GetEntry(entry);  //   Flag_eeBadScFilter, &b_Flag_eeBadScFilter);
    b_Flag_globalSuperTightHalo2016Filter->GetEntry(entry);  //   Flag_globalSuperTightHalo2016Filter, &b_Flag_globalSuperTightHalo2016Filter);

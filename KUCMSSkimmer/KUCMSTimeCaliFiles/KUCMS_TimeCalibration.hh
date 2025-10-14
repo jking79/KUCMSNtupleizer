@@ -149,8 +149,8 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 	// accessors to utilize calibration information  ::  for use in KUSkimmer
     // --------------------------------------------------------------------------
 
-	float getCorrectedTime( float time, float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey ); 
-    float getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey );
+	float getCorrectedTime( float time, float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey, int mctype ); 
+    float getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey, int mctype );
 
 	float getCalibration( uInt rhid, int run, std::string tag  ); // tag indicates which calibration set to use
     float getCalibration( uInt rhid, int run )
@@ -211,7 +211,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
     void doResTimeFit( std::string histName );
 	void load2DResHist( std::string histName );
 
-	TH1D* dressProfileHist( TH1D* hist );
+	TH1F* gprProfileHist( TH1F* hist );
 
     void makeSmearTag( std::string sourceName, std::string destName, std::string smearTag );
 
@@ -1327,15 +1327,39 @@ float KUCMS_TimeCalibration::getSmrdCalibTime( float rhtime, float rhamp, uInt r
 
 //**************  main calibrate &/or smearing function based on tag + info ********************************************************************
 
-float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey ){
+float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey, int mctype ){
 
-	return std::sqrt( (sq2( 24.0/amplitude ) + (sq2(2.5)/amplitude) + 2*sq2(0.099))/2.0 );
+	float res = -1;
+
+	if( mctype == 1 ){ // data
+
+		if( dataSetKey == "r2_ul18"  ) res = std::sqrt( (sq2( 25.16/amplitude ) + 2*sq2(0.1013))/2.0 );
+
+	} else { // MC
+
+		if( dataSetKey == "r2_ul18_mc"  ) res = std::sqrt( (sq2( 28.1/amplitude ) + 2*sq2(0.1184))/2.0 );
+
+	}//<<>>if( mctype == 0 )
+
+	if( res == -1 ){ std::cout << " -- Resolution for dataSetKey " << dataSetKey << " not found !!!!!!" << std::endl; return 1.f; }
+	return res;
 
 }//<<>>float getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey )
 
-float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey ){
+float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey, int mctype ){
 
-	return time;
+	float rtime = 0;
+    if( mctype == 1 ){ // data
+
+        rtime = time - getCalibration( rechitID, Evt_run, dataSetKey );
+    
+    } else { // MC
+
+        rtime = time; // rtime = getSmearedTime( time, amplitude, dataSetKey );;
+
+    }//<<>>if( mctype == 0 )
+
+	return rtime;
 
 }//<<>>float KUCMS_TimeCalibration::getCorrectedTime
 
@@ -2293,7 +2317,8 @@ kucms_SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D ){
 	const auto xbins = &fXBins[0];
 
 	std::string fittypename = ( doSterm ) ? "_NSC" : "_NC";
-	std::string outfilename = caliFileDir + f2DHistName + fittypename  + "_resfit.root";
+	//std::string outfilename = caliFileDir + f2DHistName + fittypename  + "_resfit.root";
+    std::string outfilename = f2DHistName + fittypename  + "_resfit.root";
     TFile* resTFile = TFile::Open( outfilename.c_str(), "UPDATE" );
     resTFile->cd();
 
@@ -2405,6 +2430,9 @@ kucms_SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D ){
 
     for( auto& profile : profileHists ){ 
 		profile.second.profileHist->Write( profile.second.profileHist->GetName(), TObject::kOverwrite ); 
+		TH1F* gprHist = gprProfileHist( profile.second.profileHist );
+		gprHist->Write( gprHist->GetName(), TObject::kOverwrite );
+		delete gprHist;
 		profile.second.deleteHists();
 	}//<<>>for( auto& profile : profileHists )
 
@@ -2469,39 +2497,80 @@ kucms_SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D ){
 
 }//<<>>SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D )
 
-TH1D* KUCMS_TimeCalibration::dressProfileHist( TH1D* hist ){
+TH1F* KUCMS_TimeCalibration::gprProfileHist( TH1F* hist ){
 
 
-    std::cout << "Dressing ProfileHist: " << hist->GetName() << std::endl;
+    std::cout << "Make GPR ProfileHist: " << hist->GetName() << std::endl;
 
     int nBins = hist->GetNbinsX();
-    float norm = hist->Integral();
-	float sigma = hist->GetStdDev();	
+	float sigma = setdec( hist->GetStdDev(), 2 );	
 
+	float minbin = 0.04;
 	float thres = 100;
+	float hill = 10000;
 	int firstBin = -1;
 	int lastBin = -1;
-    for( int ibinX = 1; ibinX <= nBins; ibinX++ ){
+	bool overHill = false;
+    for( int ibinX = 1; ibinX < nBins; ibinX++ ){
 
-		//auto content = hist->GetBinContent(ibinX);
-		
-
-
-
-        if( norm == 0.0 ) continue;
-        // get content/error
-        auto content = hist->GetBinContent(ibinX);
-        auto error   = hist->GetBinError(ibinX);
-        // set new contents
-        content /= norm;
-        error /= norm;
-        hist->SetBinContent(ibinX,content);
-        hist->SetBinError  (ibinX,error);
+		float content = hist->GetBinContent(ibinX);
+		if( content > thres && firstBin < 0 ) firstBin = ibinX;
+		if( content > hill ) overHill = true; 
+		if( overHill && content < thres && lastBin < 0 ) lastBin = ibinX;
 
     }//<<>>for (auto ibinX = 1; ibinX <= nBins; ibinX++)
 
+	int startbin = ( firstBin > 2 ) ? firstBin-1 : 1;
+	float start = setdec( hist->GetBinCenter(startbin), 2 );
+    int endbin = ( lastBin < (nBins-2) ) ? lastBin+1 : nBins-1;
+	float end = setdec( hist->GetBinCenter(endbin), 2);
+	if( std::abs(start) > std::abs(end) ) end = -1*start;
+	else start = -1*end;
 
-}//<<>>TH1D* KUCMS_TimeCalibration::dressProfileHist( TH1D* hist )
+    int range = int((end-start)/minbin);
+	float secorr =  ((float(range+1)*minbin) - (end-start))/2;
+	end += secorr;
+	start -= secorr;
+	float div = sigma/2;
+	int divrange = int(div/minbin);
+	div = float(divrange+1)*minbin;
+	int binrange = int((end-start)/(div));
+	float bcorr = ((float(binrange+1)*div) - (end-start))/2;
+	end += bcorr;
+    start -= bcorr; 
+	int nDiv = int((end-start)/(div));
+	if( nDiv%2 == 0 ){
+		nDiv++;
+		float fcorr = div/2;
+		end += fcorr;
+		start -= fcorr;
+	}//<<>>if( nDiv%2 == 0 )
+	std::string title = hist->GetName();
+	std::string newtitle = title + "_gpr";
+	TH1F* newhist = new TH1F( newtitle.c_str(), newtitle.c_str(), nDiv, start, end );
+	//newhist->Sumw2();
+	std::cout << " -- start : " << start << " end : " << end << " nDiv : " << nDiv << " bin size : " << (end-start)/nDiv << std::endl;
+	for( int ibinX = 1; ibinX <= nBins; ibinX++ ){
+	
+		float content = hist->GetBinContent(ibinX);
+		float bin = hist->GetBinCenter(ibinX);
+		newhist->Fill(bin,content);
+
+	}//<<>>for( int ibinX = 1; ibinX <= nBins; ibinX++ )
+
+	int nGPRBins = hist->GetNbinsX();
+    for( int ibinX = 1; ibinX < nGPRBins; ibinX++ ){
+
+        float content = hist->GetBinContent(ibinX);
+		float error = std::sqrt(content);
+		if( error < 1 ) error = 1;
+        newhist->SetBinError( ibinX, error );
+
+    }//<<>>for( int ibinX = 1; ibinX <= nBins; ibinX++ )
+
+	return newhist;
+
+}//<<>>TH1D* KUCMS_TimeCalibration::gprProfileHist( TH1D* hist )
 
 void KUCMS_TimeCalibration::doResTimeFits( bool doLocal ){
 

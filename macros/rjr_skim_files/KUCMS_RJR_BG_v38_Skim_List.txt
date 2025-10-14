@@ -1,6 +1,6 @@
 ###############################################################
 #rjr_skim_files/KUCMS_RJR_AllBG_v38_Skim_List.txt TotBG yes 0
-rjr_skim_files/KUCMS_RJR_MajorBG_v38_Skim_List.txt MajBG yes 0
+#rjr_skim_files/KUCMS_RJR_MajorBG_v38_Skim_List.txt MajBG yes 0
 #####rjr_skim_files/KUCMS_RJR_WZTGJets_ootmet_Skim_List.txt WZNuTGJets yes 0
 ###rjr_skim_files/KUCMS_RJR_TTGJets_ootmet_Skim_List.txt TTTGJets yes 0
 ###rjr_skim_files/KUCMS_RJR_ttWZ_ootmet_Skim_List.txt ttWZ yes 0
@@ -10,7 +10,7 @@ rjr_skim_files/KUCMS_RJR_MajorBG_v38_Skim_List.txt MajBG yes 0
 ####### GJets
 #rjr_skim_files/GJets_R18_SVIPM100_v31_LLPGskim_v38_Skim_List.txt GJets yes 0
 ####### WZNuTGJets
-#rjr_skim_files/WJLNu_R18_SVIPM100_v31_LLPGskim_v38_Skim_List.txt WJetsLNU yes 0
+rjr_skim_files/WJLNu_R18_SVIPM100_v31_LLPGskim_v38_Skim_List.txt WJetsLNU yes 0
 #rjr_skim_files/ZNuNu_v38_R18_SVIPM100_v31_LLPGskim_Skim_List.txt ZJetsNuNu yes 0
 ##rjr_skim_files/TGJets_R18_SVIPM100_v31_LLPGskim_v38_rjrvars.txt TGJets no 0
 ####### TTTGJets

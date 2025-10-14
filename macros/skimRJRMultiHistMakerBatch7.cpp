@@ -632,8 +632,8 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 	}//<<>>if( nRjrPhos == 0 )
 	if( nRjrPhos == 1 ){
 		//if( pho1PtsH21 < 0.1  ) continue;
-		if( ms < 1000 ) continue;
-        if( rs < 0.25 ) continue;
+		if( ms > 1000 ) continue;
+        //if( rs > 0.25 ) continue;
 	}//<<>>if( nRjrPhos == 1 )
     if( nRjrPhos == 2 ){
         if( ms < 1200 ) continue;
@@ -773,8 +773,8 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     hist1d[55]->Fill(genergy,fillwt);
     hist1d[56]->Fill(gcenergy,fillwt);
 
-	hist2d[51]->Fill(gstsig,gtime,fillwt);
-    hist2d[52]->Fill(gstsig,genergy,fillwt);
+	hist2d[51]->Fill(gwtsig,gtime,fillwt);
+    hist2d[52]->Fill(gwtsig,genergy,fillwt);
     hist2d[53]->Fill(genergy,gcenergy,fillwt);
 
 	}//<<>>for( int i = 0; i < 1; i++ ) -- continue loop
@@ -939,8 +939,8 @@ void HistMaker::initHists( std::string ht ){
     hist2d[25] = new TH2D("pho1px_v_pho2px", addstr(ht," pho1px_v_pho2px;pho1px;pho2px").c_str(), 200, 0, 2000, 200, 0, 2000 );
 
 
-    hist2d[51] = new TH2D("Sig_v_Time", addstr(ht," Sig_v_Time;selPhoSTimeSig;selPhoTOFTime").c_str(), 800, -20, 60, 200, -10, 10);
-    hist2d[52] = new TH2D("Sig_v_Energy", addstr(ht," Sig_v_Energy;selPhoSTimeSig;selPhoEnergy").c_str(), 800, -20, 60, 300, 0, 3000);
+    hist2d[51] = new TH2D("Sig_v_Time", addstr(ht," Sig_v_Time;selPhoSTimeSig;selPhoTOFTime").c_str(), 160, -20, 60, 40, -10, 10);
+    hist2d[52] = new TH2D("Sig_v_Energy", addstr(ht," Sig_v_Energy;selPhoSTimeSig;selPhoEnergy").c_str(), 160, -20, 60, 60, 0, 3000);
     hist2d[53] = new TH2D("Energy_v_CEnergy", addstr(ht," Energy_v_CEnergy;selPhoEnergy;selPhoCEnergy").c_str(), 300, 0, 3000, 300, 0, 3000);
 
 	//------- jets ( time ) 0-49 ------------------------------
@@ -980,8 +980,8 @@ int main ( int argc, char *argv[] ){
 
     //if( argc != 4 ) { std::cout << "Insufficent arguments." << std::endl; }
     //else {
-                std::string listdir = "/uscms/home/jaking/nobackup/llpana_skims/";
-				//std::string listdir = "/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/"; 
+                //std::string listdir = "/uscms/home/jaking/nobackup/llpana_skims/";
+				std::string listdir = "/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/tsig_skims/"; 
 
 				//std::string infilenameJ = "rjr_skim_files/KUCMS_RJR_GIGI_ootmet_Skim_List.txt";
                 //std::string infilenameJ = "rjr_skim_files/KUCMS_RJR_SMS_ootmet_Skim_List.txt";

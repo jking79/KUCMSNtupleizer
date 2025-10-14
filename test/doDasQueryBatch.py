@@ -448,10 +448,30 @@ dlEGAOD18 = [
 
 ]
 
+dlR2Met = [
+
+    '/MET/Run2018A-15Feb2022_UL2018-v1/AOD',
+    '/MET/Run2018B-15Feb2022_UL2018-v1/AOD',
+    '/MET/Run2018C-15Feb2022_UL2018-v1/AOD',
+    '/MET/Run2018D-15Feb2022_UL2018-v1/AOD',
+    '/MET/Run2017A-09Aug2019_UL2017_rsb-v1/AOD',
+    '/MET/Run2017B-09Aug2019_UL2017_rsb-v1/AOD',
+    '/MET/Run2017C-09Aug2019_UL2017_rsb-v1/AOD',
+    '/MET/Run2017D-09Aug2019_UL2017_rsb-v1/AOD',
+    '/MET/Run2017E-09Aug2019_UL2017_rsb-v1/AOD',
+    '/MET/Run2017F-09Aug2019_UL2017_rsb-v1/AOD',
+    '/MET/Run2016B-21Feb2020_ver2_UL2016_HIPM-v1/AOD',
+    '/MET/Run2016C-21Feb2020_UL2016_HIPM-v1/AOD',
+    '/MET/Run2016D-21Feb2020_UL2016_HIPM-v1/AOD',
+    '/MET/Run2016G-21Feb2020_UL2016-v1/AOD',
+    '/MET/Run2016H-21Feb2020_UL2016-v2/AOD',
+
+]
+
 
 query = 'dasgoclient --json -query=\'dataset='
 
-datalist = dlmet22
+datalist = dlR2Met
 
 for data in datalist :
     

@@ -158,6 +158,7 @@ class KUCMSAodSkimmer : public llpgtree {
 	float xmass;
 	float mcwgt;
 	int mctype;
+	std::string tctag;
 
 	// event varibles
 

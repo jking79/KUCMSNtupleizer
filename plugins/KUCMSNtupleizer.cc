@@ -93,11 +93,12 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
 	//Event Info
     auto eventInfoObj = new KUCMSEventInfoObject(  iConfig ); 
     auto vertexToken = consumes<std::vector<reco::Vertex>>(iConfig.getParameter<edm::InputTag>("vertices"));
-    auto triggerResultsToken = consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("triggerResults"));
-    auto triggerEventToken = consumes<trigger::TriggerEvent>(iConfig.getParameter<edm::InputTag>("triggerEvent"));
+    auto triggerFlagResultsToken = consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("triggerFlagResults"));
+    auto triggerHltResultsToken = consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("triggerHLTResults"));
+    //auto triggerEventToken = consumes<trigger::TriggerEvent>(iConfig.getParameter<edm::InputTag>("triggerEvent"));
 	//auto rhoToken = consumes<double>(iConfig.getParameter<edm::InputTag>("Rho"));
     eventInfoObj->LoadVertexTokens( vertexToken );
-    eventInfoObj->LoadTriggerTokens( triggerResultsToken, triggerEventToken );
+    eventInfoObj->LoadTriggerTokens( triggerFlagResultsToken, triggerHltResultsToken );
     ObjMan.Load( "EventInfo", eventInfoObj );
 
     //Rechits ECAL

@@ -61,10 +61,10 @@ met_list = [
 
 met18UL = [
 
-    #'cms:/MET/Run2018A-15Feb2022_UL2018-v1/AOD', #17
-    #'cms:/MET/Run2018B-15Feb2022_UL2018-v1/AOD', #9
-    #'cms:/MET/Run2018C-15Feb2022_UL2018-v1/AOD', #10
-    #'cms:/MET/Run2018D-15Feb2022_UL2018-v1/AOD', #52
+    'cms:/MET/Run2018A-15Feb2022_UL2018-v1/AOD', #17
+    'cms:/MET/Run2018B-15Feb2022_UL2018-v1/AOD', #9
+    'cms:/MET/Run2018C-15Feb2022_UL2018-v1/AOD', #10
+    'cms:/MET/Run2018D-15Feb2022_UL2018-v1/AOD', #52
 
 ]
 
@@ -169,7 +169,7 @@ egamma = [ 'cms:/EGamma/Run2018C-15Feb2022_UL2018-v1/AOD' ]
 #runlist = jetmetexo22
 #runlist = dipho
 #runlist = bosun
-runlist = egamma
+runlist = met18UL
 
 for thefile in runlist :
 
