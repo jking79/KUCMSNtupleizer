@@ -173,6 +173,8 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 	float getTTCali( uInt rhid, int run, std::string tag );
 
 	kucms_DetIDStruct& getDetIdInfo( uInt rhid );
+	std::map<int,std::map<int,std::map<int,uInt>>> getInvDetIDMap();
+    	std::map<UInt_t,kucms_DetIDStruct> getDetIDMap(); // map of information by detid for each crystal
 	uInt getDetIdInfo( int i1, int i2, int ecal );
 	uInt getTTId( uInt detId );
 	std::pair<int,int> getTTInfo( uInt ttid );
@@ -1226,6 +1228,18 @@ kucms_DetIDStruct& KUCMS_TimeCalibration::getDetIdInfo( uInt rhid ){
 uInt KUCMS_TimeCalibration::getDetIdInfo( int i1, int i2, int ecal ){
 
 	return InvDetIDMap[i1][i2][ecal];
+
+}//<<>>DetIDStruct KUCMS_TimeCalibration::getDetIdInfo( uInt rhid )
+
+std::map<int,std::map<int,std::map<int,uInt>>> KUCMS_TimeCalibration::getInvDetIDMap(){
+
+	return InvDetIDMap;
+
+}//<<>>DetIDStruct KUCMS_TimeCalibration::getInvDetIDMap( )
+
+std::map<UInt_t,kucms_DetIDStruct> KUCMS_TimeCalibration::getDetIDMap(){; // map of information by detid for each crystal
+
+	return DetIDMap;
 
 }//<<>>DetIDStruct KUCMS_TimeCalibration::getDetIdInfo( uInt rhid )
 

@@ -16,6 +16,20 @@
 //
 //
 
+<<<<<<< HEAD
+Comments to be added
+
+
+Ntuples currently stored at: store/user/lpcsusylep/jaking/KUCMSNtuple
+- can be accessed via eosls or xrdcp (to copy via xrootd)
+
+Ntuples can be run one of two ways:
+- `cmsRun test/llpgana_mc_aod.py` will interactively run the Ntuplizer
+	- make sure this is running over the correct global tag, AOD files, and number of events
+- `python test/multicrab_mc_llpgana_cmssw130_aod.py` will run the Ntuplizer via crab
+	- make sure this is running over the correct file sets and number of events
+- ntuples are kept here on the LPC (accessed via eosls): `/store/user/lpcsusylep/jaking/KUCMSNtuple`
+=======
 KUCMSNtupleizer is a plugin module for CMSSW
 To utilize first setup a CMSSW version and cone the git repo for KUCMSNtupleizer into CMSSW
 Installation instructions using CMSSW version 13.3.0 below :
@@ -147,3 +161,4 @@ When adding or modify an object class keep in mind the order of processing :
     //     #endif
 
 
+>>>>>>> master

@@ -25,8 +25,8 @@
 #include "TGraph.h"
 #include "TMathBase.h"
 
-#ifndef KUCMSRootHelperFunctionsH
-#define KUCMSRootHelperFunctionsH 
+#ifndef KUCMSRootHelperFunctionsH2
+#define KUCMSRootHelperFunctionsH2 
 
 void fillTH1( float val, TH1F* hist ){
 
