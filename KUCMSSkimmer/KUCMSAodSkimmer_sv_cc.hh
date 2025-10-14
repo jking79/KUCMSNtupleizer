@@ -548,12 +548,13 @@ void KUCMSAodSkimmer::processMLPhotons(){
 			selPhotons.fillBranch( "selPhoBHCSubcl_etaPhiCov", etaphicov);
 			//pu score
 			//CHECK
-			cout << "PU subcl score " << puscores[k] << endl;
-			selPhotons.fillBranch( "selPhoBHCsubcl_puScore", (float)puscores[k]);
-		       	//det bkg score
-			selPhotons.fillBranch( "selPhoBHCsubcl_detBkgMaxClassScore", (float)detbkgscores[k].second);
-			selPhotons.fillBranch( "selPhoBHCsubcl_detBkgMaxClass", detbkgscores[k].first);	
-			//CHECK
+			//cout << "PU subcl score " << puscores[k] << endl;
+			//selPhotons.fillBranch( "selPhoBHCsubcl_puScore", (float)puscores[k]);
+		       	////det bkg score 
+			//TODO - for photons, det bkg score is calculated over full PU-cleaned object
+			//selPhotons.fillBranch( "selPhoBHCsubcl_detBkgMaxClassScore", (float)detbkgscores[k].second);
+			//selPhotons.fillBranch( "selPhoBHCsubcl_detBkgMaxClass", detbkgscores[k].first);	
+			////CHECK
 			selPhotons.fillBranch( "selPhoBHCsubcl_photonIndex", (int)it);	
 		}
 		//center
