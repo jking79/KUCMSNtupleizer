@@ -25,6 +25,9 @@ def getOptions():
     parser.add_option("-o", "--crabCmdOptions", dest="crabCmdOptions",
          help=("The options you want to pass to the crab command CMD"
                "tasklistFile"), metavar="OPT", default="")
+    parser.add_option("-w", "--maxjobruntime", dest="wallClock",
+         help=("The options you want to pass to the crab command CMD"
+               "tasklistFile"), metavar="OPT", default="")
 
     (options, args) = parser.parse_args()
 
@@ -57,8 +60,8 @@ def main():
             except :
                     print ("Command not executed")
         else :
-            print ("Executing ( runtime 2800 ): crab %s %s %s" %(options.crabCmd, task, options.crabCmdOptions))
-            os.system('crab resubmit ' + task + ' --maxjobruntime 2600' )
+            print ("Executing: crab %s %s %s" %(options.crabCmd, task, options.crabCmdOptions))
+            os.system('crab resubmit ' + task + ' --maxjobruntime 1800' )
 
 if __name__ == '__main__':
     main()   
