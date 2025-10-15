@@ -326,13 +326,14 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
     std::cout << ")" << std::endl;
 
     std::cout << "Setting up For Main Loop." << std::endl;
-    int loopCounter(1000);
+    //int loopCounter(1000);
+    int loopCounter(1);
     auto nEntries = fInTree->GetEntries();
     if(DEBUG){ nEntries = 1000; loopCounter = 100; }
     std::cout << "Proccessing " << nEntries << " entries." << std::endl;
     nEvents = nEntries;
     //DEBUG
-    //nEntries = 10;
+    nEntries = 10;
     for (Long64_t centry = 0; centry < nEntries; centry++){
 
       if( centry%loopCounter == 0 ) std::cout << "Proccessed " << centry << " of " << nEntries << " entries." << std::endl;
@@ -1651,7 +1652,8 @@ void KUCMSAodSkimmer::processPhotons(){
 	//if( seedE == 0 ){ seedE = leadE; seedar = leadEar; }
 	//if( seedT != time ) std::cout << " Pho - SC seed time wrong !!!!!! " << time << " v " << leadEtime << std::endl;
     //if( seedE != leadE ) std::cout << " Pho - SC seed time wrong !!!!!! " << time << " v " << leadEtime << std::endl;
-	if( sew == 0 ){ std::cout << "Photon Time Sig Division by Zero !!!!!!!!!!! " << std::endl; sew = -0.00000000000000000001; } 
+	//if( sew == 0 ){ std::cout << "Photon Time Sig Division by Zero !!!!!!!!!!! " << std::endl; sew = -0.00000000000000000001; } 
+	if( sew == 0 ){ sew = 1; setw = -100; serw = -1000; }
     float phoWTime = setw/sew;
 	float phoWRes = serw/sew;
 	//float phowamp = serw/sew;
