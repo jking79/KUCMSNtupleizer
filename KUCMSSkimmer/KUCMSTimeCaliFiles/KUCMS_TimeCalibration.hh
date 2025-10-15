@@ -1329,8 +1329,8 @@ float KUCMS_TimeCalibration::getSmrdCalibTime( float rhtime, float rhamp, uInt r
 
 float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey, int mctype ){
 
+	if( amplitude == 0 ) return 100.f;
 	float res = -1;
-
 	if( mctype == 1 ){ // data
 
 		if( dataSetKey == "r2_ul18"  ) res = std::sqrt( (sq2( 25.16/amplitude ) + 2*sq2(0.1013))/2.0 );

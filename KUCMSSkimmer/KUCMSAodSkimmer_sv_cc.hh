@@ -332,7 +332,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
     std::cout << "Proccessing " << nEntries << " entries." << std::endl;
     nEvents = nEntries;
     //DEBUG
-    nEntries = 10;
+    //nEntries = 10;
     for (Long64_t centry = 0; centry < nEntries; centry++){
 
       if( centry%loopCounter == 0 ) std::cout << "Proccessed " << centry << " of " << nEntries << " entries." << std::endl;
@@ -443,8 +443,8 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
   processJets();
   processSV();
   processTracks();
-  processMLPhotons();// must be done after processPhotons()
-  processMLJets();// must be done after processJets()
+  //processMLPhotons();// must be done after processPhotons()
+  //processMLJets();// must be done after processJets()
   if( doGenInfo ){ processGenParticles(); }
   
   // select events to process and store
@@ -487,23 +487,23 @@ void KUCMSAodSkimmer::processMLPhotons(){
 		if( not isSelPho[it] ) continue;
 		std::map< unsigned int, float > rhtresmap;
 		std::map< double, unsigned int > energyToId;
-        	auto scIndx = (*Photon_scIndex)[it];
-        	auto rhids = (*SuperCluster_rhIds)[scIndx];
+        auto scIndx = (*Photon_scIndex)[it];
+        auto rhids = (*SuperCluster_rhIds)[scIndx];
 		int nSCRecHits = rhids.size();
-        	auto nRecHits = ECALRecHit_ID->size();
-        	for( int sciter = 0; sciter < nSCRecHits; sciter++  ){
+        auto nRecHits = ECALRecHit_ID->size();
+        for( int sciter = 0; sciter < nSCRecHits; sciter++  ){
 			auto scrhid = rhids[sciter];
 			int erhiter = ( rhIDtoIterMap.find(scrhid) != rhIDtoIterMap.end() ) ? rhIDtoIterMap[scrhid] : -1;
 			if( erhiter != -1 ){
-                		double erhe = (*ECALRecHit_energy)[erhiter];
-                		bool hasGainSwitch = (*ECALRecHit_hasGS1)[erhiter] || (*ECALRecHit_hasGS6)[erhiter];
+                double erhe = (*ECALRecHit_energy)[erhiter];
+                bool hasGainSwitch = (*ECALRecHit_hasGS1)[erhiter] || (*ECALRecHit_hasGS6)[erhiter];
 				float erht = erh_corTime[erhiter];
 				float rhx = (*ECALRecHit_rhx)[erhiter];
-                		float rhy = (*ECALRecHit_rhy)[erhiter];
-                		float rhz = (*ECALRecHit_rhz)[erhiter];
+                float rhy = (*ECALRecHit_rhy)[erhiter];
+                float rhz = (*ECALRecHit_rhz)[erhiter];
 				rhtresmap[scrhid] = erh_timeRes[erhiter];
 				energyToId[erhe] = scrhid;
-                		if( DEBUG ) std::cout << " " << erht << " " << rhx << " " << rhy << " " << rhz << std::endl;
+                if( DEBUG ) std::cout << " " << erht << " " << rhx << " " << rhy << " " << rhz << std::endl;
 				//skip endcap rechits
 				if(fabs((*ECALRecHit_eta)[erhiter]) > 1.479) continue;
 				//cout << "rh e " <<  erhe << " rh t " << erht << " rhid " << scrhid << " eta " << (*ECALRecHit_eta)[erhiter] << " phi " << (*ECALRecHit_phi)[erhiter] << endl;
@@ -1014,24 +1014,66 @@ void KUCMSAodSkimmer::processEvntVars(){
   if( doGenInfo ) fillWgt = ( ( xsctn * 1000 ) * evtGenWgt  ) / configWgts["sumEvtWgt"];
 
   selEvtVars.fillBranch( "evtFillWgt", fillWgt );
-  selEvtVars.fillBranch( "Flag_BadChargedCandidateFilter", Flag_BadChargedCandidateFilter );//not suggested
-  selEvtVars.fillBranch( "Flag_BadPFMuonDzFilter", Flag_BadPFMuonDzFilter );//suggested
-  selEvtVars.fillBranch( "Flag_BadPFMuonFilter", Flag_BadPFMuonFilter );//suggested
-  selEvtVars.fillBranch( "Flag_EcalDeadCellTriggerPrimitiveFilter", Flag_EcalDeadCellTriggerPrimitiveFilter );//suggested
-  selEvtVars.fillBranch( "Flag_HBHENoiseFilter", Flag_HBHENoiseFilter );//suggested
-  selEvtVars.fillBranch( "Flag_HBHENoiseIsoFilter", Flag_HBHENoiseIsoFilter );//suggested
-  selEvtVars.fillBranch( "Flag_ecalBadCalibFilter", Flag_ecalBadCalibFilter );//suggested
-  selEvtVars.fillBranch( "Flag_eeBadScFilter", Flag_eeBadScFilter );//suggested
-  selEvtVars.fillBranch( "Flag_globalSuperTightHalo2016Filter", Flag_globalSuperTightHalo2016Filter );//suggested
-  selEvtVars.fillBranch( "Flag_goodVertices", Flag_goodVertices );//suggested
-  selEvtVars.fillBranch( "Flag_hfNoisyHitsFilter", Flag_hfNoisyHitsFilter );//optional
 
-  selEvtVars.fillBranch( "Trigger_hltPFMET120", Trigger_hltPFMET120 );
-  selEvtVars.fillBranch( "Trigger_hltPFMHTTightID120", Trigger_hltPFMET130 );
-  selEvtVars.fillBranch( "Trigger_hltPFMETNoMu120", Trigger_hltPFMET140 );
-  selEvtVars.fillBranch( "Trigger_hltPFMHTNoMuTightID120", Trigger_hltPFMET200 );
+  bool BadChargedCandidateFilter = true;
+  bool BadPFMuonDzFilter = true;
+  bool BadPFMuonFilter = true;
+  bool EcalDeadCellTriggerPrimitiveFilter = true;
+  bool HBHENoiseFilter = true;
+  bool HBHENoiseIsoFilter = true;
+  bool ecalBadCalibFilter = true;
+  bool eeBadScFilter = true;
+  bool globalSuperTightHalo2016Filter = true;
+  bool goodVertices = true;
+  bool hfNoisyHitsFilter = true;
 
- 
+  if( not doGenInfo ){
+
+	BadChargedCandidateFilter = Flag_BadChargedCandidateFilter;
+	BadPFMuonDzFilter = Flag_BadPFMuonDzFilter;
+	BadPFMuonFilter = Flag_BadPFMuonFilter;
+	EcalDeadCellTriggerPrimitiveFilter = Flag_EcalDeadCellTriggerPrimitiveFilter;
+	HBHENoiseFilter = Flag_HBHENoiseFilter;
+	HBHENoiseIsoFilter = Flag_HBHENoiseIsoFilter;
+	ecalBadCalibFilter = Flag_ecalBadCalibFilter;
+	eeBadScFilter = Flag_eeBadScFilter;
+	globalSuperTightHalo2016Filter = Flag_globalSuperTightHalo2016Filter;
+	goodVertices = Flag_goodVertices;
+	hfNoisyHitsFilter = Flag_hfNoisyHitsFilter;
+
+  }//<<>>if( not doGenInfo )
+
+  selEvtVars.fillBranch( "Flag_BadChargedCandidateFilter", BadChargedCandidateFilter );//not suggested
+  selEvtVars.fillBranch( "Flag_BadPFMuonDzFilter", BadPFMuonDzFilter );//suggested
+  selEvtVars.fillBranch( "Flag_BadPFMuonFilter", BadPFMuonFilter );//suggested
+  selEvtVars.fillBranch( "Flag_EcalDeadCellTriggerPrimitiveFilter", EcalDeadCellTriggerPrimitiveFilter );//suggested
+  selEvtVars.fillBranch( "Flag_HBHENoiseFilter", HBHENoiseFilter );//suggested
+  selEvtVars.fillBranch( "Flag_HBHENoiseIsoFilter", HBHENoiseIsoFilter );//suggested
+  selEvtVars.fillBranch( "Flag_ecalBadCalibFilter", ecalBadCalibFilter );//suggested
+  selEvtVars.fillBranch( "Flag_eeBadScFilter", eeBadScFilter );//suggested
+  selEvtVars.fillBranch( "Flag_globalSuperTightHalo2016Filter", globalSuperTightHalo2016Filter );//suggested
+  selEvtVars.fillBranch( "Flag_goodVertices", goodVertices );//suggested
+  selEvtVars.fillBranch( "Flag_hfNoisyHitsFilter", hfNoisyHitsFilter );//optional
+
+  bool PFMET120_PFMHT120_IDTight = true;
+  bool PFMETNoMu120_PFMHTNoMu120_IDTight = true;
+  bool PFMET120_PFMHT120_IDTight_PFHT60 = true;
+  bool PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60 = true;
+
+  if( not doGenInfo ){
+
+	PFMET120_PFMHT120_IDTight = HLT_PFMET120_PFMHT120_IDTight_v;
+	PFMETNoMu120_PFMHTNoMu120_IDTight = HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_v;
+	PFMET120_PFMHT120_IDTight_PFHT60 = HLT_PFMET120_PFMHT120_IDTight_PFHT60_v;
+	PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60 = HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60_v;
+
+  }//<<>>if( not doGenInfo )
+
+  selEvtVars.fillBranch( "Trigger_PFMET120_PFMHT120_IDTight", PFMET120_PFMHT120_IDTight );
+  selEvtVars.fillBranch( "Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight", PFMETNoMu120_PFMHTNoMu120_IDTight );
+  selEvtVars.fillBranch( "Trigger_PFMET120_PFMHT120_IDTight_PFHT60", PFMET120_PFMHT120_IDTight_PFHT60 );
+  selEvtVars.fillBranch( "Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60", PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60 );
+
 }//<<>>void KUCMSAodSkimmer::processEvntVars()
 
 void KUCMSAodSkimmer::processMet(){
@@ -1083,10 +1125,10 @@ void KUCMSAodSkimmer::processRechits(){
 		float rha = (*ECALRecHit_ampres)[it]; // instead of energy ? ( this is the ADC amplitude in units of the pedistal rms for this rechit )
 		float corrht = timeCali->getCorrectedTime( rht, rha, rhid, Evt_run, tctag, mctype );
 		float rhtres = timeCali->getTimeResoltuion( rha, rhid, Evt_run, tctag, mctype );
-		if( rhid < 840000000 ){
-			std::cout << " TC check : inputs : rhid " << rhid << " run " << Evt_run << " tag "  << tctag << " type " << mctype << std::endl;
-			std::cout << " TC check : time : " << rht << " -> " << corrht << " res : " << rha << " -> " << rhtres << std::endl;
-		}//<<>>if( rhid < 840000000 )
+		//if( rhid < 840000000 ){
+		//	std::cout << " TC check : inputs : rhid " << rhid << " run " << Evt_run << " tag "  << tctag << " type " << mctype << std::endl;
+		//	std::cout << " TC check : time : " << rht << " -> " << corrht << " res : " << rha << " -> " << rhtres << std::endl;
+		//}//<<>>if( rhid < 840000000 )
 		erh_corTime.push_back( corrht );
         erh_timeRes.push_back( rhtres );
         if( true ){
@@ -1584,19 +1626,25 @@ void KUCMSAodSkimmer::processPhotons(){
         if( erhiter != -1 ){
 			float gainwt = 1;
             float erhe = (*ECALRecHit_energy)[erhiter];
+			float erampres = (*ECALRecHit_ampres)[erhiter];
             float erht = erh_corTime[erhiter];
             float erhar = (*ECALRecHit_ampres)[erhiter];
-			float ertoftime = erht - calcor + pvtof;
+			float erx = (*ECALRecHit_rhx)[erhiter];
+            float ery = (*ECALRecHit_rhy)[erhiter];
+            float erz = (*ECALRecHit_rhz)[erhiter];
+			float cor_cms000 = hypo(erx,ery,erz)/SOL;
+			float cor_tofPVtoRH = hypo(erx-PV_x,ery-PV_y,erz-PV_z)/SOL;
+			float ertoftime = erht - cor_cms000 + cor_tofPVtoRH;
 			//float erres = std::sqrt( (sq2( 24.0/erhar ) + (sq2(2.5)/erhar) + 2*sq2(0.099))/2.0 );
             //float erres = std::sqrt( sq2( 25.3/erhar ) + 2*sq2(0.085) );
 			float erres = erh_timeRes[erhiter];
 			bool hasGainSwitch = (*ECALRecHit_hasGS1)[erhiter] || (*ECALRecHit_hasGS6)[erhiter];
 			if( hasGainSwitch ) gainwt = 0;
-			erhe = erhe*gainwt;
-            setw += erhe*ertoftime;
-			serw += erhe*erres;
-            sew += erhe;
-            if( erhe > leadE ){ leadE = erhe; leadEtime = ertoftime; leadEar = erhar; leadRHID = pscrhid; }
+			erhar = erampres*gainwt;
+            setw += erhar*ertoftime;
+			serw += erhar*erres;
+            sew += erhar;
+            if( erhe*gainwt > leadE ){ leadE = erhe; leadEtime = ertoftime; leadEar = erhar; leadRHID = pscrhid; }
 			//if( ertoftime == time ){ seedE = erhe; seedT = ertoftime; seedar = erhar; } 
         }//<<>>if( scrhid == rhid )
     }//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
@@ -2268,13 +2316,15 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
   float m_cosS  = S->GetCosDecayAngle();
   float m_dphiS = S->GetDeltaPhiDecayAngle();
   float m_dphiSI  = S->GetDeltaPhiBoostVisible();
-  float m_PTS = S->GetFourVector().Pt();
-  float m_PZS = S->GetFourVector().Pz();
   
   float m_MX2a = X2a->GetMass();
   float m_cosX2a = X2a->GetCosDecayAngle();
   float m_MX2b = X2b->GetMass();
   float m_cosX2b = X2b->GetCosDecayAngle();
+
+  float m_PTS = S->GetFourVector().Pt();
+  float m_PZS = S->GetFourVector().Pz();
+  float m_PS = S->GetMomentum(*LAB);
 
   selRjrVars.fillBranch( "rjrX2aMass", m_MX2a );
   selRjrVars.fillBranch( "rjrX2aCosA", m_cosX2a );
@@ -2285,10 +2335,13 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
   selRjrVars.fillBranch( "rjrSCosA", m_cosS );
 
   selRjrVars.fillBranch( "rjrSdphiDA", m_dphiS  );
-  selRjrVars.fillBranch( "rjrSdphiBV", m_dphiSI );
+  selRjrVars.fillBranch( "rjrSdphiBV", m_dphiSI ); // !!!!!!!!!!!!!  dphiCMI
   selRjrVars.fillBranch( "rjrPTS", m_PTS );
   selRjrVars.fillBranch( "rjrPZS", m_PZS );
-
+  selRjrVars.fillBranch( "rjrPS", m_PS );
+ 
+  hist2d[2]->Fill(m_dphiSI,m_PS);
+ 
   std::vector< TLorentzVector > hp4;
   std::vector< TLorentzVector > hxp4;
 	
@@ -2604,8 +2657,6 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     selRjrVars.fillBranch( "rjrPVlab", m_PV_lab );
     selRjrVars.fillBranch( "rjrDphiMETV", m_dphiMET_V );
 
-	hist2d[2]->Fill(m_dphiMET_V,m_PTS);
-
 	float rjrMet = hypo(phoRMetCPx,phoRMetCPy);
 
     selRjrVars.fillBranch( "rjrMET", rjrMet ); 
@@ -2808,7 +2859,6 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
   selEvtVars.makeBranch( "PVy", FLOAT );
   selEvtVars.makeBranch( "PVz", FLOAT );
   
-
   selEvtVars.makeBranch( "Flag_BadChargedCandidateFilter", BOOL );
   selEvtVars.makeBranch( "Flag_BadPFMuonDzFilter", BOOL );
   selEvtVars.makeBranch( "Flag_BadPFMuonFilter", BOOL );
@@ -2822,20 +2872,10 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
   selEvtVars.makeBranch( "Flag_hfNoisyHitsFilter", BOOL );
   //selEvtVars.makeBranch( "Flag_MetFilter", BOOL );
 
-  //selEvtVars.makeBranch( "hltPFMET50", BOOL );
-  //selEvtVars.makeBranch( "hltPFMET70", BOOL );
-  //selEvtVars.makeBranch( "hltPFMET90", BOOL );
-  //selEvtVars.makeBranch( "hltPFMET100", BOOL );
-  //selEvtVars.makeBranch( "hltPFMET110", BOOL );
-  selEvtVars.makeBranch( "Trigger_hltPFMET120", BOOL );
-  //selEvtVars.makeBranch( "hltPFMET130", BOOL );
-  //selEvtVars.makeBranch( "hltPFMET140", BOOL );
-  //selEvtVars.makeBranch( "hltPFMET200", BOOL );
-  //selEvtVars.makeBranch( "hltPFMET250", BOOL );
-  //selEvtVars.makeBranch( "hltPFMET300", BOOL );
-  selEvtVars.makeBranch( "Trigger_hltPFMHTTightID120", BOOL );
-  selEvtVars.makeBranch( "Trigger_hltPFMETNoMu120", BOOL );
-  selEvtVars.makeBranch( "Trigger_hltPFMHTNoMuTightID120", BOOL );
+  selEvtVars.makeBranch( "Trigger_PFMET120_PFMHT120_IDTight", BOOL );
+  selEvtVars.makeBranch( "Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight", BOOL );
+  selEvtVars.makeBranch( "Trigger_PFMET120_PFMHT120_IDTight_PFHT60", BOOL );
+  selEvtVars.makeBranch( "Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60", BOOL );
 
   selEvtVars.attachBranches( fOutTree );
 
@@ -3160,6 +3200,7 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     selRjrVars.makeBranch( "rjrSdphiBV", VFLOAT );
     selRjrVars.makeBranch( "rjrPTS", VFLOAT );
     selRjrVars.makeBranch( "rjrPZS", VFLOAT );
+    selRjrVars.makeBranch( "rjrPS", VFLOAT );
 
     selRjrVars.makeBranch( "rjrEVa", VFLOAT );
     selRjrVars.makeBranch( "rjrEVb", VFLOAT );
@@ -3369,7 +3410,7 @@ void KUCMSAodSkimmer::initHists(){
 
     ////hist2d[1] = new TH2D("jetDrMuTime_pt", "jetDrMuTime_pt", jtdiv, -1*jtran, jtran, 500, 0, 500);
 	hist2d[1] = new TH2D("scorigcross", "SC Types;Mian-Orig;Std-OOT-Excluded", 2, 0, 2, 3, 0, 3); 
-    hist2d[2] = new TH2D("rjrPst_v_rjrdPhiSX1", "rjrDphiMETV_v_rjrPst;rjrDphiMETV;rjrPst", 32, 0, 3.2, 200, 0, 2000);
+    hist2d[2] = new TH2D("rjrPst_v_rjrdPhiSX1", "rjrDphiMETV_v_rjrPst;rjrDphiMETV;rjrPst", 32, 0, 3.2, 60, 0, 3000);
 
 	//------------------------------------------------------------------------------------------
     //------ 3D Hists --------------------------------------------------------------------------

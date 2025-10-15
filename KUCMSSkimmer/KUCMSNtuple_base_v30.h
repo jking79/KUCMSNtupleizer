@@ -218,88 +218,10 @@ public :
    UInt_t          Evt_luminosityBlock;
    UInt_t          Evt_run;
    UInt_t          Evt_event;
-   Bool_t          Trigger_hltEG20EtFilterLooseHoverE;
-   Bool_t          Trigger_hltEG20EtL1TripleEGFilter;
-   Bool_t          Trigger_hltEG20HEFilterLooseHoverE;
-   Bool_t          Trigger_hltEG20HEL1TripleEGFilter;
-   Bool_t          Trigger_hltEG20L1SingleEGLowETOrEtFilter;
-   Bool_t          Trigger_hltEG20L1SingleEGLowETOrEtaREtFilter;
-   Bool_t          Trigger_hltEG30EBHE10R9Id50b80eHEFilter;
-   Bool_t          Trigger_hltEG30EBL1SingleAndDoubleEGOrEtFilter;
-   Bool_t          Trigger_hltEG30EBR9Id50b80eR9IdFilter;
-   Bool_t          Trigger_hltEG30EIso15HE30EcalIsoLastFilter;
-   Bool_t          Trigger_hltEG30EtFilterLooseHoverE;
-   Bool_t          Trigger_hltEG30EtL1TripleEGFilter;
-   Bool_t          Trigger_hltEG30HE30HEFilter;
-   Bool_t          Trigger_hltEG30HEFilterLooseHoverE;
-   Bool_t          Trigger_hltEG30HEL1TripleEGFilter;
-   Bool_t          Trigger_hltEG30L1IsoEGerJetC34drMin0p3EtFilter;
-   Bool_t          Trigger_hltEG30L1SingleAndDoubleEGOrEtFilter;
-   Bool_t          Trigger_hltEG30L1SingleAndDoubleEGWithTauWithJetEtFilter;
-   Bool_t          Trigger_hltEG30LHE12R9Id50b80eHEFilter;
-   Bool_t          Trigger_hltEG30LR9Id50b80eR9IdFilter;
-   Bool_t          Trigger_hltEG30PVHE10R9Id50b80eHEFilter;
-   Bool_t          Trigger_hltEG30PVR9Id50b80eR9IdFilter;
-   Bool_t          Trigger_hltEG30PVrealANDHE10R9Id50b80eHEFilter;
-   Bool_t          Trigger_hltEG30PVrealANDR9Id50b80eR9IdFilter;
-   Bool_t          Trigger_hltEG60EtFilter;
-   Bool_t          Trigger_hltEG60HEFilter;
-   Bool_t          Trigger_hltEG60R9Id90CaloIdLIsoLClusterShapeFilter;
-   Bool_t          Trigger_hltEG60R9Id90CaloIdLIsoLDisplacedIdFilter;
-   Bool_t          Trigger_hltEG60R9Id90CaloIdLIsoLEcalPFClusterIsoFilter;
-   Bool_t          Trigger_hltEG60R9Id90CaloIdLIsoLHcalPFClusterIsoFilter;
-   Bool_t          Trigger_hltEG60R9Id90CaloIdLIsoLHollowTrackIsoFilter;
-   Bool_t          Trigger_hltEG60R9Id90CaloIdLIsoLR9IdFilter;
-   Bool_t          Trigger_hltEGL1SingleEGNonIsoOrWithJetAndTauNoPSFilter;
-   Bool_t          Trigger_hltHT130Jet30;
-   Bool_t          Trigger_hltHT175Jet10;
-   Bool_t          Trigger_hltHT200Jet30;
-   Bool_t          Trigger_hltL1sSingleAndDoubleEG;
-   Bool_t          Trigger_hltL1sSingleAndDoubleEGNonIsoOr;
-   Bool_t          Trigger_hltL1sSingleAndDoubleEGor;
-   Bool_t          Trigger_hltL1sSingleEG15;
-   Bool_t          Trigger_hltL1sSingleEG18;
-   Bool_t          Trigger_hltL1sSingleEG24;
-   Bool_t          Trigger_hltL1sSingleEG26;
-   Bool_t          Trigger_hltL1sSingleEG34to45;
-   Bool_t          Trigger_hltL1sSingleEG34to50;
-   Bool_t          Trigger_hltL1sSingleEG40to50;
-   Bool_t          Trigger_hltL1sSingleEGNonIsoOrWithJetAndTauNoPS;
-   Bool_t          Trigger_hltL1sSingleEGor;
-   Bool_t          Trigger_hltL1sTripleEGOrDoubleEGOrSingleEG;
-   Bool_t          Trigger_hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilter;
-   Bool_t          Trigger_hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilterLowPt;
-   Bool_t          Trigger_hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilterMidPt;
-   Bool_t          Trigger_hltPFHT180Jet30;
-   Bool_t          Trigger_hltPFHT250Jet30;
-   Bool_t          Trigger_hltPFHT350Jet15;
-   Bool_t          Trigger_hltPFMET100;
-   Bool_t          Trigger_hltPFMET110;
-   Bool_t          Trigger_hltPFMET120;
-   Bool_t          Trigger_hltPFMET130;
-   Bool_t          Trigger_hltPFMET140;
-   Bool_t          Trigger_hltPFMET200;
-   Bool_t          Trigger_hltPFMET250;
-   Bool_t          Trigger_hltPFMET300;
-   Bool_t          Trigger_hltPFMET50;
-   Bool_t          Trigger_hltPFMET70;
-   Bool_t          Trigger_hltPFMET90;
-   Bool_t          Trigger_hltPFMETNoMu100;
-   Bool_t          Trigger_hltPFMETNoMu110;
-   Bool_t          Trigger_hltPFMETNoMu120;
-   Bool_t          Trigger_hltPFMETNoMu130;
-   Bool_t          Trigger_hltPFMETNoMu140;
-   Bool_t          Trigger_hltPFMETNoMu60;
-   Bool_t          Trigger_hltPFMHTNoMuTightID100;
-   Bool_t          Trigger_hltPFMHTNoMuTightID110;
-   Bool_t          Trigger_hltPFMHTNoMuTightID120;
-   Bool_t          Trigger_hltPFMHTNoMuTightID130;
-   Bool_t          Trigger_hltPFMHTNoMuTightID140;
-   Bool_t          Trigger_hltPFMHTNoMuTightID70;
-   Bool_t          Trigger_hltPFMHTNoMuTightID90;
-   Bool_t          Trigger_hltPFMHTTightID120;
-   Bool_t          Trigger_hltPFMHTTightID130;
-   Bool_t          Trigger_hltPFMHTTightID140;
+   Bool_t          HLT_PFMET120_PFMHT120_IDTight_v;
+   Bool_t          HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_v;
+   Bool_t          HLT_PFMET120_PFMHT120_IDTight_PFHT60_v;
+   Bool_t          HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60_v;
    UInt_t          PV_npvs;
    Float_t         PV_x;
    Float_t         PV_y;
@@ -672,88 +594,10 @@ public :
    TBranch        *b_Evt_luminosityBlock;   //!
    TBranch        *b_Evt_run;   //!
    TBranch        *b_Evt_event;   //!
-   TBranch        *b_Trigger_hltEG20EtFilterLooseHoverE;   //!
-   TBranch        *b_Trigger_hltEG20EtL1TripleEGFilter;   //!
-   TBranch        *b_Trigger_hltEG20HEFilterLooseHoverE;   //!
-   TBranch        *b_Trigger_hltEG20HEL1TripleEGFilter;   //!
-   TBranch        *b_Trigger_hltEG20L1SingleEGLowETOrEtFilter;   //!
-   TBranch        *b_Trigger_hltEG20L1SingleEGLowETOrEtaREtFilter;   //!
-   TBranch        *b_Trigger_hltEG30EBHE10R9Id50b80eHEFilter;   //!
-   TBranch        *b_Trigger_hltEG30EBL1SingleAndDoubleEGOrEtFilter;   //!
-   TBranch        *b_Trigger_hltEG30EBR9Id50b80eR9IdFilter;   //!
-   TBranch        *b_Trigger_hltEG30EIso15HE30EcalIsoLastFilter;   //!
-   TBranch        *b_Trigger_hltEG30EtFilterLooseHoverE;   //!
-   TBranch        *b_Trigger_hltEG30EtL1TripleEGFilter;   //!
-   TBranch        *b_Trigger_hltEG30HE30HEFilter;   //!
-   TBranch        *b_Trigger_hltEG30HEFilterLooseHoverE;   //!
-   TBranch        *b_Trigger_hltEG30HEL1TripleEGFilter;   //!
-   TBranch        *b_Trigger_hltEG30L1IsoEGerJetC34drMin0p3EtFilter;   //!
-   TBranch        *b_Trigger_hltEG30L1SingleAndDoubleEGOrEtFilter;   //!
-   TBranch        *b_Trigger_hltEG30L1SingleAndDoubleEGWithTauWithJetEtFilter;   //!
-   TBranch        *b_Trigger_hltEG30LHE12R9Id50b80eHEFilter;   //!
-   TBranch        *b_Trigger_hltEG30LR9Id50b80eR9IdFilter;   //!
-   TBranch        *b_Trigger_hltEG30PVHE10R9Id50b80eHEFilter;   //!
-   TBranch        *b_Trigger_hltEG30PVR9Id50b80eR9IdFilter;   //!
-   TBranch        *b_Trigger_hltEG30PVrealANDHE10R9Id50b80eHEFilter;   //!
-   TBranch        *b_Trigger_hltEG30PVrealANDR9Id50b80eR9IdFilter;   //!
-   TBranch        *b_Trigger_hltEG60EtFilter;   //!
-   TBranch        *b_Trigger_hltEG60HEFilter;   //!
-   TBranch        *b_Trigger_hltEG60R9Id90CaloIdLIsoLClusterShapeFilter;   //!
-   TBranch        *b_Trigger_hltEG60R9Id90CaloIdLIsoLDisplacedIdFilter;   //!
-   TBranch        *b_Trigger_hltEG60R9Id90CaloIdLIsoLEcalPFClusterIsoFilter;   //!
-   TBranch        *b_Trigger_hltEG60R9Id90CaloIdLIsoLHcalPFClusterIsoFilter;   //!
-   TBranch        *b_Trigger_hltEG60R9Id90CaloIdLIsoLHollowTrackIsoFilter;   //!
-   TBranch        *b_Trigger_hltEG60R9Id90CaloIdLIsoLR9IdFilter;   //!
-   TBranch        *b_Trigger_hltEGL1SingleEGNonIsoOrWithJetAndTauNoPSFilter;   //!
-   TBranch        *b_Trigger_hltHT130Jet30;   //!
-   TBranch        *b_Trigger_hltHT175Jet10;   //!
-   TBranch        *b_Trigger_hltHT200Jet30;   //!
-   TBranch        *b_Trigger_hltL1sSingleAndDoubleEG;   //!
-   TBranch        *b_Trigger_hltL1sSingleAndDoubleEGNonIsoOr;   //!
-   TBranch        *b_Trigger_hltL1sSingleAndDoubleEGor;   //!
-   TBranch        *b_Trigger_hltL1sSingleEG15;   //!
-   TBranch        *b_Trigger_hltL1sSingleEG18;   //!
-   TBranch        *b_Trigger_hltL1sSingleEG24;   //!
-   TBranch        *b_Trigger_hltL1sSingleEG26;   //!
-   TBranch        *b_Trigger_hltL1sSingleEG34to45;   //!
-   TBranch        *b_Trigger_hltL1sSingleEG34to50;   //!
-   TBranch        *b_Trigger_hltL1sSingleEG40to50;   //!
-   TBranch        *b_Trigger_hltL1sSingleEGNonIsoOrWithJetAndTauNoPS;   //!
-   TBranch        *b_Trigger_hltL1sSingleEGor;   //!
-   TBranch        *b_Trigger_hltL1sTripleEGOrDoubleEGOrSingleEG;   //!
-   TBranch        *b_Trigger_hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilter;   //!
-   TBranch        *b_Trigger_hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilterLowPt;   //!
-   TBranch        *b_Trigger_hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilterMidPt;   //!
-   TBranch        *b_Trigger_hltPFHT180Jet30;   //!
-   TBranch        *b_Trigger_hltPFHT250Jet30;   //!
-   TBranch        *b_Trigger_hltPFHT350Jet15;   //!
-   TBranch        *b_Trigger_hltPFMET100;   //!
-   TBranch        *b_Trigger_hltPFMET110;   //!
-   TBranch        *b_Trigger_hltPFMET120;   //!
-   TBranch        *b_Trigger_hltPFMET130;   //!
-   TBranch        *b_Trigger_hltPFMET140;   //!
-   TBranch        *b_Trigger_hltPFMET200;   //!
-   TBranch        *b_Trigger_hltPFMET250;   //!
-   TBranch        *b_Trigger_hltPFMET300;   //!
-   TBranch        *b_Trigger_hltPFMET50;   //!
-   TBranch        *b_Trigger_hltPFMET70;   //!
-   TBranch        *b_Trigger_hltPFMET90;   //!
-   TBranch        *b_Trigger_hltPFMETNoMu100;   //!
-   TBranch        *b_Trigger_hltPFMETNoMu110;   //!
-   TBranch        *b_Trigger_hltPFMETNoMu120;   //!
-   TBranch        *b_Trigger_hltPFMETNoMu130;   //!
-   TBranch        *b_Trigger_hltPFMETNoMu140;   //!
-   TBranch        *b_Trigger_hltPFMETNoMu60;   //!
-   TBranch        *b_Trigger_hltPFMHTNoMuTightID100;   //!
-   TBranch        *b_Trigger_hltPFMHTNoMuTightID110;   //!
-   TBranch        *b_Trigger_hltPFMHTNoMuTightID120;   //!
-   TBranch        *b_Trigger_hltPFMHTNoMuTightID130;   //!
-   TBranch        *b_Trigger_hltPFMHTNoMuTightID140;   //!
-   TBranch        *b_Trigger_hltPFMHTNoMuTightID70;   //!
-   TBranch        *b_Trigger_hltPFMHTNoMuTightID90;   //!
-   TBranch        *b_Trigger_hltPFMHTTightID120;   //!
-   TBranch        *b_Trigger_hltPFMHTTightID130;   //!
-   TBranch        *b_Trigger_hltPFMHTTightID140;   //!
+   TBranch        *b_HLT_PFMET120_PFMHT120_IDTight_v;
+   TBranch        *b_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_v;
+   TBranch        *b_HLT_PFMET120_PFMHT120_IDTight_PFHT60_v;
+   TBranch        *b_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60_v;
    TBranch        *b_PV_npvs;   //!
    TBranch        *b_PV_x;   //!
    TBranch        *b_PV_y;   //!
@@ -1543,88 +1387,12 @@ void llpgtree::Init( TChain *tree, bool doGenInfo ){
    fChain->SetBranchAddress("Evt_run", &Evt_run, &b_Evt_run);
    fChain->SetBranchAddress("Evt_event", &Evt_event, &b_Evt_event);
 
-   fChain->SetBranchAddress("Trigger_hltEG20EtFilterLooseHoverE", &Trigger_hltEG20EtFilterLooseHoverE, &b_Trigger_hltEG20EtFilterLooseHoverE);
-   fChain->SetBranchAddress("Trigger_hltEG20EtL1TripleEGFilter", &Trigger_hltEG20EtL1TripleEGFilter, &b_Trigger_hltEG20EtL1TripleEGFilter);
-   fChain->SetBranchAddress("Trigger_hltEG20HEFilterLooseHoverE", &Trigger_hltEG20HEFilterLooseHoverE, &b_Trigger_hltEG20HEFilterLooseHoverE);
-   fChain->SetBranchAddress("Trigger_hltEG20HEL1TripleEGFilter", &Trigger_hltEG20HEL1TripleEGFilter, &b_Trigger_hltEG20HEL1TripleEGFilter);
-   fChain->SetBranchAddress("Trigger_hltEG20L1SingleEGLowETOrEtFilter", &Trigger_hltEG20L1SingleEGLowETOrEtFilter, &b_Trigger_hltEG20L1SingleEGLowETOrEtFilter);
-   fChain->SetBranchAddress("Trigger_hltEG20L1SingleEGLowETOrEtaREtFilter", &Trigger_hltEG20L1SingleEGLowETOrEtaREtFilter, &b_Trigger_hltEG20L1SingleEGLowETOrEtaREtFilter);
-   fChain->SetBranchAddress("Trigger_hltEG30EBHE10R9Id50b80eHEFilter", &Trigger_hltEG30EBHE10R9Id50b80eHEFilter, &b_Trigger_hltEG30EBHE10R9Id50b80eHEFilter);
-   fChain->SetBranchAddress("Trigger_hltEG30EBL1SingleAndDoubleEGOrEtFilter", &Trigger_hltEG30EBL1SingleAndDoubleEGOrEtFilter, &b_Trigger_hltEG30EBL1SingleAndDoubleEGOrEtFilter);
-   fChain->SetBranchAddress("Trigger_hltEG30EBR9Id50b80eR9IdFilter", &Trigger_hltEG30EBR9Id50b80eR9IdFilter, &b_Trigger_hltEG30EBR9Id50b80eR9IdFilter);
-   fChain->SetBranchAddress("Trigger_hltEG30EIso15HE30EcalIsoLastFilter", &Trigger_hltEG30EIso15HE30EcalIsoLastFilter, &b_Trigger_hltEG30EIso15HE30EcalIsoLastFilter);
-   fChain->SetBranchAddress("Trigger_hltEG30EtFilterLooseHoverE", &Trigger_hltEG30EtFilterLooseHoverE, &b_Trigger_hltEG30EtFilterLooseHoverE);
-   fChain->SetBranchAddress("Trigger_hltEG30EtL1TripleEGFilter", &Trigger_hltEG30EtL1TripleEGFilter, &b_Trigger_hltEG30EtL1TripleEGFilter);
-   fChain->SetBranchAddress("Trigger_hltEG30HE30HEFilter", &Trigger_hltEG30HE30HEFilter, &b_Trigger_hltEG30HE30HEFilter);
-   fChain->SetBranchAddress("Trigger_hltEG30HEFilterLooseHoverE", &Trigger_hltEG30HEFilterLooseHoverE, &b_Trigger_hltEG30HEFilterLooseHoverE);
-   fChain->SetBranchAddress("Trigger_hltEG30HEL1TripleEGFilter", &Trigger_hltEG30HEL1TripleEGFilter, &b_Trigger_hltEG30HEL1TripleEGFilter);
-   fChain->SetBranchAddress("Trigger_hltEG30L1IsoEGerJetC34drMin0p3EtFilter", &Trigger_hltEG30L1IsoEGerJetC34drMin0p3EtFilter, &b_Trigger_hltEG30L1IsoEGerJetC34drMin0p3EtFilter);
-   fChain->SetBranchAddress("Trigger_hltEG30L1SingleAndDoubleEGOrEtFilter", &Trigger_hltEG30L1SingleAndDoubleEGOrEtFilter, &b_Trigger_hltEG30L1SingleAndDoubleEGOrEtFilter);
-   fChain->SetBranchAddress("Trigger_hltEG30L1SingleAndDoubleEGWithTauWithJetEtFilter", &Trigger_hltEG30L1SingleAndDoubleEGWithTauWithJetEtFilter, &b_Trigger_hltEG30L1SingleAndDoubleEGWithTauWithJetEtFilter);
-   fChain->SetBranchAddress("Trigger_hltEG30LHE12R9Id50b80eHEFilter", &Trigger_hltEG30LHE12R9Id50b80eHEFilter, &b_Trigger_hltEG30LHE12R9Id50b80eHEFilter);
-   fChain->SetBranchAddress("Trigger_hltEG30LR9Id50b80eR9IdFilter", &Trigger_hltEG30LR9Id50b80eR9IdFilter, &b_Trigger_hltEG30LR9Id50b80eR9IdFilter);
-   fChain->SetBranchAddress("Trigger_hltEG30PVHE10R9Id50b80eHEFilter", &Trigger_hltEG30PVHE10R9Id50b80eHEFilter, &b_Trigger_hltEG30PVHE10R9Id50b80eHEFilter);
-   fChain->SetBranchAddress("Trigger_hltEG30PVR9Id50b80eR9IdFilter", &Trigger_hltEG30PVR9Id50b80eR9IdFilter, &b_Trigger_hltEG30PVR9Id50b80eR9IdFilter);
-   fChain->SetBranchAddress("Trigger_hltEG30PVrealANDHE10R9Id50b80eHEFilter", &Trigger_hltEG30PVrealANDHE10R9Id50b80eHEFilter, &b_Trigger_hltEG30PVrealANDHE10R9Id50b80eHEFilter);
-   fChain->SetBranchAddress("Trigger_hltEG30PVrealANDR9Id50b80eR9IdFilter", &Trigger_hltEG30PVrealANDR9Id50b80eR9IdFilter, &b_Trigger_hltEG30PVrealANDR9Id50b80eR9IdFilter);
-   fChain->SetBranchAddress("Trigger_hltEG60EtFilter", &Trigger_hltEG60EtFilter, &b_Trigger_hltEG60EtFilter);
-   fChain->SetBranchAddress("Trigger_hltEG60HEFilter", &Trigger_hltEG60HEFilter, &b_Trigger_hltEG60HEFilter);
-   fChain->SetBranchAddress("Trigger_hltEG60R9Id90CaloIdLIsoLClusterShapeFilter", &Trigger_hltEG60R9Id90CaloIdLIsoLClusterShapeFilter, &b_Trigger_hltEG60R9Id90CaloIdLIsoLClusterShapeFilter);
-   fChain->SetBranchAddress("Trigger_hltEG60R9Id90CaloIdLIsoLDisplacedIdFilter", &Trigger_hltEG60R9Id90CaloIdLIsoLDisplacedIdFilter, &b_Trigger_hltEG60R9Id90CaloIdLIsoLDisplacedIdFilter);
-   fChain->SetBranchAddress("Trigger_hltEG60R9Id90CaloIdLIsoLEcalPFClusterIsoFilter", &Trigger_hltEG60R9Id90CaloIdLIsoLEcalPFClusterIsoFilter, &b_Trigger_hltEG60R9Id90CaloIdLIsoLEcalPFClusterIsoFilter);
-   fChain->SetBranchAddress("Trigger_hltEG60R9Id90CaloIdLIsoLHcalPFClusterIsoFilter", &Trigger_hltEG60R9Id90CaloIdLIsoLHcalPFClusterIsoFilter, &b_Trigger_hltEG60R9Id90CaloIdLIsoLHcalPFClusterIsoFilter);
-   fChain->SetBranchAddress("Trigger_hltEG60R9Id90CaloIdLIsoLHollowTrackIsoFilter", &Trigger_hltEG60R9Id90CaloIdLIsoLHollowTrackIsoFilter, &b_Trigger_hltEG60R9Id90CaloIdLIsoLHollowTrackIsoFilter);
-   fChain->SetBranchAddress("Trigger_hltEG60R9Id90CaloIdLIsoLR9IdFilter", &Trigger_hltEG60R9Id90CaloIdLIsoLR9IdFilter, &b_Trigger_hltEG60R9Id90CaloIdLIsoLR9IdFilter);
-   fChain->SetBranchAddress("Trigger_hltEGL1SingleEGNonIsoOrWithJetAndTauNoPSFilter", &Trigger_hltEGL1SingleEGNonIsoOrWithJetAndTauNoPSFilter, &b_Trigger_hltEGL1SingleEGNonIsoOrWithJetAndTauNoPSFilter);
-   fChain->SetBranchAddress("Trigger_hltHT130Jet30", &Trigger_hltHT130Jet30, &b_Trigger_hltHT130Jet30);
-   fChain->SetBranchAddress("Trigger_hltHT175Jet10", &Trigger_hltHT175Jet10, &b_Trigger_hltHT175Jet10);
-   fChain->SetBranchAddress("Trigger_hltHT200Jet30", &Trigger_hltHT200Jet30, &b_Trigger_hltHT200Jet30);
-   fChain->SetBranchAddress("Trigger_hltL1sSingleAndDoubleEG", &Trigger_hltL1sSingleAndDoubleEG, &b_Trigger_hltL1sSingleAndDoubleEG);
-   fChain->SetBranchAddress("Trigger_hltL1sSingleAndDoubleEGNonIsoOr", &Trigger_hltL1sSingleAndDoubleEGNonIsoOr, &b_Trigger_hltL1sSingleAndDoubleEGNonIsoOr);
-   fChain->SetBranchAddress("Trigger_hltL1sSingleAndDoubleEGor", &Trigger_hltL1sSingleAndDoubleEGor, &b_Trigger_hltL1sSingleAndDoubleEGor);
-   fChain->SetBranchAddress("Trigger_hltL1sSingleEG15", &Trigger_hltL1sSingleEG15, &b_Trigger_hltL1sSingleEG15);
-   fChain->SetBranchAddress("Trigger_hltL1sSingleEG18", &Trigger_hltL1sSingleEG18, &b_Trigger_hltL1sSingleEG18);
-   fChain->SetBranchAddress("Trigger_hltL1sSingleEG24", &Trigger_hltL1sSingleEG24, &b_Trigger_hltL1sSingleEG24);
-   fChain->SetBranchAddress("Trigger_hltL1sSingleEG26", &Trigger_hltL1sSingleEG26, &b_Trigger_hltL1sSingleEG26);
-   fChain->SetBranchAddress("Trigger_hltL1sSingleEG34to45", &Trigger_hltL1sSingleEG34to45, &b_Trigger_hltL1sSingleEG34to45);
-   fChain->SetBranchAddress("Trigger_hltL1sSingleEG34to50", &Trigger_hltL1sSingleEG34to50, &b_Trigger_hltL1sSingleEG34to50);
-   fChain->SetBranchAddress("Trigger_hltL1sSingleEG40to50", &Trigger_hltL1sSingleEG40to50, &b_Trigger_hltL1sSingleEG40to50);
-   fChain->SetBranchAddress("Trigger_hltL1sSingleEGNonIsoOrWithJetAndTauNoPS", &Trigger_hltL1sSingleEGNonIsoOrWithJetAndTauNoPS, &b_Trigger_hltL1sSingleEGNonIsoOrWithJetAndTauNoPS);
-   fChain->SetBranchAddress("Trigger_hltL1sSingleEGor", &Trigger_hltL1sSingleEGor, &b_Trigger_hltL1sSingleEGor);
-   fChain->SetBranchAddress("Trigger_hltL1sTripleEGOrDoubleEGOrSingleEG", &Trigger_hltL1sTripleEGOrDoubleEGOrSingleEG, &b_Trigger_hltL1sTripleEGOrDoubleEGOrSingleEG);
-   fChain->SetBranchAddress("Trigger_hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilter", &Trigger_hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilter, &b_Trigger_hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilter);
-   fChain->SetBranchAddress("Trigger_hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilterLowPt", &Trigger_hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilterLowPt, &b_Trigger_hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilterLowPt);
-   fChain->SetBranchAddress("Trigger_hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilterMidPt", &Trigger_hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilterMidPt, &b_Trigger_hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilterMidPt);
-   fChain->SetBranchAddress("Trigger_hltPFHT180Jet30", &Trigger_hltPFHT180Jet30, &b_Trigger_hltPFHT180Jet30);
-   fChain->SetBranchAddress("Trigger_hltPFHT250Jet30", &Trigger_hltPFHT250Jet30, &b_Trigger_hltPFHT250Jet30);
-   fChain->SetBranchAddress("Trigger_hltPFHT350Jet15", &Trigger_hltPFHT350Jet15, &b_Trigger_hltPFHT350Jet15);
-   fChain->SetBranchAddress("Trigger_hltPFMET100", &Trigger_hltPFMET100, &b_Trigger_hltPFMET100);
-   fChain->SetBranchAddress("Trigger_hltPFMET110", &Trigger_hltPFMET110, &b_Trigger_hltPFMET110);
-   fChain->SetBranchAddress("Trigger_hltPFMET120", &Trigger_hltPFMET120, &b_Trigger_hltPFMET120);
-   fChain->SetBranchAddress("Trigger_hltPFMET130", &Trigger_hltPFMET130, &b_Trigger_hltPFMET130);
-   fChain->SetBranchAddress("Trigger_hltPFMET140", &Trigger_hltPFMET140, &b_Trigger_hltPFMET140);
-   fChain->SetBranchAddress("Trigger_hltPFMET200", &Trigger_hltPFMET200, &b_Trigger_hltPFMET200);
-   fChain->SetBranchAddress("Trigger_hltPFMET250", &Trigger_hltPFMET250, &b_Trigger_hltPFMET250);
-   fChain->SetBranchAddress("Trigger_hltPFMET300", &Trigger_hltPFMET300, &b_Trigger_hltPFMET300);
-   fChain->SetBranchAddress("Trigger_hltPFMET50", &Trigger_hltPFMET50, &b_Trigger_hltPFMET50);
-   fChain->SetBranchAddress("Trigger_hltPFMET70", &Trigger_hltPFMET70, &b_Trigger_hltPFMET70);
-   fChain->SetBranchAddress("Trigger_hltPFMET90", &Trigger_hltPFMET90, &b_Trigger_hltPFMET90);
-   fChain->SetBranchAddress("Trigger_hltPFMETNoMu100", &Trigger_hltPFMETNoMu100, &b_Trigger_hltPFMETNoMu100);
-   fChain->SetBranchAddress("Trigger_hltPFMETNoMu110", &Trigger_hltPFMETNoMu110, &b_Trigger_hltPFMETNoMu110);
-   fChain->SetBranchAddress("Trigger_hltPFMETNoMu120", &Trigger_hltPFMETNoMu120, &b_Trigger_hltPFMETNoMu120);
-   fChain->SetBranchAddress("Trigger_hltPFMETNoMu130", &Trigger_hltPFMETNoMu130, &b_Trigger_hltPFMETNoMu130);
-   fChain->SetBranchAddress("Trigger_hltPFMETNoMu140", &Trigger_hltPFMETNoMu140, &b_Trigger_hltPFMETNoMu140);
-   fChain->SetBranchAddress("Trigger_hltPFMETNoMu60", &Trigger_hltPFMETNoMu60, &b_Trigger_hltPFMETNoMu60);
-   fChain->SetBranchAddress("Trigger_hltPFMHTNoMuTightID100", &Trigger_hltPFMHTNoMuTightID100, &b_Trigger_hltPFMHTNoMuTightID100);
-   fChain->SetBranchAddress("Trigger_hltPFMHTNoMuTightID110", &Trigger_hltPFMHTNoMuTightID110, &b_Trigger_hltPFMHTNoMuTightID110);
-   fChain->SetBranchAddress("Trigger_hltPFMHTNoMuTightID120", &Trigger_hltPFMHTNoMuTightID120, &b_Trigger_hltPFMHTNoMuTightID120);
-   fChain->SetBranchAddress("Trigger_hltPFMHTNoMuTightID130", &Trigger_hltPFMHTNoMuTightID130, &b_Trigger_hltPFMHTNoMuTightID130);
-   fChain->SetBranchAddress("Trigger_hltPFMHTNoMuTightID140", &Trigger_hltPFMHTNoMuTightID140, &b_Trigger_hltPFMHTNoMuTightID140);
-   fChain->SetBranchAddress("Trigger_hltPFMHTNoMuTightID70", &Trigger_hltPFMHTNoMuTightID70, &b_Trigger_hltPFMHTNoMuTightID70);
-   fChain->SetBranchAddress("Trigger_hltPFMHTNoMuTightID90", &Trigger_hltPFMHTNoMuTightID90, &b_Trigger_hltPFMHTNoMuTightID90);
-   fChain->SetBranchAddress("Trigger_hltPFMHTTightID120", &Trigger_hltPFMHTTightID120, &b_Trigger_hltPFMHTTightID120);
-   fChain->SetBranchAddress("Trigger_hltPFMHTTightID130", &Trigger_hltPFMHTTightID130, &b_Trigger_hltPFMHTTightID130);
-   fChain->SetBranchAddress("Trigger_hltPFMHTTightID140", &Trigger_hltPFMHTTightID140, &b_Trigger_hltPFMHTTightID140);
+   if( not doGenInfo ){
+   fChain->SetBranchAddress("HLT_PFMET120_PFMHT120_IDTight_v", &HLT_PFMET120_PFMHT120_IDTight_v, &b_HLT_PFMET120_PFMHT120_IDTight_v);
+   fChain->SetBranchAddress("HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_v", &HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_v, &b_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_v);
+   fChain->SetBranchAddress("HLT_PFMET120_PFMHT120_IDTight_PFHT60_v", &HLT_PFMET120_PFMHT120_IDTight_PFHT60_v, &b_HLT_PFMET120_PFMHT120_IDTight_PFHT60_v);
+   fChain->SetBranchAddress("HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60_v", &HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60_v, &b_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60_v);
+   }//<<>>if( not doGenInfo )
 
    fChain->SetBranchAddress("PV_npvs", &PV_npvs, &b_PV_npvs);
    fChain->SetBranchAddress("PV_x", &PV_x, &b_PV_x);
@@ -2039,88 +1807,12 @@ void llpgtree::getBranches( Long64_t entry, bool doGenInfo ){
    b_Evt_run->GetEntry(entry);   //!
    b_Evt_event->GetEntry(entry);   //!
 
-   b_Trigger_hltEG20EtFilterLooseHoverE->GetEntry(entry);   //!
-   b_Trigger_hltEG20EtL1TripleEGFilter->GetEntry(entry);   //!
-   b_Trigger_hltEG20HEFilterLooseHoverE->GetEntry(entry);   //!
-   b_Trigger_hltEG20HEL1TripleEGFilter->GetEntry(entry);   //!
-   b_Trigger_hltEG20L1SingleEGLowETOrEtFilter->GetEntry(entry);   //!
-   b_Trigger_hltEG20L1SingleEGLowETOrEtaREtFilter->GetEntry(entry);   //!
-   b_Trigger_hltEG30EBHE10R9Id50b80eHEFilter->GetEntry(entry);   //!
-   b_Trigger_hltEG30EBL1SingleAndDoubleEGOrEtFilter->GetEntry(entry);   //!
-   b_Trigger_hltEG30EBR9Id50b80eR9IdFilter->GetEntry(entry);   //!
-   b_Trigger_hltEG30EIso15HE30EcalIsoLastFilter->GetEntry(entry);   //!
-   b_Trigger_hltEG30EtFilterLooseHoverE->GetEntry(entry);   //!
-   b_Trigger_hltEG30EtL1TripleEGFilter->GetEntry(entry);   //!
-   b_Trigger_hltEG30HE30HEFilter->GetEntry(entry);   //!
-   b_Trigger_hltEG30HEFilterLooseHoverE->GetEntry(entry);   //!
-   b_Trigger_hltEG30HEL1TripleEGFilter->GetEntry(entry);   //!
-   b_Trigger_hltEG30L1IsoEGerJetC34drMin0p3EtFilter->GetEntry(entry);   //!
-   b_Trigger_hltEG30L1SingleAndDoubleEGOrEtFilter->GetEntry(entry);   //!
-   b_Trigger_hltEG30L1SingleAndDoubleEGWithTauWithJetEtFilter->GetEntry(entry);   //!
-   b_Trigger_hltEG30LHE12R9Id50b80eHEFilter->GetEntry(entry);   //!
-   b_Trigger_hltEG30LR9Id50b80eR9IdFilter->GetEntry(entry);   //!
-   b_Trigger_hltEG30PVHE10R9Id50b80eHEFilter->GetEntry(entry);   //!
-   b_Trigger_hltEG30PVR9Id50b80eR9IdFilter->GetEntry(entry);   //!
-   b_Trigger_hltEG30PVrealANDHE10R9Id50b80eHEFilter->GetEntry(entry);   //!
-   b_Trigger_hltEG30PVrealANDR9Id50b80eR9IdFilter->GetEntry(entry);   //!
-   b_Trigger_hltEG60EtFilter->GetEntry(entry);   //!
-   b_Trigger_hltEG60HEFilter->GetEntry(entry);   //!
-   b_Trigger_hltEG60R9Id90CaloIdLIsoLClusterShapeFilter->GetEntry(entry);   //!
-   b_Trigger_hltEG60R9Id90CaloIdLIsoLDisplacedIdFilter->GetEntry(entry);   //!
-   b_Trigger_hltEG60R9Id90CaloIdLIsoLEcalPFClusterIsoFilter->GetEntry(entry);   //!
-   b_Trigger_hltEG60R9Id90CaloIdLIsoLHcalPFClusterIsoFilter->GetEntry(entry);   //!
-   b_Trigger_hltEG60R9Id90CaloIdLIsoLHollowTrackIsoFilter->GetEntry(entry);   //!
-   b_Trigger_hltEG60R9Id90CaloIdLIsoLR9IdFilter->GetEntry(entry);   //!
-   b_Trigger_hltEGL1SingleEGNonIsoOrWithJetAndTauNoPSFilter->GetEntry(entry);   //!
-   b_Trigger_hltHT130Jet30->GetEntry(entry);   //!
-   b_Trigger_hltHT175Jet10->GetEntry(entry);   //!
-   b_Trigger_hltHT200Jet30->GetEntry(entry);   //!
-   b_Trigger_hltL1sSingleAndDoubleEG->GetEntry(entry);   //!
-   b_Trigger_hltL1sSingleAndDoubleEGNonIsoOr->GetEntry(entry);   //!
-   b_Trigger_hltL1sSingleAndDoubleEGor->GetEntry(entry);   //!
-   b_Trigger_hltL1sSingleEG15->GetEntry(entry);   //!
-   b_Trigger_hltL1sSingleEG18->GetEntry(entry);   //!
-   b_Trigger_hltL1sSingleEG24->GetEntry(entry);   //!
-   b_Trigger_hltL1sSingleEG26->GetEntry(entry);   //!
-   b_Trigger_hltL1sSingleEG34to45->GetEntry(entry);   //!
-   b_Trigger_hltL1sSingleEG34to50->GetEntry(entry);   //!
-   b_Trigger_hltL1sSingleEG40to50->GetEntry(entry);   //!
-   b_Trigger_hltL1sSingleEGNonIsoOrWithJetAndTauNoPS->GetEntry(entry);   //!
-   b_Trigger_hltL1sSingleEGor->GetEntry(entry);   //!
-   b_Trigger_hltL1sTripleEGOrDoubleEGOrSingleEG->GetEntry(entry);   //!
-   b_Trigger_hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilter->GetEntry(entry);   //!
-   b_Trigger_hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilterLowPt->GetEntry(entry);   //!
-   b_Trigger_hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilterMidPt->GetEntry(entry);   //!
-   b_Trigger_hltPFHT180Jet30->GetEntry(entry);   //!
-   b_Trigger_hltPFHT250Jet30->GetEntry(entry);   //!
-   b_Trigger_hltPFHT350Jet15->GetEntry(entry);   //!
-   b_Trigger_hltPFMET100->GetEntry(entry);   //!
-   b_Trigger_hltPFMET110->GetEntry(entry);   //!
-   b_Trigger_hltPFMET120->GetEntry(entry);   //!
-   b_Trigger_hltPFMET130->GetEntry(entry);   //!
-   b_Trigger_hltPFMET140->GetEntry(entry);   //!
-   b_Trigger_hltPFMET200->GetEntry(entry);   //!
-   b_Trigger_hltPFMET250->GetEntry(entry);   //!
-   b_Trigger_hltPFMET300->GetEntry(entry);   //!
-   b_Trigger_hltPFMET50->GetEntry(entry);   //!
-   b_Trigger_hltPFMET70->GetEntry(entry);   //!
-   b_Trigger_hltPFMET90->GetEntry(entry);   //!
-   b_Trigger_hltPFMETNoMu100->GetEntry(entry);   //!
-   b_Trigger_hltPFMETNoMu110->GetEntry(entry);   //!
-   b_Trigger_hltPFMETNoMu120->GetEntry(entry);   //!
-   b_Trigger_hltPFMETNoMu130->GetEntry(entry);   //!
-   b_Trigger_hltPFMETNoMu140->GetEntry(entry);   //!
-   b_Trigger_hltPFMETNoMu60->GetEntry(entry);   //!
-   b_Trigger_hltPFMHTNoMuTightID100->GetEntry(entry);   //!
-   b_Trigger_hltPFMHTNoMuTightID110->GetEntry(entry);   //!
-   b_Trigger_hltPFMHTNoMuTightID120->GetEntry(entry);   //!
-   b_Trigger_hltPFMHTNoMuTightID130->GetEntry(entry);   //!
-   b_Trigger_hltPFMHTNoMuTightID140->GetEntry(entry);   //!
-   b_Trigger_hltPFMHTNoMuTightID70->GetEntry(entry);   //!
-   b_Trigger_hltPFMHTNoMuTightID90->GetEntry(entry);   //!
-   b_Trigger_hltPFMHTTightID120->GetEntry(entry);   //!
-   b_Trigger_hltPFMHTTightID130->GetEntry(entry);   //!
-   b_Trigger_hltPFMHTTightID140->GetEntry(entry);   //!
+   if( not doGenInfo ){
+   b_HLT_PFMET120_PFMHT120_IDTight_v->GetEntry(entry);   //!
+   b_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_v->GetEntry(entry);   //!
+   b_HLT_PFMET120_PFMHT120_IDTight_PFHT60_v->GetEntry(entry);   //!
+   b_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60_v->GetEntry(entry);   //!
+   }//<<>>if( not doGenInfo )
 
    b_PV_npvs->GetEntry(entry);   //!
    b_PV_x->GetEntry(entry);   //!
