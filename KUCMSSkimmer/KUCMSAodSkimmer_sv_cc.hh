@@ -479,7 +479,7 @@ void KUCMSAodSkimmer::processMLPhotons(){
 	ca.SetPV(PV_x, PV_y, PV_z); //set to PV coords (assuming these are global vars)
 	ca.SetTransferFactor(1/30.); //set to 1/min photon pt
 	for( uInt it = 0; it < nPhotons; it++ ){
-		cout << "nphoton #" << it << endl;
+		//cout << "nphoton #" << it << endl;
 		if( not isSelPho[it] ) continue;
 		std::map< unsigned int, float > rhtresmap;
 		std::map< double, unsigned int > energyToId;
@@ -502,7 +502,7 @@ void KUCMSAodSkimmer::processMLPhotons(){
                 		if( DEBUG ) std::cout << " " << erht << " " << rhx << " " << rhy << " " << rhz << std::endl;
 				//skip endcap rechits
 				if(fabs((*ECALRecHit_eta)[erhiter]) > 1.479) continue;
-				cout << "rh e " <<  erhe << " rh t " << erht << " rhid " << scrhid << " eta " << (*ECALRecHit_eta)[erhiter] << " phi " << (*ECALRecHit_phi)[erhiter] << endl;
+				//cout << "rh e " <<  erhe << " rh t " << erht << " rhid " << scrhid << " eta " << (*ECALRecHit_eta)[erhiter] << " phi " << (*ECALRecHit_phi)[erhiter] << endl;
 				//cout << "rh e " <<  erhe << " rh t " << erht << " rhid " << scrhid << " eta " << (*ECALRecHit_eta)[erhiter] << endl;
 				ca.AddRecHit(rhx, rhy, rhz, erhe, erht, scrhid, hasGainSwitch);
 			}//<<>>if( ecalrhiter != -1 )
@@ -532,12 +532,10 @@ void KUCMSAodSkimmer::processMLPhotons(){
 
 		vector<bool> puscores;
 		phoobj.GetPUScores(puscores);
-		cout << "got pu scores " << puscores.size() << endl;
 		vector<pair<int, double>> detbkgscores;
 		phoobj.GetDetBkgScores(detbkgscores);
-		cout << "# subclusters " << nk << endl;
 		for(int k = 0; k < nk; k++){
-			cout << "cluster #" << k << endl;
+			//cout << "cluster #" << k << endl;
 			float subcltime = subcls[k].t();
 			float subcleta = subcls[k].eta();
 			float subclphi = subcls[k].phi();
@@ -591,7 +589,6 @@ void KUCMSAodSkimmer::processMLPhotons(){
 		//calculate time significance
 		//CHECK
 		float timeSignificance = phoobj.GetObjTimeSig();
-		cout << "photon time significance " << timeSignificance << endl;
 		selPhotons.fillBranch( "selPhoBHC_timeSignficance", timeSignificance);
 
 
@@ -731,9 +728,7 @@ void KUCMSAodSkimmer::processMLJets(){
 		jetobj.GetSubclusters(subcls);
 
 		vector<bool> puscores;
-		cout << "getting pu scores" << endl;
 		jetobj.GetPUScores(puscores);
-		cout << "got pu scores" << endl;
 		vector<pair<int, double>> detbkgscores;
 		jetobj.GetDetBkgScores(detbkgscores);
 		for(int k = 0; k < nk; k++){
