@@ -7,7 +7,8 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#include "KUCMSAodSkimmer_sv_cc.hh"
+#include "KUCMSAodSkimmer_Main.hh"
+//#include "KUCMSAodSkimmer_sv_cc.hh"
 //#include "KUCMSAodSkimmer_cc_probe.hh"
 //#include "KUCMSAodSkimmer_rh_cc.hh"
 //#include "KUCMSAodSkimmer_v16_rh_cc.hh"
@@ -53,7 +54,8 @@ int main ( int argc, char *argv[] ){
                 //const std::string outfilename = "_rjrskim_v32.root"; // SV vars + BaysC && TimeCali added
                 //const std::string outfilename = "_rjrskim_v36.root"; // expanded hts & hs rjr vars selection
                 //const std::string outfilename = "_rjrskim_v37.root"; // added SV info, nIsoTracks, and rjr JXX 4vector information
-                const std::string outfilename = "_rjrskim_v38.root"; // added additional SV information and photon time significance
+                //const std::string outfilename = "_rjrskim_v38.root"; // added additional SV information and photon time significance
+                const std::string outfilename = "_rjrskim_v39.root"; // included BHC processing and branchs, added triggerpath varibles
 
                 int skipCnt = 0; // used to skip files ( in tchian ) for fast processing - if( nFiles%skipCnt != 0 ) continue; --  disabled in code  --  
 				// !!!!!!!!!!!!!!!!!!!  alternate RJR setup with invis in comb split rule

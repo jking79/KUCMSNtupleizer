@@ -35,9 +35,13 @@
 
 #ifndef KUCMSAodSkimmer_header
 #define KUCMSAodSkimmer_header
+
 //--------------------------------------------------------------------------------------------------------------------------------------
 // KUCMSAodSkimmer class ---------------------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------------------------------------------
+
+//#define DEBUG true
+#define DEBUG false
 
 using namespace RestFrames;
 
@@ -73,7 +77,20 @@ class KUCMSAodSkimmer : public llpgtree {
 	void startJobs();
     void endJobs();
 	void fillConfigTree( TTree* fOutTree );
+
+	// set branches
     void setOutputBranches( TTree* fOutTree );
+	void setEvtVarMetBranches( TTree* fOutTree );
+	void setTrackBranches( TTree* fOutTree );
+	void setEcalBranches( TTree* fOutTree );
+	void setGenBranches( TTree* fOutTree );
+	void setPhotonBranches( TTree* fOutTree );
+	void setRJRBranches( TTree* fOutTree );
+	void setElectronBranches( TTree* fOutTree );
+	void setJetsBranches( TTree* fOutTree );
+	void setMuonsBranches( TTree* fOutTree );
+	void setSVBranches( TTree* fOutTree );
+	void setBCBranches( TTree* fOutTree );
 
 	// object processing & selection
     void processTracks();
@@ -88,9 +105,10 @@ class KUCMSAodSkimmer : public llpgtree {
     void processJets();
 	void processMet();
     void processSV();
+
 	void processRJR( int type, bool newEvent );
-	void processMLPhotons();
-    void processMLJets();
+	void processBHCPhotons();
+    void processBHCJets();
 
 	int getPhoQuality( int it );
     int getJetQuality( int it );	
@@ -196,6 +214,7 @@ class KUCMSAodSkimmer : public llpgtree {
     KUCMSBranchManager selGenPart;
     KUCMSBranchManager selSV;
     KUCMSBranchManager selTracks;
+    KUCMSBranchManager BHCInfo;
 
    std::vector<float>   *OSuperCluster_diffEnergy;
    std::vector<float>   *OSuperCluster_dR;
@@ -215,7 +234,6 @@ class KUCMSAodSkimmer : public llpgtree {
    TBranch        *b_OSuperCluster_nOtherIn;   //!
    TBranch        *b_OSuperCluster_otherSeedID;   //!
    TBranch        *b_OSuperCluster_nXtalOverlap;   //!
-
 
 };
 
