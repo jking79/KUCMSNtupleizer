@@ -1624,19 +1624,25 @@ void KUCMSAodSkimmer::processPhotons(){
         if( erhiter != -1 ){
 			float gainwt = 1;
             float erhe = (*ECALRecHit_energy)[erhiter];
+			float erampres = (*ECALRecHit_ampres)[erhiter];
             float erht = erh_corTime[erhiter];
             float erhar = (*ECALRecHit_ampres)[erhiter];
-			float ertoftime = erht - calcor + pvtof;
+			float erx = (*ECALRecHit_rhx)[erhiter];
+            float ery = (*ECALRecHit_rhy)[erhiter];
+            float erz = (*ECALRecHit_rhz)[erhiter];
+			float cor_cms000 = hypo(erx,ery,erz)/SOL;
+			float cor_tofPVtoRH = hypo(erx-PV_x,ery-PV_y,erz-PV_z)/SOL;
+			float ertoftime = erht - cor_cms000 + cor_tofPVtoRH;
 			//float erres = std::sqrt( (sq2( 24.0/erhar ) + (sq2(2.5)/erhar) + 2*sq2(0.099))/2.0 );
             //float erres = std::sqrt( sq2( 25.3/erhar ) + 2*sq2(0.085) );
 			float erres = erh_timeRes[erhiter];
 			bool hasGainSwitch = (*ECALRecHit_hasGS1)[erhiter] || (*ECALRecHit_hasGS6)[erhiter];
 			if( hasGainSwitch ) gainwt = 0;
-			erhe = erhe*gainwt;
-            setw += erhe*ertoftime;
-			serw += erhe*erres;
-            sew += erhe;
-            if( erhe > leadE ){ leadE = erhe; leadEtime = ertoftime; leadEar = erhar; leadRHID = pscrhid; }
+			erhar = erampres*gainwt;
+            setw += erhar*ertoftime;
+			serw += erhar*erres;
+            sew += erhar;
+            if( erhe*gainwt > leadE ){ leadE = erhe; leadEtime = ertoftime; leadEar = erhar; leadRHID = pscrhid; }
 			//if( ertoftime == time ){ seedE = erhe; seedT = ertoftime; seedar = erhar; } 
         }//<<>>if( scrhid == rhid )
     }//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
@@ -3402,7 +3408,7 @@ void KUCMSAodSkimmer::initHists(){
 
     ////hist2d[1] = new TH2D("jetDrMuTime_pt", "jetDrMuTime_pt", jtdiv, -1*jtran, jtran, 500, 0, 500);
 	hist2d[1] = new TH2D("scorigcross", "SC Types;Mian-Orig;Std-OOT-Excluded", 2, 0, 2, 3, 0, 3); 
-    hist2d[2] = new TH2D("rjrPst_v_rjrdPhiSX1", "rjrDphiMETV_v_rjrPst;rjrDphiMETV;rjrPst", 32, 0, 3.2, 200, 0, 2000);
+    hist2d[2] = new TH2D("rjrPst_v_rjrdPhiSX1", "rjrDphiMETV_v_rjrPst;rjrDphiMETV;rjrPst", 32, 0, 3.2, 60, 0, 3000);
 
 	//------------------------------------------------------------------------------------------
     //------ 3D Hists --------------------------------------------------------------------------
