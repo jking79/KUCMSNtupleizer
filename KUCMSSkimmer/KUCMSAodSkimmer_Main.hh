@@ -337,14 +337,14 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
     std::cout << ")" << std::endl;
 
     std::cout << "Setting up For Main Loop." << std::endl;
-    //int loopCounter(1000);
-    int loopCounter(1);
+    int loopCounter(1000);
+    //int loopCounter(1);
     auto nEntries = fInTree->GetEntries();
     if(DEBUG){ nEntries = 1000; loopCounter = 100; }
     std::cout << "Proccessing " << nEntries << " entries." << std::endl;
     nEvents = nEntries;
     //DEBUG
-    nEntries = 100;
+    //nEntries = 100;
     for (Long64_t centry = 0; centry < nEntries; centry++){
 
       if( centry%loopCounter == 0 ) std::cout << "Proccessed " << centry << " of " << nEntries << " entries." << std::endl;
@@ -477,8 +477,8 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
   auto saveToTree = eventSelection();	
   if( saveToTree ){ 
 
-    processBHCPhotons(); 
-    processBHCJets(); 
+    //processBHCPhotons(); 
+    //processBHCJets(); 
 	processRJR(0,true); 
 	processRJR(1,false); 
 
