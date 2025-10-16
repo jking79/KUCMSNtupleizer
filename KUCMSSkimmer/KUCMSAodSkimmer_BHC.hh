@@ -38,9 +38,11 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 	uInt nPhotons = Photon_excluded->size();
 	if( DEBUG ) std::cout << " - Looping over for " << nPhotons << " photons to get BC info" << std::endl;
 	ClusterAnalyzer ca;
+	//ca.SetVerbosity(0); //can turn on to see low-level warnings
 	//ca.SetDetectorCenter(x, y, z); //set to beamspot center, defaults to (0,0,0)
 	ca.SetPV(PV_x, PV_y, PV_z); //set to PV coords (assuming these are global vars)
 	ca.SetTransferFactor(1/30.); //set to 1/min photon pt
+	ca.SetupDetIDsEB();
 	for( uInt it = 0; it < nPhotons; it++ ){
 		//cout << "nphoton #" << it << endl;
 		if( not isSelPho[it] ) continue;
@@ -81,7 +83,9 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 
 		//put safety in so that if there are < 2 rhs to cluster, skip
 
-		ClusterObj phoobj = ca.RunClustering();
+		ClusterObj phoobj;
+		int clusterret = ca.RunClustering(phoobj);
+		if(clusterret == -1) continue; //bad clustering (not enough points, not able to find any clusters, etc)
 		phoobj.CalculateObjTimes();
 		phoobj.CalculatePUScores();
 		phoobj.CalculateDetBkgScores();
@@ -231,9 +235,11 @@ void KUCMSAodSkimmer::processBHCJets(){
     if( DEBUG ) std::cout << "Finding BC information for jets" << std::endl;
 
 	ClusterAnalyzer ca;
+	//ca.SetVerbosity(0); //can turn on to see low-level warnings
 	//ca.SetDetectorCenter(x, y, z); //set to beamspot center, defaults to (0,0,0)
 	ca.SetPV(PV_x, PV_y, PV_z); //set to PV coords (assuming these are global vars)
 	ca.SetTransferFactor(1/30.); //set to 1/min jet pt
+	ca.SetupDetIDsEB();
 
     std::vector<Jet> jetrhs;
   	uInt nJets = Jet_energy->size();
@@ -277,7 +283,9 @@ void KUCMSAodSkimmer::processBHCJets(){
 		//if not enough rechits to cluster, skip this object
 		if(ca.GetNRecHits() < 2) continue;
 
-		ClusterObj jetobj = ca.RunClustering();
+		ClusterObj jetobj;
+		int clusterret = ca.RunClustering(jetobj);
+		if(clusterret == -1) continue; //bad clustering (not enough points, not able to find any clusters, etc)
 		jetobj.CalculateObjTimes();
 		jetobj.CalculatePUScores();
 		jetobj.CalculateDetBkgScores();
