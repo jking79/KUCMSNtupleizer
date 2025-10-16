@@ -477,8 +477,8 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
   auto saveToTree = eventSelection();	
   if( saveToTree ){ 
 
-    //processBHCPhotons(); 
-    //processBHCJets(); 
+    processBHCPhotons(); 
+    processBHCJets(); 
 	processRJR(0,true); 
 	processRJR(1,false); 
 

@@ -35,6 +35,8 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 
 	if( DEBUG ) std::cout << "Finding BC information for photons" << std::endl;
 
+    int selPhoIndex = -1;
+
 	uInt nPhotons = Photon_excluded->size();
 	if( DEBUG ) std::cout << " - Looping over for " << nPhotons << " photons to get BC info" << std::endl;
 	ClusterAnalyzer ca;
@@ -46,6 +48,8 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 	for( uInt it = 0; it < nPhotons; it++ ){
 		//cout << "nphoton #" << it << endl;
 		if( not isSelPho[it] ) continue;
+		selPhoIndex++;
+
 		std::map< unsigned int, float > rhtresmap;
 		std::map< double, unsigned int > energyToId;
         auto scIndx = (*Photon_scIndex)[it];
@@ -90,6 +94,8 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 		phoobj.CalculatePUScores();
 		phoobj.CalculateDetBkgScores();
 		phoobj.CalculateObjTimeSig(rhtresmap);
+
+		BHCInfo.fillBranch( "selPhoBHC_selPhotonIndex", selPhoIndex );
 
 		//do subcluster observables
 		int nk = phoobj.GetNSubclusters();
@@ -234,6 +240,8 @@ void KUCMSAodSkimmer::processBHCJets(){
 
     if( DEBUG ) std::cout << "Finding BC information for jets" << std::endl;
 
+	int selJetIndex = -1;
+
 	ClusterAnalyzer ca;
 	//ca.SetVerbosity(0); //can turn on to see low-level warnings
 	//ca.SetDetectorCenter(x, y, z); //set to beamspot center, defaults to (0,0,0)
@@ -252,6 +260,7 @@ void KUCMSAodSkimmer::processBHCJets(){
     if( DEBUG ) std::cout << " - Looping over for " << nJets << " photons to get BC info" << std::endl;
   	for( uInt it = 0; it < nJets; it++ ){
         if( not isSelJet[it] ) continue;
+		selJetIndex++;
 
     	std::map< unsigned int, float > rhtresmap;
     	auto rhids = (*Jet_drRhIds)[it];
@@ -291,6 +300,7 @@ void KUCMSAodSkimmer::processBHCJets(){
 		jetobj.CalculateDetBkgScores();
 		jetobj.CalculateObjTimeSig(rhtresmap);
 
+		BHCInfo.fillBranch( "selJetBHC_selJetIndex", selJetIndex );
 
 		//do subcluster observables
 		int nk = jetobj.GetNSubclusters();
@@ -449,6 +459,7 @@ void KUCMSAodSkimmer::processBHCJets(){
 
 void KUCMSAodSkimmer::setBCBranches( TTree* fOutTree ){
 
+    BHCInfo.makeBranch( "selPhoBHC_selPhotonIndex", VINT);
 	BHCInfo.makeBranch( "selPhoBHC_nSubclusters", VINT);
 	BHCInfo.makeBranch( "selPhoBHCSubcl_time", VFLOAT);			
 	BHCInfo.makeBranch( "selPhoBHCSubcl_eta", VFLOAT);			
@@ -475,6 +486,8 @@ void KUCMSAodSkimmer::setBCBranches( TTree* fOutTree ){
 	BHCInfo.makeBranch( "selPho"+cleanedType+"_minlen", VFLOAT);
 	BHCInfo.makeBranch( "selPho"+cleanedType+"_timeSignficance", VFLOAT);
   }
+
+    BHCInfo.makeBranch( "selJetBHC_selJetIndex", VINT);
 	BHCInfo.makeBranch( "selJetBHC_nSubclusters", VINT);
 	BHCInfo.makeBranch( "selJetBHCSubcl_time", VFLOAT);			
 	BHCInfo.makeBranch( "selJetBHCSubcl_eta", VFLOAT);			
