@@ -215,7 +215,8 @@ class KUCMSAodSkimmer : public llpgtree {
     KUCMSBranchManager selGenPart;
     KUCMSBranchManager selSV;
     KUCMSBranchManager selTracks;
-    KUCMSBranchManager BHCInfo;
+    KUCMSBranchManager BHCPhoInfo;
+    KUCMSBranchManager BHCJetInfo;
 
    std::vector<float>   *OSuperCluster_diffEnergy;
    std::vector<float>   *OSuperCluster_dR;
