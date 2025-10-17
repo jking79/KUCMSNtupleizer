@@ -232,6 +232,8 @@ void KUCMSAodSkimmer::processPhotons(){
     float seedAres = 0;
     float seedTres = 0;
 	uInt seedRHID = 0;
+	std::vector<float> erhamps;
+	float sumerha = 0;
     //auto nRecHits = ECALRecHit_ID->size();
     for( int sciter = 0; sciter < nrh; sciter++  ){
         uInt pscrhid = rhids[sciter];
@@ -250,7 +252,10 @@ void KUCMSAodSkimmer::processPhotons(){
 			float ertres = erh_timeRes[erhiter];
 			bool hasGainSwitch = (*ECALRecHit_hasGS1)[erhiter] || (*ECALRecHit_hasGS6)[erhiter];
 			if( hasGainSwitch ) gainwt = 0;
-			float erhar = erampres*gainwt;
+			float invertres = 1/ertres;
+			erhamps.push_back(invertres);
+			sumerha += invertres;
+			float erhar = invertres*gainwt;
             sumtw += erhar*ertoftime;
 			sumtrw += erhar*ertres;
             sumw += erhar;
@@ -265,9 +270,14 @@ void KUCMSAodSkimmer::processPhotons(){
 	if( ltimeres != leadTres ) std::cout << " !!!!!!!   lead res mis : " << ltimeres << " v " << leadTres << std::endl;
     float stimeres = timeCali->getTimeResoltuion( seedAres, seedRHID, Evt_run, tctag, mctype );
     if( stimeres != seedTres ) std::cout << " !!!!!!!   lead res mis : " << stimeres << " v " << seedTres << std::endl;
+	leadTres = std::sqrt(leadTres);
+	seedTres = std::sqrt(seedTres);
+	phoWRes = std::sqrt(phoWRes);
 	float leadtimesig = leadTime/leadTres;
     float seedtimesig = seedTime/seedTres;
 	float wttimesig = phoWTime/phoWRes;
+
+	for( auto as : erhamps ){ hist1d[20]->Fill(as/sumerha); }
 
     selPhotons.fillBranch( "selPhoLTimeSig", leadtimesig );
     selPhotons.fillBranch( "selPhoSTimeSig", seedtimesig );
