@@ -8,6 +8,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "KUCMSHelperFunctions.hh"
+#include <ctime>
 
 #include "KUCMSAodSVSkimmer.hh"
 #include "KUCMSAodSkimmer_Helpers.hh"
@@ -347,7 +348,12 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
     //nEntries = 100;
     for (Long64_t centry = 0; centry < nEntries; centry++){
 
-      if( centry%loopCounter == 0 ) std::cout << "Proccessed " << centry << " of " << nEntries << " entries." << std::endl;
+      if( centry%loopCounter == 0 ){ 
+		std::time_t now = std::time(nullptr);
+		std::string curtime = std::ctime(&now);
+		curtime.pop_back();
+		std::cout << "Proccessed " << centry << " of " << nEntries << " entries at " << curtime << std::endl;
+	  }//<<>>if( centry%loopCounter == 0 )
       auto entry = fInTree->LoadTree(centry);
       if(DEBUG) std::cout << " -- Getting Branches " << std::endl;
       getBranches( entry, doGenInfo );
@@ -477,8 +483,8 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
   auto saveToTree = eventSelection();	
   if( saveToTree ){ 
 
-    processBHCPhotons(); 
-    processBHCJets(); 
+    //processBHCPhotons(); 
+    //processBHCJets(); 
 	processRJR(0,true); 
 	processRJR(1,false); 
 

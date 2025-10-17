@@ -219,16 +219,19 @@ void KUCMSAodSkimmer::processPhotons(){
     //float MBetaPrompt = 2*ce*m3_phys;
 
     //int nSCRhids = scrhids.size();
-    //float seedE = 0;
-    //float seedT = -99;
-    //float seedar = 0;
-    float setw = 0;
-	float serw = 0;
-    float sew = 0;
+    float sumtw = 0;
+	float sumtrw = 0;
+    float sumw = 0;
     float leadE = 0;
-    float leadEtime = -99;
-    float leadEar = 0;
-	uInt leadRHID = 0;
+    float leadTime = -99;
+    float leadAres = 0;
+    float leadTres = 0;
+    uInt leadRHID = 0;
+    float seedE = 0;
+    float seedTime = -99;
+    float seedAres = 0;
+    float seedTres = 0;
+	uInt seedRHID = 0;
     //auto nRecHits = ECALRecHit_ID->size();
     for( int sciter = 0; sciter < nrh; sciter++  ){
         uInt pscrhid = rhids[sciter];
@@ -237,47 +240,44 @@ void KUCMSAodSkimmer::processPhotons(){
 			float gainwt = 1;
             float erhe = (*ECALRecHit_energy)[erhiter];
 			float erampres = (*ECALRecHit_ampres)[erhiter];
-            float erht = erh_corTime[erhiter];
-            float erhar = (*ECALRecHit_ampres)[erhiter];
+            float erhct = erh_corTime[erhiter];
 			float erx = (*ECALRecHit_rhx)[erhiter];
             float ery = (*ECALRecHit_rhy)[erhiter];
             float erz = (*ECALRecHit_rhz)[erhiter];
 			float cor_cms000 = hypo(erx,ery,erz)/SOL;
 			float cor_tofPVtoRH = hypo(erx-PV_x,ery-PV_y,erz-PV_z)/SOL;
-			float ertoftime = erht - cor_cms000 + cor_tofPVtoRH;
-			//float erres = std::sqrt( (sq2( 24.0/erhar ) + (sq2(2.5)/erhar) + 2*sq2(0.099))/2.0 );
-            //float erres = std::sqrt( sq2( 25.3/erhar ) + 2*sq2(0.085) );
-			float erres = erh_timeRes[erhiter];
+			float ertoftime = erhct - cor_cms000 + cor_tofPVtoRH;
+			float ertres = erh_timeRes[erhiter];
 			bool hasGainSwitch = (*ECALRecHit_hasGS1)[erhiter] || (*ECALRecHit_hasGS6)[erhiter];
 			if( hasGainSwitch ) gainwt = 0;
-			erhar = erampres*gainwt;
-            setw += erhar*ertoftime;
-			serw += erhar*erres;
-            sew += erhar;
-            if( erhe*gainwt > leadE ){ leadE = erhe; leadEtime = ertoftime; leadEar = erhar; leadRHID = pscrhid; }
-			//if( ertoftime == time ){ seedE = erhe; seedT = ertoftime; seedar = erhar; } 
+			float erhar = erampres*gainwt;
+            sumtw += erhar*ertoftime;
+			sumtrw += erhar*ertres;
+            sumw += erhar;
+            if( erhe*gainwt > leadE ){ leadE = erhe; leadTime = ertoftime; leadAres = erampres; leadRHID = pscrhid; leadTres = ertres; }
+			if( erhe > seedE ){ seedE = erhe; seedTime = ertoftime; seedAres = erampres; seedRHID = pscrhid; seedTres = ertres; } 
         }//<<>>if( scrhid == rhid )
     }//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
-	//if( seedE == 0 ){ seedE = leadE; seedar = leadEar; }
-	//if( seedT != time ) std::cout << " Pho - SC seed time wrong !!!!!! " << time << " v " << leadEtime << std::endl;
-    //if( seedE != leadE ) std::cout << " Pho - SC seed time wrong !!!!!! " << time << " v " << leadEtime << std::endl;
-	//if( sew == 0 ){ std::cout << "Photon Time Sig Division by Zero !!!!!!!!!!! " << std::endl; sew = -0.00000000000000000001; } 
-	if( sew == 0 ){ sew = 1; setw = -100; serw = -1000; }
-    float phoWTime = setw/sew;
-	float phoWRes = serw/sew;
-	//float phowamp = serw/sew;
-	//float phoWRes = std::sqrt( (sq2( 24.0/phowamp ) + (sq2(2.5)/phowamp) + 2*sq2(0.099))/2.0 );
-    //float timeres = std::sqrt( (sq2( 24.0/leadEar ) + (sq2(2.5)/leadEar) + 2*sq2(0.099))/2.0 );
-    //float timeres = std::sqrt( sq2( 25.3/leadEar ) + 2*sq2(0.085) );
-	//float timeres = std::sqrt( sq2( 24.0/seedar ) + (sq2(2.5)/seedar) + 2*(0.099) );
-    float timeres = timeCali->getTimeResoltuion( leadEar, leadRHID, Evt_run, tctag, mctype );
-	float sqrt2 = std::sqrt(2);
-	float leadtimesig = sqrt2*leadEtime/timeres;
-    float seedtimesig = sqrt2*time/timeres;
-	float wttimesig = sqrt2*phoWTime/phoWRes;
-	//std::cout << " Pho Time Sig " << time << " let " << leadEtime << " wt " << phoWTime;
-	//std::cout << " le " << leadE << " ampres " << leadEar << " res " << timeres;
-    //std::cout << " lsg " << leadtimesig << " ssg " << seedtimesig << " wsg " << wttimesig << std::endl;
+	if( sumw == 0 ){ sumw = 1; sumtw = -100; sumtrw = -1000; }
+    float phoWTime = sumtw/sumw;
+	float phoWRes = sumtrw/sumw;
+    float ltimeres = timeCali->getTimeResoltuion( leadAres, leadRHID, Evt_run, tctag, mctype );
+	if( ltimeres != leadTres ) std::cout << " !!!!!!!   lead res mis : " << ltimeres << " v " << leadTres << std::endl;
+    float stimeres = timeCali->getTimeResoltuion( seedAres, seedRHID, Evt_run, tctag, mctype );
+    if( stimeres != seedTres ) std::cout << " !!!!!!!   lead res mis : " << stimeres << " v " << seedTres << std::endl;
+	float leadtimesig = leadTime/leadTres;
+    float seedtimesig = seedTime/seedTres;
+	float wttimesig = phoWTime/phoWRes;
+
+    selPhotons.fillBranch( "selPhoLTimeSig", leadtimesig );
+    selPhotons.fillBranch( "selPhoSTimeSig", seedtimesig );
+    selPhotons.fillBranch( "selPhoWTimeSig", wttimesig );
+    selPhotons.fillBranch( "selPhoWTime", phoWTime );
+    selPhotons.fillBranch( "selPhoLTime", leadTime );
+    selPhotons.fillBranch( "selPhoSTime", seedTime );
+    selPhotons.fillBranch( "selPhoWTRes", phoWRes );
+    selPhotons.fillBranch( "selPhoLTRes", leadTres );
+    selPhotons.fillBranch( "selPhoSTRes", seedTres );
 
     auto htsebcdr4 = (*Photon_hcalTowerSumEtBcConeDR04)[it];
     auto tsphcdr3 = (*Photon_trkSumPtHollowConeDR03)[it];
@@ -352,12 +352,6 @@ void KUCMSAodSkimmer::processPhotons(){
     selPhotons.fillBranch( "selPhoSCx", scx );
     selPhotons.fillBranch( "selPhoSCy", scy );
     selPhotons.fillBranch( "selPhoSCz", scz );
-
-	selPhotons.fillBranch( "selPhoLTimeSig", leadtimesig );
-    selPhotons.fillBranch( "selPhoSTimeSig", seedtimesig );
-    selPhotons.fillBranch( "selPhoWTimeSig", wttimesig );
-    selPhotons.fillBranch( "selPhoWTime", phoWTime );
-    selPhotons.fillBranch( "selPhoLTime", leadEtime );
 
     selPhotons.fillBranch( "selPhoCorEnergy", ce );
     selPhotons.fillBranch( "selPhoCorPt", cpt );
@@ -517,11 +511,16 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch( "selPhoSusyId", VFLOAT );
   selPhotons.makeBranch( "selPhoQuality", VINT ); 
   selPhotons.makeBranch( "selPhoTime", VFLOAT ); 
+ 
   selPhotons.makeBranch( "selPhoLTimeSig", VFLOAT );
   selPhotons.makeBranch( "selPhoSTimeSig", VFLOAT );
   selPhotons.makeBranch( "selPhoWTimeSig", VFLOAT );
   selPhotons.makeBranch( "selPhoWTime", VFLOAT );
   selPhotons.makeBranch( "selPhoLTime", VFLOAT );
+  selPhotons.makeBranch( "selPhoSTime", VFLOAT );
+  selPhotons.makeBranch( "selPhoWTRes", VFLOAT ); 
+  selPhotons.makeBranch( "selPhoLTRes", VFLOAT );
+  selPhotons.makeBranch( "selPhoSTRes", VFLOAT );
 
   selPhotons.makeBranch( "selPhoEnergy", VFLOAT );
   selPhotons.makeBranch( "selPhoEta", VFLOAT ); 
