@@ -226,17 +226,25 @@ void KUCMSAodSkimmer::processPhotons(){
     float leadTime = -99;
     float leadAres = 0;
     float leadTres = 0;
+	float leadSX = -1;
+	bool leadWried = false;
     uInt leadRHID = 0;
     float seedE = 0;
     float seedTime = -99;
     float seedAres = 0;
     float seedTres = 0;
+    float seedSX = -1;
+    bool seedWried = false;
 	uInt seedRHID = 0;
+	std::vector<float> erhamps;
+	float sumerha = 0;
     //auto nRecHits = ECALRecHit_ID->size();
     for( int sciter = 0; sciter < nrh; sciter++  ){
         uInt pscrhid = rhids[sciter];
 		int erhiter = ( rhIDtoIterMap.find(pscrhid) != rhIDtoIterMap.end() ) ? rhIDtoIterMap[pscrhid] : -1;
         if( erhiter != -1 ){
+			float swcrss = (*ECALRecHit_swCross)[erhiter];
+			bool isWeird = (*ECALRecHit_isWrd)[erhiter] || (*ECALRecHit_isDiWrd)[erhiter];
 			float gainwt = 1;
             float erhe = (*ECALRecHit_energy)[erhiter];
 			float erampres = (*ECALRecHit_ampres)[erhiter];
@@ -250,12 +258,19 @@ void KUCMSAodSkimmer::processPhotons(){
 			float ertres = erh_timeRes[erhiter];
 			bool hasGainSwitch = (*ECALRecHit_hasGS1)[erhiter] || (*ECALRecHit_hasGS6)[erhiter];
 			if( hasGainSwitch ) gainwt = 0;
-			float erhar = erampres*gainwt;
+			float invertres = 1/ertres;
+			erhamps.push_back(invertres);
+			sumerha += invertres;
+			float erhar = invertres*gainwt;
             sumtw += erhar*ertoftime;
 			sumtrw += erhar*ertres;
             sumw += erhar;
-            if( erhe*gainwt > leadE ){ leadE = erhe; leadTime = ertoftime; leadAres = erampres; leadRHID = pscrhid; leadTres = ertres; }
-			if( erhe > seedE ){ seedE = erhe; seedTime = ertoftime; seedAres = erampres; seedRHID = pscrhid; seedTres = ertres; } 
+            if( erhe*gainwt > leadE ){ 
+				leadE = erhe; leadTime = ertoftime; leadAres = erampres; leadRHID = pscrhid; leadTres = ertres; leadSX = swcrss; leadWried = isWeird; 
+			}//<<>>if( erhe*gainwt > leadE )
+			if( erhe > seedE ){ 
+				seedE = erhe; seedTime = ertoftime; seedAres = erampres; seedRHID = pscrhid; seedTres = ertres; seedSX = swcrss; seedWried = isWeird;
+			}//<<>>if( erhe > seedE ) 
         }//<<>>if( scrhid == rhid )
     }//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
 	if( sumw == 0 ){ sumw = 1; sumtw = -100; sumtrw = -1000; }
@@ -265,9 +280,14 @@ void KUCMSAodSkimmer::processPhotons(){
 	if( ltimeres != leadTres ) std::cout << " !!!!!!!   lead res mis : " << ltimeres << " v " << leadTres << std::endl;
     float stimeres = timeCali->getTimeResoltuion( seedAres, seedRHID, Evt_run, tctag, mctype );
     if( stimeres != seedTres ) std::cout << " !!!!!!!   lead res mis : " << stimeres << " v " << seedTres << std::endl;
+	leadTres = std::sqrt(leadTres/2);
+	seedTres = std::sqrt(seedTres/2);
+	phoWRes = std::sqrt(phoWRes/2);
 	float leadtimesig = leadTime/leadTres;
     float seedtimesig = seedTime/seedTres;
 	float wttimesig = phoWTime/phoWRes;
+
+	for( auto as : erhamps ){ hist1d[20]->Fill(as/sumerha); }
 
     selPhotons.fillBranch( "selPhoLTimeSig", leadtimesig );
     selPhotons.fillBranch( "selPhoSTimeSig", seedtimesig );
@@ -278,6 +298,10 @@ void KUCMSAodSkimmer::processPhotons(){
     selPhotons.fillBranch( "selPhoWTRes", phoWRes );
     selPhotons.fillBranch( "selPhoLTRes", leadTres );
     selPhotons.fillBranch( "selPhoSTRes", seedTres );
+    selPhotons.fillBranch( "selPhoLSCross", leadSX );
+    selPhotons.fillBranch( "selPhoSSCross", seedSX );
+    selPhotons.fillBranch( "selPhoLWeird", leadWried );
+    selPhotons.fillBranch( "selPhoSWeird", seedWried );
 
     auto htsebcdr4 = (*Photon_hcalTowerSumEtBcConeDR04)[it];
     auto tsphcdr3 = (*Photon_trkSumPtHollowConeDR03)[it];
@@ -521,6 +545,11 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch( "selPhoWTRes", VFLOAT ); 
   selPhotons.makeBranch( "selPhoLTRes", VFLOAT );
   selPhotons.makeBranch( "selPhoSTRes", VFLOAT );
+
+  selPhotons.fillBranch( "selPhoLSCross", VFLOAT );
+  selPhotons.fillBranch( "selPhoSSCross", VFLOAT );
+  selPhotons.fillBranch( "selPhoLWeird", VBOOL );
+  selPhotons.fillBranch( "selPhoSWeird", VBOOL );
 
   selPhotons.makeBranch( "selPhoEnergy", VFLOAT );
   selPhotons.makeBranch( "selPhoEta", VFLOAT ); 

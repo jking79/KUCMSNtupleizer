@@ -185,6 +185,10 @@ KUCMSAodSkimmer::~KUCMSAodSkimmer(){
 
 void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, bool noSVorPho, int skipCnt, bool useEvtWgts ){
 
+
+  if( not hasGenInfo ) loadLumiJson("json/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt");
+  //loadLumiJson("json/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt",true);
+
   useEvtWgt = useEvtWgts;
   doGenInfo = hasGenInfo;
   const std::string disphotreename = "tree/llpgtree";
@@ -273,6 +277,8 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
 
     startJobs(); // clear && init count varibles
 
+
+
     // ntuple event counts and weights
     // setup config tree inputs
 
@@ -360,6 +366,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
       geCnts.clear();
       geVars.clear();
       //geVects.clear();
+      if( mct && not isValidLumisection( Evt_run, Evt_luminosityBlock ) ) continue;
       if( genSigPerfect ) geVars.set( "genSigPerfect", 1 ); else geVars.set( "genSigPerfect", 0 );
       if( noSVorPho ) geVars.set( "noSVorPho", 1 ); else geVars.set( "noSVorPho", 0 );
       if(DEBUG) std::cout << " -- Event Loop " << std::endl;
@@ -638,6 +645,8 @@ void KUCMSAodSkimmer::initHists(){
     hist1d[12] = new TH1D("elept_v","Veto;Electron Pt [GeV];Eff",100,0,1000);
     hist1d[13] = new TH1D("elept_l","Loose;Electron Pt [GeV];Eff",100,0,1000);
     hist1d[14] = new TH1D("elept_m","Medium;Electron Pt [GeV];Eff",100,0,1000);
+
+	hist1d[20] = new TH1D("erhnamps","Pho SC Nomilized RH Ampsig;Norm Ampsig",100,0,1);
 
     ////hist1d[100] = new TH1D("genPhoPt", "genPhoPt;Pt [GeV]",500,0,1000);
 

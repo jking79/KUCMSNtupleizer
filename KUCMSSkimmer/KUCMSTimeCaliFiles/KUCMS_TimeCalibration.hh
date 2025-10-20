@@ -116,8 +116,9 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 
 	void SetupDetIDsEB();
 	void SetupDetIDsEE();
-	void SetupIovMaps();
+	std::map<UInt_t,kucms_DetIDStruct>& getDetIDMapRef(){ return DetIDMap; };
 
+	void SetupIovMaps();
     void SetupIovMap( std::string tag, float lumiMin );
 
 	void ReadCaliRunFile();
@@ -174,7 +175,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 
 	kucms_DetIDStruct& getDetIdInfo( uInt rhid );
 	std::map<int,std::map<int,std::map<int,uInt>>> getInvDetIDMap();
-    	std::map<UInt_t,kucms_DetIDStruct> getDetIDMap(); // map of information by detid for each crystal
+    std::map<UInt_t,kucms_DetIDStruct> getDetIDMap(); // map of information by detid for each crystal
 	uInt getDetIdInfo( int i1, int i2, int ecal );
 	uInt getTTId( uInt detId );
 	std::pair<int,int> getTTInfo( uInt ttid );
@@ -1338,7 +1339,7 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
 	} else { // MC
 
         if( dataSetKey == "r2_ul18"  ) res = sq2( 25.16/amplitude ) + 2*sq2(0.1013);
-		if( dataSetKey == "r2_ul18_mc"  ) res = sq2( 28.1/amplitude ) + 2*sq2(0.1184);
+		if( dataSetKey == "r2_ul18_mc"  ) res = sq2( 25.16/amplitude ) + 2*sq2(0.1013);
 
 	}//<<>>if( mctype == 0 )
 
@@ -2089,7 +2090,8 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
         auto nEntries = fInTree->GetEntries();
         if( small && nEntries > 1000000 ) nEntries = 1000000;
         if( debug ) nEntries = ( nEntries < 10000 ) ? nEntries : 10000;
-        if( debug ) std::cout << "Mf2d Proccessing " << nEntries << " entries : " << std::endl;
+        //if( debug )
+		std::cout << "Mf2d Proccessing " << nEntries << " entries : " << std::endl;
         int report = nEntries/20;
         for (auto centry = 0U; centry < nEntries; centry++){
 

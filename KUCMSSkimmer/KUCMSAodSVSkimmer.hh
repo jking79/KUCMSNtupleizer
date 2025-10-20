@@ -114,6 +114,11 @@ class KUCMSAodSkimmer : public llpgtree {
 	int getPhoQuality( int it );
     int getJetQuality( int it );	
 
+	// good Lumisection check
+	std::map<int, std::vector<std::map<int, int>>> lumiData;
+	void loadLumiJson( std::string infile, bool verbose = false );
+	bool isValidLumisection( int run, int lumi );
+
 	// event processing and selection
 	bool eventSelection();
 

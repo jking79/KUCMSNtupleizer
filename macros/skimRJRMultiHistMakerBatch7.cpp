@@ -88,7 +88,9 @@ void HistMaker::histMaker( std::string indir, std::string infilelist, std::strin
             fConfigTree->Add(tfilename.c_str());
     		cnt++;
         }//<<>>if( batch == "yes" ) else
-   
+  
+		if( glumass < 0 ){ glumass = 0; scale = 0; }
+ 
         std::cout << "Intilizing BatchVars" << std::endl;
  
 		skimlabel = intitle;
@@ -275,6 +277,7 @@ void HistMaker::histMaker( std::string indir, std::string infilelist, std::strin
     		}//<<>>if( not configInfo.count(configKey) )
     
     		float fillwt = scale * ( sCrossSection * 1000 ) * ( 1 / sumEvtWgt );
+			if( scale == 0 ) fillwt = 1;
             //float fillwt = scale * ( sCrossSection * 1000 ) * ( 1.0 / float( nTotEvts) );
 			std::cout << " fillwt : " << scale <<  " * ( " << sCrossSection << " * 1000 ) * ( " << " 1 / " << nTotEvts << " ) = " 
 						<< fillwt << std::endl;
@@ -437,6 +440,7 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     //float segwt = (configInfo[configKey])["nTotEvts"];
     float segwt = (configInfo[configKey])["sumEvtWgt"];
     float fillwt = scale * ( xsec * 1000 ) * ( evtgwt / segwt );
+	if( scale == 0 ) fillwt = 1;
     if( DEBUG ) std::cout << " evtfillwt :( " << xsec << " * 1000 ) * ( " << evtgwt << " / " << segwt << " ) = " << fillwt << std::endl;
 	batchVars[bfillwgt] += fillwt;
 
@@ -523,17 +527,30 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 	float gstsig = -99;
 	float gltsig = -99;
 	float gwtsig = -99;
+    float gstime = -99;
+    float gltime = -99;
+    float gwtime = -99;
+    float gstres = -99;
+    float gltres = -99;
+    float gwtres = -99;
 	float genergy = -99;
     float gcenergy = -99;
 
+	float sr2 = std::sqrt(2);
     float sgtime = 99;
     float sgpt = -99;
 	if( selPhoTime->size() > 0 ){
 		gtime = (*selPhoTime)[0];
 		gpt = (*selPhoPt)[0];
-		gstsig = (*selPhoSTimeSig)[0];
-        gwtsig = (*selPhoWTimeSig)[0];
-        gltsig = (*selPhoLTimeSig)[0];
+		gstsig = (*selPhoSTimeSig)[0]/sr2;
+        gwtsig = (*selPhoWTimeSig)[0]/sr2;
+        gltsig = (*selPhoLTimeSig)[0]/sr2;
+		gstime = (*selPhoSTime)[0];
+		gltime = (*selPhoWTime)[0];
+		gwtime = (*selPhoLTime)[0];
+        gstres = (*selPhoSTimeRes)[0]/sr2;
+        gltres = (*selPhoWTimeRes)[0]/sr2;
+        gwtres = (*selPhoLTimeRes)[0]/sr2;
         genergy = (*selPhoEnergy)[0];
         gcenergy = (*selPhoCorEnergy)[0];
 	}//<<>>if( selPhoTime->size() > 0 )
@@ -769,13 +786,15 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 	hist1d[51]->Fill(gstsig,fillwt);
     hist1d[52]->Fill(gwtsig,fillwt);
     hist1d[53]->Fill(gltsig,fillwt);
-    hist1d[54]->Fill(gtime,fillwt);
+    hist1d[54]->Fill(gwtime,fillwt);
     hist1d[55]->Fill(genergy,fillwt);
     hist1d[56]->Fill(gcenergy,fillwt);
 
-	hist2d[51]->Fill(gwtsig,gtime,fillwt);
+	hist2d[51]->Fill(gwtsig,gwtime,fillwt);
     hist2d[52]->Fill(gwtsig,genergy,fillwt);
+    hist2d[55]->Fill(gwtsig,genergy,fillwt);
     hist2d[53]->Fill(genergy,gcenergy,fillwt);
+    hist2d[54]->Fill(gwtsig,gcenergy,fillwt);
 
 	}//<<>>for( int i = 0; i < 1; i++ ) -- continue loop
 
@@ -904,10 +923,10 @@ void HistMaker::initHists( std::string ht ){
     hist1d[41] = new TH1D("sumPhoPtsH21", addstr(ht," sumPhoPtsH21;sumPhoPtsH21").c_str(), 200, 0, 2.0);
 
 
-	hist1d[51] = new TH1D("selPhoSTimeSig", addstr(ht," selPhoSTimeSig;selPhoSTimeSig").c_str(), 800, -20, 60);
-    hist1d[52] = new TH1D("selPhoWTimeSig", addstr(ht," selPhoWTimeSig;selPhoWTimeSig").c_str(), 800, -20, 60);
-    hist1d[53] = new TH1D("selPhoLTimeSig", addstr(ht," selPhoLTimeSig;selPhoLTimeSig").c_str(), 800, -20, 60);
-    hist1d[54] = new TH1D("selPhoTOFTime", addstr(ht," selPhoTOFTime;selPhoTOFTime").c_str(), 200, -10, 10);
+	hist1d[51] = new TH1D("selPhoSTimeSig", addstr(ht," selPhoSTimeSig;selPhoSTimeSig").c_str(), 1200, -60, 60);
+    hist1d[52] = new TH1D("selPhoWTimeSig", addstr(ht," selPhoWTimeSig;selPhoWTimeSig").c_str(), 1200, -60, 60);
+    hist1d[53] = new TH1D("selPhoLTimeSig", addstr(ht," selPhoLTimeSig;selPhoLTimeSig").c_str(), 1200, -60, 60);
+    hist1d[54] = new TH1D("selPhoTOFTime", addstr(ht," selPhoTOFTime;selPhoTOFTime").c_str(), 500, -25, 25);
     hist1d[55] = new TH1D("selPhoEnergy", addstr(ht," selPhoEnergy;selPhoEnergy").c_str(), 300, 0, 3000);
     hist1d[56] = new TH1D("selPhoCEnergy", addstr(ht," selPhoCEnergy;selPhoCEnergy").c_str(), 300, 0, 3000);
 
@@ -938,10 +957,11 @@ void HistMaker::initHists( std::string ht ){
     hist2d[24] = new TH2D("pho1PxH21_v_pho2PxH21", addstr(ht," pho1PxH21_v_pho2PxH21;pho1PxH21;pho2PxH21").c_str(), 500, 0, 5.0, 500, 0, 5.0 );
     hist2d[25] = new TH2D("pho1px_v_pho2px", addstr(ht," pho1px_v_pho2px;pho1px;pho2px").c_str(), 200, 0, 2000, 200, 0, 2000 );
 
-
-    hist2d[51] = new TH2D("Sig_v_Time", addstr(ht," Sig_v_Time;selPhoSTimeSig;selPhoTOFTime").c_str(), 160, -20, 60, 40, -10, 10);
-    hist2d[52] = new TH2D("Sig_v_Energy", addstr(ht," Sig_v_Energy;selPhoSTimeSig;selPhoEnergy").c_str(), 160, -20, 60, 60, 0, 3000);
+    hist2d[51] = new TH2D("Sig_v_Time", addstr(ht," Sig_v_Time;selPhoSTimeSig;selPhoTOFTime").c_str(), 480, -60, 60, 400, -20, 20);
+    hist2d[52] = new TH2D("WSig_v_Energy", addstr(ht," WSig_v_Energy;selPhoWTimeSig;selPhoEnergy").c_str(), 480, -60, 60, 300, 0, 3000);
     hist2d[53] = new TH2D("Energy_v_CEnergy", addstr(ht," Energy_v_CEnergy;selPhoEnergy;selPhoCEnergy").c_str(), 300, 0, 3000, 300, 0, 3000);
+    hist2d[54] = new TH2D("Sig_v_CEnergy", addstr(ht," Sig_v_CEnergy;selPhoSTimeSig;selPhoCEnergy").c_str(), 160, -20, 60, 300, 0, 3000);
+    hist2d[55] = new TH2D("WSig_v_Energy_Z", addstr(ht," WSig_v_Energy_Zoom;selPhoWTimeSig;selPhoEnergy").c_str(), 100, 0, 10, 300, 0, 1500);
 
 	//------- jets ( time ) 0-49 ------------------------------
 
@@ -972,7 +992,7 @@ void HistMaker::initHists( std::string ht ){
         ebeeMapR[it] = new TH2D( stt3.c_str(), (stt3+label).c_str(), 361, -90, 90, 721, 0, 360);
 	}}//<<>>for(int it=0; it<nEBEEMaps; it++)
 
-}//<<>>void HistMaker::initHists()
+}//<<>>void Hist`Maker::initHists()
 
 //void HistMaker::histMaker( std::string indir, std::string infilelist, std::string outfilename )
 
@@ -980,23 +1000,26 @@ int main ( int argc, char *argv[] ){
 
     //if( argc != 4 ) { std::cout << "Insufficent arguments." << std::endl; }
     //else {
-                //std::string listdir = "/uscms/home/jaking/nobackup/llpana_skims/";
-				std::string listdir = "/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/tsig_skims/"; 
+                std::string listdir = "/uscms/home/jaking/nobackup/llpana_skims/";
+				//std::string listdir = "/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/tsig_skims/"; 
 
 				//std::string infilenameJ = "rjr_skim_files/KUCMS_RJR_GIGI_ootmet_Skim_List.txt";
                 //std::string infilenameJ = "rjr_skim_files/KUCMS_RJR_SMS_ootmet_Skim_List.txt";
-                std::string infilenameJ = "rjr_skim_files/KUCMS_RJR_SMS_v38_Skim_List.txt";
 				//std::string infilenameBG = "rjr_skim_files/KUCMS_RJR_BG_ootmet_Skim_List.txt";
 				//std::string infilenameBG = "rjr_skim_files/KUCMS_RJR_BG_v28_ootmet_Skim_List.txt";
-                std::string infilenameBG = "rjr_skim_files/KUCMS_RJR_BG_v38_Skim_List.txt";
 
-				std::string version = "v38_";
+                std::string infilenameJ = "rjr_skim_files/KUCMS_RJR_SMS_v39_Skim_List.txt";
+                std::string infilenameBG = "rjr_skim_files/KUCMS_RJR_BG_v39_Skim_List.txt";
+                std::string infilenameD = "rjr_skim_files/KUCMS_RJR_DATA_v39_Skim_List.txt";
+
+				std::string version = "v39_";
 				std::string sigtype = "llpana_";
 				std::string ofnstart = "KUCMS_";
 
                 std::string htitleBG = "BG_"+sigtype+version;
                 //std::string htitleBG = "BG_sv_"+sigtype+version;
 				std::string htitleJ = sigtype+version;
+                std::string htitleD = "Data_"+sigtype+version;
 
                 HistMaker base;
 
@@ -1004,7 +1027,7 @@ int main ( int argc, char *argv[] ){
 
 				//int nj = 1;
 				//int np = 1; : 2,7,10
-                for( int np = 0; np < 1; np++ ){
+                for( int np = 0; np < 2; np++ ){
                 for( int nj = 0; nj < 1; nj++ ){
 
 				//std::string subdir = "cf_" + std::to_string(np) + "pho_" + std::to_string(nj) + "jet/";
@@ -1021,7 +1044,10 @@ int main ( int argc, char *argv[] ){
 				base.histMaker( listdir, infilenameJ, outfilenameJ, htitlefullJ, np, nj, rv_vec, r_vec, rv_vec );
                 std::string outfilenameBG = outdir + ofnstart + htitleBG + isoline;
                 std::string htitlefullBG =  htitleBG + isoline;
-                base.histMaker( listdir, infilenameBG, outfilenameBG, htitlefullBG, np, nj, r_vec, r_vec, rv_vec );
+                //base.histMaker( listdir, infilenameBG, outfilenameBG, htitlefullBG, np, nj, r_vec, r_vec, rv_vec );
+                std::string outfilenameD = outdir + ofnstart + htitleD + isoline;
+                std::string htitlefullD =  htitleD + isoline;
+                //base.histMaker( listdir, infilenameD, outfilenameD, htitlefullD, np, nj, r_vec, r_vec, rv_vec );
 
 				}}
 
