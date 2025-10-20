@@ -1,0 +1,35 @@
+# ------------------------------------
+# Master Filelist : Private Sig MC
+# -------------------------------------
+
+#KUCMSNtuple/kucmsntuple_gogoG_Sig_IPM100_v26/ gogoG_Sig_IPM100_v26_SMS-GlGl_AODSIM_mGl-1500_mN2-500_mN1-100_v26.txt ct10g15dn5dn1d 0.02209 1500 100 1 0
+
+#KUCMSNtuple/kucmsntuple_gogoG_Sig_IPM100_v26/ gogoG_Sig_IPM100_v26_SMS-GlGl_AODSIM_mGl-2000_mN2-1900_mN1-1500_v26.txt ct10g2kn19dn15d .00168 1900 1500 1 0
+#KUCMSNtuple/kucmsntuple_gogoG_Sig_IPM100_v26/ gogoG_Sig_IPM100_v26_SMS-GlGl_AODSIM_mGl-2000_mN2-1900_mN1-1_v26.txt ct10g2kn19dn1 .00168 1900 1 1 0
+#KUCMSNtuple/kucmsntuple_gogoG_Sig_IPM100_v26/ gogoG_Sig_IPM100_v26_SMS-GlGl_AODSIM_mGl-2000_mN2-1900_mN1-250_v26.txt ct10g2kn19dn250 .00168 1900 250 1 0
+#KUCMSNtuple/kucmsntuple_gogoG_Sig_IPM100_v26/ gogoG_Sig_IPM100_v26_SMS-GlGl_AODSIM_mGl-2000_mN2-1900_mN1-500_v26.txt ct10g2kn19d5d .00168 1900 500 1 0
+
+#KUCMSNtuple/kucmsntuple_gogoG_Sig_IPM100_v26/ gogoG_Sig_IPM100_v26_SMS-GlGl_AODSIM_mGl-2000_mN2-1950_mN1-1500_v26.txt ct10g2kn1950n15d .00168 1950 1500 1 0
+#KUCMSNtuple/kucmsntuple_gogoG_Sig_IPM100_v26/ gogoG_Sig_IPM100_v26_SMS-GlGl_AODSIM_mGl-2000_mN2-1950_mN1-1900_v26.txt ct10g2kn1950n19d .00168 1950 1900 1 0
+###KUCMSNtuple/kucmsntuple_gogoG_Sig_IPM100_v26/ gogoG_Sig_IPM100_v26_SMS-GlGl_AODSIM_mGl-2000_mN2-1950_mN1-1_v26.txt ct10g2kn1950n1 .00168 1950 1 1 0
+#KUCMSNtuple/kucmsntuple_gogoG_Sig_IPM100_v26/ gogoG_Sig_IPM100_v26_SMS-GlGl_AODSIM_mGl-2000_mN2-1950_mN1-250_v26.txt ct10g2kn1950n250 .00168 1950 250 1 0 
+#KUCMSNtuple/kucmsntuple_gogoG_Sig_IPM100_v26/ gogoG_Sig_IPM100_v26_SMS-GlGl_AODSIM_mGl-2000_mN2-1950_mN1-500_v26.txt ct10g2kn1950n15d .00168 1950 500 1 0
+
+#KUCMSNtuple/kucmsntuple_gogoG_Sig_IPM100_v26/ gogoG_Sig_IPM100_v26_SMS-GlGl_AODSIM_mGl-2000_mN2-1900_mN1-1000_v26.txt g2n19n10 .00168 1900 1000 1 0
+#KUCMSNtuple/kucmsntuple_gogoG_Sig_IPM100_v26/ gogoG_Sig_IPM100_v26_SMS-GlGl_AODSIM_mGl-2000_mN2-1900_mN1-1500_v26.txt g2n19n15 .00168 1900 1500 1 0
+#KUCMSNtuple/kucmsntuple_gogoG_Sig_IPM100_v26/ gogoG_Sig_IPM100_v26_SMS-GlGl_AODSIM_mGl-2000_mN2-1900_mN1-1_v26.txt g2n19n1 .00168 1900 1 1 0
+#KUCMSNtuple/kucmsntuple_gogoG_Sig_IPM100_v26/ gogoG_Sig_IPM100_v26_SMS-GlGl_AODSIM_mGl-2000_mN2-1950_mN1-1000_v26.txt g2n195n10 .00168 1950 1000 1 0
+#KUCMSNtuple/kucmsntuple_gogoG_Sig_IPM100_v26/ gogoG_Sig_IPM100_v26_SMS-GlGl_AODSIM_mGl-2000_mN2-1950_mN1-1500_v26.txt g2n195n15 .00168 1950 1500 1 0
+
+#KUCMSNtuple/kucmsntuple_gogoG_Sig_IPM100_v26/ gogoG_Sig_IPM100_v26_SMS-GlGl_AODSIM_mGl-2000_mN2-1500_mN1-1000_v26.txt g2kn15dn1k .00168 1500 1000 1 0
+#KUCMSNtuple/kucmsntuple_gogoG_Sig_IPM100_v26/ gogoG_Sig_IPM100_v26_SMS-GlGl_AODSIM_mGl-2000_mN2-1500_mN1-1_v26.txt g2kn15dn1 .00168 1500 1 1 0
+#KUCMSNtuple/kucmsntuple_gogoG_Sig_IPM100_v26/ gogoG_Sig_IPM100_v26_SMS-GlGl_AODSIM_mGl-2000_mN2-1500_mN1-250_v26.txt g2kn15dn250 .00168 1500 250 1 0
+#KUCMSNtuple/kucmsntuple_gogoG_Sig_IPM100_v26/ gogoG_Sig_IPM100_v26_SMS-GlGl_AODSIM_mGl-2000_mN2-1500_mN1-500_v26.txt g2kn15dn500 .00168 1500 500 1 0
+
+#KUCMSNtuple/kucmsntuple_gogoG_Sig_IPM100_v26/ gogoG_Sig_IPM100_v26_SMS-GlGl_AODSIM_mGl-2000_mN2-1000_mN1-1_v26.txt g2kn1kn1 .00168 1 1000 1 0
+KUCMSNtuple/kucmsntuple_gogoG_Sig_IPM100_v26/ gogoG_Sig_IPM100_v26_SMS-GlGl_AODSIM_mGl-2000_mN2-1000_mN1-250_v26.txt g2kn1kn250 .00168 1000 250 1 0
+#KUCMSNtuple/kucmsntuple_gogoG_Sig_IPM100_v26/ gogoG_Sig_IPM100_v26_SMS-GlGl_AODSIM_mGl-2000_mN2-1000_mN1-500_v26.txt g2kn1kn500 .00168 1000 500 1 0
+#KUCMSNtuple/kucmsntuple_gogoG_Sig_IPM100_v26/ gogoG_Sig_IPM100_v26_SMS-GlGl_AODSIM_mGl-2000_mN2-500_mN1-1_v26.txt g2kn5dn1 .00168 500 1 1 0
+#KUCMSNtuple/kucmsntuple_gogoG_Sig_IPM100_v26/ gogoG_Sig_IPM100_v26_SMS-GlGl_AODSIM_mGl-2000_mN2-500_mN1-250_v26.txt g2kn5dn250 .00168 500 250 1 0
+
+#KUCMSNtuple/kucmsntuple_gogoG_Sig_IPM100_v26/ gogoG_Sig_IPM100_v26_SMS-GlGl_AODSIM_mGl-2500_mN2-1500_mN1-1000_v26.txt g25dn15dn1k 0.0001687 1500 1000 1 0
