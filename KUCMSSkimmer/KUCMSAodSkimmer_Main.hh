@@ -151,6 +151,9 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
   timeCali = new KUCMS_TimeCalibration();
   timeCali->setTag(r2UL);
 
+
+  _evti = -1;
+  _evtj = -1;
 }//<<>>KUCMSAodSkimmer::KUCMSAodSkimmer()
 
 KUCMSAodSkimmer::~KUCMSAodSkimmer(){
@@ -182,41 +185,79 @@ KUCMSAodSkimmer::~KUCMSAodSkimmer(){
       
 }//<<>>KUCMSAodSkimmer::~KUCMSAodSkimmer()
 
-void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, bool noSVorPho, int skipCnt, bool useEvtWgts ){
+int KUCMSAodSkimmer::ProcessFilelist(string eosdir, string infilename, TChain*& fInTree, TChain*& fInConfigTree){
+    const std::string disphotreename = "tree/llpgtree";
+    const std::string configtreename = "tree/configtree";
 
-  useEvtWgt = useEvtWgts;
-  doGenInfo = hasGenInfo;
-  const std::string disphotreename = "tree/llpgtree";
-  const std::string configtreename = "tree/configtree";
-  //std::string inpath, infiles, key, 
-  std::string masterstr; 
-  //int mct;
-  //float crossSection, gmsblam, gmsbct, mcw;
-  std::cout << "Processing Input Lists for : " << infilelist << std::endl;
-  std::ifstream masterInfile(listdir+infilelist);
-  //while( masterInfile >> inpath >> infiles >> key >> crossSection >> gmsblam >> gmsbct >> mcwgt >> mctype ){
 
-  while( std::getline( masterInfile, masterstr ) ){
+    if(gSystem->AccessPathName(infilename.c_str())){
+      cout << "Error: File " << infilename << " not found" << endl;
+      return -1;
+    }
+  
+    if( DEBUG ) std:: cout << "InFile: " << infilename << std::endl;
+    if( DEBUG ) std:: cout << "Key: " << dataSetKey << std::endl;
+    if( DEBUG ) std:: cout << "XSec: " << xsctn << std::endl;
+    if( DEBUG ) std:: cout << "GM: " << gmass << std::endl;
+    if( DEBUG ) std:: cout << "XM: " << xmass << std::endl;
+    if( DEBUG ) std:: cout << "MCw: " << mcwgt << std::endl;
+    if( DEBUG ) std:: cout << "MCt: " << mctype << std::endl;
+    if( DEBUG ) std:: cout << "tcTag: " << tctag << std::endl;
 
-    if( DEBUG ) std:: cout << masterstr << std::endl;
-    if( masterstr[0] == '#' ) continue;
-    if( masterstr == " " ) continue;
-    auto instrs = splitString( masterstr, " " );
-    if( DEBUG ) std:: cout << instrs.size() << std::endl;
-    if( instrs.size() < 9 ) continue;
+    std::cout << "Processing Events for : " << infilename << std::endl;
+    fInTree = new TChain(disphotreename.c_str());
+    fInConfigTree = new TChain(configtreename.c_str());
+    std::cout << "Adding files to TChain." << std::endl;
+    std::cout << " - With : " << infilename << " >> " << fInTree << std::endl;
+    std::string str;
+    if( not DEBUG ) std::cout << "--  adding files";
+    int nfiles = 0;	
+    if( dataSetKey !=  "single" ){
+      std::ifstream infile(infilename);
+      while( std::getline( infile, str ) ){
+	      if(str.find("#") != string::npos) continue;
+	nfiles++;
+	//if( skipCnt != 0 && ( nfiles%skipCnt != 0 ) ) continue;
+    	string sample_str = str.substr(0,str.find("/"));
+	string prefix = str.substr(str.find("/")+1);
+	string inpath = prefix.substr(0,prefix.find(sample_str,prefix.find(sample_str)+sample_str.size())-1)+"/";
+	auto tfilename = eosdir + inpath + str;
+	fInTree->Add(tfilename.c_str());
+	fInConfigTree->Add(tfilename.c_str());
+	if(DEBUG) std::cout << "--  adding file: " << tfilename << std::endl; //else std::cout << ".";
+	//if(DEBUG) break;
+      }//<<>>while (std::getline(infile,str))
+    } else { // single infile and not a list of infile
+    	string sample_str = str.substr(0,str.find("/"));
+	string prefix = str.substr(str.find("/")+1);
+	string inpath = prefix.substr(0,prefix.find(sample_str,prefix.find(sample_str)+sample_str.size())-1)+"/";
+      auto tfilename = eosdir + inpath + infilename;
+      fInTree->Add(tfilename.c_str());
+      fInConfigTree->Add(tfilename.c_str());
+      nfiles++;			
+    }//<<>>if( key !=  "test" )
+    if( not DEBUG ) std::cout << std::endl;
+    if( nfiles == 0 ){ std::cout << " !!!!! no input files !!!!! " << std::endl; return -1; }
+    return 0;    
+}
 
-    auto inpath = instrs[0];
-    auto infiles = instrs[1];
-    auto key = instrs[2];
-    auto crossSection = std::stof( instrs[3] );
-    auto gmsbgm = std::stof( instrs[4] );
-    auto gmsbxm = std::stof( instrs[5] );
-    auto mcw = std::stof( instrs[6] );
-    auto mct = std::stoi( instrs[7] );
-	auto tct = instrs[8];
+int KUCMSAodSkimmer::ProcessFilelistOfLists(string eosdir, vector<string> processed_strings, TChain*& fInTree, TChain*& fInConfigTree){
+    const std::string disphotreename = "tree/llpgtree";
+    const std::string configtreename = "tree/configtree";
+
+    auto inpath = processed_strings[0];
+    cout << "inpath " << inpath << endl;
+    auto infile_str = processed_strings[1];
+    auto key = processed_strings[2];
+    auto crossSection = std::stof( processed_strings[3] );
+    auto gmsbgm = std::stof( processed_strings[4] );
+    auto gmsbxm = std::stof( processed_strings[5] );
+    auto mcw = std::stof( processed_strings[6] );
+    auto mct = std::stoi( processed_strings[7] );
+	auto tct = processed_strings[8];
 		
     if( DEBUG ) std:: cout << "InPath: " << inpath << std::endl;
-    if( DEBUG ) std:: cout << "InFile: " << infiles << std::endl;
+    if( DEBUG ) std:: cout << "InFile: " << infile_str << std::endl;
     if( DEBUG ) std:: cout << "Key: " << key << std::endl;
     if( DEBUG ) std:: cout << "XSec: " << crossSection << std::endl;
     if( DEBUG ) std:: cout << "GM: " << gmsbgm << std::endl;
@@ -225,25 +266,21 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
     if( DEBUG ) std:: cout << "MCt: " << mct << std::endl;
     if( DEBUG ) std:: cout << "tcTag: " << tctag << std::endl;
 
-    dataSetKey = key;
-    xsctn = crossSection;
-    gmass = gmsbgm; // = 0 if not gmsb
-    xmass = gmsbxm; // = 0 if not gmsb
-    mcwgt = mcw; // default 1
-    mctype = mct; // 0 for MC, 1 for data
-	tctag = tct; // r2_ul18 Data, r2_ul18_mc MC
-
-    std::cout << "Processing Events for : " << infiles << std::endl;
-    TChain* fInTree = new TChain(disphotreename.c_str());
-    TChain* fInConfigTree = new TChain(configtreename.c_str());
+    if(gSystem->AccessPathName(infile_str.c_str())){
+      cout << "Error: File " << infile_str << " not found" << endl;
+      return -1;
+    }
+  
+    std::cout << "Processing Events for : " << infile_str << std::endl;
+    fInTree = new TChain(disphotreename.c_str());
+    fInConfigTree = new TChain(configtreename.c_str());
     std::cout << "Adding files to TChain." << std::endl;
-    std::cout << " - With : " << listdir+infiles << " >> " << fInTree << std::endl;
+    std::cout << " - With : " << infile_str << " >> " << fInTree << std::endl;
     std::string str;
     if( not DEBUG ) std::cout << "--  adding files";
-
     int nfiles = 0;	
     if( key !=  "single" ){
-      std::ifstream infile(listdir+infiles);
+      std::ifstream infile(infile_str);
       while( std::getline( infile, str ) ){
 	      if(str.find("#") != string::npos) continue;
 	nfiles++;
@@ -251,37 +288,27 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
 	auto tfilename = eosdir + inpath + str;
 	fInTree->Add(tfilename.c_str());
 	fInConfigTree->Add(tfilename.c_str());
-	if(DEBUG) std::cout << "--  adding file: " << tfilename << std::endl; else std::cout << ".";
+	if(DEBUG) std::cout << "--  adding file: " << tfilename << std::endl; //else std::cout << ".";
 	//if(DEBUG) break;
       }//<<>>while (std::getline(infile,str))
-    } else { // single infile and not a list of infiles
-      auto tfilename = eosdir + inpath + infiles;
+    } else { // single infile and not a list of infile
+      auto tfilename = eosdir + inpath + infile_str;
       fInTree->Add(tfilename.c_str());
       fInConfigTree->Add(tfilename.c_str());
       nfiles++;			
     }//<<>>if( key !=  "test" )
     if( not DEBUG ) std::cout << std::endl;
-    if( nfiles == 0 ){ std::cout << " !!!!! no input files !!!!! " << std::endl; return; }
-	
-    auto fOutTree = new TTree("kuSkimTree","output root file for kUCMSSkimmer");
-    auto fConfigTree = new TTree("kuSkimConfigTree","config root file for kUCMSSkimmer");
+    if( nfiles == 0 ){ std::cout << " !!!!! no input files !!!!! " << std::endl; return -1; }
+    return 0;    
+}
 
-    Init( fInTree, doGenInfo );
-    initHists();
-    setOutputBranches(fOutTree);
-
-    startJobs(); // clear && init count varibles
-
-    // ntuple event counts and weights
-    // setup config tree inputs
-
+void KUCMSAodSkimmer::ProcessConfigTree(TChain* fInConfigTree){
     int nTotEvts;
     int nFltrdEvts;
     float sumEvtWgt;
     float sumFltrdEvtWgt;
     int nMetFltrdEvts;
     int nPhoFltrdEvts;
-
     TBranch *b_nTotEvts;
     TBranch *b_nFltrdEvts;
     TBranch *b_sumEvtWgt;
@@ -324,6 +351,52 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
 
     }//<<>>for (Long64_t centry = 0; centry < nConfigEntries; centry++)
 
+
+}
+
+void KUCMSAodSkimmer::kucmsAodSkimmer( std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, bool noSVorPho, int skipCnt, bool useEvtWgts ){
+
+  useEvtWgt = useEvtWgts;
+  doGenInfo = hasGenInfo;
+  //std::string inpath, infiles, key, 
+  std::string masterstr; 
+  //int mct;
+  //float crossSection, gmsblam, gmsbct, mcw;
+  std::cout << "Processing Input Lists for : " << infilelist << std::endl;
+
+    //add path to input file
+    TTree* fOutTree = new TTree("kuSkimTree","output root file for kUCMSSkimmer");
+    TTree* fConfigTree = new TTree("kuSkimConfigTree","config root file for kUCMSSkimmer");
+    TChain* fInTree = nullptr;
+    TChain* fInConfigTree = nullptr;
+    int ret = ProcessFilelist(eosdir, infilelist, fInTree, fInConfigTree);
+    if(ret < 0) return;
+
+    Init( fInTree, doGenInfo );
+    auto nEntries = fInTree->GetEntries();
+    //loop over events
+    if(_evti == _evtj){
+            _evti = 0;
+            _evtj = nEntries;
+    }
+    if(_evti < nEntries){
+    	//cap at max number of entries
+    	if(_evtj > nEntries)
+	    _evtj = nEntries;
+    }
+    else{
+    	cout << "Starting event " << _evti << " above # of entries in tree " << nEntries << " returning." << endl;
+	return;
+    }
+    initHists();
+    setOutputBranches(fOutTree);
+
+    startJobs(); // clear && init count varibles
+
+    // ntuple event counts and weights
+    // setup config tree inputs
+    ProcessConfigTree( fInConfigTree );
+
     std::cout << "configCnts ( ";
     for( auto item : configCnts ){
       std::cout << item.first <<  " " << item.second << " ";
@@ -339,16 +412,147 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
     std::cout << "Setting up For Main Loop." << std::endl;
     //int loopCounter(1000);
     int loopCounter(1);
-    auto nEntries = fInTree->GetEntries();
     if(DEBUG){ nEntries = 1000; loopCounter = 100; }
-    std::cout << "Proccessing " << nEntries << " entries." << std::endl;
-    nEvents = nEntries;
+    std::cout << "Processing " << nEntries << " entries." << std::endl;
     //DEBUG
-    nEntries = 100;
-    for (Long64_t centry = 0; centry < nEntries; centry++){
+    nEvents = _evtj - _evti;//save # of events actually ran over//nEntries;
+    cout << "Running over events " << _evti << " to " << _evtj << endl;
+    for (Long64_t centry = _evti; centry < _evtj; centry++){
 
-      if( centry%loopCounter == 0 ) std::cout << "Proccessed " << centry << " of " << nEntries << " entries." << std::endl;
+      if( centry%loopCounter == 0 ) std::cout << "Processed " << centry << " of " << nEvents << " entries (" << nEntries << " total entries)." << std::endl;
       auto entry = fInTree->LoadTree(centry);
+      cout << "centry " << centry << " entry " << entry << endl;
+      if(DEBUG) std::cout << " -- Getting Branches " << std::endl;
+      getBranches( entry, doGenInfo );
+      geCnts.clear();
+      geVars.clear();
+      //geVects.clear();
+      if( genSigPerfect ) geVars.set( "genSigPerfect", 1 ); else geVars.set( "genSigPerfect", 0 );
+      if( noSVorPho ) geVars.set( "noSVorPho", 1 ); else geVars.set( "noSVorPho", 0 );
+      if(DEBUG) std::cout << " -- Event Loop " << std::endl;
+      auto saveToTree = eventLoop(entry);
+      if( saveToTree ){ fOutTree->Fill(); }
+
+    }//<<>>for (Long64_t centry = 0; centry < nEntries; centry++)  end entry loop
+    fillConfigTree( fConfigTree ); 
+
+    endJobs();
+	
+    std::cout << "<<<<<<<< Write Output Maps and Hists <<<<<<<<<<<<<< " << std::endl;
+    cout << "Writing to " << outfilename << endl;
+    TFile* fOutFile = new TFile( outfilename.c_str(), "RECREATE" );
+    fOutFile->cd();
+
+    fOutTree->Write();
+    fConfigTree->Write();
+	
+    for( int it = 0; it < n1dHists; it++ ){ if(hist1d[it]){ hist1d[it]->Write(); delete hist1d[it]; } }
+    for( int it = 0; it < n2dHists; it++ ){ if(hist2d[it]){ hist2d[it]->Write(); delete hist2d[it]; } }
+    for( int it = 0; it < n3dHists; it++ ){ if(hist3d[it]){ hist3d[it]->Write(); delete hist3d[it]; } }
+	
+    if( CLSTRMAPS ){
+      nMaps = 0;
+      for( int it = 0; it < nEBEEMaps; it++ ){ 
+	ebeeMapP[it]->Write(); delete ebeeMapP[it]; 								 
+	ebeeMapT[it]->Write(); delete ebeeMapT[it]; 
+	ebeeMapR[it]->Write(); delete ebeeMapR[it];
+      }//<<>>for( int it = 0; it < nEBEEMaps; it++ )
+    }//<<>>f( clsttrMaps )
+	
+    std::cout << "Finished processing events for : " << infilelist << std::endl;
+	
+    fOutFile->Close();
+	
+    delete fInTree;
+    delete fOutTree;
+    delete fConfigTree;
+    delete fOutFile;
+
+
+  std::cout << "KUCMSAodSkimmer : Thats all Folks!!" << std::endl;
+
+}//<<>>void kucmsSkimmer
+
+
+void KUCMSAodSkimmer::kucmsAodSkimmer_listsOfLists( std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, bool noSVorPho, int skipCnt, bool useEvtWgts ){
+
+  useEvtWgt = useEvtWgts;
+  doGenInfo = hasGenInfo;
+  //std::string inpath, infiles, key, 
+  std::string masterstr; 
+  //int mct;
+  //float crossSection, gmsblam, gmsbct, mcw;
+  std::cout << "Processing Input Lists for : " << infilelist << std::endl;
+  std::ifstream masterInfile(infilelist);
+
+  string listdir = infilelist.substr(0,infilelist.find("/")+1); 
+  while( std::getline( masterInfile, masterstr ) ){
+
+    if( DEBUG ) std:: cout << masterstr << std::endl;
+    if( masterstr[0] == '#' ) continue;
+    if( masterstr == " " ) continue;
+    auto instrs = splitString( masterstr, " " );
+    if( DEBUG ) std:: cout << instrs.size() << std::endl;
+    if( instrs.size() < 9 ) continue;
+    //add path to input file
+    instrs[1] = listdir+instrs[1];
+    TTree* fOutTree = new TTree("kuSkimTree","output root file for kUCMSSkimmer");
+    TTree* fConfigTree = new TTree("kuSkimConfigTree","config root file for kUCMSSkimmer");
+    TChain* fInTree = nullptr;
+    TChain* fInConfigTree = nullptr;
+    int ret = ProcessFilelistOfLists(eosdir, instrs, fInTree, fInConfigTree);
+    if(ret < 0) return;
+
+    Init( fInTree, doGenInfo );
+    auto nEntries = fInTree->GetEntries();
+    //loop over events
+    if(_evti == _evtj){
+            _evti = 0;
+            _evtj = nEntries;
+    }
+    if(_evti < nEntries){
+    	//cap at max number of entries
+    	if(_evtj > nEntries)
+	    _evtj = nEntries;
+    }
+    else{
+    	cout << "Starting event " << _evti << " above # of entries in tree " << nEntries << " returning." << endl;
+	return;
+    }
+    initHists();
+    setOutputBranches(fOutTree);
+
+    startJobs(); // clear && init count varibles
+
+    // ntuple event counts and weights
+    // setup config tree inputs
+    ProcessConfigTree( fInConfigTree );
+
+    std::cout << "configCnts ( ";
+    for( auto item : configCnts ){
+      std::cout << item.first <<  " " << item.second << " ";
+    }//<<>>for( auto item : configInfo )
+    std::cout << ")" << std::endl;
+
+    std::cout << "configWgts ( ";
+    for( auto item : configWgts ){
+      std::cout << item.first <<  " " << item.second << " ";
+    }//<<>>for( auto item : configInfo )
+    std::cout << ")" << std::endl;
+
+    std::cout << "Setting up For Main Loop." << std::endl;
+    //int loopCounter(1000);
+    int loopCounter(1);
+    if(DEBUG){ nEntries = 1000; loopCounter = 100; }
+    std::cout << "Processing " << nEntries << " entries." << std::endl;
+    //DEBUG
+    nEvents = _evtj - _evti;//save # of events actually ran over//nEntries;
+    cout << "Running over events " << _evti << " to " << _evtj << endl;
+    for (Long64_t centry = _evti; centry < _evtj; centry++){
+
+      if( centry%loopCounter == 0 ) std::cout << "Processed " << centry << " of " << nEvents << " entries (" << nEntries << " total entries)." << std::endl;
+      auto entry = fInTree->LoadTree(centry);
+      cout << "centry " << centry << " entry " << entry << endl;
       if(DEBUG) std::cout << " -- Getting Branches " << std::endl;
       getBranches( entry, doGenInfo );
       geCnts.clear();
@@ -367,8 +571,9 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
 	
     std::cout << "<<<<<<<< Write Output Maps and Hists <<<<<<<<<<<<<< " << std::endl;
 
-    auto ext = splitString( infiles, "." );
+    auto ext = splitString( instrs[1], "." );
     std::string extOutFileName( ext[0] + outfilename );
+    cout << "Writing to " << extOutFileName << endl;
     TFile* fOutFile = new TFile( extOutFileName.c_str(), "RECREATE" );
     fOutFile->cd();
 
@@ -388,7 +593,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
       }//<<>>for( int it = 0; it < nEBEEMaps; it++ )
     }//<<>>f( clsttrMaps )
 	
-    std::cout << "Finished processing events for : " << infiles << std::endl;
+    std::cout << "Finished processing events for : " << instrs[1] << std::endl;
 	
     fOutFile->Close();
 	
@@ -402,6 +607,10 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
   std::cout << "KUCMSAodSkimmer : Thats all Folks!!" << std::endl;
 
 }//<<>>void kucmsSkimmer
+
+
+
+
 
 //------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------
@@ -478,7 +687,7 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
   if( saveToTree ){ 
 
     processBHCPhotons(); 
-    processBHCJets(); 
+    //processBHCJets(); 
 	processRJR(0,true); 
 	processRJR(1,false); 
 

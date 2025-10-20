@@ -67,17 +67,28 @@ class KUCMSAodSkimmer : public llpgtree {
 	~KUCMSAodSkimmer();
 
 	// tchian processing functions
-    void kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo );
-    void kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect );
-    void kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, int skipCnt );
-    void kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, bool doSVs, int skipCnt );
-    void kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, bool doSVs, int skipCnt, bool useEvtWgts );
+    //void kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo );
+    //void kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect );
+    //void kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, int skipCnt );
+    //void kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, bool doSVs, int skipCnt );
+    void kucmsAodSkimmer( std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, bool doSVs, int skipCnt, bool useEvtWgts );
+    void kucmsAodSkimmer_listsOfLists( std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, bool doSVs, int skipCnt, bool useEvtWgts );
     void initHists();
     bool eventLoop( Long64_t entry );
 	void startJobs();
     void endJobs();
 	void fillConfigTree( TTree* fOutTree );
-
+    int ProcessFilelistOfLists(string eosdir, vector<string> processed_strings, TChain*& fInChain, TChain*& fOutChain);
+    int ProcessFilelist(string eosdir, string processed_strings, TChain*& fInChain, TChain*& fOutChain);
+    void ProcessConfigTree(TChain* fInConfigTree);
+    void SetEventRange(int evti, int evtj){ _evti = evti; _evtj = evtj;}
+    void SetDataSetKey(string key){ dataSetKey = key; }
+    void SetCrossSection(float xsec){ xsctn = xsec; }
+    void SetGluinoMass(float glumass){ gmass = glumass; }
+    void SetN2Mass(float n2mass){ xmass = n2mass; }
+    void SetMCType(int type){ mctype = type; }
+    void SetTimeCalibrationTag(string ttag){ tctag = ttag; }
+    void SetMCWeight(float w){ mcwgt = w; }
 	// set branches
     void setOutputBranches( TTree* fOutTree );
 	void setEvtVarMetBranches( TTree* fOutTree );
@@ -189,6 +200,7 @@ class KUCMSAodSkimmer : public llpgtree {
     std::map<std::string,int> configCnts;
     std::map<std::string,float> configWgts;
 	uInt nEvents, nSelectedEvents;
+	int _evti, _evtj;
     float sumEvtGenWgt;
     std::vector<bool> phoJetVeto;
 	std::vector<bool> rhused;
