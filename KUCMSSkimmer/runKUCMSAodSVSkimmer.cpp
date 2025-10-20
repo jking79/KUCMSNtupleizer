@@ -36,11 +36,11 @@ int main ( int argc, char *argv[] ){
 				//const std::string infilename = "KUCMS_Ntuple_Master_DataPD_Files_List.txt"; hasGenInfo = false;
                 //no//const std::string infilename = "KUCMS_Ntuple_Master_DEG_Files_List.txt"; hasGenInfo = false;
                 //no//const std::string infilename = "KUCMS_Ntuple_Master_GoGoG_Files_List.txt";
-                //const std::string infilename = "KUCMS_Ntuple_Master_BG_SVIPM100_Files_List.txt";
+                const std::string infilename = "KUCMS_Ntuple_Master_BG_SVIPM100_Files_List.txt";
 				////const std::string infilename = "KUCMS_Ntuple_Master_SMS_Sig_Files_List_untracked.txt"; useEvtGenWgt = false;
                 //no//const std::string infilename = "KUCMS_Ntuple_Master_GoGoZ_Files_List.txt";
                 //no//const std::string infilename = "KUCMS_Ntuple_Master_SqSqG_Files_List.txt";
-                const std::string infilename = "KUCMS_Ntuple_Master_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
+                //const std::string infilename = "KUCMS_Ntuple_Master_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
 				//const std::string infilename = "KUCMS_Ntuple_Master_NtupleTest_Files_List.txt"; hasGenInfo = false;
 
                 //const std::string outfilename = "_LLPGskim_v21_rjrvars.root"; // skim v21 use new process_name tags 

@@ -10,12 +10,82 @@
 
 #include "KUCMSAodSVSkimmer.hh"
 #include "KUCMSHelperFunctions.hh"
+#include "nlohmann_json.hpp"
+#include <vector>
+
+using json = nlohmann::json;
 
 //------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------
 //	Helper functions that depended on varibles from GetEntry()
 //------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------
+
+void KUCMSAodSkimmer::loadLumiJson( std::string infile, bool verbose ){
+    // Define your target data structure
+    // assume std::map<int, std::vector<std::map<int, int>>> lumiData;
+
+    // Open JSON file
+    std::ifstream file(infile);
+    if( !file.is_open() ){
+        std::cerr << "Error: Could not open JSON file.\n";
+    	return;
+    }//<<>>if( !file.is_open() )
+
+    // Parse JSON
+    json j;
+    file >> j;
+
+    // Convert JSON structure into C++ map
+    for( auto& [runStr, lumiRanges] : j.items() ){
+
+        int run = std::stoi(runStr);
+        std::vector<std::map<int, int>> rangeList;
+        for( auto& pair : lumiRanges ){
+            if( pair.is_array() && pair.size() == 2 ){
+                std::map<int, int> range;
+                range[pair[0].get<int>()] = pair[1].get<int>();
+                rangeList.push_back(range);
+            }//<<>>if( pair.is_array() && pair.size() == 2 )
+        }//<<>>for( auto& pair : lumiRanges )
+        lumiData[run] = rangeList;
+
+    }//<<>>for( auto& [runStr, lumiRanges] : j.items() )
+
+    //Test output
+    if( verbose ){
+    for (const auto& [run, ranges] : lumiData) {
+        std::cout << " -- Run " << run << ":" << std::endl;
+        for( const auto & range : ranges ){
+            for( const auto & [start, end] : range ){
+                std::cout << " --- Lumi " << start << " - " << end << std::endl;
+            }//<<>>for (const auto& [start, end] : range)
+        }//<<>>for (const auto& range : ranges)
+    }//<<>>for (const auto& [run, ranges] : lumiData)
+	}//<<>>if( false ){
+
+}//<<>>void KUCMSAodSkimmer::loadLumiJson( std::string infile )
+
+bool KUCMSAodSkimmer::isValidLumisection( int run, int lumi ){
+
+    // Look for the run
+	//std::cout << " : Checking Run : " << run << " for this event " << std::endl;
+    auto runIt = lumiData.find(run);
+    if( runIt == lumiData.end() ){ 
+		//std::cout << " :: Run " << run << " : LumiSection : " << lumi << " is not valid " << std::endl;
+		return false;  // Run not found
+	}//<<>>if( runIt == lumiData.end() )
+    // Iterate over all lumi ranges for this run
+    for( const auto& range : runIt->second ){
+        for( const auto& [start, end] : range ){
+			//std::cout << " :: checking LumiSection : " << start << " - " << end << " for " << lumi << std::endl;
+            if( lumi >= start && lumi <= end ) return true;  // Lumi within a valid range
+        }//<<>>for( const auto& [start, end] : range )
+    }//<<>>for( const auto& range : runIt->second )
+	//std::cout << " :: Run " << run << " : LumiSection : " << lumi << " is not valid " << std::endl;
+    return false;  // Not within any range
+
+}//<<>>bool KUCMSAodSkimmer::isValidLumisection( int run, int lumi )
 
 int KUCMSAodSkimmer::getRhIdx( uInt rhDetID ){
 
