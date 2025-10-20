@@ -68,6 +68,16 @@ met18UL = [
 
 ]
 
+met17UL = [
+
+    'cms:/MET/Run2017A-09Aug2019_UL2017_rsb-v1/AOD',
+    ##'cms:/MET/Run2017B-09Aug2019_UL2017_rsb-v1/AOD',
+    ##'cms:/MET/Run2017C-09Aug2019_UL2017_rsb-v1/AOD',
+    ##'cms:/MET/Run2017D-09Aug2019_UL2017_rsb-v1/AOD',
+    'cms:/MET/Run2017E-09Aug2019_UL2017_rsb-v1/AOD',
+    ##'cms:/MET/Run2017F-09Aug2019_UL2017_rsb-v1/AOD',
+
+]
 
 deg_list = [
 
@@ -169,7 +179,7 @@ egamma = [ 'cms:/EGamma/Run2018C-15Feb2022_UL2018-v1/AOD' ]
 #runlist = jetmetexo22
 #runlist = dipho
 #runlist = bosun
-runlist = met18UL
+runlist = met17UL
 
 for thefile in runlist :
 

@@ -186,8 +186,8 @@ KUCMSAodSkimmer::~KUCMSAodSkimmer(){
 void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, bool noSVorPho, int skipCnt, bool useEvtWgts ){
 
 
-  if( not hasGenInfo ) loadLumiJson("Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt");
-  //loadLumiJson("Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt",true);
+  if( not hasGenInfo ) loadLumiJson("json/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt");
+  //loadLumiJson("json/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt",true);
 
   useEvtWgt = useEvtWgts;
   doGenInfo = hasGenInfo;

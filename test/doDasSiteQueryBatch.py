@@ -445,7 +445,7 @@ dl22 = [ '/MET/Run2022C-27Jun2023-v2/AOD' ]
 #query = 'dasgoclient --json -query=\'dataset='
 query = 'dasgoclient --json -query=\'site dataset=' 
 
-datalist = dl2018GJets
+datalist = dlR2Met
 
 for data in datalist :
     

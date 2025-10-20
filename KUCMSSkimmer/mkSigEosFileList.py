@@ -40,7 +40,7 @@ eosll = 'eos root://cmseos.fnal.gov ls '
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_GJets_R18_SVIPM100_v30/'
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_WJets_R18_SVIPM100_v31/'
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_ZJets_R18_SVIPM100_v30/'
-command = eosll+mdis+'kuncali/gammares_mc18/'
+command = eosll+mdis+'KUCMSNtuple/kucmsntuple_MET_R18_SVIPM100_v31/'
 
 #version = ''
 #version = '_v11_'

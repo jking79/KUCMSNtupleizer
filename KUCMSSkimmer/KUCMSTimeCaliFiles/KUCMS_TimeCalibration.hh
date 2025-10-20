@@ -116,8 +116,9 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 
 	void SetupDetIDsEB();
 	void SetupDetIDsEE();
-	void SetupIovMaps();
+	std::map<UInt_t,kucms_DetIDStruct>& getDetIDMapRef(){ return DetIDMap; };
 
+	void SetupIovMaps();
     void SetupIovMap( std::string tag, float lumiMin );
 
 	void ReadCaliRunFile();
@@ -174,7 +175,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 
 	kucms_DetIDStruct& getDetIdInfo( uInt rhid );
 	std::map<int,std::map<int,std::map<int,uInt>>> getInvDetIDMap();
-    	std::map<UInt_t,kucms_DetIDStruct> getDetIDMap(); // map of information by detid for each crystal
+    std::map<UInt_t,kucms_DetIDStruct> getDetIDMap(); // map of information by detid for each crystal
 	uInt getDetIdInfo( int i1, int i2, int ecal );
 	uInt getTTId( uInt detId );
 	std::pair<int,int> getTTInfo( uInt ttid );
