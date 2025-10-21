@@ -546,10 +546,10 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch( "selPhoLTRes", VFLOAT );
   selPhotons.makeBranch( "selPhoSTRes", VFLOAT );
 
-  selPhotons.fillBranch( "selPhoLSCross", VFLOAT );
-  selPhotons.fillBranch( "selPhoSSCross", VFLOAT );
-  selPhotons.fillBranch( "selPhoLWeird", VBOOL );
-  selPhotons.fillBranch( "selPhoSWeird", VBOOL );
+  selPhotons.makeBranch( "selPhoLSCross", VFLOAT );
+  selPhotons.makeBranch( "selPhoSSCross", VFLOAT );
+  selPhotons.makeBranch( "selPhoLWeird", VBOOL );
+  selPhotons.makeBranch( "selPhoSWeird", VBOOL );
 
   selPhotons.makeBranch( "selPhoEnergy", VFLOAT );
   selPhotons.makeBranch( "selPhoEta", VFLOAT ); 
