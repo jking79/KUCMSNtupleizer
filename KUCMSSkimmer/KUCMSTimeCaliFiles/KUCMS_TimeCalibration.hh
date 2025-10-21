@@ -116,8 +116,9 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 
 	void SetupDetIDsEB();
 	void SetupDetIDsEE();
-	void SetupIovMaps();
+	std::map<UInt_t,kucms_DetIDStruct>& getDetIDMapRef(){ return DetIDMap; };
 
+	void SetupIovMaps();
     void SetupIovMap( std::string tag, float lumiMin );
 
 	void ReadCaliRunFile();
@@ -174,7 +175,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 
 	kucms_DetIDStruct& getDetIdInfo( uInt rhid );
 	std::map<int,std::map<int,std::map<int,uInt>>> getInvDetIDMap();
-    	std::map<UInt_t,kucms_DetIDStruct> getDetIDMap(); // map of information by detid for each crystal
+    std::map<UInt_t,kucms_DetIDStruct> getDetIDMap(); // map of information by detid for each crystal
 	uInt getDetIdInfo( int i1, int i2, int ecal );
 	uInt getTTId( uInt detId );
 	std::pair<int,int> getTTInfo( uInt ttid );
@@ -1333,11 +1334,12 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
 	float res = -1;
 	if( mctype == 1 ){ // data
 
-		if( dataSetKey == "r2_ul18"  ) res = std::sqrt( (sq2( 25.16/amplitude ) + 2*sq2(0.1013))/2.0 );
+		if( dataSetKey == "r2_ul18"  ) res = sq2( 25.16/amplitude ) + 2*sq2(0.1013);
 
 	} else { // MC
 
-		if( dataSetKey == "r2_ul18_mc"  ) res = std::sqrt( (sq2( 28.1/amplitude ) + 2*sq2(0.1184))/2.0 );
+        if( dataSetKey == "r2_ul18"  ) res = sq2( 25.16/amplitude ) + 2*sq2(0.1013);
+		if( dataSetKey == "r2_ul18_mc"  ) res = sq2( 25.16/amplitude ) + 2*sq2(0.1013);
 
 	}//<<>>if( mctype == 0 )
 
@@ -1355,7 +1357,20 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
     
     } else { // MC
 
-        rtime = time; // rtime = getSmearedTime( time, amplitude, dataSetKey );;
+        //rtime = getSmearedTime( time, amplitude, dataSetKey );;
+		//0.00691415 1.60666 0.133913
+		float stnoise = 0.00691415;
+		float ststoch = 1.60666;
+		float ststant = 0.133913;
+    	//std::cout << " stag smearing : " << stnoise << " " << ststoch << " " << ststant << " " << srun << std::endl;
+    	double noise = pow( stnoise, 2 );
+    	double stoch = ( ststoch > 0 ) ? pow( ststoch, 2 ) : 0;
+    	double stant = pow( ststant, 2 );
+    	double resolution = std::sqrt( ( noise/pow(amplitude,2) + stoch/amplitude  + 2*stant )/2 );
+    	//std::cout << " getSmearedTime : " << resolution << " " << noise << " " << stoch << " " << stant << std::endl;
+    	if( resolution <= 0 ){ std::cout << "No smearing values set for this tag : " << dataSetKey << std::endl; rtime = time; }
+    	rtime = getRandom->Gaus( time, resolution );
+
 
     }//<<>>if( mctype == 0 )
 
@@ -2075,7 +2090,8 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
         auto nEntries = fInTree->GetEntries();
         if( small && nEntries > 1000000 ) nEntries = 1000000;
         if( debug ) nEntries = ( nEntries < 10000 ) ? nEntries : 10000;
-        if( debug ) std::cout << "Mf2d Proccessing " << nEntries << " entries : " << std::endl;
+        //if( debug )
+		std::cout << "Mf2d Proccessing " << nEntries << " entries : " << std::endl;
         int report = nEntries/20;
         for (auto centry = 0U; centry < nEntries; centry++){
 
