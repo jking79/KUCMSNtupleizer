@@ -84,7 +84,9 @@ def generateSubmission(args):
             flags = " --xsec "+str(xsec)+" --dataSetKey "+key+" --gluinoMass "+str(gluinomass)+" --N2Mass "+str(n2mass)+" --timeCaliTag "+timeCaliTag+" --MCweight "+str(mc_wt)
 
             #set output name
-            ofilename = "condor_"+args.inputList+"_"+data[1][:-4]+"_rjrskim_"+args.output
+            ofilename = "condor_"+args.inputList+"_"+data[1][:-4]+"_rjrskim"
+            if args.output is not None:
+                ofilename += "_"+args.output
     
 
 
@@ -92,7 +94,7 @@ def generateSubmission(args):
             condorSubmitFile = fulldirname + "/src/submit.sh"
             subf = open(condorSubmitFile, "w")
             print("outputfile name "+ofilename)
-            SH.writeSubmissionBase(subf, dirname, ofilename)
+            SH.writeSubmissionBase(subf, fulldirname, ofilename)
             #need to remove local lpc path for actual args
             inputlist = inputlist[inputlist.rfind("/",0,inputlist.rfind("/"))+1:]
             print("inputfilelist",inputlist)
@@ -106,7 +108,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
     parser.add_argument("--inputList",'-i',help="list of sample lists to run over (default is SVIPM100 selection)",required=True,choices=['data','mcBkg','mcSig'])
-    parser.add_argument('--output','-o',help='output label',default="")
+    parser.add_argument('--output','-o',help='output label',default=None)
     parser.add_argument('--split','-s',help="condor job split",default=0,type=int)
     parser.add_argument('--maxnevts',help="maximum number of events to run over",default=-999,type=int)
     parser.add_argument('--verbosity','-v',help="verbosity",default=0)
