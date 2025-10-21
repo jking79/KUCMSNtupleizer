@@ -207,6 +207,7 @@ class KUCMSAodSkimmer : public llpgtree {
     std::map<std::string,float> configWgts;
 	uInt nEvents, nSelectedEvents;
 	int _evti, _evtj;
+	std::map<UInt_t, pair<int,int>> _detidmap;
     float sumEvtGenWgt;
     std::vector<bool> phoJetVeto;
 	std::vector<bool> rhused;

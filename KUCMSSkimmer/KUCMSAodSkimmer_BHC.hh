@@ -45,7 +45,7 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 	//ca.SetDetectorCenter(x, y, z); //set to beamspot center, defaults to (0,0,0)
 	ca.SetPV(PV_x, PV_y, PV_z); //set to PV coords (assuming these are global vars)
 	ca.SetTransferFactor(1/30.); //set to 1/min photon pt
-	ca.SetupDetIDsEB();
+	ca.SetDetIDsEB(_detidmap);
 	for( uInt it = 0; it < nPhotons; it++ ){
 		//cout << "nphoton #" << it << endl;
 		if( not isSelPho[it] ) continue;
@@ -253,7 +253,7 @@ void KUCMSAodSkimmer::processBHCJets(){
 	//ca.SetDetectorCenter(x, y, z); //set to beamspot center, defaults to (0,0,0)
 	ca.SetPV(PV_x, PV_y, PV_z); //set to PV coords (assuming these are global vars)
 	ca.SetTransferFactor(1/30.); //set to 1/min jet pt
-	ca.SetupDetIDsEB();
+	ca.SetDetIDsEB(_detidmap);
 
     std::vector<Jet> jetrhs;
   	uInt nJets = Jet_energy->size();

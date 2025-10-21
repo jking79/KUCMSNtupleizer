@@ -150,7 +150,13 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 
   timeCali = new KUCMS_TimeCalibration();
   timeCali->setTag(r2UL);
-
+  std::map<UInt_t,kucms_DetIDStruct> detidmap = timeCali->getDetIDMapRef();
+  for(auto it = detidmap.begin(); it != detidmap.end(); it++){
+	  kucms_DetIDStruct detidstruct = it->second;
+	  int ieta = detidstruct.i2;
+	  int iphi = detidstruct.i1;
+	  _detidmap[it->first] = std::make_pair(ieta, iphi);
+   }
 
   _evti = -1;
   _evtj = -1;
