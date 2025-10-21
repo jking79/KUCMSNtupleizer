@@ -127,7 +127,6 @@ int main ( int argc, char *argv[] ){
         std::string eosdir = "root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/";
         KUCMSAodSkimmer llpgana;
 	llpgana.SetEventRange(evti, evtj);
-
 	if(in_file.find("_Master_") != string::npos){
         	llpgana.kucmsAodSkimmer_listsOfLists( eosdir, in_file, outfilename, hasGenInfo, genSigPerfect, noSVorPho, skipCnt, useEvtGenWgt );
 	}

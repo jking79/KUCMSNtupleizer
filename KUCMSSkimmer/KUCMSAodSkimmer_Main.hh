@@ -8,6 +8,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "KUCMSHelperFunctions.hh"
+#include <ctime>
 
 #include "KUCMSAodSVSkimmer.hh"
 #include "KUCMSAodSkimmer_Helpers.hh"
@@ -184,6 +185,10 @@ KUCMSAodSkimmer::~KUCMSAodSkimmer(){
 
 void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, bool noSVorPho, int skipCnt, bool useEvtWgts ){
 
+
+  if( not hasGenInfo ) loadLumiJson("json/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt");
+  //loadLumiJson("json/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt",true);
+
   useEvtWgt = useEvtWgts;
   doGenInfo = hasGenInfo;
   const std::string disphotreename = "tree/llpgtree";
@@ -272,6 +277,8 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
 
     startJobs(); // clear && init count varibles
 
+
+
     // ntuple event counts and weights
     // setup config tree inputs
 
@@ -337,23 +344,29 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string listdir, std::string eosdir, 
     std::cout << ")" << std::endl;
 
     std::cout << "Setting up For Main Loop." << std::endl;
-    //int loopCounter(1000);
-    int loopCounter(1);
+    int loopCounter(1000);
+    //int loopCounter(1);
     auto nEntries = fInTree->GetEntries();
     if(DEBUG){ nEntries = 1000; loopCounter = 100; }
     std::cout << "Proccessing " << nEntries << " entries." << std::endl;
     nEvents = nEntries;
     //DEBUG
-    nEntries = 100;
+    //nEntries = 100;
     for (Long64_t centry = 0; centry < nEntries; centry++){
 
-      if( centry%loopCounter == 0 ) std::cout << "Proccessed " << centry << " of " << nEntries << " entries." << std::endl;
+      if( centry%loopCounter == 0 ){ 
+		std::time_t now = std::time(nullptr);
+		std::string curtime = std::ctime(&now);
+		curtime.pop_back();
+		std::cout << "Proccessed " << centry << " of " << nEntries << " entries at " << curtime << std::endl;
+	  }//<<>>if( centry%loopCounter == 0 )
       auto entry = fInTree->LoadTree(centry);
       if(DEBUG) std::cout << " -- Getting Branches " << std::endl;
       getBranches( entry, doGenInfo );
       geCnts.clear();
       geVars.clear();
       //geVects.clear();
+      if( mct && not isValidLumisection( Evt_run, Evt_luminosityBlock ) ) continue;
       if( genSigPerfect ) geVars.set( "genSigPerfect", 1 ); else geVars.set( "genSigPerfect", 0 );
       if( noSVorPho ) geVars.set( "noSVorPho", 1 ); else geVars.set( "noSVorPho", 0 );
       if(DEBUG) std::cout << " -- Event Loop " << std::endl;
@@ -477,8 +490,8 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
   auto saveToTree = eventSelection();	
   if( saveToTree ){ 
 
-    processBHCPhotons(); 
-    processBHCJets(); 
+    //processBHCPhotons(); 
+    //processBHCJets(); 
 	processRJR(0,true); 
 	processRJR(1,false); 
 
@@ -632,6 +645,8 @@ void KUCMSAodSkimmer::initHists(){
     hist1d[12] = new TH1D("elept_v","Veto;Electron Pt [GeV];Eff",100,0,1000);
     hist1d[13] = new TH1D("elept_l","Loose;Electron Pt [GeV];Eff",100,0,1000);
     hist1d[14] = new TH1D("elept_m","Medium;Electron Pt [GeV];Eff",100,0,1000);
+
+	hist1d[20] = new TH1D("erhnamps","Pho SC Nomilized RH Ampsig;Norm Ampsig",100,0,1);
 
     ////hist1d[100] = new TH1D("genPhoPt", "genPhoPt;Pt [GeV]",500,0,1000);
 

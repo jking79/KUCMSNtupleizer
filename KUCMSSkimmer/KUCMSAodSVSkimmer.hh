@@ -26,6 +26,7 @@
 #include "KUCMSTimeCaliFiles/KUCMS_TimeCalibration.hh"
 
 #include "KUCMSNtuple_base_v30.h"
+//#include "KUCMSNtuple_base_v30_noHtl.h"
 //#include "KUCMSNtuple_base_noSV_v30.h"
 
 #include "../interface/MaterialVeto.h"
@@ -112,6 +113,11 @@ class KUCMSAodSkimmer : public llpgtree {
 
 	int getPhoQuality( int it );
     int getJetQuality( int it );	
+
+	// good Lumisection check
+	std::map<int, std::vector<std::map<int, int>>> lumiData;
+	void loadLumiJson( std::string infile, bool verbose = false );
+	bool isValidLumisection( int run, int lumi );
 
 	// event processing and selection
 	bool eventSelection();
@@ -214,7 +220,8 @@ class KUCMSAodSkimmer : public llpgtree {
     KUCMSBranchManager selGenPart;
     KUCMSBranchManager selSV;
     KUCMSBranchManager selTracks;
-    KUCMSBranchManager BHCInfo;
+    KUCMSBranchManager BHCPhoInfo;
+    KUCMSBranchManager BHCJetInfo;
 
    std::vector<float>   *OSuperCluster_diffEnergy;
    std::vector<float>   *OSuperCluster_dR;

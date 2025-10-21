@@ -38,7 +38,10 @@ BCGLIBS += $(GLIBS)
 
 TCFLAGS += -I/uscms/home/mlazarov/nobackup/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSTimeCaliFiles
 
-CC=g++
+CC = g++
+
+OPTS = -O3 -march=native -ffast-math -funroll-loops -flto 
+OPTS += -fno-trapping-math -funsafe-math-optimizations -fomit-frame-pointer -fno-math-errno
 
 p1=runKUCMSAodSVSkimmer
 p2=fillKUCMSTimeCalibration
@@ -47,10 +50,10 @@ p3=spaceholder
 all: $(p1) 
 
 $(p1): $(p1).cpp
-	$(CC) -o $(p1).obj $(p1).cpp $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS) $(BCGLIBS)  
+	$(CC) -o $(p1).obj $(p1).cpp $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS) $(BCGLIBS) $(OPTS) 
 
 $(p2): $(p2).cpp
-	$(CC) -o $(p2).obj $(p2).cpp $(RTCFLAGS) $(RTGLIBS)
+	$(CC) -o $(p2).obj $(p2).cpp $(RTCFLAGS) $(RTGLIBS) $(OPTS)
 
 $(p3): $(p3).cpp
 	$(CC) -o $(p2).obj $(p2).cpp $(RTCFLAGS) $(RTGLIBS)
