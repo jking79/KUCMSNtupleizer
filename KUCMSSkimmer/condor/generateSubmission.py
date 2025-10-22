@@ -42,7 +42,6 @@ def generateSubmission(args):
     print("Using file list",inputMainList,"with ofilename",ofilename,"and dirname",dirname)
     listpath = inputMainList.split("/")
     listpath = listpath[-2]+"/"
-    print("listpath",listpath) 
     #parsing lines in master list for inputs for list-by-list processing
     with open(inputMainList,'r') as f:
         for line in f:
@@ -67,7 +66,15 @@ def generateSubmission(args):
             mc_wt = data[6]
             timeCaliTag = data[-1][:-1] #remove new line symbol
             
-            fulldirname = dirname+data[1][:-4]+"/"
+            #set output name
+            samplename = data[1][:-4]
+            ofiletag = "rjrskim"
+            if args.output is not None:
+                ofiletag += "_"+args.output
+            ofilename = "condor_"+args.inputList+"_"+samplename+"_"+ofiletag
+            
+
+            fulldirname = dirname+samplename+"/"+ofiletag
             print("Preparing sample directory: {0}".format(fulldirname))
             ##### Create a workspace (remove existing directory) #####
             if os.path.exists(fulldirname):
@@ -83,10 +90,6 @@ def generateSubmission(args):
             # grab relevant flags
             flags = " --xsec "+str(xsec)+" --dataSetKey "+key+" --gluinoMass "+str(gluinomass)+" --N2Mass "+str(n2mass)+" --timeCaliTag "+timeCaliTag+" --MCweight "+str(mc_wt)
 
-            #set output name
-            ofilename = "condor_"+args.inputList+"_"+data[1][:-4]+"_rjrskim"
-            if args.output is not None:
-                ofilename += "_"+args.output
     
 
 
