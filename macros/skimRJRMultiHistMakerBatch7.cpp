@@ -333,6 +333,7 @@ void HistMaker::histMaker( std::string indir, std::string infilelist, std::strin
  
         std::cout << "<<<<<<<< Processing Event Loop <<<<<<<<<<<<<< " << std::endl;
     	int loopCounter(100000);
+        //int loopCounter(1000);
         auto nEntries = fInTree->GetEntries();
         if(debug){ nEntries = 10; loopCounter = 1; }
         std::cout << "Proccessing " << nEntries << " entries." << std::endl;
@@ -522,6 +523,7 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 	// vf vdiff
 
     if( DEBUG ) std::cout << "RJR info " << std::endl;
+
 	float gtime = -99;
     float gpt = -99;
 	float gstsig = -99;
@@ -535,24 +537,45 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     float gwtres = -99;
 	float genergy = -99;
     float gcenergy = -99;
+	float glsx = 99;
+    float gssx = 99;
+    float gcrn = 99;
+    float gr9 = 99;
+    float gs4 = 99;
+    float gsmj = 99;
+    float gsmn = 99;
+    float gsieie = 99;
 
-	float sr2 = std::sqrt(2);
+	float sr2 = std::sqrt(1);
     float sgtime = 99;
     float sgpt = -99;
 	if( selPhoTime->size() > 0 ){
+
 		gtime = (*selPhoTime)[0];
 		gpt = (*selPhoPt)[0];
 		gstsig = (*selPhoSTimeSig)[0]/sr2;
         gwtsig = (*selPhoWTimeSig)[0]/sr2;
         gltsig = (*selPhoLTimeSig)[0]/sr2;
 		gstime = (*selPhoSTime)[0];
-		gltime = (*selPhoWTime)[0];
-		gwtime = (*selPhoLTime)[0];
+		gwtime = (*selPhoWTime)[0];
+		gltime = (*selPhoLTime)[0];
         gstres = (*selPhoSTimeRes)[0]/sr2;
         gltres = (*selPhoWTimeRes)[0]/sr2;
         gwtres = (*selPhoLTimeRes)[0]/sr2;
         genergy = (*selPhoEnergy)[0];
         gcenergy = (*selPhoCorEnergy)[0];
+
+		glsx = (*selPhoLSCross)[0];	
+        gssx = (*selPhoSSCross)[0];	
+
+		gcrn = (*selPhoClstrRn)[0];
+		gr9 = (*selPhoR9)[0];
+		gs4 = (*selPhoS4)[0];
+		gsmj = (*selPhoSMaj)[0];
+		gsmn = (*selPhoSMin)[0];
+		gsieie = (*selPhoSigmaIEtaIEta)[0];
+
+		
 	}//<<>>if( selPhoTime->size() > 0 )
 	if( selPhoTime->size() > 1 ){
 		sgtime = (*selPhoTime)[1];
@@ -783,22 +806,46 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 
 	// Time Sig
 
-	hist1d[51]->Fill(gstsig,fillwt);
+    hist1d[51]->Fill(gstsig,fillwt);
     hist1d[52]->Fill(gwtsig,fillwt);
     hist1d[53]->Fill(gltsig,fillwt);
     hist1d[54]->Fill(gwtime,fillwt);
     hist1d[55]->Fill(genergy,fillwt);
     hist1d[56]->Fill(gcenergy,fillwt);
 
-	hist2d[51]->Fill(gwtsig,gwtime,fillwt);
-    hist2d[52]->Fill(gwtsig,genergy,fillwt);
-    hist2d[55]->Fill(gwtsig,genergy,fillwt);
-    hist2d[53]->Fill(genergy,gcenergy,fillwt);
-    hist2d[54]->Fill(gwtsig,gcenergy,fillwt);
+
+    hist2d[40]->Fill(genergy,gcenergy,fillwt);
+    hist2d[41]->Fill(gwtsig,gcenergy,fillwt);
+
+    hist2d[51]->Fill(gwtsig,genergy,fillwt);
+    hist2d[52]->Fill(gwtsig,gstime,fillwt);
+    hist2d[53]->Fill(gwtsig,gltime,fillwt);
+    hist2d[54]->Fill(gwtsig,gwtime,fillwt);
+
+    hist2d[56]->Fill(gwtsig,glsx,fillwt);
+    hist2d[57]->Fill(gwtsig,gcrn,fillwt);
+    hist2d[58]->Fill(gwtsig,gr9,fillwt);
+    hist2d[59]->Fill(gwtsig,gs4,fillwt);
+    hist2d[60]->Fill(gwtsig,gsmj,fillwt);
+    hist2d[61]->Fill(gwtsig,gsmn,fillwt);
+    hist2d[62]->Fill(gwtsig,gsieie,fillwt);
+    hist2d[63]->Fill(gwtsig,gssx,fillwt);
+
+    hist2d[80]->Fill(gwtime,genergy,fillwt);
+    hist2d[81]->Fill(gwtime,glsx,fillwt);
+    hist2d[82]->Fill(gwtime,gstime,fillwt);
+    hist2d[83]->Fill(gwtime,gltime,fillwt);
+    hist2d[84]->Fill(gwtime,gcrn,fillwt);
+    hist2d[85]->Fill(gwtime,gr9,fillwt);
+    hist2d[86]->Fill(gwtime,gs4,fillwt);
+    hist2d[87]->Fill(gwtime,gsmj,fillwt);
+    hist2d[88]->Fill(gwtime,gsmn,fillwt);
+    hist2d[89]->Fill(gwtime,gsieie,fillwt);
+    hist2d[90]->Fill(gwtime,gssx,fillwt);
+
 
 	}//<<>>for( int i = 0; i < 1; i++ ) -- continue loop
 
-	
 }//<<>>void HistMaker::eventLoop(` Long64_t entry )
 
 //------------------------------------------------------------------------------------------------------------
@@ -957,11 +1004,37 @@ void HistMaker::initHists( std::string ht ){
     hist2d[24] = new TH2D("pho1PxH21_v_pho2PxH21", addstr(ht," pho1PxH21_v_pho2PxH21;pho1PxH21;pho2PxH21").c_str(), 500, 0, 5.0, 500, 0, 5.0 );
     hist2d[25] = new TH2D("pho1px_v_pho2px", addstr(ht," pho1px_v_pho2px;pho1px;pho2px").c_str(), 200, 0, 2000, 200, 0, 2000 );
 
-    hist2d[51] = new TH2D("Sig_v_Time", addstr(ht," Sig_v_Time;selPhoSTimeSig;selPhoTOFTime").c_str(), 480, -60, 60, 400, -20, 20);
-    hist2d[52] = new TH2D("WSig_v_Energy", addstr(ht," WSig_v_Energy;selPhoWTimeSig;selPhoEnergy").c_str(), 480, -60, 60, 300, 0, 3000);
-    hist2d[53] = new TH2D("Energy_v_CEnergy", addstr(ht," Energy_v_CEnergy;selPhoEnergy;selPhoCEnergy").c_str(), 300, 0, 3000, 300, 0, 3000);
-    hist2d[54] = new TH2D("Sig_v_CEnergy", addstr(ht," Sig_v_CEnergy;selPhoSTimeSig;selPhoCEnergy").c_str(), 160, -20, 60, 300, 0, 3000);
-    hist2d[55] = new TH2D("WSig_v_Energy_Z", addstr(ht," WSig_v_Energy_Zoom;selPhoWTimeSig;selPhoEnergy").c_str(), 100, 0, 10, 300, 0, 1500);
+
+    hist2d[40] = new TH2D("Energy_v_CEnergy", addstr(ht," Energy_v_CEnergy;selPhoEnergy;selPhoCEnergy").c_str(), 200, 0, 2000, 200, 0, 2000);
+    hist2d[41] = new TH2D("WSig_v_CEnergy", addstr(ht," WSig_v_CEnergy;selPhoSTimeSig;selPhoCEnergy").c_str(), 400, -80, 80, 200, 0, 2000);
+
+
+    hist2d[51] = new TH2D("WSig_v_PhoEnergy", addstr(ht," WSig_v_Energy;selPhoWTimeSig;selPhoEnergy").c_str(), 400, -80, 80, 200, 0, 2000);
+    hist2d[52] = new TH2D("WSig_v_STime", addstr(ht," WSig_v_STime;selPhoWTimeSig;selPhoSTime").c_str(), 400, -80, 80, 400, -20, 20);
+    hist2d[53] = new TH2D("WSig_v_LTime", addstr(ht," WSig_v_LTime;selPhoWTimeSig;selPhoLTime").c_str(), 400, -80, 80, 400, -20, 20);
+    hist2d[54] = new TH2D("WSig_v_WTime", addstr(ht," WSig_v_WTime;selPhoWTimeSig;selPhoWTime").c_str(), 400, -80, 80, 400, -20, 20);
+
+    hist2d[56] = new TH2D("WSig_v_LSCross", addstr(ht," WSig_v_LSCross;selPhoWTimeSig;selPhoLSCross").c_str(), 400, -80, 80, 200, -1, 1);
+    hist2d[57] = new TH2D("WSig_v_CRn", addstr(ht," WSig_v_VRn;selPhoWTimeSig;selPhoClstrRn").c_str(), 400, -80, 80, 100, 0, 1);
+    hist2d[58] = new TH2D("WSig_v_R9", addstr(ht," WSig_v_R9;selPhoWTimeSig;selPhoR9").c_str(), 400, -80, 80, 100, 0, 1);
+    hist2d[59] = new TH2D("WSig_v_S4", addstr(ht," WSig_v_S4;selPhoWTimeSig;selPhoS4").c_str(), 400, -80, 80, 100, 0, 1);
+    hist2d[60] = new TH2D("WSig_v_Smj", addstr(ht," WSig_v_Smj;selPhoWTimeSig;selPhoSMaj").c_str(), 400, -80, 80, 500, 0, 5);
+    hist2d[61] = new TH2D("WSig_v_Smn", addstr(ht," WSig_v_Smn;selPhoWTimeSig;selPhoSMin").c_str(), 400, -80, 80, 200, 0, 2);
+    hist2d[62] = new TH2D("WSig_v_Sieie", addstr(ht," WSig_v_Sieie;selPhoWTimeSig;selPhoSigmaIEtaIEta").c_str(), 400, -80, 80, 100, 0, 0.025);
+    hist2d[63] = new TH2D("WSig_v_SSCross", addstr(ht," WSig_v_SSCross;selPhoWTimeSig;selPhoSSCross").c_str(), 400, -80, 80, 200, -1, 1);
+
+    hist2d[80] = new TH2D("WTime_v_PhoEnergy", addstr(ht," WTime_v_PhoEnergy;selPhoWTime;selPhoEnergy").c_str(), 400, -20, 20, 200, 0, 2000);
+    hist2d[81] = new TH2D("WTime_v_LSCross", addstr(ht," WTime_v_LSCross;selPhoWTime;selPhoLSCross").c_str(), 400, -20, 20, 200, -1, 1);
+    hist2d[82] = new TH2D("WTime_v_STime", addstr(ht," WTime_v_STime;selPhoWTime;selPhoSTime").c_str(), 400, -20, 20, 400, -20, 20);
+    hist2d[83] = new TH2D("WTime_v_LTime", addstr(ht," WTime_v_LTime;selPhoWTime;selPhoLTime").c_str(), 400, -20, 20, 400, -20, 20);
+    hist2d[84] = new TH2D("WTime_v_CRn", addstr(ht," WTime_v_VRn;selPhoWTime;selPhoClstrRn").c_str(), 400, -20, 20, 100, 0, 1);
+    hist2d[85] = new TH2D("WTime_v_R9", addstr(ht," WTime_v_R9;selPhoWTime;selPhoR9").c_str(), 400, -20, 20, 100, 0, 1);
+    hist2d[86] = new TH2D("WTime_v_S4", addstr(ht," WTime_v_S4;selPhoWTime;selPhoS4").c_str(), 400, -20, 20, 100, 0, 1);
+    hist2d[87] = new TH2D("WTime_v_Smj", addstr(ht," WTime_v_Smj;selPhoWTime;selPhoSMaj").c_str(), 400, -20, 20, 500, 0, 5);
+    hist2d[88] = new TH2D("WTime_v_Smn", addstr(ht," WTime_v_Smn;selPhoWTime;selPhoSMin").c_str(), 400, -20, 20, 200, 0, 2);
+    hist2d[89] = new TH2D("WTime_v_Sieie", addstr(ht," WTime_v_Sieie;selPhoWTime;selPhoSigmaIEtaIEta").c_str(), 400, -20, 20, 100, 0, 0.025);
+    hist2d[90] = new TH2D("WTime_v_SSCross", addstr(ht," WTime_v_SSCross;selPhoWTime;selPhoSSCross").c_str(), 400, -20, 20, 200, -1, 1);
+
 
 	//------- jets ( time ) 0-49 ------------------------------
 
@@ -1027,7 +1100,7 @@ int main ( int argc, char *argv[] ){
 
 				//int nj = 1;
 				//int np = 1; : 2,7,10
-                for( int np = 0; np < 2; np++ ){
+                for( int np = 0; np < 1; np++ ){
                 for( int nj = 0; nj < 1; nj++ ){
 
 				//std::string subdir = "cf_" + std::to_string(np) + "pho_" + std::to_string(nj) + "jet/";

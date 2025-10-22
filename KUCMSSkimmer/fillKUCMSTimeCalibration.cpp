@@ -54,8 +54,8 @@ int main ( int argc, char *argv[] ){
 
     //std::string indir("/kuncali/gammares_cali_mc/");
     //std::string indir("/kuncali/gammares_cali/");
-    //std::string indir("KUCMSNtuple/gammares_ul18/");
-    std::string indir("kuncali/gammares_mc18/");
+    std::string indir("KUCMSNtuple/gammares_ul18/");
+    //std::string indir("kuncali/gammares_mc18/");
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -181,7 +181,7 @@ int main ( int argc, char *argv[] ){
     ////std::string inputfilename( "kucmsTimeCaliR17Plot2DFullRunFile.txt" );
 	////std::string inputfilename( "kucmsTimeCaliR24FCCvRtTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR18ULTFile.txt");
-   	std::string inputfilename( "egammares_mc_2018ul_gjets.txt");
+   	std::string inputfilename( "ecal_config/kucmsTimeCaliR18ULMCTFile.txt");
 	//-------------------------------------------------------
 	//theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_DegR17Full_xea_pm9b1800_v417" );// scale, cali, smear
     //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_egr17ef_xea_pm9b180_v327" );// scale, cali, smear
