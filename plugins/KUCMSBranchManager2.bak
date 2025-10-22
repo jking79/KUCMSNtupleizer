@@ -15,7 +15,6 @@
 #include <map>
 #include <string>
 #include <cmath>
-#include <iostream>
 
 //KUCMS includes
 #include "KUCMSItemManager.hh"
@@ -33,10 +32,16 @@ class ScalarBranch : public Item<T> {
 
     public:
     
-    void attachBranch( TTree* fOutTree ){ 
-           fOutTree->Branch( Item<T>::iName.c_str(), &this->Item<T>::iValue )->SetTitle( Item<T>::iDoc.c_str() ); };
+    void attachBranch( TTree* fOutTree );
 
 };//<<>> class Branch : Item<T> 
+
+template <class T>
+void ScalarBranch<T>::attachBranch( TTree* fOutTree ){
+
+    fOutTree->Branch( iName.c_str(), &this->iValue )->SetTitle( iDoc.c_str() );
+
+}//<<>>void Branch<T>::attachBranch( TTree* fOutTree )
 
 
 template < class T >
@@ -44,12 +49,18 @@ class VectorBranch : public VectorItem<T> {
 
     public:
 
-    void attachBranch( TTree* fOutTree ){
-           fOutTree->Branch( VectorItem<T>::iName.c_str(), &this->VectorItem<T>::iVector )->SetTitle( VectorItem<T>::iDoc.c_str() ); };
+    void attachBranch( TTree* fOutTree );
 
 };//<<>> class Branch : Item<T> 
 
-//enum BType{ VVUINT, VUINT, VINT, VFLOAT, VSTR, VBOOL, UINT, INT, FLOAT, STR, BOOL };
+template <class T>
+void VectorBranch<T>::attachBranch( TTree* fOutTree ){
+
+        fOutTree->Branch( iName.c_str(), &this->iVector )->SetTitle( iDoc.c_str() );
+
+}//<<>>void Branch<T>::attachBranch( TTree* fOutTree )
+
+
 enum BType{ VVFLOAT, VVUINT, VUINT, VINT, VFLOAT, VSTR, VBOOL, UINT, INT, FLOAT, STR, BOOL };
 
 class KUCMSBranchBase {

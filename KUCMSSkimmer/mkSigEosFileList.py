@@ -40,7 +40,8 @@ eosll = 'eos root://cmseos.fnal.gov ls '
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_GJets_R18_SVIPM100_v30/'
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_WJets_R18_SVIPM100_v31/'
 #command = eosll+mdis+'KUCMSNtuple/kucmsntuple_ZJets_R18_SVIPM100_v30/'
-command = eosll+mdis+'KUCMSNtuple/kucmsntuple_MET_R18_SVIPM100_v31/'
+#command = eosll+mdis+'KUCMSNtuple/kucmsntuple_MET_R18_SVIPM100_v31/'
+command = eosll+mdis+'KUCMSNtuple/gammares_ul18/'
 
 #version = ''
 #version = '_v11_'
@@ -55,7 +56,7 @@ version = ''
 
 rootfile = '.root'
 
-dirselect = ''
+#dirselect = ''
 #dirselect = 'HTo2LongLivedTo4b'
 #dirselect = '_newRtParams4_v26b_'
 #dirselect = '_newRtParams3_test_v26_'
@@ -76,6 +77,7 @@ dirselect = ''
 #dirselect = 'GJets_HT-200To400'
 #dirselect = 'MET'
 #dirselect = 'SMS-SqSq'
+dirselect = 'GJets'
 
 debug = True
 #debug = False

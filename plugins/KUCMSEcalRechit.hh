@@ -213,6 +213,10 @@ class KUCMSEcalRecHitObject : public KUCMSObjectBase {
     std::vector<bool> fscOriginal;
 	std::map<uInt,int> scRechitMap;
 
+    float bsX;
+    float bsY;
+    float bsZ;
+
     //const edm::InputTag recHitsEBTag;
     edm::EDGetTokenT<recHitCol> recHitsEBToken_;
     edm::Handle<recHitCol> recHitsEB_;
@@ -432,6 +436,9 @@ void KUCMSEcalRecHitObject::InitObject( TTree* fOutTree ){
     //Branches.makeBranch("zscnOMatchSIDX","OSuperCluster_XotherMatchSeedID",VUINT);
     //Branches.makeBranch("zscpOverX","OSuperCluster_XprecentXtalOverlap",VFLOAT);
 
+    Branches.makeBranch("bsX","BeamSpot_X",VFLOAT);
+    Branches.makeBranch("bsY","BeamSpot_Y",VFLOAT);
+    Branches.makeBranch("bsZ","BeamSpot_Z",VFLOAT);
 
     Branches.attachBranches(fOutTree);	
 
@@ -618,6 +625,10 @@ void KUCMSEcalRecHitObject::LoadEvent( const edm::Event& iEvent, const edm::Even
 			}//<<>>for( const auto rhid : scRhIdsGroup )
 
 	}//<<>>for( const auto sc : fsupclstrs )
+
+    bsX = beamSpot_->x0();
+    bsY = beamSpot_->y0();
+    bsZ = beamSpot_->z0();
 
 	//std::cout << "SC - Rechit Map ------------------------" << std::endl;
 	//std::cout << " # SC  " << fsupclstrs.size() << " -- nSCRecHits : " << nSCRechits << " v " <<  scRechitMap.size() << std::endl;
@@ -893,6 +904,10 @@ void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
 			if( not found ) std::cout << " SC rechit ID not found in ECAL rechit Collection !!!!!!!!!!!!!!! : " << scid << std::endl;	
 		}//<<>>for( auto scid : usedscrhids )
 	}//<<>>if( ERHODEBUG )
+
+    Branches.fillBranch("bsX",bsX);
+    Branches.fillBranch("bsY",bsY);
+    Branches.fillBranch("bsZ",bsZ);
 
 }//<<>>void KUCMSEcalRecHit::ProcessEvent()
 

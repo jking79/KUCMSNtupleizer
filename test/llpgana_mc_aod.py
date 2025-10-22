@@ -244,6 +244,8 @@ print( "With output file name : ",options.outputFileName )
 
 #test = cms.vstring( "hltPFMET100", "hltMETClean100", "hltHIPhoton20Eta3p1" )
 
+process.eventCounter = cms.EDAnalyzer("KUCMSCounter")
+
 # Make the tree 
 process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
 
@@ -305,6 +307,7 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
                               beamSpot = cms.InputTag("offlineBeamSpot"),
                               ## trigger
                               triggerFlagResults = cms.InputTag("TriggerResults","","RECO"),
+                              #triggerFlagResults = cms.InputTag("TriggerResults"),
                               triggerHLTResults = cms.InputTag("TriggerResults","","HLT"),
                               triggerEvent = cms.InputTag("hltTriggerSummaryAOD"),
                               ## METs
@@ -401,13 +404,13 @@ process.tree.metFilters = cms.vstring( #"bla" )
 
 process.load('RecoMET.METFilters.metFilters_cff')
 
-#process.myGlobalSuperTightHalo2016Filter = process.globalSuperTightHalo2016Filter.clone( taggingMode = True ) 
+process.myGlobalSuperTightHalo2016Filter = process.globalSuperTightHalo2016Filter.clone( taggingMode = True ) 
 process.Flag_goodVertices = cms.Path( process.goodVertices )
 process.Flag_globalSuperTightHalo2016Filter = cms.Path( process.globalSuperTightHalo2016Filter )
 process.hbheSequence = cms.Sequence( process.HBHENoiseFilterResultProducer * process.HBHENoiseFilter )
 process.Flag_HBHENoiseFilter = cms.Path( process.hbheSequence )
 process.Flag_HBHENoiseIsoFilter = cms.Path( process.HBHENoiseIsoFilter )
-process.Flag_EcalDeadCellTriggerPrimitiveFilter = cms.Path( process.EcalDeadCellTriggerPrimitiveFilter )
+#process.Flag_EcalDeadCellTriggerPrimitiveFilter = cms.Path( process.EcalDeadCellTriggerPrimitiveFilter )
 process.Flag_BadPFMuonFilter = cms.Path( process.BadPFMuonFilter )
 process.Flag_BadPFMuonDzFilter = cms.Path( process.BadPFMuonDzFilter )
 process.Flag_hfNoisyHitsFilter = cms.Path( process.hfNoisyHitsFilter )
@@ -430,27 +433,31 @@ process.pattriger = cms.Path( process.patTrigger )
 ## Set final paths and schedule
 
 #############3process.setFlags_path = cms.Path(process.setFlags)
+process.eventcount_path = cms.Path(process.eventCounter)
 process.tree_step = cms.EndPath(process.tree)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 
 #########process.schedule = cms.Schedule( process.kuDisplaced_path, process.setFlags_path, process.tree_step, process.endjob_step )
 # Flags must be run as a path in the Schedule in order to appear in the trigger results for KUCMSEventInfo 
 # the Flag should return 1 if the event passed the filter and 0 if it failed the filter
-process.schedule = cms.Schedule( process.kuDisplaced_path,
-                                 process.Flag_goodVertices,
-                                 process.Flag_globalSuperTightHalo2016Filter,
-                                 process.Flag_HBHENoiseFilter,
-                                 process.Flag_HBHENoiseIsoFilter,
-                                 process.Flag_EcalDeadCellTriggerPrimitiveFilter,
-                                 process.Flag_BadPFMuonFilter,
-                                 process.Flag_BadPFMuonDzFilter,
-                                 process.Flag_hfNoisyHitsFilter,
-                                 process.Flag_BadChargedCandidateFilter,
-                                 process.Flag_eeBadScFilter,
-                                 process.Flag_ecalBadCalibFilter,
-                                 #process.pattriger,
-                                 process.tree_step,
-                                 process.endjob_step, )#process.schedule
+process.schedule = cms.Schedule(    
+    process.eventcount_path,                            
+    process.kuDisplaced_path,
+    #process.Flag_goodVertices,
+    #process.Flag_globalSuperTightHalo2016Filter,
+    #process.Flag_HBHENoiseFilter,
+    #process.Flag_HBHENoiseIsoFilter,
+    #process.Flag_EcalDeadCellTriggerPrimitiveFilter,
+    #process.Flag_BadPFMuonFilter,
+    #process.Flag_BadPFMuonDzFilter,
+    #process.Flag_hfNoisyHitsFilter,
+    #process.Flag_BadChargedCandidateFilter,
+    #process.Flag_eeBadScFilter,
+    #process.Flag_ecalBadCalibFilter,
+    #process.pattriger,
+    process.tree_step,
+    process.endjob_step, 
+)#process.schedule
 
 #process.options = cms.untracked.PSet()
 #do not add changes to your config after this point (unless you know what you are doing)
