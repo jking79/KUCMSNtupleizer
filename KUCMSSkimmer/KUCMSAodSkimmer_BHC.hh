@@ -45,7 +45,7 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 	//ca.SetDetectorCenter(x, y, z); //set to beamspot center, defaults to (0,0,0)
 	ca.SetPV(PV_x, PV_y, PV_z); //set to PV coords (assuming these are global vars)
 	ca.SetTransferFactor(1/30.); //set to 1/min photon pt
-	ca.SetupDetIDsEB();
+	ca.SetDetIDsEB(_detidmap);
 	for( uInt it = 0; it < nPhotons; it++ ){
 		//cout << "nphoton #" << it << endl;
 		if( not isSelPho[it] ) continue;
@@ -73,7 +73,7 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 				//skip endcap rechits
 				if(fabs((*ECALRecHit_eta)[erhiter]) > 1.479) continue;
 				//cout << "rh e " <<  erhe << " rh t " << erht << " rhid " << scrhid << " eta " << (*ECALRecHit_eta)[erhiter] << " phi " << (*ECALRecHit_phi)[erhiter] << endl;
-				//cout << "rh e " <<  erhe << " rh t " << erht << " rhid " << scrhid << " eta " << (*ECALRecHit_eta)[erhiter] << endl;
+				//cout << "rh e " <<  erhe << " rh t " << erht << " x " << rhx << " y " << rhy << " z " << rhz << " rhid " << scrhid << endl;
 				ca.AddRecHit(rhx, rhy, rhz, erhe, erht, scrhid, hasGainSwitch);
 			}//<<>>if( ecalrhiter != -1 )
 		}//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
@@ -92,10 +92,13 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 		int clusterret = ca.RunClustering(phoobj);
 		if(clusterret == -1) continue; //bad clustering (not enough points, not able to find any clusters, etc)
 		phoobj.CalculateObjTimes();
-		phoobj.CalculatePUScores();
+		phoobj.CleanOutPU();
+		//phoobj.CalculatePUScores();
 		phoobj.CalculateDetBkgScores();
 		phoobj.CalculateObjTimeSig(rhtresmap);
 
+		//do NOT do subcluster observables
+		/*
 		BHCPhoInfo.fillBranch( "selPhoBHC_selPhotonIndex", selPhoIndex );
 
 		//do subcluster observables
@@ -134,6 +137,7 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 			////CHECK
 			BHCPhoInfo.fillBranch( "selPhoBHCsubcl_photonIndex", (int)it);	
 		}
+		*/
 		//center
 		float phoeta = phoobj.GetEtaCenter();
 		BHCPhoInfo.fillBranch( "selPhoBHC_eta", phoeta);
@@ -145,7 +149,7 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 		//time at PV
 		float photime_pv = phoobj.GetObjTime_PV();
 		BHCPhoInfo.fillBranch( "selPhoBHC_PVTime", photime_pv);
-	
+//cout << "photon - det time " << photime << " pv time " << photime_pv << endl;	
 		//covariance
 		float etavar = phoobj.GetEtaVar();
 		float phivar = phoobj.GetPhiVar();
@@ -249,7 +253,7 @@ void KUCMSAodSkimmer::processBHCJets(){
 	//ca.SetDetectorCenter(x, y, z); //set to beamspot center, defaults to (0,0,0)
 	ca.SetPV(PV_x, PV_y, PV_z); //set to PV coords (assuming these are global vars)
 	ca.SetTransferFactor(1/30.); //set to 1/min jet pt
-	ca.SetupDetIDsEB();
+	ca.SetDetIDsEB(_detidmap);
 
     std::vector<Jet> jetrhs;
   	uInt nJets = Jet_energy->size();
