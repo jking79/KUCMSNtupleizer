@@ -74,14 +74,18 @@ class KUCMSAodSkimmer : public llpgtree {
     //void kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, bool doSVs, int skipCnt );
     void kucmsAodSkimmer( std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, bool doSVs, int skipCnt, bool useEvtWgts );
     void kucmsAodSkimmer_listsOfLists( std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, bool doSVs, int skipCnt, bool useEvtWgts );
+    void kucmsAodSkimmer_Batch( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, bool noSVorPho, int skipCnt, bool useEvtWgts );
+
     void initHists();
     bool eventLoop( Long64_t entry );
 	void startJobs();
     void endJobs();
+
 	void fillConfigTree( TTree* fOutTree );
     int ProcessFilelistOfLists(string eosdir, vector<string> processed_strings, TChain*& fInChain, TChain*& fOutChain);
     int ProcessFilelist(string eosdir, string processed_strings, TChain*& fInChain, TChain*& fOutChain);
     void ProcessConfigTree(TChain* fInConfigTree);
+
     void SetEventRange(int evti, int evtj){ _evti = evti; _evtj = evtj;}
     void SetDataSetKey(string key){ dataSetKey = key; }
     void SetCrossSection(float xsec){ xsctn = xsec; }
@@ -90,6 +94,7 @@ class KUCMSAodSkimmer : public llpgtree {
     void SetMCType(int type){ mctype = type; }
     void SetTimeCalibrationTag(string ttag){ tctag = ttag; }
     void SetMCWeight(float w){ mcwgt = w; }
+
 	// set branches
     void setOutputBranches( TTree* fOutTree );
 	void setEvtVarMetBranches( TTree* fOutTree );

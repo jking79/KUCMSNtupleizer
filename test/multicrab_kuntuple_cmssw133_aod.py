@@ -64,7 +64,7 @@ def docrab( dataset ):
         #inputJSON    = 'Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt'
         ##inputJSON    = 'Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON.txt'
         ##inputJSON    = 'Cert_314472-325175_13TeV_PromptReco_Collisions18_JSON.txt'
-        inputJSON    = 'Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt'
+        #inputJSON    = 'Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt'
         #inputJSON    = 'Cert_Collisions2022_355100_362760_Golden.json'	
 
         filespjob = int(dataset[1])
@@ -86,7 +86,7 @@ def docrab( dataset ):
         #config.Site.whitelist = ['T1_*','T2_US_*','T2_IT_*','T2_DE_*','T2_ES_*','T2_FR_*','T2_UK_*']
         config.Site.blacklist = ['T2_CH_CSCS','T2_ES_CIEMAT']
 
-        config.Data.partialDataset = True
+        #config.Data.partialDataset = True
         config.Data.inputDataset   = None
         #config.Data.lumiMask       = inputJSON    # Comment out for MC only set for data !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         #config.Data.splitting     = 'Automatic' # data
@@ -103,7 +103,7 @@ def docrab( dataset ):
         #config.Data.unitsPerJob   = 14 # 14 for eg c 18ul ~ 2 files & 19 hours too much disk space -> 1 file worth & break up to keep under 2000 jobs
         #config.Data.unitsPerJob   =  24 # MET C 
         #config.Data.unitsPerJob   =  48 # MET D
-        config.Data.runRange = '321988-323726' #
+        #config.Data.runRange = runrange #
 
         #config.JobType.allowUndistributedCMSSW = True
         #config.JobType.maxJobRuntimeMin = 1800
@@ -153,7 +153,9 @@ def docrab( dataset ):
             ##trial          = "kucmsntuple_MET_R18_AL1SelEle_DEOnly" + version #
             ##trial          = "kucmsntuple_EGamma_R18_AL1SelEle_DEOnly" + version #
          
-            trial          = "kucmsntuple_MET_R18_SVIPM100" + version #  
+            #trial          = "kucmsntuple_MET_R18_SVIPM100" + version #  
+            trial          = "kucmsntuple_MET_R17_SVIPM100" + version #  
+
             #trial          = "kucmsntuple_EGamma_R18_InvMetPho30_NoSV"
             #trial          = "kucmsntuple_EGamma_R18_InvMet100IP_NoSv" + version # 
             #trial          = "kucmsntuple_DisJet_R18_SVIPM100" + version #
@@ -209,11 +211,10 @@ def docrab( dataset ):
             #2017 UL: 106X_dataRun2_v33
             #2016 UL: 106X_dataRun2_v33 (or 102X_dataRun2_v13 depending on CMSSW version; newer CMSSW 13.x usually uses 106X_dataRun2_v33)
             #Recomended for Run2 ana - Data(ALL UL MiniAODv2): 106X_dataRun2_v37 MC 2018: 106X_upgrade2018_realistic_v16_L1v1
-#>>>>>>>>>>>>>>>>>>>     #2016UL #globalTag=106X_dataRun2_v33
-#>>>>>>>>>>>>>>>>>>>     #2017UL #globalTag=106X_dataRun2_v33
-            #####config.JobType.pyCfgParams   = ['globalTag=106X_dataRun2_v20','multicrab=True']
-#>>>>>>>>>>>>>>>>>>>     #2018UL #globalTag=106X_dataRun2_v24
-            gt = 'globalTag=106X_dataRun2_v35'
+#>>>>>>>>>>>>>>>>>>>     #2016UL 
+#>>>>>>>>>>>>>>>>>>>     #2017UL 
+#>>>>>>>>>>>>>>>>>>>     #2018UL #globalTag=106X_dataRun2_v37 # https://twiki.cern.ch/twiki/bin/view/CMS/PdmVRun2LegacyAnalysis
+            gt = 'globalTag=106X_dataRun2_v37'
             config.JobType.pyCfgParams   = [gt,mcrab,efilter]
             ###config.JobType.pyCfgParams   = [gt,mcrab,efilter,mDoETOnly]
             #config.JobType.pyCfgParams   = [gt,mcrab,fInvMetALP,mNoSV]
@@ -281,7 +282,14 @@ def run_multi():
         #['/MET/Run2018A-15Feb2022_UL2018-v1/AOD',1],
         #['/MET/Run2018B-15Feb2022_UL2018-v1/AOD',1],
         #['/MET/Run2018C-15Feb2022_UL2018-v1/AOD',1],
-        ['/MET/Run2018D-15Feb2022_UL2018-v1/AOD',1],
+        #['/MET/Run2018D-15Feb2022_UL2018-v1/AOD',1],
+
+        ['/MET/Run2017A-09Aug2019_UL2017_rsb-v1/AOD',1],
+        ['/MET/Run2017B-09Aug2019_UL2017_rsb-v1/AOD',1],
+        #['/MET/Run2017C-09Aug2019_UL2017_rsb-v1/AOD',1],
+        ['/MET/Run2017D-09Aug2019_UL2017_rsb-v1/AOD',1],
+        #['/MET/Run2017E-09Aug2019_UL2017_rsb-v1/AOD',1],
+        #['/MET/Run2017F-09Aug2019_UL2017_rsb-v1/AOD',1],
 
         #['/MET/Run2022A-27Jun2023-v1/AOD',1],
         #['/MET/Run2022B-27Jun2023-v2/AOD',1],

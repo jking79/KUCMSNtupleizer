@@ -61,7 +61,7 @@ int main ( int argc, char *argv[] ){
     int skipCnt = 0; // used to skip files ( in tchian ) for fast processing - if( nFiles%skipCnt != 0 ) continue; --  disabled in code  --  
 	// !!!!!!!!!!!!!!!!!!!  alternate RJR setup with invis in comb split rule
     KUCMSAodSkimmer llpgana;
-    llpgana.kucmsAodSkimmer_listsOfLists( listdir, eosdir, infilename, outfilename, hasGenInfo, genSigPerfect, noSVorPho, skipCnt, useEvtGenWgt );
+    llpgana.kucmsAodSkimmer_Batch( listdir, eosdir, infilename, outfilename, hasGenInfo, genSigPerfect, noSVorPho, skipCnt, useEvtGenWgt );
     return 1;
 
 
