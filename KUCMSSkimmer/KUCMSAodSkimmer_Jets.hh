@@ -82,7 +82,7 @@ void KUCMSAodSkimmer::processJets(){
     float jgtof = 0; //*Jet_genTOF)[it];
     float jgt = 0; //(*Jet_genTime)[it];
     float jgllpt = 0; //*Jet_genTimeLLP)[it];
-    if( doGenInfo ){
+    if( hasGenInfoFlag ){
       //qrkllpId = int((*Jet_genQrkLlpId)[it]);
       gjllpId = int((*Jet_genJetLlpId)[it]);
       jgdpt = (*Jet_genDptMatch)[it];

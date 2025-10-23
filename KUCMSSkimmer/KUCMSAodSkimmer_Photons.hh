@@ -60,7 +60,7 @@ void KUCMSAodSkimmer::processPhotons(){
     bool hasPixSeed = (*Photon_pixelSeed)[it];
 
     //if( geVars("genSigPerfect") == 1 ) std::cout << " -- pho sel susid " << (*Gen_susId)[(*Photon_genIdx)[it]] << std::endl;
-    bool isGenSig = doGenInfo ? ( (*Gen_susId)[(*Photon_genIdx)[it]] == 22 )  : 0;
+    bool isGenSig = hasGenInfoFlag ? ( (*Gen_susId)[(*Photon_genIdx)[it]] == 22 )  : 0;
 
     auto pt = (*Photon_pt)[it];
     bool underMinPt = pt < 30;
@@ -159,7 +159,7 @@ void KUCMSAodSkimmer::processPhotons(){
 
     float ctau = -10;
 
-    if( doGenInfo ){
+    if( hasGenInfoFlag ){
 
       genIdx = (*Photon_genIdx)[it];
       momIdx = (*Gen_motherIdx)[genIdx];

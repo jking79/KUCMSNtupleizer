@@ -45,13 +45,13 @@ void KUCMSAodSkimmer::processEvntVars(){
   if( DEBUG ) std::cout << "Finding Event wts Vars" << std::endl;
   selEvtVars.fillBranch( "dsKey", dataSetKey );
   float evtGenWgt = 1;
-  if( useEvtWgt && doGenInfo ) evtGenWgt = Evt_genWgt;
+  if( useEvtGenWgtFlag && hasGenInfoFlag ) evtGenWgt = Evt_genWgt;
   selEvtVars.fillBranch( "evtGenWgt", evtGenWgt );
   //sumEvtGenWgt += Evt_genWgt;
   selEvtVars.fillBranch( "evtXSection", xsctn );
   
   float fillWgt = 1;
-  if( doGenInfo ) fillWgt = ( ( xsctn * 1000 ) * evtGenWgt  ) / configWgts["sumEvtWgt"];
+  if( hasGenInfoFlag ) fillWgt = ( ( xsctn * 1000 ) * evtGenWgt  ) / configWgts["sumEvtWgt"];
 
   selEvtVars.fillBranch( "evtFillWgt", fillWgt );
 
@@ -67,7 +67,7 @@ void KUCMSAodSkimmer::processEvntVars(){
   bool goodVertices = true;
   bool hfNoisyHitsFilter = true;
 
-  if( not doGenInfo ){
+  if( not hasGenInfoFlag ){
 
 	BadChargedCandidateFilter = Flag_BadChargedCandidateFilter;
 	BadPFMuonDzFilter = Flag_BadPFMuonDzFilter;
@@ -100,7 +100,7 @@ void KUCMSAodSkimmer::processEvntVars(){
   bool PFMET120_PFMHT120_IDTight_PFHT60 = true;
   bool PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60 = true;
 
-  if( not doGenInfo ){
+  if( not hasGenInfoFlag ){
 
 	PFMET120_PFMHT120_IDTight = HLT_PFMET120_PFMHT120_IDTight_v;
 	PFMETNoMu120_PFMHTNoMu120_IDTight = HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_v;

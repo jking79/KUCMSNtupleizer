@@ -91,7 +91,7 @@ void KUCMSAodSkimmer::processSV(){
 
 	selSV.fillBranch("LeptonicSV_passMuonID", pmuonid);
 	selSV.fillBranch("LeptonicSV_passElectronID", peleid);
-	if(doGenInfo) 
+	if(hasGenInfoFlag) 
 	  selSV.fillBranch( "LeptonicSV_isGold", (*Vertex_isGold)[svit]);
       }
       else if( ( ntracks >= 5 ) && ( mass/ntracks > 1 ) ) {
@@ -99,7 +99,7 @@ void KUCMSAodSkimmer::processSV(){
 	nHsv++;
 
 	selSV.fillBranch( "HadronicSV_massOverNtracks", mass/ntracks);
-	if(doGenInfo)
+	if(hasGenInfoFlag)
 	  selSV.fillBranch( "HadronicSV_matchRatio", (*Vertex_matchRatio)[svit]);
 	if(tightOnZSelection)
 	  nHadPassZWindow++;
@@ -178,7 +178,7 @@ void KUCMSAodSkimmer::setSVBranches( TTree* fOutTree ){
   selSV.makeBranch( "SV_nElectronPassZWindow", UINT );
   selSV.makeBranch( "SV_nMuonPassZWindow", UINT );
   
-  if( doGenInfo ){
+  if( hasGenInfoFlag ){
     selSV.makeBranch( "HadronicSV_matchRatio", VFLOAT);
     selSV.makeBranch( "LeptonicSV_isGold", VBOOL);
   }

@@ -48,7 +48,7 @@ void KUCMSAodSkimmer::processElectrons(){
   //if( DEBUG ) std::cout << " -- Looping electrons: " << std::endl;
   for( uInt itr = 0; itr < nElectrons; itr++ ){
 
-    if( ( doGenInfo && ( (*Electron_genIdx)[itr] > -1 ) ) || not doGenInfo ){
+    if( ( hasGenInfoFlag && ( (*Electron_genIdx)[itr] > -1 ) ) || not hasGenInfoFlag ){
       hist1d[10]->Fill((*Electron_pt)[itr]);
       if( (*Electron_isLVeto)[itr] ) hist1d[11]->Fill((*Electron_pt)[itr]);
       if( (*Electron_isVeto)[itr] ) hist1d[12]->Fill((*Electron_pt)[itr]);
