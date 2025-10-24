@@ -68,6 +68,8 @@ void KUCMSAodSkimmer::processPhotons(){
     auto overMaxEta = std::abs(eta) > 1.479;
     auto phi = (*Photon_phi)[it];
 
+	if( ( eta > -3.2 && eta < -1.77 ) && ( phi > -1.77 && phi < -0.67 ) ) hasHemObj = true;
+
     if( DEBUG ) std::cout << " -- looping photons : getting pho iso " << std::endl;
     auto htsecdr4 = (*Photon_hcalTowerSumEtConeDR04)[it];   //!
     bool passHcalSum = true;

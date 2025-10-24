@@ -67,25 +67,17 @@ class KUCMSAodSkimmer : public llpgtree {
     KUCMSAodSkimmer();
 	~KUCMSAodSkimmer();
 
-	// tchian processing functions
-    //void kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo );
-    //void kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect );
-    //void kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, int skipCnt );
-    //void kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, bool doSVs, int skipCnt );
     void kucmsAodSkimmer( std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, bool doSVs, int skipCnt, bool useEvtWgts );
     void kucmsAodSkimmer_listsOfLists( std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, bool doSVs, int skipCnt, bool useEvtWgts );
-    void kucmsAodSkimmer_Batch( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, bool noSVorPho, int skipCnt, bool useEvtWgts );
+    void kucmsAodSkimmer_Batch( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename );
 
     void initHists();
     bool eventLoop( Long64_t entry );
 	void startJobs();
     void endJobs();
+    void fillConfigTree( TTree* fOutTree );
 	void ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree );
-
-	void fillConfigTree( TTree* fOutTree );
-    int ProcessFilelistOfLists(string eosdir, vector<string> processed_strings, TChain*& fInChain, TChain*& fOutChain);
-    int ProcessFilelist(string eosdir, string processed_strings, TChain*& fInChain, TChain*& fOutChain);
-    void ProcessConfigTree(TChain* fInConfigTree);
+    void ProcessConfigTree( TChain* fInConfigTree );
 
    // Class varibles accessors
 
@@ -97,6 +89,12 @@ class KUCMSAodSkimmer : public llpgtree {
     void SetMCType(int type){ mctype = type; }
     void SetTimeCalibrationTag(string ttag){ tctag = ttag; }
     void SetMCWeight(float w){ mcwgt = w; }
+
+	void SetGenInfoFlag( bool f ){ hasGenInfoFlag = f; } 
+    void SetNoSVorPhoFlag( bool f ){ noSVorPhoFlag = f; }
+    void SetUseEvtGenWgtFlag( bool f ){ useEvtGenWgtFlag = f; }
+    void SetGenSigPerfectFlag( bool f ){ genSigPerfectFlag = f; }
+    void SetDoBHC( bool f ){ doBHC = f; }
 
 	// set branches
 
@@ -235,11 +233,10 @@ class KUCMSAodSkimmer : public llpgtree {
     std::map<std::string,int> configCnts;
     std::map<std::string,float> configWgts;
 
+    std::map<UInt_t, pair<int,int>> _detidmap;
 	uInt nEvents, nSelectedEvents;
 	int _evti, _evtj;
-
-	std::map<UInt_t, pair<int,int>> _detidmap;
-
+    bool hasHemObj;
     float sumEvtGenWgt;
 
     std::vector<bool> phoJetVeto;

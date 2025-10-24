@@ -114,6 +114,10 @@ void KUCMSAodSkimmer::processEvntVars(){
   selEvtVars.fillBranch( "Trigger_PFMET120_PFMHT120_IDTight_PFHT60", PFMET120_PFMHT120_IDTight_PFHT60 );
   selEvtVars.fillBranch( "Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60", PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60 );
 
+  bool hemVeto = false;
+  if( not hasGenInfoFlag && hasHemObj && ( Evt_run > 319076 && Evt_run < 326635 ) ) hemVeto = true;
+  selEvtVars.fillBranch( "Flag_hemVeto", hemVeto );
+
 }//<<>>void KUCMSAodSkimmer::processEvntVars()
 
 void KUCMSAodSkimmer::processMet(){
@@ -166,6 +170,8 @@ void KUCMSAodSkimmer::setEvtVarMetBranches( TTree* fOutTree ){
   selEvtVars.makeBranch( "Flag_globalSuperTightHalo2016Filter", BOOL );
   selEvtVars.makeBranch( "Flag_goodVertices", BOOL );
   selEvtVars.makeBranch( "Flag_hfNoisyHitsFilter", BOOL );
+
+  selEvtVars.makeBranch( "Flag_hemVeto", BOOL );
 
   selEvtVars.makeBranch( "Trigger_PFMET120_PFMHT120_IDTight", BOOL );
   selEvtVars.makeBranch( "Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight", BOOL );

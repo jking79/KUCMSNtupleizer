@@ -164,6 +164,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
   loadLumiJson("config/json/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.json");
   //loadLumiJson("config/json/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt",true);
 
+	hasHemObj = false;
 
   // condor event segmenting varibles : used to run over subset of events for condor jobs
 
@@ -232,15 +233,10 @@ KUCMSAodSkimmer::~KUCMSAodSkimmer(){
       
 }//<<>>KUCMSAodSkimmer::~KUCMSAodSkimmer()
 
-void KUCMSAodSkimmer::kucmsAodSkimmer_Batch( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, bool noSVorPho, int skipCnt, bool useEvtWgts ){
-
+void KUCMSAodSkimmer::kucmsAodSkimmer_Batch( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename ){
 
   // set "meta" parameters
 
-  genSigPerfectFlag = genSigPerfect;
-  noSVorPhoFlag = noSVorPho;
-  useEvtGenWgtFlag = useEvtWgts;
-  hasGenInfoFlag = hasGenInfo;
   eosDirPath = eosdir;
   listDirPath = listdir;
   outFileName = outfilename;
@@ -682,6 +678,8 @@ void KUCMSAodSkimmer::startJobs(){
     nEvents = 0;
     nSelectedEvents = 0;
 
+	hasHemObj = false;
+
     //sumEvtGenWgt = 0.0;
 
     configCnts.clear();
@@ -713,7 +711,6 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
 
   // counts events and saves event varibles
   // --------------------------------------
-  processEvntVars();	
   processRechits();// must be done before rechitID to Iter map used
   processMet();
   processPhotons();
@@ -722,6 +719,7 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
   processJets();
   processSV();
   processTracks();
+  processEvntVars();// process last to catch Hem issue
   if( hasGenInfoFlag ){ processGenParticles(); }
   
   // select events to process and store
