@@ -67,24 +67,19 @@ class KUCMSAodSkimmer : public llpgtree {
     KUCMSAodSkimmer();
 	~KUCMSAodSkimmer();
 
-	// tchian processing functions
-    //void kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo );
-    //void kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect );
-    //void kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, int skipCnt );
-    //void kucmsAodSkimmer( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, bool doSVs, int skipCnt );
     void kucmsAodSkimmer( std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, bool doSVs, int skipCnt, bool useEvtWgts );
     void kucmsAodSkimmer_listsOfLists( std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, bool doSVs, int skipCnt, bool useEvtWgts );
-    void kucmsAodSkimmer_Batch( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, bool noSVorPho, int skipCnt, bool useEvtWgts );
+    void kucmsAodSkimmer_Batch( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename );
 
     void initHists();
     bool eventLoop( Long64_t entry );
 	void startJobs();
     void endJobs();
+    void fillConfigTree( TTree* fOutTree );
+	void ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree );
+    void ProcessConfigTree( TChain* fInConfigTree );
 
-	void fillConfigTree( TTree* fOutTree );
-    int ProcessFilelistOfLists(string eosdir, vector<string> processed_strings, TChain*& fInChain, TChain*& fOutChain);
-    int ProcessFilelist(string eosdir, string processed_strings, TChain*& fInChain, TChain*& fOutChain);
-    void ProcessConfigTree(TChain* fInConfigTree);
+   // Class varibles accessors
 
     void SetEventRange(int evti, int evtj){ _evti = evti; _evtj = evtj;}
     void SetDataSetKey(string key){ dataSetKey = key; }
@@ -95,7 +90,14 @@ class KUCMSAodSkimmer : public llpgtree {
     void SetTimeCalibrationTag(string ttag){ tctag = ttag; }
     void SetMCWeight(float w){ mcwgt = w; }
 
+	void SetGenInfoFlag( bool f ){ hasGenInfoFlag = f; } 
+    void SetNoSVorPhoFlag( bool f ){ noSVorPhoFlag = f; }
+    void SetUseEvtGenWgtFlag( bool f ){ useEvtGenWgtFlag = f; }
+    void SetGenSigPerfectFlag( bool f ){ genSigPerfectFlag = f; }
+    void SetDoBHC( bool f ){ doBHC = f; }
+
 	// set branches
+
     void setOutputBranches( TTree* fOutTree );
 	void setEvtVarMetBranches( TTree* fOutTree );
 	void setTrackBranches( TTree* fOutTree );
@@ -110,6 +112,7 @@ class KUCMSAodSkimmer : public llpgtree {
 	void setBCBranches( TTree* fOutTree );
 
 	// object processing & selection
+
     void processTracks();
 	void processEvntVars();
 	void processRechits();
@@ -126,6 +129,8 @@ class KUCMSAodSkimmer : public llpgtree {
 	void processRJR( int type, bool newEvent );
 	void processBHCPhotons();
     void processBHCJets();
+
+	// object quality functions
 
 	int getPhoQuality( int it );
     int getJetQuality( int it );	
@@ -192,6 +197,7 @@ class KUCMSAodSkimmer : public llpgtree {
     MinMassesCombJigsaw* CombSplit_Jb;
 
     // config vars
+
     std::string dataSetKey;
     float xsctn;
     float gmass;
@@ -200,20 +206,39 @@ class KUCMSAodSkimmer : public llpgtree {
 	int mctype;
 	std::string tctag;
 
+	bool genSigPerfectFlag;
+	bool noSVorPhoFlag;
+	bool useEvtGenWgtFlag; 
+	bool hasGenInfoFlag;
+    bool doBHC;
+
+	// input tree, paths, and file names
+
+	std::string disphoTreeName;
+	std::string configTreeName;
+    std::string inFilePath;
+    std::string inFileName;
+    std::string listDirPath;
+	std::string eosDirPath;
+    std::string outFileName;
+
 	// event varibles
 
-    bool doGenInfo;
 	globalEventVars gEvtVar;
     ItemManager<std::vector<float>> geVects;	
     ItemManager<uInt> geCnts;
 	ItemManager<float> geVars;
+
 	std::map<std::string,int> cutflow;
     std::map<std::string,int> configCnts;
     std::map<std::string,float> configWgts;
+
+    std::map<UInt_t, pair<int,int>> _detidmap;
 	uInt nEvents, nSelectedEvents;
 	int _evti, _evtj;
-	std::map<UInt_t, pair<int,int>> _detidmap;
+    bool hasHemObj;
     float sumEvtGenWgt;
+
     std::vector<bool> phoJetVeto;
 	std::vector<bool> rhused;
     std::vector<float> rhispho;
@@ -240,6 +265,8 @@ class KUCMSAodSkimmer : public llpgtree {
     KUCMSBranchManager selTracks;
     KUCMSBranchManager BHCPhoInfo;
     KUCMSBranchManager BHCJetInfo;
+
+   // Other SC information ? ( this is a hack ) depreciated - or make so ?   
 
    std::vector<float>   *OSuperCluster_diffEnergy;
    std::vector<float>   *OSuperCluster_dR;

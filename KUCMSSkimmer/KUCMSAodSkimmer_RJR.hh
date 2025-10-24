@@ -223,7 +223,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
   selRjrVars.fillBranch( "rjrPZS", m_PZS );
   selRjrVars.fillBranch( "rjrPS", m_PS );
  
-  hist2d[2]->Fill(m_dphiSI,m_PS);
+  hist2d[2]->Fill(m_dphiSI,m_PTS);
  
   std::vector< TLorentzVector > hp4;
   std::vector< TLorentzVector > hxp4;

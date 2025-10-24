@@ -48,7 +48,7 @@ void KUCMSAodSkimmer::processElectrons(){
   //if( DEBUG ) std::cout << " -- Looping electrons: " << std::endl;
   for( uInt itr = 0; itr < nElectrons; itr++ ){
 
-    if( ( doGenInfo && ( (*Electron_genIdx)[itr] > -1 ) ) || not doGenInfo ){
+    if( ( hasGenInfoFlag && ( (*Electron_genIdx)[itr] > -1 ) ) || not hasGenInfoFlag ){
       hist1d[10]->Fill((*Electron_pt)[itr]);
       if( (*Electron_isLVeto)[itr] ) hist1d[11]->Fill((*Electron_pt)[itr]);
       if( (*Electron_isVeto)[itr] ) hist1d[12]->Fill((*Electron_pt)[itr]);
@@ -65,6 +65,8 @@ void KUCMSAodSkimmer::processElectrons(){
     //std::cout << " -- esid : " << esid << std::endl;
     auto eletime = (*Electron_seedTOFTime)[itr];
     if( std::abs(eletime) > 30 ) continue;
+
+	if( ( eta > -3.2 && eta < -1.77 ) && ( phi > -1.77 && phi < -0.67 ) ) hasHemObj = true;
 
     uInt nPhotons = Photon_excluded->size();
     float elePhoIsoDr(10.0);

@@ -60,13 +60,15 @@ void KUCMSAodSkimmer::processPhotons(){
     bool hasPixSeed = (*Photon_pixelSeed)[it];
 
     //if( geVars("genSigPerfect") == 1 ) std::cout << " -- pho sel susid " << (*Gen_susId)[(*Photon_genIdx)[it]] << std::endl;
-    bool isGenSig = doGenInfo ? ( (*Gen_susId)[(*Photon_genIdx)[it]] == 22 )  : 0;
+    bool isGenSig = hasGenInfoFlag ? ( (*Gen_susId)[(*Photon_genIdx)[it]] == 22 )  : 0;
 
     auto pt = (*Photon_pt)[it];
     bool underMinPt = pt < 30;
     auto eta = (*Photon_eta)[it];
     auto overMaxEta = std::abs(eta) > 1.479;
     auto phi = (*Photon_phi)[it];
+
+	if( ( eta > -3.2 && eta < -1.77 ) && ( phi > -1.77 && phi < -0.67 ) ) hasHemObj = true;
 
     if( DEBUG ) std::cout << " -- looping photons : getting pho iso " << std::endl;
     auto htsecdr4 = (*Photon_hcalTowerSumEtConeDR04)[it];   //!
@@ -159,7 +161,7 @@ void KUCMSAodSkimmer::processPhotons(){
 
     float ctau = -10;
 
-    if( doGenInfo ){
+    if( hasGenInfoFlag ){
 
       genIdx = (*Photon_genIdx)[it];
       momIdx = (*Gen_motherIdx)[genIdx];

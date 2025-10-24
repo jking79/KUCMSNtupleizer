@@ -60,6 +60,8 @@ void KUCMSAodSkimmer::processJets(){
     auto rhids = (*Jet_drRhIds)[it];
     if( DEBUG ) std::cout << " -- jettDrId size: " << rhids.size() << std::endl;		
 
+	if( ( eta > -3.2 && eta < -1.77 ) && ( phi > -1.77 && phi < -0.67 ) ) hasHemObj = true;
+
     auto area = (*Jet_area)[it];
     auto chEmEF = (*Jet_chEmEF)[it];
     auto chHEF = (*Jet_chHEF)[it];
@@ -82,7 +84,7 @@ void KUCMSAodSkimmer::processJets(){
     float jgtof = 0; //*Jet_genTOF)[it];
     float jgt = 0; //(*Jet_genTime)[it];
     float jgllpt = 0; //*Jet_genTimeLLP)[it];
-    if( doGenInfo ){
+    if( hasGenInfoFlag ){
       //qrkllpId = int((*Jet_genQrkLlpId)[it]);
       gjllpId = int((*Jet_genJetLlpId)[it]);
       jgdpt = (*Jet_genDptMatch)[it];
