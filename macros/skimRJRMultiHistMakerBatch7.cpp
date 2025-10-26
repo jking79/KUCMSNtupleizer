@@ -492,12 +492,20 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 	bool isomv = nLooseMuons < 1;
 	bool isolepv = isoev && isomv;
 
-	bool MetFilter = Flag_MetFilter;
-	bool HaloFilter = Flag_globalSuperTightHalo2016Filter;
+	//bool MetFilter = Flag_MetFilter;
+	//bool HaloFilter = Flag_globalSuperTightHalo2016Filter;
+
+    bool metFlag = Flag_BadChargedCandidateFilter && Flag_BadPFMuonDzFilter && Flag_BadPFMuonFilter && Flag_HBHENoiseFilter && Flag_HBHENoiseIsoFilter;
+    metFlag = metFlag && Flag_MetFilter && Flag_ecalBadCalibFilter && Flag_eeBadScFilter && Flag_goodVertices && Flag_hfNoisyHitsFilter;
+    metFlag = metFlag && Flag_globalSuperTightHalo2016Filter;
+    //bool Flag_EcalDeadCellTriggerPrimitiveFilter;
+
+	bool trigger = ( Trigger_PFMET120_PFMHT120_IDTight or Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight ); 
+	trigger = trigger and ( Trigger_PFMET120_PFMHT120_IDTight_PFHT60 or Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60 );
 
     if( DEBUG ) std::cout << "Batch fill " << std::endl;
-	if( !MetFilter ) batchVars[bmetfilter] += fillwt;
-    if( !HaloFilter ) batchVars[bhaloFilter] += fillwt;
+	//if( !MetFilter ) batchVars[bmetfilter] += fillwt;
+    //if( !HaloFilter ) batchVars[bhaloFilter] += fillwt;
     if( svhardv ) batchVars[bnSVHad] += fillwt;
     if( svlepv ) batchVars[bnSVLep] += fillwt;
 	
@@ -513,8 +521,8 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     //if( !lMuonF ) batchVars[bnLooseMuons] += fillwt;
     //if( !hasLLepF ) batchVars[bisolept] += fillwt;
 
-	if( !MetFilter && svlepmatv ) batchVars[bCutA] += fillwt;
-	if( !MetFilter && !hasLLepF ) batchVars[bfinal] += fillwt;
+	//if( !MetFilter && svlepmatv ) batchVars[bCutA] += fillwt;
+	//if( !MetFilter && !hasLLepF ) batchVars[bfinal] += fillwt;
 
 	// rjr var cuts
 	//cutvc = vc; ax2nq
@@ -545,6 +553,7 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     float gsmj = 99;
     float gsmn = 99;
     float gsieie = 99;
+	bool ggs = false;
 
 	float sr2 = std::sqrt(1);
     float sgtime = 99;
@@ -567,6 +576,7 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 
 		glsx = (*selPhoLSCross)[0];	
         gssx = (*selPhoSSCross)[0];	
+		ggs = (*selPhoShasGS)[0];
 
 		gcrn = (*selPhoClstrRn)[0];
 		gr9 = (*selPhoR9)[0];
@@ -592,6 +602,9 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     float mr = (*rjr_Mr)[cs];
     float rv = (*rjr_Rv)[cs];
 	float r = (*rjr_R)[cs];
+
+	float pts = (*rjrPTS)[cs];
+	float dphisi = (*rjrSdphiBV)[cs];
 
     float ms = (*rjr_Ms)[cs]; // pHs41; NEW !!!!!!!
     float msq = (*rjr_pHs21)[cs]; // Ms for sqsq?
@@ -663,6 +676,8 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     bool n2phocust( rjrNPhotons->at(cs) < 2 );
 
 	//if( timecust )  continue;
+	//if( metFilter ) continue;
+	if( not trigger ) continue;
 
 	// GGG cut sets
 	if( nRjrPhos < 20 && nphocust ) continue;  
@@ -758,6 +773,7 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     hist2d[1]->Fill(ms,rx,fillwt);
     hist2d[2]->Fill(ms,rm,fillwt);
     hist2d[3]->Fill(mva,mvb,fillwt);
+    hist2d[4]->Fill(dphisi,pts,fillwt); //= new TH2D("dPhiSI_v_PtS"
 
     hist2d[10]->Fill(rs,rx,fillwt);
     hist2d[11]->Fill(rs,rm,fillwt);
@@ -806,13 +822,14 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 
 	// Time Sig
 
+	//if( not ggs ) continue;
+
     hist1d[51]->Fill(gstsig,fillwt);
     hist1d[52]->Fill(gwtsig,fillwt);
     hist1d[53]->Fill(gltsig,fillwt);
     hist1d[54]->Fill(gwtime,fillwt);
     hist1d[55]->Fill(genergy,fillwt);
     hist1d[56]->Fill(gcenergy,fillwt);
-
 
     hist2d[40]->Fill(genergy,gcenergy,fillwt);
     hist2d[41]->Fill(gwtsig,gcenergy,fillwt);
@@ -842,6 +859,30 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     hist2d[88]->Fill(gwtime,gsmn,fillwt);
     hist2d[89]->Fill(gwtime,gsieie,fillwt);
     hist2d[90]->Fill(gwtime,gssx,fillwt);
+
+    hist2d[100]->Fill(gltime,genergy,fillwt);
+    hist2d[101]->Fill(gltime,glsx,fillwt);
+    hist2d[102]->Fill(gltime,gstime,fillwt);
+    hist2d[103]->Fill(gltime,gltime,fillwt);
+    hist2d[104]->Fill(gltime,gcrn,fillwt);
+    hist2d[105]->Fill(gltime,gr9,fillwt);
+    hist2d[106]->Fill(gltime,gs4,fillwt);
+    hist2d[107]->Fill(gltime,gsmj,fillwt);
+    hist2d[108]->Fill(gltime,gsmn,fillwt);
+    hist2d[109]->Fill(gltime,gsieie,fillwt);
+    hist2d[110]->Fill(gltime,gssx,fillwt);
+
+    hist2d[200]->Fill(gstime,genergy,fillwt);
+    hist2d[201]->Fill(gstime,glsx,fillwt);
+    hist2d[202]->Fill(gstime,gstime,fillwt);
+    hist2d[203]->Fill(gstime,gltime,fillwt);
+    hist2d[204]->Fill(gstime,gcrn,fillwt);
+    hist2d[205]->Fill(gstime,gr9,fillwt);
+    hist2d[206]->Fill(gstime,gs4,fillwt);
+    hist2d[207]->Fill(gstime,gsmj,fillwt);
+    hist2d[208]->Fill(gstime,gsmn,fillwt);
+    hist2d[209]->Fill(gstime,gsieie,fillwt);
+    hist2d[210]->Fill(gstime,gssx,fillwt);
 
 
 	}//<<>>for( int i = 0; i < 1; i++ ) -- continue loop
@@ -986,6 +1027,7 @@ void HistMaker::initHists( std::string ht ){
     hist2d[1] = new TH2D("Ms_v_Rx", addstr(ht," Ms_v_Rx;M_{s} [GeV];R_{x}").c_str(), 120, 0, 12000, 120, 0, 1.2 );
     hist2d[2] = new TH2D("Ms_v_Rm", addstr(ht," Ms_v_Rm;M_{s} [GeV];R_{m}").c_str(), 120, 0, 12000, 120, 0, 1.2 );
     hist2d[3] = new TH2D("Mva_v_Mvb", addstr(ht," Mva_v_Mvb;M_{va} [GeV];M_{vb} [GeV]").c_str(), 80, 0, 4000, 80, 0, 4000 );
+    hist2d[4] = new TH2D("dPhiSI_v_PtS", addstr(ht," dPhiSI_v_PtS;sPhi_{SI};P_{t}^{S}").c_str(), 320, 0, 3.2, 120, 0, 1200 );
 
     hist2d[10] = new TH2D("Rs_v_Rx", addstr(ht," Rs_v_Rx;R_{s};R_{x}").c_str(), 120, 0, 1.2, 120, 0, 1.2 );
     hist2d[11] = new TH2D("Rs_v_Rm", addstr(ht," Rs_v_Rm;R_{s};R_{m}").c_str(), 120, 0, 1.2, 120, 0, 1.2 );
@@ -1013,7 +1055,6 @@ void HistMaker::initHists( std::string ht ){
     hist2d[52] = new TH2D("WSig_v_STime", addstr(ht," WSig_v_STime;selPhoWTimeSig;selPhoSTime").c_str(), 400, -80, 80, 400, -20, 20);
     hist2d[53] = new TH2D("WSig_v_LTime", addstr(ht," WSig_v_LTime;selPhoWTimeSig;selPhoLTime").c_str(), 400, -80, 80, 400, -20, 20);
     hist2d[54] = new TH2D("WSig_v_WTime", addstr(ht," WSig_v_WTime;selPhoWTimeSig;selPhoWTime").c_str(), 400, -80, 80, 400, -20, 20);
-
     hist2d[56] = new TH2D("WSig_v_LSCross", addstr(ht," WSig_v_LSCross;selPhoWTimeSig;selPhoLSCross").c_str(), 400, -80, 80, 200, -1, 1);
     hist2d[57] = new TH2D("WSig_v_CRn", addstr(ht," WSig_v_VRn;selPhoWTimeSig;selPhoClstrRn").c_str(), 400, -80, 80, 100, 0, 1);
     hist2d[58] = new TH2D("WSig_v_R9", addstr(ht," WSig_v_R9;selPhoWTimeSig;selPhoR9").c_str(), 400, -80, 80, 100, 0, 1);
@@ -1035,6 +1076,29 @@ void HistMaker::initHists( std::string ht ){
     hist2d[89] = new TH2D("WTime_v_Sieie", addstr(ht," WTime_v_Sieie;selPhoWTime;selPhoSigmaIEtaIEta").c_str(), 400, -20, 20, 100, 0, 0.025);
     hist2d[90] = new TH2D("WTime_v_SSCross", addstr(ht," WTime_v_SSCross;selPhoWTime;selPhoSSCross").c_str(), 400, -20, 20, 200, -1, 1);
 
+    hist2d[100] = new TH2D("LTime_v_PhoEnergy", addstr(ht," LTime_v_PhoEnergy;selPhoLTime;selPhoEnergy").c_str(), 400, -20, 20, 200, 0, 2000);
+    hist2d[101] = new TH2D("LTime_v_LSCross", addstr(ht," LTime_v_LSCross;selPhoLTime;selPhoLSCross").c_str(), 400, -20, 20, 200, -1, 1);
+    hist2d[102] = new TH2D("LTime_v_STime", addstr(ht," LTime_v_STime;selPhoLTime;selPhoSTime").c_str(), 400, -20, 20, 400, -20, 20);
+    hist2d[103] = new TH2D("LTime_v_LTime", addstr(ht," LTime_v_LTime;selPhoLTime;selPhoLTime").c_str(), 400, -20, 20, 400, -20, 20);
+    hist2d[104] = new TH2D("LTime_v_CRn", addstr(ht," LTime_v_VRn;selPhoLTime;selPhoClstrRn").c_str(), 400, -20, 20, 100, 0, 1);
+    hist2d[105] = new TH2D("LTime_v_R9", addstr(ht," LTime_v_R9;selPhoLTime;selPhoR9").c_str(), 400, -20, 20, 100, 0, 1);
+    hist2d[106] = new TH2D("LTime_v_S4", addstr(ht," LTime_v_S4;selPhoLTime;selPhoS4").c_str(), 400, -20, 20, 100, 0, 1);
+    hist2d[107] = new TH2D("LTime_v_Smj", addstr(ht," LTime_v_Smj;selPhoLTime;selPhoSMaj").c_str(), 400, -20, 20, 500, 0, 5);
+    hist2d[108] = new TH2D("LTime_v_Smn", addstr(ht," LTime_v_Smn;selPhoLTime;selPhoSMin").c_str(), 400, -20, 20, 200, 0, 2);
+    hist2d[109] = new TH2D("LTime_v_Sieie", addstr(ht," LTime_v_Sieie;selPhoLTime;selPhoSigmaIEtaIEta").c_str(), 400, -20, 20, 100, 0, 0.025);
+    hist2d[110] = new TH2D("LTime_v_SSCross", addstr(ht," LTime_v_SSCross;selPhoLTime;selPhoSSCross").c_str(), 400, -20, 20, 200, -1, 1);
+
+    hist2d[200] = new TH2D("STime_v_PhoEnergy", addstr(ht," STime_v_PhoEnergy;selPhoSTime;selPhoEnergy").c_str(), 400, -20, 20, 200, 0, 2000);
+    hist2d[201] = new TH2D("STime_v_LSCross", addstr(ht," STime_v_LSCross;selPhoSTime;selPhoLSCross").c_str(), 400, -20, 20, 200, -1, 1);
+    hist2d[202] = new TH2D("STime_v_STime", addstr(ht," STime_v_STime;selPhoSTime;selPhoSTime").c_str(), 400, -20, 20, 400, -20, 20);
+    hist2d[203] = new TH2D("STime_v_LTime", addstr(ht," STime_v_LTime;selPhoSTime;selPhoLTime").c_str(), 400, -20, 20, 400, -20, 20);
+    hist2d[204] = new TH2D("STime_v_CRn", addstr(ht," STime_v_VRn;selPhoSTime;selPhoClstrRn").c_str(), 400, -20, 20, 100, 0, 1);
+    hist2d[205] = new TH2D("STime_v_R9", addstr(ht," STime_v_R9;selPhoSTime;selPhoR9").c_str(), 400, -20, 20, 100, 0, 1);
+    hist2d[206] = new TH2D("STime_v_S4", addstr(ht," STime_v_S4;selPhoSTime;selPhoS4").c_str(), 400, -20, 20, 100, 0, 1);
+    hist2d[207] = new TH2D("STime_v_Smj", addstr(ht," STime_v_Smj;selPhoSTime;selPhoSMaj").c_str(), 400, -20, 20, 500, 0, 5);
+    hist2d[208] = new TH2D("STime_v_Smn", addstr(ht," STime_v_Smn;selPhoSTime;selPhoSMin").c_str(), 400, -20, 20, 200, 0, 2);
+    hist2d[209] = new TH2D("STime_v_Sieie", addstr(ht," STime_v_Sieie;selPhoSTime;selPhoSigmaIEtaIEta").c_str(), 400, -20, 20, 100, 0, 0.025);
+    hist2d[210] = new TH2D("STime_v_SSCross", addstr(ht," STime_v_SSCross;selPhoSTime;selPhoSSCross").c_str(), 400, -20, 20, 200, -1, 1);
 
 	//------- jets ( time ) 0-49 ------------------------------
 
@@ -1075,6 +1139,7 @@ int main ( int argc, char *argv[] ){
     //else {
                 std::string listdir = "/uscms/home/jaking/nobackup/llpana_skims/";
 				//std::string listdir = "/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/tsig_skims/"; 
+                //std::string listdir = "/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/";
 
 				//std::string infilenameJ = "rjr_skim_files/KUCMS_RJR_GIGI_ootmet_Skim_List.txt";
                 //std::string infilenameJ = "rjr_skim_files/KUCMS_RJR_SMS_ootmet_Skim_List.txt";
@@ -1083,9 +1148,9 @@ int main ( int argc, char *argv[] ){
 
                 std::string infilenameJ = "rjr_skim_files/KUCMS_RJR_SMS_v39_Skim_List.txt";
                 std::string infilenameBG = "rjr_skim_files/KUCMS_RJR_BG_v39_Skim_List.txt";
-                std::string infilenameD = "rjr_skim_files/KUCMS_RJR_DATA_v39_Skim_List.txt";
+                std::string infilenameD = "rjr_skim_files/KUCMS_RJR_DATA_v40_Skim_List.txt";
 
-				std::string version = "v39_";
+				std::string version = "v40_";
 				std::string sigtype = "llpana_";
 				std::string ofnstart = "KUCMS_";
 
@@ -1100,7 +1165,7 @@ int main ( int argc, char *argv[] ){
 
 				//int nj = 1;
 				//int np = 1; : 2,7,10
-                for( int np = 0; np < 1; np++ ){
+                for( int np = 1; np < 2; np++ ){
                 for( int nj = 0; nj < 1; nj++ ){
 
 				//std::string subdir = "cf_" + std::to_string(np) + "pho_" + std::to_string(nj) + "jet/";
@@ -1110,17 +1175,17 @@ int main ( int argc, char *argv[] ){
 				std::vector<float> rv_vec{1.0}; // Sig scaling
                 std::string outdir = "";
 
-				std::string isoline = "sc10_TSig_";
+				std::string isoline = "trig_TSig_allGS_";
 				isoline += "cv" + std::to_string( np ) + "_";
                 std::string outfilenameJ = outdir + ofnstart + htitleJ + isoline;
 				std::string htitlefullJ =  htitleJ + isoline;
-				base.histMaker( listdir, infilenameJ, outfilenameJ, htitlefullJ, np, nj, rv_vec, r_vec, rv_vec );
+				//base.histMaker( listdir, infilenameJ, outfilenameJ, htitlefullJ, np, nj, rv_vec, r_vec, rv_vec );
                 std::string outfilenameBG = outdir + ofnstart + htitleBG + isoline;
                 std::string htitlefullBG =  htitleBG + isoline;
                 //base.histMaker( listdir, infilenameBG, outfilenameBG, htitlefullBG, np, nj, r_vec, r_vec, rv_vec );
                 std::string outfilenameD = outdir + ofnstart + htitleD + isoline;
                 std::string htitlefullD =  htitleD + isoline;
-                //base.histMaker( listdir, infilenameD, outfilenameD, htitlefullD, np, nj, r_vec, r_vec, rv_vec );
+                base.histMaker( listdir, infilenameD, outfilenameD, htitlefullD, np, nj, r_vec, r_vec, rv_vec );
 
 				}}
 

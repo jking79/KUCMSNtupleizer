@@ -893,7 +893,7 @@ void KUCMSAodSkimmer::initHists(){
 
     ////hist2d[1] = new TH2D("jetDrMuTime_pt", "jetDrMuTime_pt", jtdiv, -1*jtran, jtran, 500, 0, 500);
 	hist2d[1] = new TH2D("scorigcross", "SC Types;Mian-Orig;Std-OOT-Excluded", 2, 0, 2, 3, 0, 3); 
-    hist2d[2] = new TH2D("rjrPst_v_rjrdPhiSX1", "rjrDphiMETV_v_rjrPst;rjrDphiMETV;rjrPst", 32, 0, 3.2, 60, 0, 3000);
+    hist2d[2] = new TH2D("rjrPtS_v_rjrdPhiSI", "rjrDPhiSI_v_rjrPtS;rjrDphiSI;rjrPtS", 32, 0, 3.2, 60, 0, 3000);
 
 	//------------------------------------------------------------------------------------------
     //------ 3D Hists --------------------------------------------------------------------------

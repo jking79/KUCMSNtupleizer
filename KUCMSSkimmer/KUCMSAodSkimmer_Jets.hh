@@ -60,8 +60,6 @@ void KUCMSAodSkimmer::processJets(){
     auto rhids = (*Jet_drRhIds)[it];
     if( DEBUG ) std::cout << " -- jettDrId size: " << rhids.size() << std::endl;		
 
-	if( ( eta > -3.2 && eta < -1.77 ) && ( phi > -1.77 && phi < -0.67 ) ) hasHemObj = true;
-
     auto area = (*Jet_area)[it];
     auto chEmEF = (*Jet_chEmEF)[it];
     auto chHEF = (*Jet_chHEF)[it];
@@ -114,6 +112,9 @@ void KUCMSAodSkimmer::processJets(){
     auto isMinQuality = quality > 1; // 2 = "tight" 3 = "tighter"
 
     bool isNotPhoJet = not phoJetVeto[it];
+
+	bool hemEligible = overMinPt && isMinQuality;
+    if( hemEligible && inHEMRegion( eta, phi ) ) hasHemObj = true;
 
     auto jetSelected = underMaxEta && isMinQuality && overMinPt && isNotPhoJet;
     if( not jetSelected ){ isSelJet.push_back(false); continue; }

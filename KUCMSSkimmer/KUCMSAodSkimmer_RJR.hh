@@ -219,9 +219,11 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 
   selRjrVars.fillBranch( "rjrSdphiDA", m_dphiS  );
   selRjrVars.fillBranch( "rjrSdphiBV", m_dphiSI ); // !!!!!!!!!!!!!  dphiCMI
+  selRjrVars.fillBranch( "rjrDPhiSI", m_dphiSI ); // !!!!!!!!!!!!!  dphiCMI
   selRjrVars.fillBranch( "rjrPTS", m_PTS );
   selRjrVars.fillBranch( "rjrPZS", m_PZS );
   selRjrVars.fillBranch( "rjrPS", m_PS );
+
  
   hist2d[2]->Fill(m_dphiSI,m_PTS);
  
@@ -619,6 +621,7 @@ void KUCMSAodSkimmer::setRJRBranches( TTree* fOutTree ){
 
     selRjrVars.makeBranch( "rjrPVlab", VFLOAT );
     selRjrVars.makeBranch( "rjrDphiMETV", VFLOAT );
+    selRjrVars.makeBranch( "rjrDPhiSI", VFLOAT );
 
     selRjrVars.makeBranch( "rjrNJetsJb", VINT );
     selRjrVars.makeBranch( "rjrNJetsJa", VINT );

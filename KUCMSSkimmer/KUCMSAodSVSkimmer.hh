@@ -146,7 +146,7 @@ class KUCMSAodSkimmer : public llpgtree {
 	// histogram and recdhit map varibles & functions
     TH1D *hist1d[n1dHists];
     TH2D *hist2d[n2dHists];
-    TH3D *hist3d[n3dHists];
+    TH3D *hist3d[n3dHists]; 
 
     int nMaps;
     bool fMap[nEBEEMaps];
@@ -160,6 +160,7 @@ class KUCMSAodSkimmer : public llpgtree {
     //std::map<UInt_t,DetIDStruct> DetIDMap;
 	KUCMS_TimeCalibration* timeCali;
 
+    bool inHEMRegion( float eta, float phi );
     int getRhIdx( uInt rhDetID );
     uInt getLeadRhID( std::vector<uInt> recHitIds );
     float clstrR9( std::vector<uInt> recHitIds );

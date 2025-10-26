@@ -186,6 +186,7 @@ public :
    std::vector<float>   *selPhoSSCross;
    std::vector<bool>    *selPhoLWeird;
    std::vector<float>   *selPhoLSCross;
+   std::vector<bool>    *selPhoShasGS;
 
    std::vector<float>   *selPhoSTimeSig;
    std::vector<float>   *selPhoLTimeSig;
@@ -504,7 +505,7 @@ public :
    TBranch        *b_selPhoSSCross;
    TBranch        *b_selPhoLWeird;
    TBranch        *b_selPhoLSCross;
-
+   TBranch        *b_selPhoShasGS;
 
    TBranch        *b_muonIsLoose;   //!
    TBranch        *b_muonIsMedium;   //!
@@ -830,6 +831,7 @@ void skimtuple_v36::Init( TChain *tree, bool doGenInfo ){
    selPhoSSCross = 0;
    selPhoLWeird = 0;
    selPhoLSCross = 0;
+   selPhoShasGS = 0;
 
    selPhoTrkSumPtHollowConeDR03 = 0;
    selPhoTrkSumPtHollowConeDR04 = 0;
@@ -1140,6 +1142,7 @@ void skimtuple_v36::Init( TChain *tree, bool doGenInfo ){
    fChain->SetBranchAddress("selPhoSSCross", &selPhoSSCross, &b_selPhoSSCross);
    fChain->SetBranchAddress("selPhoLWeird", &selPhoLWeird, &b_selPhoLWeird);
    fChain->SetBranchAddress("selPhoLSCross", &selPhoLSCross, &b_selPhoLSCross);
+   fChain->SetBranchAddress("selPhoShasGS", &selPhoShasGS, &b_selPhoShasGS);
 
    fChain->SetBranchAddress("muonIsLoose", &muonIsLoose, &b_muonIsLoose);
    fChain->SetBranchAddress("muonIsMedium", &muonIsMedium, &b_muonIsMedium);
@@ -1453,6 +1456,7 @@ void skimtuple_v36::getBranches( Long64_t entry, bool doGenInfo ){
    b_selPhoSSCross->GetEntry(entry);
    b_selPhoLWeird->GetEntry(entry);
    b_selPhoLSCross->GetEntry(entry);
+   b_selPhoShasGS->GetEntry(entry);
 
    b_muonIsLoose->GetEntry(entry);  //   muonIsLoose, &b_muonIsLoose);
    b_muonIsMedium->GetEntry(entry);  //   muonIsMedium, &b_muonIsMedium);

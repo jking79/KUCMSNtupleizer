@@ -173,7 +173,7 @@ def docrab( dataset ):
 
             # !!!!!!!!!!!!!!!!!    Set output paths !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1!1
             config.Data.outLFNDirBase  = "/store/group/lpcsusylep/jaking/KUCMSNtuple/"+trial+"/"
-            config.General.requestName   = trial+"_"+primaryDataset+"_"+dataset+"_"+runEra+"_p3_request"
+            config.General.requestName   = trial+"_"+primaryDataset+"_"+dataset+"_"+runEra+"_request"
             config.Data.outputDatasetTag = trial+"_"+primaryDataset+"_"+dataset+"_"+runEra
 
             fSVIPM125 = 'eventFilter=SVIPMet125'
@@ -284,10 +284,10 @@ def run_multi():
         #['/MET/Run2018C-15Feb2022_UL2018-v1/AOD',1],
         #['/MET/Run2018D-15Feb2022_UL2018-v1/AOD',1],
 
-        ['/MET/Run2017A-09Aug2019_UL2017_rsb-v1/AOD',1],
-        ['/MET/Run2017B-09Aug2019_UL2017_rsb-v1/AOD',1],
-        #['/MET/Run2017C-09Aug2019_UL2017_rsb-v1/AOD',1],
-        ['/MET/Run2017D-09Aug2019_UL2017_rsb-v1/AOD',1],
+        #['/MET/Run2017A-09Aug2019_UL2017_rsb-v1/AOD',1],
+        #['/MET/Run2017B-09Aug2019_UL2017_rsb-v1/AOD',1],
+        ['/MET/Run2017C-09Aug2019_UL2017_rsb-v1/AOD',1],
+        #['/MET/Run2017D-09Aug2019_UL2017_rsb-v1/AOD',1],
         #['/MET/Run2017E-09Aug2019_UL2017_rsb-v1/AOD',1],
         #['/MET/Run2017F-09Aug2019_UL2017_rsb-v1/AOD',1],
 

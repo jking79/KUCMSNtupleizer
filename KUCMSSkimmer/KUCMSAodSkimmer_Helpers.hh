@@ -21,6 +21,12 @@ using json = nlohmann::json;
 //------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------
 
+bool KUCMSAodSkimmer::inHEMRegion( float eta, float phi ){
+
+	return ( ( eta > -3.2 && eta < -1.2 ) && ( phi > -1.77 && phi < -0.67 ) );
+
+}//<<>>void KUCMSAodSkimmer::inHEMRegion( float eta, float phi )
+
 void KUCMSAodSkimmer::loadLumiJson( std::string infile, bool verbose ){
     // Define your target data structure
     // assume std::map<int, std::vector<std::map<int, int>>> lumiData;
