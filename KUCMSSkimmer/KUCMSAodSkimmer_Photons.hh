@@ -68,7 +68,7 @@ void KUCMSAodSkimmer::processPhotons(){
     auto overMaxEta = std::abs(eta) > 1.479;
     auto phi = (*Photon_phi)[it];
 
-	if( ( eta > -3.2 && eta < -1.77 ) && ( phi > -1.77 && phi < -0.67 ) ) hasHemObj = true;
+	//if( ( eta > -3.2 && eta < -1.77 ) && ( phi > -1.77 && phi < -0.67 ) ) hasHemObj = true;
 
     if( DEBUG ) std::cout << " -- looping photons : getting pho iso " << std::endl;
     auto htsecdr4 = (*Photon_hcalTowerSumEtConeDR04)[it];   //!
@@ -108,9 +108,12 @@ void KUCMSAodSkimmer::processPhotons(){
 
     //  change to skip jets and keep all photons regardless of photon iso with jet
     bool phoskip = isExcluded || hasPixSeed || overMaxEta || underMinPt || failPhoIso;
+	bool hemEligible = not underMinPt && not isExcluded; 
     //if( geVars("genSigPerfect") == 1 && isGenSig ) std::cout << " -- pho sel: phoskip " << phoskip <<  " isGenSig " << isGenSig << std::endl;  
     //if( geVars("genSigPerfect") == 1 &&  phoskip && isGenSig  ){ 
     //		std::cout << "   -- xsepji: " << isExcluded  << hasPixSeed << overMaxEta << underMinPt << isJetPhoton << failPhoIso << std::endl; }
+
+    if( hemEligible && inHEMRegion( eta, phi ) ) hasHemObj = true;
 	
     if( ( geVars("genSigPerfect") != 1 ) && phoskip ){ isSelPho.push_back(false); continue; }		
     if( ( geVars("genSigPerfect") == 1 ) &&  ( not isGenSig ) ){ isSelPho.push_back(false);  continue; }
@@ -227,16 +230,17 @@ void KUCMSAodSkimmer::processPhotons(){
     float leadE = 0;
     float leadTime = -99;
     float leadAres = 0;
-    float leadTres = 0;
+    float leadTres = 2000000;
 	float leadSX = -1;
 	bool leadWried = false;
     uInt leadRHID = 0;
     float seedE = 0;
     float seedTime = -99;
     float seedAres = 0;
-    float seedTres = 0;
+    float seedTres = 2000000;
     float seedSX = -1;
     bool seedWried = false;
+	bool seedGS = false;
 	uInt seedRHID = 0;
 	std::vector<float> erhamps;
 	float sumerha = 0;
@@ -268,20 +272,22 @@ void KUCMSAodSkimmer::processPhotons(){
 			sumtrw += erhar*ertres;
             sumw += erhar;
             if( erhe*gainwt > leadE ){ 
-				leadE = erhe; leadTime = ertoftime; leadAres = erampres; leadRHID = pscrhid; leadTres = ertres; leadSX = swcrss; leadWried = isWeird; 
+				leadE = erhe; leadTime = ertoftime; leadAres = erampres; leadRHID = pscrhid; 
+				leadTres = ertres; leadSX = swcrss; leadWried = isWeird;
 			}//<<>>if( erhe*gainwt > leadE )
 			if( erhe > seedE ){ 
-				seedE = erhe; seedTime = ertoftime; seedAres = erampres; seedRHID = pscrhid; seedTres = ertres; seedSX = swcrss; seedWried = isWeird;
+				seedE = erhe; seedTime = ertoftime; seedAres = erampres; seedRHID = pscrhid; 
+				seedTres = ertres; seedSX = swcrss; seedWried = isWeird; seedGS = hasGainSwitch;
 			}//<<>>if( erhe > seedE ) 
         }//<<>>if( scrhid == rhid )
     }//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
 	if( sumw == 0 ){ sumw = 1; sumtw = -100; sumtrw = -1000; }
     float phoWTime = sumtw/sumw;
 	float phoWRes = sumtrw/sumw;
-    float ltimeres = timeCali->getTimeResoltuion( leadAres, leadRHID, Evt_run, tctag, mctype );
-	if( ltimeres != leadTres ) std::cout << " !!!!!!!   lead res mis : " << ltimeres << " v " << leadTres << std::endl;
-    float stimeres = timeCali->getTimeResoltuion( seedAres, seedRHID, Evt_run, tctag, mctype );
-    if( stimeres != seedTres ) std::cout << " !!!!!!!   lead res mis : " << stimeres << " v " << seedTres << std::endl;
+    //float ltimeres = timeCali->getTimeResoltuion( leadAres, leadRHID, Evt_run, tctag, mctype );
+	//if( ltimeres != leadTres ) std::cout << " !!!!!!!   lead res mis : " << ltimeres << " v " << leadTres << std::endl;
+    //float stimeres = timeCali->getTimeResoltuion( seedAres, seedRHID, Evt_run, tctag, mctype );
+    //if( stimeres != seedTres ) std::cout << " !!!!!!!   seed res mis : " << stimeres << " v " << seedTres << std::endl;
 	leadTres = std::sqrt(leadTres/2);
 	seedTres = std::sqrt(seedTres/2);
 	phoWRes = std::sqrt(phoWRes/2);
@@ -304,6 +310,7 @@ void KUCMSAodSkimmer::processPhotons(){
     selPhotons.fillBranch( "selPhoSSCross", seedSX );
     selPhotons.fillBranch( "selPhoLWeird", leadWried );
     selPhotons.fillBranch( "selPhoSWeird", seedWried );
+    selPhotons.fillBranch( "selPhoShasGS", seedGS );
 
     auto htsebcdr4 = (*Photon_hcalTowerSumEtBcConeDR04)[it];
     auto tsphcdr3 = (*Photon_trkSumPtHollowConeDR03)[it];
@@ -548,6 +555,7 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch( "selPhoLTRes", VFLOAT );
   selPhotons.makeBranch( "selPhoSTRes", VFLOAT );
 
+  selPhotons.makeBranch( "selPhoShasGS", VBOOL );
   selPhotons.makeBranch( "selPhoLSCross", VFLOAT );
   selPhotons.makeBranch( "selPhoSSCross", VFLOAT );
   selPhotons.makeBranch( "selPhoLWeird", VBOOL );

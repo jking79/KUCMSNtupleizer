@@ -47,6 +47,12 @@ void KUCMSAodSkimmer::processMuons(){
     selMuons.fillBranch( "muonIsMedium", (*Muon_isMedium)[itr] );
 
     if( (*Muon_isLoose)[itr] ) nLooseMuons++;
+	
+	float eta = (*Muon_eta)[itr];
+    float phi = (*Muon_phi)[itr];
+    bool hemEligible = (*Muon_isLoose)[itr] && (*Muon_pt)[itr] > 30;
+    if( hemEligible && inHEMRegion( eta, phi ) ) hasHemObj = true;  
+
 
   }//<<>>for( uInt itr = 0; itr < nMuons; itr++ )
   selMuons.fillBranch( "nMuons", nMuons );

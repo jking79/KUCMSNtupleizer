@@ -66,8 +66,6 @@ void KUCMSAodSkimmer::processElectrons(){
     auto eletime = (*Electron_seedTOFTime)[itr];
     if( std::abs(eletime) > 30 ) continue;
 
-	if( ( eta > -3.2 && eta < -1.77 ) && ( phi > -1.77 && phi < -0.67 ) ) hasHemObj = true;
-
     uInt nPhotons = Photon_excluded->size();
     float elePhoIsoDr(10.0);
     bool epSeedIdMatch = false;
@@ -103,6 +101,10 @@ void KUCMSAodSkimmer::processElectrons(){
     selElectrons.fillBranch( "eleHasSVMatch", (*Electron_hasSVMatch)[itr] );
     selElectrons.fillBranch( "eleIsLoose", (*Electron_isLoose)[itr] );
     if( (*Electron_isLoose)[itr] ) nLooseEle++;
+
+	bool hemEligible = (*Electron_isLoose)[itr] && (*Electron_pt)[itr] > 30;
+
+    if( hemEligible && inHEMRegion( eta, phi ) ) hasHemObj = true;	
 
   }//<<>>for( int itr = 0; itr < nElectrons; itr++ )
   if( DEBUG ) std::cout << " -- Finishd looping electrons " << std::endl;
