@@ -11,6 +11,8 @@ import submissionHelper as SH
 
 
 
+
+
 # Create workspace and condor submit files.
 def generateSubmission(args):
     # Ensure that the directory includes "/" at the end.
@@ -27,21 +29,64 @@ def generateSubmission(args):
     dirname = odir
     cmsswpath = os.environ["CMSSW_BASE"]+"/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/"
     print(cmsswpath)
-    if(args.inputList == "data"):
+    year = ""
+    if(args.year == "2018"):
+        year = "R18"
+    elif(args.year == "2017"):
+        year = "R17"
+    elif(args.year == "2022"):
+        year = "R22"
+    else:
+        print("Year",args.year,"not found")
+        exit()
+    reco_date = {}
+    reco_date["2017"] = "_17Nov2017"
+    reco_date["2017_MET"] = "-09Aug2019_UL2017_rsb-v1"
+    reco_date["2017_DEG"] = "-09Aug2019_UL2017-v1"
+    reco_date["2018_DEG"] = "-15Feb2022"
+    reco_date["2018_MET"] = "-15Feb2022_UL2018-v1"
+    reco_date["2022_MET"] = "-27Jun2023-v2"
+    reco_date["2018_MC"] = "RunIISummer20UL18"
+    reco_date["2017_MC"] = "RunIIFall17DRPremix"
+    reco_date["2018"] = ""
+    reco_date[""] = ""
+    data = False
+    MCbkg = False
+    MCsig = False
+    inputList = ""
+    recotag = ""
+    if(args.inputSample == "GJets"):
+        MCbkg = True
+        inputList = "GJets_"+year+"_SVIPM100_v31_GJets_HT-"+args.HT
+    elif(args.inputSample == "QCD"):
+        MCbkg = True
+        inputList = "QCD_"+year+"_SVIPM100_v31_QCD_HT"+args.HT
+    elif(args.inputSample == "MET"):
+        data = True
+        inputList = "MET_"+year+"_SVIPM100_v31_MET_AOD_Run"+args.year+args.era
+    elif(args.inputSample == "gogoG"):
+        MCsig = True
+        inputList = "gogoG_AODSIM"
+        if(args.mGl != "" and args.mN2 != "" and args.mN1 != ""):
+            inputList += "_mGl-"+args.mGl+"_mN2-"+args.mN2+"_mN1-"+args.mN1
+    else:
+        print("Lists for input sample",args.inputSample,"not found")
+        exit()
+    
+    if(data):
+        recotag = args.year+"_"+args.inputSample
         inputMainList = cmsswpath+"ntuple_master_lists/KUCMS_Ntuple_Master_DataPD_Files_List.txt"
-        dirname += "data/"
-    elif(args.inputList == "mcBkg"):
+    elif(MCbkg):
+        recotag = args.year+"_MC"
         inputMainList = cmsswpath+"ntuple_master_lists/KUCMS_Ntuple_Master_BG_SVIPM100_Files_List.txt"
-        dirname += "MCbkg/"
-    elif(args.inputList == "mcSig"): #gluino only right now!
+    elif(MCsig): #gluino only right now!
         inputMainList = cmsswpath+"ntuple_master_lists/KUCMS_Ntuple_Master_SMS_Sig_Files_List.txt"
-        dirname += "MCsig/"
     else:
     	print("Input list"+args.inputMainList+" not found")
     	exit()
-    print("Using file list",inputMainList,"with ofilename",ofilename,"and dirname",dirname)
-    listpath = inputMainList.split("/")
-    listpath = listpath[-2]+"/"
+    print("Using file list",inputMainList)
+    listpath = inputMainList[:inputMainList.rfind("/")]+"/"
+    #parsing master list
     #parsing lines in master list for inputs for list-by-list processing
     with open(inputMainList,'r') as f:
         for line in f:
@@ -52,6 +97,10 @@ def generateSubmission(args):
                 continue
             data = line.split(" ")
             eospath = data[0]
+            #print("data",data[1],"inputList",inputList)
+            #if sublist specified, only look at that one
+            if(inputList != "" and inputList not in data[1]):
+                continue
             inputlist = listpath+data[1]
             key = data[2]
             xsec = data[3]
@@ -60,21 +109,30 @@ def generateSubmission(args):
             n1mass = 0
             #get signal masses from sample name (if they exist)
             if "SMS" in inputlist:
-                gluinomass = data[data.find("mGl-")+4 : data.find("_mN2-")]
-                n2mass = data[data.find("mN2-")+4 : data.find("_mN1")]
-                n1mass = data[data.find("mN1-")+4 : data.find("_ct")]
+                file = data[1]
+                gluinomass = file[file.find("mGl-")+4 : file.find("_mN2-")]
+                n2mass = file[file.find("mN2-")+4 : file.find("_mN1")]
+                n1mass = file[file.find("mN1-")+4 : file.find("_ct")]
             mc_wt = data[6]
             timeCaliTag = data[-1][:-1] #remove new line symbol
-            
+           
+            #set dirname
+            dirname = data[1][:data[1].find("_")]
+
+
             #set output name
-            samplename = data[1][:-4]
+            print("recotag",recotag)
+            samplename = data[1][:-4]+reco_date[recotag]
             ofiletag = "rjrskim"
             if args.output is not None:
                 ofiletag += "_"+args.output
-            ofilename = "condor_"+args.inputList+"_"+samplename+"_"+ofiletag
-            
+            ofile_inputList = ""
+            #if(inputMainList != ""):
+            #    ofile_inputList = inputMainList+"_"
+            ofilename = "condor_"+ofile_inputList+samplename+"_"+ofiletag
 
-            fulldirname = dirname+samplename+"/"+ofiletag
+            fulldirname = odir+dirname+"/"+samplename+"/"+ofiletag
+            print("dirname",dirname,"samplename",samplename)
             print("Preparing sample directory: {0}".format(fulldirname))
             ##### Create a workspace (remove existing directory) #####
             if os.path.exists(fulldirname):
@@ -110,12 +168,20 @@ def main():
     # options
     parser = argparse.ArgumentParser()
     parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
-    parser.add_argument("--inputList",'-i',help="list of sample lists to run over (default is SVIPM100 selection)",required=True,choices=['data','mcBkg','mcSig'])
+    #TODO - separate photon/Z and squark/gluino and mixed cases (gogoG, gogoZ, sqsqG, sqsqGZ, etc)
+    #parser.add_argument("--inputList",help="list of sample lists to run over (default is SVIPM100 selection)",choices=['data','mcBkg','mcSig'])
+    parser.add_argument('--inputSample',help='Ntuple sample to create skims from',choices=['GJets','QCD','MET','gogoG'])
+    parser.add_argument("--year",help="run year",choices = ["2017","2018","2022"],default="2018")
+    parser.add_argument('--HT',help='HT slice (some MC samples only)',default='')
+    parser.add_argument('--era',help='run era (data only)',default='')
+    parser.add_argument('--mGl',help='gluino mass for signal',default='')
+    parser.add_argument('--mN2',help='neutralino2 mass for signal',default='')
+    parser.add_argument('--mN1',help='neutralino1 mass for signal',default='')
     parser.add_argument('--output','-o',help='output label',default=None)
     parser.add_argument('--split','-s',help="condor job split",default=0,type=int)
     parser.add_argument('--maxnevts',help="maximum number of events to run over",default=-999,type=int)
     parser.add_argument('--verbosity','-v',help="verbosity",default=0)
-    parser.add_argument('--hasGenInfo',help='set hasGenInfo flag',default=False,action="store_true")
+    #parser.add_argument('--hasGenInfo',help='set hasGenInfo flag',default=False,action="store_true")
     parser.add_argument('--genSigPerfect',help='set genSigPerfect flag',default=False,action="store_true")
     parser.add_argument('--noSVorPho',help='set noSVorPho flag',default=False,action="store_true")
    

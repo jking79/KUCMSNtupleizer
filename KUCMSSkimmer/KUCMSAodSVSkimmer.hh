@@ -67,10 +67,11 @@ class KUCMSAodSkimmer : public llpgtree {
     KUCMSAodSkimmer();
 	~KUCMSAodSkimmer();
 
-    void kucmsAodSkimmer( std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, bool doSVs, int skipCnt, bool useEvtWgts );
-    void kucmsAodSkimmer_listsOfLists( std::string eosdir, std::string infilelist, std::string outfilename, bool hasGenInfo, bool genSigPerfect, bool doSVs, int skipCnt, bool useEvtWgts );
-    void kucmsAodSkimmer_Batch( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename );
-
+    void kucmsAodSkimmer( std::string eosdir, std::string infilelist, std::string outfilename);
+    void kucmsAodSkimmer_listsOfLists( std::string eosdir, std::string infilelist, std::string outfilename );
+    void ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree, std::string outfilename );
+    int ProcessFilelistOfLists(string eosdir, vector<string> processed_strings, TChain*& fInTree, TChain*& fInConfigTree);
+    int ProcessFilelist(string eosdir, string infilename, TChain*& fInTree, TChain*& fInConfigTree);
     void initHists();
     bool eventLoop( Long64_t entry );
 	void startJobs();
@@ -196,6 +197,9 @@ class KUCMSAodSkimmer : public llpgtree {
   	MinMassesSqCombJigsaw* CombSplit_J;
     MinMassesCombJigsaw* CombSplit_Ja;
     MinMassesCombJigsaw* CombSplit_Jb;
+
+        ClusterAnalyzer _ca;
+
 
     // config vars
 

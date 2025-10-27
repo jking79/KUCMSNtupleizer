@@ -40,12 +40,10 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 
 	uInt nPhotons = Photon_excluded->size();
 	if( DEBUG ) std::cout << " - Looping over for " << nPhotons << " photons to get BC info" << std::endl;
-	ClusterAnalyzer ca;
-	//ca.SetVerbosity(0); //can turn on to see low-level warnings
 	//ca.SetDetectorCenter(x, y, z); //set to beamspot center, defaults to (0,0,0)
-	ca.SetPV(PV_x, PV_y, PV_z); //set to PV coords (assuming these are global vars)
-	ca.SetTransferFactor(1/30.); //set to 1/min photon pt
-	//ca.SetDetIDsEB(_detidmap);
+	_ca.SetPV(PV_x, PV_y, PV_z); //set to PV coords (assuming these are global vars)
+	_ca.SetTransferFactor(1/30.); //set to 1/min photon pt
+	int selPhoBHCIdx = 0;
 	for( uInt it = 0; it < nPhotons; it++ ){
 		//cout << "nphoton #" << it << endl;
 		if( not isSelPho[it] ) continue;
@@ -74,12 +72,12 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 				if(fabs((*ECALRecHit_eta)[erhiter]) > 1.479) continue;
 				//cout << "rh e " <<  erhe << " rh t " << erht << " rhid " << scrhid << " eta " << (*ECALRecHit_eta)[erhiter] << " phi " << (*ECALRecHit_phi)[erhiter] << endl;
 				//cout << "rh e " <<  erhe << " rh t " << erht << " x " << rhx << " y " << rhy << " z " << rhz << " rhid " << scrhid << endl;
-				ca.AddRecHit(rhx, rhy, rhz, erhe, erht, scrhid, hasGainSwitch);
+				_ca.AddRecHit(rhx, rhy, rhz, erhe, erht, scrhid, hasGainSwitch);
 			}//<<>>if( ecalrhiter != -1 )
 		}//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
 	
 		//if not enough rechits to cluster, skip this object
-		if(ca.GetNRecHits() < 2) continue;
+		if(_ca.GetNRecHits() < 2) continue;
 
 		//
 		//  call to BayesianClustering framework to process photon information 
@@ -89,55 +87,12 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 		//put safety in so that if there are < 2 rhs to cluster, skip
 
 		ClusterObj phoobj;
-		int clusterret = ca.RunClustering(phoobj);
+		int clusterret = _ca.RunClustering(phoobj);
 		if(clusterret == -1) continue; //bad clustering (not enough points, not able to find any clusters, etc)
 		phoobj.CalculateObjTimes();
-		phoobj.CleanOutPU();
-		//phoobj.CalculatePUScores();
-		phoobj.CalculateDetBkgScores();
 		phoobj.CalculateObjTimeSig(rhtresmap);
+		phoobj.CalculatePUScores();
 
-		//do NOT do subcluster observables
-		/*
-		BHCPhoInfo.fillBranch( "selPhoBHC_selPhotonIndex", selPhoIndex );
-
-		//do subcluster observables
-		int nk = phoobj.GetNSubclusters();
-		BHCPhoInfo.fillBranch( "selPhoBHC_nSubclusters", nk);
-		vector<Jet> subcls;
-		phoobj.GetSubclusters(subcls);
-
-		vector<bool> puscores;
-		phoobj.GetPUScores(puscores);
-		vector<pair<int, double>> detbkgscores;
-		phoobj.GetDetBkgScores(detbkgscores);
-		for(int k = 0; k < nk; k++){
-			//cout << "cluster #" << k << endl;
-			float subcltime = subcls[k].t();
-			float subcleta = subcls[k].eta();
-			float subclphi = subcls[k].phi();
-			BHCPhoInfo.fillBranch( "selPhoBHCSubcl_time", subcltime);			
-			BHCPhoInfo.fillBranch( "selPhoBHCSubcl_eta", subcleta);			
-			BHCPhoInfo.fillBranch( "selPhoBHCSubcl_phi", subclphi);
-			Matrix subcl_cov = subcls[k].GetCovariance();
-			float etavar = subcl_cov.at(0,0);
-			float phivar = subcl_cov.at(1,1);
-			float etaphicov = subcl_cov.at(0,1);
-			BHCPhoInfo.fillBranch( "selPhoBHCSubcl_etaVar", etavar);			
-			BHCPhoInfo.fillBranch( "selPhoBHCSubcl_phiVar", phivar);			
-			BHCPhoInfo.fillBranch( "selPhoBHCSubcl_etaPhiCov", etaphicov);
-			//pu score
-			//CHECK
-			//cout << "PU subcl score " << puscores[k] << endl;
-			//BHCPhoInfo.fillBranch( "selPhoBHCsubcl_puScore", (float)puscores[k]);
-		       	////det bkg score 
-			//TODO - for photons, det bkg score is calculated over full PU-cleaned object
-			//BHCPhoInfo.fillBranch( "selPhoBHCsubcl_detBkgMaxClassScore", (float)detbkgscores[k].second);
-			//BHCPhoInfo.fillBranch( "selPhoBHCsubcl_detBkgMaxClass", detbkgscores[k].first);	
-			////CHECK
-			BHCPhoInfo.fillBranch( "selPhoBHCsubcl_photonIndex", (int)it);	
-		}
-		*/
 		//center
 		float phoeta = phoobj.GetEtaCenter();
 		BHCPhoInfo.fillBranch( "selPhoBHC_eta", phoeta);
@@ -153,15 +108,18 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 		//covariance
 		float etavar = phoobj.GetEtaVar();
 		float phivar = phoobj.GetPhiVar();
+		float timevar = phoobj.GetTimeVar();
 		float etaphicov = phoobj.GetEtaPhiCov();
 		double majlen, minlen;
 		majlen = -1;
 		minlen = -1;
 		phoobj.GetMajMinLengths(majlen, minlen); //space only
 		
-		BHCPhoInfo.fillBranch( "selPhoBHC_etaVar", etavar);
-		BHCPhoInfo.fillBranch( "selPhoBHC_phiVar", phivar);
-		BHCPhoInfo.fillBranch( "selPhoBHC_etaPhiCov", etaphicov);
+		BHCPhoInfo.fillBranch( "selPhoBHC_selPhoIndex", selPhoIndex );
+		BHCPhoInfo.fillBranch( "selPhoBHC_etaVar", (float)etavar);
+		BHCPhoInfo.fillBranch( "selPhoBHC_phiVar", (float)phivar);
+		BHCPhoInfo.fillBranch( "selPhoBHC_timeVar", (float)timevar);
+		BHCPhoInfo.fillBranch( "selPhoBHC_etaPhiCov", (float)etaphicov);
 		BHCPhoInfo.fillBranch( "selPhoBHC_majlen", (float)majlen);
 		BHCPhoInfo.fillBranch( "selPhoBHC_minlen", (float)minlen);
 		//calculate time significance
@@ -169,10 +127,25 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 		float timeSignificance = phoobj.GetObjTimeSig();
 		BHCPhoInfo.fillBranch( "selPhoBHC_timeSignficance", timeSignificance);
 
+		//for studying PU cleaning
+		vector<bool> puscores;
+		phoobj.GetPUScores(puscores);
+		int nsubclusters = phoobj.GetNSubclusters();
+		//cout << "nsubclusters " << nsubclusters << endl;
+		for(int k = 0; k < nsubclusters; k++){
+			BHCPhoInfo.fillBranch("selPhoBHCSubcl_etaVar",phoobj.GetSubclusterEtaVar(k));
+			BHCPhoInfo.fillBranch("selPhoBHCSubcl_phiVar",phoobj.GetSubclusterPhiVar(k));
+			BHCPhoInfo.fillBranch("selPhoBHCSubcl_timeVar",phoobj.GetSubclusterTimeVar(k));
+			BHCPhoInfo.fillBranch("selPhoBHCSubcl_energy",phoobj.GetSubclusterEnergy(k));
+			BHCPhoInfo.fillBranch("selPhoBHCSubcl_selPhotonBHCIndex",selPhoBHCIdx);
+			//cout << "subcluster #" << k << " pu score " << puscores[k] << " selPhoBHCIndex " << selPhoBHCIdx << " it " << it << endl;
+			BHCPhoInfo.fillBranch("selPhoBHCSubcl_puScore",(int)puscores[k]);
+		}
 
-		//TODO - CHECK PU cleaning and det bkg cleaning
-		/*
+
 		phoobj.CleanOutPU();
+		phoobj.CalculateObjTimes();
+		phoobj.CalculateObjTimeSig(rhtresmap);
 		//do PU-cleaned observables
 		//center
 		phoeta = phoobj.GetEtaCenter();
@@ -198,42 +171,20 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 		BHCPhoInfo.fillBranch( "selPhoBHCPUCleaned_majlen", (float)majlen);
 		BHCPhoInfo.fillBranch( "selPhoBHCPUCleaned_minlen", (float)minlen);
 		//calculate time significance
-		//CHECK
 		timeSignificance = phoobj.GetObjTimeSig();
 		BHCPhoInfo.fillBranch( "selPhoBHCPUCleaned_timeSignficance", timeSignificance);
-		//
-		double minscore = 0.9;
-		phoobj.CleanOutDetBkg(minscore);
-		//do PU-cleaned && det bkg-cleaned observables
-		//center
-		phoeta = phoobj.GetEtaCenter();
-		BHCPhoInfo.fillBranch( "selPhoBHCPUDetBkgCleaned_eta", phoeta);
-		phophi = phoobj.GetPhiCenter();
-		BHCPhoInfo.fillBranch( "selPhoBHCPUDetBkgCleaned_phi", phophi);
-		//time at detector face
-		photime = phoobj.GetObjTime_Det();
-		BHCPhoInfo.fillBranch( "selPhoBHCPUDetBkgCleaned_DetTime", photime);
-		//time at PV
-		photime_pv = phoobj.GetObjTime_PV();
-		BHCPhoInfo.fillBranch( "selPhoBHCPUDetBkgCleaned_PVTime", photime_pv);
-	
-		//covariance
-		etavar = phoobj.GetEtaVar();
-		phivar = phoobj.GetPhiVar();
-		etaphicov = phoobj.GetEtaPhiCov();
-		//phoobj.GetMajMinLengths(majlen, minlen); //space only
-		
-		BHCPhoInfo.fillBranch( "selPhoBHCPUDetBkgCleaned_etaVar", etavar);
-		BHCPhoInfo.fillBranch( "selPhoBHCPUDetBkgCleaned_phiVar", phivar);
-		BHCPhoInfo.fillBranch( "selPhoBHCPUDetBkgCleaned_etaPhiCov", etaphicov);
-		BHCPhoInfo.fillBranch( "selPhoBHCPUDetBkgCleaned_majlen", (float)majlen);
-		BHCPhoInfo.fillBranch( "selPhoBHCPUDetBkgCleaned_minlen", (float)minlen);
-		//calculate time significance
-		timeSignificance = phoobj.GetObjTimeSig();
-		BHCPhoInfo.fillBranch( "selPhoBHCPUDetBkgCleaned_timeSignficance", timeSignificance);
-		*/
-
-		ca.ClearRecHitList();
+		//get detector bkg score for pu-cleaned photon
+		phoobj.CalculateDetBkgScores(true);
+		vector<vector<float>> detbkgscores;
+		phoobj.GetDetBkgScores(detbkgscores);
+		float physbkg_score = detbkgscores[0][0];
+		float bh_score = detbkgscores[0][1];
+		float spike_score = detbkgscores[0][2];
+		BHCPhoInfo.fillBranch( "selPhoBHCPUCleaned_physBkgMVAScore", physbkg_score);
+		BHCPhoInfo.fillBranch( "selPhoBHCPUCleaned_beamHaloMVAScore", bh_score);
+		BHCPhoInfo.fillBranch( "selPhoBHCPUCleaned_spikeMVAScore", spike_score);
+		selPhoBHCIdx++;
+		_ca.ClearRecHitList();
         // branches created strating on 2546 in  void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree )
         // on line 2709 and below make a BHCPhoInfo branch : selPhotons.makeBranch( "yourvarname", VFLOAT );		
 
@@ -248,12 +199,9 @@ void KUCMSAodSkimmer::processBHCJets(){
 
 	int selJetIndex = -1;
 
-	ClusterAnalyzer ca;
-	//ca.SetVerbosity(0); //can turn on to see low-level warnings
 	//ca.SetDetectorCenter(x, y, z); //set to beamspot center, defaults to (0,0,0)
-	ca.SetPV(PV_x, PV_y, PV_z); //set to PV coords (assuming these are global vars)
-	ca.SetTransferFactor(1/30.); //set to 1/min jet pt
-	//ca.SetDetIDsEB(_detidmap);
+	_ca.SetPV(PV_x, PV_y, PV_z); //set to PV coords (assuming these are global vars)
+	_ca.SetTransferFactor(1/30.); //set to 1/min jet pt
 
     std::vector<Jet> jetrhs;
   	uInt nJets = Jet_energy->size();
@@ -263,6 +211,7 @@ void KUCMSAodSkimmer::processBHCJets(){
 	float norm_PUcleaned = 0;
 	float pvtime_PUdetBkgCleaned = 0;
 	float norm_PUdetBkgCleaned = 0;
+	int selJetBHCIdx = 0;
     if( DEBUG ) std::cout << " - Looping over for " << nJets << " photons to get BC info" << std::endl;
   	for( uInt it = 0; it < nJets; it++ ){
         if( not isSelJet[it] ) continue;
@@ -289,21 +238,21 @@ void KUCMSAodSkimmer::processBHCJets(){
 		if(fabs((*ECALRecHit_eta)[erhiter]) > 1.479) continue;
 		//cout << "rh e " <<  erhe << " rh t " << erht << " rhid " << jrhid << " eta " << (*ECALRecHit_eta)[erhiter] << endl;
 
-		ca.AddRecHit(rhx, rhy, rhz, erhe, erht, jrhid, hasGainSwitch);
+		_ca.AddRecHit(rhx, rhy, rhz, erhe, erht, jrhid, hasGainSwitch);
 
 
             }//<<>>if( ecalrhiter != -1 )
         }//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
 
 		//if not enough rechits to cluster, skip this object
-		if(ca.GetNRecHits() < 2) continue;
+		if(_ca.GetNRecHits() < 2) continue;
 
 		ClusterObj jetobj;
-		int clusterret = ca.RunClustering(jetobj);
+		int clusterret = _ca.RunClustering(jetobj);
 		if(clusterret == -1) continue; //bad clustering (not enough points, not able to find any clusters, etc)
 		jetobj.CalculateObjTimes();
 		jetobj.CalculatePUScores();
-		jetobj.CalculateDetBkgScores();
+		jetobj.CalculateDetBkgScores(false);
 		jetobj.CalculateObjTimeSig(rhtresmap);
 
 		BHCJetInfo.fillBranch( "selJetBHC_selJetIndex", selJetIndex );
@@ -311,33 +260,29 @@ void KUCMSAodSkimmer::processBHCJets(){
 		//do subcluster observables
 		int nk = jetobj.GetNSubclusters();
 		BHCJetInfo.fillBranch( "selJetBHC_nSubclusters", nk);
-		vector<Jet> subcls;
-		jetobj.GetSubclusters(subcls);
 
 		vector<bool> puscores;
 		jetobj.GetPUScores(puscores);
-		vector<pair<int, double>> detbkgscores;
+		vector<vector<float>> detbkgscores;
 		jetobj.GetDetBkgScores(detbkgscores);
 		for(int k = 0; k < nk; k++){
-			float subcltime = subcls[k].t();
-			float subcleta = subcls[k].eta();
-			float subclphi = subcls[k].phi();
-			BHCJetInfo.fillBranch( "selJetBHCSubcl_time", subcltime);			
-			BHCJetInfo.fillBranch( "selJetBHCSubcl_eta", subcleta);			
-			BHCJetInfo.fillBranch( "selJetBHCSubcl_phi", subclphi);
-			Matrix subcl_cov = subcls[k].GetCovariance();
-			float etavar = subcl_cov.at(0,0);
-			float phivar = subcl_cov.at(1,1);
-			float etaphicov = subcl_cov.at(0,1);
-			BHCJetInfo.fillBranch( "selJetBHCSubcl_etaVar", etavar);			
-			BHCJetInfo.fillBranch( "selJetBHCSubcl_phiVar", phivar);			
-			BHCJetInfo.fillBranch( "selJetBHCSubcl_etaPhiCov", etaphicov);
+			BHCJetInfo.fillBranch( "selJetBHCSubcl_selJetBHCIndex", it);	
+			BHCJetInfo.fillBranch( "selJetBHCSubcl_eta", jetobj.GetSubclusterEtaCenter(k));	
+			BHCJetInfo.fillBranch( "selJetBHCSubcl_phi", jetobj.GetSubclusterPhiCenter(k));
+			BHCJetInfo.fillBranch( "selJetBHCSubcl_etaVar", jetobj.GetSubclusterEtaVar(k));			
+			BHCJetInfo.fillBranch( "selJetBHCSubcl_phiVar", jetobj.GetSubclusterPhiVar(k));			
+			BHCJetInfo.fillBranch( "selJetBHCSubcl_timeVar", jetobj.GetSubclusterTimeVar(k));			
+			BHCJetInfo.fillBranch( "selJetBHCSubcl_energy", jetobj.GetSubclusterEnergy(k));			
+			BHCJetInfo.fillBranch( "selJetBHCSubcl_etaPhiCov", jetobj.GetSubclusterEtaPhiCov(k));
 			//pu score
-			BHCJetInfo.fillBranch( "selJetBHCsubcl_puScore", puscores[k]);
+			BHCJetInfo.fillBranch( "selJetBHCSubcl_puScore", (int)puscores[k]);
 		       	//det bkg score
-			BHCJetInfo.fillBranch( "selJetBHCsubcl_detBkgMaxClassScore", (float)detbkgscores[k].second);
-			BHCJetInfo.fillBranch( "selJetBHCsubcl_detBkgMaxClass", detbkgscores[k].first);	
-			BHCJetInfo.fillBranch( "selJetBHCsubcl_jetIndex", it);	
+			if(puscores[k] == 0) continue;
+			BHCJetInfo.fillBranch( "selJetBHCPUCleanedsubcl_jetIndex", it);	
+			BHCJetInfo.fillBranch( "selJetBHCPUCleanedsubcl_physBkgMVAScore", detbkgscores[k][0]);	
+			BHCJetInfo.fillBranch( "selJetBHCPUCleanedsubcl_beamHaloMVAScore", detbkgscores[k][1]);	
+			BHCJetInfo.fillBranch( "selJetBHCPUCleanedsubcl_spikeMVAScore", detbkgscores[k][2]);	
+    			BHCJetInfo.fillBranch( "selJetBHCPUCleanedsubcl_selJetBHCIndex", selJetBHCIdx);
 		}
 		//center
 		float jeteta = jetobj.GetEtaCenter();
@@ -444,7 +389,8 @@ void KUCMSAodSkimmer::processBHCJets(){
 		BHCInfo.fillBranch( "selJetBHCPUDetBkgCleaned_timeSignficance", timeSignificance);
 		*/
 
-		ca.ClearRecHitList();
+		selJetBHCIdx++;
+		_ca.ClearRecHitList();
 		
 
 
@@ -465,7 +411,7 @@ void KUCMSAodSkimmer::processBHCJets(){
 
 void KUCMSAodSkimmer::setBCBranches( TTree* fOutTree ){
 
-    BHCPhoInfo.makeBranch( "selPhoBHC_selPhotonIndex", VINT);
+		/*
 	BHCPhoInfo.makeBranch( "selPhoBHC_nSubclusters", VINT);
 	BHCPhoInfo.makeBranch( "selPhoBHCSubcl_time", VFLOAT);			
 	BHCPhoInfo.makeBranch( "selPhoBHCSubcl_eta", VFLOAT);			
@@ -474,12 +420,9 @@ void KUCMSAodSkimmer::setBCBranches( TTree* fOutTree ){
 	BHCPhoInfo.makeBranch( "selPhoBHCSubcl_phiVar", VFLOAT);			
 	BHCPhoInfo.makeBranch( "selPhoBHCSubcl_etaPhiCov", VFLOAT);
 	//pu score
-	BHCPhoInfo.makeBranch( "selPhoBHCsubcl_puScore", VFLOAT);
-	//det bkg score
-	BHCPhoInfo.makeBranch( "selPhoBHCsubcl_detBkgMaxClassScore", VFLOAT);
-	BHCPhoInfo.makeBranch( "selPhoBHCsubcl_detBkgMaxClass", VINT);	
-	BHCPhoInfo.makeBranch( "selPhoBHCsubcl_photonIndex", VINT);	
-  for(const string cleanedType : {"BHC", "BHCPUCleaned", "BHCPUDetBkgCleaned"}) {
+	*/	
+    	BHCPhoInfo.makeBranch("selPhoBHC_selPhoIndex", VINT);
+  for(const string cleanedType : {"BHC", "BHCPUCleaned"}) {
 	BHCPhoInfo.makeBranch( "selPho"+cleanedType+"_eta", VFLOAT);
 	BHCPhoInfo.makeBranch( "selPho"+cleanedType+"_phi", VFLOAT);
 	BHCPhoInfo.makeBranch( "selPho"+cleanedType+"_DetTime", VFLOAT);
@@ -487,11 +430,22 @@ void KUCMSAodSkimmer::setBCBranches( TTree* fOutTree ){
 
 	BHCPhoInfo.makeBranch( "selPho"+cleanedType+"_etaVar", VFLOAT);
 	BHCPhoInfo.makeBranch( "selPho"+cleanedType+"_phiVar", VFLOAT);
+	BHCPhoInfo.makeBranch( "selPho"+cleanedType+"_timeVar", VFLOAT);
 	BHCPhoInfo.makeBranch( "selPho"+cleanedType+"_etaPhiCov", VFLOAT);
 	BHCPhoInfo.makeBranch( "selPho"+cleanedType+"_majlen", VFLOAT);
 	BHCPhoInfo.makeBranch( "selPho"+cleanedType+"_minlen", VFLOAT);
 	BHCPhoInfo.makeBranch( "selPho"+cleanedType+"_timeSignficance", VFLOAT);
   }
+    	BHCPhoInfo.makeBranch("selPhoBHCSubcl_selPhotonBHCIndex", VINT);
+	BHCPhoInfo.makeBranch( "selPhoBHCPUCleaned_physBkgMVAScore", VFLOAT);
+	BHCPhoInfo.makeBranch( "selPhoBHCPUCleaned_beamHaloMVAScore", VFLOAT);
+	BHCPhoInfo.makeBranch( "selPhoBHCPUCleaned_spikeMVAScore", VFLOAT);
+	BHCPhoInfo.makeBranch("selPhoBHCSubcl_puScore", VINT);
+	BHCPhoInfo.makeBranch("selPhoBHCSubcl_etaVar",VFLOAT);
+	BHCPhoInfo.makeBranch("selPhoBHCSubcl_phiVar",VFLOAT);
+	BHCPhoInfo.makeBranch("selPhoBHCSubcl_timeVar",VFLOAT);
+	BHCPhoInfo.makeBranch("selPhoBHCSubcl_energy",VFLOAT);
+		
 
   BHCPhoInfo.attachBranches( fOutTree );
 
@@ -502,13 +456,19 @@ void KUCMSAodSkimmer::setBCBranches( TTree* fOutTree ){
 	BHCJetInfo.makeBranch( "selJetBHCSubcl_phi", VFLOAT);
 	BHCJetInfo.makeBranch( "selJetBHCSubcl_etaVar", VFLOAT);			
 	BHCJetInfo.makeBranch( "selJetBHCSubcl_phiVar", VFLOAT);			
+	BHCJetInfo.makeBranch( "selJetBHCSubcl_timeVar", VFLOAT);			
+	BHCJetInfo.makeBranch( "selJetBHCSubcl_energy", VFLOAT);			
 	BHCJetInfo.makeBranch( "selJetBHCSubcl_etaPhiCov", VFLOAT);
 	//pu score
-	BHCJetInfo.makeBranch( "selJetBHCsubcl_puScore", VFLOAT);
+	BHCJetInfo.makeBranch( "selJetBHCSubcl_puScore", VINT);
 	//det bkg score
-	BHCJetInfo.makeBranch( "selJetBHCsubcl_detBkgMaxClassScore", VFLOAT);
-	BHCJetInfo.makeBranch( "selJetBHCsubcl_detBkgMaxClass", VINT);	
-	BHCJetInfo.makeBranch( "selJetBHCsubcl_jetIndex", VINT);	
+	BHCJetInfo.makeBranch( "selJetBHC_selJetBHCIndex", VINT);	
+	BHCJetInfo.makeBranch( "selJetBHCSubcl_selJetBHCIndex", VINT);	
+	BHCJetInfo.makeBranch( "selJetBHCPUCleanedsubcl_jetIndex", VINT);	
+	BHCJetInfo.makeBranch( "selJetBHCPUCleanedsubcl_physBkgMVAScore", VFLOAT);	
+	BHCJetInfo.makeBranch( "selJetBHCPUCleanedsubcl_beamHaloMVAScore",VFLOAT);	
+	BHCJetInfo.makeBranch( "selJetBHCPUCleanedsubcl_spikeMVAScore", VFLOAT);	
+    	BHCJetInfo.makeBranch( "selJetBHCPUCleanedsubcl_selJetBHCIndex", VINT);
   for(const string cleanedType : {"BHC", "BHCPUCleaned", "BHCPUDetBkgCleaned"}) {
 	BHCJetInfo.makeBranch( "selJet"+cleanedType+"_eta", VFLOAT);
 	BHCJetInfo.makeBranch( "selJet"+cleanedType+"_phi", VFLOAT);
