@@ -160,6 +160,11 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 
   _evti = -1;
   _evtj = -1;
+  //_ca.SetVerbosity(0); //_can turn on to see low-level warnings
+  _ca.SetDetIDsEB(_detidmap);
+  _ca.SetCNNModel("json/small3CNN_EMultr_2017and2018.json");
+
+
 }//<<>>KUCMSAodSkimmer::KUCMSAodSkimmer()
 
 KUCMSAodSkimmer::~KUCMSAodSkimmer(){

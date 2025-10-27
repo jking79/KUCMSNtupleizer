@@ -186,6 +186,9 @@ class KUCMSAodSkimmer : public llpgtree {
     MinMassesCombJigsaw* CombSplit_Ja;
     MinMassesCombJigsaw* CombSplit_Jb;
 
+        ClusterAnalyzer _ca;
+
+
     // config vars
     std::string dataSetKey;
     float xsctn;
