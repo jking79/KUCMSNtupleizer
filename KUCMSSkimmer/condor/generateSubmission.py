@@ -49,6 +49,7 @@ def generateSubmission(args):
     reco_date["2018_MC"] = "RunIISummer20UL18"
     reco_date["2017_MC"] = "RunIIFall17DRPremix"
     reco_date["2018"] = ""
+    reco_date[""] = ""
     data = False
     MCbkg = False
     MCsig = False
