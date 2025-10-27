@@ -423,6 +423,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string eosdir, std::string infilelis
     //DEBUG
     nEvents = _evtj - _evti;//save # of events actually ran over//nEntries;
     cout << "Running over events " << _evti << " to " << _evtj << endl;
+    clock_t t;
     for (Long64_t centry = _evti; centry < _evtj; centry++){
 
       if( centry%loopCounter == 0 ) std::cout << "Processed " << centry << " of " << nEvents << " entries (" << nEntries << " total entries)." << std::endl;
@@ -436,7 +437,10 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string eosdir, std::string infilelis
       if( genSigPerfect ) geVars.set( "genSigPerfect", 1 ); else geVars.set( "genSigPerfect", 0 );
       if( noSVorPho ) geVars.set( "noSVorPho", 1 ); else geVars.set( "noSVorPho", 0 );
       if(DEBUG) std::cout << " -- Event Loop " << std::endl;
+      t = clock();
       auto saveToTree = eventLoop(entry);
+      t = clock() - t;
+      cout << "time for event " << (double)t/CLOCKS_PER_SEC << endl;
       if( saveToTree ){ fOutTree->Fill(); }
 
     }//<<>>for (Long64_t centry = 0; centry < nEntries; centry++)  end entry loop
@@ -554,6 +558,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_listsOfLists( std::string eosdir, std::str
     //DEBUG
     nEvents = _evtj - _evti;//save # of events actually ran over//nEntries;
     cout << "Running over events " << _evti << " to " << _evtj << endl;
+    clock_t t;
     for (Long64_t centry = _evti; centry < _evtj; centry++){
 
       if( centry%loopCounter == 0 ) std::cout << "Processed " << centry << " of " << nEvents << " entries (" << nEntries << " total entries)." << std::endl;
@@ -567,7 +572,10 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_listsOfLists( std::string eosdir, std::str
       if( genSigPerfect ) geVars.set( "genSigPerfect", 1 ); else geVars.set( "genSigPerfect", 0 );
       if( noSVorPho ) geVars.set( "noSVorPho", 1 ); else geVars.set( "noSVorPho", 0 );
       if(DEBUG) std::cout << " -- Event Loop " << std::endl;
+      t = clock();
       auto saveToTree = eventLoop(entry);
+      t = clock() - t;
+      cout << "time for event " << (double)t/CLOCKS_PER_SEC << endl;
       if( saveToTree ){ fOutTree->Fill(); }
 
     }//<<>>for (Long64_t centry = 0; centry < nEntries; centry++)  end entry loop
@@ -692,8 +700,8 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
   auto saveToTree = eventSelection();	
   if( saveToTree ){ 
 
-    //processBHCPhotons(); 
-    //processBHCJets(); 
+    processBHCPhotons(); 
+    processBHCJets(); 
 	processRJR(0,true); 
 	processRJR(1,false); 
 
