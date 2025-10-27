@@ -45,6 +45,7 @@ OPTS += -fno-trapping-math -funsafe-math-optimizations -fomit-frame-pointer -fno
 
 p1=runKUCMSAodSVSkimmer
 p2=fillKUCMSTimeCalibration
+p3=runLocalKUCMSAodSVSkimmer
 
 all: $(p1) 
 
@@ -53,3 +54,6 @@ $(p1): $(p1).cpp
 
 $(p2): $(p2).cpp
 	$(CC) -o $(p2).obj $(p2).cpp $(RTCFLAGS) $(RTGLIBS) $(OPTS)
+
+$(p3): $(p3).cpp
+	$(CC) -o $(p3).obj $(p3).cpp $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS) $(BCGLIBS) $(OPTS)
