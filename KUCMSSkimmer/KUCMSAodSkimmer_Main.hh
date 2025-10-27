@@ -408,24 +408,21 @@ int KUCMSAodSkimmer::ProcessFilelistOfLists(string eosdir, vector<string> proces
     auto inpath = processed_strings[0];
     cout << "inpath " << inpath << endl;
     auto infile_str = processed_strings[1];
-    auto key = processed_strings[2];
-    auto crossSection = std::stof( processed_strings[3] );
-    auto gmsbgm = std::stof( processed_strings[4] );
-    auto gmsbxm = std::stof( processed_strings[5] );
-    auto mcw = std::stof( processed_strings[6] );
-    auto mct = std::stoi( processed_strings[7] );
-	auto tct = processed_strings[8];
-		
-    if( DEBUG ) std:: cout << "InPath: " << inpath << std::endl;
+    dataSetKey = processed_strings[2];
+    xsctn = std::stof( processed_strings[3] );
+    gmass = std::stof( processed_strings[4] );
+    xmass = std::stof( processed_strings[5] );
+    mcwgt = std::stof( processed_strings[6] );
+    mctype = std::stoi( processed_strings[7] );
+    tctag = processed_strings[8];
     if( DEBUG ) std:: cout << "InFile: " << infile_str << std::endl;
-    if( DEBUG ) std:: cout << "Key: " << key << std::endl;
-    if( DEBUG ) std:: cout << "XSec: " << crossSection << std::endl;
-    if( DEBUG ) std:: cout << "GM: " << gmsbgm << std::endl;
-    if( DEBUG ) std:: cout << "XM: " << gmsbxm << std::endl;
-    if( DEBUG ) std:: cout << "MCw: " << mcw << std::endl;
-    if( DEBUG ) std:: cout << "MCt: " << mct << std::endl;
+    if( DEBUG ) std:: cout << "XSec: " << xsctn << std::endl;
+    if( DEBUG ) std:: cout << "GM: " << gmass << std::endl;
+    if( DEBUG ) std:: cout << "XM: " << xmass << std::endl;
+    if( DEBUG ) std:: cout << "MCw: " << mcwgt << std::endl;
+    if( DEBUG ) std:: cout << "MCt: " << mctype << std::endl;
     if( DEBUG ) std:: cout << "tcTag: " << tctag << std::endl;
-
+		
     if(gSystem->AccessPathName(infile_str.c_str())){
       cout << "Error: File " << infile_str << " not found" << endl;
       return -1;
@@ -439,7 +436,7 @@ int KUCMSAodSkimmer::ProcessFilelistOfLists(string eosdir, vector<string> proces
     std::string str;
     if( not DEBUG ) std::cout << "--  adding files";
     int nfiles = 0;	
-    if( key !=  "single" ){
+    if( dataSetKey !=  "single" ){
       std::ifstream infile(infile_str);
       while( std::getline( infile, str ) ){
 	      if(str.find("#") != string::npos) continue;

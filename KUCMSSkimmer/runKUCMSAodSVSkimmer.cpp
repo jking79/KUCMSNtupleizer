@@ -12,6 +12,17 @@
 //#include "KUCMSAodSkimmer_cc_probe.hh"
 //#include "KUCMSAodSkimmer_rh_cc.hh"
 //#include "KUCMSAodSkimmer_v16_rh_cc.hh"
+//
+//example calls
+//Using a 'master' list of lists:
+// ./runKUCMSAodSVSkimmer.obj -i ntuple_master_lists/KUCMS_Ntuple_Master_DataPD_Files_List.txt --evtFirst 0 --evtLast 100 -o test_v41_fullDataList
+//
+//Using a single list of sample files
+// ./runKUCMSAodSVSkimmer.obj -i ntuple_master_lists/MET_R18_SVIPM100_v31_MET_AOD_Run2018A.txt --evtFirst 0 --evtLast 100 -o test_v41
+//Notes:
+//	- hasGenInfo and mctype is set here based on file name (ie 'AOD' vs 'AODSIM')
+//	- the time calibration tag (ttag here) is updated for MC automatically ('_mc' appended)
+//
 // ------------------------------------------- main function ------------------------------------------------------------
 int main ( int argc, char *argv[] ){
 
@@ -55,22 +66,22 @@ int main ( int argc, char *argv[] ){
 	}
 
 	if(hprint){
-    	cout << "Usage: " << argv[0] << " [options]" << endl;
-        cout << "  options:" << endl;
-        cout << "   --help(-h)                           print options" << endl;
-        cout << "   --input(-i) [file]                   input filelist" << endl;
-	cout << "   --output(-o) [file]                  output file tag" << endl;
-	cout << "   --evtFirst [i] --evtLast [j]         skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
-	cout << "   --hasGenInfo                         sample has gen info (default = false)" << endl;
-	cout << "   --genSigPerfect                      turn on gensigperfect (default = false)" << endl;
-	cout << "   --noSVorPho                          selection doesn't have SV or photon (default = false)" << endl;
-	cout << "   --noBHC                              will not run BHC objects (default = false - BHC on)" << endl;
-        cout << "   --dataSetKey                         set dataset key" << endl;
-        cout << "   --xsec                               set cross-section (default = 1)" << endl;
-        cout << "   --gluinoMass                         set gluino mass (default = 0)" << endl;
-        cout << "   --N2Mass                             set N2 mass (default = 0)" << endl;
-        cout << "   --timeCaliTag                        set time calibration tag (default = r2_ul18(_mc))" << endl;
-        cout << "   --MCweight                           set MC weight (default = 0)" << endl;
+    		cout << "Usage: " << argv[0] << " [options]" << endl;
+        	cout << "  options:" << endl;
+        	cout << "   --help(-h)                           print options" << endl;
+        	cout << "   --input(-i) [file]                   input filelist" << endl;
+		cout << "   --output(-o) [file]                  output file tag" << endl;
+		cout << "   --evtFirst [i] --evtLast [j]         skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
+		cout << "   --hasGenInfo                         sample has gen info (default = false)" << endl;
+		cout << "   --genSigPerfect                      turn on gensigperfect (default = false)" << endl;
+		cout << "   --noSVorPho                          selection doesn't have SV or photon (default = false)" << endl;
+		cout << "   --noBHC                              will not run BHC objects (default = false - BHC on)" << endl;
+        	cout << "   --dataSetKey                         set dataset key" << endl;
+        	cout << "   --xsec                               set cross-section (default = 1)" << endl;
+        	cout << "   --gluinoMass                         set gluino mass (default = 0)" << endl;
+        	cout << "   --N2Mass                             set N2 mass (default = 0)" << endl;
+        	cout << "   --timeCaliTag                        set time calibration tag (default = r2_ul18(_mc))" << endl;
+        	cout << "   --MCweight                           set MC weight (default = 0)" << endl;
 		return 0;
 	}
 
@@ -84,8 +95,8 @@ int main ( int argc, char *argv[] ){
 		hasGenInfo = false;
 	}//<<>>if(hasGenInfo && in_file.find("Data"))
 
-    int skipCnt = 0; // used to skip files ( in tchian ) for fast processing - if( nFiles%skipCnt != 0 ) continue; --  disabled in code  --  
-    std::string eosdir = "root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/";
+    	int skipCnt = 0; // used to skip files ( in tchian ) for fast processing - if( nFiles%skipCnt != 0 ) continue; --  disabled in code  --  
+    	std::string eosdir = "root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/";
     	KUCMSAodSkimmer llpgana;
 	llpgana.SetEventRange(evti, evtj);
 	llpgana.SetGenInfoFlag( hasGenInfo );
