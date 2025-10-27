@@ -39,10 +39,21 @@ def generateSubmission(args):
     else:
         print("Year",args.year,"not found")
         exit()
+    reco_date = {}
+    reco_date["2017"] = "_17Nov2017"
+    reco_date["2017_MET"] = "-09Aug2019_UL2017_rsb-v1"
+    reco_date["2017_DEG"] = "-09Aug2019_UL2017-v1"
+    reco_date["2018_DEG"] = "-15Feb2022"
+    reco_date["2018_MET"] = "-15Feb2022_UL2018-v1"
+    reco_date["2022_MET"] = "-27Jun2023-v2"
+    reco_date["2018_MC"] = "RunIISummer20UL18"
+    reco_date["2017_MC"] = "RunIIFall17DRPremix"
+    reco_date["2018"] = ""
     data = False
     MCbkg = False
     MCsig = False
     inputList = ""
+    recotag = ""
     if(args.inputSample == "GJets"):
         MCbkg = True
         inputList = "GJets_"+year+"_SVIPM100_v31_GJets_HT-"+args.HT
@@ -60,10 +71,12 @@ def generateSubmission(args):
     else:
         print("Lists for input sample",args.inputSample,"not found")
         exit()
-
+    
     if(data):
+        recotag = args.year+"_"+args.inputSample
         inputMainList = cmsswpath+"ntuple_master_lists/KUCMS_Ntuple_Master_DataPD_Files_List.txt"
     elif(MCbkg):
+        recotag = args.year+"_MC"
         inputMainList = cmsswpath+"ntuple_master_lists/KUCMS_Ntuple_Master_BG_SVIPM100_Files_List.txt"
     elif(MCsig): #gluino only right now!
         inputMainList = cmsswpath+"ntuple_master_lists/KUCMS_Ntuple_Master_SMS_Sig_Files_List.txt"
@@ -107,7 +120,8 @@ def generateSubmission(args):
 
 
             #set output name
-            samplename = data[1][:-4]
+            print("recotag",recotag)
+            samplename = data[1][:-4]+reco_date[recotag]
             ofiletag = "rjrskim"
             if args.output is not None:
                 ofiletag += "_"+args.output
@@ -117,6 +131,7 @@ def generateSubmission(args):
             ofilename = "condor_"+ofile_inputList+samplename+"_"+ofiletag
 
             fulldirname = odir+dirname+"/"+samplename+"/"+ofiletag
+            print("dirname",dirname,"samplename",samplename)
             print("Preparing sample directory: {0}".format(fulldirname))
             ##### Create a workspace (remove existing directory) #####
             if os.path.exists(fulldirname):
