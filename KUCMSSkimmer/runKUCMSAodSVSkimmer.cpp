@@ -134,11 +134,11 @@ int main ( int argc, char *argv[] ){
 		if(in_file.find("AODSIM") != string::npos){
 			mctype = 0;
 			ttag += "_mc";
-			hasGenInfo = true
+			hasGenInfo = true;
 		}
 		else{
 			mctype = 1;
-			hasGenInfo = false
+			hasGenInfo = false;
 		}
 		//from master list
    		llpgana.SetDataSetKey(key);
