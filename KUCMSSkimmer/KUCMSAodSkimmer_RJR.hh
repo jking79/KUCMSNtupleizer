@@ -63,40 +63,39 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
   auto phoRMetCPy = geVars("metPy"); //selMet.getFLBranchValue("metPy");
   float unCorMet = hypo(phoRMetCPx,phoRMetCPy);
 
+  auto phoBMetPx = geVars("metBPx"); //selMet.getFLBranchValue("metPx");
+  auto phoBMetPy = geVars("metBPy"); //selMet.getFLBranchValue("metPy");
+  float unCorBMet = hypo(phoBMetPx,phoBMetPy);
+
   int nRJRPhos = 0;
   std::vector<RFKey> jetID;
   std::vector<TLorentzVector> pho4vec;
   bool zsig = ( geVars("noSVorPho") == 1 ) ? true : false;	
   if( zsig ) std::cout << " ------------ noSVorPho is True !!!!!!!!!!!!!!!!!!!!!!!! " << std::endl;
   if( not zsig ){
-    if( nSelPhotons != 0 ){
-      nRJRPhos = 1;
-      if( DEBUG ) std::cout << " - Loading Lead/SubLead Pho" << std::endl;
-      if( type == 0 ){
-	phoRMetCPx += leadPhoPt*std::cos(leadPhoPhi); 
-	phoRMetCPy += leadPhoPt*std::sin(leadPhoPhi);
-      }//<<>>if( type == 0 )
-      else if( type == 1 ){
-	TLorentzVector phojet;
-	phojet.SetPtEtaPhiM( leadPhoPt, leadPhoEta, leadPhoPhi, 0 );
-	jetID.push_back( COMB_J->AddLabFrameFourVector(phojet) );
-	pho4vec.push_back(phojet);
-      }//<<>>if( type == 1 )
-      else {  std::cout << " !!!!!!!! Valid RJR Photon Processing Option Not Specified !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl; }
+	if( nSelPhotons != 0 ){
+    	nRJRPhos = 1;
+      	if( DEBUG ) std::cout << " - Loading Lead/SubLead Pho" << std::endl;
+      	if( type == 0 ){
+			phoBMetPx -= leadPhoPt*std::cos(leadPhoPhi); 
+			phoBMetPy -= leadPhoPt*std::sin(leadPhoPhi);
+      	}//<<>>if( type == 0 )
+		TLorentzVector phojet;
+		phojet.SetPtEtaPhiM( leadPhoPt, leadPhoEta, leadPhoPhi, 0 );
+		jetID.push_back( COMB_J->AddLabFrameFourVector(phojet) );
+		pho4vec.push_back(phojet);
     }//<<>>if( nSelPhotons > 0 )
     if( nSelPhotons > 1 ){ 
-      nRJRPhos = 2;
-      if( type == 0 ){
-	phoRMetCPx += subLeadPhoPt*std::cos(subLeadPhoPhi);
-	phoRMetCPy += subLeadPhoPt*std::sin(subLeadPhoPhi);
-      }//<<>>if( type == 0 )
-      else if( type == 1 ){
-	TLorentzVector sphojet;
-	sphojet.SetPtEtaPhiM( subLeadPhoPt, subLeadPhoEta, subLeadPhoPhi, 0 );
-	jetID.push_back( COMB_J->AddLabFrameFourVector(sphojet) );
-	pho4vec.push_back(sphojet);
-      }//<<>>if( type == 1 )
-    }//<<>>if( nSelPhotons > 1 )
+    	nRJRPhos = 2;
+      	if( type == 0 ){
+			phoBMetPx -= subLeadPhoPt*std::cos(subLeadPhoPhi);
+			phoBMetPy -= subLeadPhoPt*std::sin(subLeadPhoPhi);
+      	}//<<>>if( type == 0 )
+		TLorentzVector sphojet;
+		sphojet.SetPtEtaPhiM( subLeadPhoPt, subLeadPhoEta, subLeadPhoPhi, 0 );
+		jetID.push_back( COMB_J->AddLabFrameFourVector(sphojet) );
+		pho4vec.push_back(sphojet);
+	}//<<>>if( nSelPhotons > 1 )
   }//<<>>if( not zsig )
   else std::cout << " --- !!!  Photons not loaded into RJR !!!!!!!!!!!!!!!!!!" << std::endl;
 
@@ -107,8 +106,13 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     std::cout << " - Loading MET x: " << geVars("metPx") << " -> " << phoRMetCPx;
     std::cout << " y: " << geVars("metPy") << " -> " << phoRMetCPy << std::endl;
   }//<<>>if( verbose )
-  TVector3 ETMiss(phoRMetCPx,phoRMetCPy,0);
-  INV->SetLabFrameThreeVector(ETMiss);
+  if( type == 0 ){
+  	TVector3 ETBMiss(phoBMetPx,phoBMetPy,0);
+  	INV->SetLabFrameThreeVector(ETBMiss);
+  } else if( type == 1 ){
+    TVector3 ETMiss(phoRMetCPx,phoRMetCPy,0);
+    INV->SetLabFrameThreeVector(ETMiss);
+  } else { std::cout << " !!!!!!!! Valid RJR Photon Processing Option Not Specified !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl; }
 
   auto nSelJets = geCnts("nSelJets"); //selJets.getUIBranchValue("nSelJets");
   auto selJetPt = geVects( "selJetPt");
