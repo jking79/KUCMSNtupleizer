@@ -11,8 +11,8 @@
 #include "KUCMSAodSVSkimmer.hh"
 #include "KUCMSHelperFunctions.hh"
 
-//#define DEBUG true
-#define DEBUG false
+//#define RJRDEBUG true
+#define RJRDEBUG false
 
 //------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------
@@ -39,7 +39,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
   //bool verbose = true;
   bool verbose = false;
 
-  if( DEBUG || verbose ) std::cout << "Processing RJR event varibles." << std::endl;
+  if( RJRDEBUG || verbose ) std::cout << "Processing RJR event varibles for type " << type << std::endl;
   // ------------------  Loading &  Processing RJR event varibles  ---------------------------------------------------------
 
   // intilize out branches
@@ -70,6 +70,8 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
   auto phoBMetPy = geVars("metBPy"); //selMet.getFLBranchValue("metPy");
   float unCorBMet = hypo(phoBMetPx,phoBMetPy);
 
+  if( RJRDEBUG ) std::cout << " - Loading Photons." << std::endl;
+
   int nRJRPhos = 0;
   std::vector<RFKey> jetID;
   std::vector<TLorentzVector> pho4vec;
@@ -78,7 +80,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
   if( not zsig ){
 	if( nSelPhotons != 0 ){
     	nRJRPhos = 1;
-      	if( DEBUG ) std::cout << " - Loading Lead/SubLead Pho" << std::endl;
+      	if( RJRDEBUG ) std::cout << " - Loading Lead/SubLead Pho" << std::endl;
       	if( type == 0 ){
 			phoBMetPx += leadPhoMx; 
 			phoBMetPy += leadPhoMy;
@@ -102,7 +104,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
   }//<<>>if( not zsig )
   else std::cout << " --- !!!  Photons not loaded into RJR !!!!!!!!!!!!!!!!!!" << std::endl;
 
-  if( DEBUG ) std::cout << " - Loading MET." << std::endl;
+  if( RJRDEBUG ) std::cout << " - Loading MET." << std::endl;
   if( verbose ){
     std::cout << " - Loading MET lPt: " << leadPhoPt << " lPhi: " << leadPhoPhi << std::endl;
     std::cout << " - Loading MET slPt: " << subLeadPhoPt << " slPhi: " << subLeadPhoPhi << std::endl; 
@@ -123,7 +125,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
   auto selJetMass = geVects( "selJetMass");
   std::vector<RFKey> leadJetKey;
   std::vector<TLorentzVector> jet4vec;
-  if( DEBUG ) std::cout << " - Loading Jets." << std::endl;
+  if( RJRDEBUG ) std::cout << " - Loading Jets." << std::endl;
   for( uInt it = 0; it < nSelJets; it++ ){
     auto sjetPt = selJetPt[it]; //selJets.getFLBranchValue( "selJetPt", it );
     auto sjetEta = selJetEta[it]; //selJets.getFLBranchValue( "selJetEta", it );
@@ -140,7 +142,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 
   if( !LAB->AnalyzeEvent() ) std::cout << "Something went wrong with tree event analysis" << std::endl;
 	
-  if( DEBUG ) std::cout << " - Getting RJR varibles." << std::endl;
+  if( RJRDEBUG ) std::cout << " - Getting RJR Object Location Information." << std::endl;
   // ---------  Finished Processing RJR varibles --------------------------------------------------------------------
 
   uInt firstJet = 0;
@@ -199,6 +201,8 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 
   }//<<>>for( uInt it = 0; it < nVisObjects; it++ )
 
+  if( RJRDEBUG ) std::cout << " - Getting RJR varibles." << std::endl;
+
   float m_MS = S->GetMass();
   float m_cosS  = S->GetCosDecayAngle();
   float m_dphiS = S->GetDeltaPhiDecayAngle();
@@ -231,6 +235,8 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
  
   if( type == 0 ) hist2d[2]->Fill(m_dphiSI,m_PTS);
   if( type == 1 ) hist2d[3]->Fill(m_dphiSI,m_PTS); 
+
+  if( RJRDEBUG ) std::cout << " - Getting RJR varibles 2." << std::endl;
 
   std::vector< TLorentzVector > hp4;
   std::vector< TLorentzVector > hxp4;
@@ -273,6 +279,8 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     selRjrVars.fillBranch( "rjr_sJ2b_pz", float(hp4[3].Pz()) );
     selRjrVars.fillBranch( "rjr_sJ2b_e", float(hp4[3].E()) );
 
+  if( RJRDEBUG ) std::cout << " - Getting RJR varibles 3." << std::endl;
+
 	float x1sp = ( X1a->GetFourVector(*S) + X1b->GetFourVector(*S) ).P();
 	float x1asp = ( X1a->GetFourVector(*S) ).P();
     float x1bsp = ( X1b->GetFourVector(*S) ).P();
@@ -298,6 +306,8 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     selRjrVars.fillBranch( "rjr_pHs21b", phs21b );
     selRjrVars.fillBranch( "rjr_pHs11a", phs11a );
     selRjrVars.fillBranch( "rjr_pHs11b", phs11b );
+
+  if( RJRDEBUG ) std::cout << " - Getting RJR varibles 4." << std::endl;
 
     hxp4.push_back(X2a->GetFourVector(pJetSideSum4Vec[0]));//0
     hxp4.push_back(X2a->GetFourVector(pJetSideSum4Vec[1]));//1
@@ -326,6 +336,8 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     selRjrVars.fillBranch( "rjr_pHxb10", phxb10 );
     selRjrVars.fillBranch( "rjr_pHxa11", phxa11 );
     selRjrVars.fillBranch( "rjr_pHxb11", phxb11 );
+
+  if( RJRDEBUG ) std::cout << " - Getting RJR varibles 5." << std::endl;
 
     float pj1apt = S->GetTransverseMomentum(pJetSideSum4Vec[0]);
     float pj2apt = S->GetTransverseMomentum(pJetSideSum4Vec[1]);
@@ -357,6 +369,8 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     selRjrVars.fillBranch( "rjr_pHts11a", phts11a );
     selRjrVars.fillBranch( "rjr_pHts11b", phts11b );
 
+  if( RJRDEBUG ) std::cout << " - Getting RJR varibles 6." << std::endl;
+
     float ptj1apt = X2a->GetTransverseMomentum(pJetSideSum4Vec[0]);
     float ptj2apt = X2a->GetTransverseMomentum(pJetSideSum4Vec[1]);
     float ptx1apt = X2a->GetTransverseMomentum(X1a->GetFourVector(*LAB));
@@ -384,6 +398,8 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     selRjrVars.fillBranch( "rjr_pHtxa11", phtxa11 );
     selRjrVars.fillBranch( "rjr_pHtxb11", phtxb11 );
 
+  if( RJRDEBUG ) std::cout << " - Getting RJR varibles 7." << std::endl;
+
 	float phopt1 = 0;
     float phopt2 = 0;
 
@@ -394,6 +410,8 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 
     selRjrVars.fillBranch( "rjr_p1Pts", phopt1 );
     selRjrVars.fillBranch( "rjr_p2Pts", phopt2 );
+
+  if( RJRDEBUG ) std::cout << " - Getting RJR varibles 8." << std::endl;
 
     float phopt1xa = 0;
     float phopt1xb = 0;
@@ -408,6 +426,8 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 		if( phoside[1] < 2 ) phopt2xa = X2a->GetTransverseMomentum( pho4vec[1] );
         else phopt2xb = X2b->GetTransverseMomentum( pho4vec[1] );
 	}//<<>>if( nPhov > 1 )
+
+  if( RJRDEBUG ) std::cout << " - Getting RJR varibles 9." << std::endl;
 
     float phop1xa = 0;
     float phop1xb = 0;
@@ -433,6 +453,8 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     selRjrVars.fillBranch( "rjr_p1Pxb", phop1xb );
     selRjrVars.fillBranch( "rjr_p2Pxa", phop2xa );
     selRjrVars.fillBranch( "rjr_p2Pxb", phop2xb );
+
+  if( RJRDEBUG ) std::cout << " - Getting RJR varibles 10." << std::endl;
 
 	std::vector< TLorentzVector > p4;
 	p4.push_back(Ja->GetFourVector(*S));
@@ -462,6 +484,8 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     selRjrVars.fillBranch( "rjr_pHs11", pHs11 );
     selRjrVars.fillBranch( "rjr_pHts22", pHts22 );
     selRjrVars.fillBranch( "rjr_pHts11", pHts11 );
+
+  if( RJRDEBUG ) std::cout << " - Getting RJR varibles 11." << std::endl;
 
 	for( int i = 0; i < 4; i++ ){
 
@@ -497,6 +521,8 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     selRjrVars.fillBranch( "rjrX2aPs", pf_pX2a );
     selRjrVars.fillBranch( "rjrX2bPs", pf_pX2b );
 
+  if( RJRDEBUG ) std::cout << " - Getting RJR varibles 12." << std::endl;
+
   	float m_EVa = X2a->GetListVisibleFrames().GetFourVector(*X2a).E();
   	float m_EVb = X2b->GetListVisibleFrames().GetFourVector(*X2b).E();
   	float m_PVa = X2a->GetListVisibleFrames().GetFourVector(*X2a).P();
@@ -525,7 +551,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     selRjrVars.fillBranch( "rjr_Mvb", m_MVb );
     selRjrVars.fillBranch( "rjr_Rm", m_MVab );
 
-  	float m_PV_lab    = S->GetListVisibleFrames().GetFourVector().P();
+  	float m_PV_lab = S->GetListVisibleFrames().GetFourVector().P();
   	float m_dphiMET_V = 0.f; 
 	if( type == 0 ) m_dphiMET_V = S->GetListVisibleFrames().GetFourVector().Vect().DeltaPhi(ETBMiss);
     else if( type == 1 ) m_dphiMET_V = S->GetListVisibleFrames().GetFourVector().Vect().DeltaPhi(ETMiss);
@@ -548,6 +574,8 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 
     selRjrVars.fillBranch( "rjrPVlab", m_PV_lab );
     selRjrVars.fillBranch( "rjrDphiMETV", m_dphiMET_V );
+
+  if( RJRDEBUG ) std::cout << " - Getting RJR varibles 13." << std::endl;
 
 	float rjrMet = hypo(phoRMetCPx,phoRMetCPy);
 

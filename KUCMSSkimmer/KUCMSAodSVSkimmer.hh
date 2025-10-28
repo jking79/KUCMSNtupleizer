@@ -69,16 +69,19 @@ class KUCMSAodSkimmer : public llpgtree {
 
     void kucmsAodSkimmer( std::string eosdir, std::string infilelist, std::string outfilename);
     void kucmsAodSkimmer_listsOfLists( std::string eosdir, std::string infilelist, std::string outfilename );
-    void ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree, std::string outfilename );
+    void kucmsAodSkimmer_local( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename );
+
     int ProcessFilelistOfLists(string eosdir, vector<string> processed_strings, TChain*& fInTree, TChain*& fInConfigTree);
     int ProcessFilelist(string eosdir, string infilename, TChain*& fInTree, TChain*& fInConfigTree);
+
+    void ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree );
+    void ProcessConfigTree( TChain* fInConfigTree );
+    void fillConfigTree( TTree* fOutTree );
+
     void initHists();
     bool eventLoop( Long64_t entry );
 	void startJobs();
     void endJobs();
-    void fillConfigTree( TTree* fOutTree );
-	void ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree );
-    void ProcessConfigTree( TChain* fInConfigTree );
 
    // Class varibles accessors
 
@@ -96,6 +99,7 @@ class KUCMSAodSkimmer : public llpgtree {
     void SetUseEvtGenWgtFlag( bool f ){ useEvtGenWgtFlag = f; }
     void SetGenSigPerfectFlag( bool f ){ genSigPerfectFlag = f; }
     void SetDoBHC( bool f ){ doBHC = f; }
+    void SetOutFileName( std::string  ofn ){ outFileName = ofn; }
 
 	// set branches
 
@@ -272,7 +276,7 @@ class KUCMSAodSkimmer : public llpgtree {
     KUCMSBranchManager BHCJetInfo;
 
    // Other SC information ? ( this is a hack ) depreciated - or make so ?   
-
+/*
    std::vector<float>   *OSuperCluster_diffEnergy;
    std::vector<float>   *OSuperCluster_dR;
    std::vector<unsigned int> *OSuperCluster_otherMatchSeedID;
@@ -291,6 +295,7 @@ class KUCMSAodSkimmer : public llpgtree {
    TBranch        *b_OSuperCluster_nOtherIn;   //!
    TBranch        *b_OSuperCluster_otherSeedID;   //!
    TBranch        *b_OSuperCluster_nXtalOverlap;   //!
+*/
 
 };
 
