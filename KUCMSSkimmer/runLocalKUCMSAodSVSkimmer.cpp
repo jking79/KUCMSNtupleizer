@@ -7,12 +7,10 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#include "KUCMSAodSkimmer_Main.hh"
-//#include "KUCMSAodSkimmer_sv_cc.hh"
-//#include "KUCMSAodSkimmer_cc_probe.hh"
-//#include "KUCMSAodSkimmer_rh_cc.hh"
-//#include "KUCMSAodSkimmer_v16_rh_cc.hh"
+#include "KUCMSAodSkimmer_Main_noBHC.hh"
+
 // ------------------------------------------- main function ------------------------------------------------------------
+
 int main ( int argc, char *argv[] ){
 
     const std::string listdir = "ntuple_master_lists/";
@@ -40,9 +38,9 @@ int main ( int argc, char *argv[] ){
 
 	//const std::string infilename = "KUCMS_Ntuple_Master_NtupleTest_Files_List.txt"; hasGenInfo = false;
 
-    //const std::string infilename = "KUCMS_Ntuple_Master_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
+    const std::string infilename = "KUCMS_Ntuple_Master_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
     //const std::string infilename = "KUCMS_Ntuple_Master_BG_SVIPM100_Files_List.txt";
-    const std::string infilename = "KUCMS_Ntuple_Master_DataPD_Files_List.txt"; hasGenInfo = false;
+    //const std::string infilename = "KUCMS_Ntuple_Master_DataPD_Files_List.txt"; hasGenInfo = false;
 
     //const std::string outfilename = "_LLPGskim_v21_rjrvars.root"; // skim v21 use new process_name tags 
     //const std::string outfilename = "_LLPGskim_v22_rjrvars.root"; // skim v22 keeps 0 pho events 
@@ -67,7 +65,7 @@ int main ( int argc, char *argv[] ){
 	llpgana.SetNoSVorPhoFlag(noSVorPho); 
 	llpgana.SetUseEvtGenWgtFlag(useEvtGenWgt);
 	llpgana.SetGenSigPerfectFlag(genSigPerfect);
-    llpgana.kucmsAodSkimmer_Batch( listdir, eosdir, infilename, outfilename );
+    llpgana.kucmsAodSkimmer_local( listdir, eosdir, infilename, outfilename );
     return 1;
 
 

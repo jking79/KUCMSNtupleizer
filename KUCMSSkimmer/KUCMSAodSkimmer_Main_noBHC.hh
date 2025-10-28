@@ -22,7 +22,7 @@
 #include "KUCMSAodSkimmer_Jets.hh"
 #include "KUCMSAodSkimmer_Muons.hh"
 #include "KUCMSAodSkimmer_SV.hh"
-#include "KUCMSAodSkimmer_BHC.hh"
+#include "KUCMSAodSkimmer_BHC_Dummy.hh"
 
 
 //-----------------------------------------------------------------------------------------------------------------------------
@@ -206,8 +206,8 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 	// BNC Intiation
 
   //_ca.SetVerbosity(0); //_can turn on to see low-level warnings
-  _ca.SetDetIDsEB(_detidmap);
-  _ca.SetCNNModel("json/small3CNN_EMultr_2017and2018.json");
+  //_ca.SetDetIDsEB(_detidmap);
+  //_ca.SetCNNModel("json/small3CNN_EMultr_2017and2018.json");
 
 
 }//<<>>KUCMSAodSkimmer::KUCMSAodSkimmer()
@@ -911,7 +911,8 @@ void KUCMSAodSkimmer::initHists(){
 
     ////hist2d[1] = new TH2D("jetDrMuTime_pt", "jetDrMuTime_pt", jtdiv, -1*jtran, jtran, 500, 0, 500);
 	hist2d[1] = new TH2D("scorigcross", "SC Types;Mian-Orig;Std-OOT-Excluded", 2, 0, 2, 3, 0, 3); 
-    hist2d[2] = new TH2D("rjrPtS_v_rjrdPhiSI", "rjrDPhiSI_v_rjrPtS;rjrDphiSI;rjrPtS", 32, 0, 3.2, 60, 0, 3000);
+    hist2d[2] = new TH2D("rjrPtS_v_rjrdPhiSI_t0", "rjrDPhiSI_v_rjrPtS Type 0;rjrDphiSI;rjrPtS", 32, 0, 3.2, 60, 0, 3000);
+    hist2d[3] = new TH2D("rjrPtS_v_rjrdPhiSI_t1", "rjrDPhiSI_v_rjrPtS Type 1;rjrDphiSI;rjrPtS", 32, 0, 3.2, 60, 0, 3000);
 
 	//------------------------------------------------------------------------------------------
     //------ 3D Hists --------------------------------------------------------------------------
