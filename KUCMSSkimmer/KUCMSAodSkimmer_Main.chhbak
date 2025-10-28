@@ -750,11 +750,11 @@ bool KUCMSAodSkimmer::eventSelection(){
   float evtMet = geVars("cmet");
   int nSelJets = geCnts("nSelJets"); //selJets.getUIBranchValue("nSelJets");
   float nSelPhotons = geCnts("nSelPhotons"); //selPhotons.getUIBranchValue("nSelPhotons");
-  float leadSelPho = geCnts("leadPho"); //selPhotons.getUIBranchValue("leadSelPho");
-  float subLeadSelPho = geCnts("subLeadPho"); //selPhotons.getUIBranchValue("subLeadSelPho");
+  //float leadSelPho = geCnts("leadPho"); //selPhotons.getUIBranchValue("leadSelPho");
+  //float subLeadSelPho = geCnts("subLeadPho"); //selPhotons.getUIBranchValue("subLeadSelPho");
   float leadPhoPt = ( nSelPhotons > 0 ) ? geVars("leadPhoPt") : 0;
   float subLeadPhoPt = ( nSelPhotons > 1 ) ? geVars("subLeadPhoPt") : 0;
-  if( DEBUG ) std::cout << " - Lead/Sublead Photons: " << leadSelPho << " - " << subLeadSelPho << std::endl;
+  //if( DEBUG ) std::cout << " - Lead/Sublead Photons: " << leadSelPho << " - " << subLeadSelPho << std::endl;
 
   bool hasLepSV = geVars("nSVLep") > 0;
   bool hasHadSV = geVars("nSVHad") > 0;
@@ -893,8 +893,9 @@ void KUCMSAodSkimmer::initHists(){
 
     ////hist2d[1] = new TH2D("jetDrMuTime_pt", "jetDrMuTime_pt", jtdiv, -1*jtran, jtran, 500, 0, 500);
 	hist2d[1] = new TH2D("scorigcross", "SC Types;Mian-Orig;Std-OOT-Excluded", 2, 0, 2, 3, 0, 3); 
-    hist2d[2] = new TH2D("rjrPtS_v_rjrdPhiSI", "rjrDPhiSI_v_rjrPtS;rjrDphiSI;rjrPtS", 32, 0, 3.2, 60, 0, 3000);
-
+    hist2d[2] = new TH2D("rjrPtS_v_rjrdPhiSI_t0", "rjrDPhiSI_v_rjrPtS T1;rjrDphiSI;rjrPtS", 32, 0, 3.2, 60, 0, 3000);
+    hist2d[3] = new TH2D("rjrPtS_v_rjrdPhiSI_t1", "rjrDPhiSI_v_rjrPtS T2;rjrDphiSI;rjrPtS", 32, 0, 3.2, 60, 0, 3000);
+	
 	//------------------------------------------------------------------------------------------
     //------ 3D Hists --------------------------------------------------------------------------
 

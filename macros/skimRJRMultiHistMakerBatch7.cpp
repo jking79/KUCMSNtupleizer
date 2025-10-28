@@ -403,7 +403,8 @@ void HistMaker::histMaker( std::string indir, std::string infilelist, std::strin
 // ----------------------------------------------- event loop -------------------------------------------------------------------------
 void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector<float> r_vec, std::vector<float> rv_vec ){
 
-	int cs = ( cutselection == 0 ) ? 0 : 1;
+	//int cs = ( cutselection == 0 ) ? 0 : 1;
+	int cs = 0;
 
     //cutv = cut;  n rjr jets per side
     //cutva = va;  n rjr phos in event
@@ -462,7 +463,7 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 	//!!!!! MET Cut
     auto metCPt = hypo(selCMetPx,selCMetPy);
     auto metPt = hypo(selMetPx,selMetPy);
-	if( metCPt < 150 ) continue;
+	if( metPt < 150 ) continue;
     //hist1d[2]->Fill(12,fillwt);
 
 	//if( DEBUG ) std::cout << "RJR jet cut " << std::endl;
@@ -686,7 +687,7 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 	if( not metFlag ) continue;
     if( not haloFilter ) continue;
 	if( not trigger ) continue;
-    if( hemVeto ) continue;
+    //if( hemVeto ) continue;
 
 	// GGG cut sets
 	//if( nRjrPhos < 20 && nphocust ) continue;  
@@ -1174,7 +1175,7 @@ int main ( int argc, char *argv[] ){
 
 				//int nj = 1;
 				//int np = 1; : 2,7,10
-                for( int np = 0; np < 1; np++ ){
+                for( int np = 1; np < 2; np++ ){
                 for( int nj = 0; nj < 1; nj++ ){
 
 				//std::string subdir = "cf_" + std::to_string(np) + "pho_" + std::to_string(nj) + "jet/";
@@ -1184,17 +1185,18 @@ int main ( int argc, char *argv[] ){
 				std::vector<float> rv_vec{1.0}; // Sig scaling
                 std::string outdir = "";
 
-				std::string isoline = "P1TrMfHeHa_TSig_allGS_"; // Tv = time valid, Mf = metfilters, Ha = halofilters, Tr = trigger, He = hemfilter;
+                std::string isoline = "P1TrMfHeHa_RJR0_"; // Tv = time valid, Mf = metfilters, Ha = halofilters, Tr = trigger, He = hemfilter;
+				//std::string isoline = "P1TrMfHeHa_TSig_GS1_"; // Tv = time valid, Mf = metfilters, Ha = halofilters, Tr = trigger, He = hemfilter;
 				isoline += "cv" + std::to_string( np ) + "_";
                 std::string outfilenameJ = outdir + ofnstart + htitleJ + isoline;
 				std::string htitlefullJ =  htitleJ + isoline;
-				base.histMaker( listdir, infilenameJ, outfilenameJ, htitlefullJ, np, nj, rv_vec, r_vec, rv_vec );
+				//base.histMaker( listdir, infilenameJ, outfilenameJ, htitlefullJ, np, nj, rv_vec, r_vec, rv_vec );
                 std::string outfilenameBG = outdir + ofnstart + htitleBG + isoline;
                 std::string htitlefullBG =  htitleBG + isoline;
                 //base.histMaker( listdir, infilenameBG, outfilenameBG, htitlefullBG, np, nj, r_vec, r_vec, rv_vec );
                 std::string outfilenameD = outdir + ofnstart + htitleD + isoline;
                 std::string htitlefullD =  htitleD + isoline;
-                //base.histMaker( listdir, infilenameD, outfilenameD, htitlefullD, np, nj, r_vec, r_vec, rv_vec );
+                base.histMaker( listdir, infilenameD, outfilenameD, htitlefullD, np, nj, r_vec, r_vec, rv_vec );
 
 				}}
 

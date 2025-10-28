@@ -44,6 +44,7 @@ void KUCMSAodSkimmer::processPhotons(){
   //----------------- photons ------------------
 
   std::vector<int> phoOrderIndx;
+  std::vector<int> phoExcIndx;
   uInt nSelPhotons = 0;
   //uint nEleVeto = 0;
   uInt nPhotons = Photon_excluded->size();	
@@ -346,6 +347,7 @@ void KUCMSAodSkimmer::processPhotons(){
     //auto geosmin = phoEigens2D[4];
 
     float phoPhoIsoDr = 10.0;
+	int phoIsoIndx = -1;
     for( uInt it2 = 0; it2 < nPhotons; it2++ ){
       if( it == it2 ) continue;
       float eta2 = (*Photon_eta)[it2];
@@ -353,8 +355,10 @@ void KUCMSAodSkimmer::processPhotons(){
       auto dphi12 = dPhi( phi, phi2 );
       auto pho2dr = hypo( eta-eta2, dphi12 ); 
       //std::cout << " -- Eta : " << eta-eta2 << " Phi : " << dPhi(phi,phi2) << " dr : " << pho2dr << std::endl;
-      if( pho2dr < phoPhoIsoDr ) phoPhoIsoDr = pho2dr;
+      if( pho2dr < phoPhoIsoDr ){ phoPhoIsoDr = pho2dr; phoIsoIndx = it2; }
     }//for( uInt it2 = it+1; it2 < nPhotons; it2++ )
+	//bool matchPhoExc = ( phoIsoIndx > -1 ) ? (*Photon_excluded)[it] : false;
+	if( phoPhoIsoDr < 0.3 ) phoExcIndx.push_back( phoIsoIndx ); else phoExcIndx.push_back( -1 );
 
     /*
     // pho object selection ------------------------------------------
@@ -504,30 +508,66 @@ void KUCMSAodSkimmer::processPhotons(){
   geCnts.set( "nSelPhotons", nSelPhotons );	
   selPhotons.fillBranch( "nSelPhotons",  nSelPhotons );
   selPhotons.fillBranch( "nPhotons", nPhotons );	
-  //selPhotons.fillBranch( "nEleVeto", nEleVeto );
-  //selPhotons.fillBranch( "selPhoPtOrder", phoPtOrder );
 
-  //if( DEBUG || verbose ) std::cout << " - Setting Leading/Subleading Photon with " << phoPtOrder.size() << std::endl;
-  uInt leadPhoIdx = ( nSelPhotons >= 1 ) ? phoOrderIndx[0]  : 9999;
-  uInt subLeadPhoIdx = ( nSelPhotons >= 2 ) ? phoOrderIndx[1] : 9999;
-  geCnts.set("leadPho",leadPhoIdx);
-  geCnts.set("subLeadPho",subLeadPhoIdx);
-  //selPhotons.fillBranch( "leadSelPho", leadPho );
-  //selPhotons.fillBranch( "subLeadSelPho", subLeadPho );
-  //if( verbose ) std::cout << " -- pho lead & sublead selected : " << leadPho << " - " << subLeadPho << std::endl;
-  if( DEBUG ) std::cout << " -- pho lead & sublead idx selected : " << leadPhoIdx << " - " << subLeadPhoIdx << std::endl;	
-  float lPhoPt = ( nSelPhotons > 0 ) ? (*Photon_pt)[leadPhoIdx] : 0.f;
+  float lPhoPt = 0.f;
+  float lPhoPhi = 0.f;
+  float lPhoEta = 0.f;
+  float ePhoMx = 0.f;
+  float ePhoMy = 0.f;
+  if( nSelPhotons > 0 ){
+	uInt pIdx = phoOrderIndx[0];
+	uInt exIdx = phoExcIndx[0];
+	bool isOOT = (*Photon_isOot)[pIdx];
+	lPhoPt = (*Photon_pt)[pIdx];
+	lPhoPhi = (*Photon_phi)[pIdx];
+	lPhoEta = (*Photon_eta)[pIdx];
+	if( isOOT ){ 
+		ePhoMx -= lPhoPt*std::cos(lPhoPhi);
+		ePhoMy -= lPhoPt*std::sin(lPhoPhi);
+		if( exIdx > -1 ){ 
+    		float ePhoPt = (*Photon_pt)[exIdx];
+    		float ePhoPhi = (*Photon_phi)[exIdx];
+    		float ePhoEta = (*Photon_eta)[exIdx];
+			ePhoMx += ePhoPt*std::cos(ePhoPhi);
+			ePhoMy += ePhoPt*std::sin(ePhoPhi);
+		}//<<>>if( exIdx > -1 )
+	}//<<>>if( isOOT && exIdx > -1 )
+  }//<<>>if( nSelPhotons > 0 )
   geVars.set( "leadPhoPt", lPhoPt );
-  float slPhoPt = ( nSelPhotons > 1 ) ? (*Photon_pt)[subLeadPhoIdx] : 0.f;
-  geVars.set( "subLeadPhoPt", slPhoPt);
-  float lPhoPhi = ( nSelPhotons > 0 ) ? (*Photon_phi)[leadPhoIdx] : 0.f;
   geVars.set( "leadPhoPhi", lPhoPhi );
-  float slPhoPhi = ( nSelPhotons > 1 ) ? (*Photon_phi)[subLeadPhoIdx] : 0.f;
-  geVars.set( "subLeadPhoPhi", slPhoPhi );
-  float lPhoEta = ( nSelPhotons > 0 ) ? (*Photon_eta)[leadPhoIdx] : 0.f;
   geVars.set( "leadPhoEta", lPhoEta );
-  float slPhoEta = ( nSelPhotons > 1 ) ? (*Photon_eta)[subLeadPhoIdx] : 0.f;
-  geVars.set( "subLeadPhoEta", slPhoEta );
+  geVars.set( "leadPhoMx", ePhoMx );
+  geVars.set( "leadPhoMy", ePhoMy );
+
+  lPhoPt = 0.f;
+  lPhoPhi = 0.f;
+  lPhoEta = 0.f;
+  ePhoMx = 0.f;
+  ePhoMy = 0.f;
+  if( nSelPhotons > 1 ){
+    uInt pIdx = phoOrderIndx[1];
+    uInt exIdx = phoExcIndx[1];
+    bool isOOT = (*Photon_isOot)[pIdx];
+    lPhoPt = (*Photon_pt)[pIdx];
+    lPhoPhi = (*Photon_phi)[pIdx];
+    lPhoEta = (*Photon_eta)[pIdx];
+    if( isOOT ){
+        ePhoMx -= lPhoPt*std::cos(lPhoPhi);
+        ePhoMy -= lPhoPt*std::sin(lPhoPhi);
+        if( exIdx > -1 ){
+            float ePhoPt = (*Photon_pt)[exIdx];
+            float ePhoPhi = (*Photon_phi)[exIdx];
+            float ePhoEta = (*Photon_eta)[exIdx];
+            ePhoMx += ePhoPt*std::cos(ePhoPhi);
+            ePhoMy += ePhoPt*std::sin(ePhoPhi);
+        }//<<>>if( exIdx > -1 )
+    }//<<>>if( isOOT && exIdx > -1 )
+  }//<<>>if( nSelPhotons > 0 )
+  geVars.set( "subLeadPhoPt", lPhoPt );
+  geVars.set( "subLeadPhoPhi", lPhoPhi );
+  geVars.set( "subLeadPhoEta", lPhoEta );
+  geVars.set( "subLeadPhoMx", ePhoMx );
+  geVars.set( "subLeadPhoMy", ePhoMy );
 
 }//<<>>void KUCMSAodSkimmer::processPhoton(){
 
