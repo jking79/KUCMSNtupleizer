@@ -403,7 +403,8 @@ void HistMaker::histMaker( std::string indir, std::string infilelist, std::strin
 // ----------------------------------------------- event loop -------------------------------------------------------------------------
 void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector<float> r_vec, std::vector<float> rv_vec ){
 
-	int cs = ( cutselection == 0 ) ? 0 : 1;
+	//int cs = ( cutselection == 0 ) ? 0 : 1;
+	int cs = 0;
 
     //cutv = cut;  n rjr jets per side
     //cutva = va;  n rjr phos in event
@@ -462,7 +463,7 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 	//!!!!! MET Cut
     auto metCPt = hypo(selCMetPx,selCMetPy);
     auto metPt = hypo(selMetPx,selMetPy);
-	if( metCPt < 150 ) continue;
+	if( metPt < 150 ) continue;
     //hist1d[2]->Fill(12,fillwt);
 
 	//if( DEBUG ) std::cout << "RJR jet cut " << std::endl;
@@ -492,16 +493,17 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 	bool isomv = nLooseMuons < 1;
 	bool isolepv = isoev && isomv;
 
-	//bool MetFilter = Flag_MetFilter;
-	//bool HaloFilter = Flag_globalSuperTightHalo2016Filter;
-
     bool metFlag = Flag_BadChargedCandidateFilter && Flag_BadPFMuonDzFilter && Flag_BadPFMuonFilter && Flag_HBHENoiseFilter && Flag_HBHENoiseIsoFilter;
-    metFlag = metFlag && Flag_MetFilter && Flag_ecalBadCalibFilter && Flag_eeBadScFilter && Flag_goodVertices && Flag_hfNoisyHitsFilter;
-    metFlag = metFlag && Flag_globalSuperTightHalo2016Filter;
-    //bool Flag_EcalDeadCellTriggerPrimitiveFilter;
+    metFlag = metFlag && Flag_ecalBadCalibFilter && Flag_eeBadScFilter && Flag_goodVertices && Flag_hfNoisyHitsFilter;
+	//metFlag = metFlag && Flag_EcalDeadCellTriggerPrimitiveFilter; // not working 
 
-	bool trigger = ( Trigger_PFMET120_PFMHT120_IDTight or Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight ); 
-	trigger = trigger and ( Trigger_PFMET120_PFMHT120_IDTight_PFHT60 or Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60 );
+    bool haloFilter = Flag_globalSuperTightHalo2016Filter;
+
+	bool trigger = Trigger_PFMET120_PFMHT120_IDTight or Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight; 
+	trigger = trigger or Trigger_PFMET120_PFMHT120_IDTight_PFHT60 or Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60;
+
+	bool hemVeto = Flag_hemVeto;
+
 
     if( DEBUG ) std::cout << "Batch fill " << std::endl;
 	//if( !MetFilter ) batchVars[bmetfilter] += fillwt;
@@ -663,24 +665,32 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     fillwt = fillwt * m_vec[0];
 
 	//var hist fill
-	bool timecust( ( gtime < -0.5 ) || ( sgtime < -0.5 ) );
+	//bool timeCtrReg( ( gtime < -0.5 ) || ( sgtime < -0.5 ) );
+    bool p1tv( gtime < -25.0 || gtime > 25.0 );
+    bool p2tv( sgtime < -25.0 || sgtime > 25.0 );
 
-	bool rxabcust( rxa == 1 || rxb == 1 );
-    bool rxab7cust( rxa == 1 || ( rxb == 1 && rxa < 0.7 ) );
+	//bool rxabcust( rxa == 1 || rxb == 1 );
+    //bool rxab7cust( rxa == 1 || ( rxb == 1 && rxa < 0.7 ) );
 	bool jab1cust( nAJets < 1 && nBJets < 1 );
     bool jab2cust( nAJets < 2 && nBJets < 2 );
-
 
 	bool nphocust( rjrNPhotons->at(cs) < 1 );
     bool n1phocust( rjrNPhotons->at(cs) != 1 );
     bool n2phocust( rjrNPhotons->at(cs) < 2 );
+	bool timecust = false;
+	if( not nphocust && p1tv ) timecust = true;
+    if( not n2phocust && p2tv ) timecust = true;
 
-	//if( timecust )  continue;
-	//if( metFilter ) continue;
+	if( nphocust ) continue;
+	if( timecust )  continue;
+
+	if( not metFlag ) continue;
+    if( not haloFilter ) continue;
 	if( not trigger ) continue;
+    //if( hemVeto ) continue;
 
 	// GGG cut sets
-	if( nRjrPhos < 20 && nphocust ) continue;  
+	//if( nRjrPhos < 20 && nphocust ) continue;  
     if( nRjrPhos == 0 ){
         //if( ms < 1000 ) continue;
         //if( rs < 0.25 ) continue;
@@ -722,7 +732,7 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     }//<<>>if( nRjrPhos == 10 )
 
 
-    if( ( nRjrPhos > 19 && nRjrPhos < 30 ) && ( rxab7cust || nphocust ) ) continue;
+    if( ( nRjrPhos > 19 && nRjrPhos < 30 ) && ( nphocust ) ) continue;
     if( nRjrPhos == 25 ){
         if( ms < 1000 ) continue;
     }//<<>>if( nRjrPhos == 4 )
@@ -1175,7 +1185,8 @@ int main ( int argc, char *argv[] ){
 				std::vector<float> rv_vec{1.0}; // Sig scaling
                 std::string outdir = "";
 
-				std::string isoline = "trig_TSig_allGS_";
+                std::string isoline = "P1TrMfHeHa_RJR0_"; // Tv = time valid, Mf = metfilters, Ha = halofilters, Tr = trigger, He = hemfilter;
+				//std::string isoline = "P1TrMfHeHa_TSig_GS1_"; // Tv = time valid, Mf = metfilters, Ha = halofilters, Tr = trigger, He = hemfilter;
 				isoline += "cv" + std::to_string( np ) + "_";
                 std::string outfilenameJ = outdir + ofnstart + htitleJ + isoline;
 				std::string htitlefullJ =  htitleJ + isoline;

@@ -40,6 +40,14 @@ public :
    Bool_t          Flag_goodVertices;
    Bool_t          Flag_hfNoisyHitsFilter;
 
+   Bool_t          Trigger_PFMET120_PFMHT120_IDTight;				
+   Bool_t          Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight;				
+   Bool_t          Trigger_PFMET120_PFMHT120_IDTight_PFHT60;			
+   Bool_t          Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60;				
+
+   Bool_t          Flag_hemVeto;
+
+
    Float_t         PVx;
    Float_t         PVy;
    Float_t         PVz;
@@ -349,6 +357,14 @@ public :
    TBranch        *b_Flag_globalSuperTightHalo2016Filter;   //!
    TBranch        *b_Flag_goodVertices;   //!
    TBranch        *b_Flag_hfNoisyHitsFilter;   //!
+
+   TBranch        *b_Trigger_PFMET120_PFMHT120_IDTight;
+   TBranch        *b_Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight;
+   TBranch        *b_Trigger_PFMET120_PFMHT120_IDTight_PFHT60;
+   TBranch        *b_Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60;
+
+   TBranch        *b_Flag_hemVeto;
+
 
    TBranch        *b_PVx;   //!
    TBranch        *b_PVy;   //!
@@ -976,15 +992,21 @@ void skimtuple_v36::Init( TChain *tree, bool doGenInfo ){
    fChain->SetBranchAddress("Flag_BadChargedCandidateFilter", &Flag_BadChargedCandidateFilter, &b_Flag_BadChargedCandidateFilter);
    fChain->SetBranchAddress("Flag_BadPFMuonDzFilter", &Flag_BadPFMuonDzFilter, &b_Flag_BadPFMuonDzFilter);
    fChain->SetBranchAddress("Flag_BadPFMuonFilter", &Flag_BadPFMuonFilter, &b_Flag_BadPFMuonFilter);
-   //fChain->SetBranchAddress("Flag_EcalDeadCellTriggerPrimitiveFilter", &Flag_EcalDeadCellTriggerPrimitiveFilter, &b_Flag_EcalDeadCellTriggerPrimitiveFilter);
+   fChain->SetBranchAddress("Flag_EcalDeadCellTriggerPrimitiveFilter", &Flag_EcalDeadCellTriggerPrimitiveFilter, &b_Flag_EcalDeadCellTriggerPrimitiveFilter);
    fChain->SetBranchAddress("Flag_HBHENoiseFilter", &Flag_HBHENoiseFilter, &b_Flag_HBHENoiseFilter);
    fChain->SetBranchAddress("Flag_HBHENoiseIsoFilter", &Flag_HBHENoiseIsoFilter, &b_Flag_HBHENoiseIsoFilter);
-   //fChain->SetBranchAddress("Flag_MetFilter", &Flag_MetFilter, &b_Flag_MetFilter);
    fChain->SetBranchAddress("Flag_ecalBadCalibFilter", &Flag_ecalBadCalibFilter, &b_Flag_ecalBadCalibFilter);
    fChain->SetBranchAddress("Flag_eeBadScFilter", &Flag_eeBadScFilter, &b_Flag_eeBadScFilter);
    fChain->SetBranchAddress("Flag_globalSuperTightHalo2016Filter", &Flag_globalSuperTightHalo2016Filter, &b_Flag_globalSuperTightHalo2016Filter);
    fChain->SetBranchAddress("Flag_goodVertices", &Flag_goodVertices, &b_Flag_goodVertices);
    fChain->SetBranchAddress("Flag_hfNoisyHitsFilter", &Flag_hfNoisyHitsFilter, &b_Flag_hfNoisyHitsFilter);
+
+   fChain->SetBranchAddress("Trigger_PFMET120_PFMHT120_IDTight", &Trigger_PFMET120_PFMHT120_IDTight, &b_Trigger_PFMET120_PFMHT120_IDTight);
+   fChain->SetBranchAddress("Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight", &Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight, &b_Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight);
+   fChain->SetBranchAddress("Trigger_PFMET120_PFMHT120_IDTight_PFHT60", &Trigger_PFMET120_PFMHT120_IDTight_PFHT60, &b_Trigger_PFMET120_PFMHT120_IDTight_PFHT60);
+   fChain->SetBranchAddress("Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60", &Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60, &b_Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60);
+
+   fChain->SetBranchAddress("Flag_hemVeto", &Flag_hemVeto, &b_Flag_hemVeto);
 
    fChain->SetBranchAddress("PVx", &PVx, &b_PVx);
    fChain->SetBranchAddress("PVy", &PVy, &b_PVy);
@@ -1299,6 +1321,13 @@ void skimtuple_v36::getBranches( Long64_t entry, bool doGenInfo ){
    b_Flag_globalSuperTightHalo2016Filter->GetEntry(entry);  //   Flag_globalSuperTightHalo2016Filter, &b_Flag_globalSuperTightHalo2016Filter);
    b_Flag_goodVertices->GetEntry(entry);  //   Flag_goodVertices, &b_Flag_goodVertices);
    b_Flag_hfNoisyHitsFilter->GetEntry(entry);  //   Flag_hfNoisyHitsFilter, &b_Flag_hfNoisyHitsFilter);
+
+   b_Trigger_PFMET120_PFMHT120_IDTight->GetEntry(entry);
+   b_Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight->GetEntry(entry);
+   b_Trigger_PFMET120_PFMHT120_IDTight_PFHT60->GetEntry(entry);
+   b_Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60->GetEntry(entry);
+
+   b_Flag_hemVeto->GetEntry(entry);
 
    b_PVx->GetEntry(entry);  //   PVx, &b_PVx);
    b_PVy->GetEntry(entry);  //   PVy, &b_PVy);
