@@ -83,39 +83,16 @@ void KUCMSAodSkimmer::processPhotons(){
     bool isoPho = passHOE && passsEcalRhSum && passTrkSum && passHcalSum;
     bool failPhoIso = not isoPho;
 
-    /*      // moved to after photon selection
-	    if( DEBUG ) std::cout << " -- looping photons : getting phojet iso " << std::endl;
-	    bool isJetPhoton = false;
-	    phoJetVeto.clear();
-	    for( int jit = 0; jit < Jet_energy->size(); jit++ ){ phoJetVeto.push_back(false); }
-	    for( int jit = 0; jit < Jet_energy->size(); jit++ ){
-
-            bool underMinJPt = (*Jet_pt)[jit] < 30.0;
-            bool underMinJQual = getJetQuality(it)  < 2;
-	    auto jeta = (*Jet_eta)[jit];
-            auto jphi = (*Jet_phi)[jit];
-	    auto overMaxJEta = std::abs(jeta) > 2.4;
-            if( underMinJPt || underMinJQual || overMaxJEta ) continue;
-			
-            float dpjeta = jeta - eta;
-            float dpjphi = dPhi( jphi, phi );
-            float dr = hypo( dpjeta, dpjphi );
-	    bool minDr = dr < 0.4;
-            if( minDr ) isJetPhoton = true; 
-	    if( minDr && isoPho ) phoJetVeto[jit] = true;
-
-	    } // for( int jit = 0; jit < nSelJets; jit++ )
-    */
-
     //  change to skip jets and keep all photons regardless of photon iso with jet
     bool phoskip = isExcluded || hasPixSeed || overMaxEta || underMinPt || failPhoIso;
-	bool hemEligible = not underMinPt && not isExcluded; 
-    //if( geVars("genSigPerfect") == 1 && isGenSig ) std::cout << " -- pho sel: phoskip " << phoskip <<  " isGenSig " << isGenSig << std::endl;  
-    //if( geVars("genSigPerfect") == 1 &&  phoskip && isGenSig  ){ 
-    //		std::cout << "   -- xsepji: " << isExcluded  << hasPixSeed << overMaxEta << underMinPt << isJetPhoton << failPhoIso << std::endl; }
 
-    if( hemEligible && inHEMRegion( eta, phi ) ) hasHemObj = true;
-	
+	bool hemEligible1 = not underMinPt && not isExcluded;
+    bool hemEligible2 = isoPho && not underMinPt && not isExcluded; 
+
+	bool isInHemRegion = inHEMRegion( eta, phi );
+	hemBits["pho1"] = isInHemRegion && hemEligible1;		
+    hemBits["pho2"] = isInHemRegion && hemEligible2;
+
     if( ( geVars("genSigPerfect") != 1 ) && phoskip ){ isSelPho.push_back(false); continue; }		
     if( ( geVars("genSigPerfect") == 1 ) &&  ( not isGenSig ) ){ isSelPho.push_back(false);  continue; }
 	isSelPho.push_back(true);
@@ -527,7 +504,7 @@ void KUCMSAodSkimmer::processPhotons(){
 		if( exIdx > -1 ){ 
     		float ePhoPt = (*Photon_pt)[exIdx];
     		float ePhoPhi = (*Photon_phi)[exIdx];
-    		float ePhoEta = (*Photon_eta)[exIdx];
+    		//float ePhoEta = (*Photon_eta)[exIdx];
 			ePhoMx += ePhoPt*std::cos(ePhoPhi);
 			ePhoMy += ePhoPt*std::sin(ePhoPhi);
 		}//<<>>if( exIdx > -1 )
@@ -557,7 +534,7 @@ void KUCMSAodSkimmer::processPhotons(){
         if( exIdx > -1 ){
             float ePhoPt = (*Photon_pt)[exIdx];
             float ePhoPhi = (*Photon_phi)[exIdx];
-            float ePhoEta = (*Photon_eta)[exIdx];
+            //float ePhoEta = (*Photon_eta)[exIdx];
             ePhoMx += ePhoPt*std::cos(ePhoPhi);
             ePhoMy += ePhoPt*std::sin(ePhoPhi);
         }//<<>>if( exIdx > -1 )

@@ -115,8 +115,47 @@ void KUCMSAodSkimmer::processEvntVars(){
   selEvtVars.fillBranch( "Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60", PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60 );
 
   bool hemVeto = false;
-  if( not hasGenInfoFlag && hasHemObj && ( Evt_run > 319076 && Evt_run < 326635 ) ) hemVeto = true;
-  selEvtVars.fillBranch( "Flag_hemVeto", hemVeto );
+  if( not hasGenInfoFlag && ( Evt_run > 319076 && Evt_run < 326635 ) ) hemVeto = true;
+
+/*
+    bool hemEligible1 = not underMinPt && not isExcluded;
+    bool hemEligible2 = isoPho && not underMinPt && not isExcluded;
+    hemBits["pho1"] = isInHemRegion && hemEligible1;
+    hemBits["pho2"] = isInHemRegion && hemEligible2;
+
+    bool hemEligible1 = (*Muon_isLoose)[itr] && (*Muon_pt)[itr] > 50;
+    bool hemEligible2 = (*Muon_isMedium)[itr] && (*Muon_pt)[itr] > 50;
+    hemBits["mu1"] = isInHemRegion && hemEligible1;
+    hemBits["mu2"] = isInHemRegion && hemEligible2;
+
+    bool hemEligible1 = (*Electron_isLoose)[itr] && (*Electron_pt)[itr] > 30;
+    bool hemEligible2 = (*Electron_isMedium)[itr] && (*Electron_pt)[itr] > 50;
+    hemBits["el1"] = isInHemRegion && hemEligible1;
+    hemBits["el2"] = isInHemRegion && hemEligible2;
+
+    bool hemEligible1 = overMinPt && isMinQuality;
+    bool hemEligible2 = pt > 50 && quality > 2;
+    hemBits["jet1"] = isInHemRegion && hemEligible1;
+    hemBits["jet2"] = isInHemRegion && hemEligible2;
+*/
+
+  bool eLHem = hemVeto && hemBits["el1"];
+  bool eMHem = hemVeto && hemBits["el2"];
+  bool jLHem = hemVeto && hemBits["jet1"];
+  bool jMHem = hemVeto && hemBits["jet2"];
+  bool pLHem = hemVeto && hemBits["pho1"];
+  bool pMHem = hemVeto && hemBits["pho2"];
+  bool mLHem = hemVeto && hemBits["mu1"];
+  bool mMHem = hemVeto && hemBits["mu2"];
+
+  selEvtVars.fillBranch( "Flag_eLHemVeto", eLHem );
+  selEvtVars.fillBranch( "Flag_eMHemVeto", eMHem );
+  selEvtVars.fillBranch( "Flag_jLHemVeto", jLHem );
+  selEvtVars.fillBranch( "Flag_jMHemVeto", jMHem );
+  selEvtVars.fillBranch( "Flag_pLHemVeto", pLHem );
+  selEvtVars.fillBranch( "Flag_pMHemVeto", pMHem );
+  selEvtVars.fillBranch( "Flag_mLHemVeto", mLHem );
+  selEvtVars.fillBranch( "Flag_mMHemVeto", mMHem );
 
 }//<<>>void KUCMSAodSkimmer::processEvntVars()
 
@@ -174,6 +213,14 @@ void KUCMSAodSkimmer::setEvtVarMetBranches( TTree* fOutTree ){
   selEvtVars.makeBranch( "Flag_hfNoisyHitsFilter", BOOL );
 
   selEvtVars.makeBranch( "Flag_hemVeto", BOOL );
+  selEvtVars.makeBranch( "Flag_eLHemVeto", BOOL );
+  selEvtVars.makeBranch( "Flag_eMHemVeto", BOOL );
+  selEvtVars.makeBranch( "Flag_jLHemVeto", BOOL );
+  selEvtVars.makeBranch( "Flag_jMHemVeto", BOOL );
+  selEvtVars.makeBranch( "Flag_pLHemVeto", BOOL );
+  selEvtVars.makeBranch( "Flag_pMHemVeto", BOOL );
+  selEvtVars.makeBranch( "Flag_mLHemVeto", BOOL );
+  selEvtVars.makeBranch( "Flag_mMHemVeto", BOOL );
 
   selEvtVars.makeBranch( "Trigger_PFMET120_PFMHT120_IDTight", BOOL );
   selEvtVars.makeBranch( "Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight", BOOL );
