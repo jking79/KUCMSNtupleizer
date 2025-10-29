@@ -113,8 +113,13 @@ void KUCMSAodSkimmer::processJets(){
 
     bool isNotPhoJet = not phoJetVeto[it];
 
-	bool hemEligible = overMinPt && isMinQuality;
-    if( hemEligible && inHEMRegion( eta, phi ) ) hasHemObj = true;
+	bool hemEligible1 = overMinPt && isMinQuality;
+    bool hemEligible2 = pt > 50 && quality > 2;
+    bool isInHemRegion = inHEMRegion( eta, phi );
+    hemBits["jet1"] = isInHemRegion && hemEligible1;
+    hemBits["jet2"] = isInHemRegion && hemEligible2;
+
+    //if( hemEligible && inHEMRegion( eta, phi ) ) hasHemObj = true;
 
     auto jetSelected = underMaxEta && isMinQuality && overMinPt && isNotPhoJet;
     if( not jetSelected ){ isSelJet.push_back(false); continue; }
