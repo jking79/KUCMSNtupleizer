@@ -207,7 +207,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 
   //_ca.SetVerbosity(0); //_can turn on to see low-level warnings
   _ca.SetDetIDsEB(_detidmap);
-  _ca.SetCNNModel("json/small3CNN_EMultr_2017and2018.json");
+  _ca.SetCNNModel("config/json/small3CNN_EMultr_2017and2018.json");
 
 
 }//<<>>KUCMSAodSkimmer::KUCMSAodSkimmer()
@@ -286,9 +286,11 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
         }//<<>>if( centry%loopCounter == 0 )
         auto entry = fInTree->LoadTree(centry);
         if(DEBUG) std::cout << " -- Getting Branches " << std::endl;
+        std::cout << " -- Getting Branches " << std::endl;
         getBranches( entry, hasGenInfoFlag );
         geCnts.clear();
         geVars.clear();
+	std::cout << "check lumi section for data - mctype " << mctype << " is valid lumi section " << isValidLumisection( Evt_run, Evt_luminosityBlock ) << endl;
         if( mctype==1 && not isValidLumisection( Evt_run, Evt_luminosityBlock ) ) continue;
         if( genSigPerfectFlag ) geVars.set( "genSigPerfect", 1 ); else geVars.set( "genSigPerfect", 0 );
         if( noSVorPhoFlag ) geVars.set( "noSVorPho", 1 ); else geVars.set( "noSVorPho", 0 );
@@ -745,7 +747,7 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
   
   // select events to process and store
   //--------------------------------------
-  auto saveToTree = eventSelection();	
+  auto saveToTree = eventSelection();
   if( saveToTree ){ 
 
     if( doBHC ){ processBHCPhotons(); processBHCJets(); }
@@ -793,7 +795,7 @@ bool KUCMSAodSkimmer::eventSelection(){
   //auto evtSelected = leadPhoPt70 && subLeadPhoPt40 && gt2jets && gt2phos;
 
   bool evtSelected = dobase ? basesel : phosel;
-
+	
   if( met150 ) cutflow["met150"]++;
   if( met150 && gt2jets ) cutflow["m_gt2jets"]++;
   if( met150 && gt2jets && gt1phos ){ cutflow["mj_gt1phos"]++; cutflow["sel_ppt"]++; }
