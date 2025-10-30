@@ -122,7 +122,6 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 		BHCPhoInfo.fillBranch( "selPhoBHC_etaPhiCov", (float)etaphicov);
 		BHCPhoInfo.fillBranch( "selPhoBHC_majlen", (float)majlen);
 		BHCPhoInfo.fillBranch( "selPhoBHC_minlen", (float)minlen);
-		//calculate time significance
 		//CHECK
 		float timeSignificance = phoobj.GetObjTimeSig();
 		BHCPhoInfo.fillBranch( "selPhoBHC_timeSignficance", timeSignificance);
@@ -132,6 +131,7 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 		phoobj.GetPUScores(puscores);
 		int nsubclusters = phoobj.GetNSubclusters();
 		//cout << "nsubclusters " << nsubclusters << endl;
+		BHCPhoInfo.fillBranch("selPhoBHC_nSubclusters",nsubclusters);
 		for(int k = 0; k < nsubclusters; k++){
 			BHCPhoInfo.fillBranch("selPhoBHCSubcl_etaVar",phoobj.GetSubclusterEtaVar(k));
 			BHCPhoInfo.fillBranch("selPhoBHCSubcl_phiVar",phoobj.GetSubclusterPhiVar(k));
@@ -158,6 +158,8 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 		//time at PV
 		photime_pv = phoobj.GetObjTime_PV();
 		BHCPhoInfo.fillBranch( "selPhoBHCPUCleaned_PVTime", photime_pv);
+		nsubclusters = phoobj.GetNSubclusters();	
+		BHCPhoInfo.fillBranch("selPhoBHCPUCleaned_nSubclusters",nsubclusters);
 	
 		//covariance
 		etavar = phoobj.GetEtaVar();
@@ -412,7 +414,6 @@ void KUCMSAodSkimmer::processBHCJets(){
 void KUCMSAodSkimmer::setBCBranches( TTree* fOutTree ){
 
 		/*
-	BHCPhoInfo.makeBranch( "selPhoBHC_nSubclusters", VINT);
 	BHCPhoInfo.makeBranch( "selPhoBHCSubcl_time", VFLOAT);			
 	BHCPhoInfo.makeBranch( "selPhoBHCSubcl_eta", VFLOAT);			
 	BHCPhoInfo.makeBranch( "selPhoBHCSubcl_phi", VFLOAT);
@@ -435,6 +436,7 @@ void KUCMSAodSkimmer::setBCBranches( TTree* fOutTree ){
 	BHCPhoInfo.makeBranch( "selPho"+cleanedType+"_majlen", VFLOAT);
 	BHCPhoInfo.makeBranch( "selPho"+cleanedType+"_minlen", VFLOAT);
 	BHCPhoInfo.makeBranch( "selPho"+cleanedType+"_timeSignficance", VFLOAT);
+	BHCPhoInfo.makeBranch( "selPho"+cleanedType+"_nSubclusters", VINT);
   }
     	BHCPhoInfo.makeBranch("selPhoBHCSubcl_selPhotonBHCIndex", VINT);
 	BHCPhoInfo.makeBranch( "selPhoBHCPUCleaned_physBkgMVAScore", VFLOAT);
