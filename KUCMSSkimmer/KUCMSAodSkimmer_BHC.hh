@@ -125,6 +125,7 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 		//CHECK
 		float timeSignificance = phoobj.GetObjTimeSig();
 		BHCPhoInfo.fillBranch( "selPhoBHC_timeSignficance", timeSignificance);
+		BHCPhoInfo.fillBranch( "selPhoBHC_energy", (float)phoobj.GetEnergy());
 
 		//for studying PU cleaning
 		vector<bool> puscores;
@@ -160,6 +161,7 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 		BHCPhoInfo.fillBranch( "selPhoBHCPUCleaned_PVTime", photime_pv);
 		nsubclusters = phoobj.GetNSubclusters();	
 		BHCPhoInfo.fillBranch("selPhoBHCPUCleaned_nSubclusters",nsubclusters);
+		BHCPhoInfo.fillBranch("selPhoBHCPUCleaned_energy", (float)phoobj.GetEnergy());
 	
 		//covariance
 		etavar = phoobj.GetEtaVar();
@@ -413,15 +415,6 @@ void KUCMSAodSkimmer::processBHCJets(){
 
 void KUCMSAodSkimmer::setBCBranches( TTree* fOutTree ){
 
-		/*
-	BHCPhoInfo.makeBranch( "selPhoBHCSubcl_time", VFLOAT);			
-	BHCPhoInfo.makeBranch( "selPhoBHCSubcl_eta", VFLOAT);			
-	BHCPhoInfo.makeBranch( "selPhoBHCSubcl_phi", VFLOAT);
-	BHCPhoInfo.makeBranch( "selPhoBHCSubcl_etaVar", VFLOAT);			
-	BHCPhoInfo.makeBranch( "selPhoBHCSubcl_phiVar", VFLOAT);			
-	BHCPhoInfo.makeBranch( "selPhoBHCSubcl_etaPhiCov", VFLOAT);
-	//pu score
-	*/	
     	BHCPhoInfo.makeBranch("selPhoBHC_selPhoIndex", VINT);
   for(const string cleanedType : {"BHC", "BHCPUCleaned"}) {
 	BHCPhoInfo.makeBranch( "selPho"+cleanedType+"_eta", VFLOAT);
@@ -429,6 +422,7 @@ void KUCMSAodSkimmer::setBCBranches( TTree* fOutTree ){
 	BHCPhoInfo.makeBranch( "selPho"+cleanedType+"_DetTime", VFLOAT);
 	BHCPhoInfo.makeBranch( "selPho"+cleanedType+"_PVTime", VFLOAT);
 
+	BHCPhoInfo.makeBranch( "selPho"+cleanedType+"_energy", VFLOAT);
 	BHCPhoInfo.makeBranch( "selPho"+cleanedType+"_etaVar", VFLOAT);
 	BHCPhoInfo.makeBranch( "selPho"+cleanedType+"_phiVar", VFLOAT);
 	BHCPhoInfo.makeBranch( "selPho"+cleanedType+"_timeVar", VFLOAT);
