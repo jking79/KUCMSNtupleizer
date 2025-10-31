@@ -663,7 +663,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
     // ------ Do Main Loop
 
     auto ext = splitString( inFileName, "." );
-    std::string extOutFileName( ext[0] + outFileName );
+    std::string extOutFileName( ext[0] + outfilename );
 	SetOutFileName( extOutFileName );
     ProcessMainLoop( fInTree, fInConfigTree );
 

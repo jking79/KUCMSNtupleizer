@@ -25,7 +25,7 @@ def getOptions():
 
     parser.add_option('-w', '--workArea',
                       dest = 'workArea',
-                      default = 'mySigWorkSpace',
+                      default = 'myReSubWorkSpace',
                       help = "work area directory (only if CMD != 'submit')",
                       metavar = 'WAD')
 
@@ -95,7 +95,7 @@ def docrab( dataset ):
         #config.Data.unitsPerJob  =  750 # MC DiPhoBox (DPB)
 
         #config.section_("Site")
-        config.Site.whitelist = ['T1_*','T2_US_*','T2_IT_*','T2_DE_*','T2_ES_*','T2_FR_*','T2_UK_*']
+        #config.Site.whitelist = ['T1_*','T2_US_*','T2_IT_*','T2_DE_*','T2_ES_*','T2_FR_*','T2_UK_*']
         config.Site.blacklist = ['T2_CH_CSCS','T2_ES_CIEMAT']
 
         config.JobType.allowUndistributedCMSSW = True

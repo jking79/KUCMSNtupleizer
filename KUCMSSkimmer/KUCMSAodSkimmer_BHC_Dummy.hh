@@ -33,6 +33,7 @@
 
 void KUCMSAodSkimmer::processBHCPhotons(){
 
+/*
 	if( DEBUG ) std::cout << "Finding BC information for photons" << std::endl;
 	BHCPhoInfo.clearBranches();
 
@@ -189,11 +190,13 @@ void KUCMSAodSkimmer::processBHCPhotons(){
         // on line 2709 and below make a BHCPhoInfo branch : selPhotons.makeBranch( "yourvarname", VFLOAT );		
 
 	}//<<>>for( uInt it = 0; it < nPhotons; it++ )
+*/
 
 }//<<>>void KUCMSAodSkimmer::processMLPhotons()
 
 void KUCMSAodSkimmer::processBHCJets(){
 
+/*
     if( DEBUG ) std::cout << "Finding BC information for jets" << std::endl;
 	BHCJetInfo.clearBranches();
 
@@ -318,7 +321,7 @@ void KUCMSAodSkimmer::processBHCJets(){
 		BHCJetInfo.fillBranch( "selJetBHC_timeSignficance", timeSignificance);
 
 		//TODO - CHECK PU cleaning and det bkg cleaning
-		/*
+		///
 		/////////CLEAN OUT PU/////////
 		jetobj.CleanOutPU();
 		//do PU-cleaned observables
@@ -387,7 +390,7 @@ void KUCMSAodSkimmer::processBHCJets(){
 		//calculate time significance
 		timeSignificance = jetobj.GetObjTimeSig();
 		BHCInfo.fillBranch( "selJetBHCPUDetBkgCleaned_timeSignficance", timeSignificance);
-		*/
+		///
 
 		selJetBHCIdx++;
 		_ca.ClearRecHitList();
@@ -402,6 +405,7 @@ void KUCMSAodSkimmer::processBHCJets(){
   	BHCJetInfo.fillBranch( "PVtime", pvtime );
   	BHCJetInfo.fillBranch( "PVtime_PUcleaned", pvtime_PUcleaned );
   	BHCJetInfo.fillBranch( "PV_PUdetBkgCleaned", pvtime_PUdetBkgCleaned );
+*/
 
 }//<<>>void KUCMSAodSkimmer::processMLJets()
 

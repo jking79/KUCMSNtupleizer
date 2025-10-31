@@ -64,12 +64,12 @@ void KUCMSAodSkimmer::processPhotons(){
     bool isGenSig = hasGenInfoFlag ? ( (*Gen_susId)[(*Photon_genIdx)[it]] == 22 )  : 0;
 
     auto pt = (*Photon_pt)[it];
-    bool underMinPt = pt < 30;
+    bool underMinPtEB = pt < 30;
+    bool underMinPtEE = pt < 50;
     auto eta = (*Photon_eta)[it];
     auto overMaxEta = std::abs(eta) > 1.479;
-    auto phi = (*Photon_phi)[it];
 
-	//if( ( eta > -3.2 && eta < -1.77 ) && ( phi > -1.77 && phi < -0.67 ) ) hasHemObj = true;
+    auto phi = (*Photon_phi)[it];
 
     if( DEBUG ) std::cout << " -- looping photons : getting pho iso " << std::endl;
     auto htsecdr4 = (*Photon_hcalTowerSumEtConeDR04)[it];   //!
@@ -81,17 +81,37 @@ void KUCMSAodSkimmer::processPhotons(){
     auto htoem = (*Photon_hadTowOverEM)[it];
     bool passHOE = htoem < 0.02;
     bool isoPho = passHOE && passsEcalRhSum && passTrkSum && passHcalSum;
-    bool failPhoIso = not isoPho;
+    bool failPhoIsoEB = not isoPho;
+	bool failPhoIsoEE = not ( tspscdr4 < 7.0 && erhsecdr4 < 12.5 && htoem < 0.05 );
 
     //  change to skip jets and keep all photons regardless of photon iso with jet
-    bool phoskip = isExcluded || hasPixSeed || overMaxEta || underMinPt || failPhoIso;
+    //bool phoskip = isExcluded || hasPixSeed || overMaxEta || underMinPt || failPhoIso;
+	bool phoskip = isExcluded || hasPixSeed;
+	if( not overMaxEta ) phoskip = phoskip || failPhoIsoEB || underMinPtEB;
+	//if( overMaxEta ) phoskip = phoskip || failPhoIsoEE || underMinPtEE;
+	if( overMaxEta ) phoskip = true;
 
-	bool hemEligible1 = not underMinPt && not isExcluded;
-    bool hemEligible2 = isoPho && not underMinPt && not isExcluded; 
+	bool hemEligible1 = not underMinPtEB && not isExcluded;
+    bool hemEligible2 = isoPho && not underMinPtEB && not isExcluded; 
 
 	bool isInHemRegion = inHEMRegion( eta, phi );
 	hemBits["pho1"] = isInHemRegion && hemEligible1;		
     hemBits["pho2"] = isInHemRegion && hemEligible2;
+
+	bool isEESig = not isExcluded && not hasPixSeed && overMaxEta;
+    if( isEESig ){
+
+    	selPhotons.fillBranch( "EESigPho_energy", (*Photon_energy)[it] );   //!
+    	selPhotons.fillBranch( "EESigPho_eta", (*Photon_eta)[it] );   //!
+    	selPhotons.fillBranch( "EESigPho_phi", (*Photon_phi)[it] );   //!
+    	selPhotons.fillBranch( "EESigPho_tspscdr4", (*Photon_trkSumPtSolidConeDR04)[it] );   //!
+        selPhotons.fillBranch( "EESigPho_erhsecdr4", (*Photon_ecalRHSumEtConeDR04)[it] );   //!
+        selPhotons.fillBranch( "EESigPho_htoem", (*Photon_hadTowOverEM)[it] );   //!
+        selPhotons.fillBranch( "EESigPho_pt", (*Photon_pt)[it] );   //!
+
+    }//if( doGenInfo )
+
+
 
     if( ( geVars("genSigPerfect") != 1 ) && phoskip ){ isSelPho.push_back(false); continue; }		
     if( ( geVars("genSigPerfect") == 1 ) &&  ( not isGenSig ) ){ isSelPho.push_back(false);  continue; }
@@ -223,10 +243,12 @@ void KUCMSAodSkimmer::processPhotons(){
 	std::vector<float> erhamps;
 	float sumerha = 0;
     //auto nRecHits = ECALRecHit_ID->size();
+	// -------   check isTimeValid on rechit?  -------------------------------------
     for( int sciter = 0; sciter < nrh; sciter++  ){
         uInt pscrhid = rhids[sciter];
 		int erhiter = ( rhIDtoIterMap.find(pscrhid) != rhIDtoIterMap.end() ) ? rhIDtoIterMap[pscrhid] : -1;
         if( erhiter != -1 ){
+			bool isValid = (*ECALRecHit_isTimeValid)[erhiter];
 			float swcrss = (*ECALRecHit_swCross)[erhiter];
 			bool isWeird = (*ECALRecHit_isWrd)[erhiter] || (*ECALRecHit_isDiWrd)[erhiter];
 			float gainwt = 1;
@@ -242,6 +264,7 @@ void KUCMSAodSkimmer::processPhotons(){
 			float ertres = erh_timeRes[erhiter];
 			bool hasGainSwitch = (*ECALRecHit_hasGS1)[erhiter] || (*ECALRecHit_hasGS6)[erhiter];
 			if( hasGainSwitch ) gainwt = 0;
+			if( not isValid ) gainwt = 0;
 			float invertres = 1/ertres;
 			erhamps.push_back(invertres);
 			sumerha += invertres;
@@ -646,6 +669,14 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch( "selPhoGenSigMomVx", VFLOAT );   //!
   selPhotons.makeBranch( "selPhoGenSigMomVy", VFLOAT );   //!
   selPhotons.makeBranch( "selPhoGenSigMomVz", VFLOAT );   //!
+
+  selPhotons.makeBranch( "EESigPho_energy", VFLOAT );   //!
+  selPhotons.makeBranch( "EESigPho_eta", VFLOAT );   //!
+  selPhotons.makeBranch( "EESigPho_phi", VFLOAT );   //!
+  selPhotons.makeBranch( "EESigPho_pt", VFLOAT );   //!
+  selPhotons.makeBranch( "EESigPho_tspscdr4", VFLOAT );   //!
+  selPhotons.makeBranch( "EESigPho_erhsecdr4", VFLOAT );   //!
+  selPhotons.makeBranch( "EESigPho_htoem", VFLOAT );   //!
 
   // add new photon branches above
   selPhotons.attachBranches( fOutTree );
