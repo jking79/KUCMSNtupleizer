@@ -286,9 +286,9 @@ def run_multi():
 
         #['/MET/Run2017A-09Aug2019_UL2017_rsb-v1/AOD',1],
         #['/MET/Run2017B-09Aug2019_UL2017_rsb-v1/AOD',1],
-        ['/MET/Run2017C-09Aug2019_UL2017_rsb-v1/AOD',1],
+        #['/MET/Run2017C-09Aug2019_UL2017_rsb-v1/AOD',1],
         #['/MET/Run2017D-09Aug2019_UL2017_rsb-v1/AOD',1],
-        #['/MET/Run2017E-09Aug2019_UL2017_rsb-v1/AOD',1],
+        ['/MET/Run2017E-09Aug2019_UL2017_rsb-v1/AOD',1],
         #['/MET/Run2017F-09Aug2019_UL2017_rsb-v1/AOD',1],
 
         #['/MET/Run2022A-27Jun2023-v1/AOD',1],

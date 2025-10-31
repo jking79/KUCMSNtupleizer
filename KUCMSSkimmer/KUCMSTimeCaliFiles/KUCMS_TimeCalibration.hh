@@ -1252,7 +1252,7 @@ float KUCMS_TimeCalibration::getCalibration( uInt rhid, int run, std::string tag
 	//if( not validCurrentTag ){ std::cout << "No current tag set." << std::endl; return 0.f; }
 	//if( not isEB ){ std::cout << "XCalibration for EE is not supported." << std::endl; return 0.f; }
     //if( not validCurrentTag ){ std::cout << "No current tag set." << std::endl; return 0.f; }
-    if( DetIDMap[rhid].ecal != ECAL::EB ) return 999.f;
+    if( DetIDMap[rhid].ecal != ECAL::EB ) return 0.f;
     float xtaltime = -1000.f;
 	float ttcali = ( externalCali ) ? 0.f : getTTCali( rhid, run, tag );
     for( auto& calirunmap : CaliRunMapSet[tag] ){
@@ -1273,7 +1273,7 @@ float KUCMS_TimeCalibration::getCalibration( uInt rhid, int run, std::string tag
 float KUCMS_TimeCalibration::getTTCali( uInt rhid, int run, std::string tag ){
 
     //if( not isEB ){ std::cout << "TTCalibration for EE is not supported." << std::endl; return 0.f; }
-    if( DetIDMap[rhid].ecal != ECAL::EB ) return 999.f;
+    if( DetIDMap[rhid].ecal != ECAL::EB ) return 0.f;
     float xtaltime = -1000.f;
     uInt ttid = getTTId( rhid );
     for( auto& calirunmap : TTCaliRunMapSet[tag] ){
@@ -1331,14 +1331,15 @@ float KUCMS_TimeCalibration::getSmrdCalibTime( float rhtime, float rhamp, uInt r
 float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey, int mctype ){
 
 	if( amplitude == 0 ) return 100.f;
+	bool isEB( DetIDMap[rechitID].ecal == ECAL::EB );
 	float res = -1;
 	if( mctype == 1 ){ // data
 
-		if( dataSetKey == "r2_ul18"  ) res = sq2( 25.16/amplitude ) + 2*sq2(0.1013);
+		if( dataSetKey == "r2_ul18"  ) res = isEB ? sq2( 25.16/amplitude ) + 2*sq2(0.1013) : sq2( 29.4/amplitude ) + 2*sq2(0.1929);
 
 	} else { // MC
 
-        if( dataSetKey == "r2_ul18"  ) res = sq2( 25.16/amplitude ) + 2*sq2(0.1013);
+        if( dataSetKey == "r2_ul18"  ) res = isEB ? sq2( 25.16/amplitude ) + 2*sq2(0.1013) : sq2( 29.4/amplitude ) + 2*sq2(0.1929);
 		if( dataSetKey == "r2_ul18_mc"  ) res = sq2( 25.16/amplitude ) + 2*sq2(0.1013);
 
 	}//<<>>if( mctype == 0 )
