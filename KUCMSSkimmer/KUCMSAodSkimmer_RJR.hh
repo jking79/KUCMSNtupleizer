@@ -228,13 +228,28 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
   selRjrVars.fillBranch( "rjrSdphiDA", m_dphiS  );
   selRjrVars.fillBranch( "rjrSdphiBV", m_dphiSI ); // !!!!!!!!!!!!!  dphiCMI
   selRjrVars.fillBranch( "rjrDPhiSI", m_dphiSI ); // !!!!!!!!!!!!!  dphiCMI
-  selRjrVars.fillBranch( "rjrPTS", m_PTS );
+  selRjrVars.fillBranch( "rjrPTS", m_PTS ); // !!!!!!!!!!!!!!!!!!  P_{t}^{S}
   selRjrVars.fillBranch( "rjrPZS", m_PZS );
   selRjrVars.fillBranch( "rjrPS", m_PS );
 
  
   if( type == 0 ) hist2d[2]->Fill(m_dphiSI,m_PTS);
   if( type == 1 ) hist2d[3]->Fill(m_dphiSI,m_PTS); 
+
+  bool rjrCleaningVeto0 =  ( m_PTS > 150.0 ) ? true : false; 
+  selRjrVars.fillBranch( "rjrCleaningVeto0", rjrCleaningVeto0 );
+
+  bool rjrCleaningVeto1 = false;
+  if( m_dphiSI <= 0.6 && m_PTS > (250.0 * m_dphiSI) ) rjrCleaningVeto1 == true;
+  if( m_dphiSI > 0.6 && m_dphiSI < 2.4 && m_PTS > 150.0 ) rjrCleaningVeto1 == true; 
+  if( m_dphiSI >= 2.4 && m_PTS > (150.0 - (187.5 * (m_dphiSI - 2.4))) ) rjrCleaningVeto1 == true;
+  selRjrVars.fillBranch( "rjrCleaningVeto1", rjrCleaningVeto1 );  
+
+  bool rjrCleaningVeto2 = false; 
+  if( m_dphiSI <= 0.3 && m_PTS > (500.0 * m_dphiSI) ) rjrCleaningVeto2 == true; 
+  if( m_dphiSI > 0.3 && m_dphiSI < 2.8 && m_PTS > 150.0 ) rjrCleaningVeto2 == true;  
+  if( m_dphiSI >= 2.8 && m_PTS > (150.0 - (375.0 * (m_dphiSI - 2.8))) ) rjrCleaningVeto2 == true; 
+  selRjrVars.fillBranch( "rjrCleaningVeto2", rjrCleaningVeto2 );   
 
   if( RJRDEBUG ) std::cout << " - Getting RJR varibles 2." << std::endl;
 
@@ -657,6 +672,9 @@ void KUCMSAodSkimmer::setRJRBranches( TTree* fOutTree ){
     selRjrVars.makeBranch( "rjrPVlab", VFLOAT );
     selRjrVars.makeBranch( "rjrDphiMETV", VFLOAT );
     selRjrVars.makeBranch( "rjrDPhiSI", VFLOAT );
+    selRjrVars.makeBranch( "rjrCleaningVeto0", VBOOL );
+    selRjrVars.makeBranch( "rjrCleaningVeto1", VBOOL );
+    selRjrVars.makeBranch( "rjrCleaningVeto2", VBOOL );
 
     selRjrVars.makeBranch( "rjrNJetsJb", VINT );
     selRjrVars.makeBranch( "rjrNJetsJa", VINT );

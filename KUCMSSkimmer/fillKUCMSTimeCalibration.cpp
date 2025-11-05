@@ -30,7 +30,7 @@ int main ( int argc, char *argv[] ){
     ///////////////////////////////////////////////////////////////////
 
 	// Cali Tags : Tags for calibrations to use
-	std::string r2EOY( "EG_EOY_MINI" );
+	std::string r2EOY( "EOY_R2_MINI" );
 	std::string r2Fall17AOD( "RunIIFall17DRPremix" );
     std::string r2Fall17MINIAOD( "RunIIFall17MiniAODv2" );
     std::string r2UL( "UL_R2_MINI" );
@@ -48,14 +48,16 @@ int main ( int argc, char *argv[] ){
     std::string r3TagX( "r3x" );
 
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR18ULTFile.txt");
+    std::string inputfilename( "ecal_config/kucmsTimeCaliR17EOYTFile.txt");
 
 	//std::string eosdir("root://cmseos.fnal.gov//store/user/jaking/");// input parameter!
     std::string eosdir("root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/");
 
     //std::string indir("/kuncali/gammares_cali_mc/");
     //std::string indir("/kuncali/gammares_cali/");
-    std::string indir("KUCMSNtuple/gammares_ul18/");
+    //std::string indir("KUCMSNtuple/gammares_ul18/");
     //std::string indir("kuncali/gammares_mc18/");
+    std::string indir("kuncali/gammares_cali/DoubleEG/");
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -66,15 +68,15 @@ int main ( int argc, char *argv[] ){
 	// KUCMS_TimeCalibration( bool stayOpen = false, bool makeNew = false  );
 
 	////KUCMS_TimeCalibration theCali; // open tfile in read only then close after setup
-	//KUCMS_TimeCalibration theCali( true );
-	//theCali.SetEosDir(eosdir);
-	//theCali.SetInDir(indir);
+	KUCMS_TimeCalibration theCali( true );
+	theCali.SetEosDir(eosdir);
+	theCali.SetInDir(indir);
 	//
     //-----//////////  making tt cali  :
-    //theCali.SetupIovMaps();
+    theCali.SetupIovMaps();
 	// for PD R2UL
-    //theCali.setTTIov( r2ulTag );
-    //theCali.setXIov( xiovtag );
+    theCali.setTTIov( r2ulTag );
+    theCali.setXIov( xiovtag );
 	// for MC
     //theCali.setTTIov( mctag );
     //theCali.setXIov( mctag );
@@ -92,10 +94,10 @@ int main ( int argc, char *argv[] ){
 
     //-----//////////  making xtal cali :
     //theCali.makeXCaliMapEGR( inputfilename, true ); // true == run only subset of events
-    //theCali.makeXCaliMapEGR( inputfilename );
-    //theCali.makeCaliHists();
-    //theCali.SaveCaliHists();
-    //theCali.SaveCaliRunFile();
+    theCali.makeXCaliMapEGR( inputfilename );
+    theCali.makeCaliHists();
+    theCali.SaveCaliHists();
+    theCali.SaveCaliRunFile();
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -147,14 +149,14 @@ int main ( int argc, char *argv[] ){
 	//theCali.doResTimeFit( histName );
 
 	// extended range 2D
-	KUCMS_TimeCalibration theCali;
-    theCali.SetEosDir(eosdir);
-    theCali.SetInDir(indir);
-    theCali.setLowEnergy( true );
+	//KUCMS_TimeCalibration theCali;
+    //theCali.SetEosDir(eosdir);
+    /////theCali.SetInDir(indir);
+    /////theCali.setLowEnergy( true );
     //theCali.setUseEffEnergy( true );
-    theCali.useGainSwitch( true );
+    /////theCali.useGainSwitch( true );
 	//theCali.SetXBinStr( "VARIABLE 10 15 20 25 30 40 50 60 80 100 125 150 175 200 225 250 300 400 600" ); // : xr
-    theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600" ); // : xa  llpana resfit
+    /////theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600" ); // : xa  llpana resfit
     //theCali.SetXBinStr( "VARIABLE 1.0 2.0 3.0 4.0 5.0 7.5 10.0 12.5 15.0 17.5 20.0 25.0 30.0 40.0 50.0 70.0 90.0" ); // xer
     //theCali.SetXBinStr( "VARIABLE 1.0 2.0 3.0 4.0 5.0 7.5 10.0 12.5 15.0 17.5 20.0 22.5 25.0 30.0 40.0 60.0 120.0" ); // xea
     //theCali.SetXBinStr( "VARIABLE 10 15 20 25 30 40 50 60 80 100 125 150 175 200 225 250 300 400 600" ); // : ecal real
@@ -171,7 +173,7 @@ int main ( int argc, char *argv[] ){
     //theCali.SetYBinStr( "CONSTANT 240 -12 12" ); ( 100 ps )
     //--------------------------------------------------------
 	// justin profile y bins
-	theCali.SetYBinStr( "CONSTANT 1200 -24 24" ); // full range ( 40 ps )
+	///////theCali.SetYBinStr( "CONSTANT 1200 -24 24" ); // full range ( 40 ps )
     //theCali.SetYBinStr( "CONSTANT 240 -12 12" ); // justin ( 100 ps )
     //theCali.SetYBinStr( "CONSTANT 360 -12 12" ); // justin ( 67 ps )
     //theCali.SetYBinStr( "CONSTANT 180 -6 6" ); // justin ( 67 ps )
@@ -181,7 +183,7 @@ int main ( int argc, char *argv[] ){
     ////std::string inputfilename( "kucmsTimeCaliR17Plot2DFullRunFile.txt" );
 	////std::string inputfilename( "kucmsTimeCaliR24FCCvRtTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR18ULTFile.txt");
-   	std::string inputfilename( "ecal_config/kucmsTimeCaliR18ULMCTFile.txt");
+   	///////std::string inputfilename( "ecal_config/kucmsTimeCaliR18ULMCTFile.txt");
 	//-------------------------------------------------------
 	//theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_DegR17Full_xea_pm9b1800_v417" );// scale, cali, smear
     //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_egr17ef_xea_pm9b180_v327" );// scale, cali, smear
@@ -194,7 +196,7 @@ int main ( int argc, char *argv[] ){
 	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_deg18c_xa_pm6b480_v521" );
 	//theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg24d_xa_pm6b480_v810" );
 	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18A_UL_xa_pm24b1200_v107" );
-	theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_18ULMC_gjets_xa_pm24b1200_v1019" );
+	//////theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_18ULMC_gjets_xa_pm24b1200_v1019" );
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

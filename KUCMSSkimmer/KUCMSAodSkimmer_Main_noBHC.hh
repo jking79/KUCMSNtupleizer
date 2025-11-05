@@ -177,7 +177,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
     gmass = -1.f;
     xmass = -1.f;
     mcwgt = 1.f;;
-    mctype = 0;
+    mctype = 0;  // what type of input PD :  0 MC (AODSIM), 1 DATA (AOD), if we need fastSim ect, add new enrty here
     tctag = "none";
 
 	// input tree names
@@ -772,7 +772,11 @@ bool KUCMSAodSkimmer::eventSelection(){
   bool dobase = ( geVars("noSVorPho") == 1 ) ? true : false;
 
   float evtMet = geVars("cmet");
+
   int nSelJets = geCnts("nSelJets"); //selJets.getUIBranchValue("nSelJets");
+  int nQJets = geCnts("nQJets");
+  int vetoJets = geCnts("jetEventVeto");
+
   float nSelPhotons = geCnts("nSelPhotons"); //selPhotons.getUIBranchValue("nSelPhotons");
   float leadPhoPt = ( nSelPhotons > 0 ) ? geVars("leadPhoPt") : 0;
   float subLeadPhoPt = ( nSelPhotons > 1 ) ? geVars("subLeadPhoPt") : 0;
@@ -785,12 +789,15 @@ bool KUCMSAodSkimmer::eventSelection(){
   bool met150 = evtMet >= 150;
   bool gt1phos = nSelPhotons >= 1;
   bool gt2jets = nSelJets >= 2;
+  bool gt2qjets = nQJets >= 2;
+  bool allgjets = vetoJets < 1;
+
   bool gt2phos = nSelPhotons >= 2;
   bool leadPhoPt70 = leadPhoPt >= 70;
   bool leadPhoPt30 = leadPhoPt >= 30;
   bool subLeadPhoPt40 = subLeadPhoPt >= 40; 
 
-  bool basesel = met100 && gt2jets;
+  bool basesel = met100 && gt2jets && allgjets && gt2qjets;
   //bool svsel = basesel && hasSV;	
   bool phosel = basesel && ( ( gt1phos && leadPhoPt30 ) || hasSV );
   //auto evtSelected = leadPhoPt70 && subLeadPhoPt40 && gt2jets && gt2phos;

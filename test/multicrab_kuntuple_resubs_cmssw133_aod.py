@@ -94,7 +94,7 @@ def docrab( dataset ):
         #config.Data.unitsPerJob  =  50000 # MC TTJet
         #config.Data.unitsPerJob  =  750 # MC DiPhoBox (DPB)
 
-        #config.section_("Site")
+        config.section_("Site")
         #config.Site.whitelist = ['T1_*','T2_US_*','T2_IT_*','T2_DE_*','T2_ES_*','T2_FR_*','T2_UK_*']
         config.Site.blacklist = ['T2_CH_CSCS','T2_ES_CIEMAT']
 
@@ -135,7 +135,8 @@ def docrab( dataset ):
             #trial          = "kucmsntuple_gogoZ_Sig_SVIPM100_v27" # filter on #SVs( lep or had ) - redefinded loose electron
             #trial          = "kucmsntuple_sqsqG_Sig_SVIPM100_v27" #
             #trial          = "kucmsntuple_SMS_Sig_SVIPM100_v31" #
-            trial          = "kucmsntuple_resubmits_missing_D_v31"
+            #trial          = "kucmsntuple_resubmits_missing_D_v31"
+            trial          = "kucmsntuple_resubmits_missing_noSV_D_v31"
 
             # set trial name - used in output path ?
 
@@ -157,6 +158,8 @@ def docrab( dataset ):
             mcrab = 'multicrab=True'
 
             runinfo = 'runera=Run3'
+
+            nosv = 'doSV=False'
 
             #efilter = fIPM100
             efilter = fSVIPM100 #!!!!!!!!!!!!!!!!!!!!!11
@@ -195,6 +198,7 @@ def docrab( dataset ):
 #>>>>>>>>>>>>>>>>>>>     #2018UL #globalTag=106X_dataRun2_v37 # https://twiki.cern.ch/twiki/bin/view/CMS/PdmVRun2LegacyAnalysis
             gt = 'globalTag=106X_dataRun2_v37'
             config.JobType.pyCfgParams   = [gt,mcrab,efilter]
+            #config.JobType.pyCfgParams   = [gt,mcrab,efilter,nosv]
 #-----------------------------------------------------------------------------------------------------------------------------
 
             # Submit.

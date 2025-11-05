@@ -1,0 +1,5 @@
+ecal_config/gammares_EOY17_DoubleEG_MINIAOD_Run2017B-31Mar2018-v1.txt 296000 307000 r2_eoy17
+ecal_config/gammares_EOY17_DoubleEG_MINIAOD_Run2017C-31Mar2018-v1.txt 296000 307000 r2_eoy17
+ecal_config/gammares_EOY17_DoubleEG_MINIAOD_Run2017D-31Mar2018-v1.txt 296000 307000 r2_eoy17
+ecal_config/gammares_EOY17_DoubleEG_MINIAOD_Run2017E-31Mar2018-v1.txt 296000 307000 r2_eoy17
+ecal_config/gammares_EOY17_DoubleEG_MINIAOD_Run2017F-31Mar2018-v1.txt 296000 307000 r2_eoy17

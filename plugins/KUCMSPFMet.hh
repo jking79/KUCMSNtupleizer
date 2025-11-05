@@ -133,9 +133,9 @@ void KUCMSPFMetObject::LoadEvent( const edm::Event& iEvent, const edm::EventSetu
 
     if( PFMetDEBUG ) std::cout << "Collecting PFMets" << std::endl;
 
-    fpfmet.clear();
+    //fpfmet.clear();
     //for( const auto met : *pfmets_ ){ if( met.energy() > minMetE ) 
-    fpfmet.push_back((*pfmets_)[0]);
+    //fpfmet.push_back((*pfmets_)[0]);
 
 }//<<>>void KUCMSPFMet::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
@@ -149,7 +149,8 @@ void KUCMSPFMetObject::PostProcessEvent( ItemManager<float>& geVar ){
 
     if( PFMetDEBUG ) std::cout << " - enetering PFMet loop" << std::endl;
 
-    auto t1pfMET = fpfmet[0];
+    //auto t1pfMET = fpfmet[0];
+    auto t1pfMET = (*pfmets_)[0];
     const float SumEt = t1pfMET.sumEt();
     const float Pt = t1pfMET.pt();
     const float Px = t1pfMET.px();

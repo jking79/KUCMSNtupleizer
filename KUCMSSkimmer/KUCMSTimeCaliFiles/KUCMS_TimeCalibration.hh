@@ -1448,6 +1448,7 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
         std::cout << "Adding files to TChain." << std::endl;
         while (std::getline(infile,instr)){
             auto tfilename = eosDir + inDir + instr;
+			//std::cout << "opening tfile : " << tfilename << std::endl;
             std::cout << "-";
             fInTree->Add(tfilename.c_str());
         }//<<>>while (std::getline(infile,str))

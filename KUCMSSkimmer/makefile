@@ -46,8 +46,9 @@ OPTS = -O3 -march=native -ffast-math -funroll-loops -flto
 OPTS += -fno-trapping-math -funsafe-math-optimizations -fomit-frame-pointer -fno-math-errno
 
 p1=runKUCMSAodSVSkimmer
-p2=spaceholder
+p2=fillKUCMSTimeCalibration
 p3=runLocalKUCMSAodSVSkimmer
+p4=runLocalCKUCMSAodSVSkimmer
 
 all: $(p1) 
 
@@ -60,4 +61,6 @@ $(p2): $(p2).cpp
 $(p3): $(p3).cpp
 	$(CC) -o $(p3).obj $(p3).cpp $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS8) $(BCGLIBS8) $(OPTS)
 
+$(p4): $(p4).cpp 
+	$(CC) -o $(p4).obj $(p4).cpp $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS8) $(BCGLIBS8) $(OPTS) 
 
