@@ -1,0 +1,1 @@
+EGamma_R18_InvMetPho30_NoSV_EGamma_AOD_Run2018C_rjrskim_v42s.root
