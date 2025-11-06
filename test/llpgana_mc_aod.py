@@ -89,9 +89,9 @@ process.load('PhysicsTools.PatAlgos.triggerLayer1.triggerProducer_cfi')
 ## Message Logger settings
 process.load("FWCore.MessageService.MessageLogger_cfi")
 #process.MessageLogger.destinations = ['cout', 'cerr']
-#process.MessageLogger.cerr.FwkReport.reportEvery = 1
+process.MessageLogger.cerr.FwkReport.reportEvery = 1
 #process.MessageLogger.cerr.FwkReport.reportEvery = 2
-process.MessageLogger.cerr.FwkReport.reportEvery = 10
+#process.MessageLogger.cerr.FwkReport.reportEvery = 10
 #process.MessageLogger.cerr.FwkReport.reportEvery = 100
 #process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 if options.multicrab == True : process.MessageLogger.cerr.FwkReport.reportEvery = 100000
@@ -117,8 +117,89 @@ process.TFileService = cms.Service("TFileService", fileName = cms.string(options
 
 ## Define the input source
 
+#filelist_path = "met_18D_missing_resubmissions.txt"
+#with open(filelist_path) as f:
+#    readFiles = cms.untracked.vstring(line.strip() for line in f if line.strip() and not line.startswith("#"))
+
 process.source = cms.Source("PoolSource",
+    #fileNames=readFiles,
     fileNames = cms.untracked.vstring(
+
+
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/2430000/010FAEF3-D41F-D340-B7E9-E3BBD6498B3E.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/2430000/0FB1FACF-237F-1749-9878-CA52BC077610.root',
+        'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/2430000/1424BBF2-79D4-3B46-8858-DB666EA0A4A6.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/2430000/42079EE6-4686-C141-8FB5-E4590022B1A9.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/2430000/4F909A9C-185D-CC49-B9E6-18F7A289ADBD.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/2430000/50AAF0F9-800F-CC45-A12F-B8FDB3442335.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/2430000/746C3653-29BC-9444-A930-546D498E615D.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/2430000/80502D38-B7DA-5F41-B466-7178313A127C.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/2430000/8CDAFC03-8548-7C45-8632-71CF322749F5.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/2430000/9051BAF8-BDFE-FB40-A9BC-53C2D1AE3190.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/2430000/93EC3493-21C4-AE4D-8305-B04B6ACAB4B9.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/2430000/F5F89F63-AFFB-9F42-A32A-C76168E02B3E.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/018F6B3E-97D2-524A-853B-D4E6F010623D.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/03296F17-45E0-9247-B933-334BEC69B943.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/03C0679E-03B6-6B40-9EA2-4A956BC5D371.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/06104F02-486B-FC47-9BAA-915A44A48F8D.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/08626076-8276-2440-8E62-71BF442A3330.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/0986A8F9-C54F-8C43-B5D6-9739B3F9E642.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/099C48A9-0BAA-7F47-B2F6-4F1C8053E679.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/0DF60D20-8D60-2948-BE57-49A5664BF652.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/1259A5A2-D30B-084A-AF88-76E0D622DA4F.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/1C62FC6A-1CF4-6D4D-A655-45A966562DB7.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/21C90FF5-14BC-BB45-A0EC-436C7A5A8E6D.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/2967E911-0086-A148-B2AE-9BF68ABBD82A.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/2EB077EB-75AC-4C4B-8487-5A738424146F.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/2F3C22EE-54B0-B541-A4C5-B9689EC0BE38.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/3059175F-573A-964B-A43E-0D2A10D18E05.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/322411C4-4EF1-AB41-B9E8-881AF25DD27F.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/3C89AC3C-EE94-A54A-9A11-F5D1A0AE2403.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/3D87B47C-0CE6-4045-8DDF-028CECDB1EDC.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/45798998-F49C-4141-A371-885E1F8F078E.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/479AA18E-81EA-284D-ACA0-AA16C0F35D45.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/48AFE00C-6512-CC44-B898-D117F3C62C9F.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/4B29EC46-B241-474E-B53E-C5EF2DC2FBD3.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/4D7D827C-D1F1-1647-BF99-379AAA4AE824.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/507ADF4C-9788-B64B-A439-E982BEF08F2E.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/56052290-C110-524D-9B5A-6F0A2B5F0B77.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/5C869995-83A5-6C4A-944E-4034AF71E8CD.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/5E398AD2-DB52-7B45-8542-07A9BA285ADF.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/62344AB9-E0FF-C74F-A1B8-2614D1638611.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/62DE1882-7064-0746-AFD9-7C0C150785BF.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/66A05CE4-DFF0-A148-B058-78CE6BDFCBE2.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/67B8DA09-2069-BB4A-A588-7E18CFF739F2.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/691E3B11-BE46-7D4F-926E-7F5C49F3CABB.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/6C6296CA-120A-F64D-A46F-DAC3B0725F99.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/71C3E68D-976F-0D4E-B922-119D33AA34C8.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/72B177C9-BF02-CD4A-A135-8A1030937728.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/792060D9-060B-1342-8773-94A91CE76A2F.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/7AB51787-1626-5546-8752-56B2202C2E4D.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/7AFB8C74-D6E2-294F-BC40-54A3EBF2680A.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/7E94333D-669E-114F-9ECE-BCDA753CDF26.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/863EAF2E-2B43-D14E-AC88-B857DF48118D.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/924754BA-7E72-4746-AE82-17DB6C61EEBA.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/93D16D69-9990-E44A-B36C-1C4BCA6BE408.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/9C3D4D3F-62F4-3248-A057-9457B4A6D8D5.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/A3CB66E8-F548-F448-B519-DB67F4BD16D2.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/AB1FDBC7-EB94-A64C-AE96-6C0DB80EB5AE.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/B16CBED8-3CCF-5C4A-99AE-8388A346A14F.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/B57854FC-00E7-FB49-ABDF-1801AC61D29D.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/B9FB0A7E-EB8B-4B47-8423-5B81326FCEA7.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/C3C481CE-2C23-2B4A-8AA9-20D20E8C96E8.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/C462805C-50BE-B24D-948F-763BAB88AB1B.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/D500CC25-14E9-D949-AC1E-D90D22DF4EEE.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/D7832157-555D-404B-B019-22D10EB3A53C.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/D8B15542-4EC6-F945-A882-7D0D4A424909.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/DE318281-DA67-5944-B419-BBF7E69755B9.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/E22EA895-51EF-9A47-AF7B-90C220A71B78.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/E50C2ADC-DF96-074C-A6AD-1BE113A5815B.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/E9289BB4-1970-764D-A256-62776020C585.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/EC6AC7EE-7472-194B-8C77-5B8F46379FC0.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/EE033181-2E78-9B40-9E91-F90E6DB2F75C.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/EF367DBD-267D-8C47-8AB2-1E07ADD26009.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/EF69396A-46A8-7642-8C37-8440868E7F9D.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/510000/F2FC21D5-4320-AC44-9028-5FB2A928BDB9.root',
 
         #'root://cmseos.fnal.gov//store/mc/RunIISummer20UL18RECO/QCD_HT2000toInf_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/2520000/0184321F-08CA-3740-9700-89D3C169F771.root',
 
@@ -148,7 +229,10 @@ process.source = cms.Source("PoolSource",
         #'root://cmsxrootd-site.fnal.gov//store/mc/RunIIFall17DRPremix/QCD_HT200to300_TuneCP5_13TeV-madgraph-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/110000/1E29BF8B-5F60-E811-AD1D-0663CE00010C.root',
 
         # AOD Data MET
-        'file:Met_UL18B_AOD_973EEF0C-44AB-E94A-8591-04DCD00D8B4B.root',
+        #'file:Met_UL18B_AOD_973EEF0C-44AB-E94A-8591-04DCD00D8B4B.root',
+        #'file:met_18d_2EB077EB-75AC-4C4B-8487-5A738424146F.root',
+        #'file:met_18d_E9289BB4-1970-764D-A256-62776020C585.root',
+        #'file:met_18d_746C3653-29BC-9444-A930-546D498E615D.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2018B/MET/AOD/15Feb2022_UL2018-v1/25210000/CD3E4875-8B2E-ED4E-B1C9-43BB906B0555.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2018B/MET/AOD/15Feb2022_UL2018-v1/2520000/F672D9DC-50E8-684C-BE01-8E73D82651FF.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2018B/MET/AOD/15Feb2022_UL2018-v1/25210000/2325D400-4654-D64A-B3A3-9C96703D9207.root',
@@ -164,14 +248,15 @@ process.source = cms.Source("PoolSource",
          #'/store/mc/RunIISummer20UL18RECO/DiPhotonJetsBox_MGG-1000to2000_13TeV-sherpa/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/2550000/0B4130F1-3785-8043-957B-E0C2F86E1A50.root',
 
         ),##<<>>fileNames = cms.untracked.vstring
+        secondaryFileNames=cms.untracked.vstring()
         #skipEvents=cms.untracked.uint32(300),
 )##<<>>process.source = cms.Source("PoolSource",
 
 ## How many events to process
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))#ONE
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
@@ -207,8 +292,8 @@ runera = "Run3"  # current siganl model
 #runera = "Run2" # BG models
 if options.multicrab == True : runera = options.runera
 
-dosv = True
-#dosv = False # with v30 this is the only SV flag that matters, doDisEle and doECALTrackOnly are depreciated
+#dosv = True
+dosv = False # with v30 this is the only SV flag that matters, doDisEle and doECALTrackOnly are depreciated
 if options.multicrab == True : dosv = options.doSV
 
 ############dode = True

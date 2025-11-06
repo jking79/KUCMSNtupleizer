@@ -1,0 +1,1 @@
+KUCMSNtuple/kucmsntuple_SMS_Sig_SVIPM100_v31/ SMS_SVIPM100_v31_gogoG_AODSIM_mGl-2000_mN2-1950_mN1-250_ct0p1.txt glgl2 .001684 1950 250 1 0 r2_ul18

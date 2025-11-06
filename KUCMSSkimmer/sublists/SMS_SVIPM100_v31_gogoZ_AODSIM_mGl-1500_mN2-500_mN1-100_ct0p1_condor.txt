@@ -1,0 +1,1 @@
+KUCMSNtuple/kucmsntuple_SMS_Sig_SVIPM100_v31/ SMS_SVIPM100_v31_gogoZ_AODSIM_mGl-1500_mN2-500_mN1-100_ct0p1.txt glglz15 0.02209 500 100 1 0 r2_ul18_mc

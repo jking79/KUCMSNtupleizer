@@ -102,8 +102,8 @@ void KUCMSAodSkimmer::processElectrons(){
     selElectrons.fillBranch( "eleIsLoose", (*Electron_isLoose)[itr] );
     if( (*Electron_isLoose)[itr] ) nLooseEle++;
 
-	bool hemEligible1 = (*Electron_isLoose)[itr] && (*Electron_pt)[itr] > 30;
-    bool hemEligible2 = (*Electron_isMedium)[itr] && (*Electron_pt)[itr] > 50;
+	bool hemEligible1 = (*Electron_pt)[itr] > 20;
+    bool hemEligible2 = (*Electron_pt)[itr] > 30;
     bool isInHemRegion = inHEMRegion( eta, phi );
     hemBits["el1"] = isInHemRegion && hemEligible1;
     hemBits["el2"] = isInHemRegion && hemEligible2;

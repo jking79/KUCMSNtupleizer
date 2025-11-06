@@ -1,0 +1,1 @@
+KUCMSNtuple/kucmsntuple_GJets_R18_SVIPM100_v31/ GJets_R18_SVIPM100_v31_GJets_HT-40To100.txt GJets_40t100_UL18 18650 0 0 1 0 r2_ul18_mc

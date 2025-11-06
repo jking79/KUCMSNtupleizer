@@ -65,7 +65,7 @@ void KUCMSAodSkimmer::processPhotons(){
 
     auto pt = (*Photon_pt)[it];
     bool underMinPtEB = pt < 30;
-    bool underMinPtEE = pt < 50;
+    bool underMinPtEE = pt < 30;
     auto eta = (*Photon_eta)[it];
     auto overMaxEta = std::abs(eta) > 1.479;
 
@@ -75,24 +75,24 @@ void KUCMSAodSkimmer::processPhotons(){
     auto htsecdr4 = (*Photon_hcalTowerSumEtConeDR04)[it];   //!
     bool passHcalSum = true;
     auto tspscdr4 = (*Photon_trkSumPtSolidConeDR04)[it];
-    bool passTrkSum = tspscdr4 < 6.0; //(*selPhoTrkSumPtSolidConeDR04)[it] < cutvalue;
+    bool passTrkSum = tspscdr4/pt < 0.12; //(*selPhoTrkSumPtSolidConeDR04)[it] < cutvalue;
     auto erhsecdr4 = (*Photon_ecalRHSumEtConeDR04)[it];
-    bool passsEcalRhSum = erhsecdr4 < 10.0;
+    bool passsEcalRhSum = erhsecdr4/pt < 0.2;
     auto htoem = (*Photon_hadTowOverEM)[it];
     bool passHOE = htoem < 0.02;
     bool isoPho = passHOE && passsEcalRhSum && passTrkSum && passHcalSum;
     bool failPhoIsoEB = not isoPho;
-	bool failPhoIsoEE = not ( tspscdr4 < 7.0 && erhsecdr4 < 12.5 && htoem < 0.05 );
+	bool failPhoIsoEE = failPhoIsoEB; //not ( tspscdr4 < 7.0 && erhsecdr4 < 12.5 && htoem < 0.05 );
 
     //  change to skip jets and keep all photons regardless of photon iso with jet
     //bool phoskip = isExcluded || hasPixSeed || overMaxEta || underMinPt || failPhoIso;
 	bool phoskip = isExcluded || hasPixSeed;
 	if( not overMaxEta ) phoskip = phoskip || failPhoIsoEB || underMinPtEB;
-	//if( overMaxEta ) phoskip = phoskip || failPhoIsoEE || underMinPtEE;
-	if( overMaxEta ) phoskip = true;
+	if( overMaxEta ) phoskip = phoskip || failPhoIsoEE || underMinPtEE;
+	//if( overMaxEta ) phoskip = true;
 
-	bool hemEligible1 = not underMinPtEB && not isExcluded;
-    bool hemEligible2 = isoPho && not underMinPtEB && not isExcluded; 
+	bool hemEligible1 = pt > 20 && not isExcluded && not hasPixSeed;
+    bool hemEligible2 = pt > 30 && not isExcluded && not hasPixSeed; 
 
 	bool isInHemRegion = inHEMRegion( eta, phi );
 	hemBits["pho1"] = isInHemRegion && hemEligible1;		
@@ -101,6 +101,7 @@ void KUCMSAodSkimmer::processPhotons(){
 	bool isEESig = not isExcluded && not hasPixSeed && overMaxEta;
     if( isEESig ){
 
+		selPhotons.fillBranch( "EESigPho_skipped", phoskip );   //!
     	selPhotons.fillBranch( "EESigPho_energy", (*Photon_energy)[it] );   //!
     	selPhotons.fillBranch( "EESigPho_eta", (*Photon_eta)[it] );   //!
     	selPhotons.fillBranch( "EESigPho_phi", (*Photon_phi)[it] );   //!
@@ -110,8 +111,6 @@ void KUCMSAodSkimmer::processPhotons(){
         selPhotons.fillBranch( "EESigPho_pt", (*Photon_pt)[it] );   //!
 
     }//if( doGenInfo )
-
-
 
     if( ( geVars("genSigPerfect") != 1 ) && phoskip ){ isSelPho.push_back(false); continue; }		
     if( ( geVars("genSigPerfect") == 1 ) &&  ( not isGenSig ) ){ isSelPho.push_back(false);  continue; }
@@ -670,6 +669,7 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch( "selPhoGenSigMomVy", VFLOAT );   //!
   selPhotons.makeBranch( "selPhoGenSigMomVz", VFLOAT );   //!
 
+  selPhotons.makeBranch( "EESigPho_skipped", VBOOL );   //!
   selPhotons.makeBranch( "EESigPho_energy", VFLOAT );   //!
   selPhotons.makeBranch( "EESigPho_eta", VFLOAT );   //!
   selPhotons.makeBranch( "EESigPho_phi", VFLOAT );   //!

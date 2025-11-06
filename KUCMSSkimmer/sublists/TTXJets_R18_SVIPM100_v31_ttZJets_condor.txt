@@ -1,0 +1,1 @@
+KUCMSNtuple/kucmsntuple_TTXJets_R18_SVIPM100_v31/ TTXJets_R18_SVIPM100_v31_ttZJets.txt ttZJets_UL18 0.46 0 0 1 0 r2_ul18_mc
