@@ -43,7 +43,7 @@ class kucms_ProfileTimeFit {
  
 };//<<>>class ProfileTimeFit 
 
-void kucms_ProfileTimeFit::DoFit(){ 
+inline void kucms_ProfileTimeFit::DoFit(){ 
 
     std::cout << " -- ProfileTimeFit DoFit " << std::endl; 
     //if( isEmpty() ){ std::cout << " --- No such profile hist !!!!!!! " << std::endl; return; } 

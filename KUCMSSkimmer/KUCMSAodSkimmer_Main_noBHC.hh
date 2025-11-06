@@ -265,9 +265,8 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
     // --  main loop
 
     std::cout << "Setting up For Main Loop." << std::endl;
-    int loopCounter(1000);
-    if(_evtj - _evti < loopCounter)
-	    loopCounter = 1;
+    int loopCounter(100000);
+    if(_evtj - _evti < loopCounter) loopCounter = 1000;
     if(DEBUG){ nEntries = 1000; loopCounter = 100; }
     //cout total number of entries to process
     std::cout << "Processing " << nEntries << " entries." << std::endl;
@@ -376,7 +375,7 @@ int KUCMSAodSkimmer::ProcessFilelist(string eosdir, string infilename, TChain*& 
 	      if(str.find("#") != string::npos) continue;
 	nfiles++;
 	//if( skipCnt != 0 && ( nfiles%skipCnt != 0 ) ) continue;
-    	string sample_str = str.substr(0,str.find("/"));
+    string sample_str = str.substr(0,str.find("/"));
 	string prefix = str.substr(str.find("/")+1);
 	string inpath = prefix.substr(0,prefix.find(sample_str,prefix.find(sample_str)+sample_str.size())-1)+"/";
 	auto tfilename = eosdir + inpath + str;
@@ -640,6 +639,8 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
     std::string str;
     if( not DEBUG ) std::cout << "--  adding files";
     int nfiles = 0;
+	//int skipCnt = 10;
+    //if( skipCnt != 0 ) std::cout << "-- !! Skipping every " << skipCnt << std::endl;
     if( dataSetKey !=  "Single" ){
         std::ifstream infile(listDirPath+inFileName);
         while( std::getline( infile, str ) ){
@@ -778,8 +779,8 @@ bool KUCMSAodSkimmer::eventSelection(){
   int vetoJets = geCnts("jetEventVeto");
 
   float nSelPhotons = geCnts("nSelPhotons"); //selPhotons.getUIBranchValue("nSelPhotons");
-  float leadPhoPt = ( nSelPhotons > 0 ) ? geVars("leadPhoPt") : 0;
-  float subLeadPhoPt = ( nSelPhotons > 1 ) ? geVars("subLeadPhoPt") : 0;
+  float leadPhoPt = ( nSelPhotons > 0 ) ? geVects("selPhoPt").at(0) : 0;
+  float subLeadPhoPt = ( nSelPhotons > 1 ) ? geVects("selPhoPt").at(1) : 0;
 
   bool hasLepSV = geVars("nSVLep") > 0;
   bool hasHadSV = geVars("nSVHad") > 0;

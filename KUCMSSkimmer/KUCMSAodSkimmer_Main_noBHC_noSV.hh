@@ -641,12 +641,14 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
     std::string str;
     if( not DEBUG ) std::cout << "--  adding files";
     int nfiles = 0;
+    int skipCnt = 10;
+    if( skipCnt != 0 ) std::cout << "-- !! Skipping every " << skipCnt << std::endl;
     if( dataSetKey !=  "Single" ){
         std::ifstream infile(listDirPath+inFileName);
         while( std::getline( infile, str ) ){
             if(str.find("#") != string::npos) continue;
             nfiles++;
-            //if( skipCnt != 0 && ( nfiles%skipCnt != 0 ) ) continue;
+            if( skipCnt != 0 && ( nfiles%skipCnt != 0 ) ) continue;
             auto tfilename = eosDirPath + inFilePath + str;
             fInTree->Add(tfilename.c_str());
             fInConfigTree->Add(tfilename.c_str());
@@ -779,8 +781,9 @@ bool KUCMSAodSkimmer::eventSelection(){
   int vetoJets = geCnts("jetEventVeto");
 
   float nSelPhotons = geCnts("nSelPhotons"); //selPhotons.getUIBranchValue("nSelPhotons");
-  float leadPhoPt = ( nSelPhotons > 0 ) ? geVars("leadPhoPt") : 0;
-  float subLeadPhoPt = ( nSelPhotons > 1 ) ? geVars("subLeadPhoPt") : 0;
+  float leadPhoPt = ( nSelPhotons > 0 ) ? geVects("selPhoPt").at(0) : 0;
+  float subLeadPhoPt = ( nSelPhotons > 1 ) ? geVects("selPhoPt").at(1) : 0;
+
 
   bool hasLepSV = false; //geVars("nSVLep") > 0;
   bool hasHadSV = false; //geVars("nSVHad") > 0;
@@ -798,7 +801,8 @@ bool KUCMSAodSkimmer::eventSelection(){
   bool leadPhoPt30 = leadPhoPt >= 30;
   bool subLeadPhoPt40 = subLeadPhoPt >= 40; 
 
-  bool basesel = met100 && gt2jets && allgjets && gt2qjets;
+  bool basesel = gt2jets && allgjets && gt2qjets;
+  //bool basesel = met100 && gt2jets && allgjets && gt2qjets;
   //bool svsel = basesel && hasSV;	
   bool phosel = basesel && ( ( gt1phos && leadPhoPt30 ) || hasSV );
   //auto evtSelected = leadPhoPt70 && subLeadPhoPt40 && gt2jets && gt2phos;

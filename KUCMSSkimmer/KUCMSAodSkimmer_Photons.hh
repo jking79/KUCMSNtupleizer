@@ -508,65 +508,41 @@ void KUCMSAodSkimmer::processPhotons(){
   selPhotons.fillBranch( "nSelPhotons",  nSelPhotons );
   selPhotons.fillBranch( "nPhotons", nPhotons );	
 
-  float lPhoPt = 0.f;
-  float lPhoPhi = 0.f;
-  float lPhoEta = 0.f;
-  float ePhoMx = 0.f;
-  float ePhoMy = 0.f;
-  if( nSelPhotons > 0 ){
-	uInt pIdx = phoOrderIndx[0];
-	uInt exIdx = phoExcIndx[0];
+  std::vector<float> selpho_pt;
+  std::vector<float> selpho_eta;
+  std::vector<float> selpho_phi;
+  std::vector<float> selpho_Mx;
+  std::vector<float> selpho_My;
+  for( int spidx = 0; spidx < nSelPhotons; spidx++ ){
+	uInt pIdx = phoOrderIndx[spidx];
+	uInt exIdx = phoExcIndx[spidx];
 	bool isOOT = (*Photon_isOot)[pIdx];
-	lPhoPt = (*Photon_pt)[pIdx];
-	lPhoPhi = (*Photon_phi)[pIdx];
-	lPhoEta = (*Photon_eta)[pIdx];
+	float lPhoPt = (*Photon_pt)[pIdx];
+	float lPhoPhi = (*Photon_phi)[pIdx];
+	float lPhoEta = (*Photon_eta)[pIdx];
+	float ePhoMx = 0;
+    float ePhoMy = 0;
 	if( isOOT ){ 
 		ePhoMx -= lPhoPt*std::cos(lPhoPhi);
 		ePhoMy -= lPhoPt*std::sin(lPhoPhi);
 		if( exIdx > -1 ){ 
     		float ePhoPt = (*Photon_pt)[exIdx];
     		float ePhoPhi = (*Photon_phi)[exIdx];
-    		//float ePhoEta = (*Photon_eta)[exIdx];
 			ePhoMx += ePhoPt*std::cos(ePhoPhi);
 			ePhoMy += ePhoPt*std::sin(ePhoPhi);
 		}//<<>>if( exIdx > -1 )
 	}//<<>>if( isOOT && exIdx > -1 )
+	selpho_pt.push_back(lPhoPt);
+    selpho_eta.push_back(lPhoEta);
+    selpho_phi.push_back(lPhoPhi);
+    selpho_Mx.push_back(ePhoMx);
+    selpho_My.push_back(ePhoMy);
   }//<<>>if( nSelPhotons > 0 )
-  geVars.set( "leadPhoPt", lPhoPt );
-  geVars.set( "leadPhoPhi", lPhoPhi );
-  geVars.set( "leadPhoEta", lPhoEta );
-  geVars.set( "leadPhoMx", ePhoMx );
-  geVars.set( "leadPhoMy", ePhoMy );
-
-  lPhoPt = 0.f;
-  lPhoPhi = 0.f;
-  lPhoEta = 0.f;
-  ePhoMx = 0.f;
-  ePhoMy = 0.f;
-  if( nSelPhotons > 1 ){
-    uInt pIdx = phoOrderIndx[1];
-    uInt exIdx = phoExcIndx[1];
-    bool isOOT = (*Photon_isOot)[pIdx];
-    lPhoPt = (*Photon_pt)[pIdx];
-    lPhoPhi = (*Photon_phi)[pIdx];
-    lPhoEta = (*Photon_eta)[pIdx];
-    if( isOOT ){
-        ePhoMx -= lPhoPt*std::cos(lPhoPhi);
-        ePhoMy -= lPhoPt*std::sin(lPhoPhi);
-        if( exIdx > -1 ){
-            float ePhoPt = (*Photon_pt)[exIdx];
-            float ePhoPhi = (*Photon_phi)[exIdx];
-            //float ePhoEta = (*Photon_eta)[exIdx];
-            ePhoMx += ePhoPt*std::cos(ePhoPhi);
-            ePhoMy += ePhoPt*std::sin(ePhoPhi);
-        }//<<>>if( exIdx > -1 )
-    }//<<>>if( isOOT && exIdx > -1 )
-  }//<<>>if( nSelPhotons > 0 )
-  geVars.set( "subLeadPhoPt", lPhoPt );
-  geVars.set( "subLeadPhoPhi", lPhoPhi );
-  geVars.set( "subLeadPhoEta", lPhoEta );
-  geVars.set( "subLeadPhoMx", ePhoMx );
-  geVars.set( "subLeadPhoMy", ePhoMy );
+  geVects.set( "selPhoPt", selpho_pt );
+  geVects.set( "selPhoEta", selpho_eta );
+  geVects.set( "selPhoPhi", selpho_phi );
+  geVects.set( "selPhoEMx", selpho_Mx );
+  geVects.set( "selPhoEMy", selpho_My );
 
 }//<<>>void KUCMSAodSkimmer::processPhoton(){
 
