@@ -1,0 +1,1 @@
+KUCMSNtuple/kucmsntuple_DiPJBox_R18_SVIPM100_v31/ DiPJBox_R18_SVIPM100_v31_DiPhotonJetsBox_MGG-80toInf.txt DiPho_M80Inf_UL18 86.96 0 0 1 0 r2_ul18_mc

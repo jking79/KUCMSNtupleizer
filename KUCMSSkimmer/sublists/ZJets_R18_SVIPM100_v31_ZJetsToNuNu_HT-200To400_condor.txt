@@ -1,0 +1,1 @@
+KUCMSNtuple/kucmsntuple_ZJets_R18_SVIPM100_v31/ ZJets_R18_SVIPM100_v31_ZJetsToNuNu_HT-200To400.txt ZJets_200To400_UL18 72.69 0 0 1 0 r2_ul18_mc

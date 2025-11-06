@@ -1,0 +1,1 @@
+KUCMSNtuple/kucmsntuple_DiPJBox_R18_SVIPM100_v31/ DiPJBox_R18_SVIPM100_v31_DiPhotonJetsBox_M40_80-sherpa.txt DiPho_M40t80_UL18 306.8 0 0 1 0 r2_ul18_mc

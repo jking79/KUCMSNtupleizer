@@ -9,7 +9,7 @@ echo ">>> Args: $1 $2 $3"
 # --- Setup CMSSW environment ---
 export VO_CMS_SW_DIR=/cvmfs/cms.cern.ch
 source $VO_CMS_SW_DIR/cmsset_default.sh
-SCRAM_ARCH=el9_amd64_gcc12
+SCRAM_ARCH=el8_amd64_gcc12
 
 # Unpack CMSSW tarball
 tar -xzf CMSSW_13_3_3.tar.gz
@@ -20,8 +20,8 @@ eval `scramv1 runtime -sh`
 cd KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer
 
 # --- Run the skimmer ---
-echo ">>> Running ./skim.obj $1 $2 $3"
-./skim.obj "$1" "$2" "$3"
+echo ">>> Running ./runLocalCKUCMSAodSVSkimmer.obj $1 $2 $3"
+./runLocalCKUCMSAodSVSkimmer.obj "$1" "$2" "$3"
 
 # --- Move only .root files to top-level directory ---
 mv *.root ${_CONDOR_SCRATCH_DIR}/ 2>/dev/null || true

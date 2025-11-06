@@ -10,7 +10,7 @@
 #include "KUCMSHelperFunctions.hh"
 #include <ctime>
 
-#include "KUCMSAodSVSkimmer.hh"
+#include "KUCMSAodSVSkimmer_noSV.hh"
 #include "KUCMSAodSkimmer_Helpers.hh"
 #include "KUCMSAodSkimmer_EvntMetVars.hh"
 #include "KUCMSAodSkimmer_Tracks.hh"
@@ -594,6 +594,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
 
     // ---- parse input params
 
+	std::cout << "InLine: " << masterstr << std::endl;
     if( DEBUG ) std:: cout << masterstr << std::endl;
     if( masterstr[0] == '#' ) continue;
     if( masterstr == "" ) continue;
@@ -741,7 +742,7 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
   processElectrons();
   processMuons();
   processJets();
-  processSV();
+  //processSV();
   processTracks();
   processEvntVars();// process last to catch Hem issue
   if( hasGenInfoFlag ){ processGenParticles(); }
@@ -753,7 +754,7 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
 
     if( doBHC ){ processBHCPhotons(); processBHCJets(); }
 	processRJR(0,true); 
-	processRJR(1,false); 
+	//processRJR(1,false); 
 
   }//<<>>if( saveToTree )
   return saveToTree;
@@ -781,8 +782,8 @@ bool KUCMSAodSkimmer::eventSelection(){
   float leadPhoPt = ( nSelPhotons > 0 ) ? geVars("leadPhoPt") : 0;
   float subLeadPhoPt = ( nSelPhotons > 1 ) ? geVars("subLeadPhoPt") : 0;
 
-  bool hasLepSV = geVars("nSVLep") > 0;
-  bool hasHadSV = geVars("nSVHad") > 0;
+  bool hasLepSV = false; //geVars("nSVLep") > 0;
+  bool hasHadSV = false; //geVars("nSVHad") > 0;
   bool hasSV = hasLepSV || hasHadSV;
 
   bool met100 = evtMet >= 100;

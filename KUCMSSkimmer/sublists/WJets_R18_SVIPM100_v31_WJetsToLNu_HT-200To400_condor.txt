@@ -1,0 +1,1 @@
+KUCMSNtuple/kucmsntuple_WJets_R18_SVIPM100_v31/ WJets_R18_SVIPM100_v31_WJetsToLNu_HT-200To400.txt WJets_200t400_UL18 337.8 0 0 1 0 r2_ul18_mc

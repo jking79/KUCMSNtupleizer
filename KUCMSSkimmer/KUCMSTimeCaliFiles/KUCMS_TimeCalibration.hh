@@ -1333,17 +1333,13 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
 	if( amplitude == 0 ) return 100.f;
 	bool isEB( DetIDMap[rechitID].ecal == ECAL::EB );
 	float res = -1;
-	if( mctype == 1 ){ // data
+	if( mctype < 100 ){ // data
 
-		if( dataSetKey == "r2_ul18"  ) res = isEB ? sq2( 25.16/amplitude ) + 2*sq2(0.1013) : sq2( 29.4/amplitude ) + 2*sq2(0.1929);
-
-	} else { // MC
-
-        if( dataSetKey == "r2_ul18"  ) res = isEB ? sq2( 25.16/amplitude ) + 2*sq2(0.1013) : sq2( 29.4/amplitude ) + 2*sq2(0.1929);
-		if( dataSetKey == "r2_ul18_mc"  ) res = sq2( 25.16/amplitude ) + 2*sq2(0.1013);
+		if( dataSetKey == "r2_ul18"    ) res = isEB ? sq2( 25.16/amplitude ) + 2*sq2(0.1013) : sq2( 29.4/amplitude ) + 2*sq2(0.1929);
+        if( dataSetKey == "r2_eoy17"   ) res = isEB ? sq2( 31.3/amplitude ) + 2*sq2(0.1608) : sq2( 31.3/amplitude ) + 2*sq2(0.1608);
+        if( dataSetKey == "r2_ul18_mc" ) res = isEB ? sq2( 25.16/amplitude ) + 2*sq2(0.1013) : sq2( 29.4/amplitude ) + 2*sq2(0.1929);
 
 	}//<<>>if( mctype == 0 )
-
 	if( res == -1 ){ std::cout << " -- Resolution for dataSetKey " << dataSetKey << " not found !!!!!!" << std::endl; return 1.f; }
 	return res;
 
@@ -1359,7 +1355,7 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
     } else { // MC
 
         //rtime = getSmearedTime( time, amplitude, dataSetKey );;
-		//0.00691415 1.60666 0.133913
+		//0.00691415 1.60666 0.133913  smearing for 2017 MC -> Data
 		float stnoise = 0.00691415;
 		float ststoch = 1.60666;
 		float ststant = 0.133913;

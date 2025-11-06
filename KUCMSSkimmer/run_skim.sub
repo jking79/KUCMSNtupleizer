@@ -1,0 +1,55 @@
+universe              = vanilla
+executable            = runLocalCKUCMSAodSVSkimmer.sh
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+transfer_input_files  = CMSSW_13_3_3.tar.gz
+transfer_output_files = *.root
+
+output                = logs/job_$(Cluster)_$(Process).out
+error                 = logs/job_$(Cluster)_$(Process).err
+log                   = logs/job_$(Cluster)_$(Process).log
+
++JobFlavour           = "longlunch"
+
+requirements          = (OpSysAndVer == "CentOS8") || (OpSysAndVer == "AlmaLinux8") || (OpSysAndVer == "Rocky8")
+
+arguments = $(ARG1) $(ARG2) $(ARG3)
+
+queue ARG1, ARG2, ARG3 from (
+  sublists/DiPJBox_R18_SVIPM100_v31_DiPhotonJetsBox_M40_80-sherpa_condor.txt 1 1
+  sublists/DiPJBox_R18_SVIPM100_v31_DiPhotonJetsBox_MGG-0to40_condor.txt 1 1
+  sublists/DiPJBox_R18_SVIPM100_v31_DiPhotonJetsBox_MGG-80toInf_condor.txt 1 1
+  sublists/GJets_R18_SVIPM100_v31_GJets_HT-100To200_condor.txt 1 1
+  sublists/GJets_R18_SVIPM100_v31_GJets_HT-200To400_condor.txt 1 1
+  sublists/GJets_R18_SVIPM100_v31_GJets_HT-400To600_condor.txt 1 1
+  sublists/GJets_R18_SVIPM100_v31_GJets_HT-40To100_condor.txt 1 1
+  sublists/GJets_R18_SVIPM100_v31_GJets_HT-600ToInf_condor.txt 1 1
+  sublists/QCD_R18_SVIPM100_v31_QCD_HT1000to1500_condor.txt 1 1
+  sublists/QCD_R18_SVIPM100_v31_QCD_HT100to200_condor.txt 1 1
+  sublists/QCD_R18_SVIPM100_v31_QCD_HT1500to2000_condor.txt 1 1
+  sublists/QCD_R18_SVIPM100_v31_QCD_HT2000toInf_condor.txt 1 1
+  sublists/QCD_R18_SVIPM100_v31_QCD_HT200to300_condor.txt 1 1
+  sublists/QCD_R18_SVIPM100_v31_QCD_HT300to500_condor.txt 1 1
+  sublists/QCD_R18_SVIPM100_v31_QCD_HT500to700_condor.txt 1 1
+  sublists/QCD_R18_SVIPM100_v31_QCD_HT50to100_condor.txt 1 1
+  sublists/QCD_R18_SVIPM100_v31_QCD_HT700to1000_condor.txt 1 1
+  sublists/TTXJets_R18_SVIPM100_v31_TGJets_condor.txt 1 1
+  sublists/TTXJets_R18_SVIPM100_v31_TTGJets_condor.txt 1 1
+  sublists/TTXJets_R18_SVIPM100_v31_TTJets_condor.txt 1 1
+  sublists/TTXJets_R18_SVIPM100_v31_ttWJets_condor.txt 1 1
+  sublists/TTXJets_R18_SVIPM100_v31_ttZJets_condor.txt 1 1
+  sublists/WJets_R18_SVIPM100_v31_WJetsToLNu_HT-100To200_condor.txt 1 1
+  sublists/WJets_R18_SVIPM100_v31_WJetsToLNu_HT-1200To2500_condor.txt 1 1
+  sublists/WJets_R18_SVIPM100_v31_WJetsToLNu_HT-200To400_condor.txt 1 1
+  sublists/WJets_R18_SVIPM100_v31_WJetsToLNu_HT-2500ToInf_condor.txt 1 1
+  sublists/WJets_R18_SVIPM100_v31_WJetsToLNu_HT-400To600_condor.txt 1 1
+  sublists/WJets_R18_SVIPM100_v31_WJetsToLNu_HT-600To800_condor.txt 1 1
+  sublists/WJets_R18_SVIPM100_v31_WJetsToLNu_HT-800To1200_condor.txt 1 1
+  sublists/ZJets_R18_SVIPM100_v31_ZJetsToNuNu_HT-100To200_condor.txt 1 1
+  sublists/ZJets_R18_SVIPM100_v31_ZJetsToNuNu_HT-1200To2500_condor.txt 1 1
+  sublists/ZJets_R18_SVIPM100_v31_ZJetsToNuNu_HT-200To400_condor.txt 1 1
+  sublists/ZJets_R18_SVIPM100_v31_ZJetsToNuNu_HT-2500ToInf_condor.txt 1 1
+  sublists/ZJets_R18_SVIPM100_v31_ZJetsToNuNu_HT-400To600_condor.txt 1 1
+  sublists/ZJets_R18_SVIPM100_v31_ZJetsToNuNu_HT-600To800_condor.txt 1 1
+  sublists/ZJets_R18_SVIPM100_v31_ZJetsToNuNu_HT-800To1200_condor.txt 1 1
+)
