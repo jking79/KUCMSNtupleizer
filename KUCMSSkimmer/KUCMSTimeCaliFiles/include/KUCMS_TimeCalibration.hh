@@ -19,8 +19,8 @@
 #include "TGraphErrors.h"
 #include "TMultiGraph.h"
 
-#ifndef KUCMS_TimeCalibrationClass
-#define KUCMS_TimeCalibrationClass
+#ifndef KUCMS_TimeCalibrationClass_hh
+#define KUCMS_TimeCalibrationClass_hh
 
 //--------------------   hh file -------------------------------------------------------------
 //---------------------------------------------------------------------------------------------
@@ -226,3 +226,5 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
     void useGainSwitch( bool gs ){ useGSwitch = gs; };
 
 };//<<>>class KUCMS_TimeCalibration : KUCMSRootHelperBaseClass
+
+#endif
