@@ -30,6 +30,7 @@ test/*WorkSpace/
 *.root
 *.pyc
 *.obj
+*.o
 *.log
 *.png
 *.pdf

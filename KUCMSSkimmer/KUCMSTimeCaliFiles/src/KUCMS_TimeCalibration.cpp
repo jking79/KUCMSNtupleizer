@@ -1,4 +1,7 @@
-#include "KUCMS_TimeCalibration.hh"
+#include "../include/KUCMS_TimeCalibration.hh"
+
+#ifndef KUCMS_TimeCalibrationClass_cc
+#define KUCMS_TimeCalibrationClass_cc
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //  Class Object code  --  yes yes this is easier for me, im weird, will divide into hh/cc at end 
