@@ -118,16 +118,16 @@ void KUCMSAodSkimmer::processEvntVars(){
   selEvtVars.fillBranch( "Trigger_PFMET120_PFMHT120_IDTight_PFHT60", PFMET120_PFMHT120_IDTight_PFHT60 );
   selEvtVars.fillBranch( "Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60", PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60 );
 
-  bool hemRun = ( Evt_run > 319076 && Evt_run < 326635 ) ? true : false;
-  bool eLHem = hemBits["el1"];
-  bool eMHem = hemBits["el2"];
-  bool jLHem = hemBits["jet1"];
-  bool jMHem = hemBits["jet2"];
-  bool pLHem = hemBits["pho1"];
-  bool pMHem = hemBits["pho2"];
-  bool mLHem = hemBits["mu1"];
-  bool mMHem = hemBits["mu2"];
-  bool fullHemVeto = eLHem && jLHem && pMHem && mLHem && hemRun && ( mctype == 1 );
+  bool hemRun = ( ( Evt_run > 319076 ) && ( Evt_run < 326635 ) ) ? true : false;
+  bool eLHem( hemBits("el1hvl") );
+  bool eMHem( hemBits("el2hvm") );
+  bool jLHem( hemBits("jet1hvl") );
+  bool jMHem( hemBits("jet2hvm") );
+  bool pLHem( hemBits("pho1hvl") );
+  bool pMHem( hemBits("pho2hvm") );
+  bool mLHem( hemBits("mu1hvl") );
+  bool mMHem( hemBits("mu2hvm") );
+  bool fullHemVeto( eLHem && jLHem && pMHem && mLHem && hemRun && ( mctype == 1 ) );
 
   selEvtVars.fillBranch( "Flag_hemRun", hemRun );
   selEvtVars.fillBranch( "Flag_eLHemVeto", eLHem );

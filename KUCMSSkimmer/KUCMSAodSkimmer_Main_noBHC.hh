@@ -249,9 +249,12 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
     auto nEntries = fInTree->GetEntries();
 
     //loop over events
-    if(_evti == _evtj){ _evti = 0; _evtj = nEntries; }
-    if(_evti < nEntries){ if(_evtj > nEntries){ _evtj = nEntries; }} //cap at max number of entries
-    else{ cout << "Starting event " << _evti << " above # of entries in tree " << nEntries << " returning." << endl; return; }
+    if( _evti < 0 ){ _evti = 0; _evtj = nEntries; }
+	else {
+		if( _evtj > nEntries ){ _evtj = nEntries; } //cap at max number of entries
+		if( _evti > nEntries ){ cout << "Starting event " << _evti << " above # of entries in tree " << nEntries << " returning." << endl; return; }
+	}//<<>> if( _evti < 0 ) else
+	int nEventsProcessed = _evtj - _evti;
 
     initHists();
     setOutputBranches(fOutTree);
@@ -265,14 +268,13 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
     // --  main loop
 
     std::cout << "Setting up For Main Loop." << std::endl;
-    int loopCounter(100000);
-    if(_evtj - _evti < loopCounter) loopCounter = 1000;
+    int loopCounter( nEventsProcessed / 100 );
     if(DEBUG){ nEntries = 1000; loopCounter = 100; }
     //cout total number of entries to process
     std::cout << "Processing " << nEntries << " entries." << std::endl;
-    //DEBUG
-    nEvents = _evtj - _evti;//save # of events actually ran over so that when files are hadded, this should total nEntries in TChain
+    nEvents = nEventsProcessed;//save # of events actually ran over so that when files are hadded, this should total nEntries in TChain
     cout << "Running over events " << _evti << " to " << _evtj << endl;
+	int count_of_events = 0;
     for (Long64_t centry = _evti; centry < _evtj; centry++){
 
         if( centry%loopCounter == 0 ){
@@ -296,10 +298,12 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
         if( noSVorPhoFlag ) geVars.set( "noSVorPho", 1 ); else geVars.set( "noSVorPho", 0 );
 
         if(DEBUG) std::cout << " -- Event Loop " << std::endl;
+		count_of_events++;
         auto saveToTree = eventLoop(entry);
         if( saveToTree ){ fOutTree->Fill(); }
 
     }//<<>>for (Long64_t centry = 0; centry < nEntries; centry++)  end entry loop
+	if( count_of_events != nEvents ) std::cout << " !!!!!!! nEvents " << nEvents << " not = event count " << count_of_events << " !!!!!!!" << std::endl;
 
     // -- main end jobs
 
@@ -662,7 +666,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
     if( nfiles == 0 ){ std::cout << " !!!!! no input files !!!!! " << std::endl; return; }
 
     // ------ Do Main Loop
-
+	_evti = -1; _evti = -1;
     auto ext = splitString( inFileName, "." );
     std::string extOutFileName( ext[0] + outfilename );
 	SetOutFileName( extOutFileName );
