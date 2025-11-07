@@ -248,7 +248,8 @@ class KUCMSAodSkimmer : public llpgtree {
 
 	// hem veto 
     bool hasHemObj;
-	std::map< std::string, bool > hemBits;
+	//std::map< std::string, bool > hemBits;
+	ItemManager<bool> hemBits;
 
     std::vector<bool> phoJetVeto;
 	std::vector<bool> rhused;

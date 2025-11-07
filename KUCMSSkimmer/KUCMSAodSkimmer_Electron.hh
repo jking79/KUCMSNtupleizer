@@ -105,8 +105,8 @@ void KUCMSAodSkimmer::processElectrons(){
 	bool hemEligible1 = (*Electron_pt)[itr] > 20;
     bool hemEligible2 = (*Electron_pt)[itr] > 30;
     bool isInHemRegion = inHEMRegion( eta, phi );
-    hemBits["el1"] = isInHemRegion && hemEligible1;
-    hemBits["el2"] = isInHemRegion && hemEligible2;
+    hemBits.set( "el1hvl", isInHemRegion && hemEligible1 );
+    hemBits.set( "el2hvm", isInHemRegion && hemEligible2 );
 
     //if( hemEligible && inHEMRegion( eta, phi ) ) hasHemObj = true;	
 

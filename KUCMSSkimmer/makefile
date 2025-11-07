@@ -52,6 +52,16 @@ p4=runLocalCKUCMSAodSVSkimmer
 TCOBJ = KUCMS_TimeCalibration.o
 TCINC = -I/KUCMSTimeCaliFiles/include
 
+# Automatically find all .cpp files under KUCMSTimeCaliFiles/src/
+#SRC_FILES := $(wildcard KUCMSTimeCaliFiles/src/*.cpp)
+#OBJ_FILES := $(patsubst KUCMSTimeCaliFiles/src/%.cpp, KUCMSTimeCaliFiles/obj/%.o, $(SRC_FILES))
+#
+## Ensure obj directory exists
+#$(shell mkdir -p KUCMSTimeCaliFiles/obj)
+#
+## Compile rule for all .cpp in that directory
+#KUCMSTimeCaliFiles/obj/%.o: KUCMSTimeCaliFiles/src/%.cpp
+#	$(CC) $(RTCFLAGS) $(RTGLIBS) $(INC) -c $< -o $@
 
 all: $(p1) 
 
@@ -72,5 +82,5 @@ $(p4): $(p4).cpp $(TCOBJ)
 
 
 # Clean up
-clean:
-	rm -f *.o *.obj
+#clean:
+#	rm -f *.o *.obj

@@ -63,6 +63,7 @@ void KUCMSAodSkimmer::processPhotons(){
     //if( geVars("genSigPerfect") == 1 ) std::cout << " -- pho sel susid " << (*Gen_susId)[(*Photon_genIdx)[it]] << std::endl;
     bool isGenSig = hasGenInfoFlag ? ( (*Gen_susId)[(*Photon_genIdx)[it]] == 22 )  : 0;
 
+    auto energy = (*Photon_energy)[it];
     auto pt = (*Photon_pt)[it];
     bool underMinPtEB = pt < 30;
     bool underMinPtEE = pt < 30;
@@ -95,8 +96,8 @@ void KUCMSAodSkimmer::processPhotons(){
     bool hemEligible2 = pt > 30 && not isExcluded && not hasPixSeed; 
 
 	bool isInHemRegion = inHEMRegion( eta, phi );
-	hemBits["pho1"] = isInHemRegion && hemEligible1;		
-    hemBits["pho2"] = isInHemRegion && hemEligible2;
+	hemBits.set( "pho1hvl", isInHemRegion && hemEligible1 );		
+    hemBits.set( "pho2hvm", isInHemRegion && hemEligible2 );
 
 	bool isEESig = not isExcluded && not hasPixSeed && overMaxEta;
     if( isEESig ){
@@ -112,16 +113,117 @@ void KUCMSAodSkimmer::processPhotons(){
 
     }//if( doGenInfo )
 
+    if( DEBUG ) std::cout << " -- pho pull SC info" << std::endl;
+    auto scSize = SuperCluster_seedIsEB->size();
+    auto rhids = (*SuperCluster_rhIds)[scIndx];
+    uInt nrh = rhids.size();
+
+    //int nSCRhids = scrhids.size();
+    float sumtw = 0;
+    float sumtrw = 0;
+    float sumw = 0;
+    float sumtw1 = 0;
+    float sumtrw1 = 0;
+    float sumw1 = 0;
+    float leadE = 0;
+    float leadTime = -99;
+    float leadAres = 0;
+    float leadTres = 2000000;
+    float leadSX = -1;
+    bool leadWried = false;
+    uInt leadRHID = 0;
+    float seedE = 0;
+    float seedTime = -99;
+    float seedAres = 0;
+    float seedTres = 2000000;
+    float seedSX = -1;
+    bool seedWried = false;
+    bool seedGS = false;
+    uInt seedRHID = 0;
+    std::vector<float> erhamps;
+    float sumerha = 0;
+    //auto nRecHits = ECALRecHit_ID->size();
+    // -------   check isTimeValid on rechit?  -------------------------------------
+    for( int sciter = 0; sciter < nrh; sciter++  ){
+        uInt pscrhid = rhids[sciter];
+        int erhiter = ( rhIDtoIterMap.find(pscrhid) != rhIDtoIterMap.end() ) ? rhIDtoIterMap[pscrhid] : -1;
+        if( erhiter != -1 ){
+            bool isValid = (*ECALRecHit_isTimeValid)[erhiter];
+            float swcrss = (*ECALRecHit_swCross)[erhiter];
+            bool isWeird = (*ECALRecHit_isWrd)[erhiter] || (*ECALRecHit_isDiWrd)[erhiter];
+            float gainwt = 1;
+			float gainwt1 = 1;
+            float erhe = (*ECALRecHit_energy)[erhiter];
+            float erampres = (*ECALRecHit_ampres)[erhiter];
+            float erhct = erh_corTime[erhiter];
+            float erx = (*ECALRecHit_rhx)[erhiter];
+            float ery = (*ECALRecHit_rhy)[erhiter];
+            float erz = (*ECALRecHit_rhz)[erhiter];
+            float cor_cms000 = hypo(erx,ery,erz)/SOL;
+            float cor_tofPVtoRH = hypo(erx-PV_x,ery-PV_y,erz-PV_z)/SOL;
+            float ertoftime = erhct - cor_cms000 + cor_tofPVtoRH;
+            float ertres = erh_timeRes[erhiter];
+            bool hasGainSwitch = (*ECALRecHit_hasGS1)[erhiter] || (*ECALRecHit_hasGS6)[erhiter];
+            if( hasGainSwitch ) gainwt = 0;
+			if( (*ECALRecHit_hasGS1)[erhiter] ) gainwt1 = 0;
+            if( not isValid ){ gainwt = 0; gainwt1 = 0; }
+            float invertres = 1/ertres;
+            erhamps.push_back(invertres);
+            sumerha += invertres;
+            float erhar = invertres*gainwt;
+            sumtw += erhar*ertoftime;
+            sumtrw += erhar*ertres;
+            sumw += erhar;
+            float erhar1 = invertres*gainwt1;
+            sumtw1 += erhar1*ertoftime;
+            sumtrw1 += erhar1*ertres;
+            sumw1 += erhar;
+            if( erhe*gainwt1 > leadE ){
+                leadE = erhe; leadTime = ertoftime; leadAres = erampres; leadRHID = pscrhid;
+                leadTres = ertres; leadSX = swcrss; leadWried = isWeird;
+            }//<<>>if( erhe*gainwt > leadE )
+            if( erhe > seedE ){
+                seedE = erhe; seedTime = ertoftime; seedAres = erampres; seedRHID = pscrhid;
+                seedTres = ertres; seedSX = swcrss; seedWried = isWeird; seedGS = hasGainSwitch;
+            }//<<>>if( erhe > seedE ) 
+        }//<<>>if( scrhid == rhid )
+    }//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
+    if( sumw == 0 ){ sumw = 1; sumtw = -100; sumtrw = -1000; }
+    float phoWTime = sumtw/sumw;
+    float phoWRes = sumtrw/sumw;
+    float phoWTime1 = sumtw1/sumw1;
+    float phoWRes1 = sumtrw1/sumw1;
+    //float ltimeres = timeCali->getTimeResoltuion( leadAres, leadRHID, Evt_run, tctag, mctype );
+    //if( ltimeres != leadTres ) std::cout << " !!!!!!!   lead res mis : " << ltimeres << " v " << leadTres << std::endl;
+    //float stimeres = timeCali->getTimeResoltuion( seedAres, seedRHID, Evt_run, tctag, mctype );
+    //if( stimeres != seedTres ) std::cout << " !!!!!!!   seed res mis : " << stimeres << " v " << seedTres << std::endl;
+    leadTres = std::sqrt(leadTres/2);
+    seedTres = std::sqrt(seedTres/2);
+    phoWRes = std::sqrt(phoWRes/2);
+    float leadtimesig = leadTime/leadTres;
+    float seedtimesig = seedTime/seedTres;
+    float wttimesig = phoWTime/phoWRes;
+    float wttimesig1 = phoWTime1/phoWRes1;
+
+	if( isExcluded ) continue;
+
+
+
+    selPhotons.fillBranch( "allPhoWTime1", phoWTime1 );
+    selPhotons.fillBranch( "allPhoWTimeSig1", wttimesig1 );
+    selPhotons.fillBranch( "allPhoWTime", phoWTime );
+    selPhotons.fillBranch( "allPhoWTimeSig", wttimesig );
+    selPhotons.fillBranch( "allPhoEta", eta );
+    selPhotons.fillBranch( "allPhoPhi", phi );
+    selPhotons.fillBranch( "allPhoPt", pt );
+    selPhotons.fillBranch( "allPhoE", energy );
+    selPhotons.fillBranch( "allPhoPixSeed", hasPixSeed );
+
     if( ( geVars("genSigPerfect") != 1 ) && phoskip ){ isSelPho.push_back(false); continue; }		
     if( ( geVars("genSigPerfect") == 1 ) &&  ( not isGenSig ) ){ isSelPho.push_back(false);  continue; }
 	isSelPho.push_back(true);
 
     ///////////  pho selection ////////////////////////////////////////////////////////////////////
-
-    if( DEBUG ) std::cout << " -- pho pull SC info" << std::endl;
-    auto scSize = SuperCluster_seedIsEB->size();
-    auto rhids = (*SuperCluster_rhIds)[scIndx];
-    uInt nrh = rhids.size();
 
     if( DEBUG ) std::cout << " -- pho pull info" << std::endl;
     auto isOOT = (*Photon_isOot)[it];
@@ -130,7 +232,6 @@ void KUCMSAodSkimmer::processPhotons(){
     auto smin = (*SuperCluster_smin)[scIndx];
     auto r9 = (*Photon_r9)[it];
     auto sieie = 0.f;//(*Photon_sieie)[it];
-    auto energy = (*Photon_energy)[it];
     auto cee = (*SuperCluster_covEtaEta)[scIndx];
     auto cep = (*SuperCluster_covEtaPhi)[scIndx];
     auto cpp = (*SuperCluster_covPhiPhi)[scIndx];
@@ -220,83 +321,10 @@ void KUCMSAodSkimmer::processPhotons(){
     float MBetaPrompt = 2*ce*std::sqrt(1-sq2(m3_phys));
     //float MBetaPrompt = 2*ce*m3_phys;
 
-    //int nSCRhids = scrhids.size();
-    float sumtw = 0;
-	float sumtrw = 0;
-    float sumw = 0;
-    float leadE = 0;
-    float leadTime = -99;
-    float leadAres = 0;
-    float leadTres = 2000000;
-	float leadSX = -1;
-	bool leadWried = false;
-    uInt leadRHID = 0;
-    float seedE = 0;
-    float seedTime = -99;
-    float seedAres = 0;
-    float seedTres = 2000000;
-    float seedSX = -1;
-    bool seedWried = false;
-	bool seedGS = false;
-	uInt seedRHID = 0;
-	std::vector<float> erhamps;
-	float sumerha = 0;
-    //auto nRecHits = ECALRecHit_ID->size();
-	// -------   check isTimeValid on rechit?  -------------------------------------
-    for( int sciter = 0; sciter < nrh; sciter++  ){
-        uInt pscrhid = rhids[sciter];
-		int erhiter = ( rhIDtoIterMap.find(pscrhid) != rhIDtoIterMap.end() ) ? rhIDtoIterMap[pscrhid] : -1;
-        if( erhiter != -1 ){
-			bool isValid = (*ECALRecHit_isTimeValid)[erhiter];
-			float swcrss = (*ECALRecHit_swCross)[erhiter];
-			bool isWeird = (*ECALRecHit_isWrd)[erhiter] || (*ECALRecHit_isDiWrd)[erhiter];
-			float gainwt = 1;
-            float erhe = (*ECALRecHit_energy)[erhiter];
-			float erampres = (*ECALRecHit_ampres)[erhiter];
-            float erhct = erh_corTime[erhiter];
-			float erx = (*ECALRecHit_rhx)[erhiter];
-            float ery = (*ECALRecHit_rhy)[erhiter];
-            float erz = (*ECALRecHit_rhz)[erhiter];
-			float cor_cms000 = hypo(erx,ery,erz)/SOL;
-			float cor_tofPVtoRH = hypo(erx-PV_x,ery-PV_y,erz-PV_z)/SOL;
-			float ertoftime = erhct - cor_cms000 + cor_tofPVtoRH;
-			float ertres = erh_timeRes[erhiter];
-			bool hasGainSwitch = (*ECALRecHit_hasGS1)[erhiter] || (*ECALRecHit_hasGS6)[erhiter];
-			if( hasGainSwitch ) gainwt = 0;
-			if( not isValid ) gainwt = 0;
-			float invertres = 1/ertres;
-			erhamps.push_back(invertres);
-			sumerha += invertres;
-			float erhar = invertres*gainwt;
-            sumtw += erhar*ertoftime;
-			sumtrw += erhar*ertres;
-            sumw += erhar;
-            if( erhe*gainwt > leadE ){ 
-				leadE = erhe; leadTime = ertoftime; leadAres = erampres; leadRHID = pscrhid; 
-				leadTres = ertres; leadSX = swcrss; leadWried = isWeird;
-			}//<<>>if( erhe*gainwt > leadE )
-			if( erhe > seedE ){ 
-				seedE = erhe; seedTime = ertoftime; seedAres = erampres; seedRHID = pscrhid; 
-				seedTres = ertres; seedSX = swcrss; seedWried = isWeird; seedGS = hasGainSwitch;
-			}//<<>>if( erhe > seedE ) 
-        }//<<>>if( scrhid == rhid )
-    }//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
-	if( sumw == 0 ){ sumw = 1; sumtw = -100; sumtrw = -1000; }
-    float phoWTime = sumtw/sumw;
-	float phoWRes = sumtrw/sumw;
-    //float ltimeres = timeCali->getTimeResoltuion( leadAres, leadRHID, Evt_run, tctag, mctype );
-	//if( ltimeres != leadTres ) std::cout << " !!!!!!!   lead res mis : " << ltimeres << " v " << leadTres << std::endl;
-    //float stimeres = timeCali->getTimeResoltuion( seedAres, seedRHID, Evt_run, tctag, mctype );
-    //if( stimeres != seedTres ) std::cout << " !!!!!!!   seed res mis : " << stimeres << " v " << seedTres << std::endl;
-	leadTres = std::sqrt(leadTres/2);
-	seedTres = std::sqrt(seedTres/2);
-	phoWRes = std::sqrt(phoWRes/2);
-	float leadtimesig = leadTime/leadTres;
-    float seedtimesig = seedTime/seedTres;
-	float wttimesig = phoWTime/phoWRes;
-
 	for( auto as : erhamps ){ hist1d[20]->Fill(as/sumerha); }
 
+    selPhotons.fillBranch( "selPhoWTime1", phoWTime1 );
+    selPhotons.fillBranch( "selPhoWTimeSig1", wttimesig1 );
     selPhotons.fillBranch( "selPhoLTimeSig", leadtimesig );
     selPhotons.fillBranch( "selPhoSTimeSig", seedtimesig );
     selPhotons.fillBranch( "selPhoWTimeSig", wttimesig );
@@ -560,6 +588,8 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch( "selPhoQuality", VINT ); 
   selPhotons.makeBranch( "selPhoTime", VFLOAT ); 
  
+  selPhotons.makeBranch( "selPhoWTime1", VFLOAT );
+  selPhotons.makeBranch( "selPhoWTimeSig1", VFLOAT );
   selPhotons.makeBranch( "selPhoLTimeSig", VFLOAT );
   selPhotons.makeBranch( "selPhoSTimeSig", VFLOAT );
   selPhotons.makeBranch( "selPhoWTimeSig", VFLOAT );
@@ -653,6 +683,16 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch( "EESigPho_tspscdr4", VFLOAT );   //!
   selPhotons.makeBranch( "EESigPho_erhsecdr4", VFLOAT );   //!
   selPhotons.makeBranch( "EESigPho_htoem", VFLOAT );   //!
+
+  selPhotons.makeBranch( "allPhoWTime1", VFLOAT );
+  selPhotons.makeBranch( "allPhoWTimeSig1", VFLOAT );
+  selPhotons.makeBranch( "allPhoWTime", VFLOAT );
+  selPhotons.makeBranch( "allPhoWTimeSig", VFLOAT );
+  selPhotons.makeBranch( "allPhoEta", VFLOAT );
+  selPhotons.makeBranch( "allPhoPhi", VFLOAT );
+  selPhotons.makeBranch( "allPhoPt", VFLOAT );
+  selPhotons.makeBranch( "allPhoE", VFLOAT );
+  selPhotons.makeBranch( "allPhoPixSeed", VBOOL );
 
   // add new photon branches above
   selPhotons.attachBranches( fOutTree );

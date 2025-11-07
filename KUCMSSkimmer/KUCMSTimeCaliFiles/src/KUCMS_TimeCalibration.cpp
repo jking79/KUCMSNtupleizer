@@ -47,10 +47,6 @@ KUCMS_TimeCalibration::KUCMS_TimeCalibration( bool stayOpen, bool makeNew ){
 	xBinStr = "VARIABLE 25 50 75 100 125 150 175 200 225 250 300 400 600 1000 1800"; 
     yBinStr = "CONSTANT 600 -3 3";
 
-    //lowEnergy = true;
-	//xBinStr = "VARIABLE 0.2 0.5 1 2 5 10 15 20 25 50";
-	//yBinStr = "CONSTANT 1200 -3 3"; 
-
 	maptypes = {"_MeanMap","_ErrMap","_SumMap","_Sum2Map","_OccMap"};
 
 	updated = false;
@@ -96,7 +92,7 @@ void KUCMS_TimeCalibration::SetupDetIDsEB(){
     while( infile >> cmsswId >> dbID >> hashedId >> iphi >> ieta >> absieta >> pos
                 >> FED >> SM >> TT25 >> iTT >> strip5 >> Xtal >> phiSM >> etaSM >> phi >> eta ){
 
-        DetIDMap[cmsswId] = {iphi,ieta,TT25,0,phi,eta};
+        DetIDMap[cmsswId] = {iphi,ieta,TT25,0,phi,eta,SM,iTT};
 		InvDetIDMap[iphi][ieta][0] = cmsswId;
 
     }//<<>>while (infile >>
@@ -116,7 +112,7 @@ void KUCMS_TimeCalibration::SetupDetIDsEE(){
 
         int ec = 1;
         if( side > 0 ) ec = 2;
-        DetIDMap[cmsswId] = {ix,iy,TTCCU,ec,phi,eta};
+        DetIDMap[cmsswId] = {ix,iy,TTCCU,ec,phi,eta,quadrant,SC};
         InvDetIDMap[ix][iy][ec] = cmsswId;
 
     }//<<>>while (infile >>
@@ -971,9 +967,19 @@ void KUCMS_TimeCalibration::LoadExtCali( std::string calihist, std::string mapna
 
 uInt KUCMS_TimeCalibration::getTTId( uInt detId ){
 
-	int ttphi = 1 + int( DetIDMap[detId].i1 - 1 )/5;
-	int tteta = 1 + int( std::abs( DetIDMap[detId].i2 ) - 1 )/5;
-	uInt id = ( DetIDMap[detId].i2 < 0 ) ? (ttphi+tteta*100)+2000 : (ttphi+tteta*100);
+	uInt id = 9999999;
+
+	if( DetIDMap[detId].ecal == 0 ){
+		int ttphi = 1 + int( DetIDMap[detId].i1 - 1 )/5;
+		int tteta = 1 + int( std::abs( DetIDMap[detId].i2 ) - 1 )/5;
+		id = ( DetIDMap[detId].i2 < 0 ) ? (ttphi+tteta*100)+2000 : (ttphi+tteta*100);
+	} else {
+		int side = DetIDMap[detId].ecal; 
+		int ttphi = DetIDMap[detId].TT;
+		int tteta =  DetIDMap[detId].sect;
+		int mod = DetIDMap[detId].mod;
+		id = 1000000*side + mod*1000 + tteta*100 + ttphi; 
+	}//<<>>if( DetIDMap[detId].ecal == ECAL::EB ) else
 	//std::cout << " getTTId " << detId << " phi " << DetIDMap[detId].i1 << " eta " << DetIDMap[detId].i2 << std::endl; 
     //std::cout << "  --> p " << ttphi << " e " << tteta << " = " << id <<std::endl;
 	return id;
@@ -1186,7 +1192,9 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
     TBranch *b_rhID;   //!
     TBranch *b_rhRtTime;   //!
     TBranch *b_rhEnergy;   //!
-    //TBranch *b_rhAmp;
+    //TBranch *b_rhAmp; // base for resolutions 
+
+	bool highEnergy( false ); // switch to GS for determing high energy
 
 	// make sure iov maps exist for cali maps we are making
 	if( doTT && iovMaps.find(curTTIov) == iovMaps.end() ){ std::cout << " TT Iov not valid !!" << std::endl; return; }
@@ -1284,8 +1292,8 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 							for( int idx = 0; idx < nRecHits; idx++ ){
 								//if( debug) std::cout << rhEnergy->at(idx) << " " << rhID->at(idx) << " " << rhRtTime->at(idx) << std::endl;
                                 //if( rhEnergy->at(idx) < 5.0 || rhEnergy->at(idx) > 160 ) continue;
-                                if( not lowEnergy && rhEnergy->at(idx) < 5.0 ) continue;
-								if( lowEnergy && rhEnergy->at(idx) > 25.0 ) continue;
+                                if( rhEnergy->at(idx) < 5.0 ) continue;
+								if( highEnergy && rhEnergy->at(idx) < 250.0 ) continue;
 								uInt id = rhID->at(idx);
 								//if( debug) std::cout << " - EB check --- " << id << " / " << DetIDMap[id].ecal;
 								//if( debug) std::cout << " - " << ECAL::EB << std::endl;
@@ -1328,8 +1336,8 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 					calirunset[tag][tstart] = { hfname, tstart, tend, last, tlumi };
                     for( int idx = 0; idx < nRecHits; idx++ ){
 						//if( debug) std::cout << rhEnergy->at(idx) << " " << rhID->at(idx) << " " << rhRtTime->at(idx) << std::endl;
-                        if( not lowEnergy && rhEnergy->at(idx) < 5.0 ) continue;
-                        if( lowEnergy && rhEnergy->at(idx) > 25.0 ) continue;
+                        if( highEnergy && rhEnergy->at(idx) < 250.0 ) continue;
+                        if( rhEnergy->at(idx) < 5.0 ) continue;
                         uInt id = rhID->at(idx);
 						if( DetIDMap[id].ecal != ECAL::EB ) continue;
                         float time = rhRtTime->at(idx);

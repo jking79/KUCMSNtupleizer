@@ -67,8 +67,6 @@ log                   = {LOGDIR}/job_$(Cluster)_$(Process).log
 
 +JobFlavour           = "longlunch"
 
-requirements          = (OpSysAndVer == "CentOS8") || (OpSysAndVer == "AlmaLinux8") || (OpSysAndVer == "Rocky8")
-
 arguments = $(ARG1) $(ARG2) $(ARG3)
 
 queue ARG1, ARG2, ARG3 from (
@@ -124,6 +122,14 @@ def main():
     jobs = read_jobs(input_list)
     write_submission(jobs)
     submit()
+
+    # Remove submission file after submission
+    try:
+        if os.path.exists(SUB_FILE):
+            os.remove(SUB_FILE)
+            print(f"🧹 Removed temporary submission file: {SUB_FILE}")
+    except Exception as e:
+        print(f"⚠️ Warning: could not remove {SUB_FILE}: {e}")
 
 if __name__ == "__main__":
     main()

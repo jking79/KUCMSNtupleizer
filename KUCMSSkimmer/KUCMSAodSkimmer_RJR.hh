@@ -253,15 +253,15 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
   selRjrVars.fillBranch( "rjrCleaningVeto0", rjrCleaningVeto0 );
 
   bool rjrCleaningVeto1 = false;
-  if( m_dphiSI <= 0.6 && m_PTS > (250.0 * m_dphiSI) ) rjrCleaningVeto1 == true;
-  if( m_dphiSI > 0.6 && m_dphiSI < 2.4 && m_PTS > 150.0 ) rjrCleaningVeto1 == true; 
-  if( m_dphiSI >= 2.4 && m_PTS > (150.0 - (187.5 * (m_dphiSI - 2.4))) ) rjrCleaningVeto1 == true;
+  if( ( m_dphiSI <= 0.6 ) && ( m_PTS > (250.0 * m_dphiSI) ) ) rjrCleaningVeto1 = true;
+  if( ( m_dphiSI > 0.6 ) && ( m_dphiSI < 2.4 ) && ( m_PTS > 150.0 ) ) rjrCleaningVeto1 = true; 
+  if( ( m_dphiSI >= 2.4 ) && ( m_PTS > (150.0 - (187.5 * (m_dphiSI - 2.4))) ) ) rjrCleaningVeto1 = true;
   selRjrVars.fillBranch( "rjrCleaningVeto1", rjrCleaningVeto1 );  
 
   bool rjrCleaningVeto2 = false; 
-  if( m_dphiSI <= 0.3 && m_PTS > (500.0 * m_dphiSI) ) rjrCleaningVeto2 == true; 
-  if( m_dphiSI > 0.3 && m_dphiSI < 2.8 && m_PTS > 150.0 ) rjrCleaningVeto2 == true;  
-  if( m_dphiSI >= 2.8 && m_PTS > (150.0 - (375.0 * (m_dphiSI - 2.8))) ) rjrCleaningVeto2 == true; 
+  if( ( m_dphiSI <= 0.3 ) && ( m_PTS > (500.0 * m_dphiSI) ) ) rjrCleaningVeto2 = true; 
+  if( ( m_dphiSI > 0.3 ) && ( m_dphiSI < 2.8 ) && ( m_PTS > 150.0 ) ) rjrCleaningVeto2 = true;  
+  if( ( m_dphiSI >= 2.8 ) && ( m_PTS > (150.0 - (375.0 * (m_dphiSI - 2.8))) ) ) rjrCleaningVeto2 = true; 
   selRjrVars.fillBranch( "rjrCleaningVeto2", rjrCleaningVeto2 );   
 
   if( RJRDEBUG ) std::cout << " - Getting RJR varibles 2." << std::endl;

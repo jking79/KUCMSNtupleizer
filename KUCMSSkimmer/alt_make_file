@@ -1,0 +1,47 @@
+# ==== Compiler and Flags ====
+CC         = g++
+CXXFLAGS   = -Wall -O2 -std=c++17
+
+# ==== Custom Flags ====
+RTCFLAGS   =    # your real-time compile flags
+RTGLIBS    =    # your real-time link libs
+RFCFLAGS   =    # your RF compile flags
+RFGLIBS    =    # your RF link libs
+BCFLAGS8   =    # other compile flags
+BCGLIBS8   =    # other link libs
+INC        = -I./KUCMSTimeCaliFiles/include
+
+# ==== Source & Object Structure ====
+SRC_DIR    = KUCMSTimeCaliFiles/src
+OBJ_DIR    = KUCMSTimeCaliFiles/obj
+
+# Example program name (set this externally if you like)
+p4         = MyProgram
+
+# Gather object files automatically from source directory
+SRC_FILES  := $(wildcard $(SRC_DIR)/*.cpp)
+OBJ_FILES  := $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SRC_FILES))
+
+# ==== Default Target ====
+all: $(p4).obj
+
+# ==== Link Step ====
+$(p4).obj: $(p4).cpp $(OBJ_FILES)
+	@echo "Linking $@..."
+	$(CC) -o $@ $^ $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS8) $(BCGLIBS8)
+
+# ==== Compile Step with Dependency Tracking ====
+# -MMD and -MP generate dependency files (.d) for headers
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@mkdir -p $(OBJ_DIR)
+	@echo "Compiling $<..."
+	$(CC) $(RTCFLAGS) $(RTGLIBS) $(INC) -MMD -MP -c $< -o $@
+
+# ==== Include Auto-Generated Dependency Files ====
+-include $(OBJ_FILES:.o=.d)
+
+# ==== Cleanup ====
+clean:
+	@echo "Cleaning build files..."
+	rm -f $(OBJ_FILES) $(OBJ_FILES:.o=.d) $(p4).obj
+
