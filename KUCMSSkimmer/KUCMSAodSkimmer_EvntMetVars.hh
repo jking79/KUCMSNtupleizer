@@ -51,7 +51,7 @@ void KUCMSAodSkimmer::processEvntVars(){
   selEvtVars.fillBranch( "evtXSection", xsctn );
   
   float fillWgt = 1;
-  if( hasGenInfoFlag ) fillWgt = ( ( xsctn * 1000 ) * evtGenWgt  ) / configWgts["sumEvtWgt"];
+  if( mctype == 0 ) fillWgt = ( ( xsctn * 1000 ) * evtGenWgt  ) / configWgts["sumEvtWgt"];
 
   selEvtVars.fillBranch( "evtFillWgt", fillWgt );
 
@@ -67,7 +67,7 @@ void KUCMSAodSkimmer::processEvntVars(){
   bool goodVertices = true;
   bool hfNoisyHitsFilter = true;
 
-  if( not hasGenInfoFlag ){
+  if( mctype == 1 ){
 
 	BadChargedCandidateFilter = Flag_BadChargedCandidateFilter;
 	BadPFMuonDzFilter = Flag_BadPFMuonDzFilter;
@@ -83,6 +83,9 @@ void KUCMSAodSkimmer::processEvntVars(){
 
   }//<<>>if( not doGenInfo )
 
+  bool metFlags = BadChargedCandidateFilter && BadPFMuonDzFilter && BadPFMuonFilter && EcalDeadCellTriggerPrimitiveFilter; 
+  metFlags = metFlags && HBHENoiseFilter && HBHENoiseIsoFilter && ecalBadCalibFilter && eeBadScFilter && goodVertices && hfNoisyHitsFilter;
+
   selEvtVars.fillBranch( "Flag_BadChargedCandidateFilter", BadChargedCandidateFilter );//not suggested
   selEvtVars.fillBranch( "Flag_BadPFMuonDzFilter", BadPFMuonDzFilter );//suggested
   selEvtVars.fillBranch( "Flag_BadPFMuonFilter", BadPFMuonFilter );//suggested
@@ -94,13 +97,14 @@ void KUCMSAodSkimmer::processEvntVars(){
   selEvtVars.fillBranch( "Flag_globalSuperTightHalo2016Filter", globalSuperTightHalo2016Filter );//suggested
   selEvtVars.fillBranch( "Flag_goodVertices", goodVertices );//suggested
   selEvtVars.fillBranch( "Flag_hfNoisyHitsFilter", hfNoisyHitsFilter );//optional
+  selEvtVars.fillBranch( "Flag_MetFilters", metFlags );//optional 
 
   bool PFMET120_PFMHT120_IDTight = true;
   bool PFMETNoMu120_PFMHTNoMu120_IDTight = true;
   bool PFMET120_PFMHT120_IDTight_PFHT60 = true;
   bool PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60 = true;
 
-  if( not hasGenInfoFlag ){
+  if( mctype == 1 ){
 
 	PFMET120_PFMHT120_IDTight = HLT_PFMET120_PFMHT120_IDTight_v;
 	PFMETNoMu120_PFMHTNoMu120_IDTight = HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_v;
@@ -114,9 +118,27 @@ void KUCMSAodSkimmer::processEvntVars(){
   selEvtVars.fillBranch( "Trigger_PFMET120_PFMHT120_IDTight_PFHT60", PFMET120_PFMHT120_IDTight_PFHT60 );
   selEvtVars.fillBranch( "Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60", PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60 );
 
-  bool hemVeto = false;
-  if( not hasGenInfoFlag && hasHemObj && ( Evt_run > 319076 && Evt_run < 326635 ) ) hemVeto = true;
-  selEvtVars.fillBranch( "Flag_hemVeto", hemVeto );
+  bool hemRun = ( Evt_run > 319076 && Evt_run < 326635 ) ? true : false;
+  bool eLHem = hemBits["el1"];
+  bool eMHem = hemBits["el2"];
+  bool jLHem = hemBits["jet1"];
+  bool jMHem = hemBits["jet2"];
+  bool pLHem = hemBits["pho1"];
+  bool pMHem = hemBits["pho2"];
+  bool mLHem = hemBits["mu1"];
+  bool mMHem = hemBits["mu2"];
+  bool fullHemVeto = eLHem && jLHem && pMHem && mLHem && hemRun && ( mctype == 1 );
+
+  selEvtVars.fillBranch( "Flag_hemRun", hemRun );
+  selEvtVars.fillBranch( "Flag_eLHemVeto", eLHem );
+  selEvtVars.fillBranch( "Flag_eMHemVeto", eMHem );
+  selEvtVars.fillBranch( "Flag_jLHemVeto", jLHem );
+  selEvtVars.fillBranch( "Flag_jMHemVeto", jMHem );
+  selEvtVars.fillBranch( "Flag_pLHemVeto", pLHem );
+  selEvtVars.fillBranch( "Flag_pMHemVeto", pMHem );
+  selEvtVars.fillBranch( "Flag_mLHemVeto", mLHem );
+  selEvtVars.fillBranch( "Flag_mMHemVeto", mMHem );
+  selEvtVars.fillBranch( "Flag_hemVeto", fullHemVeto );
 
 }//<<>>void KUCMSAodSkimmer::processEvntVars()
 
@@ -172,8 +194,18 @@ void KUCMSAodSkimmer::setEvtVarMetBranches( TTree* fOutTree ){
   selEvtVars.makeBranch( "Flag_globalSuperTightHalo2016Filter", BOOL );
   selEvtVars.makeBranch( "Flag_goodVertices", BOOL );
   selEvtVars.makeBranch( "Flag_hfNoisyHitsFilter", BOOL );
+  selEvtVars.makeBranch( "Flag_MetFilters", BOOL );//optional  
 
+  selEvtVars.makeBranch( "Flag_hemRun", BOOL );
   selEvtVars.makeBranch( "Flag_hemVeto", BOOL );
+  selEvtVars.makeBranch( "Flag_eLHemVeto", BOOL );
+  selEvtVars.makeBranch( "Flag_eMHemVeto", BOOL );
+  selEvtVars.makeBranch( "Flag_jLHemVeto", BOOL );
+  selEvtVars.makeBranch( "Flag_jMHemVeto", BOOL );
+  selEvtVars.makeBranch( "Flag_pLHemVeto", BOOL );
+  selEvtVars.makeBranch( "Flag_pMHemVeto", BOOL );
+  selEvtVars.makeBranch( "Flag_mLHemVeto", BOOL );
+  selEvtVars.makeBranch( "Flag_mMHemVeto", BOOL );
 
   selEvtVars.makeBranch( "Trigger_PFMET120_PFMHT120_IDTight", BOOL );
   selEvtVars.makeBranch( "Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight", BOOL );

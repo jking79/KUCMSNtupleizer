@@ -32,6 +32,7 @@ p17=runKUCMSAodSVSkimmer
 p18=skimRJRMultiHistMakerZ5_batch
 p19=skimRJRMultiHistMakerBatch6
 p20=skimRJRMultiHistMakerBatch7
+p21=skimRJRMultiHistMakerBatch_EGJets
 
 all: $(p1) 
 
@@ -94,4 +95,7 @@ $(p19): $(p19).cpp
 
 $(p20): $(p20).cpp
 	$(CC) -o $(p20).obj $(p20).cpp $(RTCFLAGS) $(RTGLIBS)
+
+$(p21): $(p21).cpp
+	$(CC) -o $(p21).obj $(p21).cpp $(RTCFLAGS) $(RTGLIBS)
 

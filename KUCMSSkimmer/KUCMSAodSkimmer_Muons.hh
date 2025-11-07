@@ -50,8 +50,14 @@ void KUCMSAodSkimmer::processMuons(){
 	
 	float eta = (*Muon_eta)[itr];
     float phi = (*Muon_phi)[itr];
-    bool hemEligible = (*Muon_isLoose)[itr] && (*Muon_pt)[itr] > 30;
-    if( hemEligible && inHEMRegion( eta, phi ) ) hasHemObj = true;  
+
+    bool hemEligible1 = (*Muon_pt)[itr] > 20;
+    bool hemEligible2 = (*Muon_pt)[itr] > 30;
+    bool isInHemRegion = inHEMRegion( eta, phi );
+    hemBits["mu1"] = isInHemRegion && hemEligible1;
+    hemBits["mu2"] = isInHemRegion && hemEligible2;
+
+    //if( hemEligible && inHEMRegion( eta, phi ) ) hasHemObj = true;  
 
 
   }//<<>>for( uInt itr = 0; itr < nMuons; itr++ )

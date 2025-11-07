@@ -43,30 +43,37 @@ BCFLAGS8 += -I/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/Functional
 BCGLIBS8 += -L/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/BayesianClustering/lib -lBayesianClustering
 BCGLIBS8 += $(GLIBS8)
 
-
 CC=g++
 
 OPTS = -O3 -march=native -ffast-math -funroll-loops -flto
 OPTS += -fno-trapping-math -funsafe-math-optimizations -fomit-frame-pointer -fno-math-errno
 
 p1=runKUCMSAodSVSkimmer
-p2=spaceholder
+p2=fillKUCMSTimeCalibration
 p3=runLocalKUCMSAodSVSkimmer
+p4=runLocalCKUCMSAodSVSkimmer
+
+TCOBJ = KUCMS_TimeCalibration.o
+TCINC = -I/KUCMSTimeCaliFiles/include
+
 
 all: $(p1) 
+TimeCali: KUCMS_TimeCalibration.o
 
-el9: $(p1)
+KUCMS_TimeCalibration.o: KUCMSTimeCaliFiles/src/KUCMS_TimeCalibration.cpp KUCMSTimeCaliFiles/include/*.hh
+	$(CC) $(RTCFLAGS) $(RTGLIBS) $(TCINC) -fPIC -c $< -o $@
 
-el8: $(p3)
+$(p1): $(p1).cpp $(TCOBJ)
+	$(CC) -o $(p1).obj $(p1).cpp $(TCOBJ) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS) $(BCGLIBS)  
 
-$(p1): $(p1).cpp
-	$(CC) -o $(p1).obj $(p1).cpp $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS) $(BCGLIBS)  
+$(p2): $(p2).cpp $(TCOBJ)
+	$(CC) -o $(p2).obj $(p2).cpp $(TCOBJ) $(RTCFLAGS) $(RTGLIBS)
 
-$(p2): $(p2).cpp
-	$(CC) -o $(p2).obj $(p2).cpp $(RTCFLAGS) $(RTGLIBS)
+$(p3): $(p3).cpp $(TCOBJ)
+	$(CC) -o $(p3).obj $(p3).cpp $(TCOBJ) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS8) $(BCGLIBS8) $(OPTS)
 
-$(p3): $(p3).cpp
-	$(CC) -o $(p3).obj $(p3).cpp $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS8) $(BCGLIBS8) $(OPTS)
+$(p4): $(p4).cpp $(TCOBJ)
+	$(CC) -o $(p4).obj $(p4).cpp $(TCOBJ) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS8) $(BCGLIBS8) $(OPTS) 
 
 configtar:
 	cp runKUCMSAodSVSkimmer.obj config/
@@ -74,3 +81,7 @@ configtar:
 	cp -r json/ config/
 	cp -r ecal_config/ config/
 	tar -czf condor/config.tgz config/
+
+# Clean up
+clean:
+	rm -f *.o *.obj

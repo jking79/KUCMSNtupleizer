@@ -24,11 +24,13 @@ macros/*.obj
 !*List.txt
 !KUCMSSkimmer/ntuple_master_lists/*.txt
 !macros/ecal_config/*.txt
+!KUCMSSkimmer/sublists/*.txt
 !*readme.txt
 test/*WorkSpace/
 *.root
 *.pyc
 *.obj
+*.o
 *.log
 *.png
 *.pdf

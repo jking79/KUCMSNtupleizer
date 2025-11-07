@@ -48,17 +48,11 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
   // process event
   LAB->ClearEvent();
 
-  auto leadPhoPt = geVars("leadPhoPt"); //selPhotons.getFLBranchValue( "selPhoPt", leadSelPho );
-  auto leadPhoPhi = geVars("leadPhoPhi"); //selPhotons.getFLBranchValue( "selPhoPhi", leadSelPho );
-  auto leadPhoEta = geVars("leadPhoEta"); //selPhotons.getFLBranchValue( "selPhoPhi", leadSelPho );
-  auto leadPhoMx = geVars("leadPhoMx"); //selPhotons.getFLBranchValue( "selPhoPhi", leadSelPho );
-  auto leadPhoMy = geVars("leadPhoMy"); //selPhotons.getFLBranchValue( "selPhoPhi", leadSelPho );
-
-  auto subLeadPhoPt = geVars("subLeadPhoPt"); //selPhotons.getFLBranchValue( "selPhoPt", subLeadSelPho );
-  auto subLeadPhoPhi = geVars("subLeadPhoPhi"); //selPhotons.getFLBranchValue( "selPhoPhi", subLeadSelPho );
-  auto subLeadPhoEta = geVars("subLeadPhoEta"); //selPhotons.getFLBranchValue( "selPhoPhi", subLeadSelPho );
-  auto subLeadPhoMx = geVars("subLeadPhoMx"); //selPhotons.getFLBranchValue( "selPhoPhi", leadSelPho );
-  auto subLeadPhoMy = geVars("subLeadPhoMy"); //selPhotons.getFLBranchValue( "selPhoPhi", leadSelPho );
+  auto sPhoPt = geVects( "selPhoPt");
+  auto sPhoEta = geVects( "selPhoEta");
+  auto sPhoPhi = geVects( "selPhoPhi");
+  auto sPhoMx = geVects( "selPhoEMx");
+  auto sPhoMy = geVects( "selPhoEMy");
 
   auto nSelPhotons = geCnts("nSelPhotons");
 
@@ -75,39 +69,58 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
   int nRJRPhos = 0;
   std::vector<RFKey> jetID;
   std::vector<TLorentzVector> pho4vec;
+  std::vector<TLorentzVector> jet4vec;
   bool zsig = ( geVars("noSVorPho") == 1 ) ? true : false;	
   if( zsig ) std::cout << " ------------ noSVorPho is True !!!!!!!!!!!!!!!!!!!!!!!! " << std::endl;
-  if( not zsig ){
+  if( true ){ // old : if( not zsig ){ ?? never do this ??
+	nRJRPhos = ( nSelPhotons > 1 ) ? 2 : ( nSelPhotons > 0 ) ? 1 : 0;
+  	for( int spidx = 0; spidx < nSelPhotons; spidx++ ){
+    
+    	if( RJRDEBUG ) std::cout << " - Loading Pho " << spidx << std::endl;
+        if( type == 0 ){
+            phoBMetPx += sPhoMx[spidx]; 
+            phoBMetPy += sPhoMy[spidx];
+        }//<<>>if( type == 0 )
+        TLorentzVector phojet;
+        phojet.SetPtEtaPhiM( sPhoPt[spidx], sPhoEta[spidx], sPhoPhi[spidx], 0 );
+        jetID.push_back( COMB_J->AddLabFrameFourVector(phojet) );
+        if( spidx < nRJRPhos ) pho4vec.push_back(phojet);
+		else jet4vec.push_back(phojet);		
+
+  	}//<<>>for( spidx = 0; spidx < nSelPhotons; spidx++ )
+/*
 	if( nSelPhotons != 0 ){
     	nRJRPhos = 1;
       	if( RJRDEBUG ) std::cout << " - Loading Lead/SubLead Pho" << std::endl;
       	if( type == 0 ){
-			phoBMetPx += leadPhoMx; 
-			phoBMetPy += leadPhoMy;
+			phoBMetPx += sPhoMx[0]; 
+			phoBMetPy += sPhoMy[0];
       	}//<<>>if( type == 0 )
 		TLorentzVector phojet;
-		phojet.SetPtEtaPhiM( leadPhoPt, leadPhoEta, leadPhoPhi, 0 );
+		phojet.SetPtEtaPhiM( sPhoPt[0], sPhoEta[0], sPhoPhi[0], 0 );
 		jetID.push_back( COMB_J->AddLabFrameFourVector(phojet) );
 		pho4vec.push_back(phojet);
     }//<<>>if( nSelPhotons > 0 )
     if( nSelPhotons > 1 ){ 
     	nRJRPhos = 2;
       	if( type == 0 ){
-			phoBMetPx += subLeadPhoMx;
-			phoBMetPy += subLeadPhoMy;
+			phoBMetPx += sPhoMx[1];
+			phoBMetPy += sPhoMy[1];
       	}//<<>>if( type == 0 )
 		TLorentzVector sphojet;
-		sphojet.SetPtEtaPhiM( subLeadPhoPt, subLeadPhoEta, subLeadPhoPhi, 0 );
+		sphojet.SetPtEtaPhiM( sPhoPt[1], sPhoEta[1], sPhoPhi[1], 0 );
 		jetID.push_back( COMB_J->AddLabFrameFourVector(sphojet) );
 		pho4vec.push_back(sphojet);
 	}//<<>>if( nSelPhotons > 1 )
+*/
+
   }//<<>>if( not zsig )
   else std::cout << " --- !!!  Photons not loaded into RJR !!!!!!!!!!!!!!!!!!" << std::endl;
 
   if( RJRDEBUG ) std::cout << " - Loading MET." << std::endl;
   if( verbose ){
-    std::cout << " - Loading MET lPt: " << leadPhoPt << " lPhi: " << leadPhoPhi << std::endl;
-    std::cout << " - Loading MET slPt: " << subLeadPhoPt << " slPhi: " << subLeadPhoPhi << std::endl; 
+    std::cout << " - Loading MET lPt: " << sPhoPt[0] << " lPhi: " << sPhoPhi[0] << std::endl;
+    std::cout << " - Loading MET slPt: " << sPhoPt[1] << " slPhi: " << sPhoPhi[1] << std::endl; 
     std::cout << " - Loading MET x: " << geVars("metPx") << " -> " << phoRMetCPx;
     std::cout << " y: " << geVars("metPy") << " -> " << phoRMetCPy << std::endl;
   }//<<>>if( verbose )
@@ -124,7 +137,6 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
   auto selJetPhi = geVects( "selJetPhi");
   auto selJetMass = geVects( "selJetMass");
   std::vector<RFKey> leadJetKey;
-  std::vector<TLorentzVector> jet4vec;
   if( RJRDEBUG ) std::cout << " - Loading Jets." << std::endl;
   for( uInt it = 0; it < nSelJets; it++ ){
     auto sjetPt = selJetPt[it]; //selJets.getFLBranchValue( "selJetPt", it );
@@ -152,10 +164,11 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
   bool isALeadPhoSide = true;	
   int subPhoLocation = 0;
   int leadPhoLocation = ( type < 2 ) ? 1 : 0;
+  int xtraPhos = ( nSelPhotons > nRJRPhos ) ? nSelPhotons - nRJRPhos : 0;
   int nVisObjects = jetID.size();
-  if( nVisObjects != ( (type < 2 ) ? nRJRPhos + nSelJets : nSelJets ) ){ 
+  if( nVisObjects != ( (type < 2 ) ? nRJRPhos + nSelJets + xtraPhos : nSelJets + xtraPhos ) ){ 
     std::cout << " !!!!!!    nVisObjects != ( nRJRPhos + nSelJets )  !!!!!!!!! " << std::endl;
-    std::cout << " !!!!!!    " << nVisObjects << " != ( " << nRJRPhos << " + " << nSelJets << " )  !!!!!!!!! " << std::endl;
+    std::cout << " !!!!!!    " << nVisObjects << " != ( " << nRJRPhos + xtraPhos << " + " << nSelJets << " )  !!!!!!!!! " << std::endl;
   }//<<>>if( nVisObjects != ( nRJRPhos + nSelJets ) )
   if( COMB_J->GetFrame(jetID[0]) == *J1b || COMB_J->GetFrame(jetID[0]) == *J2b ){ isALeadPhoSide = false; if( type < 2 ) leadPhoLocation = 2; }
   //  -- redifine A & B side for jets to be : is jet on lead pho side -> A ; is not on lead pho side -> B // done
@@ -228,13 +241,28 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
   selRjrVars.fillBranch( "rjrSdphiDA", m_dphiS  );
   selRjrVars.fillBranch( "rjrSdphiBV", m_dphiSI ); // !!!!!!!!!!!!!  dphiCMI
   selRjrVars.fillBranch( "rjrDPhiSI", m_dphiSI ); // !!!!!!!!!!!!!  dphiCMI
-  selRjrVars.fillBranch( "rjrPTS", m_PTS );
+  selRjrVars.fillBranch( "rjrPTS", m_PTS ); // !!!!!!!!!!!!!!!!!!  P_{t}^{S}
   selRjrVars.fillBranch( "rjrPZS", m_PZS );
   selRjrVars.fillBranch( "rjrPS", m_PS );
 
  
   if( type == 0 ) hist2d[2]->Fill(m_dphiSI,m_PTS);
   if( type == 1 ) hist2d[3]->Fill(m_dphiSI,m_PTS); 
+
+  bool rjrCleaningVeto0 =  ( m_PTS > 150.0 ) ? true : false; 
+  selRjrVars.fillBranch( "rjrCleaningVeto0", rjrCleaningVeto0 );
+
+  bool rjrCleaningVeto1 = false;
+  if( m_dphiSI <= 0.6 && m_PTS > (250.0 * m_dphiSI) ) rjrCleaningVeto1 == true;
+  if( m_dphiSI > 0.6 && m_dphiSI < 2.4 && m_PTS > 150.0 ) rjrCleaningVeto1 == true; 
+  if( m_dphiSI >= 2.4 && m_PTS > (150.0 - (187.5 * (m_dphiSI - 2.4))) ) rjrCleaningVeto1 == true;
+  selRjrVars.fillBranch( "rjrCleaningVeto1", rjrCleaningVeto1 );  
+
+  bool rjrCleaningVeto2 = false; 
+  if( m_dphiSI <= 0.3 && m_PTS > (500.0 * m_dphiSI) ) rjrCleaningVeto2 == true; 
+  if( m_dphiSI > 0.3 && m_dphiSI < 2.8 && m_PTS > 150.0 ) rjrCleaningVeto2 == true;  
+  if( m_dphiSI >= 2.8 && m_PTS > (150.0 - (375.0 * (m_dphiSI - 2.8))) ) rjrCleaningVeto2 == true; 
+  selRjrVars.fillBranch( "rjrCleaningVeto2", rjrCleaningVeto2 );   
 
   if( RJRDEBUG ) std::cout << " - Getting RJR varibles 2." << std::endl;
 
@@ -657,6 +685,9 @@ void KUCMSAodSkimmer::setRJRBranches( TTree* fOutTree ){
     selRjrVars.makeBranch( "rjrPVlab", VFLOAT );
     selRjrVars.makeBranch( "rjrDphiMETV", VFLOAT );
     selRjrVars.makeBranch( "rjrDPhiSI", VFLOAT );
+    selRjrVars.makeBranch( "rjrCleaningVeto0", VBOOL );
+    selRjrVars.makeBranch( "rjrCleaningVeto1", VBOOL );
+    selRjrVars.makeBranch( "rjrCleaningVeto2", VBOOL );
 
     selRjrVars.makeBranch( "rjrNJetsJb", VINT );
     selRjrVars.makeBranch( "rjrNJetsJa", VINT );

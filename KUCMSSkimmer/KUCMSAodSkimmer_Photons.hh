@@ -64,58 +64,54 @@ void KUCMSAodSkimmer::processPhotons(){
     bool isGenSig = hasGenInfoFlag ? ( (*Gen_susId)[(*Photon_genIdx)[it]] == 22 )  : 0;
 
     auto pt = (*Photon_pt)[it];
-    bool underMinPt = pt < 30;
+    bool underMinPtEB = pt < 30;
+    bool underMinPtEE = pt < 30;
     auto eta = (*Photon_eta)[it];
     auto overMaxEta = std::abs(eta) > 1.479;
-    auto phi = (*Photon_phi)[it];
 
-	//if( ( eta > -3.2 && eta < -1.77 ) && ( phi > -1.77 && phi < -0.67 ) ) hasHemObj = true;
+    auto phi = (*Photon_phi)[it];
 
     if( DEBUG ) std::cout << " -- looping photons : getting pho iso " << std::endl;
     auto htsecdr4 = (*Photon_hcalTowerSumEtConeDR04)[it];   //!
     bool passHcalSum = true;
     auto tspscdr4 = (*Photon_trkSumPtSolidConeDR04)[it];
-    bool passTrkSum = tspscdr4 < 6.0; //(*selPhoTrkSumPtSolidConeDR04)[it] < cutvalue;
+    bool passTrkSum = tspscdr4/pt < 0.12; //(*selPhoTrkSumPtSolidConeDR04)[it] < cutvalue;
     auto erhsecdr4 = (*Photon_ecalRHSumEtConeDR04)[it];
-    bool passsEcalRhSum = erhsecdr4 < 10.0;
+    bool passsEcalRhSum = erhsecdr4/pt < 0.2;
     auto htoem = (*Photon_hadTowOverEM)[it];
     bool passHOE = htoem < 0.02;
     bool isoPho = passHOE && passsEcalRhSum && passTrkSum && passHcalSum;
-    bool failPhoIso = not isoPho;
-
-    /*      // moved to after photon selection
-	    if( DEBUG ) std::cout << " -- looping photons : getting phojet iso " << std::endl;
-	    bool isJetPhoton = false;
-	    phoJetVeto.clear();
-	    for( int jit = 0; jit < Jet_energy->size(); jit++ ){ phoJetVeto.push_back(false); }
-	    for( int jit = 0; jit < Jet_energy->size(); jit++ ){
-
-            bool underMinJPt = (*Jet_pt)[jit] < 30.0;
-            bool underMinJQual = getJetQuality(it)  < 2;
-	    auto jeta = (*Jet_eta)[jit];
-            auto jphi = (*Jet_phi)[jit];
-	    auto overMaxJEta = std::abs(jeta) > 2.4;
-            if( underMinJPt || underMinJQual || overMaxJEta ) continue;
-			
-            float dpjeta = jeta - eta;
-            float dpjphi = dPhi( jphi, phi );
-            float dr = hypo( dpjeta, dpjphi );
-	    bool minDr = dr < 0.4;
-            if( minDr ) isJetPhoton = true; 
-	    if( minDr && isoPho ) phoJetVeto[jit] = true;
-
-	    } // for( int jit = 0; jit < nSelJets; jit++ )
-    */
+    bool failPhoIsoEB = not isoPho;
+	bool failPhoIsoEE = failPhoIsoEB; //not ( tspscdr4 < 7.0 && erhsecdr4 < 12.5 && htoem < 0.05 );
 
     //  change to skip jets and keep all photons regardless of photon iso with jet
-    bool phoskip = isExcluded || hasPixSeed || overMaxEta || underMinPt || failPhoIso;
-	bool hemEligible = not underMinPt && not isExcluded; 
-    //if( geVars("genSigPerfect") == 1 && isGenSig ) std::cout << " -- pho sel: phoskip " << phoskip <<  " isGenSig " << isGenSig << std::endl;  
-    //if( geVars("genSigPerfect") == 1 &&  phoskip && isGenSig  ){ 
-    //		std::cout << "   -- xsepji: " << isExcluded  << hasPixSeed << overMaxEta << underMinPt << isJetPhoton << failPhoIso << std::endl; }
+    //bool phoskip = isExcluded || hasPixSeed || overMaxEta || underMinPt || failPhoIso;
+	bool phoskip = isExcluded || hasPixSeed;
+	if( not overMaxEta ) phoskip = phoskip || failPhoIsoEB || underMinPtEB;
+	if( overMaxEta ) phoskip = phoskip || failPhoIsoEE || underMinPtEE;
+	//if( overMaxEta ) phoskip = true;
 
-    if( hemEligible && inHEMRegion( eta, phi ) ) hasHemObj = true;
-	
+	bool hemEligible1 = pt > 20 && not isExcluded && not hasPixSeed;
+    bool hemEligible2 = pt > 30 && not isExcluded && not hasPixSeed; 
+
+	bool isInHemRegion = inHEMRegion( eta, phi );
+	hemBits["pho1"] = isInHemRegion && hemEligible1;		
+    hemBits["pho2"] = isInHemRegion && hemEligible2;
+
+	bool isEESig = not isExcluded && not hasPixSeed && overMaxEta;
+    if( isEESig ){
+
+		selPhotons.fillBranch( "EESigPho_skipped", phoskip );   //!
+    	selPhotons.fillBranch( "EESigPho_energy", (*Photon_energy)[it] );   //!
+    	selPhotons.fillBranch( "EESigPho_eta", (*Photon_eta)[it] );   //!
+    	selPhotons.fillBranch( "EESigPho_phi", (*Photon_phi)[it] );   //!
+    	selPhotons.fillBranch( "EESigPho_tspscdr4", (*Photon_trkSumPtSolidConeDR04)[it] );   //!
+        selPhotons.fillBranch( "EESigPho_erhsecdr4", (*Photon_ecalRHSumEtConeDR04)[it] );   //!
+        selPhotons.fillBranch( "EESigPho_htoem", (*Photon_hadTowOverEM)[it] );   //!
+        selPhotons.fillBranch( "EESigPho_pt", (*Photon_pt)[it] );   //!
+
+    }//if( doGenInfo )
+
     if( ( geVars("genSigPerfect") != 1 ) && phoskip ){ isSelPho.push_back(false); continue; }		
     if( ( geVars("genSigPerfect") == 1 ) &&  ( not isGenSig ) ){ isSelPho.push_back(false);  continue; }
 	isSelPho.push_back(true);
@@ -246,10 +242,12 @@ void KUCMSAodSkimmer::processPhotons(){
 	std::vector<float> erhamps;
 	float sumerha = 0;
     //auto nRecHits = ECALRecHit_ID->size();
+	// -------   check isTimeValid on rechit?  -------------------------------------
     for( int sciter = 0; sciter < nrh; sciter++  ){
         uInt pscrhid = rhids[sciter];
 		int erhiter = ( rhIDtoIterMap.find(pscrhid) != rhIDtoIterMap.end() ) ? rhIDtoIterMap[pscrhid] : -1;
         if( erhiter != -1 ){
+			bool isValid = (*ECALRecHit_isTimeValid)[erhiter];
 			float swcrss = (*ECALRecHit_swCross)[erhiter];
 			bool isWeird = (*ECALRecHit_isWrd)[erhiter] || (*ECALRecHit_isDiWrd)[erhiter];
 			float gainwt = 1;
@@ -265,6 +263,7 @@ void KUCMSAodSkimmer::processPhotons(){
 			float ertres = erh_timeRes[erhiter];
 			bool hasGainSwitch = (*ECALRecHit_hasGS1)[erhiter] || (*ECALRecHit_hasGS6)[erhiter];
 			if( hasGainSwitch ) gainwt = 0;
+			if( not isValid ) gainwt = 0;
 			float invertres = 1/ertres;
 			erhamps.push_back(invertres);
 			sumerha += invertres;
@@ -509,65 +508,41 @@ void KUCMSAodSkimmer::processPhotons(){
   selPhotons.fillBranch( "nSelPhotons",  nSelPhotons );
   selPhotons.fillBranch( "nPhotons", nPhotons );	
 
-  float lPhoPt = 0.f;
-  float lPhoPhi = 0.f;
-  float lPhoEta = 0.f;
-  float ePhoMx = 0.f;
-  float ePhoMy = 0.f;
-  if( nSelPhotons > 0 ){
-	uInt pIdx = phoOrderIndx[0];
-	uInt exIdx = phoExcIndx[0];
+  std::vector<float> selpho_pt;
+  std::vector<float> selpho_eta;
+  std::vector<float> selpho_phi;
+  std::vector<float> selpho_Mx;
+  std::vector<float> selpho_My;
+  for( int spidx = 0; spidx < nSelPhotons; spidx++ ){
+	uInt pIdx = phoOrderIndx[spidx];
+	uInt exIdx = phoExcIndx[spidx];
 	bool isOOT = (*Photon_isOot)[pIdx];
-	lPhoPt = (*Photon_pt)[pIdx];
-	lPhoPhi = (*Photon_phi)[pIdx];
-	lPhoEta = (*Photon_eta)[pIdx];
+	float lPhoPt = (*Photon_pt)[pIdx];
+	float lPhoPhi = (*Photon_phi)[pIdx];
+	float lPhoEta = (*Photon_eta)[pIdx];
+	float ePhoMx = 0;
+    float ePhoMy = 0;
 	if( isOOT ){ 
 		ePhoMx -= lPhoPt*std::cos(lPhoPhi);
 		ePhoMy -= lPhoPt*std::sin(lPhoPhi);
 		if( exIdx > -1 ){ 
     		float ePhoPt = (*Photon_pt)[exIdx];
     		float ePhoPhi = (*Photon_phi)[exIdx];
-    		float ePhoEta = (*Photon_eta)[exIdx];
 			ePhoMx += ePhoPt*std::cos(ePhoPhi);
 			ePhoMy += ePhoPt*std::sin(ePhoPhi);
 		}//<<>>if( exIdx > -1 )
 	}//<<>>if( isOOT && exIdx > -1 )
+	selpho_pt.push_back(lPhoPt);
+    selpho_eta.push_back(lPhoEta);
+    selpho_phi.push_back(lPhoPhi);
+    selpho_Mx.push_back(ePhoMx);
+    selpho_My.push_back(ePhoMy);
   }//<<>>if( nSelPhotons > 0 )
-  geVars.set( "leadPhoPt", lPhoPt );
-  geVars.set( "leadPhoPhi", lPhoPhi );
-  geVars.set( "leadPhoEta", lPhoEta );
-  geVars.set( "leadPhoMx", ePhoMx );
-  geVars.set( "leadPhoMy", ePhoMy );
-
-  lPhoPt = 0.f;
-  lPhoPhi = 0.f;
-  lPhoEta = 0.f;
-  ePhoMx = 0.f;
-  ePhoMy = 0.f;
-  if( nSelPhotons > 1 ){
-    uInt pIdx = phoOrderIndx[1];
-    uInt exIdx = phoExcIndx[1];
-    bool isOOT = (*Photon_isOot)[pIdx];
-    lPhoPt = (*Photon_pt)[pIdx];
-    lPhoPhi = (*Photon_phi)[pIdx];
-    lPhoEta = (*Photon_eta)[pIdx];
-    if( isOOT ){
-        ePhoMx -= lPhoPt*std::cos(lPhoPhi);
-        ePhoMy -= lPhoPt*std::sin(lPhoPhi);
-        if( exIdx > -1 ){
-            float ePhoPt = (*Photon_pt)[exIdx];
-            float ePhoPhi = (*Photon_phi)[exIdx];
-            float ePhoEta = (*Photon_eta)[exIdx];
-            ePhoMx += ePhoPt*std::cos(ePhoPhi);
-            ePhoMy += ePhoPt*std::sin(ePhoPhi);
-        }//<<>>if( exIdx > -1 )
-    }//<<>>if( isOOT && exIdx > -1 )
-  }//<<>>if( nSelPhotons > 0 )
-  geVars.set( "subLeadPhoPt", lPhoPt );
-  geVars.set( "subLeadPhoPhi", lPhoPhi );
-  geVars.set( "subLeadPhoEta", lPhoEta );
-  geVars.set( "subLeadPhoMx", ePhoMx );
-  geVars.set( "subLeadPhoMy", ePhoMy );
+  geVects.set( "selPhoPt", selpho_pt );
+  geVects.set( "selPhoEta", selpho_eta );
+  geVects.set( "selPhoPhi", selpho_phi );
+  geVects.set( "selPhoEMx", selpho_Mx );
+  geVects.set( "selPhoEMy", selpho_My );
 
 }//<<>>void KUCMSAodSkimmer::processPhoton(){
 
@@ -669,6 +644,15 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch( "selPhoGenSigMomVx", VFLOAT );   //!
   selPhotons.makeBranch( "selPhoGenSigMomVy", VFLOAT );   //!
   selPhotons.makeBranch( "selPhoGenSigMomVz", VFLOAT );   //!
+
+  selPhotons.makeBranch( "EESigPho_skipped", VBOOL );   //!
+  selPhotons.makeBranch( "EESigPho_energy", VFLOAT );   //!
+  selPhotons.makeBranch( "EESigPho_eta", VFLOAT );   //!
+  selPhotons.makeBranch( "EESigPho_phi", VFLOAT );   //!
+  selPhotons.makeBranch( "EESigPho_pt", VFLOAT );   //!
+  selPhotons.makeBranch( "EESigPho_tspscdr4", VFLOAT );   //!
+  selPhotons.makeBranch( "EESigPho_erhsecdr4", VFLOAT );   //!
+  selPhotons.makeBranch( "EESigPho_htoem", VFLOAT );   //!
 
   // add new photon branches above
   selPhotons.attachBranches( fOutTree );

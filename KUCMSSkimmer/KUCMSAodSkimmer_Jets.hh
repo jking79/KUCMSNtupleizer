@@ -38,9 +38,11 @@ void KUCMSAodSkimmer::processJets(){
   // calc
   //if( DEBUG ) std::cout << "Finding jets" << std::endl;
   //--------- jets --------------------------
-  isSelJet.clear(); 
+  //isSelJet.clear(); 
 
+  int jetEventVeto = 0;
   uInt nSelJets = 0;
+  int nQJets = 0;
   uInt nJets = Jet_energy->size();
   std::vector<float> seljetpt;
   std::vector<float> seljeteta;
@@ -50,24 +52,35 @@ void KUCMSAodSkimmer::processJets(){
   for( uInt it = 0; it < nJets; it++ ){
 
     // pull values ---------------------------------------------------
-    auto energy = (*Jet_energy)[it];
-    auto mass = (*Jet_mass)[it];
+    float energy = (*Jet_energy)[it];
+    float mass = (*Jet_mass)[it];
     //if( DEBUG ) std::cout << " - Finding Jet Quality" << std::endl;
-    auto quality = getJetQuality(it);
-    auto pt = (*Jet_pt)[it];
-    auto eta = (*Jet_eta)[it];
-    auto phi = (*Jet_phi)[it];
+    int quality = getJetQuality(it);
+	int isllpjet = getJetQuality(it);
+    float pt = (*Jet_pt)[it];
+    float eta = (*Jet_eta)[it];
+    float phi = (*Jet_phi)[it];
     auto rhids = (*Jet_drRhIds)[it];
     if( DEBUG ) std::cout << " -- jettDrId size: " << rhids.size() << std::endl;		
 
-    auto area = (*Jet_area)[it];
-    auto chEmEF = (*Jet_chEmEF)[it];
-    auto chHEF = (*Jet_chHEF)[it];
-    auto chHM = (*Jet_chHM)[it];
-    auto muEF = (*Jet_muEF)[it];
-    auto neEmEF = (*Jet_neEmEF)[it];
-    auto neHEF = (*Jet_neHEF)[it];
-    auto neHM = (*Jet_neHM)[it];
+    float area = (*Jet_area)[it];
+    float chEmEF = (*Jet_chEmEF)[it];
+    float chHEF = (*Jet_chHEF)[it];
+    float chHM = (*Jet_chHM)[it];
+    float muEF = (*Jet_muEF)[it];
+    float neEmEF = (*Jet_neEmEF)[it];
+    float neHEF = (*Jet_neHEF)[it];
+    float neHM = (*Jet_neHM)[it];
+
+  	bool nhfup( neHEF  <= 0.90 );   // delpho
+  	bool nemfup2( neEmEF <= 0.99 );
+  	bool shm1( ( neHM + chHM ) >= 1 );
+  	bool mufllp( muEF > 0.80 );
+ 	bool chf0( chHEF  >= 0 );       // delpho
+  	bool chm0( chHM >= 0 );       // delpho
+  	bool cemfup1( chEmEF <= 0.99 );
+  	bool isLLPJet = nhfup && nemfup2 && shm1 && chf0 && chm0 && ( cemfup1 || mufllp );
+	//if( quality == 4 && isLLPJet == false ) std::cout << "!!!!!!!!!!!!!!!!!!! bad jet llp qualty match !!!!!!!!!!!!!!!!!!!!!" << std::endl;
 
     int qrkllpId = 0; //*Jet_genLlpId)[it];
     int gjllpId = 0; //*Jet_genLlpId)[it];
@@ -107,18 +120,30 @@ void KUCMSAodSkimmer::processJets(){
 
     if( DEBUG ) std::cout << " - Jet Obj selection." << std::endl;
     // jet object selection ------------------------------------------
-    auto overMinPt = pt > 30; 
-    auto underMaxEta = std::abs(eta) <= 2.4;
-    auto isMinQuality = quality > 1; // 2 = "tight" 3 = "tighter"
-
+    bool overMinPt( pt > 30 ); 
+    ////bool underMaxEta( std::abs(eta) <= 3.2 );
+    bool underMaxEta( std::abs(eta) <= 2.4 );
+    bool isMinQuality( quality > 1 ); // 2 = "tight" 3 = "tighter"
+    //bool isMinQuality( quality == 4 );
     bool isNotPhoJet = not phoJetVeto[it];
+    //if( isMinQuality != isLLPJet ) std::cout << "!!!!!!!!!!!!!!!!!!! bad jet llp qualty match !!!!!!!!!!!!!!!!!!!!!" << std::endl;
 
-	bool hemEligible = overMinPt && isMinQuality;
-    if( hemEligible && inHEMRegion( eta, phi ) ) hasHemObj = true;
+    bool hemEligible1 = pt > 20;
+    bool hemEligible2 = pt > 30;
+    bool isInHemRegion = inHEMRegion( eta, phi );
+    hemBits["jet1"] = isInHemRegion && hemEligible1;
+    hemBits["jet2"] = isInHemRegion && hemEligible2;
+    //if( hemEligible && inHEMRegion( eta, phi ) ) hasHemObj = true;
 
-    auto jetSelected = underMaxEta && isMinQuality && overMinPt && isNotPhoJet;
-    if( not jetSelected ){ isSelJet.push_back(false); continue; }
-	isSelJet.push_back(true);
+	bool inAcceptance = underMaxEta && overMinPt && isNotPhoJet;
+	if( inAcceptance && not isLLPJet ) jetEventVeto++;
+
+    bool jetQualityGood = underMaxEta && isMinQuality && overMinPt && isNotPhoJet;
+	bool jetSelected = underMaxEta && isLLPJet && overMinPt && isNotPhoJet;
+	if( jetQualityGood ) nQJets++;
+	if( not jetSelected ) continue;
+    //if( not jetSelected ){ isSelJet.push_back(false); continue; }
+    //isSelJet.push_back(true);
     nSelJets++;
 
     seljetpt.push_back(pt);
@@ -161,12 +186,15 @@ void KUCMSAodSkimmer::processJets(){
   }//<<>>for( int it = 0; it < nJets; it++ )
   if( DEBUG ) std::cout << " - Finished Jet loop." << std::endl;
 
-  // fill other
   geVects.set( "selJetPt", seljetpt );
   geVects.set( "selJetEta", seljeteta );
   geVects.set( "selJetPhi", seljetphi );
   geVects.set( "selJetMass", seljetmass );
+
+  geCnts.set( "jetEventVeto", jetEventVeto ); 
+  geCnts.set( "nQJets", nQJets );
   geCnts.set( "nSelJets", nSelJets );
+
   selJets.fillBranch( "nJets", nJets);
   selJets.fillBranch( "nSelJets", nSelJets );
 
@@ -239,6 +267,7 @@ int KUCMSAodSkimmer::getJetQuality( int it ){
   int loose = 1;
 
   bool nhfup  = NHF  <= 0.90;   // delpho
+  bool nhfup9  = NHF  <= 0.99;
   bool nhflw  = NHF  >= 0.2;
 
   bool nemfup1 = NEMF <= 0.90; // delpho
@@ -249,17 +278,21 @@ int KUCMSAodSkimmer::getJetQuality( int it ){
 
   bool shm1  = SHM  >= 1;
   bool muf8  = MUF  <= 0.80;
+  bool mufllp  = MUF > 0.80;
   bool chf0  = CHF  >= 0;       // delpho
   bool chf10  = CHF  >= 0.10;
   bool chm0  = CHM  >= 0;       // delpho
   bool cemf8 = CEMF >= 0.80;
+  bool cemfup1 = CEMF <= 0.99;
   bool nhm2  = NHM  >= 1;
   bool nhm10 = NHM  >= 10;
 
+  bool eta0 = eta <= 2.4;
   bool eta1 = eta <= 2.6;
   bool eta2 = eta <= 2.7;
   bool eta3 = eta <= 3.0;
 
+  if( nhfup && nemfup2 && shm1 && chf0 && chm0 && ( cemfup1 || mufllp ) ) return 4;
   if (eta1){
     if      (nhfup && nemfup1 && shm1 && muf8 && chf0 && chm0 && cemf8) return tightLepVeto;
     else if (nhfup && nemf80 && shm1 && chf10 && chm0) return tighter;

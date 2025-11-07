@@ -1,0 +1,1 @@
+KUCMSNtuple/kucmsntuple_SMS_Sig_SVIPM100_v31/ SMS_SVIPM100_v31_sqsqG_AODSIM_mGl-1700_mN2-1500_mN1-100_ct0p1.txt sqsq17 .001248 1500 100 1 0 r2_ul18_mc

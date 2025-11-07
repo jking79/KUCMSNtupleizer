@@ -1,0 +1,1 @@
+KUCMSNtuple/kucmsntuple_GJets_R18_SVIPM100_v31/ GJets_R18_SVIPM100_v31_GJets_HT-600ToInf.txt GJets_600up_UL18 86.55 0 0 1 0 r2_ul18_mc

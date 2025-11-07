@@ -23,11 +23,10 @@
 
 
 //#include "KUCMSEcalDetIDFunctions.hh"
-#include "KUCMSTimeCaliFiles/KUCMS_TimeCalibration.hh"
+#include "KUCMSTimeCaliFiles/include/KUCMS_TimeCalibration.hh"
 
 #include "KUCMSNtuple_base_v30.h"
-//#include "KUCMSNtuple_base_v30_noHtl.h"
-//#include "KUCMSNtuple_base_noSV_v30.h"
+//#include "KUCMSNtuple_base_v30_noSV.h"
 
 #include "../interface/MaterialVeto.h"
 
@@ -246,8 +245,11 @@ class KUCMSAodSkimmer : public llpgtree {
     std::map<UInt_t, pair<int,int>> _detidmap;
 	uInt nEvents, nSelectedEvents;
 	int _evti, _evtj;
-    bool hasHemObj;
     float sumEvtGenWgt;
+
+	// hem veto 
+    bool hasHemObj;
+	std::map< std::string, bool > hemBits;
 
     std::vector<bool> phoJetVeto;
 	std::vector<bool> rhused;

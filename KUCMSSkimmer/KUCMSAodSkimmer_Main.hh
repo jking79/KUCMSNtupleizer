@@ -165,8 +165,6 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
   loadLumiJson("config/json/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.json");
   //loadLumiJson("config/json/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt",true);
 
-	hasHemObj = false;
-
   // condor event segmenting varibles : used to run over subset of events for condor jobs
 
   _evti = -1;
@@ -179,7 +177,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
     gmass = -1.f;
     xmass = -1.f;
     mcwgt = 1.f;;
-    mctype = 0;
+    mctype = 0; // what type of input PD :  0 MC (AODSIM), 1 DATA (AOD), if we need fastSim ect, add new enrty here 
     tctag = "none";
 
 	// input tree names
@@ -285,15 +283,20 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
             std::cout << "Proccessed " << centry << " of " << nEntries << " entries at " << curtime << std::endl;
         }//<<>>if( centry%loopCounter == 0 )
         auto entry = fInTree->LoadTree(centry);
+
         if(DEBUG) std::cout << " -- Getting Branches " << std::endl;
         std::cout << " -- Getting Branches " << std::endl;
         getBranches( entry, hasGenInfoFlag );
+        if( mctype==1 && not isValidLumisection( Evt_run, Evt_luminosityBlock ) ) continue;
+
         geCnts.clear();
         geVars.clear();
-	std::cout << "check lumi section for data - mctype " << mctype << " is valid lumi section " << isValidLumisection( Evt_run, Evt_luminosityBlock ) << endl;
-        if( mctype==1 && not isValidLumisection( Evt_run, Evt_luminosityBlock ) ) continue;
+        hemBits.clear();
+        hasHemObj = false;
+
         if( genSigPerfectFlag ) geVars.set( "genSigPerfect", 1 ); else geVars.set( "genSigPerfect", 0 );
         if( noSVorPhoFlag ) geVars.set( "noSVorPho", 1 ); else geVars.set( "noSVorPho", 0 );
+
         if(DEBUG) std::cout << " -- Event Loop " << std::endl;
         auto saveToTree = eventLoop(entry);
         if( saveToTree ){ fOutTree->Fill(); }
@@ -661,7 +664,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
     // ------ Do Main Loop
 
     auto ext = splitString( inFileName, "." );
-    std::string extOutFileName( ext[0] + outFileName );
+    std::string extOutFileName( ext[0] + outfilename );
 	SetOutFileName( extOutFileName );
     ProcessMainLoop( fInTree, fInConfigTree );
 
@@ -701,8 +704,6 @@ void KUCMSAodSkimmer::startJobs(){
     nEvents = 0;
     nSelectedEvents = 0;
 
-	hasHemObj = false;
-
     //sumEvtGenWgt = 0.0;
 
     configCnts.clear();
@@ -734,6 +735,7 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
 
   // counts events and saves event varibles
   // --------------------------------------
+
   processRechits();// must be done before rechitID to Iter map used
   processMet();
   processPhotons();
@@ -771,7 +773,11 @@ bool KUCMSAodSkimmer::eventSelection(){
   bool dobase = ( geVars("noSVorPho") == 1 ) ? true : false;
 
   float evtMet = geVars("cmet");
+
   int nSelJets = geCnts("nSelJets"); //selJets.getUIBranchValue("nSelJets");
+  int nQJets = geCnts("nQJets");
+  int vetoJets = geCnts("jetEventVeto");
+
   float nSelPhotons = geCnts("nSelPhotons"); //selPhotons.getUIBranchValue("nSelPhotons");
   float leadPhoPt = ( nSelPhotons > 0 ) ? geVars("leadPhoPt") : 0;
   float subLeadPhoPt = ( nSelPhotons > 1 ) ? geVars("subLeadPhoPt") : 0;
@@ -784,18 +790,22 @@ bool KUCMSAodSkimmer::eventSelection(){
   bool met150 = evtMet >= 150;
   bool gt1phos = nSelPhotons >= 1;
   bool gt2jets = nSelJets >= 2;
+  bool gt2qjets = nQJets >= 2;
+  bool allgjets = vetoJets < 1;
+
   bool gt2phos = nSelPhotons >= 2;
   bool leadPhoPt70 = leadPhoPt >= 70;
   bool leadPhoPt30 = leadPhoPt >= 30;
-  bool subLeadPhoPt40 = subLeadPhoPt >= 40; 
+  bool subLeadPhoPt40 = subLeadPhoPt >= 40;
 
-  bool basesel = met100 && gt2jets;
-  //bool svsel = basesel && hasSV;	
+  bool basesel = met100 && gt2jets && allgjets && gt2qjets;
+  //bool svsel = basesel && hasSV;  
   bool phosel = basesel && ( ( gt1phos && leadPhoPt30 ) || hasSV );
   //auto evtSelected = leadPhoPt70 && subLeadPhoPt40 && gt2jets && gt2phos;
 
   bool evtSelected = dobase ? basesel : phosel;
-	
+  //if( hasHemObj ) evtSelected = false;
+
   if( met150 ) cutflow["met150"]++;
   if( met150 && gt2jets ) cutflow["m_gt2jets"]++;
   if( met150 && gt2jets && gt1phos ){ cutflow["mj_gt1phos"]++; cutflow["sel_ppt"]++; }
@@ -913,8 +923,9 @@ void KUCMSAodSkimmer::initHists(){
 
     ////hist2d[1] = new TH2D("jetDrMuTime_pt", "jetDrMuTime_pt", jtdiv, -1*jtran, jtran, 500, 0, 500);
 	hist2d[1] = new TH2D("scorigcross", "SC Types;Mian-Orig;Std-OOT-Excluded", 2, 0, 2, 3, 0, 3); 
-    hist2d[2] = new TH2D("rjrPtS_v_rjrdPhiSI", "rjrDPhiSI_v_rjrPtS;rjrDphiSI;rjrPtS", 32, 0, 3.2, 60, 0, 3000);
-	hist2d[3] = new TH2D("rjrPtS_v_rjrdPhiSI_t1", "rjrDPhiSI_v_rjrPtS Type 1;rjrDphiSI;rjrPtS", 32, 0, 3.2, 60, 0, 3000);
+    hist2d[2] = new TH2D("rjrPtS_v_rjrdPhiSI_t0", "rjrDPhiSI_v_rjrPtS Type 0;rjrDphiSI;rjrPtS", 32, 0, 3.2, 60, 0, 3000);
+    hist2d[3] = new TH2D("rjrPtS_v_rjrdPhiSI_t1", "rjrDPhiSI_v_rjrPtS Type 1;rjrDphiSI;rjrPtS", 32, 0, 3.2, 60, 0, 3000);
+
 	//------------------------------------------------------------------------------------------
     //------ 3D Hists --------------------------------------------------------------------------
 
