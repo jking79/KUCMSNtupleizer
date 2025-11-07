@@ -205,7 +205,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 
   //_ca.SetVerbosity(0); //_can turn on to see low-level warnings
   _ca.SetDetIDsEB(_detidmap);
-  _ca.SetCNNModel("json/small3CNN_EMultr_2017and2018.json");
+  _ca.SetCNNModel("config/json/small3CNN_EMultr_2017and2018.json");
 
 
 }//<<>>KUCMSAodSkimmer::KUCMSAodSkimmer()
