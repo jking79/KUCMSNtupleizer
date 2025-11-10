@@ -440,12 +440,22 @@ dlEGAOD18 = [
 
 ]
 
+dlEGMAOD17 = [
+
+    '/DoubleEG/Run2017B-09Aug2019_UL2017-v1/MINIAOD',
+    '/DoubleEG/Run2017C-09Aug2019_UL2017-v1/MINIAOD',
+    '/DoubleEG/Run2017D-09Aug2019_UL2017-v1/MINIAOD',
+    '/DoubleEG/Run2017E-09Aug2019_UL2017-v1/MINIAOD',
+    '/DoubleEG/Run2017F-09Aug2019_UL2017-v1/MINIAOD',
+
+]
+
 dl22 = [ '/MET/Run2022C-27Jun2023-v2/AOD' ]
 
 #query = 'dasgoclient --json -query=\'dataset='
 query = 'dasgoclient --json -query=\'site dataset=' 
 
-datalist = dlR2Met
+datalist = dlEGMAOD17
 
 for data in datalist :
     

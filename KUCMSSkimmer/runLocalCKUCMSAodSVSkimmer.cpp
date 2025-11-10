@@ -17,7 +17,7 @@ int main ( int argc, char *argv[] ){
     bool hasGenInfo = ( std::stoi(argv[1]) == 1 ) ? true : false; 
 	bool useEvtGenWgt = ( std::stoi(argv[1]) == 1 ) ? true : false;
 
-    const std::string outfilename = "_rjrskim_v42.root";
+    const std::string outfilename = "_rjrskim_v43.root";
     const std::string listdir = "ntuple_master_lists/"; 
     const std::string eosdir = "root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/"; 
     bool noSVorPho = false; // ( must have a sig pho or a sv ) + base selection - loads photons in rjr 

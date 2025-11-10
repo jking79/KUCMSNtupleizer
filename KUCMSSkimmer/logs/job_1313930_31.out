@@ -1,0 +1,9 @@
+[FERMIHTC-APPTAINER]: INFO -- ApptainerImage classAd detected
+[FERMIHTC-APPTAINER]: INFO -- Attempting to run job in /cvmfs/singularity.opensciencegrid.org/cmssw/cms:rhel8
+[FERMIHTC-APPTAINER]: INFO -- Running /cvmfs/oasis.opensciencegrid.org/mis/apptainer/current/bin/apptainer exec --pid --ipc --contain --bind /cvmfs --bind /etc/hosts --bind /etc/grid-security --home /storage/local/data1/condor/execute/dir_2447797:/srv --pwd /srv /cvmfs/singularity.opensciencegrid.org/cmssw/cms:rhel8 ./runLocalCKUCMSAodSVSkimmer.sh sublists/ZJets_R18_SVIPM100_v31_ZJetsToNuNu_HT-200To400_condor.txt 1 1
+>>> Starting job on Sat Nov  8 16:22:58 UTC 2025
+>>> Host: jaking-1313930-31-cmswn2201.fnal.gov
+>>> Args: sublists/ZJets_R18_SVIPM100_v31_ZJetsToNuNu_HT-200To400_condor.txt 1 1
+>>> Setting up RestFrames and extra libraries...
+>>> Running ./runLocalCKUCMSAodSVSkimmer.obj sublists/ZJets_R18_SVIPM100_v31_ZJetsToNuNu_HT-200To400_condor.txt 1 1
+>>> Finished at Sat Nov  8 16:23:11 UTC 2025
