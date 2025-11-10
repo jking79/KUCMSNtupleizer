@@ -177,7 +177,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
     gmass = -1.f;
     xmass = -1.f;
     mcwgt = 1.f;;
-    mctype = 0; // what type of input PD :  0 MC (AODSIM), 1 DATA (AOD), if we need fastSim ect, add new enrty here 
+    mctype = 0;  // what type of input PD :  0 MC (AODSIM), 1 DATA (AOD), if we need fastSim ect, add new enrty here
     tctag = "none";
 
 	// input tree names
@@ -203,10 +203,9 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 
 	// BNC Intiation
 
-  //_ca.SetVerbosity(0); //_can turn on to see low-level warnings
-  _ca.SetDetIDsEB(_detidmap);
-  _ca.SetCNNModel("config/json/small3CNN_EMultr_2017and2018.json");
-
+    _ca.SetVerbosity(0); //_can turn on to see low-level warnings
+    _ca.SetDetIDsEB(_detidmap);
+    _ca.SetCNNModel("json/small3CNN_EMultr_2017and2018.json");
 
 }//<<>>KUCMSAodSkimmer::KUCMSAodSkimmer()
 
@@ -249,9 +248,12 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
     auto nEntries = fInTree->GetEntries();
 
     //loop over events
-    if(_evti == _evtj){ _evti = 0; _evtj = nEntries; }
-    if(_evti < nEntries){ if(_evtj > nEntries){ _evtj = nEntries; }} //cap at max number of entries
-    else{ cout << "Starting event " << _evti << " above # of entries in tree " << nEntries << " returning." << endl; return; }
+    if( _evti < 0 ){ _evti = 0; _evtj = nEntries; }
+	else {
+		if( _evtj > nEntries ){ _evtj = nEntries; } //cap at max number of entries
+		if( _evti > nEntries ){ cout << "Starting event " << _evti << " above # of entries in tree " << nEntries << " returning." << endl; return; }
+	}//<<>> if( _evti < 0 ) else
+	int nEventsProcessed = _evtj - _evti;
 
     initHists();
     setOutputBranches(fOutTree);
@@ -265,15 +267,13 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
     // --  main loop
 
     std::cout << "Setting up For Main Loop." << std::endl;
-    int loopCounter(1000);
-    if(_evtj - _evti < loopCounter)
-	    loopCounter = 1;
+    int loopCounter( nEventsProcessed / 100 );
     if(DEBUG){ nEntries = 1000; loopCounter = 100; }
     //cout total number of entries to process
     std::cout << "Processing " << nEntries << " entries." << std::endl;
-    //DEBUG
-    nEvents = _evtj - _evti;//save # of events actually ran over so that when files are hadded, this should total nEntries in TChain
+    nEvents = nEventsProcessed;//save # of events actually ran over so that when files are hadded, this should total nEntries in TChain
     cout << "Running over events " << _evti << " to " << _evtj << endl;
+	int count_of_events = 0;
     for (Long64_t centry = _evti; centry < _evtj; centry++){
 
         if( centry%loopCounter == 0 ){
@@ -297,10 +297,12 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
         if( noSVorPhoFlag ) geVars.set( "noSVorPho", 1 ); else geVars.set( "noSVorPho", 0 );
 
         if(DEBUG) std::cout << " -- Event Loop " << std::endl;
+		count_of_events++;
         auto saveToTree = eventLoop(entry);
         if( saveToTree ){ fOutTree->Fill(); }
 
     }//<<>>for (Long64_t centry = 0; centry < nEntries; centry++)  end entry loop
+	if( count_of_events != nEvents ) std::cout << " !!!!!!! nEvents " << nEvents << " not = event count " << count_of_events << " !!!!!!!" << std::endl;
 
     // -- main end jobs
 
@@ -376,7 +378,7 @@ int KUCMSAodSkimmer::ProcessFilelist(string eosdir, string infilename, TChain*& 
 	      if(str.find("#") != string::npos) continue;
 	nfiles++;
 	//if( skipCnt != 0 && ( nfiles%skipCnt != 0 ) ) continue;
-    	string sample_str = str.substr(0,str.find("/"));
+    string sample_str = str.substr(0,str.find("/"));
 	string prefix = str.substr(str.find("/")+1);
 	string inpath = prefix.substr(0,prefix.find(sample_str,prefix.find(sample_str)+sample_str.size())-1)+"/";
 	auto tfilename = eosdir + inpath + str;
@@ -596,7 +598,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
 
     if( DEBUG ) std:: cout << masterstr << std::endl;
     if( masterstr[0] == '#' ) continue;
-    if( masterstr == " " ) continue;
+    if( masterstr == "" ) continue;
     auto instrs = splitString( masterstr, " " );
     if( DEBUG ) std:: cout << instrs.size() << std::endl;
     if( instrs.size() < 9 ) continue;
@@ -612,15 +614,15 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
     auto mct = std::stoi( instrs[7] );
     auto tct = instrs[8];
 
-    if( DEBUG ) std:: cout << "InPath: " << inFilePath << std::endl;
-    if( DEBUG ) std:: cout << "InFile: " << inFileName << std::endl;
-    if( DEBUG ) std:: cout << "Key: " << key << std::endl;
-    if( DEBUG ) std:: cout << "XSec: " << crossSection << std::endl;
-    if( DEBUG ) std:: cout << "GM: " << gmsbgm << std::endl;
-    if( DEBUG ) std:: cout << "XM: " << gmsbxm << std::endl;
-    if( DEBUG ) std:: cout << "MCw: " << mcw << std::endl;
-    if( DEBUG ) std:: cout << "MCt: " << mct << std::endl;
-    if( DEBUG ) std:: cout << "tcTag: " << tctag << std::endl;
+    if( DEBUG ) std::cout << "InPath: " << inFilePath << std::endl;
+    if( DEBUG ) std::cout << "InFile: " << inFileName << std::endl;
+    if( DEBUG ) std::cout << "Key: " << key << std::endl;
+    if( DEBUG ) std::cout << "XSec: " << crossSection << std::endl;
+    if( DEBUG ) std::cout << "GM: " << gmsbgm << std::endl;
+    if( DEBUG ) std::cout << "XM: " << gmsbxm << std::endl;
+    if( DEBUG ) std::cout << "MCw: " << mcw << std::endl;
+    if( DEBUG ) std::cout << "MCt: " << mct << std::endl;
+    if( DEBUG ) std::cout << "tcTag: " << tctag << std::endl;
 
     dataSetKey = key;
     xsctn = crossSection;
@@ -640,6 +642,8 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
     std::string str;
     if( not DEBUG ) std::cout << "--  adding files";
     int nfiles = 0;
+	//int skipCnt = 10;
+    //if( skipCnt != 0 ) std::cout << "-- !! Skipping every " << skipCnt << std::endl;
     if( dataSetKey !=  "Single" ){
         std::ifstream infile(listDirPath+inFileName);
         while( std::getline( infile, str ) ){
@@ -661,7 +665,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
     if( nfiles == 0 ){ std::cout << " !!!!! no input files !!!!! " << std::endl; return; }
 
     // ------ Do Main Loop
-
+	_evti = -1; _evti = -1;
     auto ext = splitString( inFileName, "." );
     std::string extOutFileName( ext[0] + outfilename );
 	SetOutFileName( extOutFileName );
@@ -778,8 +782,8 @@ bool KUCMSAodSkimmer::eventSelection(){
   int vetoJets = geCnts("jetEventVeto");
 
   float nSelPhotons = geCnts("nSelPhotons"); //selPhotons.getUIBranchValue("nSelPhotons");
-  float leadPhoPt = ( nSelPhotons > 0 ) ? geVars("leadPhoPt") : 0;
-  float subLeadPhoPt = ( nSelPhotons > 1 ) ? geVars("subLeadPhoPt") : 0;
+  float leadPhoPt = ( nSelPhotons > 0 ) ? geVects("selPhoPt").at(0) : 0;
+  float subLeadPhoPt = ( nSelPhotons > 1 ) ? geVects("selPhoPt").at(1) : 0;
 
   bool hasLepSV = geVars("nSVLep") > 0;
   bool hasHadSV = geVars("nSVHad") > 0;
@@ -795,10 +799,10 @@ bool KUCMSAodSkimmer::eventSelection(){
   bool gt2phos = nSelPhotons >= 2;
   bool leadPhoPt70 = leadPhoPt >= 70;
   bool leadPhoPt30 = leadPhoPt >= 30;
-  bool subLeadPhoPt40 = subLeadPhoPt >= 40;
+  bool subLeadPhoPt40 = subLeadPhoPt >= 40; 
 
   bool basesel = met100 && gt2jets && allgjets && gt2qjets;
-  //bool svsel = basesel && hasSV;  
+  //bool svsel = basesel && hasSV;	
   bool phosel = basesel && ( ( gt1phos && leadPhoPt30 ) || hasSV );
   //auto evtSelected = leadPhoPt70 && subLeadPhoPt40 && gt2jets && gt2phos;
 
