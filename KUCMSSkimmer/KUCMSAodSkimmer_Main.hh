@@ -266,9 +266,8 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
     // --  main loop
 
     std::cout << "Setting up For Main Loop." << std::endl;
-    int loopCounter( nEventsProcessed / 1 );
-    if(DEBUG){ nEntries = 1000; loopCounter = 100; }
-    //cout total number of entries to process
+	int nForPrecent =  ( nEventsProcessed < 10 ) ? 1 : 10;
+    int loopCounter( nEventsProcessed / nForPrecent );
     std::cout << "Processing " << nEntries << " entries." << std::endl;
     nEvents = nEventsProcessed;//save # of events actually ran over so that when files are hadded, this should total nEntries in TChain
     cout << "Running over events " << _evti << " to " << _evtj << endl;
@@ -280,9 +279,8 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
             curtime.pop_back();
             std::cout << "Proccessed " << centry << " of " << nEntries << " entries at " << curtime << std::endl;
         }//<<>>if( centry%loopCounter == 0 )
- 	auto entry = fInTree->LoadTree(centry);
+ 	    auto entry = fInTree->LoadTree(centry);
         if(DEBUG) std::cout << " -- Getting Branches " << std::endl;
-        std::cout << " -- Getting Branches " << std::endl;
         getBranches( entry, hasGenInfoFlag );
         if( mctype==1 && not isValidLumisection( Evt_run, Evt_luminosityBlock ) ) continue;
 
