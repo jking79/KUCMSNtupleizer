@@ -89,8 +89,7 @@ int main ( int argc, char *argv[] ){
 	outfilename = outfilename+".root";
     //const std::string listdir = "ntuple_master_lists/";
 	//const std::string infilename = "KUCMS_Ntuple_Master_DataPD_Files_List.txt"; hasGenInfo = false;
-
-	if(hasGenInfo && in_file.find("Data")){
+	if(hasGenInfo && in_file.find("Data") != string::npos){
 		cout << "Warning: running over list of data samples " << in_file << " with hasGenInfo == true. Setting hasGenInfo = false." << endl;
 		hasGenInfo = false;
 	}//<<>>if(hasGenInfo && in_file.find("Data"))
