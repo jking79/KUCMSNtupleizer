@@ -90,7 +90,7 @@ $(p4): $(p4).cpp $(TCOBJ)
 configtar:
 	cp runKUCMSAodSVSkimmer.obj config/
 	cp -r ntuple_master_lists/ config/
-	cp -r json/ config/
+#	cp -r json/ config/
 	cp -r ecal_config/ config/
 	tar -czf condor/config.tgz config/
 
