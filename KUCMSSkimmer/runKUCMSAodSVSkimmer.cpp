@@ -63,6 +63,7 @@ int main ( int argc, char *argv[] ){
         	if(strncmp(argv[i],"--N2Mass", 8) == 0)			{ i++; n2mass = std::stof(argv[i]); }
         	if(strncmp(argv[i],"--timeCaliTag", 13) == 0)	{ i++; ttag = string(argv[i]); }
         	if(strncmp(argv[i],"--MCweight", 10) == 0)		{ i++; mcw = std::stof(argv[i]); }
+        	if(strncmp(argv[i],"--MCtype", 8) == 0)		{ i++; mctype = std::stoi(argv[i]); }
 	}
 
 	if(hprint){
@@ -82,6 +83,7 @@ int main ( int argc, char *argv[] ){
         	cout << "   --N2Mass                             set N2 mass (default = 0)" << endl;
         	cout << "   --timeCaliTag                        set time calibration tag (default = r2_ul18(_mc))" << endl;
         	cout << "   --MCweight                           set MC weight (default = 0)" << endl;
+		cout << "   --MCtype [type]			 set MC type (default = 0)" << endl;
 		return 0;
 	}
 
@@ -107,15 +109,8 @@ int main ( int argc, char *argv[] ){
         	llpgana.kucmsAodSkimmer_listsOfLists( eosdir, in_file, outfilename);
 	} 
 	else {
-		if(in_file.find("AODSIM") != string::npos){
-			mctype = 0;
+		if(mctype == 1)
 			ttag += "_mc";
-			hasGenInfo = true;
-		}
-		else{
-			mctype = 1;
-			hasGenInfo = false;
-		}
 		//from master list
    		llpgana.SetDataSetKey(key);
     		llpgana.SetCrossSection(xsec);

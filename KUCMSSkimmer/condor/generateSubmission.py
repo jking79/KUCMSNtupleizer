@@ -148,9 +148,11 @@ def generateSubmission(args):
             # grab relevant flags
             flags = " --xsec "+str(xsec)+" --dataSetKey "+key+" --gluinoMass "+str(gluinomass)+" --N2Mass "+str(n2mass)+" --timeCaliTag "+timeCaliTag+" --MCweight "+str(mc_wt)
 
+	    mctype = 1
             if(MCbkg or MCsig):
                 flags += " --hasGenInfo"
-    
+		mctype = 0
+  	    flags += " --MCtype "+str(mctype)  
 
             ##### Create condor submission script in src directory #####
             condorSubmitFile = fulldirname + "/src/submit.sh"
