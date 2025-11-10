@@ -38,7 +38,7 @@ void KUCMSAodSkimmer::processJets(){
   // calc
   //if( DEBUG ) std::cout << "Finding jets" << std::endl;
   //--------- jets --------------------------
-  //isSelJet.clear(); 
+  isSelJet.clear(); 
 
   int jetEventVeto = 0;
   uInt nSelJets = 0;
@@ -151,10 +151,11 @@ void KUCMSAodSkimmer::processJets(){
 
     bool jetQualityGood = underMaxEta && isMinQuality && overMinPt && isNotPhoJet;
 	bool jetSelected = underMaxEta && isLLPJet && overMinPt && isNotPhoJet;
-	if( jetQualityGood ) nQJets++;
+
+	if( jetQualityGood ){ nQJets++; isSelJet.push_back(true); }
+	else isSelJet.push_back(false);
+
 	if( not jetSelected ) continue;
-    //if( not jetSelected ){ isSelJet.push_back(false); continue; }
-    //isSelJet.push_back(true);
     nSelJets++;
 
     seljetpt.push_back(pt);
