@@ -9,13 +9,15 @@ import shutil
 # === User configuration ===
 #/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer
 CMSSW_BASE = f"/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3"
+CMSSW_TARPATH = f"/uscms/home/jaking/nobackup/el8/llpana/"
 TARBALL = "CMSSW_13_3_3.tar.gz"
+TARBALL_PATH = os.path.join(os.path.dirname(CMSSW_TARPATH), TARBALL)
 SUB_FILE = "run_skim.sub"
 SCRIPT = "runLocalCKUCMSAodSVSkimmer.sh"
 LOGDIR = "logs"
 
 def make_tarball():
-    """Create or update a tarball of the full CMSSW area."""
+    """Create or update a tarball of the full CMSSW area, excluding unwanted files and directories."""
     base_dir = os.path.dirname(os.path.abspath(CMSSW_BASE))  # Parent dir of CMSSW
     cmssw_name = os.path.basename(os.path.abspath(CMSSW_BASE))
     tar_path = os.path.join(base_dir, TARBALL)
@@ -24,15 +26,24 @@ def make_tarball():
     if os.path.exists(tar_path):
         os.remove(tar_path)
 
-    # Build tar command with exclusions
-    exclude_args = ["--exclude=.git", "--exclude=tmp", f"--exclude={TARBALL}"]
+    # Build tar command with recursive-safe exclusions
+    exclude_args = [
+        "--exclude=.git",
+        "--exclude=tmp",
+        f"--exclude={TARBALL}",
+        "--exclude=*/trash/*",
+        "--exclude=*/tsig_skims/*",
+        "--exclude=*/test/*",
+        "--exclude=*/macros/*",
+        "--exclude=*/KUCMSSkimmer/*.root",
+    ]
 
     tar_cmd = ["tar", "-czf", tar_path] + exclude_args + [cmssw_name]
 
     # Run tar from the parent directory
     subprocess.run(tar_cmd, cwd=base_dir, check=True)
 
-    print("✔️  CMSSW tarball created successfully.\n")
+    print("✅  CMSSW tarball created successfully.\n")
 
 def read_jobs(input_file):
     """Parse input file with 3 arguments per line."""
@@ -58,7 +69,7 @@ universe              = vanilla
 executable            = {SCRIPT}
 should_transfer_files = YES
 when_to_transfer_output = ON_EXIT
-transfer_input_files  = {TARBALL}
+transfer_input_files  = {TARBALL_PATH}
 transfer_output_files = *.root
 
 output                = {LOGDIR}/job_$(Cluster)_$(Process).out
@@ -66,8 +77,6 @@ error                 = {LOGDIR}/job_$(Cluster)_$(Process).err
 log                   = {LOGDIR}/job_$(Cluster)_$(Process).log
 
 +JobFlavour           = "longlunch"
-
-requirements          = (OpSysAndVer == "CentOS8") || (OpSysAndVer == "AlmaLinux8") || (OpSysAndVer == "Rocky8")
 
 arguments = $(ARG1) $(ARG2) $(ARG3)
 
@@ -124,6 +133,14 @@ def main():
     jobs = read_jobs(input_list)
     write_submission(jobs)
     submit()
+
+    # Remove submission file after submission
+    try:
+        if os.path.exists(SUB_FILE):
+            os.remove(SUB_FILE)
+            print(f"🧹 Removed temporary submission file: {SUB_FILE}")
+    except Exception as e:
+        print(f"⚠️ Warning: could not remove {SUB_FILE}: {e}")
 
 if __name__ == "__main__":
     main()

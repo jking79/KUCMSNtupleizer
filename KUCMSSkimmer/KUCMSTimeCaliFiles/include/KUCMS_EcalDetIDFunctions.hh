@@ -38,8 +38,8 @@ struct kucms_DetIDStruct {
 	enum ECAL {EB, EM, EP, NONE};
 
     kucms_DetIDStruct() {}
-    kucms_DetIDStruct( const int ni1, const int ni2, const int nTT, const int & necal, const float nphi, const float neta ) 
-		: i1(ni1), i2(ni2), TT(nTT), ecal(necal), phi(nphi), eta(neta) {}
+    kucms_DetIDStruct( const int ni1, const int ni2, const int nTT, const int & necal, const float nphi, const float neta, const int nSC, const int nMd ) 
+		: i1(ni1), i2(ni2), TT(nTT), ecal(necal), phi(nphi), eta(neta), sect(nSC), mod(nMd) {}
 
     int i1; // EB: iphi, EE: ix
     int i2; // EB: ieta, EE: iy
@@ -47,6 +47,8 @@ struct kucms_DetIDStruct {
     int ecal; // EB, EM, EP
 	float phi; // xtal phi
 	float eta; // xtal eta
+    int sect; // trigger tower
+	int mod; // module?
 
 };//<<>>struct DetIDStruct
 

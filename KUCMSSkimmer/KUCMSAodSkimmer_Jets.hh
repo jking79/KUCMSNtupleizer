@@ -38,7 +38,7 @@ void KUCMSAodSkimmer::processJets(){
   // calc
   //if( DEBUG ) std::cout << "Finding jets" << std::endl;
   //--------- jets --------------------------
-  //isSelJet.clear(); 
+  isSelJet.clear(); 
 
   int jetEventVeto = 0;
   uInt nSelJets = 0;
@@ -128,22 +128,34 @@ void KUCMSAodSkimmer::processJets(){
     bool isNotPhoJet = not phoJetVeto[it];
     //if( isMinQuality != isLLPJet ) std::cout << "!!!!!!!!!!!!!!!!!!! bad jet llp qualty match !!!!!!!!!!!!!!!!!!!!!" << std::endl;
 
-    bool hemEligible1 = pt > 20;
-    bool hemEligible2 = pt > 30;
-    bool isInHemRegion = inHEMRegion( eta, phi );
-    hemBits["jet1"] = isInHemRegion && hemEligible1;
-    hemBits["jet2"] = isInHemRegion && hemEligible2;
+    bool hemEligible1( pt > 10.0 );
+    bool hemEligible2( pt > 20.0 );
+	bool isInHemRegion = inHEMRegion( eta, phi );
+    hemBits.set( "jet1hvl", isInHemRegion && hemEligible1 );
+    hemBits.set( "jet2hvm", isInHemRegion && hemEligible2 );
     //if( hemEligible && inHEMRegion( eta, phi ) ) hasHemObj = true;
+
+
+	if( isMinQuality ){
+
+    	selJets.fillBranch( "allJetPt", pt);
+    	selJets.fillBranch( "allJetMass", mass);
+    	selJets.fillBranch( "allJetEnergy", energy);
+    	selJets.fillBranch( "allJetEta", eta);
+    	selJets.fillBranch( "allJetPhi", phi);
+
+	}//<<>>if( isMinQuality ){
 
 	bool inAcceptance = underMaxEta && overMinPt && isNotPhoJet;
 	if( inAcceptance && not isLLPJet ) jetEventVeto++;
 
     bool jetQualityGood = underMaxEta && isMinQuality && overMinPt && isNotPhoJet;
 	bool jetSelected = underMaxEta && isLLPJet && overMinPt && isNotPhoJet;
-	if( jetQualityGood ) nQJets++;
+
+	if( jetQualityGood ){ nQJets++; isSelJet.push_back(true); }
+	else isSelJet.push_back(false);
+
 	if( not jetSelected ) continue;
-    //if( not jetSelected ){ isSelJet.push_back(false); continue; }
-    //isSelJet.push_back(true);
     nSelJets++;
 
     seljetpt.push_back(pt);
@@ -239,6 +251,12 @@ void KUCMSAodSkimmer::setJetsBranches( TTree* fOutTree ){
     selJets.makeBranch( "selGenJetTof", VFLOAT ); //*Jet_genTOF)[it]; 
     selJets.makeBranch( "selGenJetTime", VFLOAT ); // (*Jet_genTime)[it]; 
     selJets.makeBranch( "selGenJetLlpTime", VFLOAT ); //*Jet_genTimeLLP)[it]; 
+
+    selJets.makeBranch( "allJetPt", VFLOAT);
+    selJets.makeBranch( "allJetMass", VFLOAT);
+    selJets.makeBranch( "allJetEnergy", VFLOAT);
+    selJets.makeBranch( "allJetEta", VFLOAT);
+    selJets.makeBranch( "allJetPhi", VFLOAT);
 
     // add new jet branches above
     selJets.attachBranches( fOutTree );

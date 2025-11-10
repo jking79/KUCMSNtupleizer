@@ -111,8 +111,9 @@ inline void kucms_CaliRunClass::fillSumCnt( uInt detid, float val, int cnt ){
     } else { 
         sumCntMap[detid] = { val, val*val, cnt };  
     }//<<>>if( sumCntMap.find(detid) != sumCntMap.end() ) 
- 
-    if( detIdHists.find(detid) != detIdHists.end() ){ detIdHists[detid]->Fill(val); } //std::cout << " -- hist Fill " << detid << " with " << val << std::endl; } 
+
+	//std::cout << " -- hist Fill " << detid << " with " << val << std::endl; } 
+    if( detIdHists.find(detid) != detIdHists.end() ){ detIdHists[detid]->Fill(val); } 
     else { 
         //std::cout << " -- hist Make " << detid << " with " << val << std::endl; 
         std::string histname = histMapName + "_SumCntHist_" + std::to_string( startRun ) + "_" + std::to_string(detid) ; 
