@@ -478,11 +478,20 @@ dlgjets18ulmini = [
 
 ]
 
+dlEGMAOD17 = [
+ 
+    '/DoubleEG/Run2017B-09Aug2019_UL2017-v1/MINIAOD',
+    '/DoubleEG/Run2017C-09Aug2019_UL2017-v1/MINIAOD',
+    '/DoubleEG/Run2017D-09Aug2019_UL2017-v1/MINIAOD',
+    '/DoubleEG/Run2017E-09Aug2019_UL2017-v1/MINIAOD',
+    '/DoubleEG/Run2017F-09Aug2019_UL2017-v1/MINIAOD',
+ 
+]
+
 
 query = 'dasgoclient --json -query=\'dataset='
 
-datalist = dlR2Met
-
+datalist = dlEGMAOD17
 
 for data in datalist :
     
