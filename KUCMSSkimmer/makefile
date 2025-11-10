@@ -27,8 +27,10 @@ BCFLAGS += -I/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/eigen/82dd3710dac619448
 BCFLAGS += -I/uscms/home/mlazarov/nobackup/CMSSW_13_0_13/src/CGAL-5.6.1/include
 BCFLAGS += -I/uscms/home/mlazarov/nobackup/CMSSW_13_0_13/src/frugally-deep-master/include
 BCFLAGS += -I/uscms/home/mlazarov/nobackup/CMSSW_13_0_13/src/FunctionalPlus-master/include
-BCFLAGS += -I$(CMSSW_BASE)/src/BayesianClustering/include -frounding-math
-BCGLIBS += -L$(CMSSW_BASE)/src/BayesianClustering/lib -lBayesianClustering
+BCFLAGS += -I/uscms/home/mlazarov/nobackup/CMSSW_13_3_3/src/BayesianClustering/include -frounding-math
+BCGLIBS += -L/uscms/home/mlazarov/nobackup/CMSSW_13_3_3/src/BayesianClustering/lib -lBayesianClustering
+#BCFLAGS += -I$(CMSSW_BASE)/src/BayesianClustering/include -frounding-math
+#BCGLIBS += -L$(CMSSW_BASE)/src/BayesianClustering/lib -lBayesianClustering
 BCGLIBS += $(GLIBS)
 
 BCFLAGS8 += -I/cvmfs/cms.cern.ch/el8_amd64_gcc11/external/eigen/82dd3710dac619448f50331c1d6a35da673f764a-f9c27fce684e89466e2ef07869cd264d/include/eigen3/
@@ -80,10 +82,10 @@ $(p2): $(p2).cpp $(TCOBJ)
 	$(CC) -o $(p2).obj $(p2).cpp $(TCOBJ) $(RTCFLAGS) $(RTGLIBS)
 
 $(p3): $(p3).cpp $(TCOBJ)
-	$(CC) -o $(p3).obj $(p3).cpp $(TCOBJ) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS8) $(BCGLIBS8) $(OPTS)
+	$(CC) -o $(p3).obj $(p3).cpp $(TCOBJ) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS) $(BCGLIBS) $(OPTS)
 
 $(p4): $(p4).cpp $(TCOBJ)
-	$(CC) -o $(p4).obj $(p4).cpp $(TCOBJ) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS8) $(BCGLIBS8) $(OPTS) 
+	$(CC) -o $(p4).obj $(p4).cpp $(TCOBJ) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS) $(BCGLIBS) $(OPTS) 
 
 configtar:
 	cp runKUCMSAodSVSkimmer.obj config/
