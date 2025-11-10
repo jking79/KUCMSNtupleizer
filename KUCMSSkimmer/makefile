@@ -64,9 +64,10 @@ TCINC = -I/KUCMSTimeCaliFiles/include
 #	$(CC) $(RTCFLAGS) $(RTGLIBS) $(INC) -c $< -o $@
 
 all: $(p1) 
+TimeCali: KUCMS_TimeCalibration.o
 
 KUCMS_TimeCalibration.o: KUCMSTimeCaliFiles/src/KUCMS_TimeCalibration.cpp KUCMSTimeCaliFiles/include/*.hh
-	$(CC) $(RTCFLAGS) $(RTGLIBS) $(TCINC) -c $< -o $@
+	$(CC) $(RTCFLAGS) $(RTGLIBS) $(TCINC) -fPIC -c $< -o $@
 
 $(p1): $(p1).cpp $(TCOBJ)
 	$(CC) -o $(p1).obj $(p1).cpp $(TCOBJ) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS) $(BCGLIBS)  
