@@ -7,9 +7,7 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-//#include "KUCMSAodSkimmer_Main_noBHC_noSV.hh"
-#include "KUCMSAodSkimmer_Main_noBHC.hh"
-//#include "KUCMSAodSkimmer_Main.hh
+#include "KUCMSAodSkimmer_Main.hh"
 
 // ------------------------------------------- main function ------------------------------------------------------------
 
@@ -64,6 +62,7 @@ int main ( int argc, char *argv[] ){
     //int skipCnt = 0; // used to skip files ( in tchian ) for fast processing - if( nFiles%skipCnt != 0 ) continue; --  disabled in code  --  
 	// !!!!!!!!!!!!!!!!!!!  alternate RJR setup with invis in comb split rule
     KUCMSAodSkimmer llpgana;
+    llpgana.SetDoBHC(false);
 	llpgana.SetGenInfoFlag(hasGenInfo); 
 	llpgana.SetNoSVorPhoFlag(noSVorPho); 
 	llpgana.SetUseEvtGenWgtFlag(useEvtGenWgt);
