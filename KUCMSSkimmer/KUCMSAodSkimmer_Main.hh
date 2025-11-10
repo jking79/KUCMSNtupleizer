@@ -254,7 +254,6 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
 		if( _evti > nEntries ){ cout << "Starting event " << _evti << " above # of entries in tree " << nEntries << " returning." << endl; return; }
 	}//<<>> if( _evti < 0 ) else
 	int nEventsProcessed = _evtj - _evti;
-
     initHists();
     setOutputBranches(fOutTree);
 
@@ -267,7 +266,7 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
     // --  main loop
 
     std::cout << "Setting up For Main Loop." << std::endl;
-    int loopCounter( nEventsProcessed / 100 );
+    int loopCounter( nEventsProcessed / 1 );
     if(DEBUG){ nEntries = 1000; loopCounter = 100; }
     //cout total number of entries to process
     std::cout << "Processing " << nEntries << " entries." << std::endl;
@@ -275,15 +274,13 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
     cout << "Running over events " << _evti << " to " << _evtj << endl;
 	int count_of_events = 0;
     for (Long64_t centry = _evti; centry < _evtj; centry++){
-
         if( centry%loopCounter == 0 ){
             std::time_t now = std::time(nullptr);
             std::string curtime = std::ctime(&now);
             curtime.pop_back();
             std::cout << "Proccessed " << centry << " of " << nEntries << " entries at " << curtime << std::endl;
         }//<<>>if( centry%loopCounter == 0 )
-        auto entry = fInTree->LoadTree(centry);
-
+ 	auto entry = fInTree->LoadTree(centry);
         if(DEBUG) std::cout << " -- Getting Branches " << std::endl;
         std::cout << " -- Getting Branches " << std::endl;
         getBranches( entry, hasGenInfoFlag );
@@ -381,8 +378,14 @@ int KUCMSAodSkimmer::ProcessFilelist(string eosdir, string infilename, TChain*& 
 	//if( skipCnt != 0 && ( nfiles%skipCnt != 0 ) ) continue;
     string sample_str = str.substr(0,str.find("/"));
 	string prefix = str.substr(str.find("/")+1);
-	string inpath = prefix.substr(0,prefix.find(sample_str,prefix.find(sample_str)+sample_str.size())-1)+"/";
-	auto tfilename = eosdir + inpath + str;
+	string match = "kucmsntuple_";
+	string proc = prefix.substr(match.size());
+        proc = proc.substr(0,proc.find("_"));	
+	string inpath = prefix.substr(0,prefix.find(sample_str,prefix.find(sample_str)+sample_str.size())-1);
+	prefix = prefix.substr(0,prefix.rfind(proc));
+	prefix.replace(prefix.rfind("_"),1,"/");
+	inpath = prefix+str;
+	auto tfilename = eosdir + inpath;
 	fInTree->Add(tfilename.c_str());
 	fInConfigTree->Add(tfilename.c_str());
 	if(DEBUG) std::cout << "--  adding file: " << tfilename << std::endl; //else std::cout << ".";
@@ -538,6 +541,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string eosdir, std::string infilelis
     if(ret < 0) return;
 
 	SetOutFileName(outfilename);
+cout << "is in tree null " << (fInTree == nullptr) << endl; 
     ProcessMainLoop(fInTree, fInConfigTree);
     std::cout << "Finished processing events for : " << infilelist << std::endl;
   	std::cout << "KUCMSAodSkimmer : Thats all Folks!!" << std::endl;
