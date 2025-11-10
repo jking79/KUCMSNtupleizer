@@ -14,12 +14,13 @@ source ./config/cmssw_setup_connect.sh
 cmssw_setup sandbox-CMSSW_13_3_3.tar.bz2 
 source ./config/setup_RestFrames_connect.sh
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CMSSW_BASE/src/BayesianClustering/lib
-mv config/json .
 mv config/ntuple_master_lists .
 mv config/ecal_config .
+mv config/fullMask60cm_Data.root .
 ###
 ####don't need lhapdf library - but may need to do this for cgal, etc.
 ####export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/lhapdf/6.2.1-pafccj3/lib/
+ls
 ./config/runKUCMSAodSVSkimmer.obj "$@"
 #pwd
 #echo "--done run"

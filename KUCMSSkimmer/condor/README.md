@@ -1,0 +1,10 @@
+Condor README and notes
+- the path for file lists are hardcoded based on the current CMSSW source directory and expecting a double-nested KUCMSNtupleizer directory structure
+- make sure all the external files necessary to the skimmer are in the config folder and this is current with the config.tgz tarball in the condor/ directory
+	- ie jsons, root files for time calibration or material vetos, file lists to run over, etc
+	- make sure all the paths are consistent with what is called in `execute_script.sh` (ie if you ask for a file in the `json/` directory, this directory needs to be moved out of from `config/json` when executing on condor)
+	- if you need to update teh config.tgz tarball, you can use the command `make configtar` from the base skimmer directory
+- the script generator is set up to run over either `master` list of file lists or a single file list for signal only right now
+	- ex) `python generateSubmission.py -i gogoG --year 2018 -o v41` will create separate condor scripts for all the gogoG filelists in the SMS master list (that are not commented out) 
+	- ex) `python generateSubmission.py -i gogoG --year 2018 -o v41 --mGl 2000 --mN2 1500 --mN1 1000` will create a single condor submission script for the gogoG mass point of mGl-2000_mN2-1500_mN1-1000 (the default lifetime is ctau = 0.1 because that's all we have right now)
+	- ex) `python generateSubmission.py -i GJets --year 2018 -o v41 --HT 400To600` will create a single condor submission script for the GJets HT400To600 sample 

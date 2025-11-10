@@ -69,7 +69,7 @@ int main ( int argc, char *argv[] ){
     		cout << "Usage: " << argv[0] << " [options]" << endl;
         	cout << "  options:" << endl;
         	cout << "   --help(-h)                           print options" << endl;
-        	cout << "   --input(-i) [file]                   input filelist" << endl;
+        	cout << "   --input(-i) [file]                   input filelist (can be \"Master\" list of lists or single sample list)" << endl;
 		cout << "   --output(-o) [file]                  output file tag" << endl;
 		cout << "   --evtFirst [i] --evtLast [j]         skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
 		cout << "   --hasGenInfo                         sample has gen info (default = false)" << endl;

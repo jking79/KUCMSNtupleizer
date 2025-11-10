@@ -203,9 +203,9 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 
 	// BNC Intiation
 
-    _ca.SetVerbosity(0); //_can turn on to see low-level warnings
+    _ca.SetVerbosity(-1); //_can turn on to see low-level warnings
     _ca.SetDetIDsEB(_detidmap);
-    _ca.SetCNNModel("json/small3CNN_EMultr_2017and2018.json");
+    _ca.SetCNNModel("config/json/small3CNN_EMultr_2017and2018.json");
 
 }//<<>>KUCMSAodSkimmer::KUCMSAodSkimmer()
 
@@ -285,6 +285,7 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
         auto entry = fInTree->LoadTree(centry);
 
         if(DEBUG) std::cout << " -- Getting Branches " << std::endl;
+        std::cout << " -- Getting Branches " << std::endl;
         getBranches( entry, hasGenInfoFlag );
         if( mctype==1 && not isValidLumisection( Evt_run, Evt_luminosityBlock ) ) continue;
 
@@ -752,7 +753,7 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
   
   // select events to process and store
   //--------------------------------------
-  auto saveToTree = eventSelection();	
+  auto saveToTree = eventSelection();
   if( saveToTree ){ 
 
     if( doBHC ){ processBHCPhotons(); processBHCJets(); }
