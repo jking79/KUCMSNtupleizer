@@ -49,7 +49,7 @@ p2=fillKUCMSTimeCalibration
 p3=runLocalKUCMSAodSVSkimmer
 p4=runLocalCKUCMSAodSVSkimmer
 
-TCOBJ = KUCMS_TimeCalibration.o
+TCOBJ = KUCMS_TimeCalibration.so
 TCINC = -I/KUCMSTimeCaliFiles/include
 
 # Automatically find all .cpp files under KUCMSTimeCaliFiles/src/
@@ -64,9 +64,9 @@ TCINC = -I/KUCMSTimeCaliFiles/include
 #	$(CC) $(RTCFLAGS) $(RTGLIBS) $(INC) -c $< -o $@
 
 all: $(p1) 
-TimeCali: KUCMS_TimeCalibration.o
+TimeCali: KUCMS_TimeCalibration.so
 
-KUCMS_TimeCalibration.o: KUCMSTimeCaliFiles/src/KUCMS_TimeCalibration.cpp KUCMSTimeCaliFiles/include/*.hh
+KUCMS_TimeCalibration.so: KUCMSTimeCaliFiles/src/KUCMS_TimeCalibration.cpp KUCMSTimeCaliFiles/include/*.hh
 	$(CC) $(RTCFLAGS) $(RTGLIBS) $(TCINC) -fPIC -c $< -o $@
 
 $(p1): $(p1).cpp $(TCOBJ)
