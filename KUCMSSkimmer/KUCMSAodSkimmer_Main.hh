@@ -203,7 +203,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 
 	// BNC Intiation
 
-    _ca.SetVerbosity(0); //_can turn on to see low-level warnings
+    _ca.SetVerbosity(-1); //_can turn on to see low-level warnings
     _ca.SetDetIDsEB(_detidmap);
     _ca.SetCNNModel("config/json/small3CNN_EMultr_2017and2018.json");
 
