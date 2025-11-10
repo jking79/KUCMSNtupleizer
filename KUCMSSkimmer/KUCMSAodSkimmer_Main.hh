@@ -192,7 +192,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 
     // event varibles
 
-    doBHC = false;
+    doBHC = true;
     genSigPerfectFlag = false;
     noSVorPhoFlag = false;
     useEvtGenWgtFlag = true;
