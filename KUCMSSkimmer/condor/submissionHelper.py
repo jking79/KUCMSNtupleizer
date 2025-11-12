@@ -103,6 +103,8 @@ def filesSplit(eosdir, infile, nevtsmax = -999):
             lines = f.readlines()
             for line in lines:
                 line = line[:line.find("\n")]
+                if(line[0] == "#"):
+                    continue
                 file = eosdir+"/"+line
                 arr.append(file)
         print("Splitting each file into "+str(len(arr))+" jobs ")
@@ -112,6 +114,8 @@ def filesSplit(eosdir, infile, nevtsmax = -999):
             evtarr = []
             for line in lines:
                 line = line[:line.find("\n")]
+                if(line[0] == "#"):
+                    continue
                 file = eosdir+"/"+line
                 rfile = ROOT.TFile.Open(file)
                 tree = rfile.Get("tree/llpgtree")
