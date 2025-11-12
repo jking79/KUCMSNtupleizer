@@ -148,6 +148,7 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 		phoobj.CalculateObjTimes();
 		phoobj.CalculateObjTimeSig(rhtresmap);
 		//do PU-cleaned observables
+		BHCPhoInfo.fillBranch( "selPhoBHCPUCleaned_selPhoIndex", selPhoIndex );
 		//center
 		phoeta = phoobj.GetEtaCenter();
 		BHCPhoInfo.fillBranch( "selPhoBHCPUCleaned_eta", phoeta);
@@ -299,6 +300,7 @@ void KUCMSAodSkimmer::processBHCJets(){
 		//time at PV
 		float jettime_pv = jetobj.GetObjTime_PV();
 		BHCJetInfo.fillBranch( "selJetBHC_PVTime", jettime_pv);
+		BHCJetInfo.fillBranch("selJetBHC_energy", (float)jetobj.GetEnergy());
 
 		pvtime += jettime_pv*jetobj.GetEnergy();
 		norm += jetobj.GetEnergy();
@@ -321,22 +323,21 @@ void KUCMSAodSkimmer::processBHCJets(){
 		float timeSignificance = jetobj.GetObjTimeSig();
 		BHCJetInfo.fillBranch( "selJetBHC_timeSignficance", timeSignificance);
 
-		//TODO - CHECK PU cleaning and det bkg cleaning
-		/*
 		/////////CLEAN OUT PU/////////
 		jetobj.CleanOutPU();
 		//do PU-cleaned observables
 		//center
 		jeteta = jetobj.GetEtaCenter();
-		BHCInfo.fillBranch( "selJetBHCPUCleaned_eta", jeteta);
+		BHCJetInfo.fillBranch( "selJetBHCPUCleaned_eta", jeteta);
 		jetphi = jetobj.GetPhiCenter();
-		BHCInfo.fillBranch( "selJetBHCPUCleaned_phi", jetphi);
+		BHCJetInfo.fillBranch( "selJetBHCPUCleaned_phi", jetphi);
 		//time at detector face
 		jettime = jetobj.GetObjTime_Det();
-		BHCInfo.fillBranch( "selJetBHCPUCleaned_DetTime", jettime);
+		BHCJetInfo.fillBranch( "selJetBHCPUCleaned_DetTime", jettime);
 		//time at PV
 		jettime_pv = jetobj.GetObjTime_PV();
-		BHCInfo.fillBranch( "selJetBHCPUCleaned_PVTime", jettime_pv);
+		BHCJetInfo.fillBranch( "selJetBHCPUCleaned_PVTime", jettime_pv);
+		BHCJetInfo.fillBranch("selJetBHCPUCleaned_energy", (float)jetobj.GetEnergy());
 		
 		pvtime_PUcleaned += jettime_pv*jetobj.GetEnergy();
 		norm_PUcleaned += jetobj.GetEnergy();
@@ -347,20 +348,22 @@ void KUCMSAodSkimmer::processBHCJets(){
 		etaphicov = jetobj.GetEtaPhiCov();
 		//jetobj.GetMajMinLengths(majlen, minlen); //space only
 		
-		BHCInfo.fillBranch( "selJetBHCPUCleaned_etaVar", etavar);
-		BHCInfo.fillBranch( "selJetBHCPUCleaned_phiVar", phivar);
-		BHCInfo.fillBranch( "selJetBHCPUCleaned_etaPhiCov", etaphicov);
-		BHCInfo.fillBranch( "selJetBHCPUCleaned_majlen", (float)majlen);
-		BHCInfo.fillBranch( "selJetBHCPUCleaned_minlen", (float)minlen);
+		BHCJetInfo.fillBranch( "selJetBHCPUCleaned_etaVar", etavar);
+		BHCJetInfo.fillBranch( "selJetBHCPUCleaned_phiVar", phivar);
+		BHCJetInfo.fillBranch( "selJetBHCPUCleaned_etaPhiCov", etaphicov);
+		BHCJetInfo.fillBranch( "selJetBHCPUCleaned_majlen", (float)majlen);
+		BHCJetInfo.fillBranch( "selJetBHCPUCleaned_minlen", (float)minlen);
 		//calculate time significance
 		timeSignificance = jetobj.GetObjTimeSig();
-		BHCInfo.fillBranch( "selJetBHCPUCleaned_timeSignficance", timeSignificance);
+		BHCJetInfo.fillBranch( "selJetBHCPUCleaned_timeSignficance", timeSignificance);
 		//
-		double minscore = 0.9;
-		jetobj.CleanOutDetBkg(minscore);
 
 
 		/////////CLEAN OUT DET BKG AND PU/////////
+		/*
+		double minscore = 0.9;
+		//TODO - update function below
+		jetobj.CleanOutDetBkg(minscore);
 		//do PU-cleaned && det bkg-cleaned observables
 		//center
 		jeteta = jetobj.GetEtaCenter();
@@ -415,8 +418,8 @@ void KUCMSAodSkimmer::processBHCJets(){
 
 void KUCMSAodSkimmer::setBCBranches( TTree* fOutTree ){
 
-    	BHCPhoInfo.makeBranch("selPhoBHC_selPhoIndex", VINT);
   for(const string cleanedType : {"BHC", "BHCPUCleaned"}) {
+    	BHCPhoInfo.makeBranch("selPho"+cleanedType+"_selPhoIndex", VINT);
 	BHCPhoInfo.makeBranch( "selPho"+cleanedType+"_eta", VFLOAT);
 	BHCPhoInfo.makeBranch( "selPho"+cleanedType+"_phi", VFLOAT);
 	BHCPhoInfo.makeBranch( "selPho"+cleanedType+"_DetTime", VFLOAT);
@@ -450,8 +453,7 @@ void KUCMSAodSkimmer::setBCBranches( TTree* fOutTree ){
 	BHCJetInfo.makeBranch( "selJetBHCSubcl_time", VFLOAT);			
 	BHCJetInfo.makeBranch( "selJetBHCSubcl_eta", VFLOAT);			
 	BHCJetInfo.makeBranch( "selJetBHCSubcl_phi", VFLOAT);
-	BHCJetInfo.makeBranch( "selJetBHCSubcl_etaVar", VFLOAT);			
-	BHCJetInfo.makeBranch( "selJetBHCSubcl_phiVar", VFLOAT);			
+
 	BHCJetInfo.makeBranch( "selJetBHCSubcl_timeVar", VFLOAT);			
 	BHCJetInfo.makeBranch( "selJetBHCSubcl_energy", VFLOAT);			
 	BHCJetInfo.makeBranch( "selJetBHCSubcl_etaPhiCov", VFLOAT);
@@ -470,6 +472,7 @@ void KUCMSAodSkimmer::setBCBranches( TTree* fOutTree ){
 	BHCJetInfo.makeBranch( "selJet"+cleanedType+"_phi", VFLOAT);
 	BHCJetInfo.makeBranch( "selJet"+cleanedType+"_DetTime", VFLOAT);
 	BHCJetInfo.makeBranch( "selJet"+cleanedType+"_PVTime", VFLOAT);
+	BHCJetInfo.makeBranch( "selJet"+cleanedType+"_energy", VFLOAT);
 
 	BHCJetInfo.makeBranch( "selJet"+cleanedType+"_etaVar", VFLOAT);
 	BHCJetInfo.makeBranch( "selJet"+cleanedType+"_phiVar", VFLOAT);
