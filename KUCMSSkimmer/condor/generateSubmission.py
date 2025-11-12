@@ -141,18 +141,16 @@ def generateSubmission(args):
             # Create directories for work area.
             SH.createWorkArea(fulldirname)
             eosdir = "root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/"+eospath
-            eventnums = SH.eventsSplit(eosdir, inputlist, args.split,True, args.maxnevts)
-            if eventnums == 0 or eventnums is None:
-                print("eventnums",eventnums)
-                return
+            #eventnums = SH.eventsSplit(eosdir, inputlist, args.split,True, args.maxnevts)
+            filearr = SH.filesSplit(eosdir, inputlist, args.maxnevts)
             # grab relevant flags
             flags = " --xsec "+str(xsec)+" --dataSetKey "+key+" --gluinoMass "+str(gluinomass)+" --N2Mass "+str(n2mass)+" --timeCaliTag "+timeCaliTag+" --MCweight "+str(mc_wt)
 
-	    mctype = 1
+            mctype = 1
             if(MCbkg or MCsig):
                 flags += " --hasGenInfo"
-		mctype = 0
-  	    flags += " --MCtype "+str(mctype)  
+                mctype = 0
+            flags += " --MCtype "+str(mctype)  
 
             ##### Create condor submission script in src directory #####
             condorSubmitFile = fulldirname + "/src/submit.sh"
@@ -162,7 +160,7 @@ def generateSubmission(args):
             #need to remove local lpc path for actual args
             inputlist = inputlist[inputlist.rfind("/",0,inputlist.rfind("/"))+1:]
             print("inputfilelist",inputlist)
-            SH.writeQueueList(subf, inputlist, ofilename, eventnums, flags)
+            SH.writeQueueList(subf, ofilename, filearr, flags)
             print("------------------------------------------------------------")
             print("Submission ready, to run use:")
             print("condor_submit "+condorSubmitFile+"\n")
@@ -181,7 +179,7 @@ def main():
     parser.add_argument('--mN2',help='neutralino2 mass for signal',default='')
     parser.add_argument('--mN1',help='neutralino1 mass for signal',default='')
     parser.add_argument('--output','-o',help='output label',default=None)
-    parser.add_argument('--split','-s',help="condor job split",default=0,type=int)
+    #parser.add_argument('--split','-s',help="condor job split",default=0,type=int)
     parser.add_argument('--maxnevts',help="maximum number of events to run over",default=-999,type=int)
     parser.add_argument('--verbosity','-v',help="verbosity",default=0)
     #parser.add_argument('--hasGenInfo',help='set hasGenInfo flag',default=False,action="store_true")

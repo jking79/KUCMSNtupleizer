@@ -341,6 +341,37 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
 
 }//<<>>void KUCMSAodSkimmer::ProcessMainLoop()
 
+
+int KUCMSAodSkimmer::ProcessFile(string infilename, TChain*& fInTree, TChain*& fInConfigTree){
+    const std::string disphotreename = "tree/llpgtree";
+    const std::string configtreename = "tree/configtree";
+    if(gSystem->AccessPathName(infilename.c_str())){
+      cout << "Error: File " << infilename << " not found" << endl;
+      return -1;
+    }
+  
+    if( DEBUG ) std:: cout << "InFile: " << infilename << std::endl;
+    if( DEBUG ) std:: cout << "Key: " << dataSetKey << std::endl;
+    if( DEBUG ) std:: cout << "XSec: " << xsctn << std::endl;
+    if( DEBUG ) std:: cout << "GM: " << gmass << std::endl;
+    if( DEBUG ) std:: cout << "XM: " << xmass << std::endl;
+    if( DEBUG ) std:: cout << "MCw: " << mcwgt << std::endl;
+    if( DEBUG ) std:: cout << "MCt: " << mctype << std::endl;
+    if( DEBUG ) std:: cout << "tcTag: " << tctag << std::endl;
+
+    std::cout << "Processing Events for : " << infilename << std::endl;
+    fInTree = new TChain(disphotreename.c_str());
+    fInConfigTree = new TChain(configtreename.c_str());
+    fInTree->Add(infilename.c_str());
+    fInConfigTree->Add(infilename.c_str());
+    if(DEBUG) std::cout << "--  adding file: " << infilename << std::endl; //else std::cout << ".";
+    return 0;
+
+
+}
+
+
+
 int KUCMSAodSkimmer::ProcessFilelist(string eosdir, string infilename, TChain*& fInTree, TChain*& fInConfigTree){
     const std::string disphotreename = "tree/llpgtree";
     const std::string configtreename = "tree/configtree";
@@ -526,7 +557,26 @@ void KUCMSAodSkimmer::ProcessConfigTree( TChain* fInConfigTree ){
 
 }//<<>>void KUCMSAodSkimmer::ProcessConfigTree(TChain* fInConfigTree)
 
-void KUCMSAodSkimmer::kucmsAodSkimmer( std::string eosdir, std::string infilelist, std::string outfilename){
+void KUCMSAodSkimmer::kucmsAodSkimmer( std::string infile, std::string outfilename){
+
+    std::cout << "Processing Input Lists for : " << infile << std::endl;
+
+    //add path to input file
+    //TTree* fOutTree = new TTree("kuSkimTree","output root file for kUCMSSkimmer");
+    //TTree* fConfigTree = new TTree("kuSkimConfigTree","config root file for kUCMSSkimmer");
+    TChain* fInTree = nullptr;
+    TChain* fInConfigTree = nullptr;
+    int ret = ProcessFile( infile, fInTree, fInConfigTree);
+    if(ret < 0) return;
+
+	SetOutFileName(outfilename);
+    ProcessMainLoop(fInTree, fInConfigTree);
+    std::cout << "Finished processing events for : " << infile << std::endl;
+  	std::cout << "KUCMSAodSkimmer : Thats all Folks!!" << std::endl;
+
+}//<<>>void KUCMSAodSkimmer::kucmsAodSkimmer( std::string eosdir, std::string infilelist, std::string outfilename)
+
+void KUCMSAodSkimmer::kucmsAodSkimmer_Filelist( std::string eosdir, std::string infilelist, std::string outfilename){
 
     std::cout << "Processing Input Lists for : " << infilelist << std::endl;
 

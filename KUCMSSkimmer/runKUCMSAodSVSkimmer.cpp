@@ -70,7 +70,7 @@ int main ( int argc, char *argv[] ){
     		cout << "Usage: " << argv[0] << " [options]" << endl;
         	cout << "  options:" << endl;
         	cout << "   --help(-h)                           print options" << endl;
-        	cout << "   --input(-i) [file]                   input filelist (can be \"Master\" list of lists or single sample list)" << endl;
+        	cout << "   --input(-i) [file]                   input file" << endl;
 		cout << "   --output(-o) [file]                  output file tag" << endl;
 		cout << "   --evtFirst [i] --evtLast [j]         skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
 		cout << "   --hasGenInfo                         sample has gen info (default = false)" << endl;
@@ -91,10 +91,6 @@ int main ( int argc, char *argv[] ){
 	outfilename = outfilename+".root";
     //const std::string listdir = "ntuple_master_lists/";
 	//const std::string infilename = "KUCMS_Ntuple_Master_DataPD_Files_List.txt"; hasGenInfo = false;
-	if(hasGenInfo && in_file.find("Data") != string::npos){
-		cout << "Warning: running over list of data samples " << in_file << " with hasGenInfo == true. Setting hasGenInfo = false." << endl;
-		hasGenInfo = false;
-	}//<<>>if(hasGenInfo && in_file.find("Data"))
 
     	int skipCnt = 0; // used to skip files ( in tchian ) for fast processing - if( nFiles%skipCnt != 0 ) continue; --  disabled in code  --  
     	std::string eosdir = "root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/";
@@ -105,24 +101,19 @@ int main ( int argc, char *argv[] ){
     	llpgana.SetUseEvtGenWgtFlag( useEvtGenWgt );
     	llpgana.SetGenSigPerfectFlag( genSigPerfect );
     	llpgana.SetDoBHC( !noBHC );
-	if(in_file.find("_Master_") != string::npos){
-        	llpgana.kucmsAodSkimmer_listsOfLists( eosdir, in_file, outfilename);
-	} 
-	else {
-		if(mctype == 1)
-			ttag += "_mc";
-		//from master list
-   		llpgana.SetDataSetKey(key);
-    		llpgana.SetCrossSection(xsec);
-    		llpgana.SetGluinoMass(glumass);
-    		llpgana.SetN2Mass(n2mass);
-    		llpgana.SetMCType(mctype);
-    		llpgana.SetTimeCalibrationTag(ttag);
-		llpgana.SetMCWeight(mcw);
-		//this method takes in 1 list at a time
-		eosdir = eosdir+"KUCMSNtuple/";
-        	llpgana.kucmsAodSkimmer( eosdir, in_file, outfilename);
-	}//<<>>if(in_file.find("_Master_") != string::npos)
+	//from master list
+   	llpgana.SetDataSetKey(key);
+    	llpgana.SetCrossSection(xsec);
+    	llpgana.SetGluinoMass(glumass);
+    	llpgana.SetN2Mass(n2mass);
+    	llpgana.SetMCType(mctype);
+    	llpgana.SetTimeCalibrationTag(ttag);
+	llpgana.SetMCWeight(mcw);
+	//this method takes in 1 list at a time
+	eosdir = eosdir+"KUCMSNtuple/";
+	if(in_file.find(eosdir) == string::npos)
+	       in_file = eosdir+in_file;	
+        llpgana.kucmsAodSkimmer( in_file, outfilename);
     return 1;
 
 

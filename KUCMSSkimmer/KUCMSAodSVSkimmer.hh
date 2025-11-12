@@ -67,12 +67,14 @@ class KUCMSAodSkimmer : public llpgtree {
     KUCMSAodSkimmer();
 	~KUCMSAodSkimmer();
 
-    void kucmsAodSkimmer( std::string eosdir, std::string infilelist, std::string outfilename);
+    void kucmsAodSkimmer( std::string infile, std::string outfilename);
+    void kucmsAodSkimmer_Filelist( std::string eosdir, std::string infilelist, std::string outfilename);
     void kucmsAodSkimmer_listsOfLists( std::string eosdir, std::string infilelist, std::string outfilename );
     void kucmsAodSkimmer_local( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename );
 
     int ProcessFilelistOfLists(string eosdir, vector<string> processed_strings, TChain*& fInTree, TChain*& fInConfigTree);
     int ProcessFilelist(string eosdir, string infilename, TChain*& fInTree, TChain*& fInConfigTree);
+    int ProcessFile(string infilename, TChain*& fInTree, TChain*& fInConfigTree);
 
     void ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree );
     void ProcessConfigTree( TChain* fInConfigTree );
