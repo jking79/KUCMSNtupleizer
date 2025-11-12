@@ -60,7 +60,7 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 			int erhiter = ( rhIDtoIterMap.find(scrhid) != rhIDtoIterMap.end() ) ? rhIDtoIterMap[scrhid] : -1;
 			if( erhiter != -1 ){
                 double erhe = (*ECALRecHit_energy)[erhiter];
-                bool hasGainSwitch = (*ECALRecHit_hasGS1)[erhiter] || (*ECALRecHit_hasGS6)[erhiter];
+                bool hasBadTime = (*ECALRecHit_hasGS1)[erhiter] || (*ECALRecHit_hasGS6)[erhiter] || !(*ECALRecHit_isTimeValid)[erhiter];
 				float erht = erh_corTime[erhiter];
 				float rhx = (*ECALRecHit_rhx)[erhiter];
                 float rhy = (*ECALRecHit_rhy)[erhiter];
@@ -72,7 +72,7 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 				if(fabs((*ECALRecHit_eta)[erhiter]) > 1.479) continue;
 				//cout << "rh e " <<  erhe << " rh t " << erht << " rhid " << scrhid << " eta " << (*ECALRecHit_eta)[erhiter] << " phi " << (*ECALRecHit_phi)[erhiter] << endl;
 				//cout << "rh e " <<  erhe << " rh t " << erht << " x " << rhx << " y " << rhy << " z " << rhz << " rhid " << scrhid << endl;
-				_ca.AddRecHit(rhx, rhy, rhz, erhe, erht, scrhid, hasGainSwitch);
+				_ca.AddRecHit(rhx, rhy, rhz, erhe, erht, scrhid, hasBadTime);
 			}//<<>>if( ecalrhiter != -1 )
 		}//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
 	
@@ -230,20 +230,20 @@ void KUCMSAodSkimmer::processBHCJets(){
             int erhiter = ( rhIDtoIterMap.find(jrhid) != rhIDtoIterMap.end() ) ? rhIDtoIterMap[jrhid] : -1;
             if( erhiter != -1 ){
                 float erhe = (*ECALRecHit_energy)[erhiter];
-                bool hasGainSwitch = (*ECALRecHit_hasGS1)[erhiter] || (*ECALRecHit_hasGS6)[erhiter];
+                bool hasBadTime = (*ECALRecHit_hasGS1)[erhiter] || (*ECALRecHit_hasGS6)[erhiter] || !(*ECALRecHit_isTimeValid)[erhiter];
                 float erht = erh_corTime[erhiter];
                 float rhx = (*ECALRecHit_rhx)[erhiter];
                 float rhy = (*ECALRecHit_rhy)[erhiter];
                 float rhz = (*ECALRecHit_rhz)[erhiter];
                 rhtresmap[jrhid] = erh_timeRes[erhiter];
     
-            	if( DEBUG ) std::cout << erhe << " " << erht << " " << hasGainSwitch;
+            	if( DEBUG ) std::cout << erhe << " " << erht << " " << hasBadTime;
                 if( DEBUG ) std::cout << " " << erht << " " << rhx << " " << rhy << " " << rhz << std::endl;
 		//skip endcap rechits
 		if(fabs((*ECALRecHit_eta)[erhiter]) > 1.479) continue;
 		//cout << "rh e " <<  erhe << " rh t " << erht << " rhid " << jrhid << " eta " << (*ECALRecHit_eta)[erhiter] << endl;
 
-		_ca.AddRecHit(rhx, rhy, rhz, erhe, erht, jrhid, hasGainSwitch);
+		_ca.AddRecHit(rhx, rhy, rhz, erhe, erht, jrhid, hasBadTime);
 
 
             }//<<>>if( ecalrhiter != -1 )
