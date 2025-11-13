@@ -7,7 +7,7 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#include "KUCMSTimeCaliFiles/KUCMS_TimeCalibration.hh"
+#include "KUCMSTimeCaliFiles/include/KUCMS_TimeCalibration.hh"
 // ------------------------------------------- main function ------------------------------------------------------------
 int main ( int argc, char *argv[] ){
 
@@ -47,8 +47,11 @@ int main ( int argc, char *argv[] ){
     std::string r3TagTT( "r3tt" );
     std::string r3TagX( "r3x" );
 
+	//std::string inputfilename( "ecal_config/kucmsTimeCaliTestTFile.txt");
+    //std::string inputfilename( "ecal_config/kucmsTimeCaliR17EOYTFile.txt");
+
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR18ULTFile.txt");
-    std::string inputfilename( "ecal_config/kucmsTimeCaliR17EOYTFile.txt");
+    std::string inputfilename( "ecal_config/kucmsTimeCaliR17ULTFile.txt");
 
 	//std::string eosdir("root://cmseos.fnal.gov//store/user/jaking/");// input parameter!
     std::string eosdir("root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/");
@@ -56,8 +59,9 @@ int main ( int argc, char *argv[] ){
     //std::string indir("/kuncali/gammares_cali_mc/");
     //std::string indir("/kuncali/gammares_cali/");
     //std::string indir("KUCMSNtuple/gammares_ul18/");
+    std::string indir("KUCMSNtuple/gammares_ul17/");
     //std::string indir("kuncali/gammares_mc18/");
-    std::string indir("kuncali/gammares_cali/DoubleEG/");
+    //std::string indir("kuncali/gammares_cali/DoubleEG/");
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -86,8 +90,8 @@ int main ( int argc, char *argv[] ){
 
 
     //-----//////////  making trigtower cali :
-    //theCali.makeTTCaliMapEGR( inputfilename, true ); // true == run only subset of events
-    //theCali.makeTTCaliMapEGR( inputfilename );
+    //theCali.makeTTCaliMapEGR( inputfilename, 1, true ); // true == run only subset of events
+	//theCali.makeTTCaliMapEGR( inputfilename );
     //theCali.makeCaliHists();
     //theCali.SaveCaliHists();
     //theCali.SaveTTRunFile();

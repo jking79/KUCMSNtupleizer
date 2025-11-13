@@ -207,8 +207,6 @@ void KUCMSAodSkimmer::processPhotons(){
 
 	if( isExcluded ) continue;
 
-
-
     selPhotons.fillBranch( "allPhoWTime1", phoWTime1 );
     selPhotons.fillBranch( "allPhoWTimeSig1", wttimesig1 );
     selPhotons.fillBranch( "allPhoWTime", phoWTime );

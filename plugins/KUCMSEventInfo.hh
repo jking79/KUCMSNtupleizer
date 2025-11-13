@@ -175,6 +175,11 @@ void KUCMSEventInfoObject::LoadEvent( const edm::Event& iEvent, const edm::Event
 		auto name = triggerFlagNames.triggerName(itrig);
 		auto result = triggerFlagResults->accept(itrig);	
 		flags[name] = result;
+        if( cfFlag("makeTriggerList") ){
+            if( std::find( fullTriggerList.begin(), fullTriggerList.end(), name ) == fullTriggerList.end() ){
+                fullTriggerList.push_back(name);
+            }//<<>>if( std::find( fullTriggerList.begin(), fullTriggerList.end(), nameFilter ) == fullTriggerList.end() )
+        }//<<>>if( cfFlag("makeTriggerList") )
 		//std::cout << " " << name << " = " << result << std::endl; 
 	}//for (auto itrig = 0U; itrig < nTriggerNames; itrig++)
 
@@ -200,9 +205,18 @@ void KUCMSEventInfoObject::LoadEvent( const edm::Event& iEvent, const edm::Event
     //std::cout << " ---- Trigger Results Flags:" << std::endl;
     const edm::TriggerNames& triggerHLTNames = iEvent.triggerNames( *triggerHLTResults );
 	const uInt nTriggerHLTNames = triggerHLTNames.size();
+	
+	if( cfFlag("makeTriggerList") ){
+		for( auto itrig = 0U; itrig < nTriggerHLTNames; itrig++ ){
+			std::string triggerName = triggerHLTNames.triggerName(itrig);
+            if( std::find( fullTriggerList.begin(), fullTriggerList.end(), triggerName ) == fullTriggerList.end() ){
+                fullTriggerList.push_back( triggerName );
+            }//<<>>if( std::find( fullTriggerList.begin(), fullTriggerList.end(), nameFilter ) == fullTriggerList.end() )
+		}//<<>>for( auto itrig = 0U; itrig < nTriggerHLTNames; itrig++ )
+	}//<<>>if( cfFlag("makeTriggerList") )
+
     hltpaths.clear();
 	for( auto path : triggerList ){
-
     	for( auto itrig = 0U; itrig < nTriggerHLTNames; itrig++ ){
         	std::string triggerName = triggerHLTNames.triggerName(itrig);
 			if( triggerName.find( path ) != std::string::npos ){
@@ -211,11 +225,7 @@ void KUCMSEventInfoObject::LoadEvent( const edm::Event& iEvent, const edm::Event
 				//std::cout << " " << path << " (" << itrig << ") " << triggerName << " = " << result << std::endl;
 			}//<<>>if( std::regex_match(triggerName, pathRegex) )
     	}//for (auto itrig = 0U; itrig < nTriggerNames; itrig++)
-
 	}//<<>>for( auto path : hltpaths )
-
-	//trigFlags.clear();
-	//for( auto trigName : triggerList ){ trigFlags[trigName] = false; }
 
     if( EventInfoDEBUG ) std::cout << "Collecting EventInfos" << std::endl;
 
@@ -325,6 +335,7 @@ void KUCMSEventInfoObject::EndJobs(){
 		
 		std::cout << "List of Triggers appearing in the events processed in this dataset : " << std::endl;
 		for( auto trigName : fullTriggerList ) std::cout << trigName << std::endl;
+
 
 	}//<<>>if( cfFlag("makeTriggerList") )
 

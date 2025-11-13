@@ -1,0 +1,5 @@
+ecal_config/gammares_ul17_DoubleEG_MINIAOD_Run2017B.txt 296399 306460 r2_ul17
+ecal_config/gammares_ul17_DoubleEG_MINIAOD_Run2017C.txt 296399 306460 r2_ul17
+ecal_config/gammares_ul17_DoubleEG_MINIAOD_Run2017D.txt 296399 306460 r2_ul17
+ecal_config/gammares_ul17_DoubleEG_MINIAOD_Run2017E.txt 296399 306460 r2_ul17
+ecal_config/gammares_ul17_DoubleEG_MINIAOD_Run2017F.txt 296399 306460 r2_ul17
