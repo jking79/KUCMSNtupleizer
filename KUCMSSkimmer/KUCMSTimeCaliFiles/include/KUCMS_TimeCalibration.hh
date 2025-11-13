@@ -85,6 +85,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
     std::string yBinStr;
 
 	std::vector<std::string> maptypes;
+    std::vector<std::string> ebeemap;
 
     std::map<UInt_t,kucms_DetIDStruct> DetIDMap; // map of information by detid for each crystal
     std::map<int,std::map<int,std::map<int,uInt>>> InvDetIDMap;
@@ -179,7 +180,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 	uInt getDetIdInfo( int i1, int i2, int ecal );
 	uInt getTTId( uInt detId );
 	std::pair<int,int> getTTInfo( uInt ttid );
-    uInt getInvTTId( int i1, int i2 );
+    uInt getInvTTId( int i1, int i2, bool isEB );
 
 	void setTag( std::string tag ){ curTag = tag; }; // used to change rereco version or campaian calibrations are for
     void setXIov( std::string tag ){ curXIov = tag; };
@@ -199,11 +200,11 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 
 	// function to create calibration and smear information 
 	// make TT maps from egamma res ntuple from lpc/jwk space
-	void makeCaliMapsEGR( std::string inputFileName, bool doTT, bool small = false, bool doCali = true );
-	void makeTTCaliMapEGR( std::string inputFileName, bool small = false, bool doCali = true ) 
-			{ makeCaliMapsEGR( inputFileName, true, small, doCali ); }; 
-	void makeXCaliMapEGR( std::string inputFileName, bool small = false, bool doCali = true )
-			{ makeCaliMapsEGR( inputFileName, false, small, doCali ); };
+	void makeCaliMapsEGR( std::string inputFileName, bool doTT, int GID = 1, bool small = false, bool doCali = true );
+	void makeTTCaliMapEGR( std::string inputFileName, int GID = 1, bool small = false, bool doCali = true ) 
+			{ makeCaliMapsEGR( inputFileName, true, GID, small, doCali ); }; 
+	void makeXCaliMapEGR( std::string inputFileName, int GID = 1, bool small = false, bool doCali = true )
+			{ makeCaliMapsEGR( inputFileName, false, GID, small, doCali ); };
 
 	void plot2dResolutionEGR( std::string inputFileName, bool scale = true, bool usecali = true, bool smear = false, std::string ext = "" );
     void plot2dResbyIovForEGR( std::string inputFileName, bool scale = true, bool usecali = true, bool smear = false, std::string ext = "" );
