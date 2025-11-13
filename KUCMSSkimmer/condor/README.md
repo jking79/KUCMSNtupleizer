@@ -1,4 +1,6 @@
 Condor README and notes
+- each job is assigned 1 file
+	- the `--maxnevts [n]` flag can be used to set at most `n` events to be run over per job (ie if a file has 100 events, and `--maxnevts 20`, this will generate 5 jobs with 20 events each for the same file)
 - the path for file lists are hardcoded based on the current CMSSW source directory and expecting a double-nested KUCMSNtupleizer directory structure
 - make sure all the external files necessary to the skimmer are in the config folder and this is current with the config.tgz tarball in the condor/ directory
 	- ie jsons, root files for time calibration or material vetos, file lists to run over, etc
