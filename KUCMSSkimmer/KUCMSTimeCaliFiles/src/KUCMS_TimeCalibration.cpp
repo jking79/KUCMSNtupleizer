@@ -1229,9 +1229,14 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
 	float res = -1;
 	if( mctype < 100 ){ // data
 
-		if( dataSetKey == "r2_ul18"    ) res = isEB ? sq2( 25.16/amplitude ) + 2*sq2(0.1013) : sq2( 29.4/amplitude ) + 2*sq2(0.1929);
-        if( dataSetKey == "r2_eoy17"   ) res = isEB ? sq2( 31.3/amplitude ) + 2*sq2(0.1608) : sq2( 31.3/amplitude ) + 2*sq2(0.1608);
-        if( dataSetKey == "r2_ul18_mc" ) res = isEB ? sq2( 25.16/amplitude ) + 2*sq2(0.1013) : sq2( 29.4/amplitude ) + 2*sq2(0.1929);
+		if( dataSetKey == "r2_ul18"    ){ 
+			res = isEB ? sq2( 25.16/amplitude ) + 2*sq2(0.1013) : sq2( 29.4/amplitude ) + 2*sq2(0.1929); }
+        if( dataSetKey == "r2_eoy17"   ){ 
+			res = isEB ? sq2( 31.3/amplitude ) + 2*sq2(0.1608) : sq2( 31.3/amplitude ) + 2*sq2(0.1608); }
+        if( dataSetKey == "r2_ul18_mc" ){ 
+			res = isEB ? sq2( 25.16/amplitude ) + 2*sq2(0.1013) : sq2( 29.4/amplitude ) + 2*sq2(0.1929); }
+        if( dataSetKey == "r2_ul17"   ){ 
+			res = isEB ? sq2( 20.0/amplitude ) + sq2( 3.0 )/amplitude + 2*sq2(0.1599) : sq2( 31.3/amplitude ) + 2*sq2(0.1608); }
 
 	}//<<>>if( mctype == 0 )
 	if( res == -1 ){ std::cout << " -- Resolution for dataSetKey " << dataSetKey << " not found !!!!!!" << std::endl; return 1.f; }
@@ -1300,6 +1305,7 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
     std::vector<float> *rhEnergy = 0;
     std::vector<bool> *rhisGS6 = 0;
     std::vector<bool> *rhisGS1 = 0;
+	std::vector<float> *rhTimeError = 0;
 
 	//std::vector<float> *rhAmp = 0;
 
@@ -1310,6 +1316,7 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
     TBranch *b_rhEnergy;   //!
     TBranch *b_rhisGS6;   //!
     TBranch *b_rhisGS1;   //!
+    TBranch *b_rhTimeError;
     //TBranch *b_rhAmp; // base for resolutions 
 
 	if( GID == 2 ){ setTTIov( curTTIov + "_gs2" ); setXIov( curXIov + "_gs2" ); }
@@ -1374,6 +1381,7 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
         fInTree->SetBranchAddress("rhCaliEnergy", &rhEnergy, &b_rhEnergy);
    		fInTree->SetBranchAddress("rhisGS6", &rhisGS6, &b_rhisGS6);
    		fInTree->SetBranchAddress("rhisGS1", &rhisGS1, &b_rhisGS1);
+        fInTree->SetBranchAddress("rhTimeError", &rhTimeError, &b_rhTimeError);
 
         auto treeEntries = fInTree->GetEntries();
 		auto nEntries = small ? ( treeEntries < 10000000 ) ? treeEntries : 10000000  : treeEntries;
@@ -1395,6 +1403,7 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
             b_rhEnergy->GetEntry(entry);
             b_rhisGS6->GetEntry(entry);
             b_rhisGS1->GetEntry(entry);
+			b_rhTimeError->GetEntry(entry);
 
 			if( debug) std::cout << " processing " << run;
             if( debug) std::cout << " in " << srun << " to " << erun;
@@ -1422,6 +1431,7 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 						// if end == last : all runs in range completed, if run > last : run in range already filled
 						if( run > range.lastRun ){
 							for( int idx = 0; idx < nRecHits; idx++ ){
+								if( rhTimeError->at(idx) <= 0.61 ) continue; // only valid for ratio time reco
 								bool gs6 = rhisGS6->at(idx);
 								bool gs1 = rhisGS1->at(idx);
 								//if( debug) std::cout << rhEnergy->at(idx) << " " << rhID->at(idx) << " " << rhRtTime->at(idx) << std::endl;
