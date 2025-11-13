@@ -87,11 +87,8 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 		//put safety in so that if there are < 2 rhs to cluster, skip
 
 		ClusterObj phoobj;
-		int clusterret = _ca.RunClustering(phoobj);
+		int clusterret = _ca.RunClustering(phoobj, true);
 		if(clusterret == -1) continue; //bad clustering (not enough points, not able to find any clusters, etc)
-		phoobj.CalculateObjTimes();
-		phoobj.CalculateObjTimeSig(rhtresmap);
-		phoobj.CalculatePUScores();
 
 		//center
 		float phoeta = phoobj.GetEtaCenter();
@@ -122,8 +119,8 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 		BHCPhoInfo.fillBranch( "selPhoBHC_etaPhiCov", (float)etaphicov);
 		BHCPhoInfo.fillBranch( "selPhoBHC_majlen", (float)majlen);
 		BHCPhoInfo.fillBranch( "selPhoBHC_minlen", (float)minlen);
-		//CHECK
-		float timeSignificance = phoobj.GetObjTimeSig();
+		float timeSignificance = -999;//waiting for centralized time significance code
+		//vector<double> weights; phoobj.GetRecHitWeights(weights); ///these weights are the PU projected out weights if PU cleaning has been applied (otherwise sum to 1)
 		BHCPhoInfo.fillBranch( "selPhoBHC_timeSignficance", timeSignificance);
 		BHCPhoInfo.fillBranch( "selPhoBHC_energy", (float)phoobj.GetEnergy());
 
@@ -145,8 +142,6 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 
 
 		phoobj.CleanOutPU();
-		phoobj.CalculateObjTimes();
-		phoobj.CalculateObjTimeSig(rhtresmap);
 		//do PU-cleaned observables
 		BHCPhoInfo.fillBranch( "selPhoBHCPUCleaned_selPhoIndex", selPhoIndex );
 		//center
@@ -176,10 +171,9 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 		BHCPhoInfo.fillBranch( "selPhoBHCPUCleaned_majlen", (float)majlen);
 		BHCPhoInfo.fillBranch( "selPhoBHCPUCleaned_minlen", (float)minlen);
 		//calculate time significance
-		timeSignificance = phoobj.GetObjTimeSig();
+		timeSignificance = -999;//waiting for centralized time significance code
+		//vector<double> weights; phoobj.GetRecHitWeights(weights); ///these weights are the PU projected out weights if PU cleaning has been applied via phoobj.CleanOutPU() (otherwise sum to 1)
 		BHCPhoInfo.fillBranch( "selPhoBHCPUCleaned_timeSignficance", timeSignificance);
-		//get detector bkg score for pu-cleaned photon
-		phoobj.CalculateDetBkgScores(true);
 		vector<vector<float>> detbkgscores;
 		phoobj.GetDetBkgScores(detbkgscores);
 		float physbkg_score = detbkgscores[0][0];
@@ -253,12 +247,8 @@ void KUCMSAodSkimmer::processBHCJets(){
 		if(_ca.GetNRecHits() < 2) continue;
 
 		ClusterObj jetobj;
-		int clusterret = _ca.RunClustering(jetobj);
+		int clusterret = _ca.RunClustering(jetobj, false);
 		if(clusterret == -1) continue; //bad clustering (not enough points, not able to find any clusters, etc)
-		jetobj.CalculateObjTimes();
-		jetobj.CalculatePUScores();
-		jetobj.CalculateDetBkgScores(false);
-		jetobj.CalculateObjTimeSig(rhtresmap);
 
 		BHCJetInfo.fillBranch( "selJetBHC_selJetIndex", selJetIndex );
 
@@ -320,7 +310,8 @@ void KUCMSAodSkimmer::processBHCJets(){
 		BHCJetInfo.fillBranch( "selJetBHC_majlen", (float)majlen);
 		BHCJetInfo.fillBranch( "selJetBHC_minlen", (float)minlen);
 		//calculate time significance
-		float timeSignificance = jetobj.GetObjTimeSig();
+		float timeSignificance = -999;//waiting for centralized time significance code
+		//vector<double> weights; jetobj.GetRecHitWeights(weights); ///these weights are the PU projected out weights if PU cleaning has been applied via jetobj.CleanOutPU() (otherwise sum to 1)
 		BHCJetInfo.fillBranch( "selJetBHC_timeSignficance", timeSignificance);
 
 		/////////CLEAN OUT PU/////////
@@ -354,15 +345,15 @@ void KUCMSAodSkimmer::processBHCJets(){
 		BHCJetInfo.fillBranch( "selJetBHCPUCleaned_majlen", (float)majlen);
 		BHCJetInfo.fillBranch( "selJetBHCPUCleaned_minlen", (float)minlen);
 		//calculate time significance
-		timeSignificance = jetobj.GetObjTimeSig();
+		timeSignificance = -999;//waiting for centralized time significance code
+		//vector<double> weights; jetobj.GetRecHitWeights(weights); ///these weights are the PU projected out weights if PU cleaning has been applied via jetobj.CleanOutPU() (otherwise sum to 1)
 		BHCJetInfo.fillBranch( "selJetBHCPUCleaned_timeSignficance", timeSignificance);
 		//
 
 
-		/////////CLEAN OUT DET BKG AND PU/////////
+		/////////CLEAN OUT DET BKG/////////
 		/*
 		double minscore = 0.9;
-		//TODO - update function below
 		jetobj.CleanOutDetBkg(minscore);
 		//do PU-cleaned && det bkg-cleaned observables
 		//center
