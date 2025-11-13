@@ -1240,8 +1240,8 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
 
 	}//<<>>if( mctype == 0 )
 	if( res == -1 ){ std::cout << " -- Resolution for dataSetKey " << dataSetKey << " not found !!!!!!" << std::endl; return 1.f; }
-	// return res/2;
-	return res;
+	return res/2;
+	//return res;
 
 }//<<>>float getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey )
 
