@@ -1,0 +1,1 @@
+ecal_config/gammares_ul18_EGamma_MINIAOD_Run2018A-15Feb2022_UL2018-v1_v29_test.txt 315257 325172 r2_ul18_test

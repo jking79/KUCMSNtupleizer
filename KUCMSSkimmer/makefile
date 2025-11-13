@@ -11,7 +11,7 @@
 #
 ###############################################################3
 
-$(shell ./setup_RestFrames.sh)
+#$(shell ./setup_RestFrames.sh)
 
 RTCFLAGS = $(shell root-config --cflags)
 RTGLIBS = $(shell root-config --glibs)
@@ -75,13 +75,13 @@ all: $(p1)
 TimeCali: KUCMS_TimeCalibration.so
 
 KUCMS_TimeCalibration.so: KUCMSTimeCaliFiles/src/KUCMS_TimeCalibration.cpp KUCMSTimeCaliFiles/include/*.hh
-	$(CC) $(RTCFLAGS) $(RTGLIBS) $(TCINC) -fPIC -c $< -o $@
+	$(CC) $(RTCFLAGS) $(RTGLIBS) $(TCINC) $(OPTS) -fPIC -c $< -o $@
 
 $(p1): $(p1).cpp $(TCOBJ)
 	$(CC) -o $(p1).obj $(p1).cpp $(TCOBJ) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS) $(BCGLIBS)  
 
 $(p2): $(p2).cpp $(TCOBJ)
-	$(CC) -o $(p2).obj $(p2).cpp $(TCOBJ) $(RTCFLAGS) $(RTGLIBS)
+	$(CC) -o $(p2).obj $(p2).cpp $(TCOBJ) $(RTCFLAGS) $(RTGLIBS) $(OPTS)
 
 $(p3): $(p3).cpp $(TCOBJ)
 	$(CC) -o $(p3).obj $(p3).cpp $(TCOBJ) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS) $(BCGLIBS) $(OPTS)

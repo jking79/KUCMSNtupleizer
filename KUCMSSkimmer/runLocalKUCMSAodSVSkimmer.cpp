@@ -20,14 +20,11 @@ int main ( int argc, char *argv[] ){
     //const std::string eosdir = "root://cmseos.fnal.gov//store/user/janguian/";
 	//const std::string eosdir = "/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/";				
 
-	bool useEvtGenWgt = true;
-    //bool useEvtGenWgt = false;
-	//bool noSVorPho = true; // only base selection - will not load phos in rjr
-	bool noSVorPho = false; // ( must have a sig pho or a sv ) + base selection - loads photons in rjr
-    //bool genSigPerfect = true;
-    bool genSigPerfect = false;
-    //bool hasGenInfo = false;
-    bool hasGenInfo = true;
+	// set below //  bool noSVorPho = true; // only base selection - will not load phos in rjr
+	// set below //  bool noSVorPho = false; // ( flase = must have a sig pho or a sv ) + base selection - loads photons in rjr ( defaults false )
+    // set below //  bool genSigPerfect = true; // ( defaults false )
+    bool useEvtGenWgt = true; // false for SMS MC only
+    bool hasGenInfo = true; // typically false for data only 
 
     //no//const std::string infilename = "KUCMS_Ntuple_Master_BG_Files_List.txt";
     //no//const std::string infilename = "KUCMS_Ntuple_Master_DEG_Files_List.txt"; hasGenInfo = false;
@@ -62,11 +59,11 @@ int main ( int argc, char *argv[] ){
     //int skipCnt = 0; // used to skip files ( in tchian ) for fast processing - if( nFiles%skipCnt != 0 ) continue; --  disabled in code  --  
 	// !!!!!!!!!!!!!!!!!!!  alternate RJR setup with invis in comb split rule
     KUCMSAodSkimmer llpgana;
+    //llpgana.SetNoSVorPhoFlag(noSVorPho);
+    //llpgana.SetGenSigPerfectFlag(genSigPerfect);
     llpgana.SetDoBHC(false);
 	llpgana.SetGenInfoFlag(hasGenInfo); 
-	llpgana.SetNoSVorPhoFlag(noSVorPho); 
 	llpgana.SetUseEvtGenWgtFlag(useEvtGenWgt);
-	llpgana.SetGenSigPerfectFlag(genSigPerfect);
     llpgana.kucmsAodSkimmer_local( listdir, eosdir, infilename, outfilename );
     return 1;
 
