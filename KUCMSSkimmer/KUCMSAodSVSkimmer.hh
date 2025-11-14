@@ -143,6 +143,7 @@ class KUCMSAodSkimmer : public llpgtree {
 	float getTimeSig( int scIndex );
 	float getTimeSig( vector<vector<unsigned int>> rhids );
 
+	void MakePhotonIsoMap(int phoidx, map<string, double>& isomap);
 	// object quality functions
 
 	int getPhoQuality( int it );
