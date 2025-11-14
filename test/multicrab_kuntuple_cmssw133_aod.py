@@ -103,8 +103,9 @@ def docrab( dataset ):
         #config.Data.unitsPerJob   = 14 # 14 for eg c 18ul ~ 2 files & 19 hours too much disk space -> 1 file worth & break up to keep under 2000 jobs
         #config.Data.unitsPerJob   =  24 # MET C 
         #config.Data.unitsPerJob   =  48 # MET D
-        #config.Data.runRange = runrange #
-
+        config.Data.runRange = '305000-305181' #
+            
+    
         #config.JobType.allowUndistributedCMSSW = True
         #config.JobType.maxJobRuntimeMin = 1800
         #config.JobType.maxJobRuntimeMin = 2280
@@ -154,9 +155,9 @@ def docrab( dataset ):
             ##trial          = "kucmsntuple_EGamma_R18_AL1SelEle_DEOnly" + version #
          
             #trial          = "kucmsntuple_MET_R18_SVIPM100" + version #  
-            #trial          = "kucmsntuple_MET_R17_SVIPM100" + version #  
+            trial          = "kucmsntuple_MET_R17_SVIPM100" + version #  
 
-            trial          = "kucmsntuple_test" + version 
+            #trial          = "kucmsntuple_test" + version 
 
             #trial          = "kucmsntuple_EGamma_R18_InvMetPho30_NoSV"
             #trial          = "kucmsntuple_EGamma_R18_InvMet100IP_NoSv" + version # 
@@ -282,7 +283,7 @@ def run_multi():
     runDataset = [
 
         #['/MET/Run2018A-15Feb2022_UL2018-v1/AOD',1],
-        ['/MET/Run2018B-15Feb2022_UL2018-v1/AOD',1],
+        #['/MET/Run2018B-15Feb2022_UL2018-v1/AOD',1],
         #['/MET/Run2018C-15Feb2022_UL2018-v1/AOD',1],
         #['/MET/Run2018D-15Feb2022_UL2018-v1/AOD',1],
 
@@ -291,7 +292,7 @@ def run_multi():
         #['/MET/Run2017C-09Aug2019_UL2017_rsb-v1/AOD',1],
         #['/MET/Run2017D-09Aug2019_UL2017_rsb-v1/AOD',1],
         #['/MET/Run2017E-09Aug2019_UL2017_rsb-v1/AOD',1],
-        #['/MET/Run2017F-09Aug2019_UL2017_rsb-v1/AOD',1],
+        ['/MET/Run2017F-09Aug2019_UL2017_rsb-v1/AOD',1],
 
         #['/MET/Run2022A-27Jun2023-v1/AOD',1],
         #['/MET/Run2022B-27Jun2023-v2/AOD',1],
