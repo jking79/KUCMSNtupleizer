@@ -159,7 +159,8 @@ int main ( int argc, char *argv[] ){
     theCali.setLowEnergy( true );
     ////theCali.setUseEffEnergy( true );
     theCali.useGainSwitch( true );
-	theCali.setDoEE( false );
+	//theCali.setDoEE( false );
+    theCali.setDoEE( true );
 	theCali.setUseGainID( 1 );
 	////theCali.SetXBinStr( "VARIABLE 10 15 20 25 30 40 50 60 80 100 125 150 175 200 225 250 300 400 600" ); // : xr
     theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600" ); // : xa  llpana resfit
@@ -203,8 +204,9 @@ int main ( int argc, char *argv[] ){
 	//theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg24d_xa_pm6b480_v810" );
 	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18A_UL_xa_pm24b1200_v107" );
 	//////theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_18ULMC_gjets_xa_pm24b1200_v1019" );
-	theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_deg_17_UL_xa_pm24b1200_v113" );
-
+	//theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_deg_17_UL_xa_pm24b1200_v113" );
+    theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_deg_17_UL_EE_xa_pm24b1200_v114" );
+    //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_deg_18_UL_EE_xa_pm24b1200_v114" );
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
