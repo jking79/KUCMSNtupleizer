@@ -23,7 +23,7 @@
 #include "KUCMSAodSkimmer_Muons.hh"
 #include "KUCMSAodSkimmer_SV.hh"
 #include "KUCMSAodSkimmer_BHC.hh"
-
+#include "KUCMSAodSkimmer_TimeSig.hh"
 
 //-----------------------------------------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------------------------------------
@@ -283,7 +283,9 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
  	    auto entry = fInTree->LoadTree(centry);
         if(DEBUG) std::cout << " -- Getting Branches " << std::endl;
         getBranches( entry, hasGenInfoFlag );
+		//std::cout << " -- Checking Valid Lumi with mctype " << mctype << " run " << Evt_run << " block " << Evt_luminosityBlock << std::endl;
         if( mctype==1 && not isValidLumisection( Evt_run, Evt_luminosityBlock ) ) continue;
+		//std::cout << " --- Valid Lumi Processing Event " << std::endl;
 
         geCnts.clear();
         geVars.clear();
