@@ -1146,7 +1146,7 @@ float KUCMS_TimeCalibration::getCalibration( uInt rhid, int run, std::string tag
 	//if( not validCurrentTag ){ std::cout << "No current tag set." << std::endl; return 0.f; }
 	//if( not isEB ){ std::cout << "XCalibration for EE is not supported." << std::endl; return 0.f; }
     //if( not validCurrentTag ){ std::cout << "No current tag set." << std::endl; return 0.f; }
-    if( DetIDMap[rhid].ecal != ECAL::EB ) return 0.f;
+    //if( DetIDMap[rhid].ecal != ECAL::EB ) return 0.f;
     float xtaltime = -1000.f;
 	float ttcali = ( externalCali ) ? 0.f : getTTCali( rhid, run, tag );
     for( auto& calirunmap : CaliRunMapSet[tag] ){
@@ -1167,7 +1167,7 @@ float KUCMS_TimeCalibration::getCalibration( uInt rhid, int run, std::string tag
 float KUCMS_TimeCalibration::getTTCali( uInt rhid, int run, std::string tag ){
 
     //if( not isEB ){ std::cout << "TTCalibration for EE is not supported." << std::endl; return 0.f; }
-    if( DetIDMap[rhid].ecal != ECAL::EB ) return 0.f;
+    //if( DetIDMap[rhid].ecal != ECAL::EB ) return 0.f;
     float xtaltime = -1000.f;
     uInt ttid = getTTId( rhid );
     for( auto& calirunmap : TTCaliRunMapSet[tag] ){
@@ -2149,7 +2149,7 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
                                 float seedTimeIC11 = ( usecali ) ? getCalibration( (*resRhID)[3], run, tag ) : 0;
                                 //if(debug) std::cout << " -- IC0l: " << seedTimeIC00 << " IC1l: " << seedTimeIC10;
                                 //if(debug) std::cout << " IC0g: " << seedTimeIC01 << " IC1g: " << seedTimeIC11 << std::endl;
-
+								
                                 //-------------------set for local, repo calcs for global --------------------------------
 
                                 if(debug) std::cout << " - Calc 2D Hist" << std::endl;
@@ -2173,6 +2173,8 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
                                 double lyf1 = (*resRtTime)[1]-seedTimeIC10;
                                 double gyf0 = (*resRtTime)[2]-seedTimeIC01;
                                 double gyf1 = (*resRtTime)[3]-seedTimeIC11;
+								std::cout << " -- : " << (*resRtTime)[0] << " - " << seedTimeIC00 << " " << usecali << " " << doEE;
+								std::cout << " " << (*resRhID)[0] << std::endl;
 
                                 if( smear ){
                                     std::cout << "Times are smeared !!!!!" << std::endl;
@@ -2839,7 +2841,7 @@ void KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
 
 					auto idinfo = DetIDMap[rhID->at(idx)];
 					double btime = rhTime->at(idx);
-					if( idinfo.ecal != ECAL::EB ) continue;
+					//if( idinfo.ecal != ECAL::EB ) continue;
 					double calibration = usecali ? getCalibration( rhID->at(idx), run, tag ) : 0;
 					double time = btime - calibration;
 					double time2 = time*time;

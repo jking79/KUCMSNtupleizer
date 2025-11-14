@@ -141,9 +141,9 @@ void KUCMSAodSkimmer::processEvntVars(){
   selEvtVars.fillBranch( "Flag_hemVeto", fullHemVeto );
 
   bool has1PLPho = ( geVars("has1PLPho") == 1 ) ? true : false;
-  selEvtVars.fillBranch( "Pho_has1PromptLoose", has1PLPho );
+  selEvtVars.fillBranch( "evt_has1PromptLoosePho", has1PLPho );
   bool has1PTPho = ( geVars("has1PTPho") == 1 ) ? true : false;
-  selEvtVars.fillBranch( "Pho_has1PromptTight", has1PTPho );
+  selEvtVars.fillBranch( "evt_has1PromptTightPho", has1PTPho );
 
 
 
@@ -219,8 +219,8 @@ void KUCMSAodSkimmer::setEvtVarMetBranches( TTree* fOutTree ){
   selEvtVars.makeBranch( "Trigger_PFMET120_PFMHT120_IDTight_PFHT60", BOOL );
   selEvtVars.makeBranch( "Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60", BOOL );
 
-  selEvtVars.makeBranch( "Pho_has1PromptTight", BOOL );
-  selEvtVars.makeBranch( "Pho_has1PromptLoose", BOOL );
+  selEvtVars.makeBranch( "evt_has1PromptTightPho", BOOL );
+  selEvtVars.makeBranch( "evt_has1PromptLoosePho", BOOL );
 
   selEvtVars.attachBranches( fOutTree );
 

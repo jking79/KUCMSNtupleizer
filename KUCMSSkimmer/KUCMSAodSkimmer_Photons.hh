@@ -44,6 +44,7 @@ void KUCMSAodSkimmer::processPhotons(){
   //----------------- photons ------------------
 
   std::vector<int> phoOrderIndx;
+  //std::vector<int> phoOrderId;
   std::vector<int> phoExcIndx;
   uInt nSelPhotons = 0; 
   uInt nBasePhos = 0;
@@ -197,11 +198,9 @@ void KUCMSAodSkimmer::processPhotons(){
             if( erhe > seedE ){
                 seedE = erhe; seedTime = ertoftime; seedAres = erampres; seedRHID = pscrhid;
                 seedTres = ertres; seedSX = swcrss; seedWried = isWeird; seedGS = hasGainSwitch;
-		
-		bool hasBadTime = hasGainSwitch || !(*ECALRecHit_isTimeValid)[erhiter];
-		_ca.AddRecHit(erx, ery, erz, erhe, erhct, pscrhid, hasBadTime);
-
             }//<<>>if( erhe > seedE ) 
+			bool hasBadTime = hasGainSwitch || !(*ECALRecHit_isTimeValid)[erhiter];
+			_ca.AddRecHit(erx, ery, erz, erhe, erhct, pscrhid, hasBadTime);
         }//<<>>if( scrhid == rhid )
     }//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
     if( sumw == 0 ){ sumw = 1; sumtw = -100; sumtrw = -1000; }
@@ -213,13 +212,10 @@ void KUCMSAodSkimmer::processPhotons(){
     //if( ltimeres != leadTres ) std::cout << " !!!!!!!   lead res mis : " << ltimeres << " v " << leadTres << std::endl;
     //float stimeres = timeCali->getTimeResoltuion( seedAres, seedRHID, Evt_run, tctag, mctype );
     //if( stimeres != seedTres ) std::cout << " !!!!!!!   seed res mis : " << stimeres << " v " << seedTres << std::endl;
-    leadTres = std::sqrt(leadTres/2);
-    seedTres = std::sqrt(seedTres/2);
-    phoWRes = std::sqrt(phoWRes/2);
-    float leadtimesig = leadTime/leadTres;
-    float seedtimesig = seedTime/seedTres;
-    float wttimesig = phoWTime/phoWRes;
-    float wttimesig1 = phoWTime1/phoWRes1;
+    float leadtimesig = leadTime/std::sqrt(leadTres);
+    float seedtimesig = seedTime/std::sqrt(seedTres);
+    float wttimesig = phoWTime/std::sqrt(phoWRes);
+    float wttimesig1 = phoWTime1/std::sqrt(phoWRes1);
 
 	float phoWTimeSig = getTimeSig( scIndx );
 
@@ -241,8 +237,38 @@ void KUCMSAodSkimmer::processPhotons(){
 
     ///////////  pho selection ////////////////////////////////////////////////////////////////////
 
+// for the tight and loose(!tight) selections the discriminant scores are as follows (with the corresponding ROC curve info):
+// - tight: iso score > 0.337 (5% noniso contamination with ~97% iso efficiency)
+// - loose: iso score > 0.134 (10% noniso contamination with ~98% iso efficiency)
+// i figure we will eventually want to go tighter (less contamination) for the tight selection, but i think this should be (conservatively) fine for now. 
+// if you're having a problem getting enough stats in the selection region, you can move the loose to replace the tight criteria and have the loose criteria become
+// - very loose: iso score > 0.0364 (20% noniso contamination with ~99% iso efficiency)
+
+	float isobkg_score = 0;
+	float nonisobkg_score = 0;
+    if(_ca.GetNRecHits() > 2){
+    	ClusterObj phoobj;
+        _ca.NoClusterRhs(phoobj, true);
+     	map<string, double> isomap;
+        MakePhotonIsoMap(it, isomap);
+        phoobj.CalculatePhotonIDScores(pt, isomap);
+        vector<float> photonIDscores;
+        phoobj.GetPhotonIDScores(photonIDscores);
+        isobkg_score = photonIDscores[0];
+        nonisobkg_score = photonIDscores[1];
+     	////fill branches here!!!  nooooo ;)  -- will not be in step with the rest if the photon branches if filled here
+     	////selPhotons.fillBranch("selPho_isoANNScore",isobkg_score);
+     	////selPhotons.fillBranch("selPho_nonIsoANNScore",nonisobkg_score);
+    	if(DEBUG) cout << "photon " << it << " iso score " << isobkg_score << " noniso score " << nonisobkg_score << endl;
+	}//<<>>if(_ca.GetNRecHits() > 2)
+    //do photon id score
+    _ca.ClearRecHitList();
+
+	bool isTight = isobkg_score > 0.337;
+	bool isLoose = isobkg_score > 0.134;
+	bool isVeryLoose = isobkg_score > 0.0364;
     int phoTSigId = ( phoWTimeSig <= -2.5 ) ? tSigID::Early : ( phoWTimeSig < 2.5 ) ? tSigID::Prompt : tSigID::Late;
-    int phoObjId = objID::Base;
+    int phoObjId =  ( isTight ) ? objID::Tight : ( isLoose ) ? objID::Loose : objID::Base;
 
 	if( phoObjId == objID::Base ){ 
 		nBasePhos++;
@@ -365,8 +391,8 @@ void KUCMSAodSkimmer::processPhotons(){
 	for( auto as : erhamps ){ hist1d[20]->Fill(as/sumerha); }
 
     //selPhotons.fillBranch( "selPhoWTime1", phoWTime1 );
-    selPhotons.fillBranch( "selPhoWTimeSig1", phoWTimeSig );
-    selPhotons.fillBranch( "selPhoLTimeSig", leadtimesig );
+    selPhotons.fillBranch( "selPhoWTimeSig", phoWTimeSig );
+    selPhotons.fillBranch( "selPhoLTimeSigOld", leadtimesig );
     selPhotons.fillBranch( "selPhoSTimeSig", seedtimesig );
     selPhotons.fillBranch( "selPhoWTimeSig", wttimesig );
     selPhotons.fillBranch( "selPhoWTime", phoWTime );
@@ -380,6 +406,10 @@ void KUCMSAodSkimmer::processPhotons(){
     selPhotons.fillBranch( "selPhoLWeird", leadWried );
     selPhotons.fillBranch( "selPhoSWeird", seedWried );
     selPhotons.fillBranch( "selPhoShasGS", seedGS );
+
+    selPhotons.fillBranch("selPho_isoANNScore",isobkg_score);
+    selPhotons.fillBranch("selPho_nonIsoANNScore",nonisobkg_score);
+
 
     auto htsebcdr4 = (*Photon_hcalTowerSumEtBcConeDR04)[it];
     auto tsphcdr3 = (*Photon_trkSumPtHollowConeDR03)[it];
@@ -428,6 +458,8 @@ void KUCMSAodSkimmer::processPhotons(){
 	//bool matchPhoExc = ( phoIsoIndx > -1 ) ? (*Photon_excluded)[it] : false;
 	if( phoPhoIsoDr < 0.3 ) phoExcIndx.push_back( phoIsoIndx ); else phoExcIndx.push_back( -1 );
 
+
+
     /*
     // pho object selection ------------------------------------------
     if( DEBUG ) std::cout << " -- pho obj selection" << std::endl;
@@ -442,29 +474,14 @@ void KUCMSAodSkimmer::processPhotons(){
     auto phoSelected = true;
     if( not phoSelected ) continue;
     */
+
+
     //float ordpt = pt;
     //while( phoOrderIndx.count(ordpt) > 0 ){ ordpt -= 0.000001; }
     //if( DEBUG ) std::cout << " -- setting pho index : " << it << " for pt : " << ordpt << std::endl;
     phoOrderIndx.push_back(it);
+    //phoOrderId.push_back(phoObjId);
     //if( DEBUG ) std::cout << " -- pho index set : " << phoOrderIndx[ordpt] << std::endl;
-
-    if(_ca.GetNRecHits() > 2){
-	ClusterObj phoobj;
-    	_ca.NoClusterRhs(phoobj, true);
-	 map<string, double> isomap;
-         MakePhotonIsoMap(it, isomap);
-         phoobj.CalculatePhotonIDScores(pt, isomap);
-         vector<float> photonIDscores;
-         phoobj.GetPhotonIDScores(photonIDscores);
-         float isobkg_score = photonIDscores[0];
-         float nonisobkg_score = photonIDscores[1];
-	 //fill branches here!!!
-	 selPhotons.fillBranch("selPho_isoANNScore",isobkg_score);
-	 selPhotons.fillBranch("selPho_nonIsoANNScore",nonisobkg_score);
-	if(DEBUG) cout << "photon " << it << " iso score " << isobkg_score << " noniso score " << nonisobkg_score << endl;
-    }
-    //do photon id score
-    _ca.ClearRecHitList();
 
     // fill ( vectors )
     if( DEBUG ) std::cout << " -- pho fill out branches" << std::endl;
@@ -606,6 +623,7 @@ void KUCMSAodSkimmer::processPhotons(){
   std::vector<float> selpho_Mx;
   std::vector<float> selpho_My;
   for( int spidx = 0; spidx < nSelPhotons; spidx++ ){
+	//if( phoOrderId[spidx] == objID::Base ) continue;
 	uInt pIdx = phoOrderIndx[spidx];
 	uInt exIdx = phoExcIndx[spidx];
 	bool isOOT = (*Photon_isOot)[pIdx];
@@ -656,10 +674,10 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch( "selPhoObjId", VINT );
 
   //selPhotons.makeBranch( "selPhoWTime1", VFLOAT );
-  selPhotons.makeBranch( "selPhoWTimeSig1", VFLOAT );
+  selPhotons.makeBranch( "selPhoWTimeSig", VFLOAT );
   selPhotons.makeBranch( "selPhoLTimeSig", VFLOAT );
   selPhotons.makeBranch( "selPhoSTimeSig", VFLOAT );
-  selPhotons.makeBranch( "selPhoWTimeSig", VFLOAT );
+  selPhotons.makeBranch( "selPhoWTimeSigOld", VFLOAT );
   selPhotons.makeBranch( "selPhoWTime", VFLOAT );
   selPhotons.makeBranch( "selPhoLTime", VFLOAT );
   selPhotons.makeBranch( "selPhoSTime", VFLOAT );

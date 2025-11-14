@@ -54,7 +54,8 @@ int main ( int argc, char *argv[] ){
     //const std::string outfilename = "_rjrskim_v39.root"; // included BHC processing and branchs, added triggerpath varibles
     //const std::string outfilename = "_rjrskim_v40.root"; // added HEM veto, restructured skimmer for condor processing
     //const std::string outfilename = "_rjrskim_v41.root"; // modifided RJR oot photon v met handeling : 0 is now sig photon oot met correction only
-    const std::string outfilename = "_rjrskim_v43.root"; // added EE photons to RJR, set looser id reqs for jets to include photons
+    //const std::string outfilename = "_rjrskim_v43.root"; // added EE photons to RJR, set looser id reqs for jets to include photons
+    const std::string outfilename = "_rjrskim_v44.root"; // added photon object id and tsig counting
 
     //int skipCnt = 0; // used to skip files ( in tchian ) for fast processing - if( nFiles%skipCnt != 0 ) continue; --  disabled in code  --  
 	// !!!!!!!!!!!!!!!!!!!  alternate RJR setup with invis in comb split rule
