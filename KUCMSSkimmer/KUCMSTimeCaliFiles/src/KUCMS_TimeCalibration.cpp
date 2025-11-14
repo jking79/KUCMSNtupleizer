@@ -425,8 +425,8 @@ void KUCMS_TimeCalibration::ReadCaliRunFile(){
     float lumi, noise, stoch, stant;
 	bool resmap, resparms;
     while( infile >> tag >> caliMapName >> srun >> erun >> lrun >> lumi >> resmap >> resparms >> noise >> stoch >> stant ){
-        std::cout << " -- " << tag << " " << caliMapName << " " << srun << " " << erun << " " << lrun << " " << lumi;
-		std::cout << " " << resmap << " " << resparms << " " << noise << " " << stoch <<  " " << stant << std::endl;
+        //std::cout << " -- " << tag << " " << caliMapName << " " << srun << " " << erun << " " << lrun << " " << lumi;
+		//std::cout << " " << resmap << " " << resparms << " " << noise << " " << stoch <<  " " << stant << std::endl;
 		CaliRunMapSet[tag][srun] = { caliMapName, srun, erun, lrun, lumi };
         CaliRunMapSet[tag][srun].isNew = false;
 		CaliRunMapSet[tag][srun].has2DResMap = resmap;
@@ -481,7 +481,7 @@ void KUCMS_TimeCalibration::ReadTTRunFile(){
     int srun, erun, lrun;
     float lumi;
     while( infile >> tag >> caliMapName >> srun >> erun >> lrun >> lumi ){
-        std::cout << " -- " << tag << " " << caliMapName << " " << srun << " " << erun << " " << lrun << " " << lumi << std::endl;
+        //std::cout << " -- " << tag << " " << caliMapName << " " << srun << " " << erun << " " << lrun << " " << lumi << std::endl;
         TTCaliRunMapSet[tag][srun] = { caliMapName, srun, erun, lrun, lumi };
         TTCaliRunMapSet[tag][srun].isNew = false;
     }//<<>>while (infile >>
@@ -524,7 +524,7 @@ void KUCMS_TimeCalibration::ReadSmearFile(){
     std::string tag;
     float noise, stoch, stant;
     while( infile >> tag >> noise >> stoch >> stant ){
-        std::cout << " -- " << tag << " " << noise << " " << stoch <<  " " << stant << std::endl;
+        //std::cout << " -- " << tag << " " << noise << " " << stoch <<  " " << stant << std::endl;
         SmearTagSet[tag] = { noise, stoch, stant };
     }//<<>>while (infile >>
     infile.close();

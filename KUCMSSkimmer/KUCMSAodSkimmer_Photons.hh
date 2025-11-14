@@ -45,8 +45,19 @@ void KUCMSAodSkimmer::processPhotons(){
 
   std::vector<int> phoOrderIndx;
   std::vector<int> phoExcIndx;
-  uInt nSelPhotons = 0;
-  //uint nEleVeto = 0;
+  uInt nSelPhotons = 0; 
+  uInt nBasePhos = 0;
+  uInt nLoosePhos = 0;
+  uInt nTightPhos = 0;
+  uInt nEBPhos = 0;
+  uInt nPBPhos = 0;
+  uInt nLBPhos = 0;
+  uInt nELPhos = 0;
+  uInt nPLPhos = 0;
+  uInt nLLPhos = 0;
+  uInt nETPhos = 0;
+  uInt nPTPhos = 0;
+  uInt nLTPhos = 0;
   uInt nPhotons = Photon_excluded->size();	
   if( DEBUG || verbose ) std::cout << " - Looping over for " << nPhotons << " photons" << std::endl;
   for( uInt it = 0; it < nPhotons; it++ ){
@@ -117,6 +128,7 @@ void KUCMSAodSkimmer::processPhotons(){
     auto scSize = SuperCluster_seedIsEB->size();
     auto rhids = (*SuperCluster_rhIds)[scIndx];
     uInt nrh = rhids.size();
+
 
     //int nSCRhids = scrhids.size();
     float sumtw = 0;
@@ -205,10 +217,12 @@ void KUCMSAodSkimmer::processPhotons(){
     float wttimesig = phoWTime/phoWRes;
     float wttimesig1 = phoWTime1/phoWRes1;
 
+	float phoWTimeSig = getTimeSig( scIndx );
+
 	if( isExcluded ) continue;
 
-    selPhotons.fillBranch( "allPhoWTime1", phoWTime1 );
-    selPhotons.fillBranch( "allPhoWTimeSig1", wttimesig1 );
+    //selPhotons.fillBranch( "allPhoWTime1", phoWTime1 );
+    selPhotons.fillBranch( "allPhoWTimeSig1", phoWTimeSig );
     selPhotons.fillBranch( "allPhoWTime", phoWTime );
     selPhotons.fillBranch( "allPhoWTimeSig", wttimesig );
     selPhotons.fillBranch( "allPhoEta", eta );
@@ -222,6 +236,31 @@ void KUCMSAodSkimmer::processPhotons(){
 	isSelPho.push_back(true);
 
     ///////////  pho selection ////////////////////////////////////////////////////////////////////
+
+    int phoTSigId = ( phoWTimeSig <= -2.5 ) ? tSigID::Early : ( phoWTimeSig < 2.5 ) ? tSigID::Prompt : tSigID::Late;
+    int phoObjId = objID::Base;
+
+	if( phoObjId == objID::Base ){ 
+		nBasePhos++;
+        if( phoTSigId == tSigID::Early ) nEBPhos++;
+        else if( phoTSigId == tSigID::Prompt ) nPBPhos++;
+        else if( phoTSigId == tSigID::Late ) nLBPhos++;
+    }//<<>>else if( phoObjId == objID::Base )
+	else if( phoObjId == objID::Loose ){
+		nLoosePhos++;
+    	if( phoTSigId == tSigID::Early ) nELPhos++;
+    	else if( phoTSigId == tSigID::Prompt ) nPLPhos++;
+    	else if( phoTSigId == tSigID::Late ) nLLPhos++;
+	}//<<>>else if( phoObjId == objID::Loose )
+	else if( phoObjId == objID::Tight ){ 
+		nTightPhos++;
+        if( phoTSigId == tSigID::Early ) nETPhos++;
+        else if( phoTSigId == tSigID::Prompt ) nPTPhos++;
+        else if( phoTSigId == tSigID::Late ) nLTPhos++;
+    }//<<>>else if( phoObjId == objID::Tight )
+
+    selPhotons.fillBranch( "selPhoTSigId", phoTSigId );	
+    selPhotons.fillBranch( "selPhoObjId", phoObjId );
 
     if( DEBUG ) std::cout << " -- pho pull info" << std::endl;
     auto isOOT = (*Photon_isOot)[it];
@@ -321,8 +360,8 @@ void KUCMSAodSkimmer::processPhotons(){
 
 	for( auto as : erhamps ){ hist1d[20]->Fill(as/sumerha); }
 
-    selPhotons.fillBranch( "selPhoWTime1", phoWTime1 );
-    selPhotons.fillBranch( "selPhoWTimeSig1", wttimesig1 );
+    //selPhotons.fillBranch( "selPhoWTime1", phoWTime1 );
+    selPhotons.fillBranch( "selPhoWTimeSig1", phoWTimeSig );
     selPhotons.fillBranch( "selPhoLTimeSig", leadtimesig );
     selPhotons.fillBranch( "selPhoSTimeSig", seedtimesig );
     selPhotons.fillBranch( "selPhoWTimeSig", wttimesig );
@@ -498,6 +537,11 @@ void KUCMSAodSkimmer::processPhotons(){
     }//for( auto phoptit = phoOrderIndx.crbegin(); phoptit != phoOrderIndx.crend(); phoptit++ )
     }//if( phoOrderIndx.size() > 0 )
   */
+ 
+  int has1PLPho = ( nPLPhos == 1 && nBasePhos < 1 && nTightPhos < 1 ) ? 1 : 0;
+  int has1PTPho = ( nPTPhos == 1 && nBasePhos < 1 && nLoosePhos < 1 ) ? 1 : 0;
+  geVars.set("has1PLPho", has1PLPho ); 
+  geVars.set("has1PTPho", has1PTPho );
 
   int loopEnd = ( nSelPhotons > 0 ) ? ( nSelPhotons < 2  ) ? 1 : 2 : 0;
   phoJetVeto.clear();
@@ -586,7 +630,10 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch( "selPhoQuality", VINT ); 
   selPhotons.makeBranch( "selPhoTime", VFLOAT ); 
  
-  selPhotons.makeBranch( "selPhoWTime1", VFLOAT );
+  selPhotons.makeBranch( "selPhoTSigId", VINT );     
+  selPhotons.makeBranch( "selPhoObjId", VINT );
+
+  //selPhotons.makeBranch( "selPhoWTime1", VFLOAT );
   selPhotons.makeBranch( "selPhoWTimeSig1", VFLOAT );
   selPhotons.makeBranch( "selPhoLTimeSig", VFLOAT );
   selPhotons.makeBranch( "selPhoSTimeSig", VFLOAT );
