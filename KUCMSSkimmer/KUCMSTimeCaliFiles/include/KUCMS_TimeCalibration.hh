@@ -106,6 +106,8 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 	bool useEffEnergy;
     bool externalCali;
     bool useGSwitch;
+	bool doEE;
+	int useGain;
 
     TRandom* getRandom;
 
@@ -225,6 +227,8 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 	void setLowEnergy( bool setting ){ lowEnergy = setting; }; 
 	void useExtCali( bool ext ){ externalCali = ext; };
     void useGainSwitch( bool gs ){ useGSwitch = gs; };
+    void setDoEE( bool doee ){ doEE = doee; }
+    void setUseGainID( int id ){ useGain = id; }
 
 };//<<>>class KUCMS_TimeCalibration : KUCMSRootHelperBaseClass
 

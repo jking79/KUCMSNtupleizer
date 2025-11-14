@@ -42,7 +42,7 @@ KUCMS_TimeCalibration::KUCMS_TimeCalibration( bool stayOpen, bool makeNew ){
 	eosDir = "root://cmseos.fnal.gov//store/user/jaking/";
 	inDir = "";
 
-	lowEnergy = false;
+	lowEnergy = true;
 	useEffEnergy = false;
 	xBinStr = "VARIABLE 25 50 75 100 125 150 175 200 225 250 300 400 600 1000 1800"; 
     yBinStr = "CONSTANT 600 -3 3";
@@ -52,7 +52,10 @@ KUCMS_TimeCalibration::KUCMS_TimeCalibration( bool stayOpen, bool makeNew ){
 
 	updated = false;
 	externalCali = false;
-    useGSwitch = false;
+    useGSwitch = true;
+
+	doEE = false;
+	useGain = 1;
 
     std::cout << " - setup DetID & IOV Maps " << std::endl;
     SetupDetIDsEB();
@@ -1524,6 +1527,7 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 
 }//<<>>void KUCMS_TimeCalibration::makeTTCaliMap( std::string inputFileName )
 
+/*
 void KUCMS_TimeCalibration::plot2dResbyIovForEGR( std::string inputFileName, bool scale, bool usecali, bool smear, std::string ext ){
 
     std::cout << "Creating 2D Resolution Hist from EgammaRes Ntuples " << std::endl;
@@ -1820,6 +1824,10 @@ void KUCMS_TimeCalibration::plot2dResbyIovForEGR( std::string inputFileName, boo
 								}//<<>>if( useGSwitch )
                                 bool leta_cut = (idinfoL0.ecal == ECAL::EB)&&(idinfoL1.ecal == ECAL::EB);
                                 bool geta_cut = (idinfoG0.ecal == ECAL::EB)&&(idinfoG1.ecal == ECAL::EB);
+								if( doEndCaps ){
+                                	leta_cut = (idinfoL0.ecal > ECAL::EB)&&(idinfoL1.ecal > ECAL::EB);
+                                	geta_cut = (idinfoG0.ecal > ECAL::EB)&&(idinfoG1.ecal > ECAL::EB);
+								}//<<>>if( doEndCaps )
                                 //bool goodLocTime = (*resRtTime)[0] != 0 && (*resRtTime)[1] != 0;
                                 //bool goodGloTime = (*resRtTime)[2] != 0 && (*resRtTime)[3] != 0;
                                 bool goodLocTime = (*resRtTime)[0] != 0 && (*resRtTime)[1] != 0 && (*resRtTime)[0] != (*resRtTime)[1];
@@ -1876,6 +1884,7 @@ void KUCMS_TimeCalibration::plot2dResbyIovForEGR( std::string inputFileName, boo
     std::cout << "Finished making 2D delta t v eff amp plots" << std::endl;
 
 }//<<>> void plot2dResolution( std::string indir, std::string infilelistname, 
+*/
 
 /*
 
@@ -1893,8 +1902,10 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
     //bool debug = true;
     bool small = false;
     //bool small = true;
-    //bool doEE = true;
-	bool doEE = false;
+
+    ////bool doEE = true;
+	////bool doEE = false;
+    ////int useGain(1);
 
     const std::string treename("tree/llpgtree");
 
@@ -2115,12 +2126,17 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
                                 auto idinfoG0 = DetIDMap[(*resRhID)[2]];
                                 auto idinfoG1 = DetIDMap[(*resRhID)[3]];
 
+								// set gain level in this block ---------------------------------------------------------------
                                 std::vector<bool> isGainId1 = {true,true,true,true};
                                 if( useGSwitch ){
                                     for( int resrhit = 0; resrhit < 4; resrhit++ ){
                                         for( int rhit = 0; rhit < nRecHits; rhit++ ){
                                             if( (*resRhID)[resrhit] == (*rhID)[rhit] ){
-                                                isGainId1[resrhit] = not ( (*rhisGS1)[rhit] || (*rhisGS6)[rhit] );
+                                                if( useGain == 1 ) isGainId1[resrhit] = not ( (*rhisGS1)[rhit] || (*rhisGS6)[rhit] );
+												else if ( useGain == 2 ) isGainId1[resrhit] = not (*rhisGS1)[rhit] && (*rhisGS6)[rhit];
+                                                else if ( useGain == 3 ) isGainId1[resrhit] = (*rhisGS1)[rhit] && not (*rhisGS6)[rhit];
+                                                else if ( useGain == 4 ) isGainId1[resrhit] = (*rhisGS1)[rhit] && (*rhisGS6)[rhit];
+												else isGainId1[resrhit] = false;
                                                 break;
                                             }//<>if( (*resRhID)[rhit] == (*resRhID)[resrhit] )
                                         }//<<>>for( int resrhit = 0; resrhit < nResRecHits; resrhi++ )
