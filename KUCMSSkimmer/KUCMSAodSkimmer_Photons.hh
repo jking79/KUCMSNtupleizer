@@ -185,6 +185,10 @@ void KUCMSAodSkimmer::processPhotons(){
             if( erhe > seedE ){
                 seedE = erhe; seedTime = ertoftime; seedAres = erampres; seedRHID = pscrhid;
                 seedTres = ertres; seedSX = swcrss; seedWried = isWeird; seedGS = hasGainSwitch;
+		
+		bool hasBadTime = hasGainSwitch || !(*ECALRecHit_isTimeValid)[erhiter];
+		_ca.AddRecHit(erx, ery, erz, erhe, erhct, pscrhid, hasBadTime);
+
             }//<<>>if( erhe > seedE ) 
         }//<<>>if( scrhid == rhid )
     }//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
@@ -404,6 +408,24 @@ void KUCMSAodSkimmer::processPhotons(){
     //if( DEBUG ) std::cout << " -- setting pho index : " << it << " for pt : " << ordpt << std::endl;
     phoOrderIndx.push_back(it);
     //if( DEBUG ) std::cout << " -- pho index set : " << phoOrderIndx[ordpt] << std::endl;
+
+    if(_ca.GetNRecHits() > 2){
+	ClusterObj phoobj;
+    	_ca.NoClusterRhs(phoobj, true);
+	 map<string, double> isomap;
+         MakePhotonIsoMap(it, isomap);
+         phoobj.CalculatePhotonIDScores(pt, isomap);
+         vector<float> photonIDscores;
+         phoobj.GetPhotonIDScores(photonIDscores);
+         float isobkg_score = photonIDscores[0];
+         float nonisobkg_score = photonIDscores[1];
+	 //fill branches here!!!
+	 selPhotons.fillBranch("selPho_isoANNScore",isobkg_score);
+	 selPhotons.fillBranch("selPho_nonIsoANNScore",nonisobkg_score);
+	if(DEBUG) cout << "photon " << it << " iso score " << isobkg_score << " noniso score " << nonisobkg_score << endl;
+    }
+    //do photon id score
+    _ca.ClearRecHitList();
 
     // fill ( vectors )
     if( DEBUG ) std::cout << " -- pho fill out branches" << std::endl;
@@ -656,6 +678,9 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch( "selPhoPhiWidth", VFLOAT );
   selPhotons.makeBranch( "selPhoS4", VFLOAT );
   selPhotons.makeBranch( "selPhoSigmaIEtaIEta", VFLOAT );   //!
+	 
+  selPhotons.makeBranch("selPho_isoANNScore", VFLOAT);
+  selPhotons.makeBranch("selPho_nonIsoANNScore", VFLOAT);
 
   selPhotons.makeBranch( "selPhoGenPt", VFLOAT );
   selPhotons.makeBranch( "selPhoPhoIsoDr", VFLOAT );

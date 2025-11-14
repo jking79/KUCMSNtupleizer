@@ -136,7 +136,7 @@ class KUCMSAodSkimmer : public llpgtree {
 	void processRJR( int type, bool newEvent );
 	void processBHCPhotons();
     void processBHCJets();
-
+	void MakePhotonIsoMap(int phoidx, map<string, double>& isomap);
 	// object quality functions
 
 	int getPhoQuality( int it );
