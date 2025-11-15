@@ -27,7 +27,7 @@ def getDataSetName(pathToList):
         return tmp[0]
 
 # Write the header of the condor submit file
-def writeSubmissionBase(subf, dirname, ofilename):
+def writeSubmissionBase(subf, dirname, ofilename, max_max_materialize = -1, max_idle = -1):
         subf.write("universe = vanilla\n")
         subf.write("executable = execute_script.sh\n")
         subf.write("output = ./"+dirname+"/log/job.$(Process).out\n")
@@ -63,6 +63,10 @@ def writeSubmissionBase(subf, dirname, ofilename):
         #remove last semicolon 
         remap = remap[:-1]
         subf.write("transfer_output_remaps = \""+remap+"\"\n")
+        if(max_materialize != -1):
+            subf.write("max_materialize = "+str(max_materialize)+"\n")
+        if(max_idle != -1):
+            subf.write("max_idle = "+str(max_idle)+"\n")
 
 #splits by event number
 def eventsSplit(infile, nChunk, filelist, nevtsmax = -999):
