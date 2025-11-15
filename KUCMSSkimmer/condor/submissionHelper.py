@@ -27,7 +27,7 @@ def getDataSetName(pathToList):
         return tmp[0]
 
 # Write the header of the condor submit file
-def writeSubmissionBase(subf, dirname, ofilename, max_max_materialize = -1, max_idle = -1):
+def writeSubmissionBase(subf, dirname, ofilename, max_materialize = -1, max_idle = -1):
         subf.write("universe = vanilla\n")
         subf.write("executable = execute_script.sh\n")
         subf.write("output = ./"+dirname+"/log/job.$(Process).out\n")
