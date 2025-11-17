@@ -23,7 +23,7 @@
 #include "KUCMSAodSkimmer_Muons.hh"
 #include "KUCMSAodSkimmer_SV.hh"
 #include "KUCMSAodSkimmer_BHC.hh"
-
+#include "KUCMSAodSkimmer_TimeSig.hh"
 
 //-----------------------------------------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------------------------------------
@@ -163,6 +163,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
   // setup lumi json map
 
   loadLumiJson("config/json/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.json");
+  loadLumiJson("config/json/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt");
   //loadLumiJson("config/json/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt",true);
 
   // condor event segmenting varibles : used to run over subset of events for condor jobs
@@ -204,8 +205,9 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 	// BNC Intiation
 
     _ca.SetVerbosity(-1); //_can turn on to see low-level warnings
-    _ca.SetDetIDsEB(_detidmap);
+    _ca.SetDetIDs(_detidmap);
     _ca.SetCNNModel("config/json/small3CNN_EMultr_2017and2018.json");
+    _ca.SetDNNModel("config/json/med16DNN_MCtrained_photonID.json");
 
 }//<<>>KUCMSAodSkimmer::KUCMSAodSkimmer()
 
@@ -282,7 +284,9 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
  	    auto entry = fInTree->LoadTree(centry);
         if(DEBUG) std::cout << " -- Getting Branches " << std::endl;
         getBranches( entry, hasGenInfoFlag );
+		//std::cout << " -- Checking Valid Lumi with mctype " << mctype << " run " << Evt_run << " block " << Evt_luminosityBlock << std::endl;
         if( mctype==1 && not isValidLumisection( Evt_run, Evt_luminosityBlock ) ) continue;
+		//std::cout << " --- Valid Lumi Processing Event " << std::endl;
 
         geCnts.clear();
         geVars.clear();
@@ -340,6 +344,37 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
     delete fOutFile;
 
 }//<<>>void KUCMSAodSkimmer::ProcessMainLoop()
+
+
+int KUCMSAodSkimmer::ProcessFile(string infilename, TChain*& fInTree, TChain*& fInConfigTree){
+    const std::string disphotreename = "tree/llpgtree";
+    const std::string configtreename = "tree/configtree";
+    if(gSystem->AccessPathName(infilename.c_str())){
+      cout << "Error: File " << infilename << " not found" << endl;
+      return -1;
+    }
+  
+    if( DEBUG ) std:: cout << "InFile: " << infilename << std::endl;
+    if( DEBUG ) std:: cout << "Key: " << dataSetKey << std::endl;
+    if( DEBUG ) std:: cout << "XSec: " << xsctn << std::endl;
+    if( DEBUG ) std:: cout << "GM: " << gmass << std::endl;
+    if( DEBUG ) std:: cout << "XM: " << xmass << std::endl;
+    if( DEBUG ) std:: cout << "MCw: " << mcwgt << std::endl;
+    if( DEBUG ) std:: cout << "MCt: " << mctype << std::endl;
+    if( DEBUG ) std:: cout << "tcTag: " << tctag << std::endl;
+
+    std::cout << "Processing Events for : " << infilename << std::endl;
+    fInTree = new TChain(disphotreename.c_str());
+    fInConfigTree = new TChain(configtreename.c_str());
+    fInTree->Add(infilename.c_str());
+    fInConfigTree->Add(infilename.c_str());
+    if(DEBUG) std::cout << "--  adding file: " << infilename << std::endl; //else std::cout << ".";
+    return 0;
+
+
+}
+
+
 
 int KUCMSAodSkimmer::ProcessFilelist(string eosdir, string infilename, TChain*& fInTree, TChain*& fInConfigTree){
     const std::string disphotreename = "tree/llpgtree";
@@ -526,7 +561,26 @@ void KUCMSAodSkimmer::ProcessConfigTree( TChain* fInConfigTree ){
 
 }//<<>>void KUCMSAodSkimmer::ProcessConfigTree(TChain* fInConfigTree)
 
-void KUCMSAodSkimmer::kucmsAodSkimmer( std::string eosdir, std::string infilelist, std::string outfilename){
+void KUCMSAodSkimmer::kucmsAodSkimmer( std::string infile, std::string outfilename){
+
+    std::cout << "Processing Input Lists for : " << infile << std::endl;
+
+    //add path to input file
+    //TTree* fOutTree = new TTree("kuSkimTree","output root file for kUCMSSkimmer");
+    //TTree* fConfigTree = new TTree("kuSkimConfigTree","config root file for kUCMSSkimmer");
+    TChain* fInTree = nullptr;
+    TChain* fInConfigTree = nullptr;
+    int ret = ProcessFile( infile, fInTree, fInConfigTree);
+    if(ret < 0) return;
+
+	SetOutFileName(outfilename);
+    ProcessMainLoop(fInTree, fInConfigTree);
+    std::cout << "Finished processing events for : " << infile << std::endl;
+  	std::cout << "KUCMSAodSkimmer : Thats all Folks!!" << std::endl;
+
+}//<<>>void KUCMSAodSkimmer::kucmsAodSkimmer( std::string eosdir, std::string infilelist, std::string outfilename)
+
+void KUCMSAodSkimmer::kucmsAodSkimmer_Filelist( std::string eosdir, std::string infilelist, std::string outfilename){
 
     std::cout << "Processing Input Lists for : " << infilelist << std::endl;
 

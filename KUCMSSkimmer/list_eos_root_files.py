@@ -69,11 +69,19 @@ def main():
     #input_dir = eos_dir + "kucmsntuple_MET_R18_SVIPM100_v31/MET/"
     #ppath = 'MET/'
 
-    input_dir = eos_dir + "kucmsntuple_EGamma_R18_InvMetPho30_NoSV_v31/EGamma/"
-    ppath = 'EGamma/'
+    #input_dir = eos_dir + "kucmsntuple_EGamma_R18_InvMetPho30_NoSV_v31/EGamma/"
+    #ppath = 'EGamma/'
 
     #input_dir = eos_dir + "kuncali/gammares_cali/DoubleEG/"
-    #ppath = ''
+    #input_dir = eos_dir + "gammares_ul17/DoubleEG/"
+    #ppath = 'DoubleEG/'
+
+    #input_dir = eos_dir + "kucmsntuple_JetHT_R18_InvMET100_nolumimask_v31/JetHT/"
+    #ppath = 'JetHT/'
+
+    input_dir = eos_dir + "kucmsntuple_MET_R17_SVIPM100_v31/MET/"
+    #input_dir = eos_dir + "kucmsntuple_MET_R17_SVIPM100_v31/MET/"
+    ppath = 'MET/'
 
     print(f"Scanning EOS directory for .root files: {input_dir} ...")
     files = list_eos_directory(input_dir, recursive=True, extension=".root")

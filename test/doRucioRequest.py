@@ -71,11 +71,11 @@ met18UL = [
 met17UL = [
 
     #'cms:/MET/Run2017A-09Aug2019_UL2017_rsb-v1/AOD',
-    'cms:/MET/Run2017B-09Aug2019_UL2017_rsb-v1/AOD',
+    #'cms:/MET/Run2017B-09Aug2019_UL2017_rsb-v1/AOD',
     ##'cms:/MET/Run2017C-09Aug2019_UL2017_rsb-v1/AOD',
     ##'cms:/MET/Run2017D-09Aug2019_UL2017_rsb-v1/AOD',
     #'cms:/MET/Run2017E-09Aug2019_UL2017_rsb-v1/AOD',
-    ##'cms:/MET/Run2017F-09Aug2019_UL2017_rsb-v1/AOD',
+    'cms:/MET/Run2017F-09Aug2019_UL2017_rsb-v1/AOD',
 
 ]
 

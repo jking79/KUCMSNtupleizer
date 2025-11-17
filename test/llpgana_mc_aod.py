@@ -31,7 +31,7 @@ options.register('runera','Run2',VarParsing.multiplicity.singleton,VarParsing.va
 ## GT to be used
 ##------------------ mc gt
 #options.register('globalTag','106X_mc2017_realistic_v6',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
-#options.register('globalTag','106X_upgrade2018_realistic_v11_L1v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
+options.register('globalTag','106X_upgrade2018_realistic_v11_L1v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','94X_mc2017_realistic_v11',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for sig22 MC');
 #options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
@@ -41,7 +41,7 @@ options.register('runera','Run2',VarParsing.multiplicity.singleton,VarParsing.va
 ##options.register('globalTag','112X_mcRun3_2021_realistic_v16',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 
 ##------------------ data gt  
-options.register('globalTag','106X_dataRun2_v36',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
+#options.register('globalTag','106X_dataRun2_v36',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 ##options.register('globalTag','106X_dataRun2_v28',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 #options.register('globalTag','124X_dataRun3_v15',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2022');
 
@@ -89,10 +89,10 @@ process.load('PhysicsTools.PatAlgos.triggerLayer1.triggerProducer_cfi')
 ## Message Logger settings
 process.load("FWCore.MessageService.MessageLogger_cfi")
 #process.MessageLogger.destinations = ['cout', 'cerr']
-process.MessageLogger.cerr.FwkReport.reportEvery = 1
+#process.MessageLogger.cerr.FwkReport.reportEvery = 1
 #process.MessageLogger.cerr.FwkReport.reportEvery = 2
 #process.MessageLogger.cerr.FwkReport.reportEvery = 10
-#process.MessageLogger.cerr.FwkReport.reportEvery = 100
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
 #process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 if options.multicrab == True : process.MessageLogger.cerr.FwkReport.reportEvery = 100000
 
@@ -128,7 +128,7 @@ process.source = cms.Source("PoolSource",
 
         #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/2430000/010FAEF3-D41F-D340-B7E9-E3BBD6498B3E.root',
         #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/2430000/0FB1FACF-237F-1749-9878-CA52BC077610.root',
-        'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/2430000/1424BBF2-79D4-3B46-8858-DB666EA0A4A6.root',
+        #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/2430000/1424BBF2-79D4-3B46-8858-DB666EA0A4A6.root',
         #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/2430000/42079EE6-4686-C141-8FB5-E4590022B1A9.root',
         #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/2430000/4F909A9C-185D-CC49-B9E6-18F7A289ADBD.root',
         #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/2430000/50AAF0F9-800F-CC45-A12F-B8FDB3442335.root',
@@ -214,7 +214,7 @@ process.source = cms.Source("PoolSource",
         # WJets
         #'root://cmsxrootd-site.fnal.gov//store/mc/RunIISummer20UL18RECO/WJetsToLNu_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/106X_upgrade2018_realistic_v11_L1v1_ext2-v3/40000/6021A8AE-9B41-7A4F-8E33-470F73F3D4FC.root',
 
-        #'file:WJets_72B9C618-FE23-1E41-872E-57314D7CB454.root',
+        'file:WJets_72B9C618-FE23-1E41-872E-57314D7CB454.root',
 
         # DiPhotonJetsBox
         #'root://cmsxrootd-site.fnal.gov//store/mc/RunIISummer20UL18RECO/DiPhotonJetsBox_MGG-80toInf_13TeV-sherpa/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/50000/E1C9ABB4-D708-D14E-8E97-803013F321E6.root',
@@ -253,10 +253,10 @@ process.source = cms.Source("PoolSource",
 )##<<>>process.source = cms.Source("PoolSource",
 
 ## How many events to process
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))#ONE
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
@@ -277,19 +277,19 @@ if options.multicrab == True : genInfo = options.hasGenInfo
 ecalIsoInputsF17 = 'RecoEgamma/ElectronIdentification/data/Fall17/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_94X.txt'
 ecalruneraIsoInputsW22 = 'RecoEgamma/ElectronIdentification/data/Run3_Winter22/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_122X.txt'
 
-#filterselect = 'none'
+filterselect = 'none'
 #filterselect = 'InvMet100IP'
 #filterselect = 'AL1NpSC'
 #filterselect = 'AL1DisSV'
 #filterselect = 'SVIPMet100'
 #filterselect = 'MET100'
 #filterselect = 'AL1IsoPho'
-filterselect = 'IsoPhoMet100'
+#filterselect = 'IsoPhoMet100'
 #filterselect = 'AL1SelEle'
 if options.multicrab == True : filterselect = options.eventFilter
 
-runera = "Run3"  # current siganl model
-#runera = "Run2" # BG models
+#runera = "Run3"  # current siganl model
+runera = "Run2" # BG models
 if options.multicrab == True : runera = options.runera
 
 #dosv = True
@@ -495,7 +495,7 @@ process.Flag_globalSuperTightHalo2016Filter = cms.Path( process.globalSuperTight
 process.hbheSequence = cms.Sequence( process.HBHENoiseFilterResultProducer * process.HBHENoiseFilter )
 process.Flag_HBHENoiseFilter = cms.Path( process.hbheSequence )
 process.Flag_HBHENoiseIsoFilter = cms.Path( process.HBHENoiseIsoFilter )
-#process.Flag_EcalDeadCellTriggerPrimitiveFilter = cms.Path( process.EcalDeadCellTriggerPrimitiveFilter )
+process.Flag_EcalDeadCellTriggerPrimitiveFilter = cms.Path( process.EcalDeadCellTriggerPrimitiveFilter )
 process.Flag_BadPFMuonFilter = cms.Path( process.BadPFMuonFilter )
 process.Flag_BadPFMuonDzFilter = cms.Path( process.BadPFMuonDzFilter )
 process.Flag_hfNoisyHitsFilter = cms.Path( process.hfNoisyHitsFilter )

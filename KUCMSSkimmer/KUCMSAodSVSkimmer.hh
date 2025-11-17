@@ -67,12 +67,14 @@ class KUCMSAodSkimmer : public llpgtree {
     KUCMSAodSkimmer();
 	~KUCMSAodSkimmer();
 
-    void kucmsAodSkimmer( std::string eosdir, std::string infilelist, std::string outfilename);
+    void kucmsAodSkimmer( std::string infile, std::string outfilename);
+    void kucmsAodSkimmer_Filelist( std::string eosdir, std::string infilelist, std::string outfilename);
     void kucmsAodSkimmer_listsOfLists( std::string eosdir, std::string infilelist, std::string outfilename );
     void kucmsAodSkimmer_local( std::string listdir, std::string eosdir, std::string infilelist, std::string outfilename );
 
     int ProcessFilelistOfLists(string eosdir, vector<string> processed_strings, TChain*& fInTree, TChain*& fInConfigTree);
     int ProcessFilelist(string eosdir, string infilename, TChain*& fInTree, TChain*& fInConfigTree);
+    int ProcessFile(string infilename, TChain*& fInTree, TChain*& fInConfigTree);
 
     void ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree );
     void ProcessConfigTree( TChain* fInConfigTree );
@@ -115,6 +117,7 @@ class KUCMSAodSkimmer : public llpgtree {
 	void setMuonsBranches( TTree* fOutTree );
 	void setSVBranches( TTree* fOutTree );
 	void setBCBranches( TTree* fOutTree );
+	void setTSBranches( TTree* fOutTree );
 
 	// object processing & selection
 
@@ -134,7 +137,13 @@ class KUCMSAodSkimmer : public llpgtree {
 	void processRJR( int type, bool newEvent );
 	void processBHCPhotons();
     void processBHCJets();
+	void processTimeSig();
 
+	// TSig functions
+	float getTimeSig( int scIndex );
+	float getTimeSig( vector<vector<unsigned int>> rhids );
+
+	void MakePhotonIsoMap(int phoidx, map<string, double>& isomap);
 	// object quality functions
 
 	int getPhoQuality( int it );
@@ -202,7 +211,7 @@ class KUCMSAodSkimmer : public llpgtree {
     MinMassesCombJigsaw* CombSplit_Ja;
     MinMassesCombJigsaw* CombSplit_Jb;
 
-        ClusterAnalyzer _ca;
+    ClusterAnalyzer _ca;
 
 
     // config vars
@@ -232,6 +241,9 @@ class KUCMSAodSkimmer : public llpgtree {
     std::string outFileName;
 
 	// event varibles
+
+	enum objID { Base, Loose, Tight };
+	enum tSigID { Early, Prompt, Late };
 
 	globalEventVars gEvtVar;
     ItemManager<std::vector<float>> geVects;	
@@ -278,6 +290,7 @@ class KUCMSAodSkimmer : public llpgtree {
     KUCMSBranchManager selTracks;
     KUCMSBranchManager BHCPhoInfo;
     KUCMSBranchManager BHCJetInfo;
+    KUCMSBranchManager TSPhoInfo;
 
    // Other SC information ? ( this is a hack ) depreciated - or make so ?   
 /*
