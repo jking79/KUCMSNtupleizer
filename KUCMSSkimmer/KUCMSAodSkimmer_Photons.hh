@@ -392,7 +392,7 @@ void KUCMSAodSkimmer::processPhotons(){
 
     //selPhotons.fillBranch( "selPhoWTime1", phoWTime1 );
     selPhotons.fillBranch( "selPhoWTimeSig", phoWTimeSig );
-    selPhotons.fillBranch( "selPhoLTimeSigOld", leadtimesig );
+    //selPhotons.fillBranch( "selPhoLTimeSigOld", leadtimesig );
     selPhotons.fillBranch( "selPhoSTimeSig", seedtimesig );
     selPhotons.fillBranch( "selPhoWTimeSig", wttimesig );
     selPhotons.fillBranch( "selPhoWTime", phoWTime );

@@ -84,7 +84,7 @@ def generateSubmission(args):
     else:
     	print("Input list"+args.inputMainList+" not found")
     	exit()
-    print("Using file list",inputMainList)
+    print("Using main file list",inputMainList,"with input list",inputList)
     listpath = inputMainList[:inputMainList.rfind("/")]+"/"
     #parsing master list
     #parsing lines in master list for inputs for list-by-list processing
@@ -142,7 +142,7 @@ def generateSubmission(args):
             SH.createWorkArea(fulldirname)
             eosdir = "root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/"+eospath
             #eventnums = SH.eventsSplit(eosdir, inputlist, args.split,True, args.maxnevts)
-            filearr = SH.filesSplit(eosdir, inputlist, args.maxnevts)
+            filearr = SH.filesSplit(eosdir, inputlist, args.maxnevts, args.maxnfiles)
             # grab relevant flags
             flags = " --xsec "+str(xsec)+" --dataSetKey "+key+" --gluinoMass "+str(gluinomass)+" --N2Mass "+str(n2mass)+" --timeCaliTag "+timeCaliTag+" --MCweight "+str(mc_wt)
 
@@ -156,7 +156,7 @@ def generateSubmission(args):
             condorSubmitFile = fulldirname + "/src/submit.sh"
             subf = open(condorSubmitFile, "w")
             print("outputfile name "+ofilename)
-            SH.writeSubmissionBase(subf, fulldirname, ofilename)
+            SH.writeSubmissionBase(subf, fulldirname, ofilename, args.max_mat, args.max_idle)
             #need to remove local lpc path for actual args
             inputlist = inputlist[inputlist.rfind("/",0,inputlist.rfind("/"))+1:]
             print("inputfilelist",inputlist)
@@ -169,6 +169,8 @@ def main():
     # options
     parser = argparse.ArgumentParser()
     parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
+    parser.add_argument("--max_mat",help='max_materialization condor option (default: off)',default=-1)
+    parser.add_argument("--max_idle",help='max_idle condor option (default: off)',default=-1)
     #TODO - separate photon/Z and squark/gluino and mixed cases (gogoG, gogoZ, sqsqG, sqsqGZ, etc)
     #parser.add_argument("--inputList",help="list of sample lists to run over (default is SVIPM100 selection)",choices=['data','mcBkg','mcSig'])
     parser.add_argument('--inputSample',help='Ntuple sample to create skims from',choices=['GJets','QCD','MET','gogoG'])
@@ -180,7 +182,8 @@ def main():
     parser.add_argument('--mN1',help='neutralino1 mass for signal',default='')
     parser.add_argument('--output','-o',help='output label',default=None)
     #parser.add_argument('--split','-s',help="condor job split",default=0,type=int)
-    parser.add_argument('--maxnevts',help="maximum number of events to run over",default=-999,type=int)
+    parser.add_argument('--maxnevts',help="maximum number of events per job",default=-999,type=int)
+    parser.add_argument('--maxnfiles',help="maximum number of files total",default=-999,type=int)
     parser.add_argument('--verbosity','-v',help="verbosity",default=0)
     #parser.add_argument('--hasGenInfo',help='set hasGenInfo flag',default=False,action="store_true")
     parser.add_argument('--genSigPerfect',help='set genSigPerfect flag',default=False,action="store_true")

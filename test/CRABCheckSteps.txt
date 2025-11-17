@@ -1,0 +1,5 @@
+- run `python list_eos_root_files.py` to create a list of files generated
+	- no cmd line args right now - need to go into the `main()` function and edit which output path you want to look at
+- then run `python check_eos_files_v2.py` to check those files
+	- running without cmd line args will give example call
+- also, `crab report -d [path/to/crab/logs]` needs to be run soon after job completion to create lumi information and verify which (if any) jobs need to be rerun
