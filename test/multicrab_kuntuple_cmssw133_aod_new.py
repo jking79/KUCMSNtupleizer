@@ -245,7 +245,8 @@ def docrab( dataset, options ):
             gt = ''
         geninfo = 'hasGenInfo=False'
     print("globalTag",gt)
-    params = [gt, mcrab, geninfo,'doSV=False'] #turn off SV collection by default
+    #params = [gt, mcrab, geninfo,'doSV=False'] #turn off SV collection by default
+    params = [gt, mcrab, geninfo,'doSV='+str(options[6])] #turn off SV collection by default
     params.append(evt_filter)
     print("cfgParams",params)
     config.JobType.pyCfgParams = params
@@ -313,6 +314,7 @@ def run_multi():
                       default = '',
                       help = "options for crab command CMD")
     parser.add_argument('-o','--output',help='output tag for ntuples',default='')
+    parser.add_argument('--noSV',help='turn off SV collection (default = False)',action='store_true')
     parser.add_argument('--filter',help='specify event filter',choices=['50M75','InvMET100','Pho30','InvMetPho30','M100','AL1IsoPho','AL1NpSC','AL1SelEle','SVIPM100'],default='')
     parser.add_argument('--noMaskLumi',help='do not apply lumi mask (default = off)',default=False,action='store_true')
     parser.add_argument('--unitsPerJob',help='number of files to run per job (default = 1)',default=1)
@@ -342,7 +344,7 @@ def run_multi():
                 outfilter = args.filter+"_nolumimask"
             else:
                 outfilter = args.filter
-    options = [args.workArea, args.crabCmdOpts, outfilter, args.noMaskLumi, args.unitsPerJob, args.dryRun]
+    options = [args.workArea, args.crabCmdOpts, outfilter, args.noMaskLumi, args.unitsPerJob, args.dryRun, not args.noSV]
 
 
     Tune = 'TuneCP5_13TeV-madgraphMLM-pythia8'
