@@ -156,7 +156,7 @@ def generateSubmission(args):
             condorSubmitFile = fulldirname + "/src/submit.sh"
             subf = open(condorSubmitFile, "w")
             print("outputfile name "+ofilename)
-            SH.writeSubmissionBase(subf, fulldirname, ofilename, args.max_mat, args.max_idle)
+            SH.writeSubmissionBase(subf, fulldirname, ofilename, args.max_mat, args.max_idle, args.request_memory)
             #need to remove local lpc path for actual args
             inputlist = inputlist[inputlist.rfind("/",0,inputlist.rfind("/"))+1:]
             print("inputfilelist",inputlist)
@@ -171,6 +171,7 @@ def main():
     parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
     parser.add_argument("--max_mat",help='max_materialization condor option (default: off)',default=-1)
     parser.add_argument("--max_idle",help='max_idle condor option (default: off)',default=-1)
+    parser.add_argument("--request_memory",help='memory to request from condor scheduler in bits (default = 2048)',default=-1)
     #TODO - separate photon/Z and squark/gluino and mixed cases (gogoG, gogoZ, sqsqG, sqsqGZ, etc)
     #parser.add_argument("--inputList",help="list of sample lists to run over (default is SVIPM100 selection)",choices=['data','mcBkg','mcSig'])
     parser.add_argument('--inputSample',help='Ntuple sample to create skims from',choices=['GJets','QCD','MET','gogoG'])
