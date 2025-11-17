@@ -163,7 +163,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
   // setup lumi json map
 
   loadLumiJson("config/json/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.json");
-  loadLumiJson("config/json/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt");
+  //loadLumiJson("config/json/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt");
   //loadLumiJson("config/json/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt",true);
 
   // condor event segmenting varibles : used to run over subset of events for condor jobs
@@ -205,6 +205,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 	// BNC Intiation
 
     _ca.SetVerbosity(-1); //_can turn on to see low-level warnings
+    cout << "main - _detidmap size " << _detidmap.size() << endl;
     _ca.SetDetIDs(_detidmap);
     _ca.SetCNNModel("config/json/small3CNN_EMultr_2017and2018.json");
     _ca.SetDNNModel("config/json/med16DNN_MCtrained_photonID.json");
@@ -250,7 +251,7 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
     auto nEntries = fInTree->GetEntries();
 
     //loop over events
-    if( _evti < 0 ){ _evti = 0; _evtj = nEntries; }
+    if( _evti < 0 || _evti == _evtj){ _evti = 0; _evtj = nEntries; }
 	else {
 		if( _evtj > nEntries ){ _evtj = nEntries; } //cap at max number of entries
 		if( _evti > nEntries ){ cout << "Starting event " << _evti << " above # of entries in tree " << nEntries << " returning." << endl; return; }
