@@ -8,8 +8,8 @@ import shutil
 
 # === User configuration ===
 #/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer
-CMSSW_BASE = f"/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3"
-CMSSW_TARPATH = f"/uscms/home/jaking/nobackup/el8/llpana/"
+CMSSW_BASE = f"/uscms/home/jaking/nobackup/el9/CMSSW_13_3_3"
+CMSSW_TARPATH = f"/uscms/home/jaking/nobackup/el9/"
 TARBALL = "CMSSW_13_3_3.tar.gz"
 TARBALL_PATH = os.path.join(os.path.dirname(CMSSW_TARPATH), TARBALL)
 SUB_FILE = "run_skim.sub"

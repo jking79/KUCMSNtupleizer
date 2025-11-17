@@ -197,6 +197,7 @@ void KUCMSAodSkimmer::processJets(){
 
   }//<<>>for( int it = 0; it < nJets; it++ )
   if( DEBUG ) std::cout << " - Finished Jet loop." << std::endl;
+  if( nJets == 0 ){ hemBits.set( "jet1hvl", false ); hemBits.set( "jet2hvm", false ); }
 
   geVects.set( "selJetPt", seljetpt );
   geVects.set( "selJetEta", seljeteta );

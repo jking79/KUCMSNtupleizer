@@ -488,24 +488,35 @@ dlEGMAOD17 = [
  
 ]
 
+dl22 = [
+'/MET/Run2022A-27Jun2023-v1/AOD',
+'/MET/Run2022B-27Jun2023-v2/AOD',
+'/MET/Run2022C-27Jun2023-v2/AOD',
+'/JetMET/Run2022C-27Jun2023-v1/AOD',
+'/JetMET/Run2022D-19Dec2023-v1/AOD',
+'/JetMET/Run2022E-19Dec2023-v1/AOD',
+'/JetMET/Run2022F-19Dec2023-v2/AOD',
+'/JetMET/Run2022G-19Dec2023-v1/AOD',
+
+]
 
 query = 'dasgoclient --json -query=\'dataset='
 
-datalist = dlEGMAOD17
+datalist = dl22
 
 for data in datalist :
     
     command = query + data + '\''
     #output = bashout( command ).splitlines()
-    #output = bashout( command ).split('size":')
+    output = bashout( command ).split('size":')
     #output = bashout( command ).split('num_lumi":')
     #output = bashout( command ).split('files":')
-    output = bashout( command ).split('events":')
+    #output = bashout( command ).split('events":')
     #fir = output[1].split('size":')[0]
     #sec = output[1].split('size":')[1] 
     #.split('}],')[0]
-    #size = int(output[1].split('}]')[0])/1000000000000
-    size = output[1].split('}]')[0]
+    size = int(output[1].split('}]')[0])/1000000000000
+    #size = output[1].split('}]')[0]
     print( data,  size )
     #print( data, '\n',  fir, '\n', sec )
 

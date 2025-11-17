@@ -101,6 +101,8 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 
     std::map<std::string,kucms_smearTagStruct> SmearTagSet;
 
+	std::vector<int> ebx_ranges, ebtt_ranges, epmx_ranges, epmtt_ranges;
+
 	bool updated;
 	bool lowEnergy;
 	bool useEffEnergy;
