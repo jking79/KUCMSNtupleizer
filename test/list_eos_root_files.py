@@ -79,7 +79,7 @@ def main():
     #input_dir = eos_dir + "kucmsntuple_JetHT_R18_InvMET100_nolumimask_v31/JetHT/"
     #ppath = 'JetHT/'
 
-    input_dir = eos_dir + "kucmsntuple_MET_R17_SVIPM100_v31/MET/"
+    input_dir = eos_dir + "kucmsntuple_MET_R16_SVIPM100_v31/MET/"
     #input_dir = eos_dir + "kucmsntuple_MET_R17_SVIPM100_v31/MET/"
     ppath = 'MET/'
 
