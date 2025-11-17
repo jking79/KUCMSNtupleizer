@@ -61,6 +61,8 @@ void KUCMSAodSkimmer::processMuons(){
 
 
   }//<<>>for( uInt itr = 0; itr < nMuons; itr++ )
+  if( nMuons == 0 ){ hemBits.set( "mu1hvl", false ); hemBits.set( "mu2hvm", false ); }
+
   selMuons.fillBranch( "nMuons", nMuons );
   selMuons.fillBranch( "nLooseMuons", nLooseMuons );
   selMuons.fillBranch( "nMuonSVMatched", Muon_nSVMatched );

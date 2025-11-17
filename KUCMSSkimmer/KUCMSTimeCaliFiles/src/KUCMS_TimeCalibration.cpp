@@ -10,7 +10,7 @@
 
 KUCMS_TimeCalibration::KUCMS_TimeCalibration( bool stayOpen, bool makeNew ){
 
-    std::cout << "Initiating KUCMS_TimeCalibrationClass" << std::endl;
+    std::cout << "Initiating KUCMS_TimeCalibrationClass for EE && EB" << std::endl;
 	// parameter and setup hardcoded in constructer - some of this needs moved to "run" code
 
     caliFileDir = "ecal_config/";// move
@@ -24,6 +24,11 @@ KUCMS_TimeCalibration::KUCMS_TimeCalibration( bool stayOpen, bool makeNew ){
     ttHistMapName = "_TT_";
     lochist = "_SRO_Data_Hist";
     globhist = "_ZEE_Data_Hist";
+
+	ebx_ranges = {171,-85,86,360,1,361};
+	epmx_ranges = {203,-101,102,100,1,101};
+	ebtt_ranges = {35,-17,18,72,1,73};
+    epmtt_ranges = {23,-11,12,34,1,35};
 
     //std::cout << " - opening caliHistsTFile " << std::endl;
     caliTFileName = caliFileDir + "caliHistsTFile.root";// name configurable ?
@@ -764,8 +769,8 @@ void KUCMS_TimeCalibration::makeCaliHists(){
 				}//<<>>if( calihist != CaliHists.end() )
 				//} else {
 				TH2F* hist(NULL);
-				if( side == ebeemap[0] ) hist = new TH2F(filename.c_str(),filename.c_str(),171,-85,86,360,1,361);
-				else hist = new TH2F(filename.c_str(),filename.c_str(),201,-100,101,100,1,101);
+				if( side == ebeemap[0] ) hist = new TH2F(filename.c_str(),filename.c_str(),ebx_ranges[0],ebx_ranges[1],ebx_ranges[2],ebx_ranges[3],ebx_ranges[4],ebx_ranges[5]);
+				else hist = new TH2F(filename.c_str(),filename.c_str(),epmx_ranges[0],epmx_ranges[1],epmx_ranges[2],epmx_ranges[3],epmx_ranges[4],epmx_ranges[5]);
 				CaliHists[filename] = { hist, filename, true, false }; // histfile histname isnew isopen lastrun
 				//}//<<>>if( calihist != CaliHists.end() )
 			}//<<>>for( auto side : ebeemap )
@@ -859,8 +864,8 @@ void KUCMS_TimeCalibration::makeCaliHists(){
                 }//<<>>if( calihist != CaliHists.end() )
                 //} else {
                 TH2F* hist(NULL);
-                if( side == ebeemap[0] ) hist = new TH2F(filename.c_str(),filename.c_str(),35,-17,18,72,1,73);
-                else hist = new TH2F(filename.c_str(),filename.c_str(),21,-10,11,33,0,33);
+                if( side == ebeemap[0] ) hist = new TH2F(filename.c_str(),filename.c_str(),ebtt_ranges[0],ebtt_ranges[1],ebtt_ranges[2],ebtt_ranges[3],ebtt_ranges[4],ebtt_ranges[5]);
+                else hist = new TH2F(filename.c_str(),filename.c_str(),epmtt_ranges[0],epmtt_ranges[1],epmtt_ranges[2],epmtt_ranges[3],epmtt_ranges[4],epmtt_ranges[5]);
                 CaliHists[filename] = { hist, filename, true, false }; // histfile histname isne
                 //}//<<>>if( calihist != CaliHists.end() )
             }//<<>>for( auto side : ebeemap )
@@ -934,14 +939,15 @@ void KUCMS_TimeCalibration::makeCaliMaps(){
             //std::cout << " --- with : " << sfilename << std::endl;
 			if( CaliHists.find(sfilename) != CaliHists.end() ){
 			   bool isEB( side == ebeemap[0] );
-			   int end_range_eta = isEB ? 172 : 201;
+			   int end_range_eta = isEB ? 172 : 204;
                int end_range_phi = isEB ? 361 : 101;
                //std::cout << " --- found : " << tfilename << std::endl;
 				for( int ieta = 1; ieta < end_range_eta; ieta++ ){
 					for( int iphi = 1; iphi < end_range_phi; iphi++ ){
 						//std::cout << " -- Processing : " << ieta << " " << iphi;
-						int ec = isEB ? 0 : ( ieta < 0 ) ? 1 : 2; 
-						int i1 = isEB ? ieta - 86 : std::abs(ieta - 101);
+						int tti1 = ieta - 102;
+                        int i1 = isEB ? ieta - 86 : std::abs(tti1);
+						int ec = isEB ? 0 : ( tti1 < 0 ) ? 1 : 2; 
 						if( i1 == 0 ) continue;
 						uInt detid = InvDetIDMap[iphi][i1][ec];
 						float sum = CaliHists[sfilename].h2f->GetBinContent(ieta,iphi);
@@ -980,13 +986,13 @@ void KUCMS_TimeCalibration::makeCaliMaps(){
             //std::cout << " --- with : " << sfilename << std::endl;
             if( CaliHists.find(sfilename) != CaliHists.end() ){
                	bool isEB( side == ebeemap[0] );
-               	int end_range_eta = isEB ? 36 : 21;
-               	int end_range_phi = isEB ? 73 : 33;
+               	int end_range_eta = isEB ? 36 : 24;
+               	int end_range_phi = isEB ? 73 : 35;
 				//std::cout << " --- found : " << tfilename << std::endl;
                 for( int ieta = 1; ieta < end_range_eta; ieta++ ){
                     for( int iphi = 1; iphi < end_range_phi; iphi++ ){
                         //std::cout << " -- Processing : " << ieta << " " << iphi;
-                        int i1 = isEB ? ieta - 18 : ieta - 11;
+                        int i1 = isEB ? ieta - 18 : ieta - 12;
                         if( i1 == 0 ) continue;
 						uInt detid = getInvTTId( iphi, i1, isEB );
                         float sum = CaliHists[sfilename].h2f->GetBinContent(ieta,iphi);
@@ -1091,8 +1097,10 @@ std::pair<int,int> KUCMS_TimeCalibration::getTTInfo( uInt ttid ){
 		int ah = a/10;
 		int al = a - (10*ah) + 1;
 		int pm = ( s == 4 ) ? -1 : 1;
-		i1 = ah;
+		i1 = ah + 1;
 		i2 = al*pm;
+		if( ttid > 6000 ){ i1 = 200; i2 = 200; } 
+		//std::cout << " -- " << i1 << " " << i2 << " " << ttid << std::endl;
 	}//<<>>if( ttid < 4000 ) else
 	return std::make_pair(i1,i2); 
 
@@ -1106,9 +1114,11 @@ uInt KUCMS_TimeCalibration::getInvTTId( int i1, int i2, bool isEB ){
 		else tt = i1+(i2*100);
 	} else {
 		int al = std::abs(i2) - 1;
-		int ah = i1*10;
+		int ah = ( i1 - 1 )*10;
 		int m = ( i2 < 0 ) ? 4000 : 5000;
-		tt = al + ah + m; 
+        if( al > 9 ) tt = 9000;
+		else tt = al + ah + m;
+		//std::cout << " -- " << i1 << " " << i2 << " " << tt << " : " << ah << " " << al << " " << m << std::endl;
 	}//<<>> if( isEB ) else 
 	return tt;
 
@@ -1232,14 +1242,12 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
 	float res = -1;
 	if( mctype < 100 ){ // data
 
-		if( dataSetKey == "r2_ul18"    ){ 
-			res = isEB ? sq2( 25.16/amplitude ) + 2*sq2(0.1013) : sq2( 29.4/amplitude ) + 2*sq2(0.1929); }
+		if( dataSetKey == "r2_ul18" || dataSetKey == "r2_ul18_mc"   ){ 
+			res = isEB ? sq2(23.24/amplitude) + sq2(1.54)/amplitude + 2*sq2(0.0834) : sq2(38.5/amplitude) + sq2(2.9)/amplitude + 2*sq2(0.2828); }
         if( dataSetKey == "r2_eoy17"   ){ 
-			res = isEB ? sq2( 31.3/amplitude ) + 2*sq2(0.1608) : sq2( 31.3/amplitude ) + 2*sq2(0.1608); }
-        if( dataSetKey == "r2_ul18_mc" ){ 
-			res = isEB ? sq2( 25.16/amplitude ) + 2*sq2(0.1013) : sq2( 29.4/amplitude ) + 2*sq2(0.1929); }
+			res = isEB ? sq2( 31.3/amplitude ) + sq2(2.9)/amplitude + 2*sq2(0.1608) : sq2( 31.3/amplitude ) + sq2(2.9)/amplitude + 2*sq2(0.1608); }
         if( dataSetKey == "r2_ul17"   ){ 
-			res = isEB ? sq2( 20.0/amplitude ) + sq2( 3.0 )/amplitude + 2*sq2(0.1599) : sq2( 31.3/amplitude ) + 2*sq2(0.1608); }
+			res = isEB ? sq2( 19.09/amplitude ) + sq2(3.29)/amplitude + 2*sq2(0.0982) : sq2( 32.7/amplitude ) + sq2(1.77)/amplitude + 2*sq2(0.2072); }
 
 	}//<<>>if( mctype == 0 )
 	if( res == -1 ){ std::cout << " -- Resolution for dataSetKey " << dataSetKey << " not found !!!!!!" << std::endl; return 1.f; }
@@ -1903,6 +1911,7 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
     bool small = false;
     //bool small = true;
 
+	// promoted to calss varible set with accsor functions. //
     ////bool doEE = true;
 	////bool doEE = false;
     ////int useGain(1);
@@ -1913,7 +1922,7 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 
     float lB = 10; // lower and upper limits of energies for rechits used
     float uB = 120; // lower and upper limits of energies for rechits used
-    if( lowEnergy ){ lB = 0.5; uB = 120; }
+    if( lowEnergy ){ lB = 1.0; uB = 120; }
 
     std::cout << " -- use low energy : " << lowEnergy << std::endl;
     std::cout << " -- xbins : " << xBinStr << std::endl;
@@ -2173,8 +2182,8 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
                                 double lyf1 = (*resRtTime)[1]-seedTimeIC10;
                                 double gyf0 = (*resRtTime)[2]-seedTimeIC01;
                                 double gyf1 = (*resRtTime)[3]-seedTimeIC11;
-								std::cout << " -- : " << (*resRtTime)[0] << " - " << seedTimeIC00 << " " << usecali << " " << doEE;
-								std::cout << " " << (*resRhID)[0] << std::endl;
+								//std::cout << " -- : " << (*resRtTime)[0] << " - " << seedTimeIC00 << " " << usecali << " " << doEE;
+								//std::cout << " " << (*resRhID)[0] << std::endl;
 
                                 if( smear ){
                                     std::cout << "Times are smeared !!!!!" << std::endl;
@@ -2276,8 +2285,8 @@ kucms_SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D ){
 
   	std::string f2DHistName = hist2D->GetName();
 	std::cout << "Running time fitter : " << f2DHistName << std::endl;
-    //bool doSterm = true;
-	bool doSterm = false;
+    bool doSterm = true;
+	//bool doSterm = false;
 	
   	std::vector<float> fXBins;
 	//std::cout << " -- " << xBinStr << std::endl;
