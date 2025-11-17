@@ -60,6 +60,8 @@ def docrab( dataset, options ):
     inputJSON = ''
     print('dataset',dataset)
     year = ""
+    if "16" in dataset:
+        year = "2016"
     if "17" in dataset:
         year = "2017"
     if "18" in dataset:
@@ -69,7 +71,9 @@ def docrab( dataset, options ):
     elif "Run2023" in dataset:
         year = "2023"
     if "SIM" not in dataset:
-        if year == "2017":
+        if year == "2016":
+            inputJSON = "Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt"
+        elif year == "2017":
             inputJSON    = 'Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt'
         elif year == "2018":
             inputJSON    = 'Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt'
@@ -98,7 +102,7 @@ def docrab( dataset, options ):
     config.Data.inputDataset   = None
     #config.Data.splitting    = 'LumiBased' # MC&Data Set unitsperjob correctly for dataset !!!!!!!!!!!!!!!!!!!!!!!!!!
     config.Data.splitting    = 'FileBased' # MC&Data Set unitsperjob correctly for dataset !!!!!!!!!!!!!!!!!!!!!!!!!!
-    if "SIM" not in dataset and options[3]: #applying after ntuple stage to check for correct # of event processed
+    if "SIM" not in dataset and not options[3]: #applying after ntuple stage to check for correct # of event processed
         print("Applying lumi mask",inputJSON)
         config.Data.lumiMask       = inputJSON    
     #config.Data.unitsPerJob  =  10
@@ -184,7 +188,7 @@ def docrab( dataset, options ):
     #print("dataset",dataset)
 
     evt_filter = ""
-    if "M100" in trialtag and "skimIP" not in trialtag:
+    if "M100" in trialtag and "skimIP" not in trialtag and "SVIPM" not in trialtag:
         evt_filter = 'MET100'
     elif "InvMET100" in trialtag:
         evt_filter = 'InvMET100'
@@ -202,6 +206,8 @@ def docrab( dataset, options ):
         evt_filter = 'IsoPhoMet100'
     elif "AL1NpSC" in trialtag:
         evt_filter = "AL1NpSC"
+    elif "SVIPM100" in trialtag:
+        evt_filter = "SVIPMet100"
     else:
         evt_filter = 'None'
     evt_filter = 'eventFilter='+evt_filter
@@ -221,7 +227,9 @@ def docrab( dataset, options ):
             gt = ''
         geninfo = 'hasGenInfo=True'
     else: #data - TODO: check dataset1 match strings
-        if "UL2017" in dataset1:
+        if "UL2016" in dataset1:
+            gt = "globalTag=106X_dataRun2_v27"
+        elif "UL2017" in dataset1:
             gt = 'globalTag=106X_dataRun2_v20'
         elif "UL2018" in dataset1:
             gt = 'globalTag=106X_dataRun2_v36'
@@ -237,7 +245,8 @@ def docrab( dataset, options ):
             gt = ''
         geninfo = 'hasGenInfo=False'
     print("globalTag",gt)
-    params = [gt, mcrab, geninfo,'doSV=False'] #turn off SV collection by default
+    #params = [gt, mcrab, geninfo,'doSV=False'] #turn off SV collection by default
+    params = [gt, mcrab, geninfo,'doSV='+str(options[6])] #turn off SV collection by default
     params.append(evt_filter)
     print("cfgParams",params)
     config.JobType.pyCfgParams = params
@@ -305,36 +314,37 @@ def run_multi():
                       default = '',
                       help = "options for crab command CMD")
     parser.add_argument('-o','--output',help='output tag for ntuples',default='')
-    parser.add_argument('--filter',help='specify event filter',choices=['50M75','InvMET100','Pho30','InvMetPho30','M100','AL1IsoPho','AL1NpSC','AL1SelEle'],default='')
-    parser.add_argument('--maskLumi',help='apply lumi mask (default = off)',default=False,action='store_true')
-    parser.add_argument('--unitsPerJob',help='number of files to run per job',default=1)
+    parser.add_argument('--noSV',help='turn off SV collection (default = False)',action='store_true')
+    parser.add_argument('--filter',help='specify event filter',choices=['50M75','InvMET100','Pho30','InvMetPho30','M100','AL1IsoPho','AL1NpSC','AL1SelEle','SVIPM100'],default='')
+    parser.add_argument('--noMaskLumi',help='do not apply lumi mask (default = off)',default=False,action='store_true')
+    parser.add_argument('--unitsPerJob',help='number of files to run per job (default = 1)',default=1)
     parser.add_argument('--dryRun',help='will show info about submissions (name of output path, etc) but won\'t submit',action='store_true',default=False)
     args = parser.parse_args()
 
     outfilter = args.output
     if args.filter == "":
         if args.output != "":
-            if not args.maskLumi and args.era != "MC":
+            if args.noMaskLumi and args.era != "MC":
                 outfilter = "nolumimask_"+outfilter
             else:
                 outfilter = outfilter
         else:
-            if not args.maskLumi and args.era != "MC":
+            if args.noMaskLumi and args.era != "MC":
                 outfilter = "nolumimask"
             else:
                 outfilter = args.filter
     else:
         if args.output != "":
-            if not args.maskLumi and args.era != "MC":
+            if args.noMaskLumi and args.era != "MC":
                 outfilter = args.filter+"_nolumimask_"+outfilter
             else:
                 outfilter = args.filter+"_"+outfilter
         else:
-            if not args.maskLumi and args.era != "MC":
+            if args.noMaskLumi and args.era != "MC":
                 outfilter = args.filter+"_nolumimask"
             else:
                 outfilter = args.filter
-    options = [args.workArea, args.crabCmdOpts, outfilter, args.maskLumi, args.unitsPerJob, args.dryRun]
+    options = [args.workArea, args.crabCmdOpts, outfilter, args.noMaskLumi, args.unitsPerJob, args.dryRun, not args.noSV]
 
 
     Tune = 'TuneCP5_13TeV-madgraphMLM-pythia8'
@@ -352,7 +362,8 @@ def run_multi():
         if(args.year == "2018"):
            reco = "RunIISummer20UL18RECO-"
         else:
-            reco = "RunII"
+            print("Reco info not found for year",args.year,"Please add")
+            exit()
         if(args.inputSample == "QCD" or args.inputSample == "GJets"):
             if(args.inputSample == "GJets" and args.HT == "100To200"):
                 reco += "4cores5k_"
@@ -361,8 +372,14 @@ def run_multi():
         dataset = "/"+dataset+"/"+reco
     else:
         dataset = args.inputSample+"/Run"+args.year+args.era
-        #if args.inputSample == "MET" or args.inputSample == "EGamma":
-        if args.year == "2017":
+        if args.year == "2016":
+            reco = "21Feb2020"
+            if args.inputSample == "MET" and args.era == "B":
+                reco += "_ver2"
+            reco += "_UL2016"
+            if args.inputSample == "MET" and (args.era == "B" or args.era == "C" or args.era == "D"):
+                reco += "_HIPM"
+        elif args.year == "2017":
             reco = "09Aug2019_UL2017"
             if args.inputSample == "MET":
                 reco += "_rsb"
@@ -373,6 +390,8 @@ def run_multi():
         elif args.year == "2023":
             reco = "19Dec2023"
         ver = "v1"
+        if args.year == "2016" and args.inputSample == "MET" and args.era == "H":
+            ver = "v2"
         if args.year == "2018" and args.inputSample == "JetHT" and args.era == "A":
             ver = "v2"
         if args.year == "2022":

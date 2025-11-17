@@ -27,7 +27,7 @@ def getDataSetName(pathToList):
         return tmp[0]
 
 # Write the header of the condor submit file
-def writeSubmissionBase(subf, dirname, ofilename):
+def writeSubmissionBase(subf, dirname, ofilename, max_materialize = -1, max_idle = -1, mem = -1):
         subf.write("universe = vanilla\n")
         subf.write("executable = execute_script.sh\n")
         subf.write("output = ./"+dirname+"/log/job.$(Process).out\n")
@@ -63,6 +63,12 @@ def writeSubmissionBase(subf, dirname, ofilename):
         #remove last semicolon 
         remap = remap[:-1]
         subf.write("transfer_output_remaps = \""+remap+"\"\n")
+        if(max_materialize != -1):
+            subf.write("max_materialize = "+str(max_materialize)+"\n")
+        if(max_idle != -1):
+            subf.write("max_idle = "+str(max_idle)+"\n")
+        if(mem != -1):
+            subf.write("request_memory = "+str(mem)+"\n")
 
 #splits by event number
 def eventsSplit(infile, nChunk, filelist, nevtsmax = -999):
@@ -96,12 +102,14 @@ def eventsSplit(infile, nChunk, filelist, nevtsmax = -999):
 
 #splits by files
 #should return a dict of files : evt arr
-def filesSplit(eosdir, infile, nevtsmax = -999):
+def filesSplit(eosdir, infile, nevtsmax = -999, nfilesmax = -999):
     arr = []
     if nevtsmax == -999:
         with open(infile,"r") as f:
             lines = f.readlines()
             for line in lines:
+                if(len(arr) >= nfilesmax and nfilesmax != -999):
+                    break
                 line = line[:line.find("\n")]
                 if(line[0] == "#"):
                     continue
@@ -113,6 +121,8 @@ def filesSplit(eosdir, infile, nevtsmax = -999):
             lines = f.readlines()
             evtarr = []
             for line in lines:
+                if(len(arr) >= nfilesmax and nfilesmax != -999):
+                    break
                 line = line[:line.find("\n")]
                 if(line[0] == "#"):
                     continue
