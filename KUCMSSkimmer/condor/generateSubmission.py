@@ -142,7 +142,7 @@ def generateSubmission(args):
             SH.createWorkArea(fulldirname)
             eosdir = "root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/"+eospath
             #eventnums = SH.eventsSplit(eosdir, inputlist, args.split,True, args.maxnevts)
-            filearr = SH.filesSplit(eosdir, inputlist, args.maxnevts)
+            filearr = SH.filesSplit(eosdir, inputlist, args.maxnevts, args.maxnfiles)
             # grab relevant flags
             flags = " --xsec "+str(xsec)+" --dataSetKey "+key+" --gluinoMass "+str(gluinomass)+" --N2Mass "+str(n2mass)+" --timeCaliTag "+timeCaliTag+" --MCweight "+str(mc_wt)
 
@@ -183,6 +183,7 @@ def main():
     parser.add_argument('--output','-o',help='output label',default=None)
     #parser.add_argument('--split','-s',help="condor job split",default=0,type=int)
     parser.add_argument('--maxnevts',help="maximum number of events per job",default=-999,type=int)
+    parser.add_argument('--maxnfiles',help="maximum number of files total",default=-999,type=int)
     parser.add_argument('--verbosity','-v',help="verbosity",default=0)
     #parser.add_argument('--hasGenInfo',help='set hasGenInfo flag',default=False,action="store_true")
     parser.add_argument('--genSigPerfect',help='set genSigPerfect flag',default=False,action="store_true")

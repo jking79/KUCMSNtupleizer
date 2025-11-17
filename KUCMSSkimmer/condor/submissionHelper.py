@@ -100,12 +100,14 @@ def eventsSplit(infile, nChunk, filelist, nevtsmax = -999):
 
 #splits by files
 #should return a dict of files : evt arr
-def filesSplit(eosdir, infile, nevtsmax = -999):
+def filesSplit(eosdir, infile, nevtsmax = -999, nfilesmax = -999):
     arr = []
     if nevtsmax == -999:
         with open(infile,"r") as f:
             lines = f.readlines()
             for line in lines:
+                if(len(arr) >= nfilesmax and nfilesmax != -999):
+                    break
                 line = line[:line.find("\n")]
                 if(line[0] == "#"):
                     continue
@@ -117,6 +119,8 @@ def filesSplit(eosdir, infile, nevtsmax = -999):
             lines = f.readlines()
             evtarr = []
             for line in lines:
+                if(len(arr) >= nfilesmax and nfilesmax != -999):
+                    break
                 line = line[:line.find("\n")]
                 if(line[0] == "#"):
                     continue
