@@ -222,9 +222,9 @@ void KUCMSAodSkimmer::processPhotons(){
 	if( isExcluded ) continue;
 
     //selPhotons.fillBranch( "allPhoWTime1", phoWTime1 );
-    selPhotons.fillBranch( "allPhoWTimeSig1", phoWTimeSig );
+    selPhotons.fillBranch( "allPhoWTimeSig", phoWTimeSig );
     selPhotons.fillBranch( "allPhoWTime", phoWTime );
-    selPhotons.fillBranch( "allPhoWTimeSig", wttimesig );
+    selPhotons.fillBranch( "allPhoWTimeSig1", wttimesig1 );
     selPhotons.fillBranch( "allPhoEta", eta );
     selPhotons.fillBranch( "allPhoPhi", phi );
     selPhotons.fillBranch( "allPhoPt", pt );
@@ -238,11 +238,12 @@ void KUCMSAodSkimmer::processPhotons(){
     ///////////  pho selection ////////////////////////////////////////////////////////////////////
 
 // for the tight and loose(!tight) selections the discriminant scores are as follows (with the corresponding ROC curve info):
-// - tight: iso score > 0.337 (5% noniso contamination with ~97% iso efficiency)
-// - loose: iso score > 0.134 (10% noniso contamination with ~98% iso efficiency)
-// i figure we will eventually want to go tighter (less contamination) for the tight selection, but i think this should be (conservatively) fine for now. 
-// if you're having a problem getting enough stats in the selection region, you can move the loose to replace the tight criteria and have the loose criteria become
-// - very loose: iso score > 0.0364 (20% noniso contamination with ~99% iso efficiency)
+// - old  tight: iso score > 0.337 (5% noniso contamination with ~97% iso efficiency)
+// - old loose: iso score > 0.134 (10% noniso contamination with ~98% iso efficiency)
+// - old very loose: iso score > 0.0364 (20% noniso contamination with ~99% iso efficiency)
+// - tight: 0.875 (1% bkg eff for 90% sig eff)
+// - loose: 0.014 (30% bkg eff for 99.8% sig eff)
+//
 
 	float isobkg_score = 0;
 	float nonisobkg_score = 0;
@@ -264,9 +265,8 @@ void KUCMSAodSkimmer::processPhotons(){
     //do photon id score
     _ca.ClearRecHitList();
 
-	bool isTight = isobkg_score > 0.337;
-	bool isLoose = isobkg_score > 0.134;
-	bool isVeryLoose = isobkg_score > 0.0364;
+	bool isTight = isobkg_score > 0.875;
+	bool isLoose = isobkg_score > 0.014;
     int phoTSigId = ( phoWTimeSig <= -2.5 ) ? tSigID::Early : ( phoWTimeSig < 2.5 ) ? tSigID::Prompt : tSigID::Late;
     int phoObjId =  ( isTight ) ? objID::Tight : ( isLoose ) ? objID::Loose : objID::Base;
 
@@ -392,9 +392,9 @@ void KUCMSAodSkimmer::processPhotons(){
 
     //selPhotons.fillBranch( "selPhoWTime1", phoWTime1 );
     selPhotons.fillBranch( "selPhoWTimeSig", phoWTimeSig );
-    //selPhotons.fillBranch( "selPhoLTimeSigOld", leadtimesig );
+    selPhotons.fillBranch( "selPhoLTimeSig", leadtimesig );
     selPhotons.fillBranch( "selPhoSTimeSig", seedtimesig );
-    selPhotons.fillBranch( "selPhoWTimeSig", wttimesig );
+    selPhotons.fillBranch( "selPhoWTimeSigOld", wttimesig );
     selPhotons.fillBranch( "selPhoWTime", phoWTime );
     selPhotons.fillBranch( "selPhoLTime", leadTime );
     selPhotons.fillBranch( "selPhoSTime", seedTime );
@@ -457,8 +457,6 @@ void KUCMSAodSkimmer::processPhotons(){
     }//for( uInt it2 = it+1; it2 < nPhotons; it2++ )
 	//bool matchPhoExc = ( phoIsoIndx > -1 ) ? (*Photon_excluded)[it] : false;
 	if( phoPhoIsoDr < 0.3 ) phoExcIndx.push_back( phoIsoIndx ); else phoExcIndx.push_back( -1 );
-
-
 
     /*
     // pho object selection ------------------------------------------
@@ -564,6 +562,7 @@ void KUCMSAodSkimmer::processPhotons(){
 
     nSelPhotons++;
   }//<<>>for( int it = 0; it < nPhotons; it++ )
+  if( nPhotons == 0 ){ hemBits.set( "pho1hvl", false ); hemBits.set( "pho2hvm", false ); }
   if( DEBUG ) std::cout << " -- pho loop finished" << std::endl;
   // fill ( other )
 
@@ -576,11 +575,6 @@ void KUCMSAodSkimmer::processPhotons(){
     }//for( auto phoptit = phoOrderIndx.crbegin(); phoptit != phoOrderIndx.crend(); phoptit++ )
     }//if( phoOrderIndx.size() > 0 )
   */
- 
-  int has1PLPho = ( nPLPhos == 1 && nBasePhos < 1 && nTightPhos < 1 ) ? 1 : 0;
-  int has1PTPho = ( nPTPhos == 1 && nBasePhos < 1 && nLoosePhos < 1 ) ? 1 : 0;
-  geVars.set("has1PLPho", has1PLPho ); 
-  geVars.set("has1PTPho", has1PTPho );
 
   int loopEnd = ( nSelPhotons > 0 ) ? ( nSelPhotons < 2  ) ? 1 : 2 : 0;
   phoJetVeto.clear();
@@ -613,6 +607,36 @@ void KUCMSAodSkimmer::processPhotons(){
   }//<<>>for( int pit = 0; pit < loopEnd; pit++ )
 
   if( DEBUG || verbose ) std::cout << " - Selected " << nSelPhotons << " photons" << std::endl;
+
+  bool has1ELPho = ( nELPhos == 1 && nBasePhos < 1 && nTightPhos < 1 ) ? 1 : 0;
+  bool has1ETPho = ( nETPhos == 1 && nBasePhos < 1 && nLoosePhos < 1 ) ? 1 : 0;
+  bool has1PLPho = ( nPLPhos == 1 && nBasePhos < 1 && nTightPhos < 1 ) ? 1 : 0;
+  bool has1PTPho = ( nPTPhos == 1 && nBasePhos < 1 && nLoosePhos < 1 ) ? 1 : 0;
+  bool has1LLPho = ( nLLPhos == 1 && nBasePhos < 1 && nTightPhos < 1 ) ? 1 : 0;
+  bool has1LTPho = ( nLTPhos == 1 && nBasePhos < 1 && nLoosePhos < 1 ) ? 1 : 0;
+  bool has1BasePho = ( nBasePhos > 0 && nLoosePhos < 1 && nTightPhos < 1 ) ? 1 : 0;
+
+  selPhotons.fillBranch( "has1ELPho", has1ELPho );
+  selPhotons.fillBranch( "has1ETPho", has1ETPho );
+  selPhotons.fillBranch( "has1PLPho", has1PLPho );
+  selPhotons.fillBranch( "has1PTPho", has1PTPho );
+  selPhotons.fillBranch( "has1LLPho", has1LLPho );
+  selPhotons.fillBranch( "has1LTPho", has1LTPho );
+  selPhotons.fillBranch( "has1BasePho", has1BasePho );
+
+  selPhotons.fillBranch( "nBasePhotons", nBasePhos );
+  selPhotons.fillBranch( "nEBPhotons", nEBPhos );
+  selPhotons.fillBranch( "nPBPhotons", nPBPhos );
+  selPhotons.fillBranch( "nLBPhotons", nLBPhos );
+  selPhotons.fillBranch( "nLoosePhotons", nLoosePhos );
+  selPhotons.fillBranch( "nELPhotons", nELPhos );
+  selPhotons.fillBranch( "nPLPhotons", nPLPhos );
+  selPhotons.fillBranch( "nLLPhotons", nLLPhos );
+  selPhotons.fillBranch( "nTightPhotons", nTightPhos );
+  selPhotons.fillBranch( "nETPhotons", nETPhos );
+  selPhotons.fillBranch( "nPTPhotons", nPTPhos );
+  selPhotons.fillBranch( "nLTPhotons", nLTPhos );
+
   geCnts.set( "nSelPhotons", nSelPhotons );	
   selPhotons.fillBranch( "nSelPhotons",  nSelPhotons );
   selPhotons.fillBranch( "nPhotons", nPhotons );	
@@ -661,6 +685,27 @@ void KUCMSAodSkimmer::processPhotons(){
 //------------------------------------------------------------------------------------------------------------
 
 void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
+
+  selPhotons.makeBranch( "has1ELPho", BOOL );
+  selPhotons.makeBranch( "has1ETPho", BOOL );
+  selPhotons.makeBranch( "has1PLPho", BOOL );
+  selPhotons.makeBranch( "has1PTPho", BOOL );
+  selPhotons.makeBranch( "has1LLPho", BOOL );
+  selPhotons.makeBranch( "has1LTPho", BOOL );
+  selPhotons.makeBranch( "has1BasePho", BOOL );
+
+  selPhotons.makeBranch( "nBasePhotons", UINT );
+  selPhotons.makeBranch( "nEBPhotons", UINT );
+  selPhotons.makeBranch( "nPBPhotons", UINT );
+  selPhotons.makeBranch( "nLBPhotons", UINT );
+  selPhotons.makeBranch( "nLoosePhotons", UINT );
+  selPhotons.makeBranch( "nELPhotons", UINT );
+  selPhotons.makeBranch( "nPLPhotons", UINT );
+  selPhotons.makeBranch( "nLLPhotons", UINT );
+  selPhotons.makeBranch( "nTightPhotons", UINT );
+  selPhotons.makeBranch( "nETPhotons", UINT );
+  selPhotons.makeBranch( "nPTPhotons", UINT );
+  selPhotons.makeBranch( "nLTPhotons", UINT );
 
   selPhotons.makeBranch( "nPhotons", UINT );
   selPhotons.makeBranch( "nSelPhotons", UINT ); 
