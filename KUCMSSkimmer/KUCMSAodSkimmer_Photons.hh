@@ -217,7 +217,8 @@ void KUCMSAodSkimmer::processPhotons(){
     float wttimesig = phoWTime/std::sqrt(phoWRes);
     float wttimesig1 = phoWTime1/std::sqrt(phoWRes1);
 
-	float phoWTimeSig = getTimeSig( scIndx );
+    	float timesignum, timesigdenom;
+	float phoWTimeSig = getTimeSig( scIndx, timesignum, timesigdenom );
 
 	if( isExcluded ) continue;
 
