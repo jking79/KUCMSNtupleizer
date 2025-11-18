@@ -150,7 +150,10 @@ def generateSubmission(args):
             if(MCbkg or MCsig):
                 flags += " --hasGenInfo"
                 mctype = 0
-            flags += " --MCtype "+str(mctype)  
+            flags += " --MCtype "+str(mctype)
+
+            if(args.noBHC):
+                flags += " --noBHC"
 
             ##### Create condor submission script in src directory #####
             condorSubmitFile = fulldirname + "/src/submit.sh"
@@ -186,6 +189,7 @@ def main():
     parser.add_argument('--maxnevts',help="maximum number of events per job",default=-999,type=int)
     parser.add_argument('--maxnfiles',help="maximum number of files total",default=-999,type=int)
     parser.add_argument('--verbosity','-v',help="verbosity",default=0)
+    parser.add_argument('--noBHC',help='run without creating BHC objects (default = on)',default=False,action='store_true')
     #parser.add_argument('--hasGenInfo',help='set hasGenInfo flag',default=False,action="store_true")
     parser.add_argument('--genSigPerfect',help='set genSigPerfect flag',default=False,action="store_true")
     parser.add_argument('--noSVorPho',help='set noSVorPho flag',default=False,action="store_true")
