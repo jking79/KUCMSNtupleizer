@@ -789,8 +789,8 @@ public :
    //virtual Bool_t   Notify();
    //virtual void     Show(Long64_t entry = -1);
 
-   void Init( TChain *tree, bool doGenInfo );
-   void getBranches( Long64_t entry, bool doGenInfo );
+   void Init( TChain *tree, bool doGenInfo, bool doSVs );
+   void getBranches( Long64_t entry, bool doGenInfo, bool doSVs );
 
 };
 
@@ -839,7 +839,7 @@ Long64_t kuntuple_v30::LoadTree(Long64_t entry)
 
 */
 
-void llpgtree::Init( TChain *tree, bool doGenInfo ){
+void llpgtree::Init( TChain *tree, bool doGenInfo, bool doSVs ){
 
    // The Init() function is called when the selector needs to initialize
    // a new tree or chain. Typically here the branch addresses and branch
@@ -1179,6 +1179,7 @@ void llpgtree::Init( TChain *tree, bool doGenInfo ){
    fCurrent = -1;
    //fChain->SetMakeClass(1);
 
+   if( doSVs ){
    if( doGenInfo ){
    fChain->SetBranchAddress("GenVertex_dxy", &GenVertex_dxy, &b_GenVertex_dxy);
    fChain->SetBranchAddress("GenVertex_eta", &GenVertex_eta, &b_GenVertex_eta);
@@ -1263,6 +1264,7 @@ void llpgtree::Init( TChain *tree, bool doGenInfo ){
    fChain->SetBranchAddress("Vertex_x", &Vertex_x, &b_Vertex_x);
    fChain->SetBranchAddress("Vertex_y", &Vertex_y, &b_Vertex_y);
    fChain->SetBranchAddress("Vertex_z", &Vertex_z, &b_Vertex_z);
+   }//<<>> doSVs
 
    fChain->SetBranchAddress("ECALRecHit_energy", &ECALRecHit_energy, &b_ECALRecHit_energy);
    fChain->SetBranchAddress("ECALRecHit_ID", &ECALRecHit_ID, &b_ECALRecHit_ID);
@@ -1595,10 +1597,11 @@ void llpgtree::Init( TChain *tree, bool doGenInfo ){
    //Notify();
 }
 
-void llpgtree::getBranches( Long64_t entry, bool doGenInfo ){
+void llpgtree::getBranches( Long64_t entry, bool doGenInfo, bool doSVs ){
 
    // List of branches
 
+   if( doSVs ){
    if( doGenInfo ){
    b_GenVertex_dxy->GetEntry(entry);   //!
    b_GenVertex_eta->GetEntry(entry);   //!
@@ -1683,6 +1686,7 @@ void llpgtree::getBranches( Long64_t entry, bool doGenInfo ){
    b_Vertex_x->GetEntry(entry);   //!
    b_Vertex_y->GetEntry(entry);   //!
    b_Vertex_z->GetEntry(entry);   //!
+   }// doSVs
 
    b_ECALRecHit_energy->GetEntry(entry);   //!
    b_ECALRecHit_ID->GetEntry(entry);   //!

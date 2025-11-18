@@ -193,8 +193,9 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 
     // event varibles
 
+	doSVs = true;
     doBHC = true;
-    genSigPerfectFlag = false;
+	genSigPerfectFlag = false;
     noSVorPhoFlag = false;
     useEvtGenWgtFlag = true;
     hasGenInfoFlag = true;
@@ -247,7 +248,7 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
     TTree* fOutTree = new TTree("kuSkimTree","output root file for kUCMSSkimmer");
     TTree* fConfigTree = new TTree("kuSkimConfigTree","config root file for kUCMSSkimmer");
 
-    Init( fInTree, hasGenInfoFlag );
+    Init( fInTree, hasGenInfoFlag, doSVs );
     auto nEntries = fInTree->GetEntries();
 
     //loop over events
@@ -284,7 +285,7 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
         }//<<>>if( centry%loopCounter == 0 )
  	    auto entry = fInTree->LoadTree(centry);
         if(DEBUG) std::cout << " -- Getting Branches " << std::endl;
-        getBranches( entry, hasGenInfoFlag );
+        getBranches( entry, hasGenInfoFlag, doSVs );
 		//std::cout << " -- Checking Valid Lumi with mctype " << mctype << " run " << Evt_run << " block " << Evt_luminosityBlock << std::endl;
         if( mctype==1 && not isValidLumisection( Evt_run, Evt_luminosityBlock ) ) continue;
 		//std::cout << " --- Valid Lumi Processing Event " << std::endl;
@@ -348,6 +349,7 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
 
 
 int KUCMSAodSkimmer::ProcessFile(string infilename, TChain*& fInTree, TChain*& fInConfigTree){
+
     const std::string disphotreename = "tree/llpgtree";
     const std::string configtreename = "tree/configtree";
     if(gSystem->AccessPathName(infilename.c_str())){
@@ -378,6 +380,7 @@ int KUCMSAodSkimmer::ProcessFile(string infilename, TChain*& fInTree, TChain*& f
 
 
 int KUCMSAodSkimmer::ProcessFilelist(string eosdir, string infilename, TChain*& fInTree, TChain*& fInConfigTree){
+
     const std::string disphotreename = "tree/llpgtree";
     const std::string configtreename = "tree/configtree";
 
@@ -440,6 +443,7 @@ int KUCMSAodSkimmer::ProcessFilelist(string eosdir, string infilename, TChain*& 
 }//<<>>int KUCMSAodSkimmer::ProcessFilelist(string eosdir, string infilename, TChain*& fInTree, TChain*& fInConfigTree)
 
 int KUCMSAodSkimmer::ProcessFilelistOfLists(string eosdir, vector<string> processed_strings, TChain*& fInTree, TChain*& fInConfigTree){
+
     const std::string disphotreename = "tree/llpgtree";
     const std::string configtreename = "tree/configtree";
 
@@ -747,13 +751,13 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
 	setEvtVarMetBranches( fOutTree );
     setTrackBranches( fOutTree );
     setEcalBranches( fOutTree );
-    setGenBranches( fOutTree );
+    if( hasGenInfoFlag ) setGenBranches( fOutTree );
     setPhotonBranches( fOutTree );
     setRJRBranches( fOutTree );
     setElectronBranches( fOutTree );
     setJetsBranches( fOutTree );
     setMuonsBranches( fOutTree );
-    setSVBranches( fOutTree );
+    if( doSVs ) setSVBranches( fOutTree );
     if( doBHC ) setBCBranches( fOutTree );
 
 }//<<>>void KUCMSAodSkimmer::setOutputBranches(fOutTree)
@@ -803,7 +807,7 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
   processElectrons();
   processMuons();
   processJets();
-  processSV();
+  if( doSVs ) processSV();
   processTracks();
   processEvntVars();// process last to catch Hem issue
   if( hasGenInfoFlag ){ processGenParticles(); }
@@ -843,8 +847,8 @@ bool KUCMSAodSkimmer::eventSelection(){
   float leadPhoPt = ( nSelPhotons > 0 ) ? geVects("selPhoPt").at(0) : 0;
   float subLeadPhoPt = ( nSelPhotons > 1 ) ? geVects("selPhoPt").at(1) : 0;
 
-  bool hasLepSV = geVars("nSVLep") > 0;
-  bool hasHadSV = geVars("nSVHad") > 0;
+  bool hasLepSV = doSVs ? geVars("nSVLep") > 0 : false;
+  bool hasHadSV = doSVs ? geVars("nSVHad") > 0 : false;
   bool hasSV = hasLepSV || hasHadSV;
 
   bool met100 = evtMet >= 100;

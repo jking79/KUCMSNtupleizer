@@ -56,7 +56,7 @@ p1=runKUCMSAodSVSkimmer
 p2=fillKUCMSTimeCalibration
 p3=runLocalKUCMSAodSVSkimmer
 p4=runLocalCKUCMSAodSVSkimmer
-p5=makeKUCMSTimeResoltuion
+p5=makeKUCMSTimeResolution
 p6=makeKUCMSTimeCalibration
 
 TCOBJ = KUCMS_TimeCalibration.so

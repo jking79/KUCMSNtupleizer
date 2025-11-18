@@ -102,6 +102,7 @@ class KUCMSAodSkimmer : public llpgtree {
     void SetGenSigPerfectFlag( bool f ){ genSigPerfectFlag = f; }
     void SetDoBHC( bool f ){ doBHC = f; }
     void SetOutFileName( std::string  ofn ){ outFileName = ofn; }
+    void SetDoSV( bool f ){ doSVs = f; }
 
 	// set branches
 
@@ -230,6 +231,7 @@ class KUCMSAodSkimmer : public llpgtree {
 	bool useEvtGenWgtFlag; 
 	bool hasGenInfoFlag;
     bool doBHC;
+	bool doSVs;
 
 	// input tree, paths, and file names
 
