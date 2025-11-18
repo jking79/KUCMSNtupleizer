@@ -140,7 +140,8 @@ class KUCMSAodSkimmer : public llpgtree {
 	void processTimeSig();
 
 	// TSig functions
-	float getTimeSig( int scIndex );
+	//float getTimeSig( int scIndex );
+	float getTimeSig( int scIndex, float& num, float& denom, const map<unsigned int, float>& rhIdToBHCw  = {});
 	float getTimeSig( vector<vector<unsigned int>> rhids );
 
 	void MakePhotonIsoMap(int phoidx, map<string, double>& isomap);
