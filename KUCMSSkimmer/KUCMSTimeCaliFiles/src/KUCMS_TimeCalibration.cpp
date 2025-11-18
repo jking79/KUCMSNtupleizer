@@ -2730,6 +2730,11 @@ void KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
     bool debug = false;
     //bool debug = true;
 
+    bool etaMod = true;
+    int etaModFac = 6;
+    bool phiMod = true;
+    int phiModFac = 12;
+
 	std::string calistr = usecali ? "_cali" : "_nocali";
 	std::string hname = "meanRunTime_" + std::to_string(srun) + "_to_" + std::to_string(erun)+calistr;
     std::string outfilename = caliFileDir + hname+ "_Hist.root";
@@ -2745,7 +2750,9 @@ void KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
 
 	std::map< uInt, TH1D* > ttHistMap;
     for( int ieta = 1; ieta < 37; ieta++ ){
+        if( etaMod && ieta%etaModFac != 0 ) continue;
         for( int iphi = 1; iphi < 74; iphi++ ){
+			if( phiMod && iphi%phiModFac != 0 ) continue;
             int i1 = ieta - 18;
             if( i1 == 0 ) continue;
             uInt detid = getInvTTId( iphi, i1, true );
@@ -2899,7 +2906,9 @@ void KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
 		hist_eb->SetBinContent( bin, mean );
 		hist_eb->SetBinError( bin, err );
 		for( int ieta = 1; ieta < 37; ieta++ ){
+			if( etaMod && ieta%etaModFac != 0 ) continue;
             for( int iphi = 1; iphi < 74; iphi++ ){
+				if( phiMod && iphi%phiModFac != 0 ) continue;
                 int i1 = ieta - 18;
                 if( i1 == 0 ) continue;
                 uInt detid = getInvTTId( iphi, i1, true );
@@ -2914,15 +2923,16 @@ void KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
 
 	hist_eb->Write( hist_eb->GetName(), TObject::kOverwrite );
 	delete hist_eb;
-    for( int ieta = 1; ieta < 37; ieta++ ){
-        for( int iphi = 1; iphi < 74; iphi++ ){
-            int i1 = ieta - 18;
-            if( i1 == 0 ) continue;
-            uInt detid = getInvTTId( iphi, i1, true );
-			ttHistMap[detid]->Write( ttHistMap[detid]->GetName(), TObject::kOverwrite );
-			delete ttHistMap[detid];
-        }//<<>>for( int iphi = 1; iphi < 361; iphi++ )
-    }//<<>>for( int ieta = 1; ieta < 172; ieta++ )
+	for ( auto & thismap : ttHistMap ){ thismap.second->Write( thismap.second->GetName(), TObject::kOverwrite ); delete thismap.second; }
+    //for( int ieta = 1; ieta < 37; ieta++ ){
+    //    for( int iphi = 1; iphi < 74; iphi++ ){
+    //        int i1 = ieta - 18;
+    //        if( i1 == 0 ) continue;
+    //        uInt detid = getInvTTId( iphi, i1, true );
+	//		ttHistMap[detid]->Write( ttHistMap[detid]->GetName(), TObject::kOverwrite );
+	//		delete ttHistMap[detid];
+    //    }//<<>>for( int iphi = 1; iphi < 361; iphi++ )
+    //}//<<>>for( int ieta = 1; ieta < 172; ieta++ )
 
 	mrTFile->Close();
 
