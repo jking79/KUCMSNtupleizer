@@ -103,7 +103,7 @@ def docrab( dataset ):
         #config.Data.unitsPerJob   = 14 # 14 for eg c 18ul ~ 2 files & 19 hours too much disk space -> 1 file worth & break up to keep under 2000 jobs
         #config.Data.unitsPerJob   =  24 # MET C 
         #config.Data.unitsPerJob   =  48 # MET D
-        config.Data.runRange = '305000-305181' #
+        config.Data.runRange = '305516-305862' #
             
     
         #config.JobType.allowUndistributedCMSSW = True
@@ -155,7 +155,7 @@ def docrab( dataset ):
             ##trial          = "kucmsntuple_EGamma_R18_AL1SelEle_DEOnly" + version #
          
             #trial          = "kucmsntuple_MET_R18_SVIPM100" + version #  
-            trial          = "kucmsntuple_MET_R17_SVIPM100" + version #  
+            trial          = "kucmsntuple_MET_R17_SVIPM100_p5" + version #  
 
             #trial          = "kucmsntuple_test" + version 
 

@@ -26,6 +26,8 @@ macros/*.obj
 !macros/ecal_config/*.txt
 !KUCMSSkimmer/sublists/*.txt
 !*readme.txt
+!test/*JSON*
+!test/*json*
 test/*WorkSpace/
 *.root
 *.pyc
