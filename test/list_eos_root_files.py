@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import subprocess
 import os
+import argparse
 
 EOS_PREFIX = "root://cmseos.fnal.gov/"
 EOS_LS_CMD = "eos root://cmseos.fnal.gov ls {}"
@@ -62,6 +63,21 @@ def save_files_by_index(file_paths, input_dir, ppath, index=1, output_dir="."):
         outf.close()
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--crabDir",'-d',help='path to crab submission directory',required=True)
+
+
+    args = parser.parse_args()
+    if args.crabDir[-1] == "/":
+        crabdir = args.crabDir[:-1]
+    crabdir = os.path.split(crabdir)[-1]
+    match = "kucmsntuple_"
+    proc = crabdir[crabdir.find(match)+len(match):crabdir.find("_R")]
+
+    odir = crabdir[:crabdir.rfind(proc)]
+    parts = odir.split("_")
+    odir = "_".join(parts[1:])[:-1] #remove 'crab_' and ending '_'
+
     # EOS directory to scan
     eos_dir = "/store/user/lpcsusylep/jaking/KUCMSNtuple/"
     #eos_dir = "/store/user/lpcsusylep/jaking/"
@@ -79,9 +95,10 @@ def main():
     #input_dir = eos_dir + "kucmsntuple_JetHT_R18_InvMET100_nolumimask_v31/JetHT/"
     #ppath = 'JetHT/'
 
-    input_dir = eos_dir + "kucmsntuple_MET_R16_SVIPM100_v31/MET/"
+    #input_dir = eos_dir + "kucmsntuple_MET_R16_SVIPM100_v31/MET/"
     #input_dir = eos_dir + "kucmsntuple_MET_R17_SVIPM100_v31/MET/"
-    ppath = 'MET/'
+    input_dir = eos_dir + "/"+odir+"/"+proc+"/"
+    ppath = proc+'/'
 
     print(f"Scanning EOS directory for .root files: {input_dir} ...")
     files = list_eos_directory(input_dir, recursive=True, extension=".root")
