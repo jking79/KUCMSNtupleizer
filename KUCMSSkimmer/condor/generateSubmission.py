@@ -88,6 +88,7 @@ def generateSubmission(args):
     listpath = inputMainList[:inputMainList.rfind("/")]+"/"
     #parsing master list
     #parsing lines in master list for inputs for list-by-list processing
+    condor_subs = []
     with open(inputMainList,'r') as f:
         for line in f:
             full_line = line.strip()
@@ -121,7 +122,7 @@ def generateSubmission(args):
 
 
             #set output name
-            print("recotag",recotag)
+            #print("recotag",recotag)
             samplename = data[1][:-4]+reco_date[recotag]
             ofiletag = "rjrskim"
             if args.output is not None:
@@ -132,7 +133,7 @@ def generateSubmission(args):
             ofilename = "condor_"+ofile_inputList+samplename+"_"+ofiletag
 
             fulldirname = odir+dirname+"/"+samplename+"/"+ofiletag
-            print("dirname",dirname,"samplename",samplename)
+            #print("dirname",dirname,"samplename",samplename)
             print("Preparing sample directory: {0}".format(fulldirname))
             ##### Create a workspace (remove existing directory) #####
             if os.path.exists(fulldirname):
@@ -158,15 +159,28 @@ def generateSubmission(args):
             ##### Create condor submission script in src directory #####
             condorSubmitFile = fulldirname + "/src/submit.sh"
             subf = open(condorSubmitFile, "w")
-            print("outputfile name "+ofilename)
+            #print("outputfile name "+ofilename)
             SH.writeSubmissionBase(subf, fulldirname, ofilename, args.max_mat, args.max_idle, args.request_memory)
             #need to remove local lpc path for actual args
             inputlist = inputlist[inputlist.rfind("/",0,inputlist.rfind("/"))+1:]
-            print("inputfilelist",inputlist)
+            #print("inputfilelist",inputlist)
             SH.writeQueueList(subf, ofilename, filearr, flags)
+            condor_subs.append(condorSubmitFile)
+            print()
+        if len(condor_subs) < 2:
             print("------------------------------------------------------------")
             print("Submission ready, to run use:")
-            print("condor_submit "+condorSubmitFile+"\n")
+            print("condor_submit "+condor_subs[0]+"\n")
+        else:
+            #write bash script
+            #print("fulldirname",fulldirname)
+            #print("odir",odir,"dirname",dirname,"samplename",samplename,"ofiletag",ofiletag)
+            mult_bash_name = odir+dirname+"/"+ofiletag+"_MultiSub.sh"
+            mult_bash = open(mult_bash_name, "w")
+            SH.writeMultiSubScript(mult_bash, condor_subs)
+            print("------------------------------------------------------------")
+            print("Submission ready, to run use:")
+            print("source "+mult_bash_name+"\n")
                 
 def main():
     # options

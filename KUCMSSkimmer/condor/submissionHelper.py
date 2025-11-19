@@ -115,7 +115,7 @@ def filesSplit(eosdir, infile, nevtsmax = -999, nfilesmax = -999):
                     continue
                 file = eosdir+"/"+line
                 arr.append(file)
-        print("Splitting each file into "+str(len(arr))+" jobs ")
+        print("Creating "+str(len(arr))+" jobs for sample "+infile.split("/")[-1])
     else:
         with open(infile,"r") as f:
             lines = f.readlines()
@@ -140,7 +140,7 @@ def filesSplit(eosdir, infile, nevtsmax = -999, nfilesmax = -999):
                 i = 0
                 for a in arr:
                     i += len(a[1])
-        print("Splitting each file into "+str(i)+" jobs ")
+        print("Creating "+str(len(arr))+" jobs for sample "+infile.split("/")[-1])
     arr = np.array(arr,dtype=object)
     return arr
 
@@ -198,3 +198,12 @@ def writeQueueListEvents( subf, inFile, ofilename, evts, flags ):
             jobCtr=jobCtr+1
 
     subf.write(")")
+
+
+
+def writeMultiSubScript(bashfile, subs):
+    for sub in subs:
+        sample = sub.split("/")[2]
+        bashfile.write("echo -e \"Submitting sample "+sample+"...\"\n")
+        bashfile.write("condor_submit "+sub+"\n")
+        bashfile.write("echo -e \"\\n\"\n")
