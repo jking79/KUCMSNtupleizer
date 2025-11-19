@@ -85,6 +85,7 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 				//cout << "rh e " <<  erhe << " rh t " << erht << " rhid " << scrhid << " eta " << (*ECALRecHit_eta)[erhiter] << " phi " << (*ECALRecHit_phi)[erhiter] << endl;
 				//cout << "rh e " <<  erhe << " rh t " << erht << " x " << rhx << " y " << rhy << " z " << rhz << " rhid " << scrhid << endl;
 				_ca.AddRecHit(rhx, rhy, rhz, erhe, erht, scrhid, hasBadTime);
+				//cout << "processphotons - adding rh to clustering with id " << scrhid << endl;
 			}//<<>>if( ecalrhiter != -1 )
 		}//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
 	
@@ -110,7 +111,7 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 	BHCPhoInfo.fillBranch("nSelBHCPhos",(int)phoobjs.size());
 	for(int p = 0; p < phoobjs.size(); p++){
 		ClusterObj phoobj = phoobjs[p];
-		int phoidx = selPhoIdxToIt[phoobj.GetUserIndex()];
+		int phoidx = selPhoIdxToIt.at(phoobj.GetUserIndex());
 		//center
 		float phoeta = phoobj.GetEtaCenter();
 		BHCPhoInfo.fillBranch( "selPhoBHC_eta", phoeta);
@@ -143,7 +144,9 @@ void KUCMSAodSkimmer::processBHCPhotons(){
         	auto scIndx = (*Photon_scIndex)[phoidx];
 		map<unsigned int, float> weights;
 		phoobj.GetRecHitWeights(weights); ///these weights are the PU projected out weights if PU cleaning has been applied (otherwise sum to 1)
+		//cout << "doing time sig" << endl;
 		float timeSignificance = getTimeSig(scIndx, timesig_num, timesig_denom, weights);
+		//cout << "did time sig" << endl;
 		//cout << "time sig for photon # " << selPhoBHCIdx << ": " << timeSignificance << endl;
 		BHCPhoInfo.fillBranch( "selPhoBHC_timeSignficance", timeSignificance);
 		BHCPhoInfo.fillBranch( "selPhoBHC_timeSignficanceNum", timesig_num);
@@ -166,7 +169,7 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 			BHCPhoInfo.fillBranch("selPhoBHCSubcl_selPhotonBHCIndex",selPhoBHCIdx);
 			//cout << "subcluster #" << k << " pu score " << puscores[k] << " selPhoBHCIndex " << selPhoBHCIdx << " it " << it << endl;
 			if(puscores.size() == 0){
-				if(DEBUG) cout << "Run CalculatePUScores() BEFORE this loop" << endl;
+				if(true) cout << "Run CalculatePUScores() BEFORE this loop" << endl;
 				continue;
 			}
 			BHCPhoInfo.fillBranch("selPhoBHCSubcl_puScore",(int)puscores[k]);
@@ -205,7 +208,9 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 		BHCPhoInfo.fillBranch( "selPhoBHCPUCleaned_minlen", (float)minlen);
 		//calculate time significance
 		phoobj.GetRecHitWeights(weights); ///these weights are the PU projected out weights if PU cleaning has been applied (otherwise sum to 1)
+		//cout << "doing cleaned time sig" << endl;
 		timeSignificance = getTimeSig(scIndx, timesig_num, timesig_denom, weights);
+		//cout << "did cleaned time sig" << endl;
 		//cout << "time sig for photon with pu cleaning # " << selPhoBHCIdx << ": " << timeSignificance << endl;
 		BHCPhoInfo.fillBranch( "selPhoBHCPUCleaned_timeSignficance", timeSignificance);
 		BHCPhoInfo.fillBranch( "selPhoBHCPUCleaned_timeSignficanceNum", timesig_num);
@@ -223,7 +228,9 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 		//need to set isolation information for the original photon
 		map<string, double> isomap;
 		MakePhotonIsoMap(phoidx, isomap);
+		//cout << "made photon iso map " << endl;
 		phoobj.CalculatePhotonIDScores((*Photon_pt)[phoidx], isomap);
+		//cout << "calculated photon id scores" << endl;
 		vector<float> photonIDscores;
 		phoobj.GetPhotonIDScores(photonIDscores);
 		float isobkg_score = photonIDscores[0];
@@ -238,7 +245,6 @@ void KUCMSAodSkimmer::processBHCPhotons(){
         // on line 2709 and below make a BHCPhoInfo branch : selPhotons.makeBranch( "yourvarname", VFLOAT );		
 
 	}//<<>>for( uInt it = 0; it < nPhotons; it++ )
-
 }//<<>>void KUCMSAodSkimmer::processMLPhotons()
 
 void KUCMSAodSkimmer::processBHCJets(){
@@ -331,7 +337,7 @@ void KUCMSAodSkimmer::processBHCJets(){
 			BHCJetInfo.fillBranch( "selJetBHCSubcl_energy", jetobj.GetSubclusterEnergy(k));			
 			BHCJetInfo.fillBranch( "selJetBHCSubcl_etaPhiCov", jetobj.GetSubclusterEtaPhiCov(k));
 			if(puscores.size() == 0){
-				if(DEBUG) cout << "Run CalculatePUScores() BEFORE this loop" << endl;
+				if(true) cout << "Run CalculatePUScores() BEFORE this loop" << endl;
 				continue;
 			}
 			//pu score
