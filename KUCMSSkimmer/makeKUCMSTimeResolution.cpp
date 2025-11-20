@@ -252,10 +252,10 @@ int main ( int argc, char *argv[] ){
     //std::string histName = "ResMap_296399_306460__DRO_Data_Hist_NoCali_deg_17_UL_EE_xa_pm24b1200_v113";
 	//std::string histName = "ResMap_296399_306460__DRO_Data_Hist_deg_17_UL_EE_xa_pm24b1200_v1117";
 
-    //std::string histName = "ResMap_315257_325172__DRO_Data_Hist_NoCali_eg_18_UL_xa_pm24b1200_v1117";
-    //std::string histName = "ResMap_315257_325172__DRO_Data_Hist_deg_18_UL_xa_pm24b1200_v114";
-	//std::string histName = "ResMap_315257_325172__DRO_Data_Hist_NoCali_deg_18_UL_EE_xa_pm24b1200_v114";
-    //std::string histName = "ResMap_315257_325172__DRO_Data_Hist_deg_18_UL_EE_xa_pm24b1200_v1117";
+    std::string histName1 = "ResMap_315257_325172__DRO_Data_Hist_NoCali_eg_18_UL_xa_pm24b1200_v1117";
+    std::string histName2 = "ResMap_315257_325172__DRO_Data_Hist_deg_18_UL_xa_pm24b1200_v114";
+	std::string histName3 = "ResMap_315257_325172__DRO_Data_Hist_NoCali_deg_18_UL_EE_xa_pm24b1200_v114";
+    std::string histName4 = "ResMap_315257_325172__DRO_Data_Hist_deg_18_UL_EE_xa_pm24b1200_v1117";
 	
 
     //KUCMS_TimeCalibration theCali;
@@ -265,7 +265,6 @@ int main ( int argc, char *argv[] ){
     //theCali.Set2DResTFileName( "egres_DEGPD_AODSIM_R24_ECAL_v3_14011_v12_resplots.root" );
 	//
 
-	//theCali.load2DResHist( histName );
 	//theCali.setLowEnergy( true );
 
 	////theCali.SetXBinStr( "VARIABLE 5 10 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 1200 1800" ); // : xa
@@ -281,7 +280,17 @@ int main ( int argc, char *argv[] ){
 	//theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600" ); // : xa 2018UL DRO
     //theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600" ); // : xa  llpana resfit
 
+    //theCali.load2DResHist( histName );
 	//theCali.doResTimeFit( histName );
+
+    //theCali.load2DResHist( histName1 );
+    //theCali.doResTimeFit( histName1 );
+    //theCali.load2DResHist( histName2 );
+    //theCali.doResTimeFit( histName2 );
+    //theCali.load2DResHist( histName3 );
+    //theCali.doResTimeFit( histName3 );
+    //theCali.load2DResHist( histName4 );
+    //theCali.doResTimeFit( histName4 );
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -289,8 +298,8 @@ int main ( int argc, char *argv[] ){
 	KUCMS_TimeCalibration theCali;
     theCali.SetEosDir(eosdir);
     theCali.SetInDir(indir);
-	//theCali.plotMeanRunTimeEGR( inputfilename, 315257, 325172 ); // R2 2018 UL 315257_325172 // R2 2017 UL 296399_306460
-    theCali.plotMeanRunTimeEGR( inputfilename, 315257, 325172, false );
+	theCali.plotMeanRunTimeEGR( inputfilename, 315257, 325172 ); // R2 2018 UL 315257_325172 // R2 2017 UL 296399_306460
+    //theCali.plotMeanRunTimeEGR( inputfilename, 315257, 325172, false );
     ////theCali.plotMeanRunTimeEGR( inputfilename, 296399, 307554, true );
 	////theCali.makeTTDiffMaps();// make trigger tower diffrence maps
 	
