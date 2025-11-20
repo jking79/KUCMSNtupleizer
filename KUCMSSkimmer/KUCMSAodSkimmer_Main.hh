@@ -206,7 +206,6 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 	// BNC Intiation
 
     _ca.SetVerbosity(-1); //_can turn on to see low-level warnings
-    cout << "main - _detidmap size " << _detidmap.size() << endl;
     _ca.SetDetIDs(_detidmap);
     _ca.SetCNNModel("config/json/small3CNN_EMultr_2017and2018.json");
     _ca.SetDNNModel("config/json/med16DNN_MCtrained_photonID.json");

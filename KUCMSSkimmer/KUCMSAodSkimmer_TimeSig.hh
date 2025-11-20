@@ -113,7 +113,10 @@ float KUCMSAodSkimmer::getTimeSig( int scIndex, float& num, float& denom, const 
                 float invertres = 1/ertres;
                 float erhar = invertres*gainwt;
 		if(rhIdToBHCw.size() > 0){
-			erhar *= rhIdToBHCw.at(scrhid);
+			double bhcw = 0;
+			if(rhIdToBHCw.find(scrhid) != rhIdToBHCw.end())
+				bhcw = rhIdToBHCw.at(scrhid);
+			erhar *= bhcw;
 		}
                 sumtw += erhar*ertoftime;
 				sumrh += gainwt;
