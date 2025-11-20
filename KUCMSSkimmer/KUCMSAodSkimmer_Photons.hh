@@ -248,6 +248,7 @@ void KUCMSAodSkimmer::processPhotons(){
 
 	float isobkg_score = 0;
 	float nonisobkg_score = 0;
+
     if(_ca.GetNRecHits() > 2){
     	ClusterObj phoobj;
         _ca.NoClusterRhs(phoobj, true);
@@ -264,7 +265,8 @@ void KUCMSAodSkimmer::processPhotons(){
     	if(DEBUG) cout << "photon " << it << " iso score " << isobkg_score << " noniso score " << nonisobkg_score << endl;
 	}//<<>>if(_ca.GetNRecHits() > 2)
     //do photon id score
-    _ca.ClearRecHitList();
+ 
+  	_ca.ClearRecHitList();
 
 	bool isTight = isobkg_score > 0.875;
 	bool isLoose = isobkg_score > 0.014;

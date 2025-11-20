@@ -78,6 +78,9 @@ public :
    Float_t         selMetPx;
    Float_t         selMetPy;
 
+   std::vector<int>     *selPhoObjId;
+   std::vector<bool>    *rjrCleaningVeto0;
+
    std::vector<int>     *genCharge;
    std::vector<float>   *genGrvtinoMass;
    std::vector<float>   *genLLPMass;
@@ -365,6 +368,8 @@ public :
 
    TBranch        *b_Flag_hemVeto;
 
+   TBranch        *b_selPhoObjId;   //!
+   TBranch        *b_rjrCleaningVeto0;   //!
 
    TBranch        *b_PVx;   //!
    TBranch        *b_PVy;   //!
@@ -983,6 +988,9 @@ void skimtuple_v36::Init( TChain *tree, bool doGenInfo ){
    rjr_pHxb20 = 0;
    rjr_pHxb21 = 0;
 
+   selPhoObjId = 0;
+   rjrCleaningVeto0 = 0;
+
    // Set branch addresses and branch pointers
    if (!tree) return;
    fChain = tree;
@@ -1026,6 +1034,9 @@ void skimtuple_v36::Init( TChain *tree, bool doGenInfo ){
    fChain->SetBranchAddress("SV_nTracks", &SV_nTracks, &b_SV_nTracks);
    fChain->SetBranchAddress("SV_pOverE", &SV_pOverE, &b_SV_pOverE);
 */
+
+   fChain->SetBranchAddress("selPhoObjId", &selPhoObjId, &b_selPhoObjId);
+   fChain->SetBranchAddress("rjrCleaningVeto0", &rjrCleaningVeto0, &b_rjrCleaningVeto0);
 
    fChain->SetBranchAddress("DataSetKey", &DataSetKey, &b_DataSetKey);
    fChain->SetBranchAddress("evtFillWgt", &evtFillWgt, &b_evtFillWgt);
@@ -1486,6 +1497,9 @@ void skimtuple_v36::getBranches( Long64_t entry, bool doGenInfo ){
    b_selPhoLWeird->GetEntry(entry);
    b_selPhoLSCross->GetEntry(entry);
    b_selPhoShasGS->GetEntry(entry);
+
+   b_selPhoObjId->GetEntry(entry);
+   b_rjrCleaningVeto0->GetEntry(entry);
 
    b_muonIsLoose->GetEntry(entry);  //   muonIsLoose, &b_muonIsLoose);
    b_muonIsMedium->GetEntry(entry);  //   muonIsMedium, &b_muonIsMedium);
