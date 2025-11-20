@@ -48,6 +48,7 @@ def generateSubmission(args):
     reco_date["2022_MET"] = "-27Jun2023-v2"
     reco_date["2018_MC"] = "RunIISummer20UL18"
     reco_date["2017_MC"] = "RunIIFall17DRPremix"
+    reco_date["2018_EGamma"] = ""
     reco_date["2018"] = ""
     reco_date[""] = ""
     data = False
@@ -64,6 +65,9 @@ def generateSubmission(args):
     elif(args.inputSample == "MET"):
         data = True
         inputList = "MET_"+year+"_SVIPM100_v31_MET_AOD_Run"+args.year+args.era
+    elif(args.inputSample == "EGamma"):
+        data = True
+        inputList = "EGamma_"+year+"_InvMetPho30_NoSV_EGamma_AOD_Run"+args.year+args.era
     elif(args.inputSample == "gogoG"):
         MCsig = True
         inputList = "gogoG_AODSIM"
@@ -123,7 +127,7 @@ def generateSubmission(args):
 
             #set output name
             #print("recotag",recotag)
-            samplename = data[1][:-4]+reco_date[recotag]
+            samplename = data[1][:-4]#+reco_date[recotag]
             ofiletag = "rjrskim"
             if args.output is not None:
                 ofiletag += "_"+args.output
@@ -167,7 +171,10 @@ def generateSubmission(args):
             SH.writeQueueList(subf, ofilename, filearr, flags)
             condor_subs.append(condorSubmitFile)
             print()
-        if len(condor_subs) < 2:
+        if len(condor_subs) < 1:
+            print("No file list found for",inputList)
+            exit()
+        elif len(condor_subs) < 2:
             print("------------------------------------------------------------")
             print("Submission ready, to run use:")
             print("condor_submit "+condor_subs[0]+"\n")
@@ -191,7 +198,7 @@ def main():
     parser.add_argument("--request_memory",help='memory to request from condor scheduler in bits (default = 2048)',default=-1)
     #TODO - separate photon/Z and squark/gluino and mixed cases (gogoG, gogoZ, sqsqG, sqsqGZ, etc)
     #parser.add_argument("--inputList",help="list of sample lists to run over (default is SVIPM100 selection)",choices=['data','mcBkg','mcSig'])
-    parser.add_argument('--inputSample',help='Ntuple sample to create skims from',choices=['GJets','QCD','MET','gogoG'])
+    parser.add_argument('--inputSample',help='Ntuple sample to create skims from',choices=['GJets','QCD','MET','gogoG','EGamma'])
     parser.add_argument("--year",help="run year",choices = ["2017","2018","2022"],default="2018")
     parser.add_argument('--HT',help='HT slice (some MC samples only)',default='')
     parser.add_argument('--era',help='run era (data only)',default='')
