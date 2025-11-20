@@ -257,10 +257,10 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
 		if( _evtj > nEntries ){ _evtj = nEntries; } //cap at max number of entries
 		if( _evti > nEntries ){ cout << "Starting event " << _evti << " above # of entries in tree " << nEntries << " returning." << endl; return; }
 	}//<<>> if( _evti < 0 ) else
+	//if( not doSVs ){ _evtj = 2500000; _evti = 1500000; }
 	int nEventsProcessed = _evtj - _evti;
     initHists();
     setOutputBranches(fOutTree);
-	//if( doSVs == false ) _evtj = 250000;
 
     startJobs(); // clear && init count varibles
 
@@ -272,6 +272,7 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
 
     std::cout << "Setting up For Main Loop." << std::endl;
 	int nForPrecent =  ( nEventsProcessed < 10 ) ? 1 : 10;
+	if( not doSVs ){ std::cout << " ::::  Doing noSv for EGamma " << std::endl; nForPrecent = 100; }
     int loopCounter( nEventsProcessed / nForPrecent );
     std::cout << "Processing " << nEntries << " entries." << std::endl;
     nEvents = nEventsProcessed;//save # of events actually ran over so that when files are hadded, this should total nEntries in TChain
@@ -871,6 +872,7 @@ bool KUCMSAodSkimmer::eventSelection(){
 
   bool evtSelected = dobase ? basesel : phosel;
   //if( hasHemObj ) evtSelected = false;
+  if( not doSVs ) evtSelected = gt2qjets; 
 
   if( met150 ) cutflow["met150"]++;
   if( met150 && gt2jets ) cutflow["m_gt2jets"]++;
