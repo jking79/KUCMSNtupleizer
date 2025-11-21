@@ -163,7 +163,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
   // setup lumi json map
 
   loadLumiJson("config/json/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.json");
-  //loadLumiJson("config/json/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt");
+  loadLumiJson("config/json/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt");
   //loadLumiJson("config/json/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt",true);
 
   // condor event segmenting varibles : used to run over subset of events for condor jobs
