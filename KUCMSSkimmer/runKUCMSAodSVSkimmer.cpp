@@ -43,6 +43,7 @@ int main ( int argc, char *argv[] ){
 	string ttag = "r2_ul18";
 	float mcw = 0;
 	bool noBHC = false;
+	bool noSV = false;
 	for(int i = 0; i < argc; i++){
 
     		if(strncmp(argv[i],"--help", 6) == 0) 			{ hprint = true; }
@@ -57,6 +58,7 @@ int main ( int argc, char *argv[] ){
 		if(strncmp(argv[i],"--genSigPerfect", 15) == 0)	{ genSigPerfect = true; }
 		if(strncmp(argv[i],"--noSVorPho", 11) == 0)		{ noSVorPho = true; }
 		if(strncmp(argv[i],"--noBHC", 7) == 0)		{ noBHC = true; }
+		if(strncmp(argv[i],"--noSV", 6) == 0)		{ noSV = true; }
         	if(strncmp(argv[i],"--dataSetKey", 12) == 0)	{ i++; key = string(argv[i]); }
         	if(strncmp(argv[i],"--xsec", 6) == 0)			{ i++; xsec = std::stof(argv[i]); }
         	if(strncmp(argv[i],"--gluinoMass", 12) == 0)	{ i++; glumass = std::stof(argv[i]); }
@@ -77,6 +79,7 @@ int main ( int argc, char *argv[] ){
 		cout << "   --genSigPerfect                      turn on gensigperfect (default = false)" << endl;
 		cout << "   --noSVorPho                          selection doesn't have SV or photon (default = false)" << endl;
 		cout << "   --noBHC                              will not run BHC objects (default = false - BHC on)" << endl;
+		cout << "   --nSV                                will not run SV collection (default = false - SVs on)" << endl;
         	cout << "   --dataSetKey                         set dataset key" << endl;
         	cout << "   --xsec                               set cross-section (default = 1)" << endl;
         	cout << "   --gluinoMass                         set gluino mass (default = 0)" << endl;
@@ -100,7 +103,8 @@ int main ( int argc, char *argv[] ){
     	llpgana.SetNoSVorPhoFlag( noSVorPho );
     	llpgana.SetUseEvtGenWgtFlag( useEvtGenWgt );
     	llpgana.SetGenSigPerfectFlag( genSigPerfect );
-    	llpgana.SetDoBHC( !noBHC );
+    	llpgana.SetDoBHC( !noBHC ); //if noBHC == true -> do not run BHC
+	llpgana.SetDoSV( !noSV ); //if noSV == true -> do not run SVs
 	//from master list
    	llpgana.SetDataSetKey(key);
     	llpgana.SetCrossSection(xsec);
