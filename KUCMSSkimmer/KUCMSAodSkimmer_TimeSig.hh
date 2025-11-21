@@ -46,8 +46,9 @@ void KUCMSAodSkimmer::processTimeSig(){
 		if( not isSelPho[it] ) continue;
 		selPhoIndex++;
 
-        int scIndx = (*Photon_scIndex)[it]; // vector<int> 
-		float wttimesig = getTimeSig( scIndx );
+        int scIndx = (*Photon_scIndex)[it]; // vector<int>
+	float timesignum, timesigdenom;
+		float wttimesig = getTimeSig( scIndx, timesignum, timesigdenom );
 
         TSPhoInfo.fillBranch("selPho_selPhoWTimeSig", wttimesig );
 
@@ -83,7 +84,7 @@ void KUCMSAodSkimmer::setTSBranches( TTree* fOutTree ){
 //}//<<>>void KUCMSAodSkimmer::getTimeSig
 
 //float KUCMSAodSkimmer::getTimeSig( vector<vector<unsigned int>> rhids ){
-float KUCMSAodSkimmer::getTimeSig( int scIndex ){
+float KUCMSAodSkimmer::getTimeSig( int scIndex, float& num, float& denom, const map<unsigned int, float>& rhIdToBHCw){
 
 		auto rhids = (*SuperCluster_rhIds)[scIndex];
 
@@ -111,6 +112,12 @@ float KUCMSAodSkimmer::getTimeSig( int scIndex ){
                 if( not isValid ) gainwt = 0;
                 float invertres = 1/ertres;
                 float erhar = invertres*gainwt;
+		if(rhIdToBHCw.size() > 0){
+			double bhcw = 0;
+			if(rhIdToBHCw.find(scrhid) != rhIdToBHCw.end())
+				bhcw = rhIdToBHCw.at(scrhid);
+			erhar *= bhcw;
+		}
                 sumtw += erhar*ertoftime;
 				sumrh += gainwt;
                 sumw += erhar;
@@ -122,7 +129,8 @@ float KUCMSAodSkimmer::getTimeSig( int scIndex ){
         float phoWTime = sumtw/sumw;
         float phoWVar = sumrh/sumw;
         float wttimesig = phoWTime/std::sqrt(phoWVar);
-
+	num = phoWTime;
+	denom = std::sqrt(phoWVar);
 		return wttimesig;
 
 }//<<>>void KUCMSAodSkimmer::getTimeSig

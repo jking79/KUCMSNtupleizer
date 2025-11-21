@@ -56,8 +56,9 @@ p1=runKUCMSAodSVSkimmer
 p2=fillKUCMSTimeCalibration
 p3=runLocalKUCMSAodSVSkimmer
 p4=runLocalCKUCMSAodSVSkimmer
-p5=makeKUCMSTimeResoltuion
+p5=makeKUCMSTimeResolution
 p6=makeKUCMSTimeCalibration
+p7=runLocal2KUCMSAodSVSkimmer
 
 TCOBJ = KUCMS_TimeCalibration.so
 TCINC = -I/KUCMSTimeCaliFiles/include
@@ -96,6 +97,9 @@ $(p5): $(p5).cpp $(TCOBJ)
 
 $(p6): $(p6).cpp $(TCOBJ)
 	$(CC) -o $(p6).obj $(p6).cpp $(TCOBJ) $(RTCFLAGS) $(RTGLIBS) $(OPTS)
+
+$(p7): $(p7).cpp $(TCOBJ)
+	$(CC) -o $(p7).obj $(p7).cpp $(TCOBJ) $(RTCFLAGS) $(RTGLIBS) $(OPTS)
 
 configtar:
 	cp runKUCMSAodSVSkimmer.obj config/

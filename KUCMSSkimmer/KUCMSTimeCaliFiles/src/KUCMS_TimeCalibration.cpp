@@ -1243,11 +1243,11 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
 	if( mctype < 100 ){ // data
 
 		if( dataSetKey == "r2_ul18" || dataSetKey == "r2_ul18_mc"   ){ 
-			res = isEB ? sq2(23.24/amplitude) + sq2(1.54)/amplitude + 2*sq2(0.0834) : sq2(38.5/amplitude) + sq2(2.9)/amplitude + 2*sq2(0.2828); }
+			res = isEB ? sq2(26.0/amplitude) + sq2(0.6)/amplitude + 2*sq2(0.094) : sq2(42.2/amplitude) + sq2(1.2)/amplitude + 2*sq2(0.298); }
         if( dataSetKey == "r2_eoy17"   ){ 
 			res = isEB ? sq2( 31.3/amplitude ) + sq2(2.9)/amplitude + 2*sq2(0.1608) : sq2( 31.3/amplitude ) + sq2(2.9)/amplitude + 2*sq2(0.1608); }
         if( dataSetKey == "r2_ul17"   ){ 
-			res = isEB ? sq2( 19.09/amplitude ) + sq2(3.29)/amplitude + 2*sq2(0.0982) : sq2( 32.7/amplitude ) + sq2(1.77)/amplitude + 2*sq2(0.2072); }
+			res = isEB ? sq2( 26.2/amplitude ) + sq2(1.7)/amplitude + 2*sq2(0.138) : sq2( 33.2/amplitude ) + sq2(1.7)/amplitude + 2*sq2(0.203); }
 
 	}//<<>>if( mctype == 0 )
 	if( res == -1 ){ std::cout << " -- Resolution for dataSetKey " << dataSetKey << " not found !!!!!!" << std::endl; return 1.f; }
@@ -2381,10 +2381,10 @@ kucms_SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D ){
     	//if( profile.isEmpty() ) continue;
     	kucms_TimeFitResult results = profile.GetFitResult();
 
-		float herr = std::abs( results.sigmaHigh - results.sigma );
-        float lerr = std::abs( results.sigmaLow - results.sigma ); 
-		float serr = ( herr > lerr ) ? herr : lerr;
-		//float serr = results.esigma;		
+		//float herr = std::abs( results.sigmaHigh - results.sigma );
+        //float lerr = std::abs( results.sigmaLow - results.sigma ); 
+		//float serr = ( herr > lerr ) ? herr : lerr;
+		float serr = results.esigma;		
 
     	std::cout << " Bin " << ibinX  <<  " : " << fXBins[ibinX-1] << "-" << fXBins[ibinX];
     	std::cout << " : no guass: " << results.sigma << " err: " << serr << std::endl;
@@ -2730,6 +2730,11 @@ void KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
     bool debug = false;
     //bool debug = true;
 
+    //bool etaMod = true;
+    //int etaModFac = 6;
+    //bool phiMod = true;
+    //int phiModFac = 12;
+
 	std::string calistr = usecali ? "_cali" : "_nocali";
 	std::string hname = "meanRunTime_" + std::to_string(srun) + "_to_" + std::to_string(erun)+calistr;
     std::string outfilename = caliFileDir + hname+ "_Hist.root";
@@ -2743,9 +2748,12 @@ void KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
 	std::string hname_eb = hname + "_eb";
 	TH1D* hist_eb = new TH1D(hname_eb.c_str(),title_eb.c_str(),rrange,srun,erun);
 
+ 	//    ebtt_ranges = {35,-17,18,72,1,73};
 	std::map< uInt, TH1D* > ttHistMap;
-    for( int ieta = 1; ieta < 37; ieta++ ){
-        for( int iphi = 1; iphi < 74; iphi++ ){
+    for( int ieta = 1; ieta < 36; ieta++ ){
+        //if( etaMod && ieta%etaModFac != 0 ) continue;
+        for( int iphi = 1; iphi < 73; iphi++ ){
+			//if( phiMod && iphi%phiModFac != 0 ) continue;
             int i1 = ieta - 18;
             if( i1 == 0 ) continue;
             uInt detid = getInvTTId( iphi, i1, true );
@@ -2892,18 +2900,20 @@ void KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
 
 		int run = runsum.first;
 		int bin = 1 + run - srun;
-		double mean = occ[run] > 0 ? sum[run] / occ[run] : -99;
+		double mean = occ[run] > 10 ? sum[run] / occ[run] : -99;
 		double err = mean > -99 ? sqrt( (sum2[run]/occ[run] - mean*mean)/occ[run] ) : 0;	
 		std::cout << " EB mean by Run : " << run << " sum: " << sum[run] << " occ: " << occ[run]; 
         std::cout << " mean: " << mean << " +/- " << err << std::endl;			
 		hist_eb->SetBinContent( bin, mean );
 		hist_eb->SetBinError( bin, err );
-		for( int ieta = 1; ieta < 37; ieta++ ){
-            for( int iphi = 1; iphi < 74; iphi++ ){
+		for( int ieta = 1; ieta < 36; ieta++ ){
+			//if( etaMod && ieta%etaModFac != 0 ) continue;
+            for( int iphi = 1; iphi < 73; iphi++ ){
+				//if( phiMod && iphi%phiModFac != 0 ) continue;
                 int i1 = ieta - 18;
                 if( i1 == 0 ) continue;
                 uInt detid = getInvTTId( iphi, i1, true );
-				double ttmean = ttocc[detid][run] > 0 ? ttsum[detid][run] / ttocc[detid][run] : -99;
+				double ttmean = ttocc[detid][run] > 10 ? ttsum[detid][run] / ttocc[detid][run] : -99;
 				double tterr =  mean > -99 ? sqrt( (ttsum2[detid][run]/ttocc[detid][run] - mean*mean)/ttocc[detid][run] ) : 0;
 				ttHistMap[detid]->SetBinContent( bin, ttmean );
 				ttHistMap[detid]->SetBinError( bin, tterr );
@@ -2914,15 +2924,16 @@ void KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
 
 	hist_eb->Write( hist_eb->GetName(), TObject::kOverwrite );
 	delete hist_eb;
-    for( int ieta = 1; ieta < 37; ieta++ ){
-        for( int iphi = 1; iphi < 74; iphi++ ){
-            int i1 = ieta - 18;
-            if( i1 == 0 ) continue;
-            uInt detid = getInvTTId( iphi, i1, true );
-			ttHistMap[detid]->Write( ttHistMap[detid]->GetName(), TObject::kOverwrite );
-			delete ttHistMap[detid];
-        }//<<>>for( int iphi = 1; iphi < 361; iphi++ )
-    }//<<>>for( int ieta = 1; ieta < 172; ieta++ )
+	for ( auto & thismap : ttHistMap ){ thismap.second->Write( thismap.second->GetName(), TObject::kOverwrite ); delete thismap.second; }
+    //for( int ieta = 1; ieta < 37; ieta++ ){
+    //    for( int iphi = 1; iphi < 74; iphi++ ){
+    //        int i1 = ieta - 18;
+    //        if( i1 == 0 ) continue;
+    //        uInt detid = getInvTTId( iphi, i1, true );
+	//		ttHistMap[detid]->Write( ttHistMap[detid]->GetName(), TObject::kOverwrite );
+	//		delete ttHistMap[detid];
+    //    }//<<>>for( int iphi = 1; iphi < 361; iphi++ )
+    //}//<<>>for( int ieta = 1; ieta < 172; ieta++ )
 
 	mrTFile->Close();
 

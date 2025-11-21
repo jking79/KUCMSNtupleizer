@@ -495,7 +495,7 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 
     bool metFlag = Flag_BadChargedCandidateFilter && Flag_BadPFMuonDzFilter && Flag_BadPFMuonFilter && Flag_HBHENoiseFilter && Flag_HBHENoiseIsoFilter;
     metFlag = metFlag && Flag_ecalBadCalibFilter && Flag_eeBadScFilter && Flag_goodVertices && Flag_hfNoisyHitsFilter;
-	//metFlag = metFlag && Flag_EcalDeadCellTriggerPrimitiveFilter; // not working 
+	metFlag = metFlag && Flag_EcalDeadCellTriggerPrimitiveFilter; // not working 
 
     bool haloFilter = Flag_globalSuperTightHalo2016Filter;
 
@@ -634,13 +634,18 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 	//if( not nphocust && p1tv ) timecust = true;
     //if( not n2phocust && p2tv ) timecust = true;
 
-	if( nphocust ) continue;
-	if( timecust )  continue;
+    //bool lowMet( selCMet < 150 );
+	bool lowMet( selMet < 150 );
 
-	if( not metFlag ) continue;
-    if( not haloFilter ) continue;
+	//if( nphocust ) continue;
+	//if( timecust )  continue;
+	//if( rjrCleaningVeto0->at(cs) ) continue;
+
+	//if( not lowMet ) continue;
+	if( metFlag ) continue;
+    //if( not haloFilter ) continue;
 	//if( not trigger ) continue;
-    //if( hemVeto ) continue;
+    if( hemVeto ) continue;
 
 	// GGG cut sets
 	//if( nRjrPhos < 20 && nphocust ) continue;  
@@ -806,10 +811,13 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     float gsieie = 99;
     bool ggs = false;
 
+	bool isBPho = false;
     float sr2 = std::sqrt(1);
     float sgtime = 99;
     float sgpt = -99;
     if( selPhoTime->size() > 0 ){
+
+		isBPho = (*selPhoObjId)[0] < 1;
 
         gtime = (*selPhoTime)[0];
         gpt = (*selPhoPt)[0];
@@ -844,8 +852,9 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     bool isPJphi = dPhi( bJetPhi, gphi ) >= ( PI - 0.3 );
     bool pjeb = ( std::min( bJetPt, gpt ) / std::max(  bJetPt, gpt ) ) > 0.6;
 
-    if( std::abs(geta) > 1.4 ) continue;
-    if( not isPJphi || not pjeb ) continue;
+    //if( std::abs(geta) > 1.4 ) continue;
+    //if( not isPJphi || not pjeb ) continue;
+	//if( not isBPho ) continue;
 
 	//if( not ggs ) continue;
 
@@ -854,9 +863,17 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     hist1d[6]->Fill(gpt,fillwt);
     hist1d[7]->Fill(sgpt,fillwt);
 
-    hist1d[51]->Fill(gstsig,fillwt);
+    //hist1d[51] = new TH1D("selPhoWTime", addstr(ht," selPhoWTime;selPhoWTime").c_str(), 1200, -60, 60);
+    //hist1d[52] = new TH1D("selPhoWTimeSig", addstr(ht," selPhoWTimeSig;selPhoWTimeSig").c_str(), 1200, -60, 60);
+    //hist1d[53] = new TH1D("selPhoWTimeVar", addstr(ht," selPhoWTimeVar;selPhoWTimeVar").c_str(), 1200, -60, 60);
+    //hist1d[54] = new TH1D("selPhoTOFTime", addstr(ht," selPhoTOFTime;selPhoTOFTime").c_str(), 500, -25, 25);
+    //hist1d[55] = new TH1D("selPhoEnergy", addstr(ht," selPhoEnergy;selPhoEnergy").c_str(), 300, 0, 3000);
+    //hist1d[56] = new TH1D("selPhoCEnergy", addstr(ht," selPhoCEnergy;selPhoCEnergy").c_str(), 300, 0, 3000);
+
+
+    hist1d[51]->Fill(gwtime,fillwt);
     hist1d[52]->Fill(gwtsig,fillwt);
-    hist1d[53]->Fill(gltsig,fillwt);
+    hist1d[53]->Fill(gwtres,fillwt);
     hist1d[54]->Fill(gwtime,fillwt);
     hist1d[55]->Fill(genergy,fillwt);
     hist1d[56]->Fill(gcenergy,fillwt);
@@ -1041,9 +1058,9 @@ void HistMaker::initHists( std::string ht ){
     hist1d[41] = new TH1D("sumPhoPtsH21", addstr(ht," sumPhoPtsH21;sumPhoPtsH21").c_str(), 200, 0, 2.0);
 
 
-	hist1d[51] = new TH1D("selPhoSTimeSig", addstr(ht," selPhoSTimeSig;selPhoSTimeSig").c_str(), 1200, -60, 60);
-    hist1d[52] = new TH1D("selPhoWTimeSig", addstr(ht," selPhoWTimeSig;selPhoWTimeSig").c_str(), 1200, -60, 60);
-    hist1d[53] = new TH1D("selPhoLTimeSig", addstr(ht," selPhoLTimeSig;selPhoLTimeSig").c_str(), 1200, -60, 60);
+	hist1d[51] = new TH1D("selPhoWTime", addstr(ht," selPhoWTime;selPhoWTime").c_str(), 480, -60, 60);
+    hist1d[52] = new TH1D("selPhoWTimeSig", addstr(ht," selPhoWTimeSig;selPhoWTimeSig").c_str(), 480, -60, 60);
+    hist1d[53] = new TH1D("selPhoWTimeVar", addstr(ht," selPhoWTimeVar;selPhoWTimeVar").c_str(), 480, -60, 60);
     hist1d[54] = new TH1D("selPhoTOFTime", addstr(ht," selPhoTOFTime;selPhoTOFTime").c_str(), 500, -25, 25);
     hist1d[55] = new TH1D("selPhoEnergy", addstr(ht," selPhoEnergy;selPhoEnergy").c_str(), 300, 0, 3000);
     hist1d[56] = new TH1D("selPhoCEnergy", addstr(ht," selPhoCEnergy;selPhoCEnergy").c_str(), 300, 0, 3000);
@@ -1167,9 +1184,9 @@ int main ( int argc, char *argv[] ){
 
     //if( argc != 4 ) { std::cout << "Insufficent arguments." << std::endl; }
     //else {
-                //std::string listdir = "/uscms/home/jaking/nobackup/llpana_skims/";
+                std::string listdir = "/uscms/home/jaking/nobackup/llpana_skims/";
 				//std::string listdir = "/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/tsig_skims/"; 
-                std::string listdir = "/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/";
+                //std::string listdir = "/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/";
 
 				//std::string infilenameJ = "rjr_skim_files/KUCMS_RJR_GIGI_ootmet_Skim_List.txt";
                 //std::string infilenameJ = "rjr_skim_files/KUCMS_RJR_SMS_ootmet_Skim_List.txt";
@@ -1178,7 +1195,8 @@ int main ( int argc, char *argv[] ){
 
                 std::string infilenameJ = "rjr_skim_files/KUCMS_RJR_SMS_v39_Skim_List.txt";
                 std::string infilenameBG = "rjr_skim_files/KUCMS_RJR_BG_v39_Skim_List.txt";
-                std::string infilenameD = "rjr_skim_files/KUCMS_RJR_DATA_v40_Skim_List.txt";
+                //std::string infilenameD = "rjr_skim_files/KUCMS_RJR_DATA_v40_Skim_List.txt";
+                std::string infilenameD = "rjr_skim_files/KUCMS_RJR_DATA_v44_Skim_List.txt";
 
 				std::string version = "v40_";
 				std::string sigtype = "llpana_";
@@ -1205,7 +1223,8 @@ int main ( int argc, char *argv[] ){
 				std::vector<float> rv_vec{1.0}; // Sig scaling
                 std::string outdir = "";
 
-                std::string isoline = "P1MfHa_RJR0_TSig_EGJ_"; // EGJ = EGamma + Jets selecton
+                std::string isoline = "P1MfHe_fullmet_RJR0_TSig_MET_"; //
+                //std::string isoline = "P1MfHa_RJR0_TSig_EGJ_"; // EGJ = EGamma + Jets selecton
                 //std::string isoline = "P1TrMfHeHa_RJR0_"; // Tv = time valid, Mf = metfilters, Ha = halofilters, Tr = trigger, He = hemfilter;
 				//std::string isoline = "P1TrMfHeHa_TSig_GS1_"; // Tv = time valid, Mf = metfilters, Ha = halofilters, Tr = trigger, He = hemfilter;
 				isoline += "cv" + std::to_string( np ) + "_";

@@ -102,6 +102,7 @@ class KUCMSAodSkimmer : public llpgtree {
     void SetGenSigPerfectFlag( bool f ){ genSigPerfectFlag = f; }
     void SetDoBHC( bool f ){ doBHC = f; }
     void SetOutFileName( std::string  ofn ){ outFileName = ofn; }
+    void SetDoSV( bool f ){ doSVs = f; }
 
 	// set branches
 
@@ -140,7 +141,8 @@ class KUCMSAodSkimmer : public llpgtree {
 	void processTimeSig();
 
 	// TSig functions
-	float getTimeSig( int scIndex );
+	//float getTimeSig( int scIndex );
+	float getTimeSig( int scIndex, float& num, float& denom, const map<unsigned int, float>& rhIdToBHCw  = {});
 	float getTimeSig( vector<vector<unsigned int>> rhids );
 
 	void MakePhotonIsoMap(int phoidx, map<string, double>& isomap);
@@ -229,6 +231,7 @@ class KUCMSAodSkimmer : public llpgtree {
 	bool useEvtGenWgtFlag; 
 	bool hasGenInfoFlag;
     bool doBHC;
+	bool doSVs;
 
 	// input tree, paths, and file names
 

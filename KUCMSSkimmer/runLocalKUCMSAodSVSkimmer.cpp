@@ -60,8 +60,9 @@ int main ( int argc, char *argv[] ){
     //int skipCnt = 0; // used to skip files ( in tchian ) for fast processing - if( nFiles%skipCnt != 0 ) continue; --  disabled in code  --  
 	// !!!!!!!!!!!!!!!!!!!  alternate RJR setup with invis in comb split rule
     KUCMSAodSkimmer llpgana;
-    //llpgana.SetNoSVorPhoFlag(noSVorPho);
-    //llpgana.SetGenSigPerfectFlag(genSigPerfect);
+    ////llpgana.SetNoSVorPhoFlag(noSVorPho);
+    ////llpgana.SetGenSigPerfectFlag(genSigPerfect);
+    llpgana.SetDoSV(false);
     llpgana.SetDoBHC(false);
 	llpgana.SetGenInfoFlag(hasGenInfo); 
 	llpgana.SetUseEvtGenWgtFlag(useEvtGenWgt);
