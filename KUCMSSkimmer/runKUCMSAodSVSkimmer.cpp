@@ -43,6 +43,7 @@ int main ( int argc, char *argv[] ){
 	string ttag = "r2_ul18";
 	float mcw = 0;
 	bool noBHC = false;
+	bool noSV = false;
 	for(int i = 0; i < argc; i++){
 
     		if(strncmp(argv[i],"--help", 6) == 0) 			{ hprint = true; }
