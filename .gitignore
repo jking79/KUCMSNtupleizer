@@ -21,6 +21,7 @@ test/myGMSBWorkingSpace/
 macros/*.obj
 .nfs*
 *.txt
+*.tgz
 !*List.txt
 !KUCMSSkimmer/ntuple_master_lists/*.txt
 !macros/ecal_config/*.txt

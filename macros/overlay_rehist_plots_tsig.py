@@ -115,8 +115,12 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
         if( n == 1 ) : h1[n].SetMarkerSize(msz+0.3)
         elif( n == 2 ) : h1[n].SetMarkerSize(msz+0.5)
         else : h1[n].SetMarkerSize(msz)
-        h1[n].SetMarkerSize(msz)
+        #h1[n].SetMarkerSize(msz)
         #f = TF1("mygaus", "gaus", -4, 4)
+        #f.SetParameter(0, 514 )
+        #f.SetParLimits(0, 510, 520)
+        #f.FixParameter(1, 0)
+        #f.FixParameter(2, 1)
         #f.SetLineColor(kBlue)
         #h1[n].Fit(f,"RE")
         #h1[n].GetListOfFunctions().Add(f)
@@ -247,10 +251,15 @@ Ic_legtitle = legtitle+' '+Ic_legtitle
 #     #["Data_sigma","",mc_single_loc+pcal+lstfr,"Single"],
 #]
 
-wide = 'KUCMS_Data_llpana_v40_P1MfHe_fullmet_RJR0_TSig_MET_cv0_MET18_RjrSkim_Hists.root'
+#wide = 'KUCMS_Data_llpana_v40_P1MfHe_fullmet_RJR0_TSig_MET_cv0_MET18_RjrSkim_Hists.root'
 #wide = 'KUCMS_Data_llpana_v40_P1MfHaTrHe_lowmet_RJR0_TSig_MET_cv0_MET18_RjrSkim_Hists.root'
-narrow = 'KUCMS_Data_llpana_v40_P1MfHa_RJR0_TSig_MET_cv0_MET18_RjrSkim_Hists.root'
+#narrow = 'KUCMS_Data_llpana_v40_P1MfHa_RJR0_TSig_MET_cv0_MET18_RjrSkim_Hists.root'
 
+wide = 'KUCMS_Data_llpana_v40_P1MfHe_fullmet_RJR0_TSig_allpho_MET_cv0_MET18_RjrSkim_Hists.root'
+#wide = 'KUCMS_Data_llpana_v40_P1MfHa_RJR0_TSig_Full_allPho_EGJ_cv0_EG18_RjrSkim_Hists.root'
+#wide = 'KUCMS_Data_llpana_v40_P1MfHa_RJR0_TSig_Full_EGJ_cv0_EG18_RjrSkim_Hists.root'
+#narrow = 'KUCMS_Data_llpana_v40_P1MfHa_RJR0_TSig_EGJ_cv0_EG18_RjrSkim_Hists.root'
+narrow = 'KUCMS_Data_llpana_v40_P1MfHa_RJR0_TSig_Full_allPho_EGJ_cv0_EG18_RjrSkim_Hists.root'
 
 # selPhoWTime
 # selPhoWTimeSig
@@ -258,22 +267,24 @@ narrow = 'KUCMS_Data_llpana_v40_P1MfHa_RJR0_TSig_MET_cv0_MET18_RjrSkim_Hists.roo
 inhistlist = [
 
     #["selPhoWTimeSig","",narrow,"none"]
-    ["selPhoWTimeSig","",wide,"none"]
-    #["selPhoWTime","",wide,"none"]
+    #["selPhoWTimeSig","",wide,"none"]
+    ["selPhoWTime","",narrow,"none"]
+    #["selPhoTime","",narrow,"none"]
 
     #["selPhoHcalTowerSumEtBcConeDR04","","KUCMS_GMSB_L100t400_Skim_BaseHists.root","SUS+NotSUS"],
     #["selPhoHcalTowerSumEtBcConeDR04","","KUCMS_GMSB_L100t400_Skim_BaseHists.root","SUS"],
     #["selPhoHcalTowerSumEtBcConeDR04","","KUCMS_GMSB_L100t400_Skim_BaseHists.root","NotSUS"],
 ]
 
-xtitle = 'Weighted Time Significance'
+xtitle = 'Weighted Time [ns]'
+#xtitle = 'Weighted Time Significance'
 #xtitle = 'Weighted Photon Time '
 layout = { 'xtitle' : xtitle, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'legtitle' : Ic_legtitle }
-ptitle=[' 2018 MET','',''] 
-y = [ 1, 100000 ]
-#x = [ -15.0, 15.0 ]
+ptitle=[' 2018 EGamma','',''] 
+y = [ 0.1, 100000 ]
+x = [ -8.0, 8.0 ]
 #x = [ -4.0, 4.0 ]
-x = [ -50.0, 40.0 ]
+#x = [ -50.0, 40.0 ]
 l = [ 0.7,0.65,0.925,0.9 ] # legend position
 t = [0.2,0.825,0.0,0.175,0.225] # titles position
 outname = 'llpa_met_wts_wide'

@@ -56,23 +56,54 @@ def generateSubmission(args):
     MCsig = False
     inputList = ""
     recotag = ""
+    #MC bkgs
     if(args.inputSample == "GJets"):
         MCbkg = True
-        inputList = "GJets_"+year+"_SVIPM100_v31_GJets_HT-"+args.HT
+        inputList = "GJets_"+year+"_SVIPM100_v31_GJets_HT-"+args.slice
     elif(args.inputSample == "QCD"):
         MCbkg = True
-        inputList = "QCD_"+year+"_SVIPM100_v31_QCD_HT"+args.HT
+        inputList = "QCD_"+year+"_SVIPM100_v31_QCD_HT"+args.slice
+    elif(args.inputSample == "DiPJBox"):
+        MCbkg = True
+        inputList = "DiPJBox_"+year+"_SVIPM100_v31_DiPhotonJetsBox_M"+args.slice
+        if args.slice == "40_80":
+            inputList += "-sherpa"
+    elif(args.inputSample == "TTXJets"):
+        MCbkg = True
+        inputList = "TTXJets_"+year+"_SVIPM100_v31_"+args.slice
+    elif(args.inputSample == "WJets"):
+        MCbkg = True
+        inputList = "WJets_"+year+"_SVIPM100_v31_WJetsToLNu_HT-"+args.slice
+    elif(args.inputSample == "ZJets"):
+        MCbkg = True
+        inputList = "ZJets_"+year+"_SVIPM100_v31_ZJetsToNuNu_HT-"+args.slice
+    #MC signals
+    elif(args.inputSample == "gogoG"):
+        MCsig = True
+        inputList = "gogoG_AODSIM"
+        if(args.mGl != "" and args.mN2 != "" and args.mN1 != ""):
+            inputList += "_mGl-"+args.mGl+"_mN2-"+args.mN2+"_mN1-"+args.mN1
+    elif(args.inputSample == "gogoZ"):
+        MCsig = True
+        inputList = "gogoZ_AODSIM"
+        if(args.mGl != "" and args.mN2 != "" and args.mN1 != ""):
+            inputList += "_mGl-"+args.mGl+"_mN2-"+args.mN2+"_mN1-"+args.mN1
+            if(args.ctau != ""):
+                ctau = args.ctau
+                ctau = ctau.replace(".","p")
+                inputList += "_ct"+ctau 
+    elif(args.inputSample == "sqsqG"):
+        MCsig = True
+        inputList = "sqsqG_AODSIM"
+        if(args.mGl != "" and args.mN2 != "" and args.mN1 != ""):
+            inputList += "_mGl-"+args.mGl+"_mN2-"+args.mN2+"_mN1-"+args.mN1
+    #data
     elif(args.inputSample == "MET"):
         data = True
         inputList = "MET_"+year+"_SVIPM100_v31_MET_AOD_Run"+args.year+args.era
     elif(args.inputSample == "EGamma"):
         data = True
         inputList = "EGamma_"+year+"_InvMetPho30_NoSV_EGamma_AOD_Run"+args.year+args.era
-    elif(args.inputSample == "gogoG"):
-        MCsig = True
-        inputList = "gogoG_AODSIM"
-        if(args.mGl != "" and args.mN2 != "" and args.mN1 != ""):
-            inputList += "_mGl-"+args.mGl+"_mN2-"+args.mN2+"_mN1-"+args.mN1
     else:
         print("Lists for input sample",args.inputSample,"not found")
         exit()
@@ -159,6 +190,8 @@ def generateSubmission(args):
 
             if(args.noBHC):
                 flags += " --noBHC"
+            if(args.noSV):
+                flags += " --noSV"
 
             ##### Create condor submission script in src directory #####
             condorSubmitFile = fulldirname + "/src/submit.sh"
@@ -196,15 +229,15 @@ def main():
     parser.add_argument("--max_mat",help='max_materialization condor option (default: off)',default=-1)
     parser.add_argument("--max_idle",help='max_idle condor option (default: off)',default=-1)
     parser.add_argument("--request_memory",help='memory to request from condor scheduler in bits (default = 2048)',default=-1)
-    #TODO - separate photon/Z and squark/gluino and mixed cases (gogoG, gogoZ, sqsqG, sqsqGZ, etc)
     #parser.add_argument("--inputList",help="list of sample lists to run over (default is SVIPM100 selection)",choices=['data','mcBkg','mcSig'])
-    parser.add_argument('--inputSample',help='Ntuple sample to create skims from',choices=['GJets','QCD','MET','gogoG','EGamma'])
+    parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',choices=['DiPJBox', 'DTBoson','GJets','TTXJets','QCD','WJets','ZJets','gogoG','gogoZ','sqsqG','MET','EGamma'])
     parser.add_argument("--year",help="run year",choices = ["2017","2018","2022"],default="2018")
-    parser.add_argument('--HT',help='HT slice (some MC samples only)',default='')
+    parser.add_argument('--slice',help='HT slice (ie for GJets or QCD), mass range (ie for DiPJBox), or subprocess (ie for TTXJets)',default='')
     parser.add_argument('--era',help='run era (data only)',default='')
     parser.add_argument('--mGl',help='gluino mass for signal',default='')
     parser.add_argument('--mN2',help='neutralino2 mass for signal',default='')
     parser.add_argument('--mN1',help='neutralino1 mass for signal',default='')
+    parser.add_argument('--ctau',help='ctau (only for gogoZ samples)',default='')
     parser.add_argument('--output','-o',help='output label',default=None)
     #parser.add_argument('--split','-s',help="condor job split",default=0,type=int)
     parser.add_argument('--maxnevts',help="maximum number of events per job",default=-999,type=int)
@@ -213,7 +246,8 @@ def main():
     parser.add_argument('--noBHC',help='run without creating BHC objects (default = on)',default=False,action='store_true')
     #parser.add_argument('--hasGenInfo',help='set hasGenInfo flag',default=False,action="store_true")
     parser.add_argument('--genSigPerfect',help='set genSigPerfect flag',default=False,action="store_true")
-    parser.add_argument('--noSVorPho',help='set noSVorPho flag',default=False,action="store_true")
+    parser.add_argument('--noSV',help='do not run SV collection',default=False,action="store_true")
+    #parser.add_argument('--noSVorPho',help='set noSVorPho flag',default=False,action="store_true")
    
     args = parser.parse_args()
     generateSubmission(args)

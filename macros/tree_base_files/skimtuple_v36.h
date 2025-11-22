@@ -122,6 +122,17 @@ public :
    UInt_t          nSelElectrons;
    UInt_t          nSelIsoElectrons;
 
+   std::vector<float>   *allPhoE;
+   std::vector<float>   *allPhoEta;
+   std::vector<float>   *allPhoPhi;
+   std::vector<bool>    *allPhoPixSeed;
+   std::vector<float>   *allPhoPt;
+   std::vector<float>   *allPhoWTime;
+   std::vector<float>   *allPhoWTime1;
+   std::vector<float>   *allPhoWTimeSig;
+   std::vector<float>   *allPhoWTimeSig1;
+
+
    UInt_t          nPhotons;
    UInt_t          nSelPhotons;
    std::vector<float>   *selPhoClstrRn;
@@ -440,6 +451,16 @@ public :
    TBranch        *b_nElectrons;   //!
    TBranch        *b_nSelElectrons;   //!
    TBranch        *b_nSelIsoElectrons;   //!
+
+   TBranch        *b_allPhoE;   //!
+   TBranch        *b_allPhoEta;   //!
+   TBranch        *b_allPhoPhi;   //!
+   TBranch        *b_allPhoPixSeed;   //!
+   TBranch        *b_allPhoPt;   //!
+   TBranch        *b_allPhoWTime;   //!
+   TBranch        *b_allPhoWTime1;   //!
+   TBranch        *b_allPhoWTimeSig;   //!
+   TBranch        *b_allPhoWTimeSig1;   //!
 
    TBranch        *b_nPhotons;   //!
    TBranch        *b_nSelPhotons;   //!
@@ -798,6 +819,17 @@ void skimtuple_v36::Init( TChain *tree, bool doGenInfo ){
    selPhoGenSigMomVx = 0;
    selPhoGenSigMomVy = 0;
    selPhoGenSigMomVz = 0;
+
+   allPhoE = 0;
+   allPhoEta = 0;
+   allPhoPhi = 0;
+   allPhoPixSeed = 0;
+   allPhoPt = 0;
+   allPhoWTime = 0;
+   allPhoWTime1 = 0;
+   allPhoWTimeSig = 0;
+   allPhoWTimeSig1 = 0;
+
    selPhoHadOverEM = 0;
    selPhoHadTowOverEM = 0;
    selPhoHasConversionTracks = 0;
@@ -1050,6 +1082,7 @@ void skimtuple_v36::Init( TChain *tree, bool doGenInfo ){
    fChain->SetBranchAddress("selMetPx", &selMetPx, &b_selMetPx);
    fChain->SetBranchAddress("selMetPy", &selMetPy, &b_selMetPy);
 
+/*
    fChain->SetBranchAddress("genCharge", &genCharge, &b_genCharge);
    fChain->SetBranchAddress("genGrvtinoMass", &genGrvtinoMass, &b_genGrvtinoMass);
    fChain->SetBranchAddress("genLLPMass", &genLLPMass, &b_genLLPMass);
@@ -1079,6 +1112,7 @@ void skimtuple_v36::Init( TChain *tree, bool doGenInfo ){
    fChain->SetBranchAddress("genVy", &genVy, &b_genVy);
    fChain->SetBranchAddress("genVz", &genVz, &b_genVz);
    fChain->SetBranchAddress("genXMomCTau", &genXMomCTau, &b_genXMomCTau);
+*/
 
    fChain->SetBranchAddress("eleHasSVMatch", &eleHasSVMatch, &b_eleHasSVMatch);
    fChain->SetBranchAddress("eleIsLoose", &eleIsLoose, &b_eleIsLoose);
@@ -1090,6 +1124,16 @@ void skimtuple_v36::Init( TChain *tree, bool doGenInfo ){
    fChain->SetBranchAddress("nElectrons", &nElectrons, &b_nElectrons);
    fChain->SetBranchAddress("nSelElectrons", &nSelElectrons, &b_nSelElectrons);
    fChain->SetBranchAddress("nSelIsoElectrons", &nSelIsoElectrons, &b_nSelIsoElectrons);
+
+   fChain->SetBranchAddress("allPhoE", &allPhoE, &b_allPhoE);
+   fChain->SetBranchAddress("allPhoEta", &allPhoEta, &b_allPhoEta);
+   fChain->SetBranchAddress("allPhoPhi", &allPhoPhi, &b_allPhoPhi);
+   fChain->SetBranchAddress("allPhoPixSeed", &allPhoPixSeed, &b_allPhoPixSeed);
+   fChain->SetBranchAddress("allPhoPt", &allPhoPt, &b_allPhoPt);
+   fChain->SetBranchAddress("allPhoWTime", &allPhoWTime, &b_allPhoWTime);
+   fChain->SetBranchAddress("allPhoWTime1", &allPhoWTime1, &b_allPhoWTime1);
+   fChain->SetBranchAddress("allPhoWTimeSig", &allPhoWTimeSig, &b_allPhoWTimeSig);
+   fChain->SetBranchAddress("allPhoWTimeSig1", &allPhoWTimeSig1, &b_allPhoWTimeSig1);
 
    fChain->SetBranchAddress("nPhotons", &nPhotons, &b_nPhotons);
    fChain->SetBranchAddress("nSelPhotons", &nSelPhotons, &b_nSelPhotons);
@@ -1371,6 +1415,7 @@ void skimtuple_v36::getBranches( Long64_t entry, bool doGenInfo ){
    b_selMetPx->GetEntry(entry);  //   selMetPx, &b_selMetPx);
    b_selMetPy->GetEntry(entry);  //   selMetPy, &b_selMetPy);
 
+/*
    b_genCharge->GetEntry(entry);  //   genCharge, &b_genCharge);
    b_genGrvtinoMass->GetEntry(entry);  //   genGrvtinoMass, &b_genGrvtinoMass);
    b_genLLPMass->GetEntry(entry);  //   genLLPMass, &b_genLLPMass);
@@ -1400,6 +1445,7 @@ void skimtuple_v36::getBranches( Long64_t entry, bool doGenInfo ){
    b_genVy->GetEntry(entry);  //   genVy, &b_genVy);
    b_genVz->GetEntry(entry);  //   genVz, &b_genVz);
    b_genXMomCTau->GetEntry(entry);  //   genXMomCTau, &b_genXMomCTau);
+*/
 
    b_eleHasSVMatch->GetEntry(entry);  //   eleHasSVMatch, &b_eleHasSVMatch);
    b_eleIsLoose->GetEntry(entry);  //   eleIsLoose, &b_eleIsLoose);
@@ -1411,6 +1457,16 @@ void skimtuple_v36::getBranches( Long64_t entry, bool doGenInfo ){
    b_nElectrons->GetEntry(entry);  //   nElectrons, &b_nElectrons);
    b_nSelElectrons->GetEntry(entry);  //   nSelElectrons, &b_nSelElectrons);
    b_nSelIsoElectrons->GetEntry(entry);  //   nSelIsoElectrons, &b_nSelIsoElectrons);
+
+   b_allPhoE->GetEntry(entry);   //!
+   b_allPhoEta->GetEntry(entry);   //!
+   b_allPhoPhi->GetEntry(entry);   //!
+   b_allPhoPixSeed->GetEntry(entry);   //!
+   b_allPhoPt->GetEntry(entry);   //!
+   b_allPhoWTime->GetEntry(entry);   //!
+   b_allPhoWTime1->GetEntry(entry);   //!
+   b_allPhoWTimeSig->GetEntry(entry);   //!
+   b_allPhoWTimeSig1->GetEntry(entry);   //!
 
    b_nPhotons->GetEntry(entry);  //   nPhotons, &b_nPhotons);
    b_nSelPhotons->GetEntry(entry);  //   nSelPhotons, &b_nSelPhotons);
