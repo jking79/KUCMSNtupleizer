@@ -19,6 +19,7 @@ test/oldWorkingSpace/
 test/myOldWorkSpaces/
 test/myGMSBWorkingSpace/
 macros/*.obj
+KUCMSSkimmer/condor/Output/
 .nfs*
 *.txt
 *.tgz

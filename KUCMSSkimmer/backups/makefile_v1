@@ -1,0 +1,82 @@
+# Compiler and flags
+
+CC = g++
+OPTS = -O3 -march=native -ffast-math -funroll-loops -flto -fno-trapping-math -funsafe-math-optimizations -fomit-frame-pointer -fno-math-errno
+
+RTCFLAGS = $(shell root-config --cflags)
+RTGLIBS  = $(shell root-config --glibs)
+
+RFCFLAGS = $(shell restframes-config --cxxflags)
+RFGLIBS  = $(shell restframes-config --libs)
+
+GLIBS = -L/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/gmp-static/6.2.1-f4591b847fcbe5753bfc5d2b02f57089/lib/ -lgmp \
+-L/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/boost/1.80.0-f76596f4b83666ac3468f34a5f342677/lib/ -lboost_thread
+
+BCFLAGS = -I/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/eigen/82dd3710dac619448f50331c1d6a35da673f764a-f9c27fce684e89466e2ef07869cd264d/include/eigen3/ \
+-I/uscms/home/mlazarov/nobackup/CMSSW_13_0_13/src/CGAL-5.6.1/include \
+-I/uscms/home/mlazarov/nobackup/CMSSW_13_0_13/src/frugally-deep-master/include \
+-I/uscms/home/mlazarov/nobackup/CMSSW_13_0_13/src/FunctionalPlus-master/include \
+-I/uscms/home/mlazarov/nobackup/CMSSW_13_3_3/src/BayesianClustering/include -frounding-math
+
+BCGLIBS = -L/uscms/home/mlazarov/nobackup/CMSSW_13_3_3/src/BayesianClustering/lib -lBayesianClustering $(GLIBS)
+
+SKFLAGS = -I./include
+SKLIBS  = -L./obj
+
+IFLAGS = -I../interface
+
+# Object directory
+
+OUTOBJ = ./obj/
+$(shell mkdir -p $(OUTOBJ))
+
+# Compile KUCMS_TimeCalibration.o
+
+TCOBJ = KUCMS_TimeCalibration.o
+TCINC = -I./KUCMSTimeCaliFiles/include
+
+KUCMS_TimeCalibration.o: KUCMSTimeCaliFiles/src/KUCMS_TimeCalibration.cpp KUCMSTimeCaliFiles/include/*.hh
+	$(CC) $(RTCFLAGS) $(RTGLIBS) $(TCINC) $(OPTS) -fPIC -c $< -o $@
+
+# Collect supporting .cpp files (exclude main programs)
+
+MAIN_CPP = src/runKUCMSAodSVSkimmer.cpp src/runLocalKUCMSAodSVSkimmer.cpp
+CC_FILES := $(filter-out $(MAIN_CPP), $(wildcard src/*.cc))
+OBJ_FILES := $(addprefix $(OUTOBJ),$(notdir $(CC_FILES:.cc=.o)))
+
+# Pattern rule to build object files from supporting .cpp
+
+$(OUTOBJ)%.o: src/%.cpp include/KUCMSAodSVSkimmer.hh
+	$(CC) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS) $(BCGLIBS) $(SKFLAGS) $(TCINC) $(IFLAGS) $(OPTS) -c $< -o $@
+
+$(OUTOBJ)%.o: src/%.cc include/%.hh 
+	$(CC) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS) $(BCGLIBS) $(SKFLAGS) $(TCINC) $(IFLAGS) $(OPTS) -c $< -o $@
+
+# Executables
+
+all: KUCMS_TimeCalibration.o runKUCMSAodSVSkimmer.obj
+
+local: runLocalKUCMSAodSVSkimmer.obj
+
+runKUCMSAodSVSkimmer.obj: src/runKUCMSAodSVSkimmer.cpp $(TCOBJ) $(OBJ_FILES)
+	$(CC) -o runKUCMSAodSVSkimmer.obj src/runKUCMSAodSVSkimmer.cpp $(TCOBJ) $(OBJ_FILES) \
+		$(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS) $(BCGLIBS) $(SKFLAGS) $(TCINC) $(IFLAGS) $(OPTS)
+
+runLocalKUCMSAodSVSkimmer.obj: src/runLocalKUCMSAodSVSkimmer.cpp $(TCOBJ) $(OBJ_FILES)
+	$(CC) -o runLocalKUCMSAodSVSkimmer.obj src/runLocalKUCMSAodSVSkimmer.cpp $(TCOBJ) $(OBJ_FILES) \
+		$(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS) $(BCGLIBS) $(SKFLAGS) $(TCINC) $(IFLAGS) $(OPTS)
+
+# Config tar
+
+configtar: all
+	cp runKUCMSAodSVSkimmer.obj config/
+	cp runLocalKUCMSAodSVSkimmer.obj config/
+	cp -r ntuple_master_lists/ config/
+	cp -r ecal_config/ config/
+	tar -czf condor/config.tgz config/
+
+# Clean up
+
+clean:
+	rm -f obj/*.o *.obj KUCMS_TimeCalibration.o
+

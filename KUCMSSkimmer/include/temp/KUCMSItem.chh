@@ -1,0 +1,165 @@
+// -*- C++ -*-
+//
+//
+// Original Author:  Jack W King III
+//         Created:  Wed, 27 Jan 2021 19:19:35 GMT
+//
+//
+
+//--------------------   hh file -------------------------------------------------------------
+//---------------------------------------------------------------------------------------------
+
+#include "KUCMSItem.hh"
+
+#ifndef KUCMSItemHeader
+#define KUCMSItemHeader
+
+template <class T>
+Item<T>::Item() : iName(""), iDoc(""), iValue(T()) {}
+
+template <class T>
+Item<T>::Item( std::string name, std::string doc ):
+
+    iName(name),
+    iDoc(doc)
+
+{}//<<>>Item::Item( std::string name, std::string doc )
+
+template <class T>
+Item<T>::Item( std::string name, T value, std::string doc ):
+    
+    iName(name),
+    iDoc(doc),
+    iValue(value)
+
+{}//<<>>Item::Item( std::string name, std::string doc, T value  )
+
+template <class T>
+std::string Item<T>::getdoc(){
+
+    return iDoc;
+
+}//<<>>std::string Item::getDoc
+
+template <class T>
+T Item<T>::getvalue(){
+
+    return iValue;
+
+}//<<>>Item::getVal<T>()
+
+template <class T>
+void Item<T>::clear(){
+
+    iValue = -1.0*std::numeric_limits<T>::max();
+
+}//<<>>void Item::clear()
+
+template <>
+void Item<std::string>::clear(){
+
+    iValue = "";
+
+}//<<>>void Item::clear()
+
+template <>
+void Item<bool>::clear(){
+
+    iValue = false;
+
+}//<<>>void Item::clear()
+
+template <>
+void Item<uInt>::clear(){
+
+    iValue = 0;
+
+}//<<>>void Item::clear()
+
+template <>
+void Item<std::vector<unsigned int>>::clear(){
+
+    iValue.clear();
+
+}//<<>>void Item<std::vector<unsigned int>>::clear()
+
+template <>
+void Item<std::vector<float>>::clear(){
+
+    iValue.clear();
+
+}//<<>>void Item<std::vector<unsigned int>>::clear()
+
+template <class T>
+void Item<T>::make( std::string name, std::string doc ){
+
+    iName = name;
+    iDoc = doc;
+
+}//<<>>void Item::make(  std::string name, std::string doc  )
+
+template <class T>
+void Item<T>::fill( T val ){
+
+    iValue = val;
+
+}//<<>>void Item::fill( T val )
+
+//..................................................................................
+
+template < class T >
+VectorItem<T>::VectorItem() : iName(""), iDoc("") {}
+
+template < class T >
+VectorItem<T>::VectorItem( std::string name, std::string doc ):
+
+    iName(name),
+    iDoc(doc)
+
+{}//<<>>VectorItem::VectorItem( std::string name, std::string doc )
+
+template < class T >
+VectorItem<T>::VectorItem( std::string name, T value, std::string doc ):
+ 
+    iName(name),
+    iDoc(doc)
+
+{ this.fill(value); }//<<>>VectorItem::VectorItem( std::string name, std::string doc, T value  )
+
+template < class T>
+std::string VectorItem<T>::getdoc(){
+
+    return iDoc;
+
+}//<<>>std::string VectorItem::getDoc
+
+template < class T >
+std::vector<T> VectorItem<T>::getvalue(){
+
+    return iVector;
+
+}//<<>>VectorItem::getVal<T>()
+
+template < class T >
+void VectorItem<T>::clear(){
+
+    iVector.clear();
+
+}//<<>>void VectorItem::clear()
+
+template <class T>
+void VectorItem<T>::make( std::string name, std::string doc ){
+
+    iName = name;
+    iDoc = doc;
+
+}//<<>>void VectorItem::make(  std::string name, std::string doc )
+
+template < class T >
+void VectorItem<T>::fill( T val ){
+
+    iVector.push_back( val );
+
+}//<<>>void VectorItem::clear()
+
+#endif

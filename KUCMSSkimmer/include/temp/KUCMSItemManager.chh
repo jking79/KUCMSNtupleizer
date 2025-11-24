@@ -1,0 +1,93 @@
+// -*- C++ -*-
+//
+//
+// Original Author:  Jack W King III
+//         Created:  Wed, 27 Jan 2021 19:19:35 GMT
+//
+//
+
+//--------------------   hh file -------------------------------------------------------------
+//---------------------------------------------------------------------------------------------
+
+#include "KUCMSItemManager.hh"
+
+#ifndef KUCMSItemManagerHeader
+#define KUCMSItemManagerHeader
+
+//......................................................................................
+//   ItemManager
+//......................................................................................
+
+
+template < class T , template< class > class C >
+void ItemManager<T,C>::set( std::string key, std::string name, std::string doc ){
+
+    C<T> newitem( name, doc );
+    items[key] = newitem;
+
+}//>><<void ItemManager::set( std::string key, std::string name, std::string doc )
+
+template < class T , template< class > class C >
+void ItemManager<T,C>::set( std::string name ){ set( name, name, "" ); }
+
+template < class T , template< class > class C >
+void ItemManager<T,C>::set( std::string name, T val ){
+
+    C<T> newitem( name, val, "" );
+    items[name] = newitem;
+
+}//>><<void ItemManager::set( std::string key, std::string name, std::string doc, T val )
+
+template < class T , template< class > class C >
+void ItemManager<T,C>::fill( std::string key, T val ){
+
+    if( valid( key ) ) items[key].fill( val );
+    
+}//<<>>void ItemManager<T>::fill( std::string key, T val )
+
+template < class T , template< class > class C >
+T ItemManager<T,C>::get( std::string key ){
+
+    return valid( key ) ? items[key].getvalue() : T();
+
+}//<<>>T ItemManager::get( std::string key )
+
+template < class T , template< class > class C >
+void ItemManager<T,C>::clear(){
+
+    for( auto & item : items ){ item.second.clear(); }
+
+}//<<>>T ItemManager::clear()
+
+template < class T , template< class > class C >
+void ItemManager<T,C>::reset(){
+
+    for( auto & item : items ){ item.erase(); }
+
+}//<<>>T ItemManager::reset()
+
+template < class T , template< class > class C >
+void ItemManager<T,C>::clear( std::string key ){
+    
+    if( valid( key ) ) items[key].clear();
+
+}//<<>>T ItemManager::clear( std::string key )
+
+template < class T , template< class > class C >
+T ItemManager<T,C>::operator()( std::string key ){
+
+    return valid( key ) ? items[key].getvalue() : T();
+
+}//<<>>T ItemManager<T,C>::operator()( std::string key )
+
+template < class T , template< class > class C >
+bool ItemManager<T,C>::valid( std::string key ){ 
+
+    if( items.find(key) == items.end() ){
+        std::cout << " -- IM Error: No Such Key : " << key << " !!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl; 
+        return false; 
+    } else return true;
+
+}//<<>>bool ItemManager<T>::::valid( std::string key )
+
+#endif
