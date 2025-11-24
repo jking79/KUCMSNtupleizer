@@ -41,26 +41,23 @@ TCALIDIR = KUCMSTimeCaliFiles
 TCALI_SRCDIR = $(TCALIDIR)/src
 TCALI_INCDIR = $(TCALIDIR)/include
 
-
 # Source and object files
 
 SRCDIR = ./src
 
-MAIN_CPP := $(SRCDIR)/runKUCMSAodSVSkimmer.cpp $(SRCDIR)/runLocalKUCMSAodSVSkimmer.cpp
-SUPPORT_CPP := $(filter-out $(MAIN_CPP), $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/*.cc) $(wildcard $(TCALI_SRCDIR)/*.cpp))
+MAIN_CPP := $(SRCDIR)/runKUCMSAodSVSkimmer.cpp $(SRCDIR)/runLocalKUCMSAodSVSkimmer.cpp 
+MAIN_CPP += $(TCALI_SRCDIR)/makeKUCMSTimeCalibration.cpp $(TCALI_SRCDIR)/makeKUCMSTimeResolution.cpp
+SUPPORT_CPP := $(filter-out $(MAIN_CPP), $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/*.cc) ) 
+SUPPORT_CPP += $(filter-out $(MAIN_CPP), $(wildcard $(TCALI_SRCDIR)/*.cpp) $(wildcard $(TCALI_SRCDIR)/*.cc))
 OBJ_FILES := $(patsubst %,$(OBJDIR)/%,$(notdir $(SUPPORT_CPP:.cpp=.o)))
 OBJ_FILES := $(OBJ_FILES:.cc=.o) # handle .cc extension
-
-#SRC_CPP := $(wildcard $(SRCDIR)/*.cpp)
-#SRC_CC := $(wildcard $(SRCDIR)/*.cc)
-#TCALI_SRC := $(wildcard $(TCALI_SRCDIR)/*.cpp)
-#ALL_SRC := $(SRC_CPP) $(SRC_CC) $(TCALI_SRC)
-#OBJ_FILES := $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SRC_CPP)) $(patsubst $(SRCDIR)/%.cc,$(OBJDIR)/%.o,$(SRC_CC)) $(patsubst $(TCALI_SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(TCALI_SRC))
 
 # Default target
 
 EXE_MAIN = runKUCMSAodSVSkimmer.obj
 EXE_LOCAL = runLocalKUCMSAodSVSkimmer.obj
+EXE_CALI = makeKUCMSTimeCalibration.obj
+EXE_RES = makeKUCMSTimeResolution.obj
 
 # Colored output
 
@@ -83,38 +80,49 @@ $(OBJDIR)/%.o: $(TCALI_SRCDIR)/%.cpp
 	@echo -e "$(COLOR_YELLOW)Compiling $<$(COLOR_RESET)"
 	$(CC) $(CXXFLAGS) $(CXXFLAGS_COMMON) -I$(TCALI_INCDIR) -I$(INCDIR) $(RTCFLAGS) $(RTGLIBS) -c $< -o $@
 
+$(MAINOBJDIR)/%.o: $(TCALI_SRCDIR)/%.cpp
+	@echo -e "$(COLOR_YELLOW)Compiling $<$(COLOR_RESET)"
+	$(CC) $(CXXFLAGS) $(CXXFLAGS_COMMON) -I$(TCALI_INCDIR) -I$(INCDIR) $(RTCFLAGS) $(RTGLIBS) -c $< -o $@
+
+
 MAIN_OBJ := $(MAINOBJDIR)/runKUCMSAodSVSkimmer.o
 LOCAL_OBJ := $(MAINOBJDIR)/runLocalKUCMSAodSVSkimmer.o
+TCALI_OBJ := $(MAINOBJDIR)/makeKUCMSTimeCalibration.o
+TRES_OBJ  := $(MAINOBJDIR)/makeKUCMSTimeResolution.o
 
 # Executables
 
-all: $(EXE_MAIN) configtar 
+remote: $(EXE_MAIN)
 local: $(EXE_LOCAL)
-
-#$(EXE_MAIN): $(OBJ_FILES) $(MAIN_OBJ)
-#	@echo -e "$(COLOR_GREEN)Linking $@$(COLOR_RESET)"
-#	$(CC) -o $@ $(OBJ_FILES) $(CXXFLAGS_COMMON) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS) $(BCGLIBS) -I$(INCDIR) -I$(TCALI_INCDIR) $(IFLAGS) -pthread
+time: $(EXE_CALI) $(EXE_RES)
 
 $(EXE_MAIN): $(OBJ_FILES) $(MAIN_OBJ)
 	@echo -e "$(COLOR_GREEN)Linking $@$(COLOR_RESET)"
 	$(CC) -o $@ $(OBJ_FILES) $(MAIN_OBJ) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCGLIBS) -pthread
 
-#$(EXE_LOCAL): $(OBJ_FILES) $(LOCAL_OBJ)
-#	@echo -e "$(COLOR_GREEN)Linking $@$(COLOR_RESET)"
-#	$(CC) -o $@ $(OBJ_FILES) $(CXXFLAGS_COMMON) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS) $(BCGLIBS) -I$(INCDIR) -I$(TCALI_INCDIR) $(IFLAGS) -pthread
-
 $(EXE_LOCAL): $(OBJ_FILES) $(LOCAL_OBJ)
 	@echo -e "$(COLOR_GREEN)Linking $@$(COLOR_RESET)"
 	$(CC) -o $@ $(OBJ_FILES) $(LOCAL_OBJ) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCGLIBS) -pthread
 
+$(EXE_CALI): $(TCALI_OBJ) $(OBJDIR)/KUCMS_TimeCalibration.o
+	@echo -e "$(COLOR_GREEN)Linking $@$(COLOR_RESET)"
+	$(CC) -o $@ $(TCALI_OBJ) $(OBJDIR)/KUCMS_TimeCalibration.o $(CXXFLAGS_COMMON) $(RTCFLAGS) $(RTGLIBS) -pthread
+
+$(EXE_RES): $(TRES_OBJ) $(OBJDIR)/KUCMS_TimeCalibration.o
+	@echo -e "$(COLOR_GREEN)Linking $@$(COLOR_RESET)"
+	$(CC) -o $@ $(TRES_OBJ) $(OBJDIR)/KUCMS_TimeCalibration.o $(CXXFLAGS_COMMON) $(RTCFLAGS) $(RTGLIBS) -pthread
+
+
 # Condor tarball
 
-configtar: all
+configtar: remote
 	@echo -e "$(COLOR_GREEN)Creating condor tarball$(COLOR_RESET)"
 	cp $(EXE_MAIN) config/
 	cp -r ntuple_master_lists/ config/
 	cp -r ecal_config/ config/
 	tar -czf condor/config.tgz -C config .
+
+all: remote configtar
 
 # debug
 
