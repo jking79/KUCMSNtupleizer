@@ -88,7 +88,7 @@ LOCAL_OBJ := $(MAINOBJDIR)/runLocalKUCMSAodSVSkimmer.o
 
 # Executables
 
-all: $(EXE_MAIN) 
+all: $(EXE_MAIN) configtar 
 local: $(EXE_LOCAL)
 
 #$(EXE_MAIN): $(OBJ_FILES) $(MAIN_OBJ)
