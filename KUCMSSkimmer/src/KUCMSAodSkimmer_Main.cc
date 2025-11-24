@@ -11,19 +11,19 @@
 #include <ctime>
 
 #include "KUCMSAodSVSkimmer.hh"
-#include "KUCMSAodSkimmer_Helpers.hh"
-#include "KUCMSAodSkimmer_EvntMetVars.hh"
-#include "KUCMSAodSkimmer_Tracks.hh"
-#include "KUCMSAodSkimmer_Ecal.hh"
-#include "KUCMSAodSkimmer_Gen.hh"
-#include "KUCMSAodSkimmer_Photons.hh"
-#include "KUCMSAodSkimmer_RJR.hh"
-#include "KUCMSAodSkimmer_Electron.hh"
-#include "KUCMSAodSkimmer_Jets.hh"
-#include "KUCMSAodSkimmer_Muons.hh"
-#include "KUCMSAodSkimmer_SV.hh"
-#include "KUCMSAodSkimmer_BHC.hh"
-#include "KUCMSAodSkimmer_TimeSig.hh"
+#include "KUCMSAodSkimmer_Helpers.chh"
+#include "KUCMSAodSkimmer_EvntMetVars.chh"
+#include "KUCMSAodSkimmer_Tracks.chh"
+#include "KUCMSAodSkimmer_Ecal.chh"
+#include "KUCMSAodSkimmer_Gen.chh"
+#include "KUCMSAodSkimmer_Photons.chh"
+#include "KUCMSAodSkimmer_RJR.chh"
+#include "KUCMSAodSkimmer_Electron.chh"
+#include "KUCMSAodSkimmer_Jets.chh"
+#include "KUCMSAodSkimmer_Muons.chh"
+#include "KUCMSAodSkimmer_SV.chh"
+#include "KUCMSAodSkimmer_BHC.chh"
+#include "KUCMSAodSkimmer_TimeSig.chh"
 
 //-----------------------------------------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------------------------------------

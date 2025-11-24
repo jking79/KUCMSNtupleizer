@@ -789,10 +789,12 @@ public :
    //virtual Bool_t   Notify();
    //virtual void     Show(Long64_t entry = -1);
 
-   void Init( TChain *tree, bool doGenInfo, bool doSVs );
-   void getBranches( Long64_t entry, bool doGenInfo, bool doSVs );
+   //void Init( TChain *tree, bool doGenInfo, bool doSVs );
+   //void getBranches( Long64_t entry, bool doGenInfo, bool doSVs );
 
-};
+
+   public:
+//};
 
 /*
 
@@ -839,7 +841,7 @@ Long64_t kuntuple_v30::LoadTree(Long64_t entry)
 
 */
 
-void llpgtree::Init( TChain *tree, bool doGenInfo, bool doSVs ){
+void Init( TChain *tree, bool doGenInfo, bool doSVs ){
 
    // The Init() function is called when the selector needs to initialize
    // a new tree or chain. Typically here the branch addresses and branch
@@ -1597,7 +1599,7 @@ void llpgtree::Init( TChain *tree, bool doGenInfo, bool doSVs ){
    //Notify();
 }
 
-void llpgtree::getBranches( Long64_t entry, bool doGenInfo, bool doSVs ){
+void getBranches( Long64_t entry, bool doGenInfo, bool doSVs ){
 
    // List of branches
 
@@ -2011,6 +2013,8 @@ void llpgtree::getBranches( Long64_t entry, bool doGenInfo, bool doSVs ){
    b_Track_vz->GetEntry(entry);   //!
 
 }//<<>>void root_base::getBranches(Long64_t entry)
+
+};//<<>>class llpgtree 
 
 /*
 Bool_t kuntuple_v30::Notify()

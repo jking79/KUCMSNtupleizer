@@ -17,6 +17,7 @@
 #include <cmath>
 #include <iostream>
 #include <limits> 
+#include <type_traits>
 
 //Root includes
 #include "TTree.h"
@@ -88,6 +89,23 @@ T Item<T>::getvalue(){
 }//<<>>Item::getVal<T>()
 
 template <class T>
+inline void Item<T>::clear() {
+    if constexpr (std::is_same_v<T, std::string>) {
+        iValue = "";
+    } else if constexpr (std::is_same_v<T, bool>) {
+        iValue = false;
+    } else if constexpr (std::is_same_v<T, uInt>) {
+        iValue = 0;
+    } else if constexpr (std::is_same_v<T, std::vector<unsigned int>> ||
+                         std::is_same_v<T, std::vector<float>>) {
+        iValue.clear();
+    } else {
+        iValue = -1.0 * std::numeric_limits<T>::max();
+    }
+}//<<>>inline void Item<T>::clear() 
+
+/*
+template <class T>
 void Item<T>::clear(){
 
     iValue = -1.0*std::numeric_limits<T>::max();
@@ -128,6 +146,7 @@ void Item<std::vector<float>>::clear(){
     iValue.clear();
 
 }//<<>>void Item<std::vector<unsigned int>>::clear()
+*/
 
 template <class T>
 void Item<T>::make( std::string name, std::string doc ){
@@ -296,7 +315,7 @@ void ItemManager<T,C>::clear(){
 template < class T , template< class > class C >
 void ItemManager<T,C>::reset(){
 
-    for( auto & item : items ){ item.erase(); }
+    for( auto & item : items ){ item.clear(); }
 
 }//<<>>T ItemManager::reset()
 
