@@ -281,8 +281,11 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
     float minttlumi =  0.36; // in /fb
     float minxlumi = 9.0; // in /fb
 
-	float minttlumig2 = 3.6;
-	float minxlumig2 = 18.0;
+	float minttlumigs2 = 4.0;
+	float minxlumigs2 = 16.0;
+
+    float minttlumigs3 = 12.0;
+    float minxlumigs3 = 48.0;
 
     std::string r2ulTagTT( "r2ultt" );
     std::string r2ulTagX( "r2ulx" );
@@ -305,11 +308,18 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
     SetupIovMap( r2ulTagX, minxlumi );
     setXIov("r2ulx");
 
-    std::string r2ulTagTTG2( "r2ultt_g2" );
-	std::string r2ulTagXG2( "r2ulx_g2" );
+    std::string r2ulTagTTGS2( "r2ultt_gs2" );
+	std::string r2ulTagXGS2( "r2ulx_gs2" );
 
-	SetupIovMap( r2ulTagTTG2, minttlumig2 );
-	SetupIovMap( r2ulTagXG2, minttlumig2 );
+	SetupIovMap( r2ulTagTTGS2, minttlumigs2 );
+	SetupIovMap( r2ulTagXGS2, minttlumigs2 );
+
+    std::string r2ulTagTTGS3( "r2ultt_gs3" );
+    std::string r2ulTagXGS3( "r2ulx_gs3" );
+
+    SetupIovMap( r2ulTagTTGS3, minttlumigs3 );
+    SetupIovMap( r2ulTagXGS3, minttlumigs3 );
+
 
     std::string r3TagTT( "r3tt" );
     std::string r3TagX( "r3x" );
@@ -1428,6 +1438,7 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
             bool runNotFound( true );
 			auto& calirunset = doTT ? TTCaliRunMapSet : CaliRunMapSet;
 			if( calirunset.find(tag) != calirunset.end() ){ // tag exists
+
 				if( debug) std::cout << " - tag found : " << tag << std::endl;
 				tagNotFound = false;
 				auto& runset = calirunset[tag];
@@ -1441,6 +1452,7 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 						if( debug) std::cout  << " nrh " << nRecHits << std::endl; 
 						// if end == last : all runs in range completed, if run > last : run in range already filled
 						if( run > range.lastRun ){
+
 							for( int idx = 0; idx < nRecHits; idx++ ){
 								if( rhTimeError->at(idx) <= 0.61 ) continue; // only valid for ratio time reco
 								bool gs6 = rhisGS6->at(idx);
@@ -1464,13 +1476,16 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
                                 //if( crstime == 0 ) std::cout << " = e " << DetIDMap[id].i2 << " p " << DetIDMap[id].i1 << std::endl;
 								range.fillSumCnt( crsid, crstime ); // lastrun valid?????
 							}//<<>>for( int idx = 0; idx < nRecHits; idx++ )
+
 						}//<<>>if( run > range.lastRun )
 						break;
 					}//<<>>if( run > startRun && run <= endRun )
 				}//<<>>for( auto& range : runset )
+
 			}//<<>>if( calirunset.find(tag) != calirunset.end() ) 
 
 			if( tagNotFound || runNotFound ){		
+
 				if( debug) std::cout << " - tag not found : " << tag << std::endl;
 				std::string tmpxtalmap = "none"; 
 				int tstart = 9999999;
@@ -1510,6 +1525,7 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 						calirunset[tag][tstart].fillSumCnt( crsid, crstime );
                     }//<<>>for( int idx = 0; idx < nRecHits; idx++ )
 				} // else { std::cout << "No IOV for this run/tag " << run << " - " << tag << " ? !!!!!!! " << std::endl; }
+
 			}//<<>>if( not tagfound )
 
 		}//<<>>for (Long64_t centry = 0; centry < nEntries; cnentry++)

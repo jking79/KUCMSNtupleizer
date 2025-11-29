@@ -11,19 +11,21 @@
 #include <ctime>
 
 #include "KUCMSAodSVSkimmer.hh"
-#include "KUCMSAodSkimmer_Helpers.hh"
-#include "KUCMSAodSkimmer_EvntMetVars.hh"
-#include "KUCMSAodSkimmer_Tracks.hh"
-#include "KUCMSAodSkimmer_Ecal.hh"
-#include "KUCMSAodSkimmer_Gen.hh"
-#include "KUCMSAodSkimmer_Photons.hh"
-#include "KUCMSAodSkimmer_RJR.hh"
-#include "KUCMSAodSkimmer_Electron.hh"
-#include "KUCMSAodSkimmer_Jets.hh"
-#include "KUCMSAodSkimmer_Muons.hh"
-#include "KUCMSAodSkimmer_SV.hh"
-#include "KUCMSAodSkimmer_BHC.hh"
-#include "KUCMSAodSkimmer_TimeSig.hh"
+/*
+#include "KUCMSAodSkimmer_Helpers.hpp"
+#include "KUCMSAodSkimmer_EvntMetVars.hpp"
+#include "KUCMSAodSkimmer_Tracks.hpp"
+#include "KUCMSAodSkimmer_Ecal.hpp"
+#include "KUCMSAodSkimmer_Gen.hpp"
+#include "KUCMSAodSkimmer_Photons.hpp"
+#include "KUCMSAodSkimmer_RJR.hpp"
+#include "KUCMSAodSkimmer_Electron.hpp"
+#include "KUCMSAodSkimmer_Jets.hpp"
+#include "KUCMSAodSkimmer_Muons.hpp"
+#include "KUCMSAodSkimmer_SV.hpp"
+#include "KUCMSAodSkimmer_BHC.hpp"
+#include "KUCMSAodSkimmer_TimeSig.hpp"
+*/
 
 //-----------------------------------------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------------------------------------
@@ -163,7 +165,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
   // setup lumi json map
 
   loadLumiJson("config/json/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.json");
-  //loadLumiJson("config/json/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt");
+  loadLumiJson("config/json/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt");
   //loadLumiJson("config/json/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt",true);
 
   // condor event segmenting varibles : used to run over subset of events for condor jobs

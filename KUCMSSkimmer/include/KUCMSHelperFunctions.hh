@@ -47,7 +47,7 @@ typedef const std::vector<double> CVDbl;
 // Helper functions ( single line function defs, mostly )
 //
 
-const auto sortByPt = [](auto & obj1, auto & obj2) {return obj1.pt() > obj2.pt();};
+inline const auto sortByPt = [](auto & obj1, auto & obj2) {return obj1.pt() > obj2.pt();};
 
 //
 // The "crystalball" function for ROOT 5.x (mimics ROOT 6.x).
@@ -60,7 +60,7 @@ const auto sortByPt = [](auto & obj1, auto & obj2) {return obj1.pt() > obj2.pt()
 //
 
 // see math/mathcore/src/PdfFuncMathCore.cxx in ROOT 6.x
-double crystalball_function(double x, double alpha, double n, double sigma, double mean) {
+inline double crystalball_function(double x, double alpha, double n, double sigma, double mean) {
 
     // evaluate the crystal ball function
     if (sigma < 0.)     return 0.;
@@ -82,7 +82,7 @@ double crystalball_function(double x, double alpha, double n, double sigma, doub
 
 }//<<>>double crystalball_function(double x, double alpha, double n, double sigma, double mean)
 
-double crystalball_function(const double *x, const double *p) {
+inline double crystalball_function(const double *x, const double *p) {
 
     // if ((!x) || (!p)) return 0.; // just a precaution
     // [Constant] * ROOT::Math::crystalball_function(x, [Alpha], [N], [Sigma], [Mean])
@@ -90,7 +90,7 @@ double crystalball_function(const double *x, const double *p) {
 
 }//<<>>double crystalball_function(const double *x, const double *p)
 
-double twosided_crystalball_function(double x, double alphalow, double alphahigh, double nlow, double nhigh, double sigma, double mean) {
+inline double twosided_crystalball_function(double x, double alphalow, double alphahigh, double nlow, double nhigh, double sigma, double mean) {
 
     // evaluate the crystal ball function
     if(sigma < 0.) return 0.;
@@ -114,13 +114,13 @@ double twosided_crystalball_function(double x, double alphalow, double alphahigh
 
 }//<<>>double double_crystalball_function(double x, ... double nlow, double nhigh, double sigma, double mean)
 
-double twosided_crystalball_function(const double *x, const double *p) {
+inline double twosided_crystalball_function(const double *x, const double *p) {
 
     return (p[0] * twosided_crystalball_function(x[0], p[3], p[4], p[5], p[6], p[2], p[1]));
 
 }//<<>>double double_crystalball_function(const double *x, const double *p)
 
-const float getMyAngle ( const float x, const float y){
+inline const float getMyAngle ( const float x, const float y){
 
     if( x == 0 && y == 0 ) return 6.39; //-999.0;
     if( x == 0 ){ if( y > 0 ) return PI/2; else return 3*PI/2; }
@@ -134,7 +134,7 @@ const float getMyAngle ( const float x, const float y){
 
 }//<<>> const float getAngle (CFlt x, CFlt y)
 
-const float getAngle ( const float x, const float y){
+inline const float getAngle ( const float x, const float y){
 
     if( x == 0 && y == 0) return 6.39;
     auto a = std::atan2(y,x);
@@ -143,7 +143,7 @@ const float getAngle ( const float x, const float y){
 
 }//<<>> const float getAngle (CFlt x, CFlt y) with atan2
 
-const float getATan2 ( const float x, const float y){
+inline const float getATan2 ( const float x, const float y){
 
     if( x == 0 && y == 0) return 6.39;
     else return std::atan2(y,x);
@@ -151,77 +151,77 @@ const float getATan2 ( const float x, const float y){
 }//<<>> const float getAngle (CFlt x, CFlt y) with atan2
 
 // math functions
-const auto pow      (CFlt x, int p){ float r = x; for( int i = 1; i < p; i++ ){ r *= x; } return (p>0)?r:0; }
-const auto pow      (CDbl x, int p){ double r = x; for( int i = 1; i < p; i++ ){ r *= x; } return (p>0)?r:0; }
-const auto accum    (CVFlt x){return std::accumulate(x.begin(),x.end(),0.0f);}
-const auto sq2      (CFlt x){return x*x;}
-const auto sq2      (CDbl x){return x*x;}
-const auto rad2     (CFlt x, CFlt y, CFlt z = 0.f){return x*x+y*y+z*z;}
-const auto hypo     (CFlt x, CFlt y, CFlt z = 0.f){return std::sqrt(rad2(x,y,z));}
-const auto phi      (CFlt x, CFlt y){return std::atan2(y,x);}
-const auto theta    (CFlt r, CFlt z){return std::atan2(r,z);}
-const auto eta      (CFlt x, CFlt y, CFlt z){return -1.0f*std::log(std::tan(theta(hypo(x,y),z)/2.f));}
-const auto effMean  (CFlt x, CFlt y){return (x*y)/sqrt(x*x+y*y);}
-const auto dIPhi    (CFlt x, CFlt y){auto dp(x-y); if( dp > 180 ){dp-=360.0;} else if( dp < -180 ){ dp+=360.0;} return dp;}
-const auto dPhi     (CFlt x, CFlt y){auto dp(x-y); if( dp > PI ){dp-=2*PI;} else if( dp < -PI ){ dp+=2*PI;} return dp;}
-const auto vfsum    (CVFlt x){return std::accumulate(x.begin(),x.end(),0.0f);}
-const auto max      (CVFlt x){float m(x[0]); for(auto ix : x ){ if( ix > m ) m = ix; } return m;}
-const auto dR1		(CFlt e1, CFlt p1, CFlt e2, CFlt p2){auto de = e1-e2; auto dp = dPhi(p1,p2); return hypo(de,dp);}
+inline const auto pow      (CFlt x, int p){ float r = x; for( int i = 1; i < p; i++ ){ r *= x; } return (p>0)?r:0; }
+inline const auto pow      (CDbl x, int p){ double r = x; for( int i = 1; i < p; i++ ){ r *= x; } return (p>0)?r:0; }
+inline const auto accum    (CVFlt x){return std::accumulate(x.begin(),x.end(),0.0f);}
+inline const auto sq2      (CFlt x){return x*x;}
+inline const auto sq2      (CDbl x){return x*x;}
+inline const auto rad2     (CFlt x, CFlt y, CFlt z = 0.f){return x*x+y*y+z*z;}
+inline const auto hypo     (CFlt x, CFlt y, CFlt z = 0.f){return std::sqrt(rad2(x,y,z));}
+inline const auto phi      (CFlt x, CFlt y){return std::atan2(y,x);}
+inline const auto theta    (CFlt r, CFlt z){return std::atan2(r,z);}
+inline const auto eta      (CFlt x, CFlt y, CFlt z){return -1.0f*std::log(std::tan(theta(hypo(x,y),z)/2.f));}
+inline const auto effMean  (CFlt x, CFlt y){return (x*y)/sqrt(x*x+y*y);}
+inline const auto dIPhi    (CFlt x, CFlt y){auto dp(x-y); if( dp > 180 ){dp-=360.0;} else if( dp < -180 ){ dp+=360.0;} return dp;}
+inline const auto dPhi     (CFlt x, CFlt y){auto dp(x-y); if( dp > PI ){dp-=2*PI;} else if( dp < -PI ){ dp+=2*PI;} return dp;}
+inline const auto vfsum    (CVFlt x){return std::accumulate(x.begin(),x.end(),0.0f);}
+inline const auto max      (CVFlt x){float m(x[0]); for(auto ix : x ){ if( ix > m ) m = ix; } return m;}
+inline const auto dR1		(CFlt e1, CFlt p1, CFlt e2, CFlt p2){auto de = e1-e2; auto dp = dPhi(p1,p2); return hypo(de,dp);}
 
 // stats functions
-const auto mean     (CVFlt x){return std::accumulate(x.begin(),x.end(),0.0f)/x.size();}
-const auto mean     (CVFlt x, CFlt w){return std::accumulate(x.begin(),x.end(),0.0f)/w;}
-const auto mean     (CVFlt x, CVFlt wv){
+inline const auto mean     (CVFlt x){return std::accumulate(x.begin(),x.end(),0.0f)/x.size();}
+inline const auto mean     (CVFlt x, CFlt w){return std::accumulate(x.begin(),x.end(),0.0f)/w;}
+inline const auto mean     (CVFlt x, CVFlt wv){
                         float sum(0.0), wt(0.0); int it(0); for( auto ix : x ){ sum+=ix*wv[it]; wt+=wv[it]; it++; } return sum/wt;}
-const auto wnum     (CFlt it, CFlt w){return (((it-1)*w)/it);}
-const auto stdev    (CVFlt x, CFlt m){float sum(0.0); for( auto ix : x ){ sum += sq2(ix-m); } return std::sqrt(sum/(x.size()-1));}
-const auto var      (CVFlt x, CFlt m){float sum(0.0); for( auto ix : x ){ sum += sq2(ix-m); } return sum/(x.size()-1);}
+inline const auto wnum     (CFlt it, CFlt w){return (((it-1)*w)/it);}
+inline const auto stdev    (CVFlt x, CFlt m){float sum(0.0); for( auto ix : x ){ sum += sq2(ix-m); } return std::sqrt(sum/(x.size()-1));}
+inline const auto var      (CVFlt x, CFlt m){float sum(0.0); for( auto ix : x ){ sum += sq2(ix-m); } return sum/(x.size()-1);}
 
-const auto stdev    (CVFlt x, CFlt m, CVFlt wv, CFlt w){
+inline const auto stdev    (CVFlt x, CFlt m, CVFlt wv, CFlt w){
                         float sum(0.0); int it(0);
                         for(auto ix : x ){ sum += wv[it]*sq2(ix-m); it++; }
                         return std::sqrt(sum/wnum(it,w));
-                    }//const auto stdev
+                    }//inline const auto stdev
 
-const auto var(CVFlt x, CFlt m, CVFlt wv, CFlt w){
+inline const auto var(CVFlt x, CFlt m, CVFlt wv, CFlt w){
     float sum(0.0); int it(0); for(auto ix : x ){ sum += wv[it]*sq2(ix-m); it++; } return sum/wnum(it,w);}
-const auto var(CVFlt x, CFlt m, CVFlt wv){
+inline const auto var(CVFlt x, CFlt m, CVFlt wv){
     float sum(0.0); int it(0); for(auto ix : x ){ sum += wv[it]*sq2(ix-m); it++; } return sum/wnum(it,vfsum(wv));}
 
-const auto cvar     (CVFlt x, CFlt mx, CVFlt y, CFlt my, CVFlt wv, CFlt w){
+inline const auto cvar     (CVFlt x, CFlt mx, CVFlt y, CFlt my, CVFlt wv, CFlt w){
                         float sum(0.0); int it(0);
                         for(auto ix : x ){ sum += wv[it]*(ix-mx)*(y[it]-my); it++; }
                         return sum/wnum(it,w);
-                    }//<<>> const auto cvar(CVFlt x, CFlt mx, CVFlt y, CFlt my, CVFlt wv, CFlt w)
+                    }//<<>> inline const auto cvar(CVFlt x, CFlt mx, CVFlt y, CFlt my, CVFlt wv, CFlt w)
 
-const auto cvar     (CVFlt x, CFlt mx, CVFlt y, CFlt my){
+inline const auto cvar     (CVFlt x, CFlt mx, CVFlt y, CFlt my){
                         float sum(0.0); int it(0);
                         for( auto ix : x ){ sum += (ix-mx)*(y[it]-my); it++; }
                         return sum/(x.size()-1);
-                    }//const auto cvar
+                    }//inline const auto cvar
 
-const auto rms      (CVFlt x){float sum(0.0); for(auto ix : x ){ sum += sq2(ix); } return std::sqrt(sum/x.size());}
-const auto chisq    (CVFlt x, CFlt m, CFlt v){ float chi(0); for(auto ix : x ){ chi += sq2(ix-m)/v; } return chi; }
+inline const auto rms      (CVFlt x){float sum(0.0); for(auto ix : x ){ sum += sq2(ix); } return std::sqrt(sum/x.size());}
+inline const auto chisq    (CVFlt x, CFlt m, CFlt v){ float chi(0); for(auto ix : x ){ chi += sq2(ix-m)/v; } return chi; }
 
-const auto meanIPhi (CVFlt x){
+inline const auto meanIPhi (CVFlt x){
                         float sum(0.0);
                         auto maxphi = max(x);
                         for(auto ix : x ){ if( (maxphi-ix) > 180 ) sum+=(ix+360); else sum+=ix; }
                         auto rslt = sum/x.size();
                         if( rslt > 360 ) rslt-=360;
                         return rslt;
-                    }//<<>> const auto meanPhi(CVFlt x)
+                    }//<<>> inline const auto meanPhi(CVFlt x)
 
-const auto meanIPhi (CVFlt x, CVFlt wv){
+inline const auto meanIPhi (CVFlt x, CVFlt wv){
                         float wt(0.0), sum(0.0); int it(0);
                         auto maxphi = max(x);
                         for(auto ix : x ){ if( (maxphi-ix) > 180 ) sum+=(ix+360)*wv[it]; else sum+=ix*wv[it]; wt+=wv[it]; it++; }
                         auto rslt = sum/wt;
                         if( rslt > 360 ) rslt-=360;
                         return rslt;
-                     }//<<>> const auto meanPhi(CVFlt x, CVFlt wv)
+                     }//<<>> inline const auto meanPhi(CVFlt x, CVFlt wv)
 
-const auto wsin2    (CVFlt x, CVFlt wv){
+inline const auto wsin2    (CVFlt x, CVFlt wv){
                         double sum(0.0), wt(0.0); int it(0);
                         for(auto ix : x ){
                             sum += wv[it]*sq2(sin(ix));
@@ -229,15 +229,15 @@ const auto wsin2    (CVFlt x, CVFlt wv){
                             it++;
                         }//for(auto ix : x )
                         return sum/wt;
-                    }//const auto wsin2(CVFlt x, CVFlt wv)
+                    }//inline const auto wsin2(CVFlt x, CVFlt wv)
 
-const auto wcos2    (CVFlt x, CVFlt wv){
+inline const auto wcos2    (CVFlt x, CVFlt wv){
                         double sum(0.0), wt(0.0); int it(0);
                         for(auto ix : x ){ sum += wv[it]*sq2(cos(ix)); wt += wv[it]; it++;}
                         return sum/wt;
-                    }//const auto wcos2
+                    }//inline const auto wcos2
 
-const auto wsincos  (CVFlt x, CVFlt wv){
+inline const auto wsincos  (CVFlt x, CVFlt wv){
                         double sum(0.0), wt(0.0); int it(0);
                         for(auto ix : x ){ sum += wv[it]*sin(ix)*cos(ix); wt += wv[it]; it++;}
                         return sum/wt;
@@ -245,11 +245,11 @@ const auto wsincos  (CVFlt x, CVFlt wv){
 
 //-----------  misc helper functions -------------------------------------------
 
-std::string addstr( std::string current, std::string input ){ return (current+input); }
+inline std::string addstr( std::string current, std::string input ){ return (current+input); }
 
-std::string RemoveDelim(std::string tmp, const std::string & delim){return tmp.erase(tmp.find(delim),delim.length());}
+inline std::string RemoveDelim(std::string tmp, const std::string & delim){return tmp.erase(tmp.find(delim),delim.length());}
 
-const auto splitString( std::string str, const char* separator ) {
+inline const auto splitString( std::string str, const char* separator ) {
 
 	std::vector < std::string > strings;
     int startIndex(0), endIndex(0);
@@ -276,7 +276,7 @@ template <typename T> std::string toString(T value){
 
 }//<<>>template <typename T> std::string to_string(T value)
 
-void setBins(std::string & str, std::vector<double> & bins, bool & var_bins){
+inline void setBins(std::string & str, std::vector<double> & bins, bool & var_bins){
 
     if(str.find("CONSTANT") != std::string::npos){
 
@@ -310,7 +310,7 @@ void setBins(std::string & str, std::vector<double> & bins, bool & var_bins){
 
 }//<<>>void setBins(std::string & str, std::vector<Double_t> & bins, Bool_t & var_bins)
 
-std::vector<double> setBins( std::string str ){
+inline std::vector<double> setBins( std::string str ){
 
 	    double bin_edge;
 		std::vector<double> bins;

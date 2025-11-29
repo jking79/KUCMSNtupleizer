@@ -1,0 +1,81 @@
+// -*- C++ -*-
+//
+//
+// Original Author:  Jack W King III
+//         Created:  Wed, 27 Jan 2021 19:19:35 GMT
+//
+//
+
+//--------------------   hh file -------------------------------------------------------------
+//---------------------------------------------------------------------------------------------
+
+// basic C++ types
+#include <cstdlib>
+#include <vector>
+#include <map>
+#include <string>
+#include <cmath>
+#include <iostream>
+#include <limits> 
+
+//Root includes
+#include "TTree.h"
+
+#ifndef KUCMSItemHeader_hh
+#define KUCMSItemHeader_hh
+
+
+//.............................................................................................
+
+typedef unsigned int uInt;
+
+template <class T> 
+class Item {
+
+    public:
+
+    Item();
+    Item( std::string name, std::string doc = "" );
+    Item( std::string name, T value, std::string doc = "" );
+    //~Item();
+
+    void make( std::string name, std::string doc = "" );
+    void fill( T val );
+    void clear();
+    T getvalue();
+    std::string getdoc();
+
+    //protected:
+
+    std::string iName;
+    std::string iDoc;
+    T iValue;
+
+};//<<>>class Item 
+
+//..................................................................................
+template < class T>
+class VectorItem {
+
+    public:
+
+    VectorItem();
+    VectorItem( std::string name, std::string doc );
+    VectorItem( std::string name, T value, std::string doc );
+    //~VectorItem();
+
+    void make( std::string name, std::string doc = "" );
+    void fill( T val );
+    void clear();
+    std::vector<T> getvalue();
+    std::string getdoc();
+
+    protected:
+
+    std::string iName;
+    std::string iDoc;
+    std::vector<T> iVector;
+
+};//<<>>class VectorItem
+
+#endif

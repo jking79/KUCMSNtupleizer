@@ -1,113 +1,145 @@
-##################################################3
-#
-#	Makefile for Root & RJR
-#
-#################################################3
+# Compiler and flags
 
-############################################################################################3
-#
-#  Need to place the following line into your bash_profile or run from command line
-#  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/BayesianClustering/lib
-#
-###############################################################3
+CC = g++
+CXXFLAGS_COMMON = -O3 -march=native -ffast-math -funroll-loops -flto -fno-trapping-math -funsafe-math-optimizations -fomit-frame-pointer -fno-math-errno
+CXXFLAGS_DEBUG = -g -O0 -Wall -Wextra
+CXXFLAGS_RELEASE = $(CXXFLAGS_COMMON)
+CXXFLAGS ?= $(CXXFLAGS_RELEASE)
 
-#$(shell ./setup_RestFrames.sh)
+# Root and RestFrames
 
 RTCFLAGS = $(shell root-config --cflags)
 RTGLIBS = $(shell root-config --glibs)
-
 RFCFLAGS = $(shell restframes-config --cxxflags)
 RFGLIBS = $(shell restframes-config --libs)
 
-#GLIBS8 += -L/cvmfs/cms.cern.ch/el8_amd64_gcc11/external/boost/1.80.0-0eec8fa902b6ad913364ef1d6ac9c8d0/lib/ -lboost_thread
-#GLIBS8 += -L/cvmfs/cms.cern.ch/el8_amd64_gcc11/external/gmp-static/6.2.1-b661550d99fe45fff5976e08ec5e3b5f/lib/ -lgmp
-GLIBS += -L/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/gmp-static/6.2.1-f4591b847fcbe5753bfc5d2b02f57089/lib/ -lgmp
-GLIBS += -L/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/boost/1.80.0-f76596f4b83666ac3468f34a5f342677/lib/ -lboost_thread
+# General libs
+
+GLIBS = -L/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/gmp-static/6.2.1-f4591b847fcbe5753bfc5d2b02f57089/lib/ -lgmp -L/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/boost/1.80.0-f76596f4b83666ac3468f34a5f342677/lib/ -lboost_thread
+
+# BayesianClustering, Eigen, etc.
+
+BCFLAGS = -I/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/eigen/82dd3710dac619448f50331c1d6a35da673f764a-f9c27fce684e89466e2ef07869cd264d/include/eigen3/ \
+-I/uscms/home/mlazarov/nobackup/CMSSW_13_0_13/src/CGAL-5.6.1/include \
+-I/uscms/home/mlazarov/nobackup/CMSSW_13_0_13/src/frugally-deep-master/include \
+-I/uscms/home/mlazarov/nobackup/CMSSW_13_0_13/src/FunctionalPlus-master/include \
+-I/uscms/home/mlazarov/nobackup/CMSSW_13_3_3/src/BayesianClustering/include -frounding-math
+
+BCGLIBS = -L/uscms/home/mlazarov/nobackup/CMSSW_13_3_3/src/BayesianClustering/lib -lBayesianClustering $(GLIBS)
+
+# Project include and object directories
+
+INCDIR = ./include
+OBJDIR = ./obj
+$(shell mkdir -p $(OBJDIR))
+MAINOBJDIR = ./mainobj
+$(shell mkdir -p $(MAINOBJDIR))
+
+IFLAGS = -I../interface
+
+TCALIDIR = KUCMSTimeCaliFiles
+TCALI_SRCDIR = $(TCALIDIR)/src
+TCALI_INCDIR = $(TCALIDIR)/include
+
+# Source and object files
+
+SRCDIR = ./src
+
+MAIN_CPP := $(SRCDIR)/runKUCMSAodSVSkimmer.cpp $(SRCDIR)/runLocalKUCMSAodSVSkimmer.cpp 
+MAIN_CPP += $(TCALI_SRCDIR)/makeKUCMSTimeCalibration.cpp $(TCALI_SRCDIR)/makeKUCMSTimeResolution.cpp
+SUPPORT_CPP := $(filter-out $(MAIN_CPP), $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/*.cc) ) 
+SUPPORT_CPP += $(filter-out $(MAIN_CPP), $(wildcard $(TCALI_SRCDIR)/*.cpp) $(wildcard $(TCALI_SRCDIR)/*.cc))
+OBJ_FILES := $(patsubst %,$(OBJDIR)/%,$(notdir $(SUPPORT_CPP:.cpp=.o)))
+OBJ_FILES := $(OBJ_FILES:.cc=.o) # handle .cc extension
+
+# Default target
+
+EXE_MAIN = runKUCMSAodSVSkimmer.obj
+EXE_LOCAL = runLocalKUCMSAodSVSkimmer.obj
+EXE_CALI = makeKUCMSTimeCalibration.obj
+EXE_RES = makeKUCMSTimeResolution.obj
+
+# Colored output
+
+COLOR_YELLOW = \033[1;33m
+COLOR_GREEN = \033[1;32m
+COLOR_RED = \033[1;31m
+COLOR_RESET = \033[0m
+
+# Pattern rule for compiling .cpp and .cc
+
+$(MAINOBJDIR)/%.o: $(SRCDIR)/%.cpp
+	@echo -e "$(COLOR_YELLOW)Compiling main file $<$(COLOR_RESET)"
+	$(CC) $(CXXFLAGS) $(CXXFLAGS_COMMON) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS) $(BCGLIBS) -I$(INCDIR) -I$(TCALI_INCDIR) $(IFLAGS) -c $< -o $@
+
+$(OBJDIR)/%.o: $(SRCDIR)/%.cc
+	@echo -e "$(COLOR_YELLOW)Compiling $<$(COLOR_RESET)"
+	$(CC) $(CXXFLAGS) $(CXXFLAGS_COMMON) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS) $(BCGLIBS) -I$(INCDIR) -I$(TCALI_INCDIR) $(IFLAGS) -c $< -o $@
+
+$(OBJDIR)/%.o: $(TCALI_SRCDIR)/%.cpp
+	@echo -e "$(COLOR_YELLOW)Compiling $<$(COLOR_RESET)"
+	$(CC) $(CXXFLAGS) $(CXXFLAGS_COMMON) -I$(TCALI_INCDIR) -I$(INCDIR) $(RTCFLAGS) $(RTGLIBS) -c $< -o $@
+
+$(MAINOBJDIR)/%.o: $(TCALI_SRCDIR)/%.cpp
+	@echo -e "$(COLOR_YELLOW)Compiling $<$(COLOR_RESET)"
+	$(CC) $(CXXFLAGS) $(CXXFLAGS_COMMON) -I$(TCALI_INCDIR) -I$(INCDIR) $(RTCFLAGS) $(RTGLIBS) -c $< -o $@
 
 
-BCFLAGS += -I/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/eigen/82dd3710dac619448f50331c1d6a35da673f764a-f9c27fce684e89466e2ef07869cd264d/include/eigen3/
-BCFLAGS += -I/uscms/home/mlazarov/nobackup/CMSSW_13_0_13/src/CGAL-5.6.1/include
-BCFLAGS += -I/uscms/home/mlazarov/nobackup/CMSSW_13_0_13/src/frugally-deep-master/include
-BCFLAGS += -I/uscms/home/mlazarov/nobackup/CMSSW_13_0_13/src/FunctionalPlus-master/include
-BCFLAGS += -I/uscms/home/mlazarov/nobackup/CMSSW_13_3_3/src/BayesianClustering/include -frounding-math
-BCGLIBS += -L/uscms/home/mlazarov/nobackup/CMSSW_13_3_3/src/BayesianClustering/lib -lBayesianClustering
-#BCFLAGS += -I$(CMSSW_BASE)/src/BayesianClustering/include -frounding-math
-#BCGLIBS += -L$(CMSSW_BASE)/src/BayesianClustering/lib -lBayesianClustering
-BCGLIBS += $(GLIBS)
+MAIN_OBJ := $(MAINOBJDIR)/runKUCMSAodSVSkimmer.o
+LOCAL_OBJ := $(MAINOBJDIR)/runLocalKUCMSAodSVSkimmer.o
+TCALI_OBJ := $(MAINOBJDIR)/makeKUCMSTimeCalibration.o
+TRES_OBJ  := $(MAINOBJDIR)/makeKUCMSTimeResolution.o
 
-#BCFLAGS8 += -I/cvmfs/cms.cern.ch/el8_amd64_gcc11/external/eigen/82dd3710dac619448f50331c1d6a35da673f764a-f9c27fce684e89466e2ef07869cd264d/include/eigen3/
-##BCFLAGS8 += -I$(CMSSW_BASE)/src/CGAL-5.6.1/include
-##BCFLAGS8 += -I$(CMSSW_BASE)/src/frugally-deep-master/include
-##BCFLAGS8 += -I$(CMSSW_BASE)/src/FunctionalPlus-master/include
-#BCFLAGS8 += -I/cvmfs/cms.cern.ch/el8_amd64_gcc11/external/eigen/82dd3710dac619448f50331c1d6a35da673f764a-f9c27fce684e89466e2ef07869cd264d/include/eigen3/
-#BCFLAGS8 += -I/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/BayesianClustering/include -frounding-math
-#BCFLAGS8 += -I/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/CGAL-5.6.1/include
-#BCFLAGS8 += -I/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/frugally-deep-master/include
-#BCFLAGS8 += -I/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/FunctionalPlus-master/include
-#BCGLIBS8 += -L/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/BayesianClustering/lib -lBayesianClustering
-#BCGLIBS8 += $(GLIBS8)
+# Executables
 
-CC=g++
+remote: $(EXE_MAIN)
+local: $(EXE_LOCAL)
+time: $(EXE_CALI) $(EXE_RES)
 
-OPTS = -O3 -march=native -ffast-math -funroll-loops -flto
-OPTS += -fno-trapping-math -funsafe-math-optimizations -fomit-frame-pointer -fno-math-errno
+$(EXE_MAIN): $(OBJ_FILES) $(MAIN_OBJ)
+	@echo -e "$(COLOR_GREEN)Linking $@$(COLOR_RESET)"
+	$(CC) -o $@ $(OBJ_FILES) $(MAIN_OBJ) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCGLIBS) -pthread
 
-p1=runKUCMSAodSVSkimmer
-p2=fillKUCMSTimeCalibration
-p3=runLocalKUCMSAodSVSkimmer
-p4=runLocalCKUCMSAodSVSkimmer
-p5=makeKUCMSTimeResolution
-p6=makeKUCMSTimeCalibration
-p7=runLocal2KUCMSAodSVSkimmer
+$(EXE_LOCAL): $(OBJ_FILES) $(LOCAL_OBJ)
+	@echo -e "$(COLOR_GREEN)Linking $@$(COLOR_RESET)"
+	$(CC) -o $@ $(OBJ_FILES) $(LOCAL_OBJ) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCGLIBS) -pthread
 
-TCOBJ = KUCMS_TimeCalibration.so
-TCINC = -I/KUCMSTimeCaliFiles/include
+$(EXE_CALI): $(TCALI_OBJ) $(OBJDIR)/KUCMS_TimeCalibration.o
+	@echo -e "$(COLOR_GREEN)Linking $@$(COLOR_RESET)"
+	$(CC) -o $@ $(TCALI_OBJ) $(OBJDIR)/KUCMS_TimeCalibration.o $(CXXFLAGS_COMMON) $(RTCFLAGS) $(RTGLIBS) -pthread
 
-# Automatically find all .cpp files under KUCMSTimeCaliFiles/src/
-#SRC_FILES := $(wildcard KUCMSTimeCaliFiles/src/*.cpp)
-#OBJ_FILES := $(patsubst KUCMSTimeCaliFiles/src/%.cpp, KUCMSTimeCaliFiles/obj/%.o, $(SRC_FILES))
-#
-## Ensure obj directory exists
-#$(shell mkdir -p KUCMSTimeCaliFiles/obj)
-#
-## Compile rule for all .cpp in that directory
-#KUCMSTimeCaliFiles/obj/%.o: KUCMSTimeCaliFiles/src/%.cpp
-#	$(CC) $(RTCFLAGS) $(RTGLIBS) $(INC) -c $< -o $@
+$(EXE_RES): $(TRES_OBJ) $(OBJDIR)/KUCMS_TimeCalibration.o
+	@echo -e "$(COLOR_GREEN)Linking $@$(COLOR_RESET)"
+	$(CC) -o $@ $(TRES_OBJ) $(OBJDIR)/KUCMS_TimeCalibration.o $(CXXFLAGS_COMMON) $(RTCFLAGS) $(RTGLIBS) -pthread
 
-all: $(p1) 
-#TimeCali: KUCMS_TimeCalibration.so
 
-KUCMS_TimeCalibration.so: KUCMSTimeCaliFiles/src/KUCMS_TimeCalibration.cpp KUCMSTimeCaliFiles/include/*.hh
-	$(CC) $(RTCFLAGS) $(RTGLIBS) $(TCINC) $(OPTS) -fPIC -c $< -o $@
+# Condor tarball
 
-$(p1): $(p1).cpp $(TCOBJ)
-	$(CC) -o $(p1).obj $(p1).cpp $(TCOBJ) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS) $(BCGLIBS)  
-
-$(p2): $(p2).cpp $(TCOBJ)
-	$(CC) -o $(p2).obj $(p2).cpp $(TCOBJ) $(RTCFLAGS) $(RTGLIBS) $(OPTS)
-
-$(p3): $(p3).cpp $(TCOBJ)
-	$(CC) -o $(p3).obj $(p3).cpp $(TCOBJ) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS) $(BCGLIBS) $(OPTS)
-
-$(p4): $(p4).cpp $(TCOBJ)
-	$(CC) -o $(p4).obj $(p4).cpp $(TCOBJ) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS) $(BCGLIBS) $(OPTS) 
-
-$(p5): $(p5).cpp $(TCOBJ)
-	$(CC) -o $(p5).obj $(p5).cpp $(TCOBJ) $(RTCFLAGS) $(RTGLIBS) $(OPTS)
-
-$(p6): $(p6).cpp $(TCOBJ)
-	$(CC) -o $(p6).obj $(p6).cpp $(TCOBJ) $(RTCFLAGS) $(RTGLIBS) $(OPTS)
-
-$(p7): $(p7).cpp $(TCOBJ)
-	$(CC) -o $(p7).obj $(p7).cpp $(TCOBJ) $(RTCFLAGS) $(RTGLIBS) $(OPTS)
-
-configtar:
-	cp runKUCMSAodSVSkimmer.obj config/
+configtar: remote
+	@echo -e "$(COLOR_GREEN)Creating condor tarball$(COLOR_RESET)"
+	cp $(EXE_MAIN) config/
 	cp -r ntuple_master_lists/ config/
-	cp -r json/ config/
 	cp -r ecal_config/ config/
-	tar -czf condor/config.tgz config/
+	tar -czf condor/config.tgz -C config .
 
-# Clean up
-#clean:
-#	rm -f *.o *.obj
+all: remote configtar
+
+# debug
+
+print-main:
+	@echo "MAINOBJDIR = '$(MAINOBJDIR)'"
+	@echo "MAIN_CPP = '$(MAIN_CPP)'"
+	@echo "MAIN_OBJ = '$(MAIN_OBJ)'"
+	@echo "OBJ_FILES = '$(OBJ_FILES)'"
+
+# Clean
+
+clean:
+	@echo -e "$(COLOR_RED)Cleaning objects and executables$(COLOR_RESET)"
+	rm -rf $(OBJDIR)/*.o *.obj
+	rm -rf condor/config.tgz
+
+# Phony targets
+
+.PHONY: all clean configtar
+

@@ -7,7 +7,7 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#include "KUCMSAodSkimmer_Main.hh"
+#include "KUCMSAodSVSkimmer.hh"
 //#include "KUCMSAodSkimmer_sv_cc.hh"
 //#include "KUCMSAodSkimmer_cc_probe.hh"
 //#include "KUCMSAodSkimmer_rh_cc.hh"

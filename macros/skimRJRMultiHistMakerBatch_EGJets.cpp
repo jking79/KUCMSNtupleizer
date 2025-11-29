@@ -786,6 +786,11 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 
 	// Time Sig
 
+    int nPhos = selPhoTime->size();
+	//int nPhos = allPhoE->size();
+
+	for( int ip = 0; ip < nPhos; ip++ ){
+
     float gtime = -99;
     float gpt = -99;
     float gphi = -99;
@@ -815,36 +820,68 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     float sr2 = std::sqrt(1);
     float sgtime = 99;
     float sgpt = -99;
+
+	//gpt = (*allPhoPt)[ip];
+	//geta = (*allPhoEta)[ip];
+	//gwtsig = (*allPhoWTimeSig)[ip];
+	//gwtime = (*allPhoWTime)[ip];
+
     if( selPhoTime->size() > 0 ){
 
-		isBPho = (*selPhoObjId)[0] < 1;
+		isBPho = (*selPhoObjId)[ip] < 1;
 
-        gtime = (*selPhoTime)[0];
-        gpt = (*selPhoPt)[0];
-        gphi = (*selPhoPhi)[0];
-        geta = (*selPhoEta)[0];
-        gstsig = (*selPhoSTimeSig)[0]/sr2;
-        gwtsig = (*selPhoWTimeSig)[0]/sr2;
-        gltsig = (*selPhoLTimeSig)[0]/sr2;
-        gstime = (*selPhoSTime)[0];
-        gwtime = (*selPhoWTime)[0];
-        gltime = (*selPhoLTime)[0];
-        gstres = (*selPhoSTimeRes)[0]/sr2;
-        gltres = (*selPhoWTimeRes)[0]/sr2;
-        gwtres = (*selPhoLTimeRes)[0]/sr2;
-        genergy = (*selPhoEnergy)[0];
-        gcenergy = (*selPhoCorEnergy)[0];
+		//apE = allPhoE->at(ip);
+	
+	
+        gtime = (*selPhoTime)[ip];
+        gpt = (*selPhoPt)[ip];
+        gphi = (*selPhoPhi)[ip];
+        geta = (*selPhoEta)[ip];
+        gstsig = (*selPhoSTimeSig)[ip]/sr2;
+        gwtsig = (*selPhoWTimeSig)[ip]/sr2;
+        gltsig = (*selPhoLTimeSig)[ip]/sr2;
+        gstime = (*selPhoSTime)[ip];
+        gwtime = (*selPhoWTime)[ip];
+        gltime = (*selPhoLTime)[ip];
+        gstres = (*selPhoSTimeRes)[ip]/sr2;
+        gltres = (*selPhoWTimeRes)[ip]/sr2;
+        gwtres = (*selPhoLTimeRes)[ip]/sr2;
+        genergy = (*selPhoEnergy)[ip];
+        gcenergy = (*selPhoCorEnergy)[ip];
 
-        glsx = (*selPhoLSCross)[0];
-        gssx = (*selPhoSSCross)[0];
-        ggs = (*selPhoShasGS)[0];
+        glsx = (*selPhoLSCross)[ip];
+        gssx = (*selPhoSSCross)[ip];
+        ggs = (*selPhoShasGS)[ip];
 
-        gcrn = (*selPhoClstrRn)[0];
-        gr9 = (*selPhoR9)[0];
-        gs4 = (*selPhoS4)[0];
-        gsmj = (*selPhoSMaj)[0];
-        gsmn = (*selPhoSMin)[0];
-        gsieie = (*selPhoSigmaIEtaIEta)[0];
+        gcrn = (*selPhoClstrRn)[ip];
+        gr9 = (*selPhoR9)[ip];
+        gs4 = (*selPhoS4)[ip];
+        gsmj = (*selPhoSMaj)[ip];
+        gsmn = (*selPhoSMin)[ip];
+        gsieie = (*selPhoSigmaIEtaIEta)[ip];
+
+
+//   vector<float>   *allPhoE;
+//   vector<float>   *allPhoEta;
+//   vector<float>   *allPhoPhi;
+//   vector<bool>    *allPhoPixSeed;
+//   vector<float>   *allPhoPt;
+//   vector<float>   *allPhoWTime;
+//   vector<float>   *allPhoWTime1;
+//   vector<float>   *allPhoWTimeSig;
+//   vector<float>   *allPhoWTimeSig1
+	    
+
+        glsx = (*selPhoLSCross)[ip];
+        gssx = (*selPhoSSCross)[ip];
+        ggs = (*selPhoShasGS)[ip];
+
+        gcrn = (*selPhoClstrRn)[ip];
+        gr9 = (*selPhoR9)[ip];
+        gs4 = (*selPhoS4)[ip];
+        gsmj = (*selPhoSMaj)[ip];
+        gsmn = (*selPhoSMin)[ip];
+        gsieie = (*selPhoSigmaIEtaIEta)[ip];
 
 
     }//<<>>if( selPhoTime->size() > 0 )
@@ -861,6 +898,7 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     hist1d[4]->Fill(gtime,fillwt);
     hist1d[5]->Fill(sgtime,fillwt);
     hist1d[6]->Fill(gpt,fillwt);
+
     hist1d[7]->Fill(sgpt,fillwt);
 
     //hist1d[51] = new TH1D("selPhoWTime", addstr(ht," selPhoWTime;selPhoWTime").c_str(), 1200, -60, 60);
@@ -877,6 +915,7 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     hist1d[54]->Fill(gwtime,fillwt);
     hist1d[55]->Fill(genergy,fillwt);
     hist1d[56]->Fill(gcenergy,fillwt);
+    hist1d[57]->Fill(gtime,fillwt);
 
     hist2d[40]->Fill(genergy,gcenergy,fillwt);
     hist2d[41]->Fill(gwtsig,gcenergy,fillwt);
@@ -931,6 +970,7 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     hist2d[209]->Fill(gstime,gsieie,fillwt);
     hist2d[210]->Fill(gstime,gssx,fillwt);
 
+	}//<<>>for( int ip = 0; ip < nPhos; ip++ )
 
 	}//<<>>for( int i = 0; i < 1; i++ ) -- continue loop
 
@@ -1013,9 +1053,11 @@ void HistMaker::initHists( std::string ht ){
     hist1d[1] = new TH1D("Ms", addstr(ht," Ms;Ms [GeV]").c_str(), 120, 0, 12000);
     hist1d[2] = new TH1D("Mva", addstr(ht," Mva;Mva [GeV]").c_str(), 80, 0, 4000);
     hist1d[3] = new TH1D("Mvb", addstr(ht," Mvb;Mvb [GeV]").c_str(), 80, 0, 4000);
+
     hist1d[4] = new TH1D("photime", addstr(ht," Lead Photon Time;Lead Photon Time [ns]").c_str(), 800, -2.0, 8.0);
     hist1d[5] = new TH1D("sphotime", addstr(ht," Second Photon Time;Second Photon Time [ns]").c_str(), 250, -25.0, 25.0);
     hist1d[6] = new TH1D("phopt", addstr(ht," Lead Photon Pt;Lead Photon Pt [GeV]").c_str(), 800, 0, 4000);
+
     hist1d[7] = new TH1D("sphopt", addstr(ht," Second Photon Pt;Second Photon Pt [GeV]").c_str(), 800, 0, 4000);
     hist1d[8] = new TH1D("Msq", addstr(ht," Msq;Msq [GeV]").c_str(), 120, 0, 12000);
 
@@ -1058,12 +1100,13 @@ void HistMaker::initHists( std::string ht ){
     hist1d[41] = new TH1D("sumPhoPtsH21", addstr(ht," sumPhoPtsH21;sumPhoPtsH21").c_str(), 200, 0, 2.0);
 
 
-	hist1d[51] = new TH1D("selPhoWTime", addstr(ht," selPhoWTime;selPhoWTime").c_str(), 480, -60, 60);
-    hist1d[52] = new TH1D("selPhoWTimeSig", addstr(ht," selPhoWTimeSig;selPhoWTimeSig").c_str(), 480, -60, 60);
+	hist1d[51] = new TH1D("selPhoWTime", addstr(ht," selPhoWTime;selPhoWTime").c_str(), 240, -30, 30);
+    hist1d[52] = new TH1D("selPhoWTimeSig", addstr(ht," selPhoWTimeSig;selPhoWTimeSig").c_str(), 240, -60, 60);
     hist1d[53] = new TH1D("selPhoWTimeVar", addstr(ht," selPhoWTimeVar;selPhoWTimeVar").c_str(), 480, -60, 60);
     hist1d[54] = new TH1D("selPhoTOFTime", addstr(ht," selPhoTOFTime;selPhoTOFTime").c_str(), 500, -25, 25);
     hist1d[55] = new TH1D("selPhoEnergy", addstr(ht," selPhoEnergy;selPhoEnergy").c_str(), 300, 0, 3000);
     hist1d[56] = new TH1D("selPhoCEnergy", addstr(ht," selPhoCEnergy;selPhoCEnergy").c_str(), 300, 0, 3000);
+    hist1d[57] = new TH1D("selPhoTime", addstr(ht," selPhoTime;selPhoTime").c_str(), 240, -30, 30);
 
     for( int it = 0; it < n1dHists; it++ ){ if(hist1d[it]) hist1d[it]->Sumw2();}
 
@@ -1223,8 +1266,8 @@ int main ( int argc, char *argv[] ){
 				std::vector<float> rv_vec{1.0}; // Sig scaling
                 std::string outdir = "";
 
-                std::string isoline = "P1MfHe_fullmet_RJR0_TSig_MET_"; //
-                //std::string isoline = "P1MfHa_RJR0_TSig_EGJ_"; // EGJ = EGamma + Jets selecton
+                //std::string isoline = "P1MfHe_fullmet_RJR0_TSig_allpho_MET_"; //
+                std::string isoline = "P1MfHa_RJR0_TSig_Full_allPho_EGJ_"; // EGJ = EGamma + Jets selecton
                 //std::string isoline = "P1TrMfHeHa_RJR0_"; // Tv = time valid, Mf = metfilters, Ha = halofilters, Tr = trigger, He = hemfilter;
 				//std::string isoline = "P1TrMfHeHa_TSig_GS1_"; // Tv = time valid, Mf = metfilters, Ha = halofilters, Tr = trigger, He = hemfilter;
 				isoline += "cv" + std::to_string( np ) + "_";
