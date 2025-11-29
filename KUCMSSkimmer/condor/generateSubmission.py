@@ -104,6 +104,9 @@ def generateSubmission(args):
     elif(args.inputSample == "EGamma"):
         data = True
         inputList = "EGamma_"+year+"_InvMetPho30_NoSV_EGamma_AOD_Run"+args.year+args.era
+    elif(args.inputSample == "JetHT"):
+        data = True
+        inputList = "JetHT_"+year+"_InvMET100_nolumimask_v31_JetHT_AOD_Run"+args.year+args.era
     else:
         print("Lists for input sample",args.inputSample,"not found")
         exit()
@@ -230,7 +233,7 @@ def main():
     parser.add_argument("--max_idle",help='max_idle condor option (default: off)',default=-1)
     parser.add_argument("--request_memory",help='memory to request from condor scheduler in bits (default = 2048)',default=-1)
     #parser.add_argument("--inputList",help="list of sample lists to run over (default is SVIPM100 selection)",choices=['data','mcBkg','mcSig'])
-    parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',choices=['DiPJBox', 'DTBoson','GJets','TTXJets','QCD','WJets','ZJets','gogoG','gogoZ','sqsqG','MET','EGamma'])
+    parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',choices=['DiPJBox', 'DTBoson','GJets','TTXJets','QCD','WJets','ZJets','gogoG','gogoZ','sqsqG','MET','EGamma','JetHT'])
     parser.add_argument("--year",help="run year",choices = ["2017","2018","2022"],default="2018")
     parser.add_argument('--slice',help='HT slice (ie for GJets or QCD), mass range (ie for DiPJBox), or subprocess (ie for TTXJets)',default='')
     parser.add_argument('--era',help='run era (data only)',default='')
