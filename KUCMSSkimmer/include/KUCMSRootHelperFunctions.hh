@@ -28,7 +28,7 @@
 #ifndef KUCMSRootHelperFunctionsH2
 #define KUCMSRootHelperFunctionsH2 
 
-void fillTH1( float val, TH1F* hist ){
+inline void fillTH1( float val, TH1F* hist ){
 
     auto nBins = hist->GetNbinsX();
     auto low = hist->GetBinCenter(1);
@@ -39,7 +39,7 @@ void fillTH1( float val, TH1F* hist ){
 
 }//<<>>void fillTH1( float val, TH1F* hist )
 
-void fillTH1( float val, TH1D* hist ){
+inline void fillTH1( float val, TH1D* hist ){
 
     auto nBins = hist->GetNbinsX();
     auto low = hist->GetBinCenter(1);
@@ -50,7 +50,7 @@ void fillTH1( float val, TH1D* hist ){
 
 }//<<>>void fillTH1( float val, TH1D* hist )
 
-void fillRatioHist(TH1D* numi, TH1D* denom, TH1D* result ){
+inline void fillRatioHist(TH1D* numi, TH1D* denom, TH1D* result ){
 
     const auto nbins = numi->GetNbinsX();
     for (auto ibin = 0; ibin <= nbins; ibin++){
@@ -71,7 +71,7 @@ void fillRatioHist(TH1D* numi, TH1D* denom, TH1D* result ){
 
 }//<<>>fillRatioHist(TH1F* numi, TH1F* denom, TH1F* result )
 
-void normTH2D(TH2D* hist){
+inline void normTH2D(TH2D* hist){
 
     std::cout << "Normilizing " << " hist: " << hist->GetName() << std::endl;
 
@@ -98,7 +98,7 @@ void normTH2D(TH2D* hist){
 
 }//<<>>void NormTH2D(TH2D* hist){
 
-void normTH2F(TH2F* hist){
+inline void normTH2F(TH2F* hist){
 
     std::cout << "Normilizing " << " hist: " << hist->GetName() << std::endl;
 
@@ -125,7 +125,7 @@ void normTH2F(TH2F* hist){
 
 }//<<>>void NormTH2F(TH2F* hist){
 
-void normTH1D(TH1D* hist){
+inline void normTH1D(TH1D* hist){
 
     std::cout << "Normilizing " << " hist: " << hist->GetName() << std::endl;
 
@@ -147,7 +147,7 @@ void normTH1D(TH1D* hist){
 
 }//<<>>void NormTH1D(TH1D* hist)
 
-void profileTH2D(TH2D* nhist, TH1D* prof, TH1D* fithist, float range = 0.2 ){
+inline void profileTH2D(TH2D* nhist, TH1D* prof, TH1D* fithist, float range = 0.2 ){
 
     std::cout << "Profile " << " hist: " << nhist->GetName() << std::endl;
 
@@ -189,7 +189,7 @@ void profileTH2D(TH2D* nhist, TH1D* prof, TH1D* fithist, float range = 0.2 ){
 
 }//<<>>void profileTH2D(TH2D* hist, TH1D* prof)
 
-void scaleHist(TH2F *& hist, const Bool_t isUp, const Bool_t varBinsX, const Bool_t varBinsY){
+inline void scaleHist(TH2F *& hist, const Bool_t isUp, const Bool_t varBinsX, const Bool_t varBinsY){
 
     std::cout << "Scaling " << (isUp?"up":"down") << " hist: " << hist->GetName() << std::endl;
 
@@ -217,7 +217,7 @@ void scaleHist(TH2F *& hist, const Bool_t isUp, const Bool_t varBinsX, const Boo
 
 }//<<>>void scaleHist(TH2D *& hist, const Bool_t isUp, const Bool_t varBinsX, const Bool_t varBinsY)
 
-void thresDivTH2D(TH2D* numi, TH2D* denom, float thres){
+inline void thresDivTH2D(TH2D* numi, TH2D* denom, float thres){
 
     std::cout << "Threshold Division - " << " hist: " << numi->GetName() << std::endl;
 
@@ -244,7 +244,7 @@ void thresDivTH2D(TH2D* numi, TH2D* denom, float thres){
 
 }//<<>>void thresDivTH2D(TH2D* numi, TH2D* denom, float thres){
 
-std::vector<float> getDistStats( std::vector<float> values ){
+inline std::vector<float> getDistStats( std::vector<float> values ){
 
     std::vector<float> results;
     int size = values.size();
@@ -301,7 +301,7 @@ std::vector<float> getDistStats( std::vector<float> values ){
     return results;
 }//>>>> std::vector<float> getDistStats( std::vector<float> values )
 
-std::vector<float> getDistStats( std::vector<float> values, std::vector<float> wts ){
+inline std::vector<float> getDistStats( std::vector<float> values, std::vector<float> wts ){
 
     std::vector<float> results;
     int size = values.size();
@@ -368,7 +368,7 @@ std::vector<float> getDistStats( std::vector<float> values, std::vector<float> w
     return results;
 }//>>>>vector<float> getDistStats( std::vector<float> values, std::vector<float> weights )
 
-std::vector<float> getRhGrpEigen( std::vector<float> xs, std::vector<float> wts ){
+inline std::vector<float> getRhGrpEigen( std::vector<float> xs, std::vector<float> wts ){
 //spherical
 
     std::vector<float> results;
@@ -402,7 +402,7 @@ std::vector<float> getRhGrpEigen( std::vector<float> xs, std::vector<float> wts 
     return results;
 }//<<>>vector<float> getRhGrpEigen2D( std::vector<float> xs, std::vector<float> ys, std::vector<float> zs, std::vector<float> wts )
 
-std::vector<float> getRhGrpEigen( std::vector<float> xs, std::vector<float> ys, std::vector<float> wts ){
+inline std::vector<float> getRhGrpEigen( std::vector<float> xs, std::vector<float> ys, std::vector<float> wts ){
 
     std::vector<float> results;
 
@@ -444,7 +444,7 @@ std::vector<float> getRhGrpEigen( std::vector<float> xs, std::vector<float> ys, 
     return results;
 }//<<>>vector<float> = getRhGrpEigen2D( std::vector<float> xs, std::vector<float> ys, std::vector<float> zs, std::vector<float> wts )
 
-std::vector<float> getRhGrpEigen( std::vector<float> xs, std::vector<float> ys, std::vector<float> zs, std::vector<float> wts ){
+inline std::vector<float> getRhGrpEigen( std::vector<float> xs, std::vector<float> ys, std::vector<float> zs, std::vector<float> wts ){
 // ieipt
 
     std::vector<float> results;

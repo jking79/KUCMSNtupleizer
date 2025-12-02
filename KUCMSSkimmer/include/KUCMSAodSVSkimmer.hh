@@ -10,7 +10,7 @@
 //--------------------   hh file -------------------------------------------------------------
 //---------------------------------------------------------------------------------------------
 
-#include "KUCMSItemManager.hh"
+//#include "KUCMSItemManager.hh"
 #include "KUCMSBranchManager2.hh"
 
 #include "RestFrames/RestFrames.hh"
@@ -23,12 +23,12 @@
 
 
 //#include "KUCMSEcalDetIDFunctions.hh"
-#include "KUCMSTimeCaliFiles/include/KUCMS_TimeCalibration.hh"
+#include "KUCMS_TimeCalibration.hh"
 
 #include "KUCMSNtuple_base_v30.h"
 //#include "KUCMSNtuple_base_v30_noSV.h"
 
-#include "../interface/MaterialVeto.h"
+#include "MaterialVeto.h"
 
 #include<Math/Vector3D.h>
 #include<Math/Vector3Dfwd.h>
