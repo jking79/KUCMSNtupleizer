@@ -11,7 +11,7 @@
 #include "KUCMSAodSVSkimmer.hh"
 #include "KUCMSHelperFunctions.hh"
 
-//#define DEBUG true
+//#define true true
 #define DEBUG false
 
 //------------------------------------------------------------------------------------------------------------
@@ -81,7 +81,7 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 				energyToId[erhe] = scrhid;
                 if( DEBUG ) std::cout << " " << erht << " " << rhx << " " << rhy << " " << rhz << std::endl;
 				//skip endcap rechits
-				if(fabs((*ECALRecHit_eta)[erhiter]) > 1.479) continue;
+				//if(fabs((*ECALRecHit_eta)[erhiter]) > 1.479) continue;
 				//cout << "rh e " <<  erhe << " rh t " << erht << " rhid " << scrhid << " eta " << (*ECALRecHit_eta)[erhiter] << " phi " << (*ECALRecHit_phi)[erhiter] << endl;
 				//cout << "rh e " <<  erhe << " rh t " << erht << " x " << rhx << " y " << rhy << " z " << rhz << " rhid " << scrhid << endl;
 				_ca.AddRecHit(rhx, rhy, rhz, erhe, erht, scrhid, hasBadTime);
@@ -102,16 +102,18 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 		ClusterObj phoobj;
 		int clusterret = _ca.RunClustering(phoobj, true);
 		if(clusterret == -1) continue; //bad clustering (not enough points, not able to find any clusters, etc)
+		//cout << "selPhoIndex " << selPhoIndex << " it " << it << endl;
 		selPhoIdxToIt[selPhoIndex] = it;
 		phoobj.SetUserIndex(selPhoIndex);
 		phoobjs.push_back(phoobj);
 	}
-
 	sort(phoobjs.begin(), phoobjs.end(), ptsort);
 	BHCPhoInfo.fillBranch("nSelBHCPhos",(int)phoobjs.size());
 	for(int p = 0; p < phoobjs.size(); p++){
 		ClusterObj phoobj = phoobjs[p];
+		//cout << "phoobj #" << p << " usridx " << phoobj.GetUserIndex() << endl; 
 		int phoidx = selPhoIdxToIt.at(phoobj.GetUserIndex());
+		//cout << "phoidx " << phoidx << endl;
 		//center
 		float phoeta = phoobj.GetEtaCenter();
 		BHCPhoInfo.fillBranch( "selPhoBHC_eta", phoeta);
@@ -123,7 +125,7 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 		//time at PV
 		float photime_pv = phoobj.GetObjTime_PV();
 		BHCPhoInfo.fillBranch( "selPhoBHC_PVTime", photime_pv);
-//cout << "photon - det time " << photime << " pv time " << photime_pv << endl;	
+		//cout << "photon - det time " << photime << " pv time " << photime_pv << endl;	
 		//covariance
 		float etavar = phoobj.GetEtaVar();
 		float phivar = phoobj.GetPhiVar();
@@ -143,6 +145,7 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 		BHCPhoInfo.fillBranch( "selPhoBHC_minlen", (float)minlen);
         	auto scIndx = (*Photon_scIndex)[phoidx];
 		map<unsigned int, float> weights;
+		//cout << "getting rh weights - bhc" << endl;
 		phoobj.GetRecHitWeights(weights); ///these weights are the PU projected out weights if PU cleaning has been applied (otherwise sum to 1)
 		//cout << "doing time sig" << endl;
 		float timeSignificance = getTimeSig(scIndx, timesig_num, timesig_denom, weights);
@@ -167,7 +170,7 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 			BHCPhoInfo.fillBranch("selPhoBHCSubcl_timeVar",phoobj.GetSubclusterTimeVar(k));
 			BHCPhoInfo.fillBranch("selPhoBHCSubcl_energy",phoobj.GetSubclusterEnergy(k));
 			BHCPhoInfo.fillBranch("selPhoBHCSubcl_selPhotonBHCIndex",selPhoBHCIdx);
-			//cout << "subcluster #" << k << " pu score " << puscores[k] << " selPhoBHCIndex " << selPhoBHCIdx << " it " << it << endl;
+			//cout << "subcluster #" << k << " pu score " << puscores[k] << " selPhoBHCIndex " << selPhoBHCIdx << endl;
 			if(puscores.size() == 0){
 				if(true) cout << "Run CalculatePUScores() BEFORE this loop" << endl;
 				continue;
@@ -207,6 +210,7 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 		BHCPhoInfo.fillBranch( "selPhoBHCPUCleaned_majlen", (float)majlen);
 		BHCPhoInfo.fillBranch( "selPhoBHCPUCleaned_minlen", (float)minlen);
 		//calculate time significance
+		//cout << "getting rh weights" << endl;
 		phoobj.GetRecHitWeights(weights); ///these weights are the PU projected out weights if PU cleaning has been applied (otherwise sum to 1)
 		//cout << "doing cleaned time sig" << endl;
 		timeSignificance = getTimeSig(scIndx, timesig_num, timesig_denom, weights);
@@ -217,7 +221,9 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 		BHCPhoInfo.fillBranch( "selPhoBHCPUCleaned_timeSignficanceDenom", timesig_denom);
 		vector<vector<float>> detbkgscores;
 		phoobj.CalculateDetBkgScores(true);
+		//cout << "calculated det bkg scores" << endl;
 		phoobj.GetDetBkgScores(detbkgscores);
+		//cout << "got detbkg scores" << endl;
 		float physbkg_score = detbkgscores[0][0];
 		float bh_score = detbkgscores[0][1];
 		float spike_score = detbkgscores[0][2];
@@ -227,6 +233,7 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 		
 		//need to set isolation information for the original photon
 		map<string, double> isomap;
+		//cout << "making isomap" << endl;
 		MakePhotonIsoMap(phoidx, isomap);
 		//cout << "made photon iso map " << endl;
 		phoobj.CalculatePhotonIDScores((*Photon_pt)[phoidx], isomap);
@@ -267,7 +274,7 @@ void KUCMSAodSkimmer::processBHCJets(){
 	float pvtime_PUdetBkgCleaned = 0;
 	float norm_PUdetBkgCleaned = 0;
 	int selJetBHCIdx = 0;
-	vector<ClusterObj> jetobjs;
+	std::vector<ClusterObj, Eigen::aligned_allocator<ClusterObj>> jetobjs;
     if( DEBUG ) std::cout << " - Looping over for " << nJets << " jets to get BC info" << std::endl;
   	for( uInt it = 0; it < nJets; it++ ){
         if( not isSelJet[it] ) continue;
@@ -302,7 +309,6 @@ void KUCMSAodSkimmer::processBHCJets(){
 
 		//if not enough rechits to cluster, skip this object
 		if(_ca.GetNRecHits() < 2) continue;
-
 		ClusterObj jetobj;
 		int clusterret = _ca.RunClustering(jetobj, false);
 		if(clusterret == -1) continue; //bad clustering (not enough points, not able to find any clusters, etc)
@@ -315,10 +321,10 @@ void KUCMSAodSkimmer::processBHCJets(){
 	sort(jetobjs.begin(), jetobjs.end(), ptsort);
 	for(int j = 0; j < jetobjs.size(); j++){
 		ClusterObj jetobj = jetobjs[j];
-
 		jetobj.CalculatePUScores();
 		BHCJetInfo.fillBranch( "selJetBHC_selJetIndex", jetobj.GetUserIndex() );
 		nbhcjets++;
+		//debug
 		//do subcluster observables
 		int nk = jetobj.GetNSubclusters();
 		BHCJetInfo.fillBranch( "selJetBHC_nSubclusters", nk);
@@ -362,7 +368,6 @@ void KUCMSAodSkimmer::processBHCJets(){
 		BHCJetInfo.fillBranch( "selJetBHC_PVTime", jettime_pv);
 		BHCJetInfo.fillBranch("selJetBHC_energy", (float)jetobj.GetEnergy());
 		BHCJetInfo.fillBranch( "selJetBHC_pt", (float)jetobj.GetPt());			
-	
 		pvtime += jettime_pv*jetobj.GetEnergy();
 		norm += jetobj.GetEnergy();
 
@@ -374,7 +379,6 @@ void KUCMSAodSkimmer::processBHCJets(){
 		majlen = -1;
 		minlen = -1;
 		jetobj.GetMajMinLengths(majlen, minlen); //space only
-		
 		BHCJetInfo.fillBranch( "selJetBHC_etaVar", etavar);
 		BHCJetInfo.fillBranch( "selJetBHC_phiVar", phivar);
 		BHCJetInfo.fillBranch( "selJetBHC_etaPhiCov", etaphicov);
@@ -404,7 +408,6 @@ void KUCMSAodSkimmer::processBHCJets(){
 		
 		pvtime_PUcleaned += jettime_pv*jetobj.GetEnergy();
 		norm_PUcleaned += jetobj.GetEnergy();
-	
 		//covariance
 		etavar = jetobj.GetEtaVar();
 		phivar = jetobj.GetPhiVar();
