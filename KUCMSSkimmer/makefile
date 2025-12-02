@@ -120,7 +120,7 @@ configtar: remote
 	cp $(EXE_MAIN) config/
 	cp -r ntuple_master_lists/ config/
 	cp -r ecal_config/ config/
-	tar -czf condor/config.tgz -C config .
+	tar -czf condor/config.tgz config 
 
 all: remote configtar
 
@@ -138,6 +138,7 @@ clean:
 	@echo -e "$(COLOR_RED)Cleaning objects and executables$(COLOR_RESET)"
 	rm -rf $(OBJDIR)/*.o *.obj
 	rm -rf condor/config.tgz
+	rm -rf .cache */*.pcm */*.o */*.so */*.d #purge all build artifacts
 
 # Phony targets
 
