@@ -5,7 +5,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dir","-d",help="top directory that has directories of root files to had (default = Output/)",default="Output/")
     parser.add_argument("--proc","-p",help='process to hadd',required=True)
-    parser.add_argument("--tag","-t",help="root outfile tag to hadd",required=True)
+    parser.add_argument("--tag","-t",help="root outfile tag to hadd",default='')
     parser.add_argument("--force",help='force remake of outfile',action='store_true')
     parser.add_argument("--big",help='run routine for larger rootfiles',action='store_true')
     parser.add_argument("--dryRun",help="dry run, print commands without running",action="store_true")
@@ -15,7 +15,7 @@ def main():
     oname = args.tag
     bashfilename = "haddScripts/doHadd_"+proc+"_"+oname+".sh"
     bashfile = open(bashfilename,"w")
-    cmdHadd = "hadd -k -d /uscmst1b_scratch/lpc1/3DayLifetime/mlazarov/ -j 4 -v 0"
+    cmdHadd = "hadd -k -j 4 -v 0"
     #provide directory Output/proc
     topdir = args.dir + "/" + args.proc
     cmds = []
