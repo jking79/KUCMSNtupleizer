@@ -106,18 +106,20 @@ float KUCMSAodSkimmer::getTimeSig( int scIndex, float& num, float& denom, const 
                 float cor_tofPVtoRH = hypo(erx-PV_x,ery-PV_y,erz-PV_z)/SOL;
                 float ertoftime = erhct - cor_cms000 + cor_tofPVtoRH;
                 bool isValid = (*ECALRecHit_isTimeValid)[erhiter];
+                bool isEE = fabs((*ECALRecHit_eta)[erhiter]) > 1.479;
+                bool badEETime = (*ECALRecHit_timeError)[erhiter] < 1.005;
+                if( isEE && badEETime ) isValid = false;
                 bool hasGainSwitch = (*ECALRecHit_hasGS1)[erhiter] || (*ECALRecHit_hasGS6)[erhiter];
                 float gainwt = 1;
                 if( hasGainSwitch ) gainwt = 0;
                 if( not isValid ) gainwt = 0;
                 float invertres = 1/ertres;
                 float erhar = invertres*gainwt;
-		if(rhIdToBHCw.size() > 0){
-			double bhcw = 0;
-			if(rhIdToBHCw.find(scrhid) != rhIdToBHCw.end())
-				bhcw = rhIdToBHCw.at(scrhid);
-			erhar *= bhcw;
-		}
+				if(rhIdToBHCw.size() > 0){
+					double bhcw = 0;
+					if(rhIdToBHCw.find(scrhid) != rhIdToBHCw.end()) bhcw = rhIdToBHCw.at(scrhid);
+					erhar *= bhcw;
+				}//<<>>if(rhIdToBHCw.size() > 0) 
                 sumtw += erhar*ertoftime;
 				sumrh += gainwt;
                 sumw += erhar;
@@ -129,8 +131,8 @@ float KUCMSAodSkimmer::getTimeSig( int scIndex, float& num, float& denom, const 
         float phoWTime = sumtw/sumw;
         float phoWVar = sumrh/sumw;
         float wttimesig = phoWTime/std::sqrt(phoWVar);
-	num = phoWTime;
-	denom = std::sqrt(phoWVar);
+	    num = phoWTime;
+	    denom = std::sqrt(phoWVar);
 		return wttimesig;
 
 }//<<>>void KUCMSAodSkimmer::getTimeSig

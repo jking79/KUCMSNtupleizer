@@ -531,29 +531,47 @@ void KUCMSAodSkimmer::ProcessConfigTree( TChain* fInConfigTree ){
     std::cout << "Proccessing " << nConfigEntries << " config entries." << std::endl;
     configCnts.clear();
     configWgts.clear();
-    for (Long64_t centry = 0; centry < nConfigEntries; centry++){
 
-      auto entry = fInConfigTree->LoadTree(centry);
+	if( _evti == 0 ){
 
-      b_nTotEvts->GetEntry(entry);   //!
-      b_nFltrdEvts->GetEntry(entry);   //!
-      b_sumEvtWgt->GetEntry(entry);   //!  
-      b_sumFltrdEvtWgt->GetEntry(entry);   //!
-      b_nMetFltrdEvts->GetEntry(entry);   //!
-      b_nPhoFltrdEvts->GetEntry(entry);   //!
+      for (Long64_t centry = 0; centry < nConfigEntries; centry++){
 
-      cutflow["nTotEvts"] += nTotEvts;
-      cutflow["nFltrdEvts"] += nFltrdEvts;
+        auto entry = fInConfigTree->LoadTree(centry);
 
-      configCnts["nTotEvts"] += nTotEvts;
-      configCnts["nFltrdEvts"] += nFltrdEvts;
-      configWgts["sumEvtWgt"] += useEvtGenWgtFlag ? sumEvtWgt : nTotEvts;
-      configWgts["sumFltrdEvtWgt"] += useEvtGenWgtFlag ? sumFltrdEvtWgt : nFltrdEvts;
-      configCnts["nMetFltrdEvts"] += nMetFltrdEvts;
-      configCnts["nPhoFltrdEvts"] += nPhoFltrdEvts;
+        b_nTotEvts->GetEntry(entry);   //!
+        b_nFltrdEvts->GetEntry(entry);   //!
+        b_sumEvtWgt->GetEntry(entry);   //!  
+        b_sumFltrdEvtWgt->GetEntry(entry);   //!
+        b_nMetFltrdEvts->GetEntry(entry);   //!
+        b_nPhoFltrdEvts->GetEntry(entry);   //!
+
+        cutflow["nTotEvts"] += nTotEvts;
+        cutflow["nFltrdEvts"] += nFltrdEvts;
+
+        configCnts["nTotEvts"] += nTotEvts;
+        configCnts["nFltrdEvts"] += nFltrdEvts;
+        configWgts["sumEvtWgt"] += useEvtGenWgtFlag ? sumEvtWgt : nTotEvts;
+        configWgts["sumFltrdEvtWgt"] += useEvtGenWgtFlag ? sumFltrdEvtWgt : nFltrdEvts;
+        configCnts["nMetFltrdEvts"] += nMetFltrdEvts;
+        configCnts["nPhoFltrdEvts"] += nPhoFltrdEvts;
 
 
-    }//<<>>for (Long64_t centry = 0; centry < nConfigEntries; centry++)
+      }//<<>>for (Long64_t centry = 0; centry < nConfigEntries; centry++)
+
+	} else {
+
+      cutflow["nTotEvts"] = 0;
+      cutflow["nFltrdEvts"] = 0;
+
+      configCnts["nTotEvts"] = 0;
+      configCnts["nFltrdEvts"] = 0;
+      configWgts["sumEvtWgt"] = 0;
+      configWgts["sumFltrdEvtWgt"] = 0;
+      configCnts["nMetFltrdEvts"] = 0;
+      configCnts["nPhoFltrdEvts"] = 0;
+	
+	}//<<>if( _evti == 0 )
+	
 
     std::cout << "configCnts ( ";
     for( auto item : configCnts ){

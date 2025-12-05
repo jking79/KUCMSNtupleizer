@@ -27,7 +27,7 @@ KUCMS_TimeCalibration::KUCMS_TimeCalibration( bool stayOpen, bool makeNew ){
 
 	ebx_ranges = {171,-85,86,360,1,361};
 	epmx_ranges = {203,-101,102,100,1,101};
-	ebtt_ranges = {35,-17,18,72,1,73};
+	ebtt_ranges = {35,-17,18,74,1,75};
     epmtt_ranges = {23,-11,12,34,1,35};
 
     //std::cout << " - opening caliHistsTFile " << std::endl;
@@ -281,11 +281,11 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
     float minttlumi =  0.36; // in /fb
     float minxlumi = 9.0; // in /fb
 
-	float minttlumigs2 = 4.0;
-	float minxlumigs2 = 16.0;
+	float minttlumigs2 = 12.0;
+	float minxlumigs2 = 60.0;
 
-    float minttlumigs3 = 12.0;
-    float minxlumigs3 = 48.0;
+    //float minttlumigs3 = 36.0;
+    //float minxlumigs3 = 400.0;
 
     std::string r2ulTagTT( "r2ultt" );
     std::string r2ulTagX( "r2ulx" );
@@ -308,17 +308,17 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
     SetupIovMap( r2ulTagX, minxlumi );
     setXIov("r2ulx");
 
-    std::string r2ulTagTTGS2( "r2ultt_gs2" );
-	std::string r2ulTagXGS2( "r2ulx_gs2" );
+    //std::string r2ulTagTTGS2( "r2ultt_gs2" );
+	//std::string r2ulTagXGS2( "r2ulx_gs2" );
 
-	SetupIovMap( r2ulTagTTGS2, minttlumigs2 );
-	SetupIovMap( r2ulTagXGS2, minttlumigs2 );
+	//SetupIovMap( r2ulTagTTGS2, minttlumigs2 );
+	//SetupIovMap( r2ulTagXGS2, minttlumigs2 );
 
-    std::string r2ulTagTTGS3( "r2ultt_gs3" );
-    std::string r2ulTagXGS3( "r2ulx_gs3" );
+    //std::string r2ulTagTTGS3( "r2ultt_gs3" );
+    //std::string r2ulTagXGS3( "r2ulx_gs3" );
 
-    SetupIovMap( r2ulTagTTGS3, minttlumigs3 );
-    SetupIovMap( r2ulTagXGS3, minttlumigs3 );
+    //SetupIovMap( r2ulTagTTGS3, minttlumigs3 );
+    //SetupIovMap( r2ulTagXGS3, minttlumigs3 );
 
 
     std::string r3TagTT( "r3tt" );
@@ -452,6 +452,7 @@ void KUCMS_TimeCalibration::ReadCaliRunFile(){
         CaliRunMapSet[tag][srun].noise = noise;
         CaliRunMapSet[tag][srun].stoch = stoch;
         CaliRunMapSet[tag][srun].stant = stant;
+        CaliRunMapSet[tag][srun].hasGID2 = true;
     }//<<>>while (infile >>
 	infile.close();
 
@@ -498,10 +499,12 @@ void KUCMS_TimeCalibration::ReadTTRunFile(){
     std::string caliMapName, tag;
     int srun, erun, lrun;
     float lumi;
-    while( infile >> tag >> caliMapName >> srun >> erun >> lrun >> lumi ){
+	bool hgsc;
+    while( infile >> tag >> caliMapName >> srun >> erun >> lrun >> lumi >> hgsc ){
         //std::cout << " -- " << tag << " " << caliMapName << " " << srun << " " << erun << " " << lrun << " " << lumi << std::endl;
         TTCaliRunMapSet[tag][srun] = { caliMapName, srun, erun, lrun, lumi };
         TTCaliRunMapSet[tag][srun].isNew = false;
+        TTCaliRunMapSet[tag][srun].hasGID2 = hgsc;
     }//<<>>while (infile >>
 	infile.close();
 
@@ -523,9 +526,10 @@ void KUCMS_TimeCalibration::SaveTTRunFile(){
         	int erun = calirunsct.second.endRun;
         	std::string mapName = calirunsct.second.histMapName;
         	float lumi = calirunsct.second.lumi;
-			int lrun = calirunsct.second.lastRun; 
+			int lrun = calirunsct.second.lastRun;
+			bool hgsc = calirunsct.second.hasGID2; 
 			//std::cout << " -- " << tag << " " << mapName << " " << srun << " " << erun << " " << lrun << " " << lumi << std::endl;
-        	outfile << tag << " " << mapName << " " << srun << " " << erun << " " << lrun << " " << lumi << std::endl;
+        	outfile << tag << " " << mapName << " " << srun << " " << erun << " " << lrun << " " << lumi << " " << hgsc << std::endl;
 
 		}//<<>>for( auto& calirunsct : calirunmap )
 
@@ -973,9 +977,9 @@ void KUCMS_TimeCalibration::makeCaliMaps(){
                         calirunsct.second.errMap[detid] = error;
 					}//<<>>for( int iphi = 1; iphi < 361; iphi++ )
 				}//<<>>for( int ieta = 1; ieta < 172; ieta++ )
-			}//<<>>for( auto side : ebeemap )
+            }//<<>>if( CaliHists.find(sfilename) != CaliHists.end() )
 
-			}//<<>>if( CaliHists.find(sfilename) != CaliHists.end() )
+			}//<<>>for( auto side : ebeemap )
         }//<<>>for( auto& calirunsct : calirunmap )
     }//<<>>for( auto& calirunmap : CaliRunMapSet )
 
@@ -997,7 +1001,7 @@ void KUCMS_TimeCalibration::makeCaliMaps(){
             if( CaliHists.find(sfilename) != CaliHists.end() ){
                	bool isEB( side == ebeemap[0] );
                	int end_range_eta = isEB ? 36 : 24;
-               	int end_range_phi = isEB ? 73 : 35;
+               	int end_range_phi = isEB ? 75 : 35;
 				//std::cout << " --- found : " << tfilename << std::endl;
                 for( int ieta = 1; ieta < end_range_eta; ieta++ ){
                     for( int iphi = 1; iphi < end_range_phi; iphi++ ){
@@ -1071,20 +1075,24 @@ void KUCMS_TimeCalibration::LoadExtCali( std::string calihist, std::string mapna
 
 }//<<>>void KUCMS_TimeCalibration::LoadExtCali( std::string calihist, std::string mapname, std::string tag )
 
-uInt KUCMS_TimeCalibration::getTTId( uInt detId ){
+uInt KUCMS_TimeCalibration::getTTId( uInt detId, int gainID ){
 
 	uInt id = 9999999;
 
 	if( DetIDMap[detId].ecal == 0 ){
-		int ttphi = 1 + int( DetIDMap[detId].i1 - 1 )/5;
-		int tteta = 1 + int( std::abs( DetIDMap[detId].i2 ) - 1 )/5;
-		id = ( DetIDMap[detId].i2 < 0 ) ? (ttphi+tteta*100)+2000 : (ttphi+tteta*100);
+		if( gainID == 1 ){
+			int ttphi = 1 + int( DetIDMap[detId].i1 - 1 )/5;
+			int tteta = 1 + int( std::abs( DetIDMap[detId].i2 ) - 1 )/5;
+			id = ( DetIDMap[detId].i2 < 0 ) ? (ttphi+tteta*100)+2000 : (ttphi+tteta*100);
+		} else { id = ( DetIDMap[detId].i2 < 0 ) ? 2174 : 174; } 
 	} else {
-		int side = DetIDMap[detId].ecal; 
-		//int ttphi = DetIDMap[detId].TT;
-		//int tteta =  DetIDMap[detId].sect;
-		int mod = DetIDMap[detId].mod;
-		id = 1000*( side + 3 ) + mod; 
+		int side = DetIDMap[detId].ecal;
+		if( gainID == 1 ){
+			//int ttphi = DetIDMap[detId].TT;
+			//int tteta =  DetIDMap[detId].sect;
+			int mod = DetIDMap[detId].mod;
+			id = 1000*( side + 3 ) + mod; 
+		} else { id = 1000*( side + 3 ) + 330; }
 	}//<<>>if( DetIDMap[detId].ecal == ECAL::EB ) else
 	//std::cout << " getTTId " << detId << " phi " << DetIDMap[detId].i1 << " eta " << DetIDMap[detId].i2 << std::endl; 
     //std::cout << "  --> p " << ttphi << " e " << tteta << " = " << id <<std::endl;
@@ -1160,19 +1168,20 @@ std::map<UInt_t,kucms_DetIDStruct> KUCMS_TimeCalibration::getDetIDMap(){; // map
 
 //std::map<std::string,std::map<int,CaliRunStruct>> CaliRunMapSet;
 
-float KUCMS_TimeCalibration::getCalibration( uInt rhid, int run, std::string tag ){
+float KUCMS_TimeCalibration::getCalibration( uInt rhid, int run, std::string tag, int gainID ){
 
 	if( rhid == 0 ) return -999.f;
+	if( gainID > 1 ) return -999.f;
 	//if( not validCurrentTag ){ std::cout << "No current tag set." << std::endl; return 0.f; }
 	//if( not isEB ){ std::cout << "XCalibration for EE is not supported." << std::endl; return 0.f; }
     //if( not validCurrentTag ){ std::cout << "No current tag set." << std::endl; return 0.f; }
     //if( DetIDMap[rhid].ecal != ECAL::EB ) return 0.f;
     float xtaltime = -1000.f;
-	float ttcali = ( externalCali ) ? 0.f : getTTCali( rhid, run, tag );
+	float ttcali = ( externalCali ) ? 0.f : getTTCali( rhid, run, tag, gainID );
     for( auto& calirunmap : CaliRunMapSet[tag] ){
 		int endrun = calirunmap.second.endRun;
 		int startrun = calirunmap.second.startRun;	
-		//std::cout << "GEtCali : " << run << " " << tag << " " << rhid << " " << startrun << " " << endrun << std::endl;
+		//std::cout << "GetCali : " << run << " " << tag << " " << rhid << " " << startrun << " " << endrun << std::endl;
 		if( ( run >= startrun ) && ( run <= endrun ) ){
             xtaltime = calirunmap.second.meanMap[rhid];
 			//std::cout << "Found Cali : " << xtaltime << std::endl;
@@ -1184,12 +1193,12 @@ float KUCMS_TimeCalibration::getCalibration( uInt rhid, int run, std::string tag
 
 }//<<>>float KUCMS_TimeCalibration::getCalibration( std::string tag )
 
-float KUCMS_TimeCalibration::getTTCali( uInt rhid, int run, std::string tag ){
+float KUCMS_TimeCalibration::getTTCali( uInt rhid, int run, std::string tag, int gainID ){
 
     //if( not isEB ){ std::cout << "TTCalibration for EE is not supported." << std::endl; return 0.f; }
     //if( DetIDMap[rhid].ecal != ECAL::EB ) return 0.f;
     float xtaltime = -1000.f;
-    uInt ttid = getTTId( rhid );
+    uInt ttid = getTTId( rhid, gainID );
     for( auto& calirunmap : TTCaliRunMapSet[tag] ){
         int endrun = calirunmap.second.endRun;
         int startrun = calirunmap.second.startRun;
@@ -1266,12 +1275,13 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
 
 }//<<>>float getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey )
 
-float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey, int mctype ){
+float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsigned int rechitID, 
+												unsigned int Evt_run, std::string dataSetKey, int mctype, int gainID ){
 
 	float rtime = 0;
     if( mctype == 1 ){ // data
 
-        rtime = time - getCalibration( rechitID, Evt_run, dataSetKey );
+        rtime = time - getCalibration( rechitID, Evt_run, dataSetKey, gainID );
     
     } else { // MC
 
@@ -1340,13 +1350,23 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
     TBranch *b_rhTimeError;
     //TBranch *b_rhAmp; // base for resolutions 
 
-	if( GID == 2 ){ setTTIov( curTTIov + "_gs2" ); setXIov( curXIov + "_gs2" ); }
-    if( GID == 3 ){ setTTIov( curTTIov + "_gs3" ); setXIov( curXIov + "_gs3" ); }
-    if( GID == 4 ){ setTTIov( curTTIov + "_gs4" ); setXIov( curXIov + "_gs4" ); }
+	//Set current IOV tag to corrcet version for this gain
+	if( GID == 1 ){ if( debug ) std::cout << " -------- GainID 1 Processing " << std::endl; }
+	else if( GID == 2 ){ if( debug ) std::cout << " -------- GainID 2 Processing " << std::endl; }
+	//else if( GID == 2 ){ setTTIov( curTTIov + "_gs2" ); setXIov( curXIov + "_gs2" ); }
+    //else if( GID == 3 ){ setTTIov( curTTIov + "_gs3" ); setXIov( curXIov + "_gs3" ); }
+    //else if( GID == 4 ){ setTTIov( curTTIov + "_gs4" ); setXIov( curXIov + "_gs4" ); }
 
 	// make sure iov maps exist for cali maps we are making
 	if( doTT && iovMaps.find(curTTIov) == iovMaps.end() ){ std::cout << " TT Iov not valid !!" << std::endl; return; }
     if( not doTT && iovMaps.find(curXIov) == iovMaps.end() ){ std::cout << " X Iov not valid !!" << std::endl; return; }
+	if( GID > 1 ){
+		if( not doTT ){ std::cout << " Not in TT Calibration for High Gain Calibration !!" << std::endl; return; }
+		if( iovMaps.find(curTTIov) == iovMaps.end() ){ std::cout << " TT Iov not valid for High Gain Calibration !!" << std::endl; return; }
+	} else { //<<>>if( GID > 1 )
+    	if( doTT && iovMaps.find(curTTIov) == iovMaps.end() ){ std::cout << " TT Iov not valid !!" << std::endl; return; }
+    	if( not doTT && iovMaps.find(curXIov) == iovMaps.end() ){ std::cout << " X Iov not valid !!" << std::endl; return; }
+	}//<<>>//<<>>if( GID > 1 )	
 
     std::ifstream infilelist(inputFileName);
     std::string infilestr;
@@ -1362,9 +1382,10 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 		std::string wichtype = doTT ? "TT" : "X";
 
 		// SET GS TAG !!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		if( GID == 2 ) tag = tag + "_gs2";
-        if( GID == 3 ) tag = tag + "_gs3";
-        if( GID == 4 ) tag = tag + "_gs4";
+		if( GID == 1 ){ if( debug ) std::cout << "GainID 1 tag" << std::endl; }
+		else if( GID == 2 ) tag = tag + "_gs2";
+        //else if( GID == 3 ) tag = tag + "_gs3";
+        //else if( GID == 4 ) tag = tag + "_gs4";
 
         std::cout << "open input file : " << infilename << std::endl;
         std::cout << "For Run " << srun << " to Run " << erun << std::endl;
@@ -1375,6 +1396,12 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 			std::cout << " No TT maps for this tag !!" << std::endl; 
 			return; 
 		}//<<>>if( not doTT && TTCaliRunMapSet.find(tag) == TTCaliRunMapSet.end() )
+
+        if( GID > 1 ){ 
+			if( TTCaliRunMapSet.find(tag) == TTCaliRunMapSet.end() || CaliRunMapSet.find(tag) == CaliRunMapSet.end() ){
+            std::cout << " No TT and/or X maps for this tag in High Gain Calibration!!" << std::endl;
+            return;
+        }}//<<>>if( not doTT && TTCaliRunMapSet.find(tag) == TTCaliRunMapSet.end() )
 
         std::ifstream infile(infilename);
         std::string instr;
@@ -1407,7 +1434,7 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
         auto treeEntries = fInTree->GetEntries();
 		auto nEntries = small ? ( treeEntries < 10000000 ) ? treeEntries : 10000000  : treeEntries;
         std::cout << "Starting entry loops for " << nEntries << " Entries" <<  std::endl;
-        if( debug ) nEntries = 10000;
+        //if( debug ) nEntries = 10000;
 		int modbreak = debug ? 1000 : 1000000;
         for (Long64_t centry = 0; centry < nEntries; centry++){
 
@@ -1426,51 +1453,71 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
             b_rhisGS1->GetEntry(entry);
 			b_rhTimeError->GetEntry(entry);
 
-			if( debug) std::cout << " processing " << run;
-            if( debug) std::cout << " in " << srun << " to " << erun;
+			//if( debug) std::cout << " processing " << run;
+            //if( debug) std::cout << " in " << srun << " to " << erun;
             if( run < srun || run > erun ) continue;
             if( finalRun < run ) finalRun = run;
-			if( debug) std::cout << " eval w/ final : " << finalRun << std::endl;
+			//if( debug) std::cout << " eval w/ final : " << finalRun << std::endl;
 
 			int nRecHits = rhID->size();
-            if( debug) std::cout << " - looping over nRecHits: " << nRecHits << std::endl;
+            //if( debug) std::cout << " - looping over nRecHits: " << nRecHits << std::endl;
 			bool tagNotFound( true );
             bool runNotFound( true );
 			auto& calirunset = doTT ? TTCaliRunMapSet : CaliRunMapSet;
 			if( calirunset.find(tag) != calirunset.end() ){ // tag exists
 
-				if( debug) std::cout << " - tag found : " << tag << std::endl;
+				//if( debug) std::cout << " - tag found : " << tag << std::endl;
 				tagNotFound = false;
 				auto& runset = calirunset[tag];
-				if( debug) std::cout << " - In runset : " << tag << " " << runset[run].startRun << std::endl;
+				//if( debug) std::cout << " - In runset : " << tag << " " << runset[run].startRun << std::endl;
 				for( auto& runrange : runset ){
 					auto& range = runrange.second;
-					if( debug) std::cout << " - run chk : " << run << " " << range.startRun << " " << range.endRun << std::endl;
+					//if( debug) std::cout << " - run chk : " << run << " " << range.startRun << " " << range.endRun << std::endl;
 					if( run >= range.startRun && run <= range.endRun ){ // run range exists 
 						runNotFound = false;
-						if( debug) std::cout << " - check lastRun : " << run << " last " << range.lastRun;
-						if( debug) std::cout  << " nrh " << nRecHits << std::endl; 
+						//if( debug) std::cout << " - check lastRun : " << run << " last " << range.lastRun;
+						//if( debug) std::cout  << " nrh " << nRecHits << std::endl; 
 						// if end == last : all runs in range completed, if run > last : run in range already filled
-						if( run > range.lastRun ){
+						if( GID > 1 ) range.doGID2 = true;
+						if( run > range.lastRun || ( not range.hasGID2 && range.doGID2 ) ){
 
 							for( int idx = 0; idx < nRecHits; idx++ ){
-								if( rhTimeError->at(idx) <= 0.61 ) continue; // only valid for ratio time reco
+
+								int gainid = 0;
 								bool gs6 = rhisGS6->at(idx);
 								bool gs1 = rhisGS1->at(idx);
-								//if( debug) std::cout << rhEnergy->at(idx) << " " << rhID->at(idx) << " " << rhRtTime->at(idx) << std::endl;
+                        		//std::cout << " -- : time error " << rhTimeError->at(idx) << std::endl;
+								bool gid1 = not gs6 && not gs1;
+								bool gid2 = gs6 && not gs1;
+								bool gid3 = not gs6 && gs1;
+								bool gid4 = gs6 && gs1;
+                                //if( debug) std::cout << " -- : time error " << rhTimeError->at(idx) << std::endl;
+                                //if( debug) std::cout << " -- : GID " << GID << " gs6 " << gs6 << " gs1 " << gs1 << " e " << rhEnergy->at(idx) << std::endl;
 								float minRhEnergy = 5.0;
-								if( GID == 1 && ( not (gs6 == 0 && gs1 == 0 ) ) ) continue;
-								else if( GID == 2 ){ minRhEnergy = 120.0; if( not( gs6 == 1 && gs1 == 0 ) ) continue; }
-                                else if( GID == 3 ){ minRhEnergy = 240.0; if( not( gs6 == 0 && gs1 == 1 ) ) continue; }
-								else if( GID == 4 ){ minRhEnergy = 240.0; if( not( gs6 == 1 && gs1 == 1 ) ) continue; }
+                                if( gid2 ) minRhEnergy = 120.0;
+                                else if( gid3 || gid4 ) minRhEnergy = 240.0;
+								bool skiprechit = false;
+								if( gid1 ) gainid == 1;
+								else if( gid2 || gid3 || gid4 ) gainid == 2;
+								if( GID != gainid ) skiprechit = true;
+                                uInt id = rhID->at(idx);
+                                float errorThres = gid1 ? 0.61 : 0.6;
+								if( DetIDMap[id].ecal != ECAL::EB ) errorThres = gid1 ? 1.01 : 1.0;
+								if( rhTimeError->at(idx) <= errorThres ) skiprechit = true; 
+								if( rhTimeError->at(idx) > 900 ) skiprechit = true;
+                                //std::cout << " -- : GID " << GID << " gs6 " << gs6 << " gs1 " << gs1 << " e " << rhEnergy->at(idx) << std::endl;
+								if( skiprechit ) continue;
+								//std::cout << " -- : time error " << rhTimeError->at(idx) << std::endl;
+                                //std::cout << " --- : GID " << GID << " gs6 " << gs6 << " gs1 " << gs1 << " e " << rhEnergy->at(idx) << std::endl;
 								if( rhEnergy->at(idx) < minRhEnergy ) continue;
-								uInt id = rhID->at(idx);
+                                if( debug) std::cout << " --- : time error " << rhTimeError->at(idx) << std::endl;
+								if( debug) std::cout << " --- : GID " << GID << " gs6 " << gs6 << " gs1 " << gs1 << " e " << rhEnergy->at(idx) << std::endl;
 								//if( debug) std::cout << " - EB check --- " << id << " / " << DetIDMap[id].ecal;
 								//if( debug) std::cout << " - " << ECAL::EB << std::endl;
-								////if( DetIDMap[id].ecal != ECAL::EB ) continue;
 								float time = rhRtTime->at(idx);
-           						uInt crsid = doTT ? getTTId( id ) : id;
-           						float crstime = ( not doTT && doCali ) ? time - getTTCali( id, run, tag ) : time ;
+           						uInt crsid = doTT ? getTTId( id, GID ) : id;
+                        		float bcrstime = ( not doTT && doCali ) ? time - getTTCali( id, run, tag ) : time;
+                        		float crstime = ( doTT && doCali && gainid != 1  ) ? bcrstime - getCalibration( id, run, tag ) : bcrstime;
 								//float crstime = time;
                                 //if( crstime == 0 ) std::cout << " -- " << crsid << " = " << id;
                                 //if( crstime == 0 ) std::cout << " = e " << DetIDMap[id].i2 << " p " << DetIDMap[id].i1 << std::endl;
@@ -1493,6 +1540,7 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 				int last = 0;
 				float tlumi = 0;
 				auto& iovset = doTT ? iovMaps[curTTIov] : iovMaps[curXIov];
+				if( not doCali && GID > 1 ){ std::cout << " -- New IOV range for this run/tag in High Gain w/ doCali Fasle" << std::endl; return; }
 				for( auto& iovmap : iovset ){
 					if( debug) std::cout << " checking : " << run << " " << iovmap.first << " " << iovmap.second << std::endl;
 					//if( run == iovmap.first ){}// first run in range - start new map  endrun = iovmap.second
@@ -1508,20 +1556,33 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 					std::string hfname = tag+"_"+std::to_string(tstart)+"_"+wichtype;
 					calirunset[tag][tstart] = { hfname, tstart, tend, last, tlumi };
                     for( int idx = 0; idx < nRecHits; idx++ ){
+						int gainid = 0;
                         bool gs6 = rhisGS6->at(idx);
                         bool gs1 = rhisGS1->at(idx);
+                        //if( gs6 || gs1 ) std::cout << " -- : time error " << rhTimeError->at(idx) << std::endl;
                         //if( debug) std::cout << rhEnergy->at(idx) << " " << rhID->at(idx) << " " << rhRtTime->at(idx) << std::endl;
+                        bool gid1 = not gs6 && not gs1;
+                        bool gid2 = gs6 && not gs1;
+                        bool gid3 = not gs6 && gs1;
+                        bool gid4 = gs6 && gs1;
                         float minRhEnergy = 5.0;
-                        if( GID == 1 && ( gs6 != 0 && gs1 != 0 ) ) continue;
-                        else if( GID == 2 ){ minRhEnergy = 120.0; if( gs6 != 1 && gs1 != 0 ) continue; }
-                        else if( GID == 3 ){ minRhEnergy = 240.0; if( gs6 != 0 && gs1 != 1 ) continue; }
-                        else if( GID == 4 ){ minRhEnergy = 240.0; if( gs6 != 1 && gs1 != 1 ) continue; }
+                        if( gid2 ) minRhEnergy = 120.0;
+                        else if( gid3 || gid4 ) minRhEnergy = 240.0;
+                        bool skiprechit = false;
+                        if( gid1 ) gainid == 1;
+                        else if( gid2 || gid3 || gid4 ) gainid == 2;
+                        if( GID != gainid ) skiprechit = true;
+                       	uInt id = rhID->at(idx);
+						float errorThres = gid1 ? 0.61 : 0.6;
+                        if( DetIDMap[id].ecal != ECAL::EB ) errorThres = gid1 ? 1.01 : 1.0;
+                        if( rhTimeError->at(idx) <= errorThres ) skiprechit = true;
+                        if( rhTimeError->at(idx) > 900 ) skiprechit = true;
+						if( skiprechit ) continue;
                         if( rhEnergy->at(idx) < minRhEnergy ) continue;
-                        uInt id = rhID->at(idx);
-						//if( DetIDMap[id].ecal != ECAL::EB ) continue;
                         float time = rhRtTime->at(idx);
-                        uInt crsid = doTT ? getTTId( id ) : id;
-                        float crstime = ( not doTT && doCali ) ? time - getTTCali( id, run, tag ) : time;
+                        uInt crsid = doTT ? getTTId( id, GID ) : id;
+                        float bcrstime = ( not doTT && doCali ) ? time - getTTCali( id, run, tag ) : time;
+						float crstime = ( doTT && doCali && gainid != 1  ) ? bcrstime - getCalibration( id, run, tag ) : bcrstime;
 						calirunset[tag][tstart].fillSumCnt( crsid, crstime );
                     }//<<>>for( int idx = 0; idx < nRecHits; idx++ )
 				} // else { std::cout << "No IOV for this run/tag " << run << " - " << tag << " ? !!!!!!! " << std::endl; }
@@ -1541,10 +1602,13 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 			auto& range = runrange.second;
 			if( range.updated ){
 				std::cout << "For: " << std::to_string( runrange.first ) << std::endl; 
-				if( finalRun > 100000 ) range.lastRun = ( finalRun < range.endRun ) ? finalRun : range.endRun;
-				else range.lastRun = 999999;
+				if( range.lastRun != range.endRun ){
+					if( finalRun > 100000 ) range.lastRun = ( finalRun < range.endRun ) ? finalRun : range.endRun;
+					else range.lastRun = 999999;
+				}//<<>>if( range.lastRun != range.endRun )
 				range.makeMeanMap( false );
 				range.updated = false;
+				if( GID > 1 && ( range.lastRun == range.endRun ) ){ range.hasGID2 = true; range.doGID2 = false; }
 			}//<<>>if( range.updated )
 		}//<<>>for( auto& runrange : calirun.second )
 	}//<<>>for( auto& calirun : calirunset )

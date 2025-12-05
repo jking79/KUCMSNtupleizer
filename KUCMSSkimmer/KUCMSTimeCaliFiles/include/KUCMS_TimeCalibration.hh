@@ -155,14 +155,14 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 	// accessors to utilize calibration information  ::  for use in KUSkimmer
     // --------------------------------------------------------------------------
 
-	float getCorrectedTime( float time, float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey, int mctype ); 
+	float getCorrectedTime( float time, float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey, int mctype, int gainID = 1 ); 
     float getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey, int mctype );
 
-	float getCalibration( uInt rhid, int run, std::string tag  ); // tag indicates which calibration set to use
-    float getCalibration( uInt rhid, int run )
-			{ return getCalibration( rhid, run, curTag ); };
-	float getCalibTime( float rhtime, uInt rhid, int run )
-			{ return rhtime - getCalibration( rhid, run ); };
+	float getCalibration( uInt rhid, int run, std::string tag, int gainID = 1 ); // tag indicates which calibration set to use
+    float getCalibration( uInt rhid, int run, int gainID = 1 )
+			{ return getCalibration( rhid, run, curTag, gainID ); };
+	float getCalibTime( float rhtime, uInt rhid, int run, int gainID = 1 )
+			{ return rhtime - getCalibration( rhid, run, gainID ); };
 	//tag indicates which smear to use
 	float getSmearedTime(  float rhtime, float rhamp, std::string stag );
     float getSmearedTime(  float rhtime, float rhamp )
@@ -176,13 +176,13 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 	// accessor function for use in fillTimeCali - Setup and processing functions
 	// --------------------------------------------------------------------------
 
-	float getTTCali( uInt rhid, int run, std::string tag );
+	float getTTCali( uInt rhid, int run, std::string tag, int gainID = 1 );
 
 	kucms_DetIDStruct& getDetIdInfo( uInt rhid );
 	std::map<int,std::map<int,std::map<int,uInt>>> getInvDetIDMap();
     std::map<UInt_t,kucms_DetIDStruct> getDetIDMap(); // map of information by detid for each crystal
 	uInt getDetIdInfo( int i1, int i2, int ecal );
-	uInt getTTId( uInt detId );
+	uInt getTTId( uInt detId, int gainID = 1 );
 	std::pair<int,int> getTTInfo( uInt ttid );
     uInt getInvTTId( int i1, int i2, bool isEB );
 

@@ -95,6 +95,8 @@ TRES_OBJ  := $(MAINOBJDIR)/makeKUCMSTimeResolution.o
 remote: $(EXE_MAIN)
 local: $(EXE_LOCAL)
 time: $(EXE_CALI) $(EXE_RES)
+cali: $(EXE_CALI)
+res: $(EXE_RES)
 
 $(EXE_MAIN): $(OBJ_FILES) $(MAIN_OBJ)
 	@echo -e "$(COLOR_GREEN)Linking $@$(COLOR_RESET)"

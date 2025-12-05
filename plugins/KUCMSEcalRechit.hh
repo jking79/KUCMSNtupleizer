@@ -837,7 +837,7 @@ void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
         const float rhEnergy = recHit.energy();
 		float rhJErr = recHit.timeError();
         float rhChi2 = recHit.chi2();
-		bool isTimeValid = rhJErr > 0.61;
+		bool isTimeValid = isEB ? rhJErr > 0.61 : rhJErr > 1.01;
 
 		if( cfFlag("doProbeOut") ){
 			//bool flagged = rhIsRecov || rhIsPoor || rhIsDead || rhIsOther;
