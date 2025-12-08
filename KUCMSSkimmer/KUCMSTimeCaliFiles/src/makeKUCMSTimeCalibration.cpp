@@ -98,17 +98,26 @@ int main ( int argc, char *argv[] ){
     //        { makeCaliMapsEGR( inputFileName, false, GID, small, doCali ); };
     //theCali.makeTTCaliMapEGR( inputfilename, 1, true ); // true == run only subset of events
 	//theCali.makeTTCaliMapEGR( inputfilename );
+    //theCali.makeCaliHists();
+    //theCali.SaveCaliHists();
+    //theCali.SaveTTRunFile();
+
+    //-----//////////  making xtal cali :
+    //theCali.makeXCaliMapEGR( inputfilename, true ); // true == run only subset of events
+	//theCali.makeXCaliMapEGR( inputfilename, 1, true ); // true == run only subset of events
+    //theCali.makeXCaliMapEGR( inputfilename );
+    //theCali.makeCaliHists();
+    //theCali.SaveCaliHists();
+    //theCali.SaveCaliRunFile();
+
+	//----///////////  make gainid 2 calibrations
+    //theCali.makeTTCaliMapEGR( inputfilename, 2, false, false ); // do gainID 2 no calibration step
+    //theCali.makeTTCaliMapEGR( inputfilename, 2, true ); // do gainID 2
     theCali.makeTTCaliMapEGR( inputfilename, 2 ); // do gainID 2
     theCali.makeCaliHists();
     theCali.SaveCaliHists();
     theCali.SaveTTRunFile();
 
-    //-----//////////  making xtal cali :
-    //theCali.makeXCaliMapEGR( inputfilename, true ); // true == run only subset of events
-    //theCali.makeXCaliMapEGR( inputfilename );
-    //theCali.makeCaliHists();
-    //theCali.SaveCaliHists();
-    //theCali.SaveCaliRunFile();
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

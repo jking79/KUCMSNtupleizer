@@ -106,12 +106,12 @@ class kucms_CaliRunClass : public KUCMS_RootHelperBaseClass {
     //inline void kucms_CaliRunClass::fillSumCnt( uInt detid, float val, int cnt ){ 
 	void fillSumCnt( uInt detid, float val, int cnt = 1 ){
     
-		std::cout << "Cecking " << detid << " with " << endRun << " " << lastRun <<  " " << hasGID2 << " " << doGID2  << std::endl; 
+		//std::cout << "Cecking " << detid << " with " << endRun << " " << lastRun <<  " " << hasGID2 << " " << doGID2  << std::endl; 
         if( endRun == lastRun ){ 
 			if( hasGID2 == true ) return; 
 			if( doGID2 == false ) return;
 		}//<<>>if( ( endRun == lastRun )
-        std::cout << "Filling " << detid << " with " << val << " " << cnt << std::endl; 
+        //std::cout << "Filling " << detid << " with " << val << " " << cnt << std::endl; 
         updated = true; 
         if( sumCntMap.find(detid) != sumCntMap.end() ){  
             sumCntMap[detid].sum += val; 

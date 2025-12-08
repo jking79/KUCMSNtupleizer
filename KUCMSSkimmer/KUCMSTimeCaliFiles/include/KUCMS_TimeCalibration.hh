@@ -155,14 +155,22 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 	// accessors to utilize calibration information  ::  for use in KUSkimmer
     // --------------------------------------------------------------------------
 
-	float getCorrectedTime( float time, float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey, int mctype, int gainID = 1 ); 
+	float getCorrectedTime( float time, float amplitude, unsigned int rechitID, 
+			unsigned int Evt_run, std::string dataSetKey, int mctype, int gainID = 1 ); 
+	float getCorrectedTime( float time, float amplitude, unsigned int rechitID, 
+			unsigned int Evt_run, std::string dataSetKey, int mctype, bool gs6, bool gs1 )
+			{ int gid = ( gs6 || gs1 ) ? 2 : 1; return getCorrectedTime( time, amplitude, rechitID, Evt_run, dataSetKey, mctype, gid ); };
     float getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey, int mctype );
 
 	float getCalibration( uInt rhid, int run, std::string tag, int gainID = 1 ); // tag indicates which calibration set to use
     float getCalibration( uInt rhid, int run, int gainID = 1 )
 			{ return getCalibration( rhid, run, curTag, gainID ); };
+    float getCalibration( uInt rhid, int run, bool gs6, bool gs1 ) 
+            { int gid = ( gs6 || gs1 ) ? 2 : 1;  return getCalibration( rhid, run, curTag, gid ); }; 
 	float getCalibTime( float rhtime, uInt rhid, int run, int gainID = 1 )
 			{ return rhtime - getCalibration( rhid, run, gainID ); };
+	float getCalibTime( float rhtime, uInt rhid, int run, bool gs6, bool gs1 )
+			{ int gid = ( gs6 || gs1 ) ? 2 : 1; return rhtime - getCalibration( rhid, run, gid ); };
 	//tag indicates which smear to use
 	float getSmearedTime(  float rhtime, float rhamp, std::string stag );
     float getSmearedTime(  float rhtime, float rhamp )
