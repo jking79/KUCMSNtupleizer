@@ -117,6 +117,7 @@ def filesSplit(eosdir, infile, nevtsmax = -999, nfilesmax = -999):
                 arr.append(file)
         print("Creating "+str(len(arr))+" jobs for sample "+infile.split("/")[-1])
     else:
+        njobs = 0
         with open(infile,"r") as f:
             lines = f.readlines()
             evtarr = []
@@ -137,10 +138,11 @@ def filesSplit(eosdir, infile, nevtsmax = -999, nfilesmax = -999):
                 else:
                     evtarr = [(0,nevts)]
                 arr.append([file,evtarr])
+                njobs += len(evtarr)
                 i = 0
                 for a in arr:
                     i += len(a[1])
-        print("Creating "+str(len(arr))+" jobs for sample "+infile.split("/")[-1])
+        print("Creating "+str(njobs)+" jobs for sample "+infile.split("/")[-1])
     arr = np.array(arr,dtype=object)
     return arr
 
