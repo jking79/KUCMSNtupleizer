@@ -50,6 +50,8 @@ class kucms_CaliRunClass : public KUCMS_RootHelperBaseClass {
  
     bool isNew; 
     bool updated; 
+	bool hasGID2;
+    bool doGID2;
     bool has2DResMap; 
     bool hasResParams; 
     bool isExternal; 
@@ -67,7 +69,8 @@ class kucms_CaliRunClass : public KUCMS_RootHelperBaseClass {
     //inline kucms_CaliRunClass::kucms_CaliRunClass( std::string tmpxtalmap, int tstart, int tend, int last, float tlumi ) 
 	kucms_CaliRunClass( std::string tmpxtalmap, int tstart, int tend, int last, float tlumi )
         : histMapName(tmpxtalmap), startRun(tstart), endRun(tend), lastRun(last), lumi(tlumi)  
-        { isNew = true; isExternal = false; updated = false; has2DResMap = false; hasResParams = false; noise = 0; stoch = 0; stant = 0; } 
+        { isNew = true; isExternal = false; updated = false; hasGID2 = false; doGID2 = false; 
+          has2DResMap = false; hasResParams = false; noise = 0; stoch = 0; stant = 0; } 
     
     //inline void kucms_CaliRunClass::makeMeanMap( bool filter ){ 
 	void makeMeanMap( bool filter = false ){
@@ -102,8 +105,12 @@ class kucms_CaliRunClass : public KUCMS_RootHelperBaseClass {
      
     //inline void kucms_CaliRunClass::fillSumCnt( uInt detid, float val, int cnt ){ 
 	void fillSumCnt( uInt detid, float val, int cnt = 1 ){
-     
-        if( endRun == lastRun ) return; 
+    
+		//std::cout << "Cecking " << detid << " with " << endRun << " " << lastRun <<  " " << hasGID2 << " " << doGID2  << std::endl; 
+        if( endRun == lastRun ){ 
+			if( hasGID2 == true ) return; 
+			if( doGID2 == false ) return;
+		}//<<>>if( ( endRun == lastRun )
         //std::cout << "Filling " << detid << " with " << val << " " << cnt << std::endl; 
         updated = true; 
         if( sumCntMap.find(detid) != sumCntMap.end() ){  
