@@ -100,6 +100,7 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 		//put safety in so that if there are < 2 rhs to cluster, skip
 
 		ClusterObj phoobj;
+		//cout << "running photon clustering" << endl;
 		int clusterret = _ca.RunClustering(phoobj, true);
 		if(clusterret == -1) continue; //bad clustering (not enough points, not able to find any clusters, etc)
 		//cout << "selPhoIndex " << selPhoIndex << " it " << it << endl;
@@ -310,8 +311,10 @@ void KUCMSAodSkimmer::processBHCJets(){
 		//if not enough rechits to cluster, skip this object
 		if(_ca.GetNRecHits() < 2) continue;
 		ClusterObj jetobj;
+		//cout << "running jet clustering" << endl;
 		int clusterret = _ca.RunClustering(jetobj, false);
 		if(clusterret == -1) continue; //bad clustering (not enough points, not able to find any clusters, etc)
+		//cout << "seljetindx " << selJetIndex << endl;
 		jetobj.SetUserIndex(selJetIndex);
 		jetobjs.push_back(jetobj);
 		_ca.ClearRecHitList();
@@ -320,6 +323,7 @@ void KUCMSAodSkimmer::processBHCJets(){
 	//sort jet objs by energy
 	sort(jetobjs.begin(), jetobjs.end(), ptsort);
 	for(int j = 0; j < jetobjs.size(); j++){
+		//cout << "jetobj #" << j << endl;
 		ClusterObj jetobj = jetobjs[j];
 		jetobj.CalculatePUScores();
 		BHCJetInfo.fillBranch( "selJetBHC_selJetIndex", jetobj.GetUserIndex() );
@@ -386,9 +390,8 @@ void KUCMSAodSkimmer::processBHCJets(){
 		BHCJetInfo.fillBranch( "selJetBHC_minlen", (float)minlen);
 		//calculate time significance
 		float timeSignificance = -999;//waiting for centralized time significance code
-		//vector<double> weights; jetobj.GetRecHitWeights(weights); ///these weights are the PU projected out weights if PU cleaning has been applied via jetobj.CleanOutPU() (otherwise sum to 1)
 		BHCJetInfo.fillBranch( "selJetBHC_timeSignficance", timeSignificance);
-
+		//cout << "cleaning out jet pu " << endl;
 		/////////CLEAN OUT PU/////////
 		jetobj.CleanOutPU();
 		//do PU-cleaned observables
