@@ -49,17 +49,17 @@ int main ( int argc, char *argv[] ){
 
 	//std::string inputfilename( "ecal_config/kucmsTimeCaliTestTFile.txt");
 
-    //std::string inputfilename( "ecal_config/kucmsTimeCaliR17EOYTFile.txt");
-    std::string inputfilename( "ecal_config/kucmsTimeCaliR18ULTFile.txt");
-    //std::string inputfilename( "ecal_config/kucmsTimeCaliR17ULTFile.txt");
+    ////std::string inputfilename( "ecal_config/kucmsTimeCaliR17EOYTFile.txt");
+    //std::string inputfilename( "ecal_config/kucmsTimeCaliR18ULTFile.txt");
+    std::string inputfilename( "ecal_config/kucmsTimeCaliR17ULTFile.txt");
 
 	//std::string eosdir("root://cmseos.fnal.gov//store/user/jaking/");// input parameter!
     std::string eosdir("root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/");
 
     //std::string indir("/kuncali/gammares_cali_mc/");
     //std::string indir("/kuncali/gammares_cali/");
-    std::string indir("KUCMSNtuple/gammares_ul18/");
-    //std::string indir("KUCMSNtuple/gammares_ul17/");
+    //std::string indir("KUCMSNtuple/gammares_ul18/");
+    std::string indir("KUCMSNtuple/gammares_ul17/");
     //std::string indir("kuncali/gammares_mc18/");
     //std::string indir("kuncali/gammares_cali/DoubleEG/");
 
