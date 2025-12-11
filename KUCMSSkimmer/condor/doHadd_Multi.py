@@ -15,7 +15,8 @@ def main():
     oname = args.tag
     bashfilename = "haddScripts/doHadd_"+proc+"_"+oname+".sh"
     bashfile = open(bashfilename,"w")
-    cmdHadd = "hadd -k -d /uscmst1b_scratch/lpc1/3DayLifetime/mlazarov/ -j 4 -v 0"
+    scratch_path = "/uscmst1b_scratch/lpc1/3DayLifetime/$USER/"
+    cmdHadd = "hadd -k -d "+scratch_path+" -j 4 -v 0"
     #provide directory Output/proc
     topdir = args.dir + "/" + args.proc
     cmds = []
@@ -44,7 +45,7 @@ def main():
                 for i in range(10):
                     oname = d.name+"_"+proc+"_"+str(i)+".root"
                     oname = "condor_"+oname
-                    oname = d.path+"/"+oname
+                    oname = scratch_space+"/"+oname
                     cmd = ""
                     #check if file exists
                     if os.path.exists(oname):
@@ -62,15 +63,15 @@ def main():
                     #if not args.dryRun:
                     #    os.system(cmd+" "+oname+" "+d.path+"/out/*."+str(i)+"*.root")	
                     #print("Wrote to "+oname)
-                oname = d.path
-                oname = oname[:oname.find("/"+d.name)]
-                oname = d.path+"/"+oname[oname.rfind("/")+1:]+"_"+d.name+".root"
+                big_oname = d.path
+                big_oname = big_oname[:big_oname.find("/"+d.name)]
+                big_oname = scratch_space+"/"+big_oname[big_oname.rfind("/")+1:]+"_"+d.name+".root"
                 #check if file exists
                 if(args.force):
                 	cmd = cmdHadd+" -f"
                 #print(cmd+" "+oname+" "+d.path+"/condor_*.root")	
                 #save final hadd
-                cmds.append(cmd+" "+oname+" "+d.path+"/condor_*.root\n")
+                cmds.append(cmd+" "+big_oname+" "+oname[:oname.rfind("_")]+"_*.root\n")
                 cmds.append("echo \"Hadded "+oname+"\"\n")
                 cmds.append("\n")
                 #if not args.dryRun:
