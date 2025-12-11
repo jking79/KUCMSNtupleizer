@@ -63,11 +63,12 @@ def save_files_by_index(file_paths, input_dir, ppath, index=1, output_dir="."):
 
 def main():
     # EOS directory to scan
-    eos_dir = "/store/user/lpcsusylep/jaking/KUCMSNtuple/"
+    #eos_dir = "/store/user/lpcsusylep/jaking/KUCMSNtuple/"
     #eos_dir = "/store/user/lpcsusylep/jaking/"
+    eos_dir = "/store/user/janguian/"
 
-    input_dir = eos_dir + "kucmsntuple_MET_R18_SVIPM100_v31/MET/"
-    ppath = 'MET/'
+    #input_dir = eos_dir + "kucmsntuple_MET_R18_SVIPM100_v31/MET/"
+    #ppath = 'MET/'
 
     #input_dir = eos_dir + "kucmsntuple_EGamma_R18_InvMetPho30_NoSV_v31/EGamma/"
     #ppath = 'EGamma/'
@@ -83,6 +84,10 @@ def main():
     #input_dir = eos_dir + "kucmsntuple_MET_R17_SVIPM100_v31/MET/"
     #ppath = 'MET/'
 
+    input_dir = eos_dir + "gogoGZ/SMS-GlGl_mGl-2500_mN2-2400_mN1-500_GZ_N2ctau-0p1_AOD/"
+    ppath = 'SMS-GlGl_mGl-2500_mN2-2400_mN1-500_GZ_N2ctau-0p1_AOD/'
+    
+    
     print(f"Scanning EOS directory for .root files: {input_dir} ...")
     files = list_eos_directory(input_dir, recursive=True, extension=".root")
     print(f"✅ Found {len(files)} .root files.")

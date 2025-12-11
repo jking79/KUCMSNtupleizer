@@ -73,6 +73,9 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 			if( erhiter != -1 ){
                 double erhe = (*ECALRecHit_energy)[erhiter];
                 bool hasBadTime = (*ECALRecHit_hasGS1)[erhiter] || (*ECALRecHit_hasGS6)[erhiter] || !(*ECALRecHit_isTimeValid)[erhiter];
+				bool isEE = fabs((*ECALRecHit_eta)[erhiter]) > 1.479;
+				bool badEETime = (*ECALRecHit_timeError)[erhiter] < 1.005;
+				if( isEE && badEETime ) hasBadTime = true;
 				float erht = erh_corTime[erhiter];
 				float rhx = (*ECALRecHit_rhx)[erhiter];
                 float rhy = (*ECALRecHit_rhy)[erhiter];

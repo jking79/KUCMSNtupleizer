@@ -102,22 +102,35 @@ float KUCMSAodSkimmer::getTimeSig( int scIndex, float& num, float& denom, const 
                 float ery = (*ECALRecHit_rhy)[erhiter];
                 float erz = (*ECALRecHit_rhz)[erhiter];
                 float ertres = erh_timeRes[erhiter];
+				float terror = (*ECALRecHit_timeError)[erhiter];
+				float eta = (*ECALRecHit_eta)[erhiter];
+				bool hasGainSwitch = (*ECALRecHit_hasGS1)[erhiter] || (*ECALRecHit_hasGS6)[erhiter];
+
                 float cor_cms000 = hypo(erx,ery,erz)/SOL;
                 float cor_tofPVtoRH = hypo(erx-PV_x,ery-PV_y,erz-PV_z)/SOL;
                 float ertoftime = erhct - cor_cms000 + cor_tofPVtoRH;
-                bool isValid = (*ECALRecHit_isTimeValid)[erhiter];
-                bool hasGainSwitch = (*ECALRecHit_hasGS1)[erhiter] || (*ECALRecHit_hasGS6)[erhiter];
-                float gainwt = 1;
-                if( hasGainSwitch ) gainwt = 0;
-                if( not isValid ) gainwt = 0;
+
+				bool isEE = fabs((*ECALRecHit_eta)[erhiter]) > 1.479;
+				bool isValid = true;
+				if( terror > 900 ) isValid = false;
+				if( hasGainSwitch ){
+					if( isEE ){ if( terror < 1.0 ) isValid = false; }
+					else { if( terror < 0.6 ) isValid = false; } 
+				} else {
+                	if( isEE ){ if( terror < 1.05 ) isValid = false; }
+                    else { if( terror < 0.65 ) isValid = false; }
+				}//<<>>if( hasGainSwitch )
+
+                float gainwt = 0;
+                if( isValid ) gainwt = 1;
+
                 float invertres = 1/ertres;
                 float erhar = invertres*gainwt;
-		if(rhIdToBHCw.size() > 0){
-			double bhcw = 0;
-			if(rhIdToBHCw.find(scrhid) != rhIdToBHCw.end())
-				bhcw = rhIdToBHCw.at(scrhid);
-			erhar *= bhcw;
-		}
+				if(rhIdToBHCw.size() > 0){
+					double bhcw = 0;
+					if(rhIdToBHCw.find(scrhid) != rhIdToBHCw.end()) bhcw = rhIdToBHCw.at(scrhid);
+					erhar *= bhcw;
+				}//<<>>if(rhIdToBHCw.size() > 0) 
                 sumtw += erhar*ertoftime;
 				sumrh += gainwt;
                 sumw += erhar;
@@ -129,8 +142,8 @@ float KUCMSAodSkimmer::getTimeSig( int scIndex, float& num, float& denom, const 
         float phoWTime = sumtw/sumw;
         float phoWVar = sumrh/sumw;
         float wttimesig = phoWTime/std::sqrt(phoWVar);
-	num = phoWTime;
-	denom = std::sqrt(phoWVar);
+	    num = phoWTime;
+	    denom = std::sqrt(phoWVar);
 		return wttimesig;
 
 }//<<>>void KUCMSAodSkimmer::getTimeSig

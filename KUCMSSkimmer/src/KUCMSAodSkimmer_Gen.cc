@@ -156,7 +156,6 @@ void KUCMSAodSkimmer::processGenParticles(){
     selGenPart.fillBranch( "genPx", px );
     selGenPart.fillBranch( "genPy", py );
     selGenPart.fillBranch( "genPz", pz );
-    //selGenPart.fillBranch( "genSigType", pz );
 
   }//<<>>for( int it = 0; it < nGenParts; it++ )
 
