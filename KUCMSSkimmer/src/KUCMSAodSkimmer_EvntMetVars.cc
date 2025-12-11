@@ -51,7 +51,7 @@ void KUCMSAodSkimmer::processEvntVars(){
   selEvtVars.fillBranch( "evtXSection", xsctn );
   
   float fillWgt = 1;
-  float configSumEvtWgt = doLocal ? configWgts["sumEvtWgt"] : useEvtGenWgtFlag ? configData[dataSetKey].second.second : configData[dataSetKey].second.first;
+  float configSumEvtWgt = isLocal ? configWgts["sumEvtWgt"] : useEvtGenWgtFlag ? configData[dataSetKey].second : configData[dataSetKey].first;
   if( mctype == 0 ) fillWgt = ( ( xsctn * 1000 ) * evtGenWgt  ) / configSumEvtWgt;
 
   selEvtVars.fillBranch( "evtFillWgt", fillWgt );
