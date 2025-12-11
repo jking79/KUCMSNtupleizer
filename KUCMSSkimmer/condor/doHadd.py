@@ -9,8 +9,9 @@ def main():
     parser.add_argument("--dryRun",help="dry run, print commands without running",action="store_true")
     args = parser.parse_args()
 
-	
-    cmdHadd = "hadd -k -d /uscmst1b_scratch/lpc1/3DayLifetime/mlazarov/ -j 4"
+    scratch_path = "/uscmst1b_scratch/lpc1/3DayLifetime/$USER/"	
+    
+    cmdHadd = "hadd -k -d "+scratch_path+" -j 4"
     for d in os.scandir(args.dir):
         print(d.path)
         if not os.path.exists(d.path+"/out"):
@@ -28,7 +29,7 @@ def main():
             for i in range(10):
                 oname = d.name+"_"+proc+"_"+str(i)+".root"
                 oname = "condor_"+oname
-                oname = d.path+"/"+oname
+                oname = scratch_path+"/"+oname
                 cmd = ""
                 #check if file exists
                 if os.path.exists(oname):
@@ -44,9 +45,9 @@ def main():
                 #if not args.dryRun:
                 #    os.system(cmd+" "+oname+" "+d.path+"/out/*."+str(i)+"*.root")	
                 #print("Wrote to "+oname)
-            oname = d.path
-            oname = oname[:oname.find("/"+d.name)]
-            oname = d.path+"/"+oname[oname.rfind("/")+1:]+"_"+d.name+".root"
+            big_oname = d.path
+            big_oname = big_oname[:big_oname.find("/"+d.name)]
+            big_oname = scratch_path+"/"+big_oname[big_oname.rfind("/")+1:]+"_"+d.name+".root"
             #check if file exists
             if os.path.exists(oname):
             	if(args.force):
@@ -54,7 +55,9 @@ def main():
             	else:
             		print(oname+" exists ")
             #print(cmd+" "+oname+" "+d.path+"/condor_*.root")	
-            bashfile.write(cmd+" "+oname+" "+d.path+"/condor_*.root\n")	
+            #bashfile.write(cmd+" "+oname+" "+scratch_path+"/condor_*.root\n")
+            
+            bashfile.write(cmd+" "+big_oname+" "+oname[:oname.rfind("_")]+"_*.root\n")
             #if not args.dryRun:
             #    os.system(cmd+" "+oname+" "+d.path+"/condor_*.root")	
             #print("Wrote to "+oname)
