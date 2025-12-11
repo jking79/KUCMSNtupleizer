@@ -78,6 +78,7 @@ class KUCMSAodSkimmer : public llpgtree {
 
     void ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree );
     void ProcessConfigTree( TChain* fInConfigTree );
+	void ProcessConfigFile();
     void fillConfigTree( TTree* fOutTree );
 
     void initHists();
@@ -287,12 +288,16 @@ class KUCMSAodSkimmer : public llpgtree {
 	std::map<std::string,int> cutflow;
     std::map<std::string,int> configCnts;
     std::map<std::string,float> configWgts;
+	std::map<std::string, std::pair<float,float>> configData;
 
     std::map<UInt_t, pair<int,int>> _detidmap;
 	uInt nEvents, nSelectedEvents;
 	int _evti, _evtj;
     float sumEvtGenWgt;
 
+	//condor v local varibles
+	bool isLocal;
+	
 	// hem veto 
     bool hasHemObj;
 	//std::map< std::string, bool > hemBits;

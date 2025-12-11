@@ -288,6 +288,8 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 
   // condor event segmenting varibles : used to run over subset of events for condor jobs
 
+  isLocal = false;
+
   _evti = -1;
   _evtj = -1;
 
@@ -410,7 +412,8 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
 
     // ---   do config input
 
-    ProcessConfigTree( fInConfigTree );
+	ProcessConfigTree( fInConfigTree );
+	if( not isLocal ) ProcessConfigFile();
 
     // --  main loop
 
@@ -731,6 +734,27 @@ void KUCMSAodSkimmer::ProcessConfigTree( TChain* fInConfigTree ){
 
 }//<<>>void KUCMSAodSkimmer::ProcessConfigTree(TChain* fInConfigTree)
 
+void KUCMSAodSkimmer::ProcessConfigFile(){
+
+    std::ifstream infile("config/EventCount.txt");
+    if( !infile ){
+        std::cerr << "Could not open file\n";
+        return;
+    }//<<>>if( !infile )
+
+    std::map<std::string, std::pair<float,float>> configData;
+    std::string key;
+    float total, sum;
+    while( infile >> key >> total >> sum ){ configData[key] = {total, sum}; }
+
+    // Print everything
+    if( DEBUG ){
+    for( const auto& kv : configData ){
+        std::cout << " -- ConfigFile : " << kv.first << " : total=" << kv.second.first << ", sum=" << kv.second.second << std::endl;
+    } }//<<>>for (const auto& kv : data)//<<>>if( DEBUG )
+
+}//<<>>void KUCMSAodSkimmer::ProcessConfigTreeAndFile(TChain* fInConfigTree)
+
 void KUCMSAodSkimmer::kucmsAodSkimmer( std::string infile, std::string outfilename){
 
     std::cout << "Processing Input Lists for : " << infile << std::endl;
@@ -763,7 +787,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_Filelist( std::string eosdir, std::string 
     if(ret < 0) return;
 
 	SetOutFileName(outfilename);
-cout << "is in tree null " << (fInTree == nullptr) << endl; 
+	cout << "is in tree null " << (fInTree == nullptr) << endl; 
     ProcessMainLoop(fInTree, fInConfigTree);
     std::cout << "Finished processing events for : " << infilelist << std::endl;
   	std::cout << "KUCMSAodSkimmer : Thats all Folks!!" << std::endl;
@@ -812,6 +836,8 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
 
   eosDirPath = eosdir;
   listDirPath = listdir;
+
+  isLocal = true;
 
   // ----- parse input batch file ---------------------------------------------------------------------
 
@@ -983,8 +1009,8 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
   auto saveToTree = eventSelection();
   if( saveToTree ){ 
 
-    if( doBHC ){ //processBHCPhotons(); 
-	    processBHCJets(); }
+    //if( doBHC ){ //processBHCPhotons(); 
+	if( doBHC ){ processBHCJets(); }
 	processRJR(0,true); 
 	processRJR(1,false); 
 	processRJRISR();
@@ -1101,15 +1127,27 @@ void KUCMSAodSkimmer::fillConfigTree( TTree* fConfigTree ){
   }//<<>>for( auto item : configInfo )
 
   for( auto item : configCnts ){
-    std::string bname = item.first;
-    TBranch *cfBranch = fConfigTree->Branch( bname.c_str(), &item.second );
-    cfBranch->Fill();
+    if( item.first == "nTotEvts" && not isLocal ){
+		int nTotEvtsKey = configData[dataSetKey].first;
+		TBranch *cfBranch = fConfigTree->Branch( "nTotEvts", &nTotEvtsKey );
+		cfBranch->Fill();
+    } else {
+    	std::string bname = item.first;
+    	TBranch *cfBranch = fConfigTree->Branch( bname.c_str(), &item.second );
+    	cfBranch->Fill();
+	}//<<>>
   }//<<>>for( auto item : configInfo )
 
   for( auto item : configWgts ){
-    std::string bname = item.first;
-    TBranch *cfBranch = fConfigTree->Branch( bname.c_str(), &item.second );
-    cfBranch->Fill();
+    if( item.first == "sumEvtWgt" && not isLocal ){
+		float sumEvtWgtKey = useEvtGenWgtFlag ? configData[dataSetKey].second : configData[dataSetKey].first;
+		TBranch *cfBranch = fConfigTree->Branch( "sumEvtWgt", &sumEvtWgtKey );
+		cfBranch->Fill();
+    } else {
+    	std::string bname = item.first;
+    	TBranch *cfBranch = fConfigTree->Branch( bname.c_str(), &item.second );
+    	cfBranch->Fill();
+    }//<<>>
   }//<<>>for( auto item : configInfo )
 
   fConfigTree->Fill();
