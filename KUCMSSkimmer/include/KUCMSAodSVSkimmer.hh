@@ -78,6 +78,7 @@ class KUCMSAodSkimmer : public llpgtree {
 
     void ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree );
     void ProcessConfigTree( TChain* fInConfigTree );
+	void ProcessConfigFile();
     void fillConfigTree( TTree* fOutTree );
 
     void initHists();

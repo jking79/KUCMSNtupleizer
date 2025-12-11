@@ -739,7 +739,7 @@ void KUCMSAodSkimmer::ProcessConfigFile(){
     std::ifstream infile("config/EventCount.txt");
     if( !infile ){
         std::cerr << "Could not open file\n";
-        return 1;
+        return;
     }//<<>>if( !infile )
 
     std::map<std::string, std::pair<float,float>> configData;
@@ -749,7 +749,7 @@ void KUCMSAodSkimmer::ProcessConfigFile(){
 
     // Print everything
     if( DEBUG ){
-    for( const auto& kv : data ){
+    for( const auto& kv : configData ){
         std::cout << " -- ConfigFile : " << kv.first << " : total=" << kv.second.first << ", sum=" << kv.second.second << std::endl;
     } }//<<>>for (const auto& kv : data)//<<>>if( DEBUG )
 
@@ -1127,9 +1127,9 @@ void KUCMSAodSkimmer::fillConfigTree( TTree* fConfigTree ){
   }//<<>>for( auto item : configInfo )
 
   for( auto item : configCnts ){
-    if( item.first == "nTotEvts" && not doLocal ){
-		float nTotEvts = configData[dataSetKey].second.first;
-		TBranch *cfBranch = fConfigTree->Branch( "nTotEvts", nTotEvts );
+    if( item.first == "nTotEvts" && not isLocal ){
+		int nTotEvtsKey = configData[dataSetKey].first;
+		TBranch *cfBranch = fConfigTree->Branch( "nTotEvts", &nTotEvtsKey );
 		cfBranch->Fill();
     } else {
     	std::string bname = item.first;
@@ -1139,9 +1139,9 @@ void KUCMSAodSkimmer::fillConfigTree( TTree* fConfigTree ){
   }//<<>>for( auto item : configInfo )
 
   for( auto item : configWgts ){
-    if( item.first == "sumEvtWgt" && not doLocal ){
-		float sumEvtWgt = useEvtGenWgtFlag ? configData[dataSetKey].second.second : configData[dataSetKey].second.first;
-		TBranch *cfBranch = fConfigTree->Branch( "sumEvtWgt", sumEvtWgt );
+    if( item.first == "sumEvtWgt" && not isLocal ){
+		float sumEvtWgtKey = useEvtGenWgtFlag ? configData[dataSetKey].second : configData[dataSetKey].first;
+		TBranch *cfBranch = fConfigTree->Branch( "sumEvtWgt", &sumEvtWgtKey );
 		cfBranch->Fill();
     } else {
     	std::string bname = item.first;
