@@ -329,8 +329,8 @@ void KUCMSAodSkimmer::processRJRISR(){
 	float msperp = -1;
 	float m_PISR = -1;
     float m_PTISR = -1;
-    float m_RISR = -1;
-	if( nJetsJa > 1 || nJetsJb > 1 ){ // must have jets in ja or jb 
+	float m_RISR = -1;
+	if( nJetsJa > 0 || nJetsJb > 0 ){ // must have jets in ja or jb 
 
         TVector3 vPISR = S_c->GetFourVector(*CM_c).Vect();
         TVector3 vPINV = (X1a_c->GetFourVector(*CM_c)+X1b_c->GetFourVector(*CM_c)).Vect();
