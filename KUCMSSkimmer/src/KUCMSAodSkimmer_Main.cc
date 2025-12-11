@@ -209,7 +209,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 
     _ca.SetVerbosity(-1); //can turn on to see low-level warnings
     _ca.SetDetIDs(_detidmap);
-    _ca.SetCNNModel("config/json/KU-CNN_detector_v9p1p4_tfv2p17p1_kerasv3p10p0_1500epochs_small3_CMS_2017and2018.json");
+    _ca.SetCNNModel("config/json/KU-CNN_detector_1000epochs_archsmall3_2017and2018_CMS.json");
     _ca.SetDNNModel("config/json/med16DNN_MCtrained_photonID.json");
 
 }//<<>>KUCMSAodSkimmer::KUCMSAodSkimmer()
