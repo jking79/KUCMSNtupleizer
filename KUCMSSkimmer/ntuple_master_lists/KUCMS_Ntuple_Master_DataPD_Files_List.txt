@@ -21,10 +21,3 @@ KUCMSNtuple/kucmsntuple_DisJet_R18_SVIPM100_v31/ kucmsntuple_DisJet_R18_SVIPM100
 KUCMSNtuple/kucmsntuple_DisJet_R18_SVIPM100_v31/ kucmsntuple_DisJet_R18_SVIPM100_v31_DisplacedJet_AOD_Run2018B_v29.txt DisJet18 1 0 0 0 1 r2_ul18
 KUCMSNtuple/kucmsntuple_DisJet_R18_SVIPM100_v31/ kucmsntuple_DisJet_R18_SVIPM100_v31_DisplacedJet_AOD_Run2018C_v29.txt DisJet18 1 0 0 0 1 r2_ul18
 KUCMSNtuple/kucmsntuple_DisJet_R18_SVIPM100_v31/ kucmsntuple_DisJet_R18_SVIPMet100_v31_DisplacedJet_AOD_Run2018D_v29.txt DisJet18 1 0 0 0 1 r2_ul18
-
-#KUCMSNtuple/kucmsntuple_MET_R22_AL1NpSC_v31/ kucmsntuple_MET_R22_AL1NpSC_v31_MET_AOD_Run2022C-27Jun2023-v2_v29.txt METR22C 1 0 0 0 1 r2_ul18
-#KUCMSNtuple/kucmsntuple_MET_R22_AL1NpSC_v31/ kucmsntuple_MET_R22_AL1NpSC_v31_MET_AOD_Run2022C_v29.txt METR22C 1 0 0 0 1 r2_ul18
-
-#KUCMSNtuple/kucmsntuple_MET_R18_MRL_MET100_v24/ kucmsntuple_MET_R18_MRL_MET100_v24_filelist.txt METR18 1 0 0 0 1 r2_ul18
-#KUCMSNtuple/kucmsntuple_MET_R17_AL1IsoPho_v22/ kuntuple_MET_AL1IsoPho_R17_v22.txt METR17 1 0 0 0 1 r2_ul18 
-#KUCMSNtuple/kucmsntuple_MET_R17_AL1IsoPho_v22/ kuntuple_MET_AL1IsoPho_R17_v22.txt METR17 1 0 0 0 1 r2_ul18

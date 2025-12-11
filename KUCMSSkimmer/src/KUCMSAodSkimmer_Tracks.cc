@@ -32,7 +32,8 @@
 
 void KUCMSAodSkimmer::processTracks(){
 
-  selTracks.fillBranch( "Trk_nIsoTrack", Track_nIsoTracks);
+  int nTracks = Track_nIsoTracks;
+  selTracks.fillBranch( "Trk_nIsoTrack", nTracks );
 
 }//<<>>void KUCMSAodSkimmer::processTracks()
 
@@ -42,7 +43,8 @@ void KUCMSAodSkimmer::processTracks(){
 
 void KUCMSAodSkimmer::setTrackBranches( TTree* fOutTree ){
 
-  selTracks.makeBranch( "Trk_nIsoTrack", INT);
+  std::cout << " - Making Branches for Tracks." << std::endl;
+  selTracks.makeBranch( "Trk_nIsoTrack", INT );
 
   selTracks.attachBranches( fOutTree );
 

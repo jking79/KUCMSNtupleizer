@@ -75,6 +75,7 @@ void KUCMSAodSkimmer::processMuons(){
 
 void KUCMSAodSkimmer::setMuonsBranches( TTree* fOutTree ){
 
+	std::cout << " - Making Branches for Muons." << std::endl;
     selMuons.makeBranch( "nLooseMuons", UINT );
     selMuons.makeBranch( "nMuons", UINT );
     selMuons.makeBranch( "muonIsLoose", VBOOL );

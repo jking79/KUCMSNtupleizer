@@ -37,6 +37,9 @@
 
 KUCMSAodSkimmer::KUCMSAodSkimmer(){
 
+
+  ////    Base RJR ------------------------------------------
+
   LAB = new LabRecoFrame("LAB","LAB");
   S   = new DecayRecoFrame("S","#tilde{S}");
 
@@ -123,6 +126,117 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 
   if(!LAB->InitializeAnalysis()) std::cout << "Problem initializing analysis tree" << std::endl;
 
+  // -----------  RJRISR -----------------------------------------
+
+  LAB_c = new LabRecoFrame("LAB_c","LAB");
+  CM_c  = new DecayRecoFrame("CM_c","CM");
+  S_c  = new DecayRecoFrame("S_c","#tilde{S}");
+
+  X2a_c = new DecayRecoFrame("X2a_c","#tilde{#chi}_{2a}");
+  X2b_c = new DecayRecoFrame("X2b_c","#tilde{#chi}_{2b}");
+
+  ISR_c = new VisibleRecoFrame("ISR_c","ISR");
+  Ja_c = new DecayRecoFrame("Ja_c","jets_{a}");
+  Jb_c = new DecayRecoFrame("Jb_c","jets_{b}");
+  J1a_c = new VisibleRecoFrame("J1a_c","jets_{1a}");
+  J2a_c = new VisibleRecoFrame("J2a_c","jets_{2a}");
+  J1b_c = new VisibleRecoFrame("J1b_c","jets_{1b}");
+  J2b_c = new VisibleRecoFrame("J2b_c","jets_{2b}");
+
+  X1a_c = new InvisibleRecoFrame("X1a_c","#tilde{#chi}_{1a}");
+  X1b_c = new InvisibleRecoFrame("X1b_c","#tilde{#chi}_{1b}");
+
+  LAB_c->SetChildFrame(*CM_c);
+  CM_c->AddChildFrame(*S_c);
+  CM_c->AddChildFrame(*ISR_c);
+  S_c->AddChildFrame(*X2a_c);
+  S_c->AddChildFrame(*X2b_c);
+  X2a_c->AddChildFrame(*X1a_c);
+  X2b_c->AddChildFrame(*X1b_c);
+  X2a_c->AddChildFrame(*Ja_c);
+  X2b_c->AddChildFrame(*Jb_c);
+  Ja_c->AddChildFrame(*J1a_c);
+  Ja_c->AddChildFrame(*J2a_c);
+  Jb_c->AddChildFrame(*J1b_c);
+  Jb_c->AddChildFrame(*J2b_c);
+
+  if(!LAB->InitializeTree()){ std::cout << "Problem initializing tree" << std::endl; }
+
+  INV_c = new InvisibleGroup("INV_c","Invisible System");
+  INV_c->AddFrame(*X1a_c);
+  INV_c->AddFrame(*X1b_c);
+
+  InvM_c = new SetMassInvJigsaw("InvM_c", "Set inv. system mass");
+  INV_c->AddJigsaw(*InvM_c);
+
+  InvEta_c = new SetRapidityInvJigsaw("InvEta_c", "Set inv. system rapidity");
+  INV_c->AddJigsaw(*InvEta_c);
+  InvEta_c->AddVisibleFrames(S_c->GetListVisibleFrames()); // CM or S ?
+
+  InvSplit_c = new MinMassesSqInvJigsaw("InvSplit_c", "INV -> #tilde{#chi_{1a}}+ #tilde{#chi_{1b}}", 2);
+  INV_c->AddJigsaw(*InvSplit_c);
+  InvSplit_c->AddVisibleFrame(*J1a_c, 0);
+  InvSplit_c->AddVisibleFrame(*J2a_c, 0);
+  InvSplit_c->AddVisibleFrame(*J1b_c, 1);
+  InvSplit_c->AddVisibleFrame(*J2b_c, 1);
+  InvSplit_c->AddInvisibleFrame(*X1a_c, 0);
+  InvSplit_c->AddInvisibleFrame(*X1b_c, 1);
+
+  COMB_J_c =  new CombinatoricGroup("COMB_J_c", "Combinatoric System of Jets");
+  CombSplit_ISR_c = new MinMassesCombJigsaw("CombSplit_ISR_c", "Minimize M_{T}^{ISR} and M_{T}^{S}");
+  CombSplit_J_c = new MinMassesSqCombJigsaw("CombSplit_J_c", "Minimize M_{Va}^{2} + M_{Vb}^{2} ",2,2);
+  CombSplit_Ja_c = new MinMassesCombJigsaw("CombSplit_Ja_c", "Minimize M_{J1a} + M_{J2a} ");
+  CombSplit_Jb_c = new MinMassesCombJigsaw("CombSplit_Jb_c", "Minimize M_{J1b} + M_{J2b} ");
+
+  COMB_J_c->AddFrame(*ISR_c);
+  COMB_J_c->SetNElementsForFrame(*ISR_c, 1);
+  //COMB_J_c->AddFrame(*Ja_c);
+  //COMB_J_c->SetNElementsForFrame(*Ja_c, 1);
+  //COMB_J_c->AddFrame(*Jb_c);
+  //COMB_J_c->SetNElementsForFrame(*Jb_c, 0);
+  COMB_J_c->AddFrame(*J1a_c);
+  COMB_J_c->AddFrame(*J2a_c);
+  COMB_J_c->SetNElementsForFrame(*J1a_c, 0);
+  COMB_J_c->SetNElementsForFrame(*J2a_c, 0);
+  COMB_J_c->AddFrame(*J1b_c);
+  COMB_J_c->AddFrame(*J2b_c);
+  COMB_J_c->SetNElementsForFrame(*J1b_c, 0);
+  COMB_J_c->SetNElementsForFrame(*J2b_c, 0);
+
+  COMB_J_c->AddJigsaw(*CombSplit_ISR_c);
+  CombSplit_ISR_c->SetTransverse();
+  CombSplit_ISR_c->AddCombFrame(*ISR_c, 1);
+  CombSplit_ISR_c->AddCombFrame(*J1a_c, 0);
+  CombSplit_ISR_c->AddCombFrame(*J1b_c, 0);
+  CombSplit_ISR_c->AddCombFrame(*J2a_c, 0);
+  CombSplit_ISR_c->AddCombFrame(*J2b_c, 0);
+  CombSplit_ISR_c->AddObjectFrame(*ISR_c, 1);
+  CombSplit_ISR_c->AddObjectFrame(*S_c, 0);
+
+  COMB_J_c->AddJigsaw(*CombSplit_J_c);
+  CombSplit_J_c->AddCombFrames(Ja_c->GetListVisibleFrames(), 0);
+  CombSplit_J_c->AddCombFrames(Jb_c->GetListVisibleFrames(), 1);
+  //CombSplit_J_c->AddObjectFrame(*X2a, 0);// included vis & invis frames in split
+  //CombSplit_J_c->AddObjectFrame(*X2b, 1);// check syntax from example
+  CombSplit_J_c->AddObjectFrames(X2a_c->GetListVisibleFrames(), 0);
+  CombSplit_J_c->AddObjectFrames(X2b_c->GetListVisibleFrames(), 1);// check syntax from example
+
+  //add bloc do b
+  COMB_J_c->AddJigsaw(*CombSplit_Ja_c);
+  CombSplit_Ja_c->AddCombFrame(*J1a_c, 0);
+  CombSplit_Ja_c->AddCombFrame(*J2a_c, 1);
+  CombSplit_Ja_c->AddObjectFrame(*J1a_c, 0);
+  CombSplit_Ja_c->AddObjectFrame(*J2a_c, 1);// check syntax from example
+  COMB_J_c->AddJigsaw(*CombSplit_Jb_c);
+  CombSplit_Jb_c->AddCombFrame(*J1b_c, 0);
+  CombSplit_Jb_c->AddCombFrame(*J2b_c, 1);
+  CombSplit_Jb_c->AddObjectFrame(*J1b_c, 0);
+  CombSplit_Jb_c->AddObjectFrame(*J2b_c, 1);// check syntax from example
+
+  if(!LAB_c->InitializeAnalysis()) std::cout << "Problem initializing analysis tree" << std::endl;
+
+  //  ------------  Tree Ploter -----------------
+
   if( false ){
 	
     TreePlot tree_plot("TreePlot","TreePlot");
@@ -146,6 +260,8 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 
   }//<<>>treeplot on off
 
+  // -----------  Time Calibration -----------------
+
   // Cali Tags : Tags for calibrations to use 
   std::string r2EOY( "EG_EOY_MINI" ); 
   std::string r2Fall17AOD( "RunIIFall17DRPremix" ); 
@@ -161,6 +277,8 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 	  int iphi = detidstruct.i1;
 	  _detidmap[it->first] = std::make_pair(ieta, iphi);
    }
+
+  // ------------------------------------------------------------------------------------------
 
   // setup lumi json map
 
@@ -238,6 +356,31 @@ KUCMSAodSkimmer::~KUCMSAodSkimmer(){
     delete CombSplit_J;
     delete CombSplit_Ja;
     delete CombSplit_Jb;
+
+    delete LAB_c;
+    delete CM_c;
+    delete S_c;
+    delete X2a_c;
+    delete X2b_c;
+	delete ISR_c;
+    delete Ja_c;
+    delete Jb_c;
+    delete X1a_c;
+    delete X1b_c;
+    delete J1a_c;
+    delete J2a_c;
+    delete J1b_c;
+    delete J2b_c;
+
+    delete INV_c;
+    delete InvM_c;
+    delete InvEta_c;
+    delete InvSplit_c;
+
+    delete COMB_J_c;
+    delete CombSplit_J_c;
+    delete CombSplit_Ja_c;
+    delete CombSplit_Jb_c;
 
     delete timeCali;
       
@@ -775,6 +918,7 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     if( hasGenInfoFlag ) setGenBranches( fOutTree );
     setPhotonBranches( fOutTree );
     setRJRBranches( fOutTree );
+	setRJRISRBranches( fOutTree );
     setElectronBranches( fOutTree );
     setJetsBranches( fOutTree );
     setMuonsBranches( fOutTree );
@@ -841,6 +985,7 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
     if( doBHC ){ processBHCPhotons(); processBHCJets(); }
 	processRJR(0,true); 
 	processRJR(1,false); 
+	processRJRISR();
 
   }//<<>>if( saveToTree )
   return saveToTree;
