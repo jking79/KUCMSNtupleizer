@@ -11,8 +11,8 @@
 #include "KUCMSAodSVSkimmer.hh"
 #include "KUCMSHelperFunctions.hh"
 
-//#define DEBUG true
-#define DEBUG false
+//#define DEBUGECAL true
+#define DEBUGECAL false
 
 //------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------
@@ -38,20 +38,20 @@ void KUCMSAodSkimmer::processRechits(){
     //bool checkRHs = true;
 
 	// calc
-    if( DEBUG ) std::cout << "Finding rechits" << std::endl;
+    if( DEBUGECAL ) std::cout << "Finding rechits" << std::endl;
 	//------------ rechits -------------------------
 
 	rhIDtoIterMap.clear();
 	erh_corTime.clear();
 	erh_timeRes.clear();
     auto nRecHits = ECALRecHit_ID->size();
-    if( DEBUG ) std::cout << " -- Looping over " << nRecHits << " rechits" << std::endl;
+    if( DEBUGECAL ) std::cout << " -- Looping over " << nRecHits << " rechits" << std::endl;
     for( int it = 0; it < nRecHits; it++ ){
 
 		auto rhid = (*ECALRecHit_ID)[it];
 		rhIDtoIterMap[rhid] = it;
 		auto idinfo = timeCali->getDetIdInfo(rhid);
-    	if( DEBUG ) std::cout << " -- TimeCali DetIDInfo : " << idinfo.i2 << " " << idinfo.i1 << " " << idinfo.ecal << std::endl;
+    	if( DEBUGECAL ) std::cout << " -- TimeCali DetIDInfo : " << idinfo.i2 << " " << idinfo.i1 << " " << idinfo.ecal << std::endl;
 		float rht = (*ECALRecHit_time)[it];
 		float rhe = (*ECALRecHit_energy)[it];
 		float rha = (*ECALRecHit_ampres)[it]; // instead of energy ? ( this is the ADC amplitude in units of the pedistal rms for this rechit )
@@ -87,7 +87,7 @@ void KUCMSAodSkimmer::processRechits(){
 		*/ // ECAL Rechit information --  not saved currenty
 
 	}//<<>>for( int it = 0; it < nRecHits; it++ )
-	if( DEBUG ) std::cout << "Finished w/ rechit loop" << std::endl;
+	if( DEBUGECAL ) std::cout << "Finished w/ rechit loop" << std::endl;
 	//  ---  End of RecHit Loop ----------------------------------------------------------------------------------------
 
     int nMissingRechits = 0;
@@ -118,12 +118,12 @@ void KUCMSAodSkimmer::processRechits(){
 		hist2d[1]->Fill(xfill,yfill);
 
         std::vector<unsigned int> scrhids = (*SuperCluster_rhIds)[it];
-		int nSCRhids = scrhids.size();
+        int nSCRhids = scrhids.size();
 		if( checkRHs ){
-		bool found = false;
-		nRechitsPerSC += nSCRhids;
-		std::cout << " -- Checking : " << it << " of " << nSCs << " SCs with " << nSCRhids << " rechits. " << std::endl;
-		for( int sciter = 0; sciter < nSCRhids; sciter++  ){ 
+		  bool found = false;
+		  nRechitsPerSC += nSCRhids;
+		  std::cout << " -- Checking : " << it << " of " << nSCs << " SCs with " << nSCRhids << " rechits. " << std::endl;
+		  for( int sciter = 0; sciter < nSCRhids; sciter++  ){ 
 			auto scrhid = scrhids[sciter];
 			for( int iter = 0; iter < nRecHits; iter++ ){
 				auto rhid = (*ECALRecHit_ID)[iter];
@@ -131,8 +131,9 @@ void KUCMSAodSkimmer::processRechits(){
 				if( scrhid == rhid ){ found = true; break; } 
 			}//<<>>for( int iter = 0; iter < nRecHits; it++ )
 			if( not found ){ nMissingRechits++; nMissingRhInSC++; }// std::cout << " ---- !!!!!!  Rechit in SC and not in Rechits !!!!!!! " << std::endl;
-		}//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
+		  }//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
 		}//<<>>if( checkRHs )		
+
 		if( nMissingRhInSC > 0 ){
 			std::cout << " -- !! Missing " << nMissingRhInSC << " of " << nSCRhids;
 		    std::cout << " rechits in SC " << it << " w/ OOT" << oot << " && ORG " << orig << " rawE " << sce  << std::endl;
@@ -146,9 +147,12 @@ void KUCMSAodSkimmer::processRechits(){
 		std::cout << " Ave# rechits/SC : " << rhpsc << std::endl; 
 	}//<<>>if( checkRHs )
 	if( nMissingRechits > 0 ) std::cout << " !! ------ !! Missing " << nMissingRechits << " rechits in " << nSCs << " SCs " << std::endl;
+
 	// fill
     auto nETs = Track_pt->size();
     for( int it = 0; it < nETs; it++ ){ hist1d[7]->Fill( (*Track_pt)[it], 1 ); }
+
+    if( DEBUGECAL ) std::cout << "Finished w/ SC - Track loops" << std::endl;
 
 }//<<>>void KUCMSAodSkimmer::processRechits()
 
@@ -158,6 +162,7 @@ void KUCMSAodSkimmer::processRechits(){
 
 void KUCMSAodSkimmer::setEcalBranches( TTree* fOutTree ){
 
+	std::cout << " - Making Branches for ECAL." << std::endl;
 	// nada as of yet
 
 }//<<>>void KUCMSAodSkimmer::setBranches( TTree& fOutTree )

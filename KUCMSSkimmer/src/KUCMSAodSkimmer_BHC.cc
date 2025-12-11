@@ -489,6 +489,7 @@ void KUCMSAodSkimmer::processBHCJets(){
 
 void KUCMSAodSkimmer::setBCBranches( TTree* fOutTree ){
 
+	std::cout << " - Making Branches for BHC." << std::endl;
   for(const string cleanedType : {"BHC", "BHCPUCleaned"}) {
     	BHCPhoInfo.makeBranch("selPho"+cleanedType+"_selPhoIndex", VINT);
 	BHCPhoInfo.makeBranch( "selPho"+cleanedType+"_eta", VFLOAT);
