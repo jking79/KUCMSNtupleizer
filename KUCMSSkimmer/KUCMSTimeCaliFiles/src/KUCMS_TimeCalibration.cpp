@@ -61,6 +61,7 @@ KUCMS_TimeCalibration::KUCMS_TimeCalibration( bool stayOpen, bool makeNew ){
 
 	doEE = false;
 	useGain = 1;
+	doAllGain = false;
 
     std::cout << " - setup DetID & IOV Maps " << std::endl;
     SetupDetIDsEB();
@@ -2004,11 +2005,6 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
     bool small = false;
     //bool small = true;
 
-	// promoted to calss varible set with accsor functions. //
-    ////bool doEE = true;
-	////bool doEE = false;
-    ////int useGain(1);
-
     const std::string treename("tree/llpgtree");
 
     bool useAmp = not useEffEnergy;
@@ -2245,10 +2241,22 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
                                     }//<<>>for( int rhit = 0; rhit < 4; rhit++ )
                                 }//<<>>if( useGSwitch )
 
-                                float seedTimeIC00 = ( usecali ) ? getCalibration( (*resRhID)[0], run, tag ) : 0;
-                                float seedTimeIC10 = ( usecali ) ? getCalibration( (*resRhID)[1], run, tag ) : 0;
-                                float seedTimeIC01 = ( usecali ) ? getCalibration( (*resRhID)[2], run, tag ) : 0;
-                                float seedTimeIC11 = ( usecali ) ? getCalibration( (*resRhID)[3], run, tag ) : 0;
+                                std::vector<int> rhGainId = {1,1,1,1};
+                                if( useGSwitch ){
+                                    for( int resrhit = 0; resrhit < 4; resrhit++ ){
+                                        for( int rhit = 0; rhit < nRecHits; rhit++ ){
+                                            if( (*resRhID)[resrhit] == (*rhID)[rhit] ){
+												rhGainId[resrhit] = not ( (*rhisGS1)[rhit] || (*rhisGS6)[rhit] );
+                                                break;
+                                            }//<>if( (*resRhID)[rhit] == (*resRhID)[resrhit] )
+                                        }//<<>>for( int resrhit = 0; resrhit < nResRecHits; resrhi++ )
+                                    }//<<>>for( int rhit = 0; rhit < 4; rhit++ )
+                                }//<<>>if( useGSwitch )
+
+                                float seedTimeIC00 = ( usecali ) ? getCalibration( (*resRhID)[0], run, tag, rhGainId[0] ) : 0;
+                                float seedTimeIC10 = ( usecali ) ? getCalibration( (*resRhID)[1], run, tag, rhGainId[1] ) : 0;
+                                float seedTimeIC01 = ( usecali ) ? getCalibration( (*resRhID)[2], run, tag, rhGainId[2] ) : 0;
+                                float seedTimeIC11 = ( usecali ) ? getCalibration( (*resRhID)[3], run, tag, rhGainId[3] ) : 0;
                                 //if(debug) std::cout << " -- IC0l: " << seedTimeIC00 << " IC1l: " << seedTimeIC10;
                                 //if(debug) std::cout << " IC0g: " << seedTimeIC01 << " IC1g: " << seedTimeIC11 << std::endl;
 								
@@ -2293,8 +2301,13 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
                                 bool le_cut = ((*resE)[0]>=lB)&&((*resE)[0]<=uB)&&((*resE)[1]>=lB)&&((*resE)[1]<=uB);
                                 bool ge_cut = ((*resE)[2]>=lB)&&((*resE)[2]<=uB)&&((*resE)[3]>=lB)&&((*resE)[3]<=uB);
                                 if( useGSwitch ){
-                                    le_cut = isGainId1[0] && isGainId1[1] && (*resE)[0] >= lB && (*resE)[1] >= lB;
-                                    ge_cut = isGainId1[2] && isGainId1[3] && (*resE)[2] >= lB && (*resE)[3] >= lB;
+									if( doAllGain ){
+                                        le_cut = (*resE)[0] >= lB && (*resE)[1] >= lB;
+                                        ge_cut = (*resE)[2] >= lB && (*resE)[3] >= lB;
+									} else {
+                                    	le_cut = isGainId1[0] && isGainId1[1] && (*resE)[0] >= lB && (*resE)[1] >= lB;
+                                    	ge_cut = isGainId1[2] && isGainId1[3] && (*resE)[2] >= lB && (*resE)[3] >= lB;
+									}//<<>>if( doAllGain )
                                 }//<<>>if( useGSwitch )
                                 bool leta_cut = (idinfoL0.ecal == ECAL::EB)&&(idinfoL1.ecal == ECAL::EB);
                                 bool geta_cut = (idinfoG0.ecal == ECAL::EB)&&(idinfoG1.ecal == ECAL::EB);

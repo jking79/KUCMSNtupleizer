@@ -47,7 +47,7 @@ void KUCMSAodSkimmer::processTimeSig(){
 		selPhoIndex++;
 
         int scIndx = (*Photon_scIndex)[it]; // vector<int>
-	float timesignum, timesigdenom;
+		float timesignum, timesigdenom;
 		float wttimesig = getTimeSig( scIndx, timesignum, timesigdenom );
 
         TSPhoInfo.fillBranch("selPho_selPhoWTimeSig", wttimesig );
@@ -62,6 +62,7 @@ void KUCMSAodSkimmer::processTimeSig(){
 
 void KUCMSAodSkimmer::setTSBranches( TTree* fOutTree ){
 
+	std::cout << " - Making Branches for TSig." << std::endl;
     TSPhoInfo.makeBranch("selPho_selPhoWTimeSig", VFLOAT);
 
     TSPhoInfo.attachBranches( fOutTree );

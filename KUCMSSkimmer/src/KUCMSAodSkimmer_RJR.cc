@@ -638,6 +638,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 
 void KUCMSAodSkimmer::setRJRBranches( TTree* fOutTree ){
 
+	std::cout << " - Making Branches for RJR." << std::endl;
     selRjrVars.makeBranch( "rjrType", VINT );
 
     selRjrVars.makeBranch( "rjrX1aMass", VFLOAT );

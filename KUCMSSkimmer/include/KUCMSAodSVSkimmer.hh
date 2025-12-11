@@ -113,6 +113,7 @@ class KUCMSAodSkimmer : public llpgtree {
 	void setGenBranches( TTree* fOutTree );
 	void setPhotonBranches( TTree* fOutTree );
 	void setRJRBranches( TTree* fOutTree );
+	void setRJRISRBranches( TTree* fOutTree );
 	void setElectronBranches( TTree* fOutTree );
 	void setJetsBranches( TTree* fOutTree );
 	void setMuonsBranches( TTree* fOutTree );
@@ -136,6 +137,7 @@ class KUCMSAodSkimmer : public llpgtree {
     void processSV();
 
 	void processRJR( int type, bool newEvent );
+	void processRJRISR();
 	void processBHCPhotons();
     void processBHCJets();
 	void processTimeSig();
@@ -213,8 +215,37 @@ class KUCMSAodSkimmer : public llpgtree {
     MinMassesCombJigsaw* CombSplit_Ja;
     MinMassesCombJigsaw* CombSplit_Jb;
 
-    ClusterAnalyzer _ca;
+    // ISR RestFrames frames and friends
 
+    LabRecoFrame* LAB_c;
+    DecayRecoFrame* CM_c;
+    DecayRecoFrame* S_c;
+    DecayRecoFrame* X2a_c;
+    DecayRecoFrame* X2b_c;
+    DecayRecoFrame* Ja_c;
+    DecayRecoFrame* Jb_c;
+    VisibleRecoFrame* ISR_c;
+    VisibleRecoFrame* J1a_c;
+    VisibleRecoFrame* J1b_c;
+    VisibleRecoFrame* J2a_c;
+    VisibleRecoFrame* J2b_c;
+    InvisibleRecoFrame* X1a_c;
+    InvisibleRecoFrame* X1b_c;
+
+    InvisibleGroup* INV_c;
+    SetMassInvJigsaw* InvM_c;
+    SetRapidityInvJigsaw* InvEta_c;
+    MinMassesSqInvJigsaw* InvSplit_c;
+
+    CombinatoricGroup* COMB_J_c;
+    MinMassesCombJigsaw* CombSplit_ISR_c; 	
+    MinMassesSqCombJigsaw* CombSplit_J_c;
+    MinMassesCombJigsaw* CombSplit_Ja_c;
+    MinMassesCombJigsaw* CombSplit_Jb_c;
+
+    // BHCish
+
+    ClusterAnalyzer _ca;
 
     // config vars
 
@@ -288,6 +319,7 @@ class KUCMSAodSkimmer : public llpgtree {
     KUCMSBranchManager selMuons;
 	KUCMSBranchManager selJets;
 	KUCMSBranchManager selRjrVars;
+    KUCMSBranchManager selRjrIsrVars;
     KUCMSBranchManager selGenPart;
     KUCMSBranchManager selSV;
     KUCMSBranchManager selTracks;

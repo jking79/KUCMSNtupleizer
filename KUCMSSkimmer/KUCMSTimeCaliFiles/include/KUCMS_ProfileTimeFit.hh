@@ -78,14 +78,15 @@ class kucms_ProfileTimeFit {
     
         std::cout << " -- setting paramters " << std::endl; 
         // range vars   ? names ? 
-        //float sigrange = 2.0; 
+        float sigrange = 2.0; 
         float lowerBound = mu - 2*sigma; 
         float upperBound = mu + 2*sigma; 
         float lowerHBound = mu - 4*sigma; 
         float upperHBound = mu + 4*sigma; 
         float lowerLBound = mu - 1*sigma; 
         float upperLBound = mu + 1*sigma; 
-    
+
+ 
         // names for fits and formulas 
         std::string histname = profileHist->GetName(); 
         std::string formname = histname+"_formula"; 
