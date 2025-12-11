@@ -248,6 +248,8 @@ void KUCMSAodSkimmer::processPhotons(){
 
 	float isobkg_score = 0;
 	float nonisobkg_score = 0;
+	float physbkg_score = 0;
+	float bh_score = 0;
 
     if(_ca.GetNRecHits() > 2){
     	ClusterObj phoobj;
@@ -259,6 +261,14 @@ void KUCMSAodSkimmer::processPhotons(){
         phoobj.GetPhotonIDScores(photonIDscores);
         isobkg_score = photonIDscores[0];
         nonisobkg_score = photonIDscores[1];
+	//do det bkg scores
+	vector<vector<float>> detbkgScores;
+	phoobj.CalculateDetBkgScores(true);
+	phoobj.GetDetBkgScores(detbkgScores);
+	//binary classifier
+	physbkg_score = detbkgScores[0][0];
+	bh_score = detbkgScores[0][1];
+
      	////fill branches here!!!  nooooo ;)  -- will not be in step with the rest if the photon branches if filled here
      	////selPhotons.fillBranch("selPho_isoANNScore",isobkg_score);
      	////selPhotons.fillBranch("selPho_nonIsoANNScore",nonisobkg_score);
@@ -412,6 +422,8 @@ void KUCMSAodSkimmer::processPhotons(){
 
     selPhotons.fillBranch("selPho_isoANNScore",isobkg_score);
     selPhotons.fillBranch("selPho_nonIsoANNScore",nonisobkg_score);
+    selPhotons.fillBranch("selPho_physBkgCNNScore",physbkg_score);
+    selPhotons.fillBranch("selPho_beamHaloCNNScore",bh_score);
 
 
     auto htsebcdr4 = (*Photon_hcalTowerSumEtBcConeDR04)[it];
@@ -794,6 +806,8 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
 	 
   selPhotons.makeBranch("selPho_isoANNScore", VFLOAT);
   selPhotons.makeBranch("selPho_nonIsoANNScore", VFLOAT);
+  selPhotons.makeBranch("selPho_physBkgCNNScore", VFLOAT);
+  selPhotons.makeBranch("selPho_beamHaloCNNScore", VFLOAT);
 
   selPhotons.makeBranch( "selPhoGenPt", VFLOAT );
   selPhotons.makeBranch( "selPhoPhoIsoDr", VFLOAT );

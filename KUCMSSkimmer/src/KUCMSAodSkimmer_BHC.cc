@@ -261,6 +261,7 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 void KUCMSAodSkimmer::processBHCJets(){
 
     if( DEBUG ) std::cout << "Finding BC information for jets" << std::endl;
+    std::cout << "Finding BC information for jets" << std::endl;
 	BHCJetInfo.clearBranches();
 
 	int selJetIndex = -1;
@@ -281,12 +282,14 @@ void KUCMSAodSkimmer::processBHCJets(){
 	std::vector<ClusterObj, Eigen::aligned_allocator<ClusterObj>> jetobjs;
     if( DEBUG ) std::cout << " - Looping over for " << nJets << " jets to get BC info" << std::endl;
   	for( uInt it = 0; it < nJets; it++ ){
+		cout << "jet it " << it << endl;
         if( not isSelJet[it] ) continue;
 		selJetIndex++;
 
     	std::map< unsigned int, float > rhtresmap;
     	auto rhids = (*Jet_drRhIds)[it];
         int nJetRecHits = rhids.size();
+	double totE = 0;
         for( int jiter = 0; jiter < nJetRecHits; jiter++  ){
             auto jrhid = rhids[jiter];
             int erhiter = ( rhIDtoIterMap.find(jrhid) != rhIDtoIterMap.end() ) ? rhIDtoIterMap[jrhid] : -1;
@@ -304,7 +307,7 @@ void KUCMSAodSkimmer::processBHCJets(){
 		//skip endcap rechits
 		//if(fabs((*ECALRecHit_eta)[erhiter]) > 1.479) continue;
 		//cout << "rh e " <<  erhe << " rh t " << erht << " rhid " << jrhid << " eta " << (*ECALRecHit_eta)[erhiter] << endl;
-
+		totE += erhe;
 		_ca.AddRecHit(rhx, rhy, rhz, erhe, erht, jrhid, hasBadTime);
 
 
@@ -320,6 +323,7 @@ void KUCMSAodSkimmer::processBHCJets(){
 		//cout << "seljetindx " << selJetIndex << endl;
 		jetobj.SetUserIndex(selJetIndex);
 		jetobjs.push_back(jetobj);
+		cout << "it " << it << " selJet energy " << (*Jet_energy)[it] << " BHC jet energy " << jetobj.GetEnergy() << " tot rhE " << totE << endl;
 		_ca.ClearRecHitList();
     }//<<>>for( uInt it = 0; it < nJets; it++ )
 
@@ -488,8 +492,7 @@ void KUCMSAodSkimmer::processBHCJets(){
 //------------------------------------------------------------------------------------------------------------
 
 void KUCMSAodSkimmer::setBCBranches( TTree* fOutTree ){
-
-	std::cout << " - Making Branches for BHC." << std::endl;
+/*
   for(const string cleanedType : {"BHC", "BHCPUCleaned"}) {
     	BHCPhoInfo.makeBranch("selPho"+cleanedType+"_selPhoIndex", VINT);
 	BHCPhoInfo.makeBranch( "selPho"+cleanedType+"_eta", VFLOAT);
@@ -525,7 +528,7 @@ void KUCMSAodSkimmer::setBCBranches( TTree* fOutTree ){
 		
 
   BHCPhoInfo.attachBranches( fOutTree );
-
+*/
     BHCJetInfo.makeBranch( "selJetBHC_selJetIndex", VINT);
 	BHCJetInfo.makeBranch( "selJetBHC_nSubclusters", VINT);
 	BHCJetInfo.makeBranch( "selJetBHCSubcl_time", VFLOAT);			
