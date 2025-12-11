@@ -207,9 +207,9 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 
 	// BNC Intiation
 
-    _ca.SetVerbosity(-1); //_can turn on to see low-level warnings
+    _ca.SetVerbosity(-1); //can turn on to see low-level warnings
     _ca.SetDetIDs(_detidmap);
-    _ca.SetCNNModel("config/json/small3CNN_EMultr_2017and2018.json");
+    _ca.SetCNNModel("config/json/KU-CNN_detector_v9p1p4_tfv2p17p1_kerasv3p10p0_1500epochs_small3_CMS_2017and2018.json");
     _ca.SetDNNModel("config/json/med16DNN_MCtrained_photonID.json");
 
 }//<<>>KUCMSAodSkimmer::KUCMSAodSkimmer()
@@ -273,11 +273,12 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
 
     std::cout << "Setting up For Main Loop." << std::endl;
 	int nForPrecent =  ( nEventsProcessed < 10 ) ? 1 : 10;
-	if( not doSVs ){ std::cout << " ::::  Doing noSv for EGamma " << std::endl; nForPrecent = 100; }
+	if( not doSVs ){ std::cout << " ::::  Doing noSv for EGamma " << std::endl; } //nForPrecent = 100; }
     int loopCounter( nEventsProcessed / nForPrecent );
     std::cout << "Processing " << nEntries << " entries." << std::endl;
     nEvents = nEventsProcessed;//save # of events actually ran over so that when files are hadded, this should total nEntries in TChain
     cout << "Running over events " << _evti << " to " << _evtj << endl;
+    cout << "loopCounter " << loopCounter << " nEventsProcessed " << nEventsProcessed << " nForPrecent " << nForPrecent << endl;
 	int count_of_events = 0;
     for (Long64_t centry = _evti; centry < _evtj; centry++){
         if( centry%loopCounter == 0 ){
@@ -820,7 +821,8 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
   auto saveToTree = eventSelection();
   if( saveToTree ){ 
 
-    if( doBHC ){ processBHCPhotons(); processBHCJets(); }
+    if( doBHC ){ //processBHCPhotons(); 
+	    processBHCJets(); }
 	processRJR(0,true); 
 	processRJR(1,false); 
 
