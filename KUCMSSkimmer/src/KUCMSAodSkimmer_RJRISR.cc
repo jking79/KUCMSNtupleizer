@@ -125,6 +125,7 @@ void KUCMSAodSkimmer::processRJRISR(){
   int nJetsJa = 0;
   int nJetsJb = 0;
   int nJetsISR = 0;
+  int nPhosISR = 0;
   bool isALeadPhoSide = true;	
   int subPhoSide = ( nRJRPhos > 1 ) ? 0 : -1;
   int leadPhoSide = ( nRJRPhos > 0 ) ? 0 : -1;
@@ -136,9 +137,12 @@ void KUCMSAodSkimmer::processRJRISR(){
     std::cout << " !!!!!!    " << nVisObjects << " != ( " << nRJRPhos + xtraPhos << " + " << nSelJets << " )  !!!!!!!!! " << std::endl;
   }//<<>>if( nVisObjects != ( nRJRPhos + nSelJets ) )
 
-  if( ( nRJRPhos > 0 ) && ( COMB_J_c->GetFrame(jetID[0]) == *J1b_c || COMB_J_c->GetFrame(jetID[0]) == *J2b_c ) ){ 
+  if( nRJRPhos > 0 ){
+	if( COMB_J_c->GetFrame(jetID[0]) == *ISR_c ){ nPhosISR++; isALeadPhoSide = false; leadPhoSide = 2; }	
+	else if( ( COMB_J_c->GetFrame(jetID[0]) == *J1b_c || COMB_J_c->GetFrame(jetID[0]) == *J2b_c ) ){ 
 	isALeadPhoSide = false; 
-	leadPhoSide = 1; 
+	leadPhoSide = 1;
+	}//<<>>if( ( COMB_J_c->GetFrame(jetID[0]) == *J1b_c || COMB_J_c->GetFrame(jetID[0]) == *J2b_c ) ) 
   }//<<>>if( leadPhoIndx > -1 &&  COMB_J_c->GetFrame(jetID[0]) == *J1b_c || COMB_J_c->GetFrame(jetID[0]) == *J2b_c )
   //  -- redifine A & B side for jets to be : is jet on lead pho side -> A ; is not on lead pho side -> B // done
   for( uInt it = firstJet; it < nVisObjects; it++ ){	
@@ -149,9 +153,12 @@ void KUCMSAodSkimmer::processRJRISR(){
 
   }//<<>>for( int i = 0; i < nSelJets; i++ )
   float abDiffSide = isALeadPhoSide ? 1 : -1;
-  if( ( nRJRPhos == 2 ) ) subPhoSide = ( COMB_J_c->GetFrame(jetID[1]) == *J1a_c || COMB_J_c->GetFrame(jetID[1]) == *J2a_c ) ? 1 : 2;
+  if( ( nRJRPhos > 1 ) ){ 
+	if( COMB_J_c->GetFrame(jetID[1]) == *ISR_c ){ subPhoSide = 2; nPhosISR++; }
+	else subPhoSide = ( COMB_J_c->GetFrame(jetID[1]) == *J1a_c || COMB_J_c->GetFrame(jetID[1]) == *J2a_c ) ? 0 : 1;
+  }//<<>>if( ( nRJRPhos > 1 ) )
 
-  //selRjrIsrVars.fillBranch( "rjrIsrType", type );
+  selRjrIsrVars.fillBranch( "rjrIsrNISRPhos", nPhosISR );
   selRjrIsrVars.fillBranch( "rjrIsrABSide", isALeadPhoSide );
   selRjrIsrVars.fillBranch( "rjrIsrNJetsJa", nJetsJa );
   selRjrIsrVars.fillBranch( "rjrIsrNJetsJb", nJetsJb );
@@ -744,6 +751,7 @@ void KUCMSAodSkimmer::setRJRISRBranches( TTree* fOutTree ){
     selRjrIsrVars.makeBranch( "rjrIsrCleaningVeto1", BOOL );
     selRjrIsrVars.makeBranch( "rjrIsrCleaningVeto2", BOOL );
 
+    selRjrIsrVars.fillBranch( "rjrIsrNISRPhos", INT );
     selRjrIsrVars.makeBranch( "rjrIsrNJetsJb", INT );
     selRjrIsrVars.makeBranch( "rjrIsrNJetsJa", INT );
     selRjrIsrVars.makeBranch( "rjrIsrNJetsISR",INT );
