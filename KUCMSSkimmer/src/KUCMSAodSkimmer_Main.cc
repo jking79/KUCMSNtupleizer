@@ -736,22 +736,23 @@ void KUCMSAodSkimmer::ProcessConfigTree( TChain* fInConfigTree ){
 
 void KUCMSAodSkimmer::ProcessConfigFile(){
 
+	std::cout << " -- reading config/EventCount.txt " << std::endl;
     std::ifstream infile("config/EventCount.txt");
     if( !infile ){
-        std::cerr << "Could not open file\n";
+        std::cerr << "  --  Could not open config/EventCount.txt !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! " << std::endl;
         return;
     }//<<>>if( !infile )
 
-    std::map<std::string, std::pair<float,float>> configData;
+	configData.clear();
+
     std::string key;
     float total, sum;
     while( infile >> key >> total >> sum ){ configData[key] = {total, sum}; }
 
     // Print everything
-    if( DEBUG ){
     for( const auto& kv : configData ){
         std::cout << " -- ConfigFile : " << kv.first << " : total=" << kv.second.first << ", sum=" << kv.second.second << std::endl;
-    } }//<<>>for (const auto& kv : data)//<<>>if( DEBUG )
+    }//<<>>for (const auto& kv : data)//<<>>if( DEBUG )
 
 }//<<>>void KUCMSAodSkimmer::ProcessConfigTreeAndFile(TChain* fInConfigTree)
 
@@ -1127,8 +1128,10 @@ void KUCMSAodSkimmer::fillConfigTree( TTree* fConfigTree ){
   }//<<>>for( auto item : configInfo )
 
   for( auto item : configCnts ){
+	//std::cout << " -- configCnts : " << item.first << " local " << isLocal << std::endl;
     if( item.first == "nTotEvts" && not isLocal ){
 		int nTotEvtsKey = configData[dataSetKey].first;
+		//std::cout << " -- Filling nTotEvts : " << dataSetKey << " " << nTotEvtsKey << " for " << item.first << std::endl;
 		TBranch *cfBranch = fConfigTree->Branch( "nTotEvts", &nTotEvtsKey );
 		cfBranch->Fill();
     } else {
@@ -1139,8 +1142,10 @@ void KUCMSAodSkimmer::fillConfigTree( TTree* fConfigTree ){
   }//<<>>for( auto item : configInfo )
 
   for( auto item : configWgts ){
+	//std::cout << " -- configWgts : " << item.first << " local " << isLocal << std::endl;
     if( item.first == "sumEvtWgt" && not isLocal ){
 		float sumEvtWgtKey = useEvtGenWgtFlag ? configData[dataSetKey].second : configData[dataSetKey].first;
+        //std::cout << " -- Filling sumEvtWgt : " << dataSetKey << " " << sumEvtWgtKey << " for " << item.first << std::endl;
 		TBranch *cfBranch = fConfigTree->Branch( "sumEvtWgt", &sumEvtWgtKey );
 		cfBranch->Fill();
     } else {
