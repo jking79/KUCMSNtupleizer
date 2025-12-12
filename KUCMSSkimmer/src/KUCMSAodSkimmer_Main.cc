@@ -290,6 +290,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 
   isLocal = false;
 
+
   _evti = -1;
   _evtj = -1;
 
@@ -838,7 +839,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
   eosDirPath = eosdir;
   listDirPath = listdir;
 
-  isLocal = true;
+  //isLocal = true;
 
   // ----- parse input batch file ---------------------------------------------------------------------
 

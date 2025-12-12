@@ -751,7 +751,7 @@ void KUCMSAodSkimmer::setRJRISRBranches( TTree* fOutTree ){
     selRjrIsrVars.makeBranch( "rjrIsrCleaningVeto1", BOOL );
     selRjrIsrVars.makeBranch( "rjrIsrCleaningVeto2", BOOL );
 
-    selRjrIsrVars.fillBranch( "rjrIsrNISRPhos", INT );
+    selRjrIsrVars.makeBranch( "rjrIsrNISRPhos", INT );
     selRjrIsrVars.makeBranch( "rjrIsrNJetsJb", INT );
     selRjrIsrVars.makeBranch( "rjrIsrNJetsJa", INT );
     selRjrIsrVars.makeBranch( "rjrIsrNJetsISR",INT );
