@@ -1264,11 +1264,11 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
 	if( mctype < 100 ){ // data
 
 		if( dataSetKey == "r2_ul18" || dataSetKey == "r2_ul18_mc"   ){ 
-			res = isEB ? sq2(26.0/amplitude) + sq2(0.6)/amplitude + 2*sq2(0.094) : sq2(42.2/amplitude) + sq2(1.2)/amplitude + 2*sq2(0.298); }
+			res = isEB ? sq2(22.94/amplitude) + sq2(2.0)/amplitude + 2*sq2(0.0585) : sq2(43.02/amplitude) + sq2(0.0)/amplitude + 2*sq2(0.3105); }
         else if( dataSetKey == "r2_eoy17"   ){ 
-			res = isEB ? sq2( 31.3/amplitude ) + sq2(2.9)/amplitude + 2*sq2(0.1608) : sq2( 31.3/amplitude ) + sq2(2.9)/amplitude + 2*sq2(0.1608); }
+			res = isEB ? sq2(31.3/amplitude ) + sq2(2.9)/amplitude + 2*sq2(0.1608) : sq2(31.3/amplitude ) + sq2(2.9)/amplitude + 2*sq2(0.1608); }
         else if( dataSetKey == "r2_ul17"   ){ 
-			res = isEB ? sq2( 26.2/amplitude ) + sq2(1.7)/amplitude + 2*sq2(0.138) : sq2( 33.2/amplitude ) + sq2(1.7)/amplitude + 2*sq2(0.203); }
+			res = isEB ? sq2(23.26/amplitude ) + sq2(2.68)/amplitude + 2*sq2(0.107) : sq2(36.94/amplitude ) + sq2(0.0)/amplitude + 2*sq2(0.2051); }
 		else { res = isEB ? sq2(26.0/amplitude) + sq2(0.6)/amplitude + 2*sq2(0.094) : sq2(42.2/amplitude) + sq2(1.2)/amplitude + 2*sq2(0.298); }
 
 	}//<<>>if( mctype == 0 )
