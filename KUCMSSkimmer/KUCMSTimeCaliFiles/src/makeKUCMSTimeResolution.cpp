@@ -50,16 +50,16 @@ int main ( int argc, char *argv[] ){
 	//std::string inputfilename( "ecal_config/kucmsTimeCaliTestTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR17EOYTFile.txt");
 
-    //std::string inputfilename( "ecal_config/kucmsTimeCaliR18ULTFile.txt");
-    std::string inputfilename( "ecal_config/kucmsTimeCaliR17ULTFile.txt");
+    std::string inputfilename( "ecal_config/kucmsTimeCaliR18ULTFile.txt");
+    //std::string inputfilename( "ecal_config/kucmsTimeCaliR17ULTFile.txt");
 
 	//std::string eosdir("root://cmseos.fnal.gov//store/user/jaking/");// input parameter!
     std::string eosdir("root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/");
 
     //std::string indir("/kuncali/gammares_cali_mc/");
     //std::string indir("/kuncali/gammares_cali/");
-    //std::string indir("KUCMSNtuple/gammares_ul18/");
-    std::string indir("KUCMSNtuple/gammares_ul17/");
+    std::string indir("KUCMSNtuple/gammares_ul18/");
+    //std::string indir("KUCMSNtuple/gammares_ul17/");
     //std::string indir("kuncali/gammares_mc18/");
     //std::string indir("kuncali/gammares_cali/DoubleEG/");
 
@@ -122,7 +122,7 @@ int main ( int argc, char *argv[] ){
     ////theCali.setUseEffEnergy( true );
     theCali.useGainSwitch( true, true ); // use gainid ? --  do all gians ?
 	//theCali.setDoEE( false );
-    //theCali.setDoEE( true );
+    theCali.setDoEE( true );
 	////theCali.setUseGainID( 1 );
 	////theCali.SetXBinStr( "VARIABLE 10 15 20 25 30 40 50 60 80 100 125 150 175 200 225 250 300 400 600" ); // : xr
     theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600" ); // : xa  llpana resfit
@@ -171,8 +171,8 @@ int main ( int argc, char *argv[] ){
     //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_deg_17_UL_EE_xa_pm24b1200_v1117" );
     //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_18_UL_xa_pm24b1200_v1117" ); 
     //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18_UL_EE_xa_pm24b1200_v1117" );
-	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18UL_HG_EB_xa_pm24b1200_v1211" );
-	theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_17UL_HG_EB_xa_pm24b1200_v1211" );
+	theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18UL_HG_EE_xa_pm24b1200_v1212" );
+	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_17UL_HG_EE_xa_pm24b1200_v1211" );
 
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
