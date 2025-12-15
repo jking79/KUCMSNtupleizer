@@ -31,12 +31,13 @@ def read_filelist(filename):
         return [line.strip() for line in f if line.strip()]
 
 def main():
-    if len(sys.argv) < 6:
-        print("Usage: python3 compare_json_filelists_detailed.py <json1> <json2> <json3> <json4> <all_files.txt>")
+    if len(sys.argv) < 3:
+        print("Usage: python3 compare_json_filelists_detailed.py <all_files.txt> <json1> <json2> <json3> <json4> ...")
         sys.exit(1)
 
-    json_files = sys.argv[1:5]
-    ref_file = sys.argv[5]
+    nEntries = len(sys.argv)
+    json_files = sys.argv[2:nEntries]
+    ref_file = sys.argv[1]
 
     # --- Collect info across all JSONs ---
     all_entries = []
