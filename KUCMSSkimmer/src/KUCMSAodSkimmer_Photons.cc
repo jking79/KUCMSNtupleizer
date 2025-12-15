@@ -269,6 +269,10 @@ void KUCMSAodSkimmer::processPhotons(){
 	physbkg_score = detbkgScores[0][0];
 	bh_score = detbkgScores[0][1];
 
+	//values that provide a 0.1% FPR with a >99% efficiency for the relevant class
+	//beam halo > 0.917252
+	//phys bkg > 0.81476355
+
      	////fill branches here!!!  nooooo ;)  -- will not be in step with the rest if the photon branches if filled here
      	////selPhotons.fillBranch("selPho_isoANNScore",isobkg_score);
      	////selPhotons.fillBranch("selPho_nonIsoANNScore",nonisobkg_score);
