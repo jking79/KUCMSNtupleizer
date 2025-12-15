@@ -158,8 +158,8 @@ void KUCMSAodSkimmer::processRJRISR(){
 	else subPhoSide = ( COMB_J_c->GetFrame(jetID[1]) == *J1a_c || COMB_J_c->GetFrame(jetID[1]) == *J2a_c ) ? 0 : 1;
   }//<<>>if( ( nRJRPhos > 1 ) )
 
-  int nSVisObjects = nVisObjects - nPhosISR + rjrIsrNJetsISR;
-  int nIsrVisObjects = nPhosISR + rjrIsrNJetsISR;
+  int nSVisObjects = nVisObjects - nPhosISR + nJetsISR;
+  int nIsrVisObjects = nPhosISR + nJetsISR;
 
   selRjrIsrVars.fillBranch( "rjrIsrNISRPhos", nPhosISR );
   selRjrIsrVars.fillBranch( "rjrIsrABSide", isALeadPhoSide );
@@ -171,8 +171,8 @@ void KUCMSAodSkimmer::processRJRISR(){
   selRjrIsrVars.fillBranch( "rjrIsrNVisObjects", nVisObjects );
   selRjrIsrVars.fillBranch( "rjrIsrLeadPhoLocation", leadPhoSide );
   selRjrIsrVars.fillBranch( "rjrIsrSubPhoLocation", subPhoSide );
-  selRjrIsrVars.fillBranch( "rjrIsr_nSVisObjects", nVisObjects - nPhosISR - rjrIsrNJetsISR );
-  selRjrIsrVars.fillBranch( "rjrIsr_nIsrVisObjects", nPhosISR + rjrIsrNJetsISR );
+  selRjrIsrVars.fillBranch( "rjrIsr_nSVisObjects", nVisObjects - nPhosISR - nJetsISR );
+  selRjrIsrVars.fillBranch( "rjrIsr_nIsrVisObjects", nPhosISR + nJetsISR );
 
   std::vector<int> phoside;
   std::vector<int> jetside;
