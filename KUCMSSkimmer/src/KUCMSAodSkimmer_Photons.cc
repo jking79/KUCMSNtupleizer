@@ -200,6 +200,7 @@ void KUCMSAodSkimmer::processPhotons(){
                 seedTres = ertres; seedSX = swcrss; seedWried = isWeird; seedGS = hasGainSwitch;
             }//<<>>if( erhe > seedE ) 
 			bool hasBadTime = hasGainSwitch || !(*ECALRecHit_isTimeValid)[erhiter];
+			//cout << "adding rh with e " << erhe << endl;
 			_ca.AddRecHit(erx, ery, erz, erhe, erhct, pscrhid, hasBadTime);
         }//<<>>if( scrhid == rhid )
     }//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
@@ -250,7 +251,6 @@ void KUCMSAodSkimmer::processPhotons(){
 	float nonisobkg_score = 0;
 	float physbkg_score = 0;
 	float bh_score = 0;
-
     if(_ca.GetNRecHits() > 2){
     	ClusterObj phoobj;
         _ca.NoClusterRhs(phoobj, true);
@@ -268,6 +268,10 @@ void KUCMSAodSkimmer::processPhotons(){
 	//binary classifier
 	physbkg_score = detbkgScores[0][0];
 	bh_score = detbkgScores[0][1];
+
+	//values that provide a 0.1% FPR with a >98% efficiency for the relevant class
+	//beam halo > 0.917252
+	//phys bkg > 0.81476355 (derived from gogoG ROC)
 
      	////fill branches here!!!  nooooo ;)  -- will not be in step with the rest if the photon branches if filled here
      	////selPhotons.fillBranch("selPho_isoANNScore",isobkg_score);
