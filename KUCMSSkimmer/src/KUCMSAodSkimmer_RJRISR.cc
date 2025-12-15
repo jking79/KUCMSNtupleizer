@@ -158,6 +158,9 @@ void KUCMSAodSkimmer::processRJRISR(){
 	else subPhoSide = ( COMB_J_c->GetFrame(jetID[1]) == *J1a_c || COMB_J_c->GetFrame(jetID[1]) == *J2a_c ) ? 0 : 1;
   }//<<>>if( ( nRJRPhos > 1 ) )
 
+  int nSVisObjects = nVisObjects - nPhosISR + rjrIsrNJetsISR;
+  int nIsrVisObjects = nPhosISR + rjrIsrNJetsISR;
+
   selRjrIsrVars.fillBranch( "rjrIsrNISRPhos", nPhosISR );
   selRjrIsrVars.fillBranch( "rjrIsrABSide", isALeadPhoSide );
   selRjrIsrVars.fillBranch( "rjrIsrNJetsJa", nJetsJa );
@@ -168,6 +171,8 @@ void KUCMSAodSkimmer::processRJRISR(){
   selRjrIsrVars.fillBranch( "rjrIsrNVisObjects", nVisObjects );
   selRjrIsrVars.fillBranch( "rjrIsrLeadPhoLocation", leadPhoSide );
   selRjrIsrVars.fillBranch( "rjrIsrSubPhoLocation", subPhoSide );
+  selRjrIsrVars.fillBranch( "rjrIsr_nSVisObjects", nVisObjects - nPhosISR - rjrIsrNJetsISR );
+  selRjrIsrVars.fillBranch( "rjrIsr_nIsrVisObjects", nPhosISR + rjrIsrNJetsISR );
 
   std::vector<int> phoside;
   std::vector<int> jetside;
@@ -733,6 +738,8 @@ void KUCMSAodSkimmer::setRJRISRBranches( TTree* fOutTree ){
     selRjrIsrVars.makeBranch( "rjrIsrPVa", FLOAT );
     selRjrIsrVars.makeBranch( "rjrIsrPVb", FLOAT );
 
+    selRjrIsrVars.fillBranch( "rjrIsr_nSVisObjects", INT );
+    selRjrIsrVars.fillBranch( "rjrIsr_nIsrVisObjects", INT );
     selRjrIsrVars.makeBranch( "rjrIsrNPhotons", INT );
     selRjrIsrVars.makeBranch( "rjrIsrMET", FLOAT );
     selRjrIsrVars.makeBranch( "rjrIsrNJets", INT );
