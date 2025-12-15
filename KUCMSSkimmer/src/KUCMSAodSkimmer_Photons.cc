@@ -200,6 +200,7 @@ void KUCMSAodSkimmer::processPhotons(){
                 seedTres = ertres; seedSX = swcrss; seedWried = isWeird; seedGS = hasGainSwitch;
             }//<<>>if( erhe > seedE ) 
 			bool hasBadTime = hasGainSwitch || !(*ECALRecHit_isTimeValid)[erhiter];
+			//cout << "adding rh with e " << erhe << endl;
 			_ca.AddRecHit(erx, ery, erz, erhe, erhct, pscrhid, hasBadTime);
         }//<<>>if( scrhid == rhid )
     }//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
@@ -250,7 +251,6 @@ void KUCMSAodSkimmer::processPhotons(){
 	float nonisobkg_score = 0;
 	float physbkg_score = 0;
 	float bh_score = 0;
-
     if(_ca.GetNRecHits() > 2){
     	ClusterObj phoobj;
         _ca.NoClusterRhs(phoobj, true);
