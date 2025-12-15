@@ -738,8 +738,8 @@ void KUCMSAodSkimmer::setRJRISRBranches( TTree* fOutTree ){
     selRjrIsrVars.makeBranch( "rjrIsrPVa", FLOAT );
     selRjrIsrVars.makeBranch( "rjrIsrPVb", FLOAT );
 
-    selRjrIsrVars.fillBranch( "rjrIsr_nSVisObjects", INT );
-    selRjrIsrVars.fillBranch( "rjrIsr_nIsrVisObjects", INT );
+    selRjrIsrVars.makeBranch( "rjrIsr_nSVisObjects", INT );
+    selRjrIsrVars.makeBranch( "rjrIsr_nIsrVisObjects", INT );
     selRjrIsrVars.makeBranch( "rjrIsrNPhotons", INT );
     selRjrIsrVars.makeBranch( "rjrIsrMET", FLOAT );
     selRjrIsrVars.makeBranch( "rjrIsrNJets", INT );
