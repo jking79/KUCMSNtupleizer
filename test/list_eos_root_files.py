@@ -84,7 +84,9 @@ def main():
     #eos_dir = "/store/user/lpcsusylep/jaking/"
 
     #input_dir = eos_dir + "kucmsntuple_MET_R18_SVIPM100_v31/MET/"
-    #ppath = 'MET/'
+    #input_dir = eos_dir + "kucmsntuple_MET_R17_SVIPM100_v31/MET/"
+    input_dir = eos_dir + "kucmsntuple_MET_R17_SVIPM100_p8_v31/MET/"
+    ppath = 'MET/'
 
     #input_dir = eos_dir + "kucmsntuple_EGamma_R18_InvMetPho30_NoSV_v31/EGamma/"
     #ppath = 'EGamma/'
@@ -101,9 +103,9 @@ def main():
     #input_dir = eos_dir + "/"+odir+"/"+proc+"/"
     #ppath = proc+'/'
 
-    subdir = 'kucmsntuple_SMS_Sig_SVIPM100_v31_SMS-GlGlGZ_AODSIM_mGl-2500_mN2-2400_mN1-500_ct0p1/'
-    input_dir = eos_dir + "kucmsntuple_SMS_Sig_SVIPM100_v31/CRAB_UserFiles/"+subdir
-    ppath = 'kucmsntuple_SMS_Sig_SVIPM100_v31_SMS-GlGlGZ_AODSIM_mGl-2500_mN2-2400_mN1-500_ct0p1'
+    #subdir = 'kucmsntuple_SMS_Sig_SVIPM100_v31_SMS-GlGlGZ_AODSIM_mGl-2500_mN2-2400_mN1-500_ct0p1/'
+    #input_dir = eos_dir + "kucmsntuple_SMS_Sig_SVIPM100_v31/CRAB_UserFiles/"+subdir
+    #ppath = 'kucmsntuple_SMS_Sig_SVIPM100_v31_SMS-GlGlGZ_AODSIM_mGl-2500_mN2-2400_mN1-500_ct0p1'
 
     print(f"Scanning EOS directory for .root files: {input_dir} ...")
     files = list_eos_directory(input_dir, recursive=True, extension=".root")
