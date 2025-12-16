@@ -41,21 +41,22 @@ void KUCMSAodSkimmer::processEvntVars(){
   selEvtVars.fillBranch( "PVz", PV_z ); 
   
   //fill
+  bool useSMSWgts = false;
+  if( ( dataSetKey.find("gogo") != std::string::npos ) || ( dataSetKey.find("sqsq") != std::string::npos ) ){ useSMSWgts = true; }
+  if( useEvtGenWgtFlag == false ) useSMSWgts = true;
 
   if( DEBUG ) std::cout << "Finding Event wts Vars" << std::endl;
   selEvtVars.fillBranch( "dsKey", dataSetKey );
   float evtGenWgt = 1;
-  if( useEvtGenWgtFlag && hasGenInfoFlag ) evtGenWgt = Evt_genWgt;
+  if( hasGenInfoFlag ) evtGenWgt = Evt_genWgt; 
+  if( useSMSWgts ) evtGenWgt = 1;
   selEvtVars.fillBranch( "evtGenWgt", evtGenWgt );
-  //sumEvtGenWgt += Evt_genWgt;
   selEvtVars.fillBranch( "evtXSection", xsctn );
  
-  bool useSMSWgts = false; 
-  if( ( dataSetKey.find("gogo") == std::string::npos ) || ( dataSetKey.find("sqsq") == std::string::npos ) ){ useSMSWgts = true; }
   float fillWgt = 1;
-  if( useEvtGenWgtFlag == false ) useSMSWgts = true;
   //if( !isLocal ) std::cout << " -- ECT : key " << dataSetKey << " " << configData[dataSetKey].first << " " << configData[dataSetKey].second << std::endl;
   float configSumEvtWgt = isLocal ? configWgts["sumEvtWgt"] : useSMSWgts ? configData[dataSetKey].first : configData[dataSetKey].second;
+  //if( !isLocal ) std::cout << " -- ECT : isLocal " << isLocal << " useSMSWgts : " << useSMSWgts << " use: " << useEvtGenWgtFlag << std::endl;
   if( mctype == 0 ) fillWgt = ( ( xsctn * 1000 ) * evtGenWgt  ) / configSumEvtWgt;
   //if( !isLocal ) std::cout << " -- ECT : fillWgt " << fillWgt << " " << xsctn << " " << evtGenWgt << " " << configSumEvtWgt << std::endl;
 
