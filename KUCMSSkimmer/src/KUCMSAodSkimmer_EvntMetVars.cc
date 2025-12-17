@@ -134,7 +134,7 @@ void KUCMSAodSkimmer::processEvntVars(){
   bool pMHem( hemBits("pho2hvm") );
   bool mLHem( hemBits("mu1hvl") );
   bool mMHem( hemBits("mu2hvm") );
-  bool fullHemVeto( eLHem && jLHem && pMHem && mLHem && hemRun && ( mctype == 1 ) );
+  bool fullHemVeto( ( eLHem || jLHem || pMHem || mLHem ) && hemRun && ( mctype == 1 ) );
 
   selEvtVars.fillBranch( "Flag_hemRun", hemRun );
   selEvtVars.fillBranch( "Flag_eLHemVeto", eLHem );
