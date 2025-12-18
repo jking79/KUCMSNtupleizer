@@ -43,3 +43,10 @@ KUCMSNtuple/kucmsntuple_TTXJets_R18_SVIPM100_v31/ TTXJets_R18_SVIPM100_v31_TTGJe
 KUCMSNtuple/kucmsntuple_TTXJets_R18_SVIPM100_v31/ TTXJets_R18_SVIPM100_v31_TTJets.txt TTJets_UL18 471.7 0 0 1 0 r2_ul18_mc
 KUCMSNtuple/kucmsntuple_TTXJets_R18_SVIPM100_v31/ TTXJets_R18_SVIPM100_v31_ttWJets.txt ttWJets_UL18 0.54 0 0 1 0 r2_ul18_mc
 KUCMSNtuple/kucmsntuple_TTXJets_R18_SVIPM100_v31/ TTXJets_R18_SVIPM100_v31_ttZJets.txt ttZJets_UL18 0.46 0 0 1 0 r2_ul18_mc
+#
+KUCMSNtuple/kucmsntuple_DTBoson_R18_SVIPM100_v31/ WGG_5f_TuneCP5_13TeV_amcatnlo-pythia8.txt WGG_UL18 1.715 0 0 1 0 r2_ul18_mc
+KUCMSNtuple/kucmsntuple_DTBoson_R18_SVIPM100_v31/ WWG_TuneCP5_13TeV-amcatnlo-pythia8.txt WWG_UL18 0.2158 0 0 1 0 r2_ul18_mc
+KUCMSNtuple/kucmsntuple_DTBoson_R18_SVIPM100_v31/ WWW_4F_TuneCP5_13TeV-amcatnlo-pythia8.txt WWW_UL18 0.2147 0 0 1 0 r2_ul18_mc
+KUCMSNtuple/kucmsntuple_DTBoson_R18_SVIPM100_v31/ WWZ_4F_TuneCP5_13TeV-amcatnlo-pythia8.txt WWZ_UL18 0.1676 0 0 1 0 r2_ul18_mc
+KUCMSNtuple/kucmsntuple_DTBoson_R18_SVIPM100_v31/ WZG_TuneCP5_13TeV-amcatnlo-pythia8.txt WZG_UL18 0.0.04345 0 0 1 0 r2_ul18_mc
+KUCMSNtuple/kucmsntuple_DTBoson_R18_SVIPM100_v31/ WZ_TuneCP5_13TeV-pythia8.txt WZ_UL18 23.43 0 0 1 0 r2_ul18_mc
