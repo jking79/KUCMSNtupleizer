@@ -354,6 +354,12 @@ class KUCMSAodSkimmer : public llpgtree {
    TBranch        *b_OSuperCluster_nXtalOverlap;   //!
 */
 
+
+    //photon CR definitions
+    int GetDetBkgCR(int phoidx);
+    void TrackMatched(int scidx, double& best_dr);
+    bool GetGJetsCR(int phoidx);
+    bool GetDiJetsCR(int phoidx);
 };
 
 #endif
