@@ -488,6 +488,18 @@ dlEGMAOD17 = [
  
 ]
 
+dlEGMAOD16 = [
+
+'/DoubleEG/Run2016B-21Feb2020_ver2_UL2016_HIPM-v1/MINIAOD',
+'/DoubleEG/Run2016C-21Feb2020_UL2016_HIPM-v1/MINIAOD',
+'/DoubleEG/Run2016D-21Feb2020_UL2016_HIPM-v1/MINIAOD',
+'/DoubleEG/Run2016E-21Feb2020_UL2016_HIPM-v1/MINIAOD',
+'/DoubleEG/Run2016F-21Feb2020_UL2016-v1/MINIAOD',
+'/DoubleEG/Run2016G-21Feb2020_UL2016-v1/MINIAOD',
+'/DoubleEG/Run2016H-21Feb2020_UL2016-v1/MINIAOD',
+
+]
+
 dl22 = [
 
 '/MET/Run2022A-27Jun2023-v1/AOD',
@@ -514,21 +526,21 @@ dlmet16 = [
 
 query = 'dasgoclient --json -query=\'dataset='
 
-datalist = dl2017data
+datalist = dlEGMAOD16
 
 for data in datalist :
     
     command = query + data + '\''
     #output = bashout( command ).splitlines()
-    #output = bashout( command ).split('size":')
+    output = bashout( command ).split('size":')
     #output = bashout( command ).split('num_lumi":')
     #output = bashout( command ).split('files":')
-    output = bashout( command ).split('events":')
+    #output = bashout( command ).split('events":')
     #fir = output[1].split('size":')[0]
     #sec = output[1].split('size":')[1] 
     #.split('}],')[0]
-    #size = int(output[1].split('}]')[0])/1000000000000
-    size = output[1].split('}]')[0]
+    size = int(output[1].split('}]')[0])/1000000000000
+    #size = output[1].split('}]')[0]
     print( data,  size )
     #print( data, '\n',  fir, '\n', sec )
 
