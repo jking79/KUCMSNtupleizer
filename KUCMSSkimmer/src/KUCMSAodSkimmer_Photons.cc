@@ -30,6 +30,189 @@
 //
 //}//<<>>void KUCMSAodSkimmer::processTemplate()
 
+
+void KUCMSAodSkimmer::TrackMatched(int scidx, double& bestdr){
+	//do track matching
+	bestdr = 999;
+	double bestTrackDr = 999;
+	//double maxTrackDr;
+	double dr, teta, tphi, de;
+	unsigned int detid;
+	
+	double dphi = -999;
+	//double bestde_dr;
+	int trackidx;
+	float ec = (*SuperCluster_eta)[scidx];
+	float pc = (*SuperCluster_phi)[scidx];
+	
+	double track_phi = -999;
+	double track_eta = -999;
+	
+	//loop through tracks to get best match to this subcluster (tracks are matched to superclusters, if not idx < 0)
+	//Track_scIndexs[i][j] is for track i that matched to supercluster j (tracks can match to multiple SCs)
+	int nTracks = (*Track_scIndexs).size();
+	for(int t = 0; t < nTracks; t++){
+	        if((*Track_scIndexs)[t][0] < 0) continue; //not matched to any SC
+	        int nSCs = (*Track_scIndexs)[t].size();
+		//cout << "track #" << t << " matched to " << nSCs << " superclusters" << endl;
+	        for(int sc = 0; sc < nSCs; sc++){
+	                int sc_idx = (*Track_scIndexs)[t].at(sc);
+	                //get eta, phi of supercluster sc that track is matched to
+	                double sc_eta = (*SuperCluster_eta)[sc_idx];
+			double sc_phi = (*SuperCluster_phi)[sc_idx];
+	                double sc_phi_02pi = sc_phi;
+	                if(sc_phi_02pi < 0) sc_phi_02pi += 2*acos(-1);
+	                else if(sc_phi_02pi > 2*acos(-1)) sc_phi_02pi -= 2*acos(-1);
+	                else sc_phi_02pi = sc_phi;
+	//cout << "   track #" << t << " matched to supercluster " << sc << " with eta " << sc_eta << " and phi " << sc_phi << endl;
+	
+	                dphi = fabs(pc - sc_phi_02pi);
+	                dphi = acos(cos(dphi));
+	
+	                dr = sqrt((sc_eta - ec)*(sc_eta - ec) + dphi*dphi);
+	
+	
+	                //E = p for photons
+	                if(dr < bestTrackDr){
+	                        bestTrackDr = dr;
+	                        track_phi = sc_phi;
+	                        track_eta = sc_eta;
+	                }
+	
+	        }
+	        //cout << "best dr " << bestdr << " " << bestTrackDr << " track eta " << track_eta << " SC eta " << ec << " track phi " << track_phi << " SC phi " << pc << endl;
+	        bestdr = bestTrackDr;
+	}
+
+}
+
+
+//functions needed: dR track matching
+int KUCMSAodSkimmer::GetDetBkgCR(int phoidx){
+    	int scidx = (*Photon_scIndex)[phoidx];
+	//tc = seed time
+	float tc = (*SuperCluster_SeedTime)[scidx];
+	//pc = phi center
+	float pc = (*SuperCluster_phi)[scidx];
+	//bestdr = dr of best match to track
+	double bestdr;
+       	TrackMatched(scidx, bestdr);	
+	//tsig = weighted time significance
+    	float timesignum, timesigdenom;
+	float tsig = getTimeSig( scidx, timesignum, timesigdenom );
+	//isolation criteria
+	float trksum =     (*Photon_trkSumPtSolidConeDR04)[phoidx] < 6.0;
+        float ecalrhsum =  (*Photon_ecalRHSumEtConeDR04)[phoidx] < 10.0;
+        float htowoverem = (*Photon_hadTowOverEM)[phoidx] < 0.02;
+        bool iso = trksum && ecalrhsum && htowoverem;
+	bool pcFilter = (pc < 0.1 || (acos(-1) - 0.1 < pc && pc < acos(-1) + 0.1) || 2*acos(-1) - 0.1 < pc );
+	bool pcFilter_wide = (pc < 0.3 || (acos(-1) - 0.3 < pc && pc < acos(-1) + 0.3) || 2*acos(-1) - 0.3 < pc );
+        bool spikeTime = (tc <= -10 && tc != -999);
+        bool bhTime = (-7 < tc && tc <= -2);
+        //bool physBkgTime = (-0.5 < tc && tc <= 0.5);
+        bool detBkgTimeSig = (tsig < -3);
+        bool physBkgTimeSig = (-1 < tsig && tsig < 1);
+        bool spikeTrackMatch = (bestdr <= 0.02);
+        bool notSpikeTrackVeto = (bestdr > 0.03);
+	//spike
+	if(spikeTrackMatch && spikeTime && !pcFilter_wide && detBkgTimeSig && iso)
+		return 3;
+	//BH
+	else if(bhTime && pcFilter && iso && notSpikeTrackVeto && detBkgTimeSig)
+		return 2;
+	else return -1;
+}
+
+
+//functions needed: dR calculation
+bool KUCMSAodSkimmer::GetGJetsCR(int phoidx){
+	//event filters applied
+	//not in BH sideband (equivalent of BH filter from noise filters)
+
+	float pho_pt = (*Photon_pt)[phoidx];
+	float pho_phi = (*Photon_phi)[phoidx];
+	//GJets
+	//# jets > 1
+	int nJets = Jet_energy->size();
+	if(nJets < 1) return false;
+	//ht > 50
+	double ht = 0;
+	double j_px = 0;
+	double j_py = 0;
+	double j_pz = 0;
+	for(int j = 0; j < nJets; j++){
+		ht += (*Jet_pt)[j];
+		double pt = (*Jet_pt)[j];
+	       	double phi = (*Jet_phi)[j];
+		double eta = (*Jet_eta)[j];
+		j_px += pt*cos(phi);
+		j_py += pt*sin(phi);
+		j_pz += pt*sinh(eta);
+	}
+	double jet_sys_phi = atan2(j_py, j_px);
+	if(ht < 50) return false;
+	//met < 100
+	if(Met_pt > 150) return false; //pass ntuple selection of SVIPM100, originally using MET < 100
+	//dphi_jets_photon > pi-0.3
+	double dphi_objjet = pho_phi - jet_sys_phi;
+        dphi_objjet = acos(cos(dphi_objjet));
+	if(dphi_objjet < 4*atan(1) - 0.3) return false;
+	float jet_sys_pt = sqrt(j_px*j_px + j_py*j_py);
+	float ptasym = std::min(pho_pt, jet_sys_pt) / std::max(pho_pt, jet_sys_pt);
+	if(ptasym < 0.6) return false;
+	return true;
+}
+
+bool KUCMSAodSkimmer::GetDiJetsCR(int phoidx){
+	//event filters applied
+	//not in BH sideband (equivalent of BH filter from noise filters)
+	//DiJets
+	float pho_phi = (*Photon_phi)[phoidx];
+	float pho_eta = (*Photon_eta)[phoidx];
+	//# jets > 1
+	int nJets = Jet_energy->size();
+	if(nJets < 2) return false;
+	//ht > 50
+	double ht = 0;
+	double j_px = 0;
+	double j_py = 0;
+	double j_pz = 0;
+	//assuming jets are pt sorted in ntuple - take phi of leading jets
+	float j_phi1 = (*Jet_phi)[0];
+	float j_phi2 = (*Jet_phi)[1];
+	float j_eta1 = (*Jet_eta)[0];
+	float j_eta2 = (*Jet_eta)[1];
+	for(int j = 0; j < nJets; j++){
+		ht += (*Jet_pt)[j];
+		double pt = (*Jet_pt)[j];
+	       	double phi = (*Jet_phi)[j];
+		double eta = (*Jet_eta)[j];
+		j_px += pt*cos(phi);
+		j_py += pt*sin(phi);
+		j_pz += pt*sinh(eta);
+	}
+	if(ht < 50) return false;
+	//met < 100
+	if(Met_pt > 150) return false; //pass ntuple selection of SVIPM100, originally using MET < 100
+	//dphi_jets > pi-0.3
+	double dphi_jets = j_phi1 - j_phi2;
+        dphi_jets = acos(cos(dphi_jets));
+	if(dphi_jets < 4*atan(1) - 0.3) return false;
+
+	double ptasym = (*Jet_pt)[1] / (*Jet_pt)[0];
+	if(ptasym < 0.6) return false;
+	//min(pho_pt, jet_sys_pt) / max(pho_pt, jet_sys_pt) > 0.6
+
+		
+	//dr_pho_jet > 0.5 for all photons in event
+	double pho_jet1 = dR1(pho_eta, pho_phi, j_eta1, j_phi1);
+        double pho_jet2 = dR1(pho_eta, pho_phi, j_eta2, j_phi2);
+        double maxdR = 0.5;
+        if(pho_jet1 < 0.5 || pho_jet2 < 0.5) return false;
+	return true;
+}
+
+
 void KUCMSAodSkimmer::processPhotons(){
 
   //bool verbose = true;
@@ -251,6 +434,10 @@ void KUCMSAodSkimmer::processPhotons(){
 	float nonisobkg_score = 0;
 	float physbkg_score = 0;
 	float bh_score = 0;
+	bool gjetscr = false;
+	bool dijetscr = false;
+	bool spikecr = false;
+	bool bhcr = false;
     if(_ca.GetNRecHits() > 2){
     	ClusterObj phoobj;
         _ca.NoClusterRhs(phoobj, true);
@@ -268,6 +455,14 @@ void KUCMSAodSkimmer::processPhotons(){
 	//binary classifier
 	physbkg_score = detbkgScores[0][0];
 	bh_score = detbkgScores[0][1];
+
+	gjetscr = GetDiJetsCR(it);
+	dijetscr = GetGJetsCR(it);
+	int detbkgcr = GetDetBkgCR(it);
+	if(detbkgcr == 2)
+		bhcr = true;
+	if(detbkgcr == 3)
+		spikecr = true;
 
 	//values that provide a 0.1% FPR with a >98% efficiency for the relevant class
 	//beam halo > 0.917252
@@ -428,7 +623,10 @@ void KUCMSAodSkimmer::processPhotons(){
     selPhotons.fillBranch("selPho_nonIsoANNScore",nonisobkg_score);
     selPhotons.fillBranch("selPho_physBkgCNNScore",physbkg_score);
     selPhotons.fillBranch("selPho_beamHaloCNNScore",bh_score);
-
+    selPhotons.fillBranch("selPho_beamHaloCR",bhcr);
+    selPhotons.fillBranch("selPho_spikeCR",spikecr);
+    selPhotons.fillBranch("selPho_GJetsCR",gjetscr);
+    selPhotons.fillBranch("selPho_DiJetsCR",dijetscr);
 
     auto htsebcdr4 = (*Photon_hcalTowerSumEtBcConeDR04)[it];
     auto tsphcdr3 = (*Photon_trkSumPtHollowConeDR03)[it];
@@ -812,6 +1010,10 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch("selPho_nonIsoANNScore", VFLOAT);
   selPhotons.makeBranch("selPho_physBkgCNNScore", VFLOAT);
   selPhotons.makeBranch("selPho_beamHaloCNNScore", VFLOAT);
+  selPhotons.makeBranch("selPho_beamHaloCR",VBOOL);
+  selPhotons.makeBranch("selPho_spikeCR",VBOOL);
+  selPhotons.makeBranch("selPho_GJetsCR",VBOOL);
+  selPhotons.makeBranch("selPho_DiJetsCR",VBOOL);
 
   selPhotons.makeBranch( "selPhoGenPt", VFLOAT );
   selPhotons.makeBranch( "selPhoPhoIsoDr", VFLOAT );
