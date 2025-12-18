@@ -450,6 +450,19 @@ dlEGMAOD17 = [
 
 ]
 
+dlEGMAOD16 = [
+
+'/DoubleEG/Run2016B-21Feb2020_ver2_UL2016_HIPM-v1/MINIAOD',
+'/DoubleEG/Run2016C-21Feb2020_UL2016_HIPM-v1/MINIAOD',
+'/DoubleEG/Run2016D-21Feb2020_UL2016_HIPM-v1/MINIAOD',
+'/DoubleEG/Run2016E-21Feb2020_UL2016_HIPM-v1/MINIAOD',
+'/DoubleEG/Run2016F-21Feb2020_UL2016-v1/MINIAOD',
+'/DoubleEG/Run2016G-21Feb2020_UL2016-v1/MINIAOD',
+'/DoubleEG/Run2016H-21Feb2020_UL2016-v1/MINIAOD',
+
+]
+
+
 dl22 = [ 
 '/MET/Run2022A-27Jun2023-v1/AOD', 
 '/MET/Run2022B-27Jun2023-v2/AOD', 
@@ -464,7 +477,7 @@ dl22 = [
 #query = 'dasgoclient --json -query=\'dataset='
 query = 'dasgoclient --json -query=\'site dataset=' 
 
-datalist = dl22
+datalist = dlEGMAOD16
 
 for data in datalist :
     

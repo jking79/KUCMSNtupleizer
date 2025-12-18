@@ -169,6 +169,18 @@ dy_list = [ 'cms:/DY1JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17
 
 egamma = [ 'cms:/EGamma/Run2018C-15Feb2022_UL2018-v1/AOD' ]
 
+egamma16cali = [
+
+    'cms:/DoubleEG/Run2016B-21Feb2020_ver2_UL2016_HIPM-v1/MINIAOD',
+    'cms:/DoubleEG/Run2016C-21Feb2020_UL2016_HIPM-v1/MINIAOD',
+    'cms:/DoubleEG/Run2016D-21Feb2020_UL2016_HIPM-v1/MINIAOD',
+    'cms:/DoubleEG/Run2016E-21Feb2020_UL2016_HIPM-v1/MINIAOD',
+    'cms:/DoubleEG/Run2016F-21Feb2020_UL2016-v1/MINIAOD',
+    #'cms:/DoubleEG/Run2016G-21Feb2020_UL2016-v1/MINIAOD',
+    #'cms:/DoubleEG/Run2016H-21Feb2020_UL2016-v1/MINIAOD',
+
+]
+
 #runlist = qcd_list
 #runlist = gjets_list
 #runlist = met_list
@@ -179,12 +191,12 @@ egamma = [ 'cms:/EGamma/Run2018C-15Feb2022_UL2018-v1/AOD' ]
 #runlist = jetmetexo22
 #runlist = dipho
 #runlist = bosun
-runlist = met17UL
+runlist = egamma16cali
 
 for thefile in runlist :
 
     #thecommand = 'rucio add-rule --ask-approval --lifetime 5184000 ' + thefile + ' 1 T3_US_FNALLPC'
-    thecommand = 'rucio add-rule --ask-approval --lifetime 2592000 ' + thefile + ' 1 T3_US_FNALLPC'
+    thecommand = 'rucio rule add --ask-approval --lifetime 2592000 ' + thefile + ' 1 T3_US_FNALLPC'
     print( '---------------------------------------------------' )
     print( thecommand )
     doCommand( thecommand )
