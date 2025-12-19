@@ -523,24 +523,67 @@ dlmet16 = [
 
 ]
 
+dl_met_24 = [
+    "/JetMET0/Run2024A-PromptReco-v1/AOD",
+    "/JetMET0/Run2024B-PromptReco-v1/AOD",
+    "/JetMET0/Run2024C-PromptReco-v1/AOD",
+    "/JetMET0/Run2024D-PromptReco-v1/AOD",
+    "/JetMET0/Run2024E-PromptReco-v2/AOD",
+    "/JetMET0/Run2024F-PromptReco-v1/AOD",
+    "/JetMET0/Run2024G-PromptReco-v1/AOD",
+    "/JetMET0/Run2024H-PromptReco-v1/AOD",
+    "/JetMET0/Run2024I-PromptReco-v2/AOD",
+    "/JetMET0/Run2024J-PromptReco-v1/AOD",
+
+    "/JetMET1/Run2024A-PromptReco-v1/AOD",
+    "/JetMET1/Run2024B-PromptReco-v1/AOD",
+    "/JetMET1/Run2024C-PromptReco-v1/AOD",
+    "/JetMET1/Run2024D-PromptReco-v1/AOD",
+    "/JetMET1/Run2024E-PromptReco-v2/AOD",
+    "/JetMET1/Run2024F-PromptReco-v1/AOD",
+    "/JetMET1/Run2024G-PromptReco-v1/AOD",
+    "/JetMET1/Run2024H-PromptReco-v1/AOD",
+    "/JetMET1/Run2024I-PromptReco-v2/AOD",
+    "/JetMET1/Run2024J-PromptReco-v1/AOD",
+]
+
+dl_met_22 = [
+
+    "/MET/Run2022A-27Jun2023-v1/AOD",
+    "/MET/Run2022B-27Jun2023-v2/AOD",
+    "/MET/Run2022C-27Jun2023-v2/AOD",
+    "/JetMET/Run2022C-27Jun2023-v1/AOD",
+    "/JetMET/Run2022D-19Dec2023-v1/AOD",
+    "/JetMET/Run2022E-19Dec2023-v1/AOD",
+    "/JetMET/Run2022F-19Dec2023-v2/AOD",
+    "/JetMET/Run2022G-19Dec2023-v1/AOD",
+
+    "/JetMET0/Run2023B-19Dec2023-v1/AOD",
+    "/JetMET0/Run2023C-19Dec2023-v1/AOD",
+    "/JetMET0/Run2023D-19Dec2023-v1/AOD",
+    "/JetMET1/Run2023B-19Dec2023-v1/AOD",
+    "/JetMET1/Run2023C-19Dec2023-v1/AOD",
+    "/JetMET1/Run2023D-19Dec2023-v1/AOD",
+]
+
 
 query = 'dasgoclient --json -query=\'dataset='
 
-datalist = dlEGMAOD16
+datalist = dl_met_22
 
 for data in datalist :
     
     command = query + data + '\''
     #output = bashout( command ).splitlines()
-    output = bashout( command ).split('size":')
+    #output = bashout( command ).split('size":')
     #output = bashout( command ).split('num_lumi":')
     #output = bashout( command ).split('files":')
-    #output = bashout( command ).split('events":')
+    output = bashout( command ).split('events":')
     #fir = output[1].split('size":')[0]
     #sec = output[1].split('size":')[1] 
     #.split('}],')[0]
-    size = int(output[1].split('}]')[0])/1000000000000
-    #size = output[1].split('}]')[0]
+    #size = int(output[1].split('}]')[0])/1000000000000
+    size = output[1].split('}]')[0]
     print( data,  size )
     #print( data, '\n',  fir, '\n', sec )
 

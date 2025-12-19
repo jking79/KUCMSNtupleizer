@@ -995,29 +995,47 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
   // counts events and saves event varibles
   // --------------------------------------
 
+  bool debugl1 = false;
+  
+  if( debugl1 ) std::cout << "KUCMSAodSkimmer : processRechits" << std::endl;
   processRechits();// must be done before rechitID to Iter map used
+  if( debugl1 ) std::cout << "KUCMSAodSkimmer : processMet" << std::endl;
   processMet();
+  if( debugl1 ) std::cout << "KUCMSAodSkimmer : processPhotons" << std::endl;
   processPhotons();
+  if( debugl1 ) std::cout << "KUCMSAodSkimmer : processElectrons" << std::endl;
   processElectrons();
+  if( debugl1 ) std::cout << "KUCMSAodSkimmer : processMuons" << std::endl;
   processMuons();
+  if( debugl1 ) std::cout << "KUCMSAodSkimmer : processJets" << std::endl;
   processJets();
+  if( debugl1 && doSVs ) std::cout << "KUCMSAodSkimmer : processSV" << std::endl;
   if( doSVs ) processSV();
+  if( debugl1 ) std::cout << "KUCMSAodSkimmer : processTracks" << std::endl;
   processTracks();
+  if( debugl1 ) std::cout << "KUCMSAodSkimmer : processEvntVars" << std::endl;
   processEvntVars();// process last to catch Hem issue
+  if( debugl1 && hasGenInfoFlag ) std::cout << "KUCMSAodSkimmer : processGenParticles" << std::endl;
   if( hasGenInfoFlag ){ processGenParticles(); }
   
   // select events to process and store
   //--------------------------------------
+  if( debugl1 ) std::cout << "KUCMSAodSkimmer : eventSelection" << std::endl;
   auto saveToTree = eventSelection();
   if( saveToTree ){ 
 
-    //if( doBHC ){ //processBHCPhotons(); 
+    //if( doBHC ){ //processBHCPhotons();
+    if( debugl1 && doBHC ) std::cout << "KUCMSAodSkimmer : processBHCJets" << std::endl;
 	if( doBHC ){ processBHCJets(); }
+    if( debugl1 ) std::cout << "KUCMSAodSkimmer : processRJR 0" << std::endl;
 	processRJR(0,true); 
+    if( debugl1 ) std::cout << "KUCMSAodSkimmer : processRJR 1" << std::endl;
 	processRJR(1,false); 
+    if( debugl1 ) std::cout << "KUCMSAodSkimmer : processRJR ISR" << std::endl;
 	processRJRISR();
 
   }//<<>>if( saveToTree )
+  if( debugl1 ) std::cout << "KUCMSAodSkimmer : Return saveToTree" << std::endl;
   return saveToTree;
   
 }//<<>>void KUCMSAodSkimmer::eventLoop( Long64_t entry )
