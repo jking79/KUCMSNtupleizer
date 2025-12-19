@@ -118,7 +118,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
   else std::cout << " --- !!!  Photons not loaded into RJR !!!!!!!!!!!!!!!!!!" << std::endl;
 
   if( RJRDEBUG ) std::cout << " - Loading MET." << std::endl;
-  if( verbose ){
+  if( verbose && nSelPhotons > 0 ){
     std::cout << " - Loading MET lPt: " << sPhoPt[0] << " lPhi: " << sPhoPhi[0] << std::endl;
     std::cout << " - Loading MET slPt: " << sPhoPt[1] << " slPhi: " << sPhoPhi[1] << std::endl; 
     std::cout << " - Loading MET x: " << geVars("metPx") << " -> " << phoRMetCPx;
@@ -136,8 +136,10 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
   auto selJetEta = geVects( "selJetEta");
   auto selJetPhi = geVects( "selJetPhi");
   auto selJetMass = geVects( "selJetMass");
-  std::vector<RFKey> leadJetKey;
+
   if( RJRDEBUG ) std::cout << " - Loading Jets." << std::endl;
+
+  std::vector<RFKey> leadJetKey;
   for( uInt it = 0; it < nSelJets; it++ ){
     auto sjetPt = selJetPt[it]; //selJets.getFLBranchValue( "selJetPt", it );
     auto sjetEta = selJetEta[it]; //selJets.getFLBranchValue( "selJetEta", it );
@@ -152,7 +154,9 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     jet4vec.push_back(jet); 
   }//<<>>for( int i = 0; i < nSelJets; i++ )
 
-  if( !LAB->AnalyzeEvent() ) std::cout << "Something went wrong with tree event analysis" << std::endl;
+  if( RJRDEBUG ) std::cout << " -- Processing RJR Tree ------ " << std::endl;
+
+  if( !LAB->AnalyzeEvent() ){ std::cout << "Something went wrong with tree event analysis" << std::endl; return; }
 	
   if( RJRDEBUG ) std::cout << " - Getting RJR Object Location Information." << std::endl;
   // ---------  Finished Processing RJR varibles --------------------------------------------------------------------

@@ -474,10 +474,39 @@ dl22 = [
 '/JetMET/Run2022G-19Dec2023-v1/AOD', 
 ]
 
+dl_met_24 = [
+    "/JetMET0/Run2024A-PromptReco-v1/AOD",
+    "/JetMET0/Run2024B-PromptReco-v1/AOD",
+    "/JetMET0/Run2024C-PromptReco-v1/AOD",
+    "/JetMET0/Run2024D-PromptReco-v1/AOD",
+    "/JetMET0/Run2024E-PromptReco-v1/AOD",
+    "/JetMET0/Run2024E-PromptReco-v2/AOD",
+    "/JetMET0/Run2024F-PromptReco-v1/AOD",
+    "/JetMET0/Run2024G-PromptReco-v1/AOD",
+    "/JetMET0/Run2024H-PromptReco-v1/AOD",
+    "/JetMET0/Run2024I-PromptReco-v1/AOD",
+    "/JetMET0/Run2024I-PromptReco-v2/AOD",
+    "/JetMET0/Run2024J-PromptReco-v1/AOD",
+
+    "/JetMET1/Run2024A-PromptReco-v1/AOD",
+    "/JetMET1/Run2024B-PromptReco-v1/AOD",
+    "/JetMET1/Run2024C-PromptReco-v1/AOD",
+    "/JetMET1/Run2024D-PromptReco-v1/AOD",
+    "/JetMET1/Run2024E-PromptReco-v1/AOD",
+    "/JetMET1/Run2024E-PromptReco-v2/AOD",
+    "/JetMET1/Run2024F-PromptReco-v1/AOD",
+    "/JetMET1/Run2024G-PromptReco-v1/AOD",
+    "/JetMET1/Run2024H-PromptReco-v1/AOD",
+    "/JetMET1/Run2024I-PromptReco-v1/AOD",
+    "/JetMET1/Run2024I-PromptReco-v2/AOD",
+    "/JetMET1/Run2024J-PromptReco-v1/AOD",
+]
+
+
 #query = 'dasgoclient --json -query=\'dataset='
 query = 'dasgoclient --json -query=\'site dataset=' 
 
-datalist = dlEGMAOD16
+datalist = dl_met_24
 
 for data in datalist :
     

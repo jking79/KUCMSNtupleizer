@@ -84,7 +84,7 @@ void KUCMSAodSkimmer::processRJRISR(){
   else std::cout << " --- !!!  Photons not loaded into RJR !!!!!!!!!!!!!!!!!!" << std::endl;
 
   if( RJRDEBUG ) std::cout << " - Loading MET." << std::endl;
-  if( verbose ){
+  if( verbose && nSelPhotons > 0 ){
     std::cout << " - Loading MET lPt: " << sPhoPt[0] << " lPhi: " << sPhoPhi[0] << std::endl;
     std::cout << " - Loading MET slPt: " << sPhoPt[1] << " slPhi: " << sPhoPhi[1] << std::endl; 
     std::cout << " - Loading MET x: " << geVars("metPx") << " -> " << phoRMetCPx;
@@ -99,21 +99,46 @@ void KUCMSAodSkimmer::processRJRISR(){
   auto selJetEta = geVects( "selJetEta");
   auto selJetPhi = geVects( "selJetPhi");
   auto selJetMass = geVects( "selJetMass");
-  std::vector<RFKey> leadJetKey;
+
   if( RJRDEBUG ) std::cout << " - Loading Jets." << std::endl;
+
+  std::vector< TLorentzVector > rjr_jets;
   for( uInt it = 0; it < nSelJets; it++ ){
-	auto sjetPt = selJetPt[it]; //selJets.getFLBranchValue( "selJetPt", it );
-    auto sjetEta = selJetEta[it]; //selJets.getFLBranchValue( "selJetEta", it );
-    auto sjetPhi = selJetPhi[it]; //selJets.getFLBranchValue( "selJetPhi", it ); 
-    auto sjetMass = ( selJetMass[it] > 0 ) ? selJetMass[it] : 0; //selJets.getFLBranchValue( "selJetMass", it );   
+	float sjetPt = selJetPt[it]; //selJets.getFLBranchValue( "selJetPt", it );
+    float sjetEta = selJetEta[it]; //selJets.getFLBranchValue( "selJetEta", it );
+    float sjetPhi = selJetPhi[it]; //selJets.getFLBranchValue( "selJetPhi", it ); 
+    float sjetMass = ( selJetMass[it] > 0 ) ? selJetMass[it] : 0; //selJets.getFLBranchValue( "selJetMass", it );   
     TLorentzVector jet;
     jet.SetPtEtaPhiM( sjetPt, sjetEta, sjetPhi, sjetMass );
+	rjr_jets.push_back(jet);
     if( verbose ) std::cout << " - Loading Jet Pt: " << sjetPt << " Eta: " << sjetEta;
     if( verbose ) std::cout << " Phi: " << sjetPhi << " M: " << sjetMass << std::endl;
-    if( it == 0 ){ leadJetKey.push_back( COMB_J_c->AddLabFrameFourVector(jet) ); jetID.push_back(leadJetKey[0]); } 
-    else jetID.push_back(COMB_J_c->AddLabFrameFourVector(jet));
-    jet4vec.push_back(jet); 
+    ////if( it == 0 ){ leadJetKey.push_back( COMB_J_c->AddLabFrameFourVector(jet) ); jetID.push_back(leadJetKey[0]); } 
+    ////else jetID.push_back(COMB_J_c->AddLabFrameFourVector(jet));
+    ////jet4vec.push_back(jet); 
   }//<<>>for( int i = 0; i < nSelJets; i++ )
+
+  if( RJRDEBUG ) std::cout << " -- nRJRJets Pre : " << nSelJets << std::endl;
+  std::vector<RFKey> leadJetKey;
+  //std::vector< TLorentzVector > merged_rjr_jets = BinaryMerge( rjr_jets, 13 -  nRJRPhos );
+  BinaryMergeInPlace( rjr_jets, 16 -  nRJRPhos );
+  nSelJets = rjr_jets.size();
+  if( RJRDEBUG ) std::cout << " -- nRJRJets Post : " << nSelJets << std::endl;
+  for( uInt it = 0; it < nSelJets; it++ ){
+    ////auto sjetPt = selJetPt[it]; //selJets.getFLBranchValue( "selJetPt", it );
+    ////auto sjetEta = selJetEta[it]; //selJets.getFLBranchValue( "selJetEta", it );
+    ////auto sjetPhi = selJetPhi[it]; //selJets.getFLBranchValue( "selJetPhi", it ); 
+    ////auto sjetMass = ( selJetMass[it] > 0 ) ? selJetMass[it] : 0; //selJets.getFLBranchValue( "selJetMass", it );   
+    TLorentzVector jet = rjr_jets[it];
+    ////jet.SetPtEtaPhiM( sjetPt, sjetEta, sjetPhi, sjetMass );
+    if( verbose ) std::cout << " - Loading Jet Pt: " << jet.Pt() << " Eta: " << jet.Eta();
+    if( verbose ) std::cout << " Phi: " << jet.Phi() << " M: " << jet.M() << std::endl;
+    if( it == 0 ){ leadJetKey.push_back( COMB_J_c->AddLabFrameFourVector(jet) ); jetID.push_back(leadJetKey[0]); }
+    else jetID.push_back(COMB_J_c->AddLabFrameFourVector(jet));
+    jet4vec.push_back(jet);
+  }//<<>>for( int i = 0; i < nSelJets; i++ )
+
+  if( RJRDEBUG ) std::cout << " -- Processing RJR Tree ------ " << std::endl;
 
   if( !LAB_c->AnalyzeEvent() ) std::cout << "Something went wrong with tree event analysis" << std::endl;
 	
@@ -249,7 +274,7 @@ void KUCMSAodSkimmer::processRJRISR(){
   selRjrIsrVars.fillBranch( "rjrIsrCleaningVeto2", rjrCleaningVeto2 );   
 
 
-  if( RJRDEBUG ) std::cout << " - Getting RJR varibles 2." << std::endl;
+  //if( RJRDEBUG ) std::cout << " - Getting RJR varibles 2." << std::endl;
 
   std::vector< TLorentzVector > hp4;
   std::vector< TLorentzVector > hxp4;
@@ -292,7 +317,7 @@ void KUCMSAodSkimmer::processRJRISR(){
     selRjrIsrVars.fillBranch( "rjrIsr_sJ2b_pz", float(hp4[3].Pz()) );
     selRjrIsrVars.fillBranch( "rjrIsr_sJ2b_e", float(hp4[3].E()) );
 
-  if( RJRDEBUG ) std::cout << " - Getting RJR varibles 3." << std::endl;
+  //if( RJRDEBUG ) std::cout << " - Getting RJR varibles 3." << std::endl;
 
 	float x1sp = ( X1a_c->GetFourVector(*S_c) + X1b_c->GetFourVector(*S_c) ).P();
 	float x1asp = ( X1a_c->GetFourVector(*S_c) ).P();
@@ -398,7 +423,7 @@ void KUCMSAodSkimmer::processRJRISR(){
     selRjrIsrVars.fillBranch( "rjrIsr_pHs11a", phs11a );
     selRjrIsrVars.fillBranch( "rjrIsr_pHs11b", phs11b );
 
-  	if( RJRDEBUG ) std::cout << " - Getting RJR varibles 4." << std::endl;
+  	//if( RJRDEBUG ) std::cout << " - Getting RJR varibles 4." << std::endl;
 
 
     hxp4.push_back(X2a_c->GetFourVector(pJetSideSum4Vec[0]));//0
@@ -429,7 +454,7 @@ void KUCMSAodSkimmer::processRJRISR(){
     selRjrIsrVars.fillBranch( "rjrIsr_pHxa11", phxa11 );
     selRjrIsrVars.fillBranch( "rjrIsr_pHxb11", phxb11 );
 
-  if( RJRDEBUG ) std::cout << " - Getting RJR varibles 5." << std::endl;
+  //if( RJRDEBUG ) std::cout << " - Getting RJR varibles 5." << std::endl;
 
     float pj1apt = S_c->GetTransverseMomentum(pJetSideSum4Vec[0]);
     float pj2apt = S_c->GetTransverseMomentum(pJetSideSum4Vec[1]);
@@ -461,7 +486,7 @@ void KUCMSAodSkimmer::processRJRISR(){
     selRjrIsrVars.fillBranch( "rjrIsr_pHts11a", phts11a );
     selRjrIsrVars.fillBranch( "rjrIsr_pHts11b", phts11b );
 
-  if( RJRDEBUG ) std::cout << " - Getting RJR varibles 6." << std::endl;
+  //if( RJRDEBUG ) std::cout << " - Getting RJR varibles 6." << std::endl;
 
     float ptj1apt = X2a_c->GetTransverseMomentum(pJetSideSum4Vec[0]);
     float ptj2apt = X2a_c->GetTransverseMomentum(pJetSideSum4Vec[1]);
@@ -491,7 +516,7 @@ void KUCMSAodSkimmer::processRJRISR(){
     selRjrIsrVars.fillBranch( "rjrIsr_pHtxb11", phtxb11 );
 
 
-  if( RJRDEBUG ) std::cout << " - Getting RJR varibles 7." << std::endl;
+  //if( RJRDEBUG ) std::cout << " - Getting RJR varibles 7." << std::endl;
 
 	float phopt1 = 0;
     float phopt2 = 0;
@@ -504,7 +529,7 @@ void KUCMSAodSkimmer::processRJRISR(){
     selRjrIsrVars.fillBranch( "rjrIsr_p1Pts", phopt1 );
     selRjrIsrVars.fillBranch( "rjrIsr_p2Pts", phopt2 );
 
-  if( RJRDEBUG ) std::cout << " - Getting RJR varibles 8." << std::endl;
+  //if( RJRDEBUG ) std::cout << " - Getting RJR varibles 8." << std::endl;
 
     float phopt1xa = 0;
     float phopt1xb = 0;
@@ -520,7 +545,7 @@ void KUCMSAodSkimmer::processRJRISR(){
         else phopt2xb = X2b_c->GetTransverseMomentum( pho4vec[1] );
 	}//<<>>if( nPhov > 1 )
 
-  if( RJRDEBUG ) std::cout << " - Getting RJR varibles 9." << std::endl;
+  //if( RJRDEBUG ) std::cout << " - Getting RJR varibles 9." << std::endl;
 
     float phop1xa = 0;
     float phop1xb = 0;
@@ -547,7 +572,7 @@ void KUCMSAodSkimmer::processRJRISR(){
     selRjrIsrVars.fillBranch( "rjrIsr_p2Pxa", phop2xa );
     selRjrIsrVars.fillBranch( "rjrIsr_p2Pxb", phop2xb );
 
-  if( RJRDEBUG ) std::cout << " - Getting RJR varibles 10." << std::endl;
+  //if( RJRDEBUG ) std::cout << " - Getting RJR varibles 10." << std::endl;
 
 	std::vector< TLorentzVector > p4;
 	p4.push_back(Ja_c->GetFourVector(*S_c));
@@ -578,7 +603,7 @@ void KUCMSAodSkimmer::processRJRISR(){
     selRjrIsrVars.fillBranch( "rjrIsr_pHts22", pHts22 );
     selRjrIsrVars.fillBranch( "rjrIsr_pHts11", pHts11 );
 
-  if( RJRDEBUG ) std::cout << " - Getting RJR varibles 11." << std::endl;
+  //if( RJRDEBUG ) std::cout << " - Getting RJR varibles 11." << std::endl;
 
 	for( int i = 0; i < 4; i++ ){
 
@@ -614,7 +639,7 @@ void KUCMSAodSkimmer::processRJRISR(){
     selRjrIsrVars.fillBranch( "rjrIsrX2aPs", pf_pX2a );
     selRjrIsrVars.fillBranch( "rjrIsrX2bPs", pf_pX2b );
 
-  if( RJRDEBUG ) std::cout << " - Getting RJR varibles 12." << std::endl;
+  //if( RJRDEBUG ) std::cout << " - Getting RJR varibles 12." << std::endl;
 
   	float m_EVa = X2a_c->GetListVisibleFrames().GetFourVector(*X2a_c).E();
   	float m_EVb = X2b_c->GetListVisibleFrames().GetFourVector(*X2b_c).E();
@@ -666,7 +691,7 @@ void KUCMSAodSkimmer::processRJRISR(){
     selRjrIsrVars.fillBranch( "rjrIsrPVlab", m_PV_lab );
     selRjrIsrVars.fillBranch( "rjrIsrDphiMETV", m_dphiMET_V );
 
-  if( RJRDEBUG ) std::cout << " - Getting RJR varibles 13." << std::endl;
+  //if( RJRDEBUG ) std::cout << " - Getting RJR varibles 13." << std::endl;
 
 	float rjrMet = hypo(phoRMetCPx,phoRMetCPy);
 
@@ -698,6 +723,82 @@ void KUCMSAodSkimmer::processRJRISR(){
   if( RJRDEBUG ) std::cout << " - Getting RJR varibles finished." << std::endl;
 
 }//<<>>void KUCMSAodSkimmer::processRJR( int type, bool newEvent )
+
+std::vector< TLorentzVector > KUCMSAodSkimmer::BinaryMerge( const std::vector< TLorentzVector > & rjr_jets, int Nmax ){
+
+	if( rjr_jets.size() <= Nmax ) return rjr_jets;
+
+  	const int N = (int)rjr_jets.size();
+  	double Rmin = 2.;
+  	int imin = -1;
+  	int jmin = -1;
+  	for( int i = 0; i < N-1; i++ ){
+    	for( int j = i+1; j < N; j++ ){
+      		const double M2 = ( rjr_jets[i] + rjr_jets[j] ).M2();
+			const double sumM = rjr_jets[i].M() + rjr_jets[j].M();
+      		const double R = ( M2 > 0. ) ? ( M2 - sumM*sumM ) / M2 : 0.;
+      		if( R < Rmin ){ Rmin = R; imin = i; jmin = j; }//<<>>if(R < Rmin)
+    	}//<<>>for(int j = i+1; j < N; j++)
+  	}//<<>>for(int i = 0; i < N-1; i++)
+
+  	std::vector< TLorentzVector > merged_rjr_jets;
+    merged_rjr_jets.reserve(N - 1);
+	merged_rjr_jets.push_back( rjr_jets[imin] + rjr_jets[jmin] );
+  	for(int i = 0; i < N; i++){ if( i != imin && i != jmin ) merged_rjr_jets.push_back( rjr_jets[i] ); }
+
+  return BinaryMerge( merged_rjr_jets, Nmax );
+
+}//<<>>void KUCMSAodSkimmer::BinaryMerge( std::vector< TLorentzVector > rjr_jets )
+
+void KUCMSAodSkimmer::BinaryMergeInPlace( std::vector<TLorentzVector>& jets, int Nmax ){
+
+    if( jets.size() < 2 ) return;
+
+    auto ptDesc = []( const TLorentzVector& a, const TLorentzVector& b ){ return a.Pt() > b.Pt(); };
+
+    // Ensure initial ordering: lead jet first
+    std::sort(jets.begin(), jets.end(), ptDesc);
+
+    
+    while( (int)jets.size() > Nmax ){
+
+        const int N = (int)jets.size();
+        if( N < Nmax ) break;
+
+		//std::cout << " - Jet Merge for RJR ISR " << std::endl;
+  		//for( uInt it = 0; it < N; it++ ){
+    	//	TLorentzVector jet = jets[it];
+    	//	std::cout << " - Jet " << it << " Pt: " << jet.Pt() << " Eta: " << jet.Eta();
+    	//	std::cout << " Phi: " << jet.Phi() << " M: " << jet.M() << std::endl;
+  		//}//<<>>for( int i = 0; i < nSelJets; i++ )
+
+        // Default: merge two smallest-pT jets (last two entries)
+        int imin = N - 2;
+        int jmin = N - 1;
+
+        double Rmin = 100000000.0;
+        // Search for best pair with R < 2
+        for( int i = 0; i < N - 1; ++i ){
+            for( int j = i + 1; j < N; ++j ){
+
+                const double M2 = (jets[i] + jets[j]).M2();
+                const double sumM = jets[i].M() + jets[j].M();
+                const double R = ( M2 > 0.0 ) ? ( M2 - sumM * sumM ) : 0.0;
+                if( R < Rmin ){ Rmin = R; imin = i; jmin = j; }
+
+            }//<<>>for( int j = i + 1; j < N; ++j )
+        }//<<>>for( int i = 0; i < N - 1; ++i )
+
+        // Merge jmin into imin
+        jets[imin] += jets[jmin];
+        // Remove the merged-away jet. Use erase to keep list clean.
+        jets.erase(jets.begin() + jmin);
+        // Restore pT ordering so lead jet is first for next iteration
+        std::sort(jets.begin(), jets.end(), ptDesc);
+
+    }//while( (int)jets.size() > Nmax )
+
+}//<<>>BinaryMergeInPlace(std::vector<TLorentzVector>& jets, int Nmax)
 
 //------------------------------------------------------------------------------------------------------------
 // set output branches, initialize histograms, and endjobs
