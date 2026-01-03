@@ -88,6 +88,9 @@ def main():
     input_dir = eos_dir + "kucmsntuple_MET_R17_SVIPM100_p8_v31/MET/"
     ppath = 'MET/'
 
+    input_dir = eos_dir + "kucmsntuple_DTBoson_R18_SVIPM100_v31/"
+    ppath = '/'
+
     #input_dir = eos_dir + "kucmsntuple_EGamma_R18_InvMetPho30_NoSV_v31/EGamma/"
     #ppath = 'EGamma/'
 
