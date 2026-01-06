@@ -1,0 +1,5 @@
+ecal_config/gammares_prmt22_EGamma_MINIAOD_Run2022B-PromptReco-v1.txt 355794 362760 r3_p22
+ecal_config/gammares_prmt22_EGamma_MINIAOD_Run2022C-PromptReco-v1.txt 355794 362760 r3_p22
+ecal_config/gammares_prmt22_EGamma_MINIAOD_Run2022E-PromptReco-v1.txt 355794 362760 r3_p22
+ecal_config/gammares_prmt22_EGamma_MINIAOD_Run2022F-PromptReco-v1.txt 355794 362760 r3_p22
+ecal_config/gammares_prmt22_EGamma_MINIAOD_Run2022G-PromptReco-v1.txt 355794 362760 r3_p22

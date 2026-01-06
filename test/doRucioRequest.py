@@ -191,12 +191,13 @@ egamma16cali = [
 #runlist = jetmetexo22
 #runlist = dipho
 #runlist = bosun
-runlist = egamma16cali
+#runlist = egamma16cali
+runlist = met17UL
 
 for thefile in runlist :
 
     #thecommand = 'rucio add-rule --ask-approval --lifetime 5184000 ' + thefile + ' 1 T3_US_FNALLPC'
-    thecommand = 'rucio rule add --ask-approval --lifetime 2592000 ' + thefile + ' 1 T3_US_FNALLPC'
+    thecommand = 'rucio rule add --ask-approval --lifetime 2592000 --copies 1 --rses T3_US_FNALLPC --did ' + thefile
     print( '---------------------------------------------------' )
     print( thecommand )
     doCommand( thecommand )
