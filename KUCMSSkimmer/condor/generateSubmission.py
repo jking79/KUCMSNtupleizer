@@ -97,6 +97,11 @@ def generateSubmission(args):
         inputList = "sqsqG_AODSIM"
         if(args.mGl != "" and args.mN2 != "" and args.mN1 != ""):
             inputList += "_mGl-"+args.mGl+"_mN2-"+args.mN2+"_mN1-"+args.mN1
+    elif(args.inputSample == "gogoGZ"):
+        MCsig = True
+        inputList = "gogoGZ_AODSIM"
+        if(args.mGl != "" and args.mN2 != "" and args.mN1 != ""):
+            inputList += "_mGl-"+args.mGl+"_mN2-"+args.mN2+"_mN1-"+args.mN1
     #data
     elif(args.inputSample == "MET"):
         data = True
@@ -191,7 +196,7 @@ def generateSubmission(args):
                 mctype = 0
             flags += " --MCtype "+str(mctype)
 
-            if(args.noBHC):
+            if( not args.runPSICHE):
                 flags += " --noBHC"
             if(args.noSV):
                 flags += " --noSV"
@@ -233,7 +238,7 @@ def main():
     parser.add_argument("--max_idle",help='max_idle condor option (default: off)',default=-1)
     parser.add_argument("--request_memory",help='memory to request from condor scheduler in bits (default = 2048)',default=-1)
     #parser.add_argument("--inputList",help="list of sample lists to run over (default is SVIPM100 selection)",choices=['data','mcBkg','mcSig'])
-    parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',choices=['DiPJBox', 'DTBoson','GJets','TTXJets','QCD','WJets','ZJets','gogoG','gogoZ','sqsqG','MET','EGamma','JetHT'])
+    parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',choices=['DiPJBox', 'DTBoson','GJets','TTXJets','QCD','WJets','ZJets','gogoG','gogoZ','gogoGZ', 'sqsqG','MET','EGamma','JetHT'])
     parser.add_argument("--year",help="run year",choices = ["2017","2018","2022"],default="2018")
     parser.add_argument('--slice',help='HT slice (ie for GJets or QCD), mass range (ie for DiPJBox), or subprocess (ie for TTXJets)',default='')
     parser.add_argument('--era',help='run era (data only)',default='')
@@ -246,7 +251,7 @@ def main():
     parser.add_argument('--maxnevts',help="maximum number of events per job",default=-999,type=int)
     parser.add_argument('--maxnfiles',help="maximum number of files total",default=-999,type=int)
     parser.add_argument('--verbosity','-v',help="verbosity",default=0)
-    parser.add_argument('--noBHC',help='run without creating BHC objects (default = on)',default=False,action='store_true')
+    parser.add_argument('--runPSICHE',help='run with creating PSICHE jets (default = off)',default=False,action='store_true')
     #parser.add_argument('--hasGenInfo',help='set hasGenInfo flag',default=False,action="store_true")
     parser.add_argument('--genSigPerfect',help='set genSigPerfect flag',default=False,action="store_true")
     parser.add_argument('--noSV',help='do not run SV collection',default=False,action="store_true")

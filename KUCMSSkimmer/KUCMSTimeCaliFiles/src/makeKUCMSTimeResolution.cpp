@@ -120,17 +120,17 @@ int main ( int argc, char *argv[] ){
 
 	// extended range 2D
 	////KUCMS_TimeCalibration theCali;
-    theCali.SetEosDir(eosdir);
-    theCali.SetInDir(indir);
-    theCali.setLowEnergy( true );
+    //theCali.SetEosDir(eosdir);
+    //theCali.SetInDir(indir);
+    //theCali.setLowEnergy( true );
     ////theCali.setUseEffEnergy( true );
     //theCali.useGainSwitch( true, true ); // use gainid ? --  do all gians ? : all Gains (HG)
-    theCali.useGainSwitch( true, false ); // use gainid ? --  do all gians ? : only gainID1 (LG)
+    //theCali.useGainSwitch( true, false ); // use gainid ? --  do all gians ? : only gainID1 (LG)
 	////theCali.setDoEE( false );
-    theCali.setDoEE( true );
+    //theCali.setDoEE( true );
 	////theCali.setUseGainID( 1 );
 	////theCali.SetXBinStr( "VARIABLE 10 15 20 25 30 40 50 60 80 100 125 150 175 200 225 250 300 400 600" ); // : xr
-    theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600" ); // : xa  llpana LG resfit
+    //theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600" ); // : xa  llpana LG resfit
     //theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600 3200" ); // : xa  llpana HG resfit
     ////theCali.SetXBinStr( "VARIABLE 1.0 2.0 3.0 4.0 5.0 7.5 10.0 12.5 15.0 17.5 20.0 25.0 30.0 40.0 50.0 70.0 90.0" ); // xer
     ////theCali.SetXBinStr( "VARIABLE 1.0 2.0 3.0 4.0 5.0 7.5 10.0 12.5 15.0 17.5 20.0 22.5 25.0 30.0 40.0 60.0 120.0" ); // xea
@@ -148,7 +148,7 @@ int main ( int argc, char *argv[] ){
     ////theCali.SetYBinStr( "CONSTANT 240 -12 12" ); ( 100 ps )
     //--------------------------------------------------------
 	// justin profile y bins
-	theCali.SetYBinStr( "CONSTANT 1200 -24 24" ); // full range ( 40 ps )
+	//theCali.SetYBinStr( "CONSTANT 1200 -24 24" ); // full range ( 40 ps )
     ////theCali.SetYBinStr( "CONSTANT 240 -12 12" ); // justin ( 100 ps )
     ////theCali.SetYBinStr( "CONSTANT 360 -12 12" ); // justin ( 67 ps )
     ////theCali.SetYBinStr( "CONSTANT 180 -6 6" ); // justin ( 67 ps )
@@ -179,7 +179,7 @@ int main ( int argc, char *argv[] ){
     //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18_UL_EE_xa_pm24b1200_v1117" );
 
     //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18UL_LG_EB_xa_pm24b1200_v0106" );
-    theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18UL_LG_EE_xa_pm24b1200_v0106" );
+    //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18UL_LG_EE_xa_pm24b1200_v0106" );
     //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18UL_HG_EB_xa_pm24b1200_v0106" );
     //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18UL_HG_EE_xa_pm24b1200_v0106" );
     
@@ -244,16 +244,25 @@ int main ( int argc, char *argv[] ){
 	//std::string histName = "ResMap_296399_306460__DRO_Data_Hist_eg_17UL_HG_EB_xa_pm24b1200_v1212";
     //std::string histName = "ResMap_296399_306460__DRO_Data_Hist_eg_17UL_HG_EE_xa_pm24b1200_v1212";
 
-	//std::string histName = "ResMap_275600_283900__DRO_Data_Hist_eg_16UL_HG_EB_xa_pm24b1200_v0105";
+	//std::string histName = "ResMap_315257_325172__DRO_Data_Hist_eg_18UL_LG_EB_xa_pm24b1200_v0106";
+    //std::string histName = "ResMap_315257_325172__DRO_Data_Hist_eg_18UL_LG_EE_xa_pm24b1200_v0106";
+    //std::string histName = "ResMap_296399_306460__DRO_Data_Hist_eg_17UL_LG_EB_xa_pm24b1200_v0106";
+    std::string histName = "ResMap_296399_306460__DRO_Data_Hist_eg_17UL_LG_EE_xa_pm24b1200_v0106";
 
-    //KUCMS_TimeCalibration theCali;
+
+	//std::string histName = "ResMap_275600_283900__DRO_Data_Hist_eg_16UL_HG_EB_xa_pm24b1200_v0105";
+    //std::string histName = "ResMap_275600_283900__DRO_Data_Hist_eg_16UL_LG_EB_xa_pm24b1200_v0105";
+	//std::string histName = "ResMap_275600_283900__DRO_Data_Hist_eg_16UL_HG_EE_xa_pm24b1200_v0105";
+    //std::string histName = "ResMap_275600_283900__DRO_Data_Hist_eg_16UL_LG_EE_xa_pm24b1200_v0105";
+
+    ////KUCMS_TimeCalibration theCali;
 
 	//
 	//theCali.Set2DResTFileName( "egres_DEGPD_AODSIM_R24_Fprompt_v3_14011_v12_resplots.root" );
     //theCali.Set2DResTFileName( "egres_DEGPD_AODSIM_R24_ECAL_v3_14011_v12_resplots.root" );
 	//
 
-	//theCali.setLowEnergy( true );
+	theCali.setLowEnergy( true );
 
 	////theCali.SetXBinStr( "VARIABLE 5 10 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 1200 1800" ); // : xa
     ////theCali.SetXBinStr( "VARIABLE 5 10 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1000 1200 1800" ); // : ecal
@@ -266,11 +275,11 @@ int main ( int argc, char *argv[] ){
 	////theCali.SetXBinStr( "VARIABLE 5 10 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 1200 1800 2200" );  // : xa ( xaext+ 2200 )
 
 	//theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600" ); // : xa 2018UL DRO
-    //theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600" ); // : xa  llpana LG resfit
+    theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600" ); // : xa  llpana LG resfit
     //theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600 2400 3200" ); // : xa  llpana HG resfit
 
-    //theCali.load2DResHist( histName );
-	//theCali.doResTimeFit( histName );
+    theCali.load2DResHist( histName );
+	theCali.doResTimeFit( histName );
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
