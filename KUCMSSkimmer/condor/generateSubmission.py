@@ -191,7 +191,7 @@ def generateSubmission(args):
                 mctype = 0
             flags += " --MCtype "+str(mctype)
 
-            if(args.noBHC):
+            if( not args.runPSICHE):
                 flags += " --noBHC"
             if(args.noSV):
                 flags += " --noSV"
@@ -246,7 +246,7 @@ def main():
     parser.add_argument('--maxnevts',help="maximum number of events per job",default=-999,type=int)
     parser.add_argument('--maxnfiles',help="maximum number of files total",default=-999,type=int)
     parser.add_argument('--verbosity','-v',help="verbosity",default=0)
-    parser.add_argument('--noBHC',help='run without creating BHC objects (default = on)',default=False,action='store_true')
+    parser.add_argument('--runPSICHE',help='run with creating PSICHE jets (default = off)',default=False,action='store_true')
     #parser.add_argument('--hasGenInfo',help='set hasGenInfo flag',default=False,action="store_true")
     parser.add_argument('--genSigPerfect',help='set genSigPerfect flag',default=False,action="store_true")
     parser.add_argument('--noSV',help='do not run SV collection',default=False,action="store_true")
