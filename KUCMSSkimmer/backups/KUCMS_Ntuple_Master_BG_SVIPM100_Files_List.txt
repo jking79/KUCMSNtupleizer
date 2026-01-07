@@ -24,7 +24,7 @@
 #KUCMSNtuple/kucmsntuple_ZJets_R18_SVIPM100_v31/ ZJets_R18_SVIPM100_v31_ZJetsToNuNu_HT-1200To2500.txt ZJets_1200To2500_UL18 0.3419 0 0 1 0 r2_ul18_mc
 #KUCMSNtuple/kucmsntuple_ZJets_R18_SVIPM100_v31/ ZJets_R18_SVIPM100_v31_ZJetsToNuNu_HT-2500ToInf.txt ZJets_2500ToInf_UL18 0.005146 0 0 1 0 r2_ul18_mc
 #
-#KUCMSNtuple/kucmsntuple_DiPJBox_R18_SVIPM100_v31/ DiPJBox_R18_SVIPM100_v31_DiPhotonJetsBox_M40_80-sherpa.txt DiPho_M40t80_UL18 306.8 0 0 1 0 r2_ul18_mc
+KUCMSNtuple/kucmsntuple_DiPJBox_R18_SVIPM100_v31/ DiPJBox_R18_SVIPM100_v31_DiPhotonJetsBox_M40_80-sherpa.txt DiPho_M40t80_UL18 306.8 0 0 1 0 r2_ul18_mc
 #KUCMSNtuple/kucmsntuple_DiPJBox_R18_SVIPM100_v31/ DiPJBox_R18_SVIPM100_v31_DiPhotonJetsBox_MGG-0to40.txt DiPho_M0t40_UL18 754.6 0 0 1 0 r2_ul18_mc
 #KUCMSNtuple/kucmsntuple_DiPJBox_R18_SVIPM100_v31/ DiPJBox_R18_SVIPM100_v31_DiPhotonJetsBox_MGG-80toInf.txt DiPho_M80Inf_UL18 86.96 0 0 1 0 r2_ul18_mc
 #
@@ -41,5 +41,5 @@
 #KUCMSNtuple/kucmsntuple_TTXJets_R18_SVIPM100_v31/ TTXJets_R18_SVIPM100_v31_TGJets.txt TGJets_UL18 3 0 0 1 0 r2_ul18_mc
 #KUCMSNtuple/kucmsntuple_TTXJets_R18_SVIPM100_v31/ TTXJets_R18_SVIPM100_v31_TTGJets.txt TTGJets_UL18 3.77 0 0 1 0 r2_ul18_mc
 #KUCMSNtuple/kucmsntuple_TTXJets_R18_SVIPM100_v31/ TTXJets_R18_SVIPM100_v31_TTJets.txt TTJets_UL18 471.7 0 0 1 0 r2_ul18_mc
-KUCMSNtuple/kucmsntuple_TTXJets_R18_SVIPM100_v31/ TTXJets_R18_SVIPM100_v31_ttWJets.txt ttWJets_UL18 0.54 0 0 1 0 r2_ul18_mc
+#KUCMSNtuple/kucmsntuple_TTXJets_R18_SVIPM100_v31/ TTXJets_R18_SVIPM100_v31_ttWJets.txt ttWJets_UL18 0.54 0 0 1 0 r2_ul18_mc
 #KUCMSNtuple/kucmsntuple_TTXJets_R18_SVIPM100_v31/ TTXJets_R18_SVIPM100_v31_ttZJets.txt ttZJets_UL18 0.46 0 0 1 0 r2_ul18_mc

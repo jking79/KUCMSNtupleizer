@@ -1264,11 +1264,14 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
 	if( mctype < 100 ){ // data
 
 		if( dataSetKey == "r2_ul18" || dataSetKey == "r2_ul18_mc"   ){ 
-			res = isEB ? sq2(22.94/amplitude) + sq2(2.0)/amplitude + 2*sq2(0.0585) : sq2(43.02/amplitude) + sq2(0.0)/amplitude + 2*sq2(0.3105); }
-        else if( dataSetKey == "r2_eoy17"   ){ 
-			res = isEB ? sq2(31.3/amplitude ) + sq2(2.9)/amplitude + 2*sq2(0.1608) : sq2(31.3/amplitude ) + sq2(2.9)/amplitude + 2*sq2(0.1608); }
+			res = isEB ? sq2(22.94/amplitude) + sq2(2.00)/amplitude + 2*sq2(0.0585) : sq2(43.02/amplitude) + sq2(0.0)/amplitude + 2*sq2(0.3105); }
         else if( dataSetKey == "r2_ul17"   ){ 
-			res = isEB ? sq2(23.26/amplitude ) + sq2(2.68)/amplitude + 2*sq2(0.107) : sq2(36.94/amplitude ) + sq2(0.0)/amplitude + 2*sq2(0.2051); }
+			res = isEB ? sq2(23.26/amplitude ) + sq2(2.68)/amplitude + 2*sq2(0.1070) : sq2(36.94/amplitude ) + sq2(0.0)/amplitude + 2*sq2(0.2051); }
+        else if( dataSetKey == "r2_ul16"   ){
+            res = isEB ? sq2(23.30/amplitude ) + sq2(2.62)/amplitude + 2*sq2(0.1386) : sq2(36.94/amplitude ) + sq2(0.0)/amplitude + 2*sq2(0.2051); }
+
+        else if( dataSetKey == "r2_eoy17"   ){
+            res = isEB ? sq2(31.3/amplitude ) + sq2(2.9)/amplitude + 2*sq2(0.1608) : sq2(31.3/amplitude ) + sq2(2.9)/amplitude + 2*sq2(0.1608); }
 		else { res = isEB ? sq2(26.0/amplitude) + sq2(0.6)/amplitude + 2*sq2(0.094) : sq2(42.2/amplitude) + sq2(1.2)/amplitude + 2*sq2(0.298); }
 
 	}//<<>>if( mctype == 0 )
@@ -2513,6 +2516,7 @@ kucms_SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D ){
  
   	}//<<>>for (auto ibinX = 1; ibinX <= fNBinsX; ibinX++)
 
+/*
     for( auto& profile : profileHists ){ 
 		profile.second.profileHist->Write( profile.second.profileHist->GetName(), TObject::kOverwrite ); 
 		TH1F* gprHist = gprProfileHist( profile.second.profileHist );
@@ -2520,6 +2524,7 @@ kucms_SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D ){
 		delete gprHist;
 		profile.second.deleteHists();
 	}//<<>>for( auto& profile : profileHists )
+*/
 
   	// Prep sigma fit
   	//----------------------TimeFitter::PrepSigmaFit(FitInfo);
@@ -2536,7 +2541,7 @@ kucms_SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D ){
   	//auto x_up  = hist->GetXaxis()->GetBinUpEdge( hist->GetXaxis()->GetLast() );
 	float x_low = 75;
 	float x_up = 1600;
-	if( lowEnergy ){ x_low = 5; x_up = 1600; }
+	if( lowEnergy ){ x_low = 15; x_up = 1600; }
     if( lowEnergy && useEffEnergy ){ x_low = 1; x_up = 120; }
 
   	std::string histname = hist->GetName();

@@ -1,6 +1,0 @@
-ecal_config/gammares_ul16_DoubleEG_MINIAOD_Run2016C.txt 275600 283900 r2_ul16
-ecal_config/gammares_ul16_DoubleEG_MINIAOD_Run2016D.txt 275600 283900 r2_ul16
-ecal_config/gammares_ul16_DoubleEG_MINIAOD_Run2016E.txt 275600 283900 r2_ul16
-ecal_config/gammares_ul16_DoubleEG_MINIAOD_Run2016F.txt 275600 283900 r2_ul16
-ecal_config/gammares_ul16_DoubleEG_MINIAOD_Run2016G.txt 275600 283900 r2_ul16
-ecal_config/gammares_ul16_DoubleEG_MINIAOD_Run2016H.txt 275600 283900 r2_ul16
