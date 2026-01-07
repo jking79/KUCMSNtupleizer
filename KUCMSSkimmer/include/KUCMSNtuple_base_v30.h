@@ -851,7 +851,7 @@ void Init( TChain *tree, bool doGenInfo, bool doSVs ){
    // Init() will be called many times when running on PROOF
    // (once per file to be processed).
 
-   //Evt_genWgt = 1.f;
+   Evt_genWgt = 1.f;
 
    // Set object pointer
    GenVertex_dxy = 0;
@@ -1814,6 +1814,10 @@ void getBranches( Long64_t entry, bool doGenInfo, bool doSVs ){
    b_Evt_event->GetEntry(entry);   //!
 
    if( not doGenInfo ){
+   b_Evt_genWgt->GetEntry(entry);
+   b_Evt_hasLWZQ->GetEntry(entry);
+   b_Evt_hasLWZX->GetEntry(entry);
+   b_Evt_nLWZX->GetEntry(entry);
    b_HLT_PFMET120_PFMHT120_IDTight_v->GetEntry(entry);   //!
    b_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_v->GetEntry(entry);   //!
    b_HLT_PFMET120_PFMHT120_IDTight_PFHT60_v->GetEntry(entry);   //!
