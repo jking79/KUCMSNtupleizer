@@ -851,7 +851,7 @@ void Init( TChain *tree, bool doGenInfo, bool doSVs ){
    // Init() will be called many times when running on PROOF
    // (once per file to be processed).
 
-   Evt_genWgt = 1;
+   //Evt_genWgt = 1.f;
 
    // Set object pointer
    GenVertex_dxy = 0;

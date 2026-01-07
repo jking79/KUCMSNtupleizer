@@ -64,7 +64,7 @@ def docrab( dataset ):
         #inputJSON    = 'Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt'
         ##inputJSON    = 'Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON.txt'
         ##inputJSON    = 'Cert_314472-325175_13TeV_PromptReco_Collisions18_JSON.txt'
-        inputJSON    = 'Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt'
+        #inputJSON    = 'Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt'
         #inputJSON    = 'Cert_Collisions2022_355100_362760_Golden.json'	
 
         #--------------------------------------------------------
@@ -95,7 +95,7 @@ def docrab( dataset ):
         #config.Data.unitsPerJob  =  750 # MC DiPhoBox (DPB)
 
         #config.section_("Site")
-        config.Site.whitelist = ['T1_*','T2_US_*','T2_IT_*','T2_DE_*','T2_ES_*','T2_FR_*','T2_UK_*']
+        #config.Site.whitelist = ['T1_*','T2_US_*','T2_IT_*','T2_DE_*','T2_ES_*','T2_FR_*','T2_UK_*']
         config.Site.blacklist = ['T2_CH_CSCS','T2_ES_CIEMAT']
 
         config.JobType.allowUndistributedCMSSW = True
@@ -134,7 +134,8 @@ def docrab( dataset ):
             #trial          = "kucmsntuple_gogoZ_Sig_IPM100_v27" # 
             #trial          = "kucmsntuple_gogoZ_Sig_SVIPM100_v27" # filter on #SVs( lep or had ) - redefinded loose electron
             #trial          = "kucmsntuple_sqsqG_Sig_SVIPM100_v27" #
-            trial          = "kucmsntuple_SMS_Sig_SVIPM100_v31" #
+            #trial          = "kucmsntuple_SMS_Sig_SVIPM100_v31" #
+            trial          = "kucmsntuple_MET_R17_SVIPM100_p9_v31"# 
 
             # set trial name - used in output path ?
 
@@ -184,6 +185,8 @@ def docrab( dataset ):
             #config.JobType.pyCfgParams   = ['globalTag=106X_upgrade2018_realistic_v11_L1v1','multicrab=True','hasGenInfo=True']
             #config.JobType.pyCfgParams   = [gt,mcrab,geninfo,skimIPM100]
             #config.JobType.pyCfgParams   = ['globalTag=106X_upgrade2018_realistic_v11_L1v1','multicrab=True','hasGenInfo=True','eventSkim=AL1IsoPho']
+            gt = 'globalTag=106X_dataRun2_v37'
+            config.JobType.pyCfgParams   = [gt,mcrab,efilter]
 #>>>>>      #MC GMSB RunIIFall17DRPremix  #globalTag=94X_mc2017_realistic_v14  #  <<< comment/uncomment lumi mask when using/!using MC
             #config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v14','multicrab=True','hasGenInfo=True']
             #config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v14','multicrab=True','hasGenInfo=True','eventSkim=AL1IsoPho']
@@ -192,9 +195,9 @@ def docrab( dataset ):
             #config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v11','multicrab=True','hasGenInfo=True','eventSkim=AL1IsoPho']
 #>>>>>      #MC Justin
             #gt = 'globalTag=124X_mcRun3_2022_realistic_v12'
-            gt = 'globalTag=106X_upgrade2018_realistic_v11_L1v1'
+            #gt = 'globalTag=106X_upgrade2018_realistic_v11_L1v1'
             #gt = 'globalTag=94X_mc2017_realistic_v14'
-            config.JobType.pyCfgParams   = [gt,mcrab,geninfo,efilter,runinfo]
+            #config.JobType.pyCfgParams   = [gt,mcrab,geninfo,efilter,runinfo]
 #-----------------------------------------------------------------------------------------------------------------------------
 
             # Submit.
@@ -282,7 +285,9 @@ def run_multi():
         #['/SMS-SqSq/mGl-2150_mN2-300_mN1-100_ct0p1/AODSIM',inlist+'SqSq_mSq-2150_mN2-300_mN1-100_v27.txt'],
         #['/SMS-SqSq/mGl-2150_mN2-1950_mN1-100_ct0p1/AODSIM',inlist+'SqSq_mSq-2150_mN2-1950_mN1-100_v27.txt'],
 
-        ['/SMS-GlGlGZ/mGl-2500_mN2-2400_mN1-500_ct0p1/AODSIM','sig_aod_lists/SMS-GlGl_mGl-2500_mN2-2400_mN1-500_GZ_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGlGZ/mGl-2500_mN2-2400_mN1-500_ct0p1/AODSIM','sig_aod_lists/SMS-GlGl_mGl-2500_mN2-2400_mN1-500_GZ_N2ctau-0p1_AOD.txt'],
+
+        ['/MET/Run2017F-09Aug2019_UL2017_rsb-v1/AOD','fileslist_missing_17F.txt'],
 
     ] 
 

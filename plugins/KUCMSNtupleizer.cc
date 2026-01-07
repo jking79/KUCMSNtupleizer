@@ -58,7 +58,7 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
 
 { 
 
-    usesResource();
+    //usesResource();
     usesResource("TFileService");
 
     // -- set input flags and parmeters  ----------------------------------------------------------

@@ -143,6 +143,10 @@ class KUCMSAodSkimmer : public llpgtree {
     void processBHCJets();
 	void processTimeSig();
 
+	// RJR ISR merge jets to reduce computation load
+	std::vector< TLorentzVector > BinaryMerge( const std::vector< TLorentzVector > & rjr_jets, int Nmax );
+	void BinaryMergeInPlace( std::vector<TLorentzVector>& jets, int Nmax );
+
 	// TSig functions
 	//float getTimeSig( int scIndex );
 	float getTimeSig( int scIndex, float& num, float& denom, const map<unsigned int, float>& rhIdToBHCw  = {});
@@ -354,6 +358,12 @@ class KUCMSAodSkimmer : public llpgtree {
    TBranch        *b_OSuperCluster_nXtalOverlap;   //!
 */
 
+
+    //photon CR definitions
+    int GetDetBkgCR(int phoidx);
+    void TrackMatched(int scidx, double& best_dr);
+    bool GetGJetsCR(int phoidx);
+    bool GetDiJetsCR(int phoidx);
 };
 
 #endif

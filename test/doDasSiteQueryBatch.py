@@ -450,6 +450,19 @@ dlEGMAOD17 = [
 
 ]
 
+dlEGMAOD16 = [
+
+'/DoubleEG/Run2016B-21Feb2020_ver2_UL2016_HIPM-v1/MINIAOD',
+'/DoubleEG/Run2016C-21Feb2020_UL2016_HIPM-v1/MINIAOD',
+'/DoubleEG/Run2016D-21Feb2020_UL2016_HIPM-v1/MINIAOD',
+'/DoubleEG/Run2016E-21Feb2020_UL2016_HIPM-v1/MINIAOD',
+'/DoubleEG/Run2016F-21Feb2020_UL2016-v1/MINIAOD',
+'/DoubleEG/Run2016G-21Feb2020_UL2016-v1/MINIAOD',
+'/DoubleEG/Run2016H-21Feb2020_UL2016-v1/MINIAOD',
+
+]
+
+
 dl22 = [ 
 '/MET/Run2022A-27Jun2023-v1/AOD', 
 '/MET/Run2022B-27Jun2023-v2/AOD', 
@@ -461,10 +474,125 @@ dl22 = [
 '/JetMET/Run2022G-19Dec2023-v1/AOD', 
 ]
 
+dl_met_24 = [
+    "/JetMET0/Run2024A-PromptReco-v1/AOD",
+    "/JetMET0/Run2024B-PromptReco-v1/AOD",
+    "/JetMET0/Run2024C-PromptReco-v1/AOD",
+    "/JetMET0/Run2024D-PromptReco-v1/AOD",
+    "/JetMET0/Run2024E-PromptReco-v1/AOD",
+    "/JetMET0/Run2024E-PromptReco-v2/AOD",
+    "/JetMET0/Run2024F-PromptReco-v1/AOD",
+    "/JetMET0/Run2024G-PromptReco-v1/AOD",
+    "/JetMET0/Run2024H-PromptReco-v1/AOD",
+    "/JetMET0/Run2024I-PromptReco-v1/AOD",
+    "/JetMET0/Run2024I-PromptReco-v2/AOD",
+    "/JetMET0/Run2024J-PromptReco-v1/AOD",
+
+    "/JetMET1/Run2024A-PromptReco-v1/AOD",
+    "/JetMET1/Run2024B-PromptReco-v1/AOD",
+    "/JetMET1/Run2024C-PromptReco-v1/AOD",
+    "/JetMET1/Run2024D-PromptReco-v1/AOD",
+    "/JetMET1/Run2024E-PromptReco-v1/AOD",
+    "/JetMET1/Run2024E-PromptReco-v2/AOD",
+    "/JetMET1/Run2024F-PromptReco-v1/AOD",
+    "/JetMET1/Run2024G-PromptReco-v1/AOD",
+    "/JetMET1/Run2024H-PromptReco-v1/AOD",
+    "/JetMET1/Run2024I-PromptReco-v1/AOD",
+    "/JetMET1/Run2024I-PromptReco-v2/AOD",
+    "/JetMET1/Run2024J-PromptReco-v1/AOD",
+]
+
+dl_met_24 = [ 
+
+    "/EGamma/Run2022A-PromptReco-v1/MINIAOD",
+    "/EGamma/Run2022B-PromptReco-v1/MINIAOD",
+    "/EGamma/Run2022C-PromptReco-v1/MINIAOD",
+    "/EGamma/Run2022D-PromptReco-v1/MINIAOD",
+    "/EGamma/Run2022D-PromptReco-v2/MINIAOD",
+    "/EGamma/Run2022D-PromptReco-v3/MINIAOD",
+    "/EGamma/Run2022E-PromptReco-v1/MINIAOD",
+    "/EGamma/Run2022F-PromptReco-v1/MINIAOD",
+    "/EGamma/Run2022G-PromptReco-v1/MINIAOD",
+    "/EGamma/Run2023E-PromptReco-v1/MINIAOD",
+    "/EGamma0/Run2023A-PromptReco-v2/MINIAOD",
+    "/EGamma0/Run2023B-PromptReco-v1/MINIAOD",
+    "/EGamma0/Run2023C-PromptReco-v1/MINIAOD",
+    "/EGamma0/Run2023C-PromptReco-v2/MINIAOD",
+    "/EGamma0/Run2023C-PromptReco-v3/MINIAOD",
+    "/EGamma0/Run2023C-PromptReco-v4/MINIAOD",
+    "/EGamma0/Run2023D-PromptReco-v1/MINIAOD",
+    "/EGamma0/Run2023D-PromptReco-v2/MINIAOD",
+    "/EGamma0/Run2024A-PromptReco-v1/MINIAOD",
+    "/EGamma0/Run2024B-PromptReco-v1/MINIAOD",
+    "/EGamma0/Run2024C-PromptReco-v1/MINIAOD",
+    "/EGamma0/Run2024D-PromptReco-v1/MINIAOD",
+    "/EGamma0/Run2024E-PromptReco-v1/MINIAOD",
+    "/EGamma0/Run2024E-PromptReco-v2/MINIAOD",
+    "/EGamma0/Run2024F-PromptReco-v1/MINIAOD",
+    "/EGamma0/Run2024G-PromptReco-v1/MINIAOD",
+    "/EGamma0/Run2024H-PromptReco-v1/MINIAOD",
+    "/EGamma0/Run2024I-PromptReco-v1/MINIAOD",
+    "/EGamma0/Run2024I-PromptReco-v2/MINIAOD",
+    "/EGamma0/Run2024J-PromptReco-v1/MINIAOD",
+    "/EGamma0/Run2025B-PromptReco-v1/MINIAOD",
+    "/EGamma0/Run2025C-PromptReco-v1/MINIAOD",
+    "/EGamma0/Run2025C-PromptReco-v2/MINIAOD",
+    "/EGamma0/Run2025D-PromptReco-v1/MINIAOD",
+    "/EGamma0/Run2025E-PromptReco-v1/MINIAOD",
+    "/EGamma0/Run2025F-PromptReco-v1/MINIAOD",
+    "/EGamma0/Run2025F-PromptReco-v2/MINIAOD",
+    "/EGamma0/Run2025G-PromptReco-v1/MINIAOD",
+    "/EGamma1/Run2023A-PromptReco-v2/MINIAOD",
+    "/EGamma1/Run2023B-PromptReco-v1/MINIAOD",
+    "/EGamma1/Run2023C-PromptReco-v1/MINIAOD",
+    "/EGamma1/Run2023C-PromptReco-v2/MINIAOD",
+    "/EGamma1/Run2023C-PromptReco-v3/MINIAOD",
+    "/EGamma1/Run2023C-PromptReco-v4/MINIAOD",
+    "/EGamma1/Run2023D-PromptReco-v1/MINIAOD",
+    "/EGamma1/Run2023D-PromptReco-v2/MINIAOD",
+    "/EGamma1/Run2024A-PromptReco-v1/MINIAOD",
+    "/EGamma1/Run2024B-PromptReco-v1/MINIAOD",
+    "/EGamma1/Run2024C-PromptReco-v1/MINIAOD",
+    "/EGamma1/Run2024D-PromptReco-v1/MINIAOD",
+    "/EGamma1/Run2024E-PromptReco-v1/MINIAOD",
+    "/EGamma1/Run2024E-PromptReco-v2/MINIAOD",
+    "/EGamma1/Run2024F-PromptReco-v1/MINIAOD",
+    "/EGamma1/Run2024G-PromptReco-v1/MINIAOD",
+    "/EGamma1/Run2024H-PromptReco-v1/MINIAOD",
+    "/EGamma1/Run2024I-PromptReco-v1/MINIAOD",
+    "/EGamma1/Run2024I-PromptReco-v2/MINIAOD",
+    "/EGamma1/Run2024J-PromptReco-v1/MINIAOD",
+    "/EGamma1/Run2025B-PromptReco-v1/MINIAOD",
+    "/EGamma1/Run2025C-PromptReco-v1/MINIAOD",
+    "/EGamma1/Run2025C-PromptReco-v2/MINIAOD",
+    "/EGamma1/Run2025D-PromptReco-v1/MINIAOD",
+    "/EGamma1/Run2025E-PromptReco-v1/MINIAOD",
+    "/EGamma1/Run2025F-PromptReco-v1/MINIAOD",
+    "/EGamma1/Run2025F-PromptReco-v2/MINIAOD",
+    "/EGamma1/Run2025G-PromptReco-v1/MINIAOD",
+    "/EGamma2/Run2025B-PromptReco-v1/MINIAOD",
+    "/EGamma2/Run2025C-PromptReco-v1/MINIAOD",
+    "/EGamma2/Run2025C-PromptReco-v2/MINIAOD",
+    "/EGamma2/Run2025D-PromptReco-v1/MINIAOD",
+    "/EGamma2/Run2025E-PromptReco-v1/MINIAOD",
+    "/EGamma2/Run2025F-PromptReco-v1/MINIAOD",
+    "/EGamma2/Run2025F-PromptReco-v2/MINIAOD",
+    "/EGamma2/Run2025G-PromptReco-v1/MINIAOD",
+    "/EGamma3/Run2025B-PromptReco-v1/MINIAOD",
+    "/EGamma3/Run2025C-PromptReco-v1/MINIAOD",
+    "/EGamma3/Run2025C-PromptReco-v2/MINIAOD",
+    "/EGamma3/Run2025D-PromptReco-v1/MINIAOD",
+    "/EGamma3/Run2025E-PromptReco-v1/MINIAOD",
+    "/EGamma3/Run2025F-PromptReco-v1/MINIAOD",
+    "/EGamma3/Run2025F-PromptReco-v2/MINIAOD",
+    "/EGamma3/Run2025G-PromptReco-v1/MINIAOD",
+
+]
+
 #query = 'dasgoclient --json -query=\'dataset='
 query = 'dasgoclient --json -query=\'site dataset=' 
 
-datalist = dl22
+datalist = dl_met_24
 
 for data in datalist :
     

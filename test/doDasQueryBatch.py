@@ -488,7 +488,20 @@ dlEGMAOD17 = [
  
 ]
 
+dlEGMAOD16 = [
+
+'/DoubleEG/Run2016B-21Feb2020_ver2_UL2016_HIPM-v1/MINIAOD',
+'/DoubleEG/Run2016C-21Feb2020_UL2016_HIPM-v1/MINIAOD',
+'/DoubleEG/Run2016D-21Feb2020_UL2016_HIPM-v1/MINIAOD',
+'/DoubleEG/Run2016E-21Feb2020_UL2016_HIPM-v1/MINIAOD',
+'/DoubleEG/Run2016F-21Feb2020_UL2016-v1/MINIAOD',
+'/DoubleEG/Run2016G-21Feb2020_UL2016-v1/MINIAOD',
+'/DoubleEG/Run2016H-21Feb2020_UL2016-v1/MINIAOD',
+
+]
+
 dl22 = [
+
 '/MET/Run2022A-27Jun2023-v1/AOD',
 '/MET/Run2022B-27Jun2023-v2/AOD',
 '/MET/Run2022C-27Jun2023-v2/AOD',
@@ -500,23 +513,77 @@ dl22 = [
 
 ]
 
+dlmet16 = [
+
+'/MET/Run2016B-21Feb2020_ver2_UL2016_HIPM-v1/AOD',
+'/MET/Run2016C-21Feb2020_UL2016_HIPM-v1/AOD',
+'/MET/Run2016D-21Feb2020_UL2016_HIPM-v1/AOD',
+'/MET/Run2016G-21Feb2020_UL2016-v1/AOD',
+'/MET/Run2016H-21Feb2020_UL2016-v2/AOD',
+
+]
+
+dl_met_24 = [
+    "/JetMET0/Run2024A-PromptReco-v1/AOD",
+    "/JetMET0/Run2024B-PromptReco-v1/AOD",
+    "/JetMET0/Run2024C-PromptReco-v1/AOD",
+    "/JetMET0/Run2024D-PromptReco-v1/AOD",
+    "/JetMET0/Run2024E-PromptReco-v2/AOD",
+    "/JetMET0/Run2024F-PromptReco-v1/AOD",
+    "/JetMET0/Run2024G-PromptReco-v1/AOD",
+    "/JetMET0/Run2024H-PromptReco-v1/AOD",
+    "/JetMET0/Run2024I-PromptReco-v2/AOD",
+    "/JetMET0/Run2024J-PromptReco-v1/AOD",
+
+    "/JetMET1/Run2024A-PromptReco-v1/AOD",
+    "/JetMET1/Run2024B-PromptReco-v1/AOD",
+    "/JetMET1/Run2024C-PromptReco-v1/AOD",
+    "/JetMET1/Run2024D-PromptReco-v1/AOD",
+    "/JetMET1/Run2024E-PromptReco-v2/AOD",
+    "/JetMET1/Run2024F-PromptReco-v1/AOD",
+    "/JetMET1/Run2024G-PromptReco-v1/AOD",
+    "/JetMET1/Run2024H-PromptReco-v1/AOD",
+    "/JetMET1/Run2024I-PromptReco-v2/AOD",
+    "/JetMET1/Run2024J-PromptReco-v1/AOD",
+]
+
+dl_met_22 = [
+
+    "/MET/Run2022A-27Jun2023-v1/AOD",
+    "/MET/Run2022B-27Jun2023-v2/AOD",
+    "/MET/Run2022C-27Jun2023-v2/AOD",
+    "/JetMET/Run2022C-27Jun2023-v1/AOD",
+    "/JetMET/Run2022D-19Dec2023-v1/AOD",
+    "/JetMET/Run2022E-19Dec2023-v1/AOD",
+    "/JetMET/Run2022F-19Dec2023-v2/AOD",
+    "/JetMET/Run2022G-19Dec2023-v1/AOD",
+
+    "/JetMET0/Run2023B-19Dec2023-v1/AOD",
+    "/JetMET0/Run2023C-19Dec2023-v1/AOD",
+    "/JetMET0/Run2023D-19Dec2023-v1/AOD",
+    "/JetMET1/Run2023B-19Dec2023-v1/AOD",
+    "/JetMET1/Run2023C-19Dec2023-v1/AOD",
+    "/JetMET1/Run2023D-19Dec2023-v1/AOD",
+]
+
+
 query = 'dasgoclient --json -query=\'dataset='
 
-datalist = dl22
+datalist = dl_met_22
 
 for data in datalist :
     
     command = query + data + '\''
     #output = bashout( command ).splitlines()
-    output = bashout( command ).split('size":')
+    #output = bashout( command ).split('size":')
     #output = bashout( command ).split('num_lumi":')
     #output = bashout( command ).split('files":')
-    #output = bashout( command ).split('events":')
+    output = bashout( command ).split('events":')
     #fir = output[1].split('size":')[0]
     #sec = output[1].split('size":')[1] 
     #.split('}],')[0]
-    size = int(output[1].split('}]')[0])/1000000000000
-    #size = output[1].split('}]')[0]
+    #size = int(output[1].split('}]')[0])/1000000000000
+    size = output[1].split('}]')[0]
     print( data,  size )
     #print( data, '\n',  fir, '\n', sec )
 
