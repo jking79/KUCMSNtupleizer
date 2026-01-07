@@ -10,4 +10,4 @@ PROC=SMS
 #python3 doHadd_Multi.py --dir ./testOutput --proc ${PROC}
 #source haddScripts/doHadd_${PROC}_.sh
 
-python3 doXRDCP.py --dir ./testOutput --proc ${PROC} --targetdir skims_v44 #--dryRun
+python3 doXRDCP.py --dir ./testOutput --proc ${PROC} --targetdir skims_v45 #--dryRun
