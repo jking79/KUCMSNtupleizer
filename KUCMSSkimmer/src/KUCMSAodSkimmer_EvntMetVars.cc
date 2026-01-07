@@ -61,6 +61,7 @@ void KUCMSAodSkimmer::processEvntVars(){
   //if( !isLocal ) std::cout << " -- ECT : fillWgt " << fillWgt << " " << xsctn << " " << evtGenWgt << " " << configSumEvtWgt << std::endl;
 
   selEvtVars.fillBranch( "evtFillWgt", fillWgt );
+  std::cout << " -- ECT : fillWgt " << fillWgt << " " << xsctn << " " << evtGenWgt << " " << configSumEvtWgt << std::endl;
 
   bool BadChargedCandidateFilter = true;
   bool BadPFMuonDzFilter = true;
