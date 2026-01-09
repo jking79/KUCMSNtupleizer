@@ -530,30 +530,39 @@ dro18eelg = 'ResMap_296399_306460__DRO_Data_Hist_eg_17UL_LG_EE_xa_pm24b1200_v010
 dro17eblg = 'ResMap_315257_325172__DRO_Data_Hist_eg_18UL_LG_EB_xa_pm24b1200_v0106'
 dro17eelg = 'ResMap_315257_325172__DRO_Data_Hist_eg_18UL_LG_EE_xa_pm24b1200_v0106'
 
+sro18eblg = 'ResMap_275600_283900__SRO_Data_Hist_eg_16UL_LG_EB_xa_pm24b1200_v0105'
+sro18eelg = 'ResMap_275600_283900__SRO_Data_Hist_eg_16UL_LG_EE_xa_pm24b1200_v0105'
+sro17eblg = 'ResMap_296399_306460__SRO_Data_Hist_eg_17UL_LG_EB_xa_pm24b1200_v0106'
+sro17eelg = 'ResMap_296399_306460__SRO_Data_Hist_eg_17UL_LG_EE_xa_pm24b1200_v0106'
+sro16eblg = 'ResMap_315257_325172__SRO_Data_Hist_eg_18UL_LG_EB_xa_pm24b1200_v0106'
+sro16eelg = 'ResMap_315257_325172__SRO_Data_Hist_eg_18UL_LG_EE_xa_pm24b1200_v0106'
+
+
+
 rfend = '_NSC_resfit.root'
 shend = '_sigma'
 
 
-hl_r2_16_ebeehglg = [
+hl_r2_16_ebee = [
 
-    [dro16ebhg+shend,"",dro16ebhg+rfend,"16 UL EB"],
-    [dro16eehg+shend,"",dro16eehg+rfend,"16 UL EE"],
-    #[dro16eblg+shend,"",dro16eblg+rfend,"16 UL EB LG"],
-    #[dro16eelg+shend,"",dro16eelg+rfend,"16 UL EE LG"],
+    #[sro16ebhg+shend,"",sro16ebhg+rfend,"16 UL EB"],
+    #[sro16eehg+shend,"",sro16eehg+rfend,"16 UL EE"],
+    [sro16eblg+shend,"",sro16eblg+rfend,"16 UL EB"],
+    [sro16eelg+shend,"",sro16eelg+rfend,"16 UL EE"],
 
 ]
 
 hl_r2_18_ebee = [
 
-    [dro18eblg+shend,"",dro18eblg+rfend,"18 UL EB"],
-    [dro18eelg+shend,"",dro18eelg+rfend,"18 UL EE"],
+    [sro18eblg+shend,"",sro18eblg+rfend,"18 UL EB"],
+    [sro18eelg+shend,"",sro18eelg+rfend,"18 UL EE"],
 
 ]
 
 hl_r2_17_ebee = [
 
-    [dro17eblg+shend,"",dro17eblg+rfend,"17 UL EB"],
-    [dro17eelg+shend,"",dro17eelg+rfend,"17 UL EE"],
+    [sro17eblg+shend,"",sro17eblg+rfend,"17 UL EB"],
+    [sro17eelg+shend,"",sro17eelg+rfend,"17 UL EE"],
 
 ]
 
@@ -674,7 +683,7 @@ t = [0.325,0.85,0.1,0.175,0.285]#adjsuting lumi-sqrt(s) in title bar
 #outname = 'downloads/tr_hl_r3_24d_part_trvcc_ccgt_v7'
 #outname = 'downloads/tr_hl_r3_25c2'
 #outname = 'downloads/tr_hl_r3_25bc_xa'
-outname = 'tr_hl_r2_17'
+outname = 'tr_hl_r2_18'
 #dostack(hl_r3_24d_part, outname, date, Ic_layout, ptitle,  y, x, l, t)
 #dostack(hl_r3_24d_part_cc, outname_cc, date, Ic_layout, ptitle_cc,  y, x, l, t)
 #dostack(hl_r3_24f_EE_rtvcc, outname, date, Ic_layout, ptitle,  y, x, l, t)
@@ -684,7 +693,7 @@ outname = 'tr_hl_r2_17'
 #dostack(hl_r3_25d_prmt, outname, date, Ic_layout, ptitle,  y, x, l, t)
 #dostack(hl_r2_1817, outname, date, Ic_layout, ptitle,  y, x, l, t)
 #dostack(hl_r2_1817_ee, outname, date, Ic_layout, ptitle,  y, x, l, t)
-dostack(hl_r2_17_ebee, outname, date, Ic_layout, ptitle,  y, x, l, t)
+dostack(hl_r2_18_ebee, outname, date, Ic_layout, ptitle,  y, x, l, t)
 
 #
 ##---------------------------------------------------------------

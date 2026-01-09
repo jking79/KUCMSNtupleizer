@@ -41,6 +41,6 @@ test/*WorkSpace/
 __*
 !KUCMSSkimmer/config/*.sh
 !KUCMSSkimmer/ecal_config/*.txt
-!KUCMSSkimmer/ecal_config/*.root
 !KUCMSSkimmer/config/json/*
+!KUCMSSkimmer/ecal_config/*.root
 !KUCMSSkimmer/fullMask60cm_Data.root

@@ -1287,7 +1287,6 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
 	float rtime = 0;
     if( mctype == 1 ){ // data
 		
-		if( dataSetKey == "r2_ul16" ) return time;
         if( dataSetKey == "r3_p22" ) return time;
         if( dataSetKey == "r3_p23" ) return time;
         if( dataSetKey == "r3_p24" ) return time;
