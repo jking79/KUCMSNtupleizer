@@ -1,7 +1,9 @@
 # ------------------------------------
 # Master Filelist : Private Sig MC
 # -------------------------------------
-KUCMSNtuple/kucmsntuple_SMS_Sig_SVIPM100_v31/ SMS_SVIPM100_v31_gogoGZ_AODSIM_mGl-2500_mN2-2400_mN1-500_ct0p1.txt gogoGZ_AODSIM_mGl-2500_mN2-2400_mN1-500_ct0p1 0.0001687 2400 500 1 0 r2_ul18
+#KUCMSNtuple/kucmsntuple_SMS_Sig_SVIPM100_v31/ SMS_SVIPM100_v31_gogoGZ_AODSIM_mGl-2500_mN2-2400_mN1-500_ct0p1.txt gogoGZ_AODSIM_mGl-2500_mN2-2400_mN1-500_ct0p1 0.0001687 2400 500 1 0 r2_ul18
+KUCMSNtuple/kucmsntuple_SMS_Sig_SVIPM100_v31/ SMS_SVIPM100_v31_gogoGZ_AODSIM_mGl-2500_mN2-2400_mN1-2350_ct0p1.txt gogoGZ_AODSIM_mGl-2500_mN2-2400_mN1-2350_ct0p1 0.0001687 2400 2350 1 0 r2_ul18
+KUCMSNtuple/kucmsntuple_SMS_Sig_SVIPM100_v31/ SMS_SVIPM100_v31_gogoGZ_AODSIM_mGl-2500_mN2-2450_mN1-2400_ct0p1.txt gogoGZ_AODSIM_mGl-2500_mN2-2450_mN1-2400_ct0p1 0.0001687 2450 2400 1 0 r2_ul18
 #
 KUCMSNtuple/kucmsntuple_SMS_Sig_SVIPM100_v31/ SMS_SVIPM100_v31_gogoZ_AODSIM_mGl-1500_mN2-500_mN1-100_ct0p1.txt gogoZ_AODSIM_mGl-1500_mN2-500_mN1-100_ct0p1 0.02209 500 100 1 0 r2_ul18
 KUCMSNtuple/kucmsntuple_SMS_Sig_SVIPM100_v31/ SMS_SVIPM100_v31_gogoZ_AODSIM_mGl-2000_mN2-1900_mN1-200_ct0p001.txt gogoZ_AODSIM_mGl-2000_mN2-1900_mN1-200_ct0p001 .001684 1900 200 1 0 r2_ul18
