@@ -1813,11 +1813,14 @@ void getBranches( Long64_t entry, bool doGenInfo, bool doSVs ){
    b_Evt_run->GetEntry(entry);   //!
    b_Evt_event->GetEntry(entry);   //!
 
-   if( not doGenInfo ){
+   if( doGenInfo ){
    b_Evt_genWgt->GetEntry(entry);
    b_Evt_hasLWZQ->GetEntry(entry);
    b_Evt_hasLWZX->GetEntry(entry);
    b_Evt_nLWZX->GetEntry(entry);
+   }//<<>>if( doGenInfo )
+
+   if( not doGenInfo ){
    b_HLT_PFMET120_PFMHT120_IDTight_v->GetEntry(entry);   //!
    b_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_v->GetEntry(entry);   //!
    b_HLT_PFMET120_PFMHT120_IDTight_PFHT60_v->GetEntry(entry);   //!
