@@ -84,14 +84,14 @@ int main ( int argc, char *argv[] ){
     //-----//////////  making tt cali  :
     theCali.SetupIovMaps();
 	// for PD R2UL
-    theCali.setTTIov( r2ulTag );
-    theCali.setXIov( xiovtag );
+    //theCali.setTTIov( r2ulTag );
+    //theCali.setXIov( xiovtag );
 	// for MC
     //theCali.setTTIov( mctag );
     //theCali.setXIov( mctag );
     // for PD R3
-	//theCali.setTTIov( r3TagTT );
-	//theCali.setXIov( xiovtag );
+	theCali.setTTIov( r3TagTT );
+	theCali.setXIov( r3TagX );
 
 
     //-----//////////  making trigtower cali :
@@ -102,10 +102,10 @@ int main ( int argc, char *argv[] ){
     //void makeXCaliMapEGR( std::string inputFileName, int GID = 1, bool small = false, bool doCali = true )
     //        { makeCaliMapsEGR( inputFileName, false, GID, small, doCali ); };
     //theCali.makeTTCaliMapEGR( inputfilename, 1, true ); // true == run only subset of events
-	theCali.makeTTCaliMapEGR( inputfilename );
-    theCali.makeCaliHists();
-    theCali.SaveCaliHists();
-    theCali.SaveTTRunFile();
+	//theCali.makeTTCaliMapEGR( inputfilename );
+    //theCali.makeCaliHists();
+    //theCali.SaveCaliHists();
+    //theCali.SaveTTRunFile();
 
     //-----//////////  making xtal cali :
     //theCali.makeXCaliMapEGR( inputfilename, true ); // true == run only subset of events
@@ -118,10 +118,10 @@ int main ( int argc, char *argv[] ){
 	//----///////////  make gainid 2 calibrations
     //theCali.makeTTCaliMapEGR( inputfilename, 2, false, false ); // do gainID 2 no calibration step
     //theCali.makeTTCaliMapEGR( inputfilename, 2, true ); // do gainID 2; true == run only subset of events 
-    //theCali.makeTTCaliMapEGR( inputfilename, 2 ); // do gainID 2
-    //theCali.makeCaliHists();
-    //theCali.SaveCaliHists();
-    //theCali.SaveTTRunFile();
+    theCali.makeTTCaliMapEGR( inputfilename, 2 ); // do gainID 2
+    theCali.makeCaliHists();
+    theCali.SaveCaliHists();
+    theCali.SaveTTRunFile();
 
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -60,6 +60,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
     std::string caliRunConfig;
     std::string caliTTConfig;
     std::string caliTFileName;
+    std::string caliR3TFileName;
     std::string cali2DResPlotsTFileName;
     std::string caliSmearConfig;
 
@@ -69,6 +70,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
     std::string globhist;
 
     TFile* caliTFile;
+    TFile* caliR3TFile;
     TFile* cali2DResTFile;
 
 	std::string eosDir;
