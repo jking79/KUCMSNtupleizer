@@ -110,18 +110,18 @@ int main ( int argc, char *argv[] ){
     //-----//////////  making xtal cali :
     //theCali.makeXCaliMapEGR( inputfilename, true ); // true == run only subset of events
 	//theCali.makeXCaliMapEGR( inputfilename, 1, true ); // true == run only subset of events
-    theCali.makeXCaliMapEGR( inputfilename );
-    theCali.makeCaliHists();
-    theCali.SaveCaliHists();
-    theCali.SaveCaliRunFile();
+    //theCali.makeXCaliMapEGR( inputfilename );
+    //theCali.makeCaliHists();
+    //theCali.SaveCaliHists();
+    //theCali.SaveCaliRunFile();
 
 	//----///////////  make gainid 2 calibrations
     //theCali.makeTTCaliMapEGR( inputfilename, 2, false, false ); // do gainID 2 no calibration step
     //theCali.makeTTCaliMapEGR( inputfilename, 2, true ); // do gainID 2; true == run only subset of events 
-    //theCali.makeTTCaliMapEGR( inputfilename, 2 ); // do gainID 2
-    //theCali.makeCaliHists();
-    //theCali.SaveCaliHists();
-    //theCali.SaveTTRunFile();
+    theCali.makeTTCaliMapEGR( inputfilename, 2 ); // do gainID 2
+    theCali.makeCaliHists();
+    theCali.SaveCaliHists();
+    theCali.SaveTTRunFile();
 
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
