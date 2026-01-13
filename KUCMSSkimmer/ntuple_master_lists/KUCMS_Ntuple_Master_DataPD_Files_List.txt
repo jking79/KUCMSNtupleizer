@@ -3,6 +3,11 @@
 # -------------------------------------
 
 ## inpath infiles skimkey crossSection gluionmass nutralino2mass mcweight mctype(1 data, 0 MC) timecalitag
+KUCMSNtuple/kucmsntuple_MET_R16_SVIPM100_v31/ MET_R16_SVIPM100_v31_MET_AOD_Run2016B.txt MET16B 1 0 0 0 1 r2_ul16
+KUCMSNtuple/kucmsntuple_MET_R16_SVIPM100_v31/ MET_R16_SVIPM100_v31_MET_AOD_Run2016C.txt MET16C 1 0 0 0 1 r2_ul16
+KUCMSNtuple/kucmsntuple_MET_R16_SVIPM100_v31/ MET_R16_SVIPM100_v31_MET_AOD_Run2016D.txt MET16D 1 0 0 0 1 r2_ul16
+KUCMSNtuple/kucmsntuple_MET_R16_SVIPM100_v31/ MET_R16_SVIPM100_v31_MET_AOD_Run2016G.txt MET16G 1 0 0 0 1 r2_ul16
+KUCMSNtuple/kucmsntuple_MET_R16_SVIPM100_v31/ MET_R16_SVIPM100_v31_MET_AOD_Run2016H.txt MET16H 1 0 0 0 1 r2_ul16
 
 KUCMSNtuple/kucmsntuple_MET_R18_SVIPM100_v31/ MET_R18_SVIPM100_v31_MET_AOD_Run2018A.txt MET18A 1 0 0 0 1 r2_ul18
 KUCMSNtuple/kucmsntuple_MET_R18_SVIPM100_v31/ MET_R18_SVIPM100_v31_MET_AOD_Run2018B.txt MET18B 1 0 0 0 1 r2_ul18
