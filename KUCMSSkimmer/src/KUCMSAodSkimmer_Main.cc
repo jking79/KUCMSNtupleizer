@@ -333,7 +333,8 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
     _ca.SetVerbosity(-1); //can turn on to see low-level warnings
     _ca.SetDetIDs(_detidmap);
     _ca.SetCNNModel("config/json/KU-CNN_detector_1000epochs_archsmall3_2017and2018_CMS.json");
-    _ca.SetDNNModel("config/json/KU-DNN_photonID_balancingClasses_4kEGammaChunks_newPreprocessing_test_isoShape_1200epochs_large8.json");
+    _ca.SetBarrelDNNModel("config/json/KU-DNN_photonID_balancingClasses_4kEGammaChunks_newPreprocessing_test_isoShape_1200epochs_large8.json");
+    _ca.SetEndcapDNNModel("config/json/KU-DNN_photonID_testIsoPresel_100JetHTChunks_isoShape_1200epochs_large8_endcapOnly.json");
 
 }//<<>>KUCMSAodSkimmer::KUCMSAodSkimmer()
 
