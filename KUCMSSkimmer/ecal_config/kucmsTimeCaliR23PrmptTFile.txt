@@ -1,0 +1,1 @@
+ecal_config/gammares_prmt23_EGamma_MINIAOD_Run2023_All-PromptReco.txt 366365 372415 r3_p23
