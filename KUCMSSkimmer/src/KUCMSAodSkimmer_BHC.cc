@@ -113,10 +113,15 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 	}
 	sort(phoobjs.begin(), phoobjs.end(), ptsort);
 	BHCPhoInfo.fillBranch("nSelBHCPhos",(int)phoobjs.size());
+	bool isBarrel = false;
 	for(int p = 0; p < phoobjs.size(); p++){
 		ClusterObj phoobj = phoobjs[p];
 		//cout << "phoobj #" << p << " usridx " << phoobj.GetUserIndex() << endl; 
 		int phoidx = selPhoIdxToIt.at(phoobj.GetUserIndex());
+		if(fabs((*Photon_eta)[phoidx]) < 1.459)
+			isBarrel = true;
+		else
+			isBarrel = false;
 		//cout << "phoidx " << phoidx << endl;
 		//center
 		float phoeta = phoobj.GetEtaCenter();
@@ -240,7 +245,10 @@ void KUCMSAodSkimmer::processBHCPhotons(){
 		//cout << "making isomap" << endl;
 		MakePhotonIsoMap(phoidx, isomap);
 		//cout << "made photon iso map " << endl;
-		phoobj.CalculatePhotonIDScores((*Photon_pt)[phoidx], isomap);
+		if(isBarrel)
+			phoobj.CalculateBarrelPhotonIDScores((*Photon_pt)[phoidx], isomap);
+		else	
+			phoobj.CalculateEndcapPhotonIDScores((*Photon_pt)[phoidx], isomap);
 		//cout << "calculated photon id scores" << endl;
 		vector<float> photonIDscores;
 		phoobj.GetPhotonIDScores(photonIDscores);
@@ -317,7 +325,7 @@ void KUCMSAodSkimmer::processBHCJets(){
 		//if not enough rechits to cluster, skip this object
 		if(_ca.GetNRecHits() < 2) continue;
 		ClusterObj jetobj;
-		//cout << "running jet clustering" << endl;
+		cout << "running jet clustering" << endl;
 		int clusterret = _ca.RunClustering(jetobj, false);
 		if(clusterret == -1) continue; //bad clustering (not enough points, not able to find any clusters, etc)
 		//cout << "seljetindx " << selJetIndex << endl;
