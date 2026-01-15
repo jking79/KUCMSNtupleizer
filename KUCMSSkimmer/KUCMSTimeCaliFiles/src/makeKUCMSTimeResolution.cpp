@@ -50,8 +50,8 @@ int main ( int argc, char *argv[] ){
 	//std::string inputfilename( "ecal_config/kucmsTimeCaliTestTFile.txt");
     ////std::string inputfilename( "ecal_config/kucmsTimeCaliR17EOYTFile.txt");
 
-    std::string inputfilename( "ecal_config/kucmsTimeCaliR18ULTFile.txt");
-    //std::string inputfilename( "ecal_config/kucmsTimeCaliR17ULTFile.txt");
+    //std::string inputfilename( "ecal_config/kucmsTimeCaliR18ULTFile.txt");
+    std::string inputfilename( "ecal_config/kucmsTimeCaliR17ULTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR16ULTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR22PrmptTFile.txt");
 
@@ -63,8 +63,8 @@ int main ( int argc, char *argv[] ){
     ////std::string indir("kuncali/gammares_mc18/");
     ////std::string indir("kuncali/gammares_cali/DoubleEG/");
 
-    std::string indir("KUCMSNtuple/gammares_ul18/");
-    //std::string indir("KUCMSNtuple/gammares_ul17/");
+    //std::string indir("KUCMSNtuple/gammares_ul18/");
+    std::string indir("KUCMSNtuple/gammares_ul17/");
     //std::string indir("KUCMSNtuple/gammares_ul16/DoubleEG/");
     //std::string indir("KUCMSNtuple/gammares_prmt22/EGamma/");
 
@@ -183,7 +183,7 @@ int main ( int argc, char *argv[] ){
     //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18UL_EE_xa_pm24b1200_v0105" );
     //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_18UL_EB_xa_pm24b1200_v0108" );
     //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_18UL_EE_xa_pm24b1200_v0108" );    
-	theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18UL_xa_pm24b1200_v0114" );
+	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18UL_xa_pm24b1200_v0114" );
 
     ////theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_17UL_LG_EB_xa_pm24b1200_v0106" );
     ////theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_17UL_LG_EE_xa_pm24b1200_v0106" );	
@@ -191,6 +191,7 @@ int main ( int argc, char *argv[] ){
     //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_17UL_EE_xa_pm24b1200_v0108" );
     //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_17UL_EB_xa_pm24b1200_v0108" );
     //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_17UL_EE_xa_pm24b1200_v0108" );
+    theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_17UL_xa_pm24b1200_v0114" );
 
     ////theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_16UL_LG_EB_xa_pm24b1200_v0106" );
     ////theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_16UL_LG_EE_xa_pm24b1200_v0106" );

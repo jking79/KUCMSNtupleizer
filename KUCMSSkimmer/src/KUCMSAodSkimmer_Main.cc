@@ -1087,7 +1087,7 @@ bool KUCMSAodSkimmer::eventSelection(){
 
   bool evtSelected = dobase ? basesel : phosel;
   //if( hasHemObj ) evtSelected = false;
-  if( not doSVs ) evtSelected = gt2qjets; 
+  if( not doSVs ) evtSelected = gt2qjets && gt2jets; 
 
   if( met150 ) cutflow["met150"]++;
   if( met150 && gt2jets ) cutflow["m_gt2jets"]++;
