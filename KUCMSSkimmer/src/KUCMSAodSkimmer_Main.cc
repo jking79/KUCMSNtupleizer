@@ -455,6 +455,7 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
         if(DEBUG) std::cout << " -- Event Loop " << std::endl;
 		count_of_events++;
         auto saveToTree = eventLoop(entry);
+	cout << "saveToTree " << saveToTree << " for entry " << centry << endl;
         if( saveToTree ){ fOutTree->Fill(); }
 
     }//<<>>for (Long64_t centry = 0; centry < nEntries; centry++)  end entry loop
