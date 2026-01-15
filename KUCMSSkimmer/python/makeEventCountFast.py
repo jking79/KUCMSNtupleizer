@@ -16,6 +16,7 @@ ROOT.gEnv.SetValue("TFile.ReadBufferSize", 1048576)
 #define BG and SMS master lists #run this eventcount from the python directory
 bkg_master_list = '../ntuple_master_lists/KUCMS_Ntuple_Master_BG_SVIPM100_Files_List.txt'
 SMS_master_list = '../ntuple_master_lists/KUCMS_Ntuple_Master_SMS_Sig_Files_List.txt'
+#SMS_master_list = '../ntuple_master_lists/KUCMS_Ntuple_Master_SMS_Sig_Files_List_gogoGZ.txt'
 
 eos_prefix = 'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/'
 list_dir = '../ntuple_master_lists/'
