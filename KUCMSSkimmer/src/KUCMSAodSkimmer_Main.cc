@@ -282,14 +282,16 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 
   // setup lumi json map
 
+  loadLumiJson("config/json/Cert_Collisions2024_378981_386951_Golden.json");
+  loadLumiJson("config/json/Cert_Collisions2023_366442_370790_Golden.json");
+  loadLumiJson("config/json/Cert_Collisions2022_355100_362760_Golden.json");
   loadLumiJson("config/json/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.json");
   loadLumiJson("config/json/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt");
-  //loadLumiJson("config/json/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt",true);
-
+  loadLumiJson("config/json/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt");
+  
   // condor event segmenting varibles : used to run over subset of events for condor jobs
 
   isLocal = false;
-
 
   _evti = -1;
   _evtj = -1;
@@ -331,7 +333,8 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
     _ca.SetVerbosity(-1); //can turn on to see low-level warnings
     _ca.SetDetIDs(_detidmap);
     _ca.SetCNNModel("config/json/KU-CNN_detector_1000epochs_archsmall3_2017and2018_CMS.json");
-    _ca.SetDNNModel("config/json/KU-DNN_photonID_balancingClasses_4kEGammaChunks_newPreprocessing_test_isoShape_1200epochs_large8.json");
+    _ca.SetBarrelDNNModel("config/json/KU-DNN_photonID_balancingClasses_4kEGammaChunks_newPreprocessing_test_isoShape_1200epochs_large8.json");
+    _ca.SetEndcapDNNModel("config/json/KU-DNN_photonID_testIsoPresel_100JetHTChunks_isoShape_1200epochs_large8_endcapOnly.json");
 
 }//<<>>KUCMSAodSkimmer::KUCMSAodSkimmer()
 

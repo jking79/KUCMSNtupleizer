@@ -120,7 +120,7 @@ void KUCMSAodSkimmer::processJets(){
 
     if( DEBUG ) std::cout << " - Jet Obj selection." << std::endl;
     // jet object selection ------------------------------------------
-    bool overMinPt( pt > 30 ); 
+    bool overMinPt( pt > 20 ); 
     ////bool underMaxEta( std::abs(eta) <= 3.2 );
     bool underMaxEta( std::abs(eta) <= 2.4 );
     bool isMinQuality( quality > 1 ); // 2 = "tight" 3 = "tighter"

@@ -242,7 +242,17 @@ void KUCMSAodSkimmer::processPhotons(){
   uInt nETPhos = 0;
   uInt nPTPhos = 0;
   uInt nLTPhos = 0;
-  uInt nPhotons = Photon_excluded->size();	
+  uInt nPhotons = Photon_excluded->size();
+  //Final State Counters
+  int nPhoBH(0), nPhoEarlyBH(0), nPhoLateBH(0), nPhoEarlyPB(0), nPhoPB(0), nPhoLatePB(0);
+  int nPhoEndcapNonIso(0);
+  //Discriminant Score Cut Values
+  float bhCutVal = 0.917252;
+  float pbCutVal = 0.81476355;
+  float nonIsoCutVal = 0.99142313;
+  //Time window cut values
+  float earlyTimeCut = -2;
+  float lateTimeCut = 2;
   if( DEBUG || verbose ) std::cout << " - Looping over for " << nPhotons << " photons" << std::endl;
   for( uInt it = 0; it < nPhotons; it++ ){
 
@@ -264,7 +274,6 @@ void KUCMSAodSkimmer::processPhotons(){
     bool underMinPtEE = pt < 30;
     auto eta = (*Photon_eta)[it];
     auto overMaxEta = std::abs(eta) > 1.479;
-
     auto phi = (*Photon_phi)[it];
 
     if( DEBUG ) std::cout << " -- looping photons : getting pho iso " << std::endl;
@@ -283,8 +292,11 @@ void KUCMSAodSkimmer::processPhotons(){
     //  change to skip jets and keep all photons regardless of photon iso with jet
     //bool phoskip = isExcluded || hasPixSeed || overMaxEta || underMinPt || failPhoIso;
 	bool phoskip = isExcluded || hasPixSeed;
-	if( not overMaxEta ) phoskip = phoskip || failPhoIsoEB || underMinPtEB;
-	if( overMaxEta ) phoskip = phoskip || failPhoIsoEE || underMinPtEE;
+	//if( not overMaxEta ) phoskip = phoskip || failPhoIsoEB || underMinPtEB;
+	//if( overMaxEta ) phoskip = phoskip || failPhoIsoEE || underMinPtEE;
+	//removing isolation selection from 'selected' photon requirements to apply an inversion for a sideband
+	if( not overMaxEta ) phoskip = phoskip || underMinPtEB;
+	if( overMaxEta ) phoskip = phoskip || underMinPtEE;
 	//if( overMaxEta ) phoskip = true;
 
 	bool hemEligible1 = pt > 20 && not isExcluded && not hasPixSeed;
@@ -443,9 +455,17 @@ void KUCMSAodSkimmer::processPhotons(){
         _ca.NoClusterRhs(phoobj, true);
      	map<string, double> isomap;
         MakePhotonIsoMap(it, isomap);
-        phoobj.CalculatePhotonIDScores(pt, isomap);
         vector<float> photonIDscores;
-        phoobj.GetPhotonIDScores(photonIDscores);
+	if(overMaxEta){ //endcap
+		phoobj.CalculateEndcapPhotonIDScores(pt, isomap);
+	}
+	else{ //barrel
+		//phoobj.CalculateBarrelPhotonIDScores(pt, isomap);
+		//under development - fill with -999
+		photonIDscores.push_back(-999);
+		photonIDscores.push_back(-999);
+	}
+	phoobj.GetPhotonIDScores(photonIDscores);
         isobkg_score = photonIDscores[0];
         nonisobkg_score = photonIDscores[1];
 	//do det bkg scores
@@ -467,10 +487,25 @@ void KUCMSAodSkimmer::processPhotons(){
 	//values that provide a 0.1% FPR with a >98% efficiency for the relevant class
 	//beam halo > 0.917252
 	//phys bkg > 0.81476355 (derived from gogoG ROC)
+	if(bh_score > bhCutVal){
+		nPhoBH++;
+		if(phoWTime < earlyTimeCut)
+			nPhoEarlyBH++;
+		if(phoWTime > lateTimeCut)
+			nPhoLateBH++;
+	}
+	if(physbkg_score > pbCutVal){
+		nPhoPB++;
+		if(phoWTime < earlyTimeCut)
+			nPhoEarlyPB++;
+		if(phoWTime > lateTimeCut)
+			nPhoLatePB++;
+	}
+	//endcap noniso selection
+	if(overMaxEta && nonisobkg_score > nonIsoCutVal){
+		nPhoEndcapNonIso++;
+	}
 
-     	////fill branches here!!!  nooooo ;)  -- will not be in step with the rest if the photon branches if filled here
-     	////selPhotons.fillBranch("selPho_isoANNScore",isobkg_score);
-     	////selPhotons.fillBranch("selPho_nonIsoANNScore",nonisobkg_score);
     	if(DEBUG) cout << "photon " << it << " iso score " << isobkg_score << " noniso score " << nonisobkg_score << endl;
 	}//<<>>if(_ca.GetNRecHits() > 2)
     //do photon id score
@@ -627,6 +662,8 @@ void KUCMSAodSkimmer::processPhotons(){
     selPhotons.fillBranch("selPho_spikeCR",spikecr);
     selPhotons.fillBranch("selPho_GJetsCR",gjetscr);
     selPhotons.fillBranch("selPho_DiJetsCR",dijetscr);
+
+
 
     auto htsebcdr4 = (*Photon_hcalTowerSumEtBcConeDR04)[it];
     auto tsphcdr3 = (*Photon_trkSumPtHollowConeDR03)[it];
@@ -856,7 +893,20 @@ void KUCMSAodSkimmer::processPhotons(){
 
   geCnts.set( "nSelPhotons", nSelPhotons );	
   selPhotons.fillBranch( "nSelPhotons",  nSelPhotons );
-  selPhotons.fillBranch( "nPhotons", nPhotons );	
+  selPhotons.fillBranch( "nPhotons", nPhotons );
+
+  bool anyPB = (nPhoPB > 0);
+  bool anyBH = (nPhoBH > 0);
+  bool anyLatePB = (nPhoLatePB > 0);
+  bool anyLateBH = (nPhoLateBH > 0);
+  bool anyEarlyBH = (nPhoEarlyBH > 0);
+  //do bh CR selection
+  selPhotons.fillBranch("passNPhoGe1SelectionBeamHaloCR", bool(nPhoBH>=1 && !anyPB));
+  selPhotons.fillBranch("passNPhoGe1SelectionEarlyBeamHaloCR", bool(nPhoEarlyBH>=1 && !anyPB && !anyLateBH));
+  selPhotons.fillBranch("passNPhoGe1SelectionLateBeamHaloCR", bool(nPhoLateBH>=1 && !anyPB && !anyEarlyBH));
+  selPhotons.fillBranch("passNPhoGe1SelectionEarlyPhysBkgCR", bool(nPhoEarlyPB>=1 && !anyBH && !anyLatePB));
+  //do endcap noniso CR selection
+  selPhotons.fillBranch("passNPhoGe1SelectionEndcapNonIsoCR", bool(nPhoEndcapNonIso>=1));
 
   std::vector<float> selpho_pt;
   std::vector<float> selpho_eta;
@@ -1014,6 +1064,12 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch("selPho_spikeCR",VBOOL);
   selPhotons.makeBranch("selPho_GJetsCR",VBOOL);
   selPhotons.makeBranch("selPho_DiJetsCR",VBOOL);
+
+  selPhotons.makeBranch("passNPhoGe1SelectionBeamHaloCR",VBOOL);
+  selPhotons.makeBranch("passNPhoGe1SelectionEarlyBeamHaloCR",VBOOL);
+  selPhotons.makeBranch("passNPhoGe1SelectionLateBeamHaloCR",VBOOL); 
+  selPhotons.makeBranch("passNPhoGe1SelectionEarlyPhysBkgCR",VBOOL); 
+  selPhotons.makeBranch("passNPhoGe1SelectionEndcapNonIsoCR",VBOOL); 
 
   selPhotons.makeBranch( "selPhoGenPt", VFLOAT );
   selPhotons.makeBranch( "selPhoPhoIsoDr", VFLOAT );

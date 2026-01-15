@@ -30,12 +30,18 @@ def generateSubmission(args):
     cmsswpath = os.environ["CMSSW_BASE"]+"/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/"
     print(cmsswpath)
     year = ""
-    if(args.year == "2018"):
+    if(args.year == "2016"):
+        year = "R16"
+    elif(args.year == "2018"):
         year = "R18"
     elif(args.year == "2017"):
         year = "R17"
     elif(args.year == "2022"):
         year = "R22"
+    elif(args.year == "2023"):
+        year = "R23"
+    elif(args.year == "2024"):
+        year = "R24"
     else:
         print("Year",args.year,"not found")
         exit()
@@ -239,7 +245,7 @@ def main():
     parser.add_argument("--request_memory",help='memory to request from condor scheduler in bits (default = 2048)',default=-1)
     #parser.add_argument("--inputList",help="list of sample lists to run over (default is SVIPM100 selection)",choices=['data','mcBkg','mcSig'])
     parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',choices=['DiPJBox', 'DTBoson','GJets','TTXJets','QCD','WJets','ZJets','gogoG','gogoZ','gogoGZ', 'sqsqG','MET','EGamma','JetHT'])
-    parser.add_argument("--year",help="run year",choices = ["2017","2018","2022"],default="2018")
+    parser.add_argument("--year",help="run year",choices = ["2016","2017","2018","2022"],default="2018")
     parser.add_argument('--slice',help='HT slice (ie for GJets or QCD), mass range (ie for DiPJBox), or subprocess (ie for TTXJets)',default='')
     parser.add_argument('--era',help='run era (data only)',default='')
     parser.add_argument('--mGl',help='gluino mass for signal',default='')

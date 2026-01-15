@@ -1,3 +1,4 @@
+- all python tools are in tools directory
 - run `python list_eos_root_files.py` to create a list of files generated
 	- no cmd line args right now - need to go into the `main()` function and edit which output path you want to look at
 - then run `python check_eos_files_v2.py` to check those files

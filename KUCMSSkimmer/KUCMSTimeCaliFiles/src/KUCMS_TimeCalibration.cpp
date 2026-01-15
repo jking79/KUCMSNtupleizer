@@ -32,8 +32,10 @@ KUCMS_TimeCalibration::KUCMS_TimeCalibration( bool stayOpen, bool makeNew ){
 
     //std::cout << " - opening caliHistsTFile " << std::endl;
     caliTFileName = caliFileDir + "caliHistsTFile.root";// name configurable ?
+	caliR3TFileName = caliFileDir + "caliR3HistsTFile.root";// name configurable ?
 	cali2DResPlotsTFileName = caliFileDir + "cali2dResPlotsTFile.root";
 	caliTFile = NULL;
+    caliR3TFile = NULL;
 	cali2DResTFile = NULL;
 
     curTag = "EG_EOY_MINI";
@@ -595,20 +597,24 @@ void KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
 
     std::cout << " - opening caliHistsTFile " << std::endl;
     //caliTFileName = caliFileDir + "caliHistsTFile.root";// name configurable ?
-    if( makeNew ){ caliTFile = TFile::Open( caliTFileName.c_str(), "RECREATE" ); }
-    if( stayOpen && not makeNew ){ caliTFile = TFile::Open( caliTFileName.c_str(), "UPDATE" ); }
-	if( not stayOpen && not makeNew ){ caliTFile = TFile::Open( caliTFileName.c_str(), "READ" ); }
-    caliTFile->cd();
+    if( makeNew ){ caliTFile = TFile::Open( caliTFileName.c_str(), "RECREATE" ); caliR3TFile = TFile::Open( caliR3TFileName.c_str(), "RECREATE" ); }
+    if( stayOpen && not makeNew ){ caliTFile = TFile::Open( caliTFileName.c_str(), "UPDATE" ); caliR3TFile = TFile::Open( caliR3TFileName.c_str(), "UPDATE" ); }
+	if( not stayOpen && not makeNew ){ caliTFile = TFile::Open( caliTFileName.c_str(), "READ" ); caliR3TFile = TFile::Open( caliR3TFileName.c_str(), "READ" ); }
+    //caliTFile->cd();
 
 	for( auto& calirunmap : TTCaliRunMapSet ){
 		for( auto& calirunsct : calirunmap.second ){
 			std::string ttfilename( calirunsct.second.histMapName );
+			std::string prefix = ttfilename.substr(0,3);
+            bool isR2 = prefix == "r2_";
+			if( isR2 ) caliTFile->cd(); else if( prefix == "r3_" ) caliR3TFile->cd(); else continue;
 			for( auto mapname : maptypes ){
 			for( auto ebeehist : ebeemap ){
 				std::string filename = ttfilename + ebeehist + mapname;
 				//std::cout << " -- loading : " << filename << " ( " << ttfilename << " ) ";
 				if( ttfilename != "none" && CaliHists.find(filename) == CaliHists.end() ){
-					TH2F* hist = (TH2F*)caliTFile->Get(filename.c_str());
+					TH2F* hist = isR2 ? (TH2F*)caliTFile->Get(filename.c_str()) : (TH2F*)caliR3TFile->Get(filename.c_str());
+					if( hist != NULL) hist->SetDirectory(nullptr);
                     //std::cout << " Found " << hist << std::endl;
 					if( hist ) CaliHists[filename] = { hist, filename, false, false }; // histfile histname isnew isreshist
 				}//<<>>if( TTMaps.find(calirunmap.second.TTCaliMapName) == TTMaps.end() )
@@ -621,12 +627,16 @@ void KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
     for( auto& calirunmap : CaliRunMapSet ){
         for( auto& calirunsct : calirunmap.second ){
         	std::string xtfilename( calirunsct.second.histMapName );
+			std::string prefix = xtfilename.substr(0,3);
+            bool isR2 = prefix == "r2_";
+            if( isR2 ) caliTFile->cd(); else if( prefix == "r3_" ) caliR3TFile->cd(); else continue;
             for( auto mapname : maptypes ){
             for( auto ebeehist : ebeemap ){
                 std::string filename = xtfilename + ebeehist + mapname;
                 //std::cout << " -- loading : " << filename << " ( " << xtfilename << " ) ";
                 if( xtfilename != "none" && CaliHists.find(filename) == CaliHists.end() ){
-                    TH2F* hist = (TH2F*)caliTFile->Get(filename.c_str());
+                    TH2F* hist = isR2 ? (TH2F*)caliTFile->Get(filename.c_str()) : (TH2F*)caliR3TFile->Get(filename.c_str());
+                    if( hist != NULL) hist->SetDirectory(nullptr);
                     //std::cout << " Found " << hist << std::endl;
                     if( hist ) CaliHists[filename] = { hist, filename, false, false }; // histfile histname isnew isreshist
                 }//<<>>if( TTMaps.find(calirunmap.second.TTCaliMapName) == TTMaps.end() )
@@ -658,6 +668,7 @@ void KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
     	}//<<>>for( auto& calimapsct : TTCaliMaps )	
 		CaliHists.clear();
     	caliTFile->Close();
+        caliR3TFile->Close();
 
 	}//<<>>if( not stayOpen )
 
@@ -671,7 +682,7 @@ void KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
 void KUCMS_TimeCalibration::SaveCaliHists(){
 
     std::cout << " - Saving CaliHists " << std::endl;
-	caliTFile->cd();
+	//caliTFile->cd();
     //caliTFile->Delete("*;1");
 	for( auto& calihist : CaliHists ){
 		//std::cout << " -- saving : " << calihist.second.h2f << " " << calihist.second.histName << " "; 
@@ -683,12 +694,18 @@ void KUCMS_TimeCalibration::SaveCaliHists(){
 			//std::cout << " -- tfile deleting : " << command << std::endl; 
 			//if( notNew && notResHist ) caliTFile->Delete( command.c_str() );
 			//std::cout << " -- writing : " << calihist.second.h2f << std::endl;
+			std::string prefix = std::string(calihist.second.h2f->GetName()).substr(0,3);
+            bool isR2 = prefix == "r2_";
+            if( isR2 ) caliTFile->cd(); else caliR3TFile->cd();
 			if( notResHist ) calihist.second.h2f->Write( calihist.second.h2f->GetName(), TObject::kOverwrite );
             //if( notResHist ) calihist.second.h2f->Write();
 			//std::cout << " -- deleting : " << calihist.second.h2f << std::endl;	
 		}//<<>>if( calihist.second.h2f != NULL )
         if( calihist.second.h1f != NULL ){
 			//if( notNew ) caliTFile->Delete( command.c_str() );
+            std::string prefix = std::string(calihist.second.h1f->GetName()).substr(0,3);
+            bool isR2 = prefix == "r2_";
+            if( isR2 ) caliTFile->cd(); else caliR3TFile->cd();
             calihist.second.h1f->Write( calihist.second.h1f->GetName(), TObject::kOverwrite );
             //calihist.second.h1f->Write();
         }//<<>>if( calihist.second.h2f != NULL )
@@ -701,6 +718,7 @@ void KUCMS_TimeCalibration::SaveCaliHists(){
 	}//<<>>for( auto& calihist : CaliHists )
 	CaliHists.clear();
     caliTFile->Close();
+	caliR3TFile->Close();
 
 }///<<>>void KUCMS_TimeCalibration::SaveCaliMaps()
 
@@ -736,8 +754,9 @@ void KUCMS_TimeCalibration::makeCaliHists(){
 	//keys.clear();
 	//CaliHists.clear();
 
+	// do not associate with a TFile at this step
     //std::cout << "Recreate TFile " << std::endl;
-    caliTFile->cd();
+    //caliTFile->cd();
 	//caliTFile->Delete("*;1");
     //caliTFile->Close();
     //caliTFile = TFile::Open( caliTFileName.c_str(), "RECREATE" );
@@ -786,6 +805,7 @@ void KUCMS_TimeCalibration::makeCaliHists(){
 				TH2F* hist(NULL);
 				if( side == ebeemap[0] ) hist = new TH2F(filename.c_str(),filename.c_str(),ebx_ranges[0],ebx_ranges[1],ebx_ranges[2],ebx_ranges[3],ebx_ranges[4],ebx_ranges[5]);
 				else hist = new TH2F(filename.c_str(),filename.c_str(),epmx_ranges[0],epmx_ranges[1],epmx_ranges[2],epmx_ranges[3],epmx_ranges[4],epmx_ranges[5]);
+				if( hist != NULL) hist->SetDirectory(nullptr);
 				CaliHists[filename] = { hist, filename, true, false }; // histfile histname isnew isopen lastrun
 				//}//<<>>if( calihist != CaliHists.end() )
 			}//<<>>for( auto side : ebeemap )
@@ -801,6 +821,7 @@ void KUCMS_TimeCalibration::makeCaliHists(){
 				//CaliHists[mdfilename] = { hist1d, mdfilename, false, false };
 			}//<<>>if( CaliHists.find(mdfilename) == CaliHists.end() )
 			TH1F* hist1d = new TH1F(mdfilename.c_str(),mdfilename.c_str(),400,-2,2); 
+			if( hist1d != NULL) hist1d->SetDirectory(nullptr);
 			CaliHists[mdfilename] = { hist1d, mdfilename, false, false };
 			}//<<>>for( auto& mdfilename : {std::ref(mdfilename_eb), std::ref(mdfilename_ee) )
 
@@ -881,6 +902,7 @@ void KUCMS_TimeCalibration::makeCaliHists(){
                 TH2F* hist(NULL);
                 if( side == ebeemap[0] ) hist = new TH2F(filename.c_str(),filename.c_str(),ebtt_ranges[0],ebtt_ranges[1],ebtt_ranges[2],ebtt_ranges[3],ebtt_ranges[4],ebtt_ranges[5]);
                 else hist = new TH2F(filename.c_str(),filename.c_str(),epmtt_ranges[0],epmtt_ranges[1],epmtt_ranges[2],epmtt_ranges[3],epmtt_ranges[4],epmtt_ranges[5]);
+				if( hist != NULL) hist->SetDirectory(nullptr);
                 CaliHists[filename] = { hist, filename, true, false }; // histfile histname isne
                 //}//<<>>if( calihist != CaliHists.end() )
             }//<<>>for( auto side : ebeemap )
@@ -896,6 +918,7 @@ void KUCMS_TimeCalibration::makeCaliHists(){
                 //CaliHists[mdfilename] = { hist1d, mdfilename, false, false };
             }//<<>>if( CaliHists.find(mdfilename) == CaliHists.end() )
             TH1F* hist1d = new TH1F(mdfilename.c_str(),mdfilename.c_str(),400,-2,2);
+			if( hist1d != NULL) hist1d->SetDirectory(nullptr);
             CaliHists[mdfilename] = { hist1d, mdfilename, false, false };
             }//<<>>for( auto& mdfilename : {std::ref(mdfilename_eb), std::ref(mdfilename_ee) )
 
@@ -1171,7 +1194,7 @@ std::map<UInt_t,kucms_DetIDStruct> KUCMS_TimeCalibration::getDetIDMap(){; // map
 
 float KUCMS_TimeCalibration::getCalibration( uInt rhid, int run, std::string tag, int gainID ){
 
-	if( rhid == 0 ) return -999.f;
+	if( rhid == 0 ) return -999.f; // valid rechit id check
 	//if( gainID > 1 ) return -999.f;
 	//if( not validCurrentTag ){ std::cout << "No current tag set." << std::endl; return 0.f; }
 	//if( not isEB ){ std::cout << "XCalibration for EE is not supported." << std::endl; return 0.f; }
@@ -1285,9 +1308,9 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
 												unsigned int Evt_run, std::string dataSetKey, int mctype, int gainID ){
 
 	float rtime = 0;
+    if( Evt_run > 356513 || Evt_run < 253984 ) return time; // within calibrated run range check
     if( mctype == 1 ){ // data
 		
-		if( dataSetKey == "r2_ul16" ) return time;
         if( dataSetKey == "r3_p22" ) return time;
         if( dataSetKey == "r3_p23" ) return time;
         if( dataSetKey == "r3_p24" ) return time;
@@ -2020,7 +2043,8 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
     std::cout << " -- use low energy : " << lowEnergy << std::endl;
     std::cout << " -- xbins : " << xBinStr << std::endl;
     std::cout << " -- ybins : " << yBinStr << std::endl;
-    std::cout << " -- upper energy bound : " << uB << " lower energy bound : " << lB << std::endl;
+	if( useGSwitch ) std::cout << " -- using GS with high gian included : " << doAllGain << " lower energy bound : " << lB << std::endl;
+    else std::cout << " -- upper energy bound : " << uB << " lower energy bound : " << lB << std::endl;
 
     // Declaration of leaf types
     UInt_t          run;
@@ -2052,11 +2076,15 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
     std::string druhist("_DRO_Data_Hist");
     std::string globhist("_ZEE_Data_Hist");
     std::string ehist("_Amp_v_E_Hist");
-    std::string fTitle("#Delta(Photon Seed Time) [ns] vs. A_{eff}/#sigma_{n} (EBEB)");
-    std::string fXTitle("A_{eff}/#sigma_{n} (EBEB)");
-    std::string fYTitle("#Delta(Photon Seed Time) [ns] (EBEB)");
+    std::string eb_hist("_EB");
+    std::string ee_hist("_EE");
+    std::string fTitle("#Delta(Photon Seed Time) [ns] vs. A_{eff}/#sigma_{n}");
+    std::string fXTitle("A_{eff}/#sigma_{n}");
+    std::string fYTitle("#Delta(Photon Seed Time) [ns]");
     std::string fZTitle("");
-    std::string fEYTitle("E_{eff} [GeV] (EBEB)");
+    std::string fEYTitle("E_{eff} [GeV]");
+    std::string fEBEBTitle(" (EBEB) ");
+    std::string fEEEETitle(" (EEEE) ");
 
     std::vector<float> fXBins;
     std::vector<float> fYBins;
@@ -2085,7 +2113,7 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
         ss >> infilename >> srun >> erun >> tag;
         if( infilename[0] == '#' ) continue;
         std::cout << "open input file : " << infilename << std::endl;
-        std::cout << "with tags : " << tag << " and " << smearTag << std::endl;
+        std::cout << "with tags : " << tag << " and smearing " << smearTag << std::endl;
         std::cout << "For Run " << srun << " to Run " << erun << std::endl;
         std::cout << "Producing 2D Resolution Map " << std::endl;
 
@@ -2191,35 +2219,63 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
                             std::string caliend = usecali ? "" : nocalistr;
                             if( smear ) caliend = caliend + smearstr;
                             caliend = caliend + ext;
-							std::string histMapName = "ResMap_" + std::to_string(srun) + "_" + std::to_string(erun) + "_";
+							std::string histMapName = "ResMap_" + std::to_string(srun) + "_" + std::to_string(erun);
                             std::string lsfname = histMapName+lochist+caliend;
                             std::string ldfname = histMapName+druhist+caliend;
                             std::string gbfname = histMapName+globhist+caliend;
                             std::string efname = histMapName+ehist+caliend;
-                            if( CaliHists.find(lsfname) == CaliHists.end() ){ // 2D hist already made? 
-                                TH2F* theHistLS = new TH2F(lsfname.c_str(),lsfname.c_str(),fXBins.size()-1,xbins,fYBins.size()-1,ybins);
+                            std::string lsfnameeb = lsfname + eb_hist;
+                            std::string ldfnameeb = ldfname + eb_hist;
+                            std::string gbfnameeb = gbfname + eb_hist;
+                            std::string efnameeb = efname + eb_hist;
+                            std::string lsfnameee = lsfname + ee_hist;
+                            std::string ldfnameee = ldfname + ee_hist;
+                            std::string gbfnameee = gbfname + ee_hist;
+                            std::string efnameee = efname + ee_hist;
+                            if( CaliHists.find(lsfnameeb) == CaliHists.end() ){ // 2D hist already made? 
+                                TH2F* theHistLS = new TH2F(lsfnameeb.c_str(),lsfnameeb.c_str(),fXBins.size()-1,xbins,fYBins.size()-1,ybins);
                                 theHistLS->GetXaxis()->SetTitle(fXTitle.c_str());
                                 theHistLS->GetYaxis()->SetTitle(fYTitle.c_str());
                                 theHistLS->GetZaxis()->SetTitle(fZTitle.c_str());
-                                CaliHists[lsfname] = { theHistLS, lsfname, true, true }; // histfile histname isnew isres
-                                TH2F* theHistGB = new TH2F(gbfname.c_str(),gbfname.c_str(),fXBins.size()-1,xbins,fYBins.size()-1,ybins);
+                                CaliHists[lsfnameeb] = { theHistLS, lsfnameeb, true, true }; // histfile histname isnew isres
+                                TH2F* theHistGB = new TH2F(gbfnameeb.c_str(),gbfnameeb.c_str(),fXBins.size()-1,xbins,fYBins.size()-1,ybins);
                                 theHistGB->GetXaxis()->SetTitle(fXTitle.c_str());
                                 theHistGB->GetYaxis()->SetTitle(fYTitle.c_str());
                                 theHistGB->GetZaxis()->SetTitle(fZTitle.c_str());
-                                CaliHists[gbfname] = { theHistGB, gbfname, true, true }; // histfile histname isnew isres
-                                TH2F* theHistLD = new TH2F(ldfname.c_str(),ldfname.c_str(),fXBins.size()-1,xbins,fYBins.size()-1,ybins);
+                                CaliHists[gbfnameeb] = { theHistGB, gbfnameeb, true, true }; // histfile histname isnew isres
+                                TH2F* theHistLD = new TH2F(ldfnameeb.c_str(),ldfnameeb.c_str(),fXBins.size()-1,xbins,fYBins.size()-1,ybins);
                                 theHistLD->GetXaxis()->SetTitle(fXTitle.c_str());
                                 theHistLD->GetYaxis()->SetTitle(fYTitle.c_str());
                                 theHistLD->GetZaxis()->SetTitle(fZTitle.c_str());
-                                CaliHists[ldfname] = { theHistLD, ldfname, true, true }; // histfile histname isnew isres
-                                TH2F* theHistAE = new TH2F(efname.c_str(),efname.c_str(),500,0,1000,100,0,200);
+                                CaliHists[ldfnameeb] = { theHistLD, ldfnameeb, true, true }; // histfile histname isnew isres
+                                TH2F* theHistAE = new TH2F(efnameeb.c_str(),efnameeb.c_str(),500,0,1000,100,0,200);
                                 theHistAE->GetXaxis()->SetTitle(fXTitle.c_str());
                                 theHistAE->GetYaxis()->SetTitle(fEYTitle.c_str());
                                 theHistAE->GetZaxis()->SetTitle(fZTitle.c_str());
-                                CaliHists[efname] = { theHistAE, efname, true, true }; // histfile histname isnew isres
+                                CaliHists[efnameeb] = { theHistAE, efnameeb, true, true }; // histfile histname isnew isres
                                 //range.has2DResMap = true;
+                                TH2F* theHistLSEE = new TH2F(lsfnameee.c_str(),lsfnameee.c_str(),fXBins.size()-1,xbins,fYBins.size()-1,ybins);
+                                theHistLS->GetXaxis()->SetTitle(fXTitle.c_str());
+                                theHistLS->GetYaxis()->SetTitle(fYTitle.c_str());
+                                theHistLS->GetZaxis()->SetTitle(fZTitle.c_str());
+                                CaliHists[lsfnameee] = { theHistLSEE, lsfnameee, true, true }; // histfile histname isnew isres
+                                TH2F* theHistGBEE = new TH2F(gbfnameee.c_str(),gbfnameee.c_str(),fXBins.size()-1,xbins,fYBins.size()-1,ybins);
+                                theHistGB->GetXaxis()->SetTitle(fXTitle.c_str());
+                                theHistGB->GetYaxis()->SetTitle(fYTitle.c_str());
+                                theHistGB->GetZaxis()->SetTitle(fZTitle.c_str());
+                                CaliHists[gbfnameee] = { theHistGBEE, gbfnameee, true, true }; // histfile histname isnew isres
+                                TH2F* theHistLDEE = new TH2F(ldfnameee.c_str(),ldfnameee.c_str(),fXBins.size()-1,xbins,fYBins.size()-1,ybins);
+                                theHistLD->GetXaxis()->SetTitle(fXTitle.c_str());
+                                theHistLD->GetYaxis()->SetTitle(fYTitle.c_str());
+                                theHistLD->GetZaxis()->SetTitle(fZTitle.c_str());
+                                CaliHists[ldfnameee] = { theHistLDEE, ldfnameee, true, true }; // histfile histname isnew isres
+                                TH2F* theHistAEEE = new TH2F(efnameee.c_str(),efnameee.c_str(),500,0,1000,100,0,200);
+                                theHistAEEE->GetXaxis()->SetTitle(fXTitle.c_str());
+                                theHistAEEE->GetYaxis()->SetTitle(fEYTitle.c_str());
+                                theHistAEEE->GetZaxis()->SetTitle(fZTitle.c_str());
+                                CaliHists[efnameee] = { theHistAEEE, efnameee, true, true }; // histfile histname isnew isres
                             }//if( CaliHists.find(lsfname) == CaliHists.end() ){ 
-                            if( CaliHists[lsfname].isNew ){
+                            if( CaliHists[lsfnameeb].isNew ){
 
                                 // ----  fill res hist
 
@@ -2313,20 +2369,18 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
                                     	ge_cut = isGainId1[2] && isGainId1[3] && (*resE)[2] >= lB && (*resE)[3] >= lB;
 									}//<<>>if( doAllGain )
                                 }//<<>>if( useGSwitch )
-                                bool leta_cut = (idinfoL0.ecal == ECAL::EB)&&(idinfoL1.ecal == ECAL::EB);
-                                bool geta_cut = (idinfoG0.ecal == ECAL::EB)&&(idinfoG1.ecal == ECAL::EB);
-								if( doEE ){
-                                	leta_cut = (idinfoL0.ecal != ECAL::EB)&&(idinfoL1.ecal != ECAL::EB);
-                                	geta_cut = (idinfoG0.ecal != ECAL::EB)&&(idinfoG1.ecal != ECAL::EB);
-								}//<<>>if( doEE )
+                                bool leta_cut_eb = (idinfoL0.ecal == ECAL::EB)&&(idinfoL1.ecal == ECAL::EB);
+                                bool geta_cut_eb = (idinfoG0.ecal == ECAL::EB)&&(idinfoG1.ecal == ECAL::EB);
+                                bool leta_cut_ee = (idinfoL0.ecal != ECAL::EB)&&(idinfoL1.ecal != ECAL::EB);
+                                bool geta_cut_ee = (idinfoG0.ecal != ECAL::EB)&&(idinfoG1.ecal != ECAL::EB);
                                 bool goodLocTime = (*resRtTime)[0] != 0 && (*resRtTime)[1] != 0 && (*resRtTime)[0] != (*resRtTime)[1];
                                 bool goodGloTime = (*resRtTime)[2] != 0 && (*resRtTime)[3] != 0 && (*resRtTime)[2] != (*resRtTime)[3];
                                 bool goodLocRHs = (*resRhID)[0] != 0 && (*resRhID)[1] != 0;
                                 bool goodGloRHs = (*resRhID)[2] != 0 && (*resRhID)[3] != 0;
 
                                 bool isd_cut = idinfoL0.TT == idinfoL1.TT; // true = same, fasle = different
-                                bool levent_good = le_cut && leta_cut && goodLocRHs && goodLocTime;
-                                bool gevent_good = ge_cut && geta_cut && goodGloRHs && goodGloTime;
+                                bool levent_good = le_cut && goodLocRHs && goodLocTime;
+                                bool gevent_good = ge_cut && goodGloRHs && goodGloTime;
 
                                 if(debug) std::cout << " - Fill 2D Hist" << std::endl;
 								
@@ -2348,11 +2402,17 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 									std::cout << " -- IC0g: " << seedTimeIC01 << " IC1g: " << seedTimeIC11 << std::endl;
 								}//<<>>if( gevent_good && debug )
                                 if( levent_good && isd_cut ){
-                                    CaliHists[lsfname].h2f->Fill(lxfill,lyfill);
-                                    CaliHists[efname].h2f->Fill(lxfill,lxfille);
+                                    if( leta_cut_eb ){ CaliHists[lsfnameeb].h2f->Fill(lxfill,lyfill); CaliHists[efnameeb].h2f->Fill(lxfill,lxfille); }
+                                    if( leta_cut_ee ){ CaliHists[lsfnameee].h2f->Fill(lxfill,lyfill); CaliHists[efnameee].h2f->Fill(lxfill,lxfille); }
                                 }//<<>>if( levent_good && isd_cut )
-                                if( gevent_good ){ CaliHists[gbfname].h2f->Fill(gxfill,gyfill); }
-                                if( levent_good && not isd_cut ){ CaliHists[ldfname].h2f->Fill(lxfill,lyfill); }
+                                if( gevent_good ){ 
+									if( leta_cut_eb ) CaliHists[gbfnameeb].h2f->Fill(gxfill,gyfill); 
+                                    if( leta_cut_ee ) CaliHists[gbfnameee].h2f->Fill(gxfill,gyfill); 
+								}//<<>>if( gevent_good )
+                                if( levent_good && not isd_cut ){ 
+									if( leta_cut_eb ) CaliHists[ldfnameeb].h2f->Fill(lxfill,lyfill); 
+                                    if( leta_cut_ee ) CaliHists[ldfnameee].h2f->Fill(lxfill,lyfill); 
+								}//<<>>if( levent_good && not isd_cut )
                                 if(debug) std::cout << " - Fill hists done" << std::endl;
 
                             }//if( CaliHists[lsfname].isNew )
@@ -2516,7 +2576,6 @@ kucms_SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D ){
  
   	}//<<>>for (auto ibinX = 1; ibinX <= fNBinsX; ibinX++)
 
-/*
     for( auto& profile : profileHists ){ 
 		profile.second.profileHist->Write( profile.second.profileHist->GetName(), TObject::kOverwrite ); 
 		TH1F* gprHist = gprProfileHist( profile.second.profileHist );
@@ -2524,7 +2583,6 @@ kucms_SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D ){
 		delete gprHist;
 		profile.second.deleteHists();
 	}//<<>>for( auto& profile : profileHists )
-*/
 
   	// Prep sigma fit
   	//----------------------TimeFitter::PrepSigmaFit(FitInfo);
