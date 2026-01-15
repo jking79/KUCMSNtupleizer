@@ -333,7 +333,8 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
     _ca.SetVerbosity(-1); //can turn on to see low-level warnings
     _ca.SetDetIDs(_detidmap);
     _ca.SetCNNModel("config/json/KU-CNN_detector_1000epochs_archsmall3_2017and2018_CMS.json");
-    _ca.SetDNNModel("config/json/KU-DNN_photonID_balancingClasses_4kEGammaChunks_newPreprocessing_test_isoShape_1200epochs_large8.json");
+    _ca.SetBarrelDNNModel("config/json/KU-DNN_photonID_balancingClasses_4kEGammaChunks_newPreprocessing_test_isoShape_1200epochs_large8.json");
+    _ca.SetEndcapDNNModel("config/json/KU-DNN_photonID_testIsoPresel_100JetHTChunks_isoShape_1200epochs_large8_endcapOnly.json");
 
 }//<<>>KUCMSAodSkimmer::KUCMSAodSkimmer()
 
@@ -454,6 +455,7 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
         if(DEBUG) std::cout << " -- Event Loop " << std::endl;
 		count_of_events++;
         auto saveToTree = eventLoop(entry);
+	cout << "saveToTree " << saveToTree << " for entry " << centry << endl;
         if( saveToTree ){ fOutTree->Fill(); }
 
     }//<<>>for (Long64_t centry = 0; centry < nEntries; centry++)  end entry loop
@@ -1086,7 +1088,7 @@ bool KUCMSAodSkimmer::eventSelection(){
 
   bool evtSelected = dobase ? basesel : phosel;
   //if( hasHemObj ) evtSelected = false;
-  if( not doSVs ) evtSelected = gt2qjets; 
+  if( not doSVs ) evtSelected = gt2qjets && gt2jets; 
 
   if( met150 ) cutflow["met150"]++;
   if( met150 && gt2jets ) cutflow["m_gt2jets"]++;

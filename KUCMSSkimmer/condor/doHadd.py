@@ -20,8 +20,8 @@ def main():
         proc = d.path[d.path.find("/")+1:]
         proc = proc[proc.find("/")+1:]
         proc = proc[:proc.find("/")]
-        proc = proc[:proc.rfind("_AOD")]
-
+        print("proc",proc)
+        #proc = proc[:proc.rfind("_AOD")]
         bashfilename = "haddScripts/doHadd_"+proc+"_"+oname+".sh"
         bashfile = open(bashfilename,"w")
         #write cmds to bash script
