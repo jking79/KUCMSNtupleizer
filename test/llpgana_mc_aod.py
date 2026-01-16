@@ -12,7 +12,7 @@ options.register('eventFilter','MET100',VarParsing.multiplicity.singleton,VarPar
 options.register('doSV',True,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to run displaced SVs');
 options.register('doDisEle',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag ro run displaced electrons');
 options.register('doECALTrackOnly',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to run ECAL Tracks only');
-options.register('runera','Run2',VarParsing.multiplicity.singleton,VarParsing.varType.string,'filter to use in event processing');
+options.register('runera','Run3',VarParsing.multiplicity.singleton,VarParsing.varType.string,'filter to use in event processing');
 
 ## object prep cuts
 #options.register('jetpTmin',15.0,VarParsing.multiplicity.singleton,VarParsing.varType.float,'jet pT minimum cut');
@@ -39,6 +39,7 @@ options.register('runera','Run2',VarParsing.multiplicity.singleton,VarParsing.va
 #options.register('globalTag','133X_mcRun3_2024_realistic_v10',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','94X_mc2017_realistic_v14',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for GMSB MC');
 ##options.register('globalTag','112X_mcRun3_2021_realistic_v16',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
+options.register('globalTag','140X_dataRun3_v17',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for R3 22,23');
 
 ##------------------ data gt  
 #options.register('globalTag','106X_dataRun2_v36',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
@@ -125,6 +126,12 @@ process.source = cms.Source("PoolSource",
     #fileNames=readFiles,
     fileNames = cms.untracked.vstring(
 
+        #root://cmsxrootd.fnal.gov/
+        #'root://xrootd-cms.cern.ch//store/data/Run2022C/JetMET/AOD/EXODelayedJetMET-27Jun2023-v1/40000/a346eb6b-170c-4e4c-b403-e57a70cec129.root',
+        #'root://xrootd-cms.cern.ch//store/data/Run2022C/JetMET/AOD/EXODelayedJetMET-27Jun2023-v1/40000/113cb54d-48b1-43f5-96c1-f4725ee59eca.root',
+        #'root://xrootd-cms.infn.it//store/data/Run2022C/JetMET/AOD/EXODelayedJetMET-27Jun2023-v1/40000/a346eb6b-170c-4e4c-b403-e57a70cec129.root',
+
+    'root://cmsxrootd.fnal.gov//store/data/Run2023D/JetMET1/AOD/EXODelayedJetMET-PromptReco-v2/000/370/667/00000/89178b58-f461-478d-a2cf-142842257adc.root',
 
         #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/2430000/010FAEF3-D41F-D340-B7E9-E3BBD6498B3E.root',
         #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/2430000/0FB1FACF-237F-1749-9878-CA52BC077610.root',
@@ -310,13 +317,16 @@ probeout = False
 if options.multicrab == True : probeout = False
 
 ecalIsoInputs = ecalIsoInputsF17
-if "Run3" in runera :  ecalIsoInputs = ecalruneraIsoInputsW22
+if "Run3" in runera :  
+    ecalIsoInputs = ecalruneraIsoInputsW22
+    if 'CASTOR' in process.CaloGeometryBuilder.SelectedCalos : 
+        process.CaloGeometryBuilder.SelectedCalos.remove('CASTOR') 
 
 #genMomChase = True
 genMomChase = False
 if options.multicrab == True : genMomChase = False
-#makeTrigList = True
-makeTrigList = False
+makeTrigList = True
+#makeTrigList = False
 if options.multicrab == True : makeTrigList = False
 
 print( "Using options : mutlicrab = ",options.multicrab," geninfo = ",genInfo," filter = ",filterselect )
@@ -390,6 +400,7 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
                               beamSpot = cms.InputTag("offlineBeamSpot"),
                               ## trigger
                               triggerFlagResults = cms.InputTag("TriggerResults","","RECO"),
+                              #triggerFlagResults = cms.InputTag("TriggerResults","","Pat"),
                               #triggerFlagResults = cms.InputTag("TriggerResults"),
                               triggerHLTResults = cms.InputTag("TriggerResults","","HLT"),
                               triggerEvent = cms.InputTag("hltTriggerSummaryAOD"),
@@ -519,6 +530,9 @@ process.pattriger = cms.Path( process.patTrigger )
 process.eventcount_path = cms.Path(process.eventCounter)
 process.tree_step = cms.EndPath(process.tree)
 process.endjob_step = cms.EndPath(process.endOfProcess)
+
+if 'CASTOR' in process.CaloGeometryBuilder.SelectedCalos :
+    process.CaloGeometryBuilder.SelectedCalos.remove('CASTOR')
 
 #########process.schedule = cms.Schedule( process.kuDisplaced_path, process.setFlags_path, process.tree_step, process.endjob_step )
 # Flags must be run as a path in the Schedule in order to appear in the trigger results for KUCMSEventInfo 
