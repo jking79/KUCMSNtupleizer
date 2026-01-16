@@ -168,7 +168,7 @@ def docrab( dataset ):
 #  -------  selsect PD/MC dependent paramters
 #-----------------------------------------------------------------------------------------------------------------------------
 #>>>>>>>>>>>>>>>>>>>     #JetHT/Run2017B-17Nov2017-v1/AOD good for #globalTag=94X_dataRun2_ReReco_EOY17_v2
-            config.JobType.pyCfgParams   = ['globalTag=94X_dataRun2_ReReco_EOY17_v2','multicrab=True']
+            #config.JobType.pyCfgParams   = ['globalTag=94X_dataRun2_ReReco_EOY17_v2','multicrab=True']
 #>>>>>>>>>>>>>>>>>>>     #DoubleEG/Run2017*-09Aug2019_UL2017-v1/AOD good for #globalTag=106X_dataRun2_v20
             #config.JobType.pyCfgParams   = ['globalTag=106X_dataRun2_v20','multicrab=True']
             #config.JobType.pyCfgParams   = ['globalTag=106X_dataRun2_v36','multicrab=True','eventSkim=AL1IsoPho']
