@@ -903,7 +903,6 @@ void KUCMSAodSkimmer::processPhotons(){
   //do bh CR selection
   selPhotons.fillBranch("passNPhoGe1SelectionBeamHaloCR", bool(nPhoBH>=1 && !anyPB));
   selPhotons.fillBranch("passNPhoGe1SelectionEarlyBeamHaloCR", bool(nPhoEarlyBH>=1 && !anyPB && !anyLateBH));
-  cout << "filling passNPhoGe1SelectionLateBeamHaloCR" << endl;
   selPhotons.fillBranch("passNPhoGe1SelectionLateBeamHaloCR", bool(nPhoLateBH>=1 && !anyPB && !anyEarlyBH));
   selPhotons.fillBranch("passNPhoGe1SelectionEarlyPhysBkgCR", bool(nPhoEarlyPB>=1 && !anyBH && !anyLatePB));
   //do endcap noniso CR selection
