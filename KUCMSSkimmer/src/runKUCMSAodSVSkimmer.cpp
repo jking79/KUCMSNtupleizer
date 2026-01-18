@@ -79,7 +79,7 @@ int main ( int argc, char *argv[] ){
 		cout << "   --genSigPerfect                      turn on gensigperfect (default = false)" << endl;
 		cout << "   --noSVorPho                          selection doesn't have SV or photon (default = false)" << endl;
 		cout << "   --noBHC                              will not run BHC objects (default = false - BHC on)" << endl;
-		cout << "   --nSV                                will not run SV collection (default = false - SVs on)" << endl;
+		cout << "   --noSV                                will not run SV collection (default = false - SVs on)" << endl;
         	cout << "   --dataSetKey                         set dataset key" << endl;
         	cout << "   --xsec                               set cross-section (default = 1)" << endl;
         	cout << "   --gluinoMass                         set gluino mass (default = 0)" << endl;
