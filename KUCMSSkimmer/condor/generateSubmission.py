@@ -187,7 +187,6 @@ def generateSubmission(args):
             #if(inputMainList != ""):
             #    ofile_inputList = inputMainList+"_"
             ofilename = "condor_"+ofile_inputList+samplename+"_"+ofiletag
-
             fulldirname = odir+dirname+"/"+samplename+"/"+ofiletag
             #print("dirname",dirname,"samplename",samplename)
             print("Preparing sample directory: {0}".format(fulldirname))
