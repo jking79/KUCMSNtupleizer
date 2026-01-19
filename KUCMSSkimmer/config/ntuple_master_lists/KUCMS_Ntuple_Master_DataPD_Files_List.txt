@@ -3,6 +3,11 @@
 # -------------------------------------
 
 ## inpath infiles skimkey crossSection gluionmass nutralino2mass mcweight mctype(1 data, 0 MC) timecalitag
+KUCMSNtuple/kucmsntuple_MET_R16_SVIPM100_v31/ MET_R16_SVIPM100_v31_MET_AOD_Run2016B.txt MET16B 1 0 0 0 1 r2_ul16
+KUCMSNtuple/kucmsntuple_MET_R16_SVIPM100_v31/ MET_R16_SVIPM100_v31_MET_AOD_Run2016C.txt MET16C 1 0 0 0 1 r2_ul16
+KUCMSNtuple/kucmsntuple_MET_R16_SVIPM100_v31/ MET_R16_SVIPM100_v31_MET_AOD_Run2016D.txt MET16D 1 0 0 0 1 r2_ul16
+KUCMSNtuple/kucmsntuple_MET_R16_SVIPM100_v31/ MET_R16_SVIPM100_v31_MET_AOD_Run2016G.txt MET16G 1 0 0 0 1 r2_ul16
+KUCMSNtuple/kucmsntuple_MET_R16_SVIPM100_v31/ MET_R16_SVIPM100_v31_MET_AOD_Run2016H.txt MET16H 1 0 0 0 1 r2_ul16
 
 KUCMSNtuple/kucmsntuple_MET_R18_SVIPM100_v31/ MET_R18_SVIPM100_v31_MET_AOD_Run2018A.txt MET18A 1 0 0 0 1 r2_ul18
 KUCMSNtuple/kucmsntuple_MET_R18_SVIPM100_v31/ MET_R18_SVIPM100_v31_MET_AOD_Run2018B.txt MET18B 1 0 0 0 1 r2_ul18
@@ -22,3 +27,8 @@ KUCMSNtuple/kucmsntuple_DisJet_R18_SVIPM100_v31/ kucmsntuple_DisJet_R18_SVIPM100
 KUCMSNtuple/kucmsntuple_DisJet_R18_SVIPM100_v31/ kucmsntuple_DisJet_R18_SVIPM100_v31_DisplacedJet_AOD_Run2018B_v29.txt DisJet18 1 0 0 0 1 r2_ul18
 KUCMSNtuple/kucmsntuple_DisJet_R18_SVIPM100_v31/ kucmsntuple_DisJet_R18_SVIPM100_v31_DisplacedJet_AOD_Run2018C_v29.txt DisJet18 1 0 0 0 1 r2_ul18
 KUCMSNtuple/kucmsntuple_DisJet_R18_SVIPM100_v31/ kucmsntuple_DisJet_R18_SVIPMet100_v31_DisplacedJet_AOD_Run2018D_v29.txt DisJet18 1 0 0 0 1 r2_ul18
+
+
+#beam halo training samples
+KUCMSNtuple/kucmsntuple_MET_R18_AL1NpSC_DEOnly_v31/ MET_R18_AL1NpSC_DEOnly_v31_MET_AOD_Run2018B-15Feb2022_UL2018-v1.txt MET18B 1 0 0 0 1 r2_ul18
+KUCMSNtuple/kucmsntuple_MET_R18_AL1NpSC_v31/ MET_R18_AL1NpSC_v31_MET_AOD_Run2018C-15Feb2022_UL2018-v1.txt MET18C 1 0 0 0 1 r2_ul18
