@@ -1065,11 +1065,11 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch("selPho_GJetsCR",VBOOL);
   selPhotons.makeBranch("selPho_DiJetsCR",VBOOL);
 
-  selPhotons.makeBranch("passNPhoGe1SelectionBeamHaloCR",VBOOL);
-  selPhotons.makeBranch("passNPhoGe1SelectionEarlyBeamHaloCR",VBOOL);
-  selPhotons.makeBranch("passNPhoGe1SelectionLateBeamHaloCR",VBOOL); 
-  selPhotons.makeBranch("passNPhoGe1SelectionEarlyPhysBkgCR",VBOOL); 
-  selPhotons.makeBranch("passNPhoGe1SelectionEndcapNonIsoCR",VBOOL); 
+  selPhotons.makeBranch("passNPhoGe1SelectionBeamHaloCR",BOOL);
+  selPhotons.makeBranch("passNPhoGe1SelectionEarlyBeamHaloCR",BOOL);
+  selPhotons.makeBranch("passNPhoGe1SelectionLateBeamHaloCR",BOOL); 
+  selPhotons.makeBranch("passNPhoGe1SelectionEarlyPhysBkgCR",BOOL); 
+  selPhotons.makeBranch("passNPhoGe1SelectionEndcapNonIsoCR",BOOL); 
 
   selPhotons.makeBranch( "selPhoGenPt", VFLOAT );
   selPhotons.makeBranch( "selPhoPhoIsoDr", VFLOAT );
