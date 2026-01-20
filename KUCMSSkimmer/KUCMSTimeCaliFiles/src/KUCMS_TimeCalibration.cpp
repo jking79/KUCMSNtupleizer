@@ -1361,7 +1361,7 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
 		bool isEB( DetIDMap[rechitID].ecal == ECAL::EB );
         float ebnoise, ebstoch, ebstant, eenoise, eestoch, eestant;
 		float mcebnoise(0), mcebstoch(0), mcebstant(0), mceenoise(0), mceestoch(0), mceestant(0);
-		if( resTag != "default" && ResTagSet.find(resTag) != ResTagSet.end() ){
+		if( resTag != "default" && ResTagSet.find(resTag) != ResTagSet.end() ){  // TARGET RESOLUTION
 
             ebnoise = ResTagSet[resTag].ebnoise;
             ebstoch = ResTagSet[resTag].ebstoch;
@@ -1373,26 +1373,7 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
 		}//<<>>if( resTag != "default" )
 		else if( dataSetKey.substr(1,2) == "r2" ){ // use smear tag?  -- check first for set tag ! 
 
-			mcebnoise = 0; mcebstoch = 0; mcebstant = 0; mceenoise = 0; mceestoch = 0; mceestant = 0; 
-
-		}//<<>>if( dataSetKey.substr(1,2) == "r2" )
-        else if( dataSetKey.substr(1,2) == "r3" ){ 
-
-			mcebnoise = 0; mcebstoch = 0; mcebstant = 0; mceenoise = 0; mceestoch = 0; mceestant = 0; 
-
-		}//<<>>if( dataSetKey.substr(1,2) == "r3" )
-		if( ResTagSet.find(dataSetKey) != ResTagSet.end() ){
-
-			ebnoise = ResTagSet[dataSetKey].ebnoise;
-            ebstoch = ResTagSet[dataSetKey].ebstoch;
-            ebstant = ResTagSet[dataSetKey].ebstant;
-            eenoise = ResTagSet[dataSetKey].eenoise;
-            eestoch = ResTagSet[dataSetKey].eestoch;
-            eestant = ResTagSet[dataSetKey].eestant;
-
-		} else {
-
-			std::string tag= "default";
+            std::string tag= "r2_ul18";
             ebnoise = ResTagSet[tag].ebnoise;
             ebstoch = ResTagSet[tag].ebstoch;
             ebstant = ResTagSet[tag].ebstant;
@@ -1400,8 +1381,33 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
             eestoch = ResTagSet[tag].eestoch;
             eestant = ResTagSet[tag].eestant;
 
+		}//<<>>if( dataSetKey.substr(1,2) == "r2" )
+        else if( dataSetKey.substr(1,2) == "r3" ){ 
+
+			mcebnoise = 0; mcebstoch = 0; mcebstant = 0; mceenoise = 0; mceestoch = 0; mceestant = 0; 
+
+		}//<<>>if( dataSetKey.substr(1,2) == "r3" )
+
+		if( ResTagSet.find(dataSetKey) != ResTagSet.end() ){ // SOURCE RESOLTUION
+
+			std::string tag = dataSetKey;
+			if( dataSetKey == "r2_ul18_mc" ) tag = "RunIISummer20UL18RECO";
+            if( dataSetKey == "r3_mc" ) tag = "theRun3MC_campain";
+
+			mcebnoise = ResTagSet[tag].ebnoise;
+            mcebstoch = ResTagSet[tag].ebstoch;
+            mcebstant = ResTagSet[tag].ebstant;
+            mceenoise = ResTagSet[tag].eenoise;
+            mceestoch = ResTagSet[tag].eestoch;
+            mceestant = ResTagSet[tag].eestant;
+
+		} else { // 2018 MC Resoltion values
+
+            mcebnoise = 26.04; mcebstoch = 1.00; mcebstant = 0.1071; mceenoise = 38.69; mceestoch = 0; mceestant = 0.0843;  
+
 		}//<<>>if( ResTagSet.find(tag) != ResTagSet.end() )
-		//0.00691415 1.60666 0.133913  smearing for 2017 MC -> Data
+
+		//0.00691415 1.60666 0.133913  smearing for 2017 MC -> Data ( original smearing values )
 		float noise = isEB ? std::abs( pow(ebnoise,2) - pow(mcebnoise,2) ) : std::abs( pow(eenoise,2) - pow(mceenoise,2) );
 		float stoch = isEB ? std::abs( pow(ebstoch,2) - pow(mcebstoch,2) ) : std::abs( pow(eestoch,2) - pow(mceestoch,2) );
 		float stant = isEB ? std::abs( pow(ebstant,2) - pow(mcebstant,2) ) : std::abs( pow(eestant,2) - pow(mceestant,2) );
