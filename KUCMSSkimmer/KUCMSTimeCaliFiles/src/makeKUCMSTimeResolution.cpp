@@ -80,8 +80,8 @@ int main ( int argc, char *argv[] ){
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	// set resoltuions
-	//theCali.SetResParamters( "default", 26.04, 1.19, 0.1078, 38.69, 0, 0.0843 );
-	//theCali.SetResParamters( "RunIISummer20UL18RECO", 26.04, 1.19, 0.1078, 38.69, 0, 0.0843 );
+	//theCali.SetResParamters( "default", 26.04, 1.19, 0.1078, 38.69, 0.00, 0.0843 );
+	//theCali.SetResParamters( "RunIISummer20UL18RECO", 26.04, 1.19, 0.1078, 38.69, 0.00, 0.0843 );
 	//theCali.SetResParamters( "r2_ul18", 26.23, 1.72, 0.1391, 33.36, 1.72, 0.2039 );
     //theCali.SetResParamters( "r2_ul18_mc",  26.23, 1.72, 0.1391, 33.36, 1.72, 0.2039 );
     //theCali.SetResParamters( "r2_ul17", 25.98, 0.67, 0.0947, 42.17, 6.29, 0.2986 );
@@ -89,7 +89,8 @@ int main ( int argc, char *argv[] ){
     //theCali.SetResParamters( "r2_eoy17", 31.3, 2.9, 0.1608, 31.3, 2.9, 0.1608 );
     //theCali.SetResParamters( "r3_22p", 25.52, 1.23, 0.1722, 42.94, 8.28, 0.2490 );
     //theCali.SetResParamters( "r3_23p", 27.81, 7.36, 0.1338, 41.49, 5.52, 0.3146 );
-    //theCali.SaveResFile();
+	theCali.SetResParamters( "r3_24p", 23.41, 1.79, 0.1707, 35.09, 0.00, 0.2533 );
+    theCali.SaveResFile();
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -342,10 +343,10 @@ int main ( int argc, char *argv[] ){
     //std::string histName3 = "ResMap_355794_362760__DRO_Data_Hist_eg_22p_EE_xa_pm24b1200_v0112";
     //std::string histName4 = "ResMap_355794_362760__SRO_Data_Hist_eg_22p_EE_xa_pm24b1200_v0112";
 
-	//std::string histName1 = "ResMap_355794_362760__DRO_Data_Hist_NoCali_eg_22p_EB_xa_pm24b1200_v0112";
-    //std::string histName2 = "ResMap_355794_362760__SRO_Data_Hist_NoCali_eg_22p_EB_xa_pm24b1200_v0112";
-    //std::string histName3 = "ResMap_355794_362760__DRO_Data_Hist_NoCali_eg_22p_EE_xa_pm24b1200_v0112";
-    //std::string histName4 = "ResMap_355794_362760__SRO_Data_Hist_NoCali_eg_22p_EE_xa_pm24b1200_v0112";
+	std::string histName1 = "ResMap_355794_362760_DRO_Data_Hist_NoCali_eg_22p_xa_pm24b1200_v0120_EB";
+    std::string histName2 = "ResMap_355794_362760_DRO_Data_Hist_NoCali_eg_22p_xa_pm24b1200_v0120_EE";
+    std::string histName3 = "ResMap_355794_362760_SRO_Data_Hist_NoCali_eg_22p_xa_pm24b1200_v0120_EB";
+    std::string histName4 = "ResMap_355794_362760_SRO_Data_Hist_NoCali_eg_22p_xa_pm24b1200_v0120_EE";
 
     //std::string histName1 = "ResMap_366365_372415_DRO_Data_Hist_eg_23p_xa_pm24b1200_v0115_EB";
     //std::string histName2 = "ResMap_366365_372415_SRO_Data_Hist_eg_23p_xa_pm24b1200_v0115_EB";
@@ -367,10 +368,10 @@ int main ( int argc, char *argv[] ){
     //std::string histName3 = "ResMap_378971_387721_SRO_Data_Hist_NoCali_eg_24p_xa_pm24b1200_v0119_EB";
     //std::string histName4 = "ResMap_378971_387721_SRO_Data_Hist_NoCali_eg_24p_xa_pm24b1200_v0119_EE";
 
-ResMap_378971_387721_DRO_Data_Hist_eg_24p_xa_pm24b1200_v0119_EB
-ResMap_378971_387721_DRO_Data_Hist_eg_24p_xa_pm24b1200_v0119_EE
-ResMap_378971_387721_SRO_Data_Hist_eg_24p_xa_pm24b1200_v0119_EB
-ResMap_378971_387721_SRO_Data_Hist_eg_24p_xa_pm24b1200_v0119_EE
+    //std::string histName1 = "ResMap_378971_387721_DRO_Data_Hist_eg_24p_xa_pm24b1200_v0119_EB";
+    //std::string histName2 = "ResMap_378971_387721_DRO_Data_Hist_eg_24p_xa_pm24b1200_v0119_EE";
+    //std::string histName3 = "ResMap_378971_387721_SRO_Data_Hist_eg_24p_xa_pm24b1200_v0119_EB";
+    //std::string histName4 = "ResMap_378971_387721_SRO_Data_Hist_eg_24p_xa_pm24b1200_v0119_EE";
 
 	//
 	//theCali.Set2DResTFileName( "egres_DEGPD_AODSIM_R24_Fprompt_v3_14011_v12_resplots.root" );

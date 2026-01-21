@@ -556,15 +556,15 @@ sro18ebnc = 'ResMap_315257_325172__SRO_Data_Hist_NoCali_eg_18UL_EB_xa_pm24b1200_
 sro18eenc = 'ResMap_315257_325172__SRO_Data_Hist_NoCali_eg_18UL_EE_xa_pm24b1200_v0108'
 
 
-dro22ebnc = 'ResMap_355794_362760__DRO_Data_Hist_NoCali_eg_22p_EB_xa_pm24b1200_v0112'
-dro22eenc = 'ResMap_355794_362760__DRO_Data_Hist_NoCali_eg_22p_EE_xa_pm24b1200_v0112'
 dro22eb = 'ResMap_355794_362760__DRO_Data_Hist_eg_22p_EB_xa_pm24b1200_v0112'
 dro22ee = 'ResMap_355794_362760__DRO_Data_Hist_eg_22p_EE_xa_pm24b1200_v0112'
-sro22ebnc = 'ResMap_355794_362760__SRO_Data_Hist_NoCali_eg_22p_EB_xa_pm24b1200_v0112'
-sro22eenc = 'ResMap_355794_362760__SRO_Data_Hist_NoCali_eg_22p_EE_xa_pm24b1200_v0112'
 sro22eb = 'ResMap_355794_362760__SRO_Data_Hist_eg_22p_EB_xa_pm24b1200_v0112'
 sro22ee = 'ResMap_355794_362760__SRO_Data_Hist_eg_22p_EE_xa_pm24b1200_v0112'
 
+dro22ebnc = 'ResMap_355794_362760_DRO_Data_Hist_NoCali_eg_22p_xa_pm24b1200_v0120_EB'
+dro22eenc = 'ResMap_355794_362760_DRO_Data_Hist_NoCali_eg_22p_xa_pm24b1200_v0120_EE'
+sro22ebnc = 'ResMap_355794_362760_SRO_Data_Hist_NoCali_eg_22p_xa_pm24b1200_v0120_EB'
+sro22eenc = 'ResMap_355794_362760_SRO_Data_Hist_NoCali_eg_22p_xa_pm24b1200_v0120_EE'
 
 dro18mceb = 'ResMap_0_999999_DRO_Data_Hist_NoCali_eg_18MC_xa_pm24b1200_v0116_EB'
 dro18mcee = 'ResMap_0_999999_DRO_Data_Hist_NoCali_eg_18MC_xa_pm24b1200_v0116_EE'
@@ -586,10 +586,21 @@ dro24eenc = 'ResMap_378971_387721_DRO_Data_Hist_NoCali_eg_24p_xa_pm24b1200_v0119
 sro24ebnc = 'ResMap_378971_387721_SRO_Data_Hist_NoCali_eg_24p_xa_pm24b1200_v0119_EB'
 sro24eenc = 'ResMap_378971_387721_SRO_Data_Hist_NoCali_eg_24p_xa_pm24b1200_v0119_EE'
 
+dro24eb = 'ResMap_378971_387721_DRO_Data_Hist_eg_24p_xa_pm24b1200_v0119_EB'
+dro24ee = 'ResMap_378971_387721_DRO_Data_Hist_eg_24p_xa_pm24b1200_v0119_EE'
+sro24eb = 'ResMap_378971_387721_SRO_Data_Hist_eg_24p_xa_pm24b1200_v0119_EB'
+sro24ee = 'ResMap_378971_387721_SRO_Data_Hist_eg_24p_xa_pm24b1200_v0119_EE'
+
 
 rfend = '_NSC_resfit.root'
 shend = '_sigma'
 
+hl_r3_24_ebee = [
+    [sro24eb+shend,"",sro24eb+rfend,"24 SRO EB"],
+    [sro24ee+shend,"",sro24ee+rfend,"24 SRO EE"],
+    [dro24eb+shend,"",dro24eb+rfend,"24 DRO EB"],
+    [dro24ee+shend,"",dro24ee+rfend,"24 DRO EE"],
+]
 
 hl_r3_24_ebeenc = [
     [sro24ebnc+shend,"",sro24ebnc+rfend,"24 SRO EB"],
@@ -784,17 +795,8 @@ t = [0.325,0.85,0.1,0.175,0.285]#adjsuting lumi-sqrt(s) in title bar
 #outname = 'downloads/tr_hl_r3_24d_part_trvcc_ccgt_v7'
 #outname = 'downloads/tr_hl_r3_25c2'
 #outname = 'downloads/tr_hl_r3_25bc_xa'
-outname = 'tr_hl_r2_24nc'
-#dostack(hl_r3_24d_part, outname, date, Ic_layout, ptitle,  y, x, l, t)
-#dostack(hl_r3_24d_part_cc, outname_cc, date, Ic_layout, ptitle_cc,  y, x, l, t)
-#dostack(hl_r3_24f_EE_rtvcc, outname, date, Ic_layout, ptitle,  y, x, l, t)
-#dostack(hl_r3_25b, outname, date, Ic_layout, ptitle,  y, x, l, t)
-#dostack(hl_r3_24f_EE_rtvcc, outname, date, Ic_layout, ptitle,  y, x, l, t)
-#dostack(hl_r3_25c2_prmt, outname, date, Ic_layout, ptitle,  y, x, l, t)
-#dostack(hl_r3_25d_prmt, outname, date, Ic_layout, ptitle,  y, x, l, t)
-#dostack(hl_r2_1817, outname, date, Ic_layout, ptitle,  y, x, l, t)
-#dostack(hl_r2_1817_ee, outname, date, Ic_layout, ptitle,  y, x, l, t)
-dostack(hl_r3_24_ebeenc, outname, date, Ic_layout, ptitle,  y, x, l, t)
+outname = 'tr_hl_r2_22nc'
+dostack(hl_r3_22_ebeenc, outname, date, Ic_layout, ptitle,  y, x, l, t)
 
 #
 ##---------------------------------------------------------------
