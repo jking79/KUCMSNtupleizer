@@ -39,10 +39,10 @@ options.register('runera','Run3',VarParsing.multiplicity.singleton,VarParsing.va
 #options.register('globalTag','133X_mcRun3_2024_realistic_v10',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','94X_mc2017_realistic_v14',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for GMSB MC');
 ##options.register('globalTag','112X_mcRun3_2021_realistic_v16',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
-options.register('globalTag','140X_dataRun3_v17',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for R3 22,23');
+#options.register('globalTag','140X_dataRun3_v17',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for R3 22,23');
 
 ##------------------ data gt  
-#options.register('globalTag','106X_dataRun2_v36',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
+options.register('globalTag','106X_dataRun2_v36',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 ##options.register('globalTag','106X_dataRun2_v28',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 #options.register('globalTag','124X_dataRun3_v15',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2022');
 
@@ -131,7 +131,9 @@ process.source = cms.Source("PoolSource",
         #'root://xrootd-cms.cern.ch//store/data/Run2022C/JetMET/AOD/EXODelayedJetMET-27Jun2023-v1/40000/113cb54d-48b1-43f5-96c1-f4725ee59eca.root',
         #'root://xrootd-cms.infn.it//store/data/Run2022C/JetMET/AOD/EXODelayedJetMET-27Jun2023-v1/40000/a346eb6b-170c-4e4c-b403-e57a70cec129.root',
 
-    'root://cmsxrootd.fnal.gov//store/data/Run2023D/JetMET1/AOD/EXODelayedJetMET-PromptReco-v2/000/370/667/00000/89178b58-f461-478d-a2cf-142842257adc.root',
+    #'root://cmsxrootd.fnal.gov//store/data/Run2023D/JetMET1/AOD/EXODelayedJetMET-PromptReco-v2/000/370/667/00000/89178b58-f461-478d-a2cf-142842257adc.root',
+
+        'root://cmsxrootd.fnal.gov//store/data/Run2016G/MET/AOD/21Feb2020_UL2016-v1/20000/090027EF-E362-DA48-9977-6E3CE8BB6410.root'
 
         #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/2430000/010FAEF3-D41F-D340-B7E9-E3BBD6498B3E.root',
         #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/2430000/0FB1FACF-237F-1749-9878-CA52BC077610.root',
@@ -245,7 +247,7 @@ process.source = cms.Source("PoolSource",
         #'root://cms-xrd-global.cern.ch//store/data/Run2018B/MET/AOD/15Feb2022_UL2018-v1/25210000/2325D400-4654-D64A-B3A3-9C96703D9207.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2022C/MET/AOD/27Jun2023-v2/2820000/35c49035-7557-4a77-99c8-065844b3649d.root'
         #'root://cmsxrootd-site.fnal.gov//store/data/Run2022E/JetMET/AOD/EXODelayedJetMET-27Jun2023-v1/40000/08fd72c7-1be9-4328-9a38-85979d340331.root',
-        #'root://cms-xrd-global.cern.ch//store/data/Run2022E/JetMET/AOD/EXODelayedJetMET-27Jun2023-v1/40000/08fd72c7-1be9-4328-9a38-85979d340331.root',
+        #`'root://cms-xrd-global.cern.ch//store/data/Run2022E/JetMET/AOD/EXODelayedJetMET-27Jun2023-v1/40000/08fd72c7-1be9-4328-9a38-85979d340331.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2018C/DisplacedJet/AOD/15Feb2022_UL2018-v1/60000/E11CE7E4-249F-0D42-AD15-344870056EF4.root',
 
          # AODSIM DPJB model
@@ -261,9 +263,9 @@ process.source = cms.Source("PoolSource",
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250))#KT
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500))#QT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(5000))#BT
