@@ -139,6 +139,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 
   if( RJRDEBUG ) std::cout << " - Loading Jets." << std::endl;
 
+/*//////////////////////////////////////////////////////////////////////////////////
   std::vector<RFKey> leadJetKey;
   for( uInt it = 0; it < nSelJets; it++ ){
     auto sjetPt = selJetPt[it]; //selJets.getFLBranchValue( "selJetPt", it );
@@ -153,6 +154,35 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     else jetID.push_back(COMB_J->AddLabFrameFourVector(jet));
     jet4vec.push_back(jet); 
   }//<<>>for( int i = 0; i < nSelJets; i++ )
+*/////////////////////////////////////////////////////////////////////////////////////
+
+  std::vector< TLorentzVector > rjr_jets;
+  for( uInt it = 0; it < nSelJets; it++ ){
+    float sjetPt = selJetPt[it];
+    float sjetEta = selJetEta[it]; 
+    float sjetPhi = selJetPhi[it]; 
+    float sjetMass = ( selJetMass[it] > 0 ) ? selJetMass[it] : 0; 
+    TLorentzVector jet;
+    jet.SetPtEtaPhiM( sjetPt, sjetEta, sjetPhi, sjetMass );
+    rjr_jets.push_back(jet);
+    if( verbose ) std::cout << " - Loading Jet Pt: " << sjetPt << " Eta: " << sjetEta;
+    if( verbose ) std::cout << " Phi: " << sjetPhi << " M: " << sjetMass << std::endl;
+  }//<<>>for( int i = 0; i < nSelJets; i++ )
+
+  if( RJRDEBUG ) std::cout << " -- nRJRJets Pre : " << nSelJets << std::endl;
+  std::vector<RFKey> leadJetKey;
+  BinaryMergeInPlace( rjr_jets, 16 - nRJRPhos );
+  nSelJets = rjr_jets.size();
+  if( RJRDEBUG ) std::cout << " -- nRJRJets Post : " << nSelJets << std::endl;
+  for( uInt it = 0; it < nSelJets; it++ ){
+    TLorentzVector jet = rjr_jets[it];
+    if( verbose ) std::cout << " - Loading Jet Pt: " << jet.Pt() << " Eta: " << jet.Eta();
+    if( verbose ) std::cout << " Phi: " << jet.Phi() << " M: " << jet.M() << std::endl;
+    if( it == 0 ){ leadJetKey.push_back( COMB_J->AddLabFrameFourVector(jet) ); jetID.push_back(leadJetKey[0]); }
+    else jetID.push_back(COMB_J->AddLabFrameFourVector(jet));
+    jet4vec.push_back(jet);
+  }//<<>>for( int i = 0; i < nSelJets; i++ )
+  if( verbose ) std::cout << " -- n jet4vec : " << jet4vec.size() << std::endl;
 
   if( RJRDEBUG ) std::cout << " -- Processing RJR Tree ------ " << std::endl;
 
@@ -178,12 +208,15 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
   //  -- redifine A & B side for jets to be : is jet on lead pho side -> A ; is not on lead pho side -> B // done
   for( uInt it = firstJet; it < nVisObjects; it++ ){	
 
-    if( COMB_J->GetFrame(jetID[it]) == *J1a || COMB_J->GetFrame(jetID[it]) == *J2a  ){ isALeadPhoSide ? nJetsJa++ : nJetsJb++; } // one for each frame 
+    if( COMB_J->GetFrame(jetID[it]) == *J1a || COMB_J->GetFrame(jetID[it]) == *J2a  ){ isALeadPhoSide ? nJetsJa++ : nJetsJb++; } 
+	// one for each frame 
     else { isALeadPhoSide ? nJetsJb++ : nJetsJa++; }
 
   }//<<>>for( int i = 0; i < nSelJets; i++ )
   float abDiffSide = isALeadPhoSide ? 1 : -1;
-  if( ( type < 2 ) && ( nRJRPhos == 2 ) ) subPhoLocation = ( COMB_J->GetFrame(jetID[1]) == *J1a || COMB_J->GetFrame(jetID[1]) == *J2a ) ? 1 : 2;
+  if( ( type < 2 ) && ( nRJRPhos == 2 ) ){ 
+		subPhoLocation = ( COMB_J->GetFrame(jetID[1]) == *J1a || COMB_J->GetFrame(jetID[1]) == *J2a ) ? 1 : 2;
+  }//<<>>if( ( type < 2 ) && ( nRJRPhos == 2 ) )
 
   selRjrVars.fillBranch( "rjrType", type );
   selRjrVars.fillBranch( "rjrABSide", isALeadPhoSide );
