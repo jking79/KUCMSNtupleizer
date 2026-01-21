@@ -120,7 +120,8 @@ void KUCMSAodSkimmer::processJets(){
 
     if( DEBUG ) std::cout << " - Jet Obj selection." << std::endl;
     // jet object selection ------------------------------------------
-    bool overMinPt( pt > 20 ); 
+    bool overMinPt( pt > 20 );
+    bool overMinQaulityPt( pt > 30 ); 
     ////bool underMaxEta( std::abs(eta) <= 3.2 );
     bool underMaxEta( std::abs(eta) <= 2.4 );
     bool isMinQuality( quality > 1 ); // 2 = "tight" 3 = "tighter"
@@ -149,7 +150,7 @@ void KUCMSAodSkimmer::processJets(){
 	bool inAcceptance = underMaxEta && overMinPt && isNotPhoJet;
 	if( inAcceptance && not isLLPJet ) jetEventVeto++;
 
-    bool jetQualityGood = underMaxEta && isMinQuality && overMinPt && isNotPhoJet;
+    bool jetQualityGood = underMaxEta && isMinQuality && overMinQaulityPt && isNotPhoJet;
 	bool jetSelected = underMaxEta && isLLPJet && overMinPt && isNotPhoJet;
 
 	if( jetQualityGood ){ nQJets++; isSelJet.push_back(true); }

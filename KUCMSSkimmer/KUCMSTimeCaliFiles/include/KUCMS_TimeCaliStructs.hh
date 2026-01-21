@@ -29,17 +29,20 @@ struct kucms_lumiRunStruct {
 
 //--------------------------------------------------------------------------------------------------------------------- 
 
-struct kucms_smearTagStruct { 
+struct kucms_resTagStruct { 
  
-    kucms_smearTagStruct(){} 
-    kucms_smearTagStruct( float tnoise, float tstoch, float tstant ) 
-        : noise(tnoise), stoch(tstoch), stant(tstant) {} 
+    kucms_resTagStruct(){} 
+    kucms_resTagStruct( float tebnoise, float tebstoch, float tebstant, float teenoise, float teestoch, float teestant ) 
+        : ebnoise(tebnoise), ebstoch(tebstoch), ebstant(tebstant), eenoise(teenoise), eestoch(teestoch), eestant(teestant) {} 
  
-    float noise; 
-    float stoch; 
-    float stant; 
- 
-};//<<>>smearTagStruct 
+    float ebnoise; 
+    float ebstoch; 
+    float ebstant; 
+    float eenoise;
+    float eestoch;
+    float eestant;
+
+};//<<>>resTagStruct 
 
 //--------------------------------------------------------------------------------------------------------------------- 
 
