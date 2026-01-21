@@ -113,24 +113,15 @@ void KUCMSAodSkimmer::processRJRISR(){
 	rjr_jets.push_back(jet);
     if( verbose ) std::cout << " - Loading Jet Pt: " << sjetPt << " Eta: " << sjetEta;
     if( verbose ) std::cout << " Phi: " << sjetPhi << " M: " << sjetMass << std::endl;
-    ////if( it == 0 ){ leadJetKey.push_back( COMB_J_c->AddLabFrameFourVector(jet) ); jetID.push_back(leadJetKey[0]); } 
-    ////else jetID.push_back(COMB_J_c->AddLabFrameFourVector(jet));
-    ////jet4vec.push_back(jet); 
   }//<<>>for( int i = 0; i < nSelJets; i++ )
 
   if( RJRDEBUG ) std::cout << " -- nRJRJets Pre : " << nSelJets << std::endl;
   std::vector<RFKey> leadJetKey;
-  //std::vector< TLorentzVector > merged_rjr_jets = BinaryMerge( rjr_jets, 13 -  nRJRPhos );
   BinaryMergeInPlace( rjr_jets, 16 -  nRJRPhos );
   nSelJets = rjr_jets.size();
   if( RJRDEBUG ) std::cout << " -- nRJRJets Post : " << nSelJets << std::endl;
   for( uInt it = 0; it < nSelJets; it++ ){
-    ////auto sjetPt = selJetPt[it]; //selJets.getFLBranchValue( "selJetPt", it );
-    ////auto sjetEta = selJetEta[it]; //selJets.getFLBranchValue( "selJetEta", it );
-    ////auto sjetPhi = selJetPhi[it]; //selJets.getFLBranchValue( "selJetPhi", it ); 
-    ////auto sjetMass = ( selJetMass[it] > 0 ) ? selJetMass[it] : 0; //selJets.getFLBranchValue( "selJetMass", it );   
     TLorentzVector jet = rjr_jets[it];
-    ////jet.SetPtEtaPhiM( sjetPt, sjetEta, sjetPhi, sjetMass );
     if( verbose ) std::cout << " - Loading Jet Pt: " << jet.Pt() << " Eta: " << jet.Eta();
     if( verbose ) std::cout << " Phi: " << jet.Phi() << " M: " << jet.M() << std::endl;
     if( it == 0 ){ leadJetKey.push_back( COMB_J_c->AddLabFrameFourVector(jet) ); jetID.push_back(leadJetKey[0]); }
@@ -173,7 +164,8 @@ void KUCMSAodSkimmer::processRJRISR(){
   for( uInt it = firstJet; it < nVisObjects; it++ ){	
 
 	if( COMB_J_c->GetFrame(jetID[it]) == *ISR_c ){ nJetsISR++; continue; }
-    if( COMB_J_c->GetFrame(jetID[it]) == *J1a_c || COMB_J_c->GetFrame(jetID[it]) == *J2a_c  ){ isALeadPhoSide ? nJetsJa++ : nJetsJb++; } // one per frame 
+    if( COMB_J_c->GetFrame(jetID[it]) == *J1a_c || COMB_J_c->GetFrame(jetID[it]) == *J2a_c  ){ isALeadPhoSide ? nJetsJa++ : nJetsJb++; } 
+	// one per frame 
     else { isALeadPhoSide ? nJetsJb++ : nJetsJa++; }
 
   }//<<>>for( int i = 0; i < nSelJets; i++ )
@@ -724,6 +716,7 @@ void KUCMSAodSkimmer::processRJRISR(){
 
 }//<<>>void KUCMSAodSkimmer::processRJR( int type, bool newEvent )
 
+/*
 std::vector< TLorentzVector > KUCMSAodSkimmer::BinaryMerge( const std::vector< TLorentzVector > & rjr_jets, int Nmax ){
 
 	if( rjr_jets.size() <= Nmax ) return rjr_jets;
@@ -799,6 +792,8 @@ void KUCMSAodSkimmer::BinaryMergeInPlace( std::vector<TLorentzVector>& jets, int
     }//while( (int)jets.size() > Nmax )
 
 }//<<>>BinaryMergeInPlace(std::vector<TLorentzVector>& jets, int Nmax)
+*/
+
 
 //------------------------------------------------------------------------------------------------------------
 // set output branches, initialize histograms, and endjobs

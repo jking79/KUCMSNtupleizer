@@ -253,3 +253,81 @@ std::vector<float> KUCMSAodSkimmer::getLeadTofRhTime( std::vector<uInt> recHitId
 
 }//>>>>vector<float> KUCMSAodSkimmer::getLeadTofRhTime( rhGroup recHits, double vtxX, double vtxY, double vtxZ )
 
+////////  jet merging for RJR kenimatics calculations
+
+std::vector< TLorentzVector > KUCMSAodSkimmer::BinaryMerge( const std::vector< TLorentzVector > & rjr_jets, int Nmax ){
+
+    if( rjr_jets.size() <= Nmax ) return rjr_jets;
+
+    const int N = (int)rjr_jets.size();
+    double Rmin = 2.;
+    int imin = -1;
+    int jmin = -1;
+    for( int i = 0; i < N-1; i++ ){
+        for( int j = i+1; j < N; j++ ){
+            const double M2 = ( rjr_jets[i] + rjr_jets[j] ).M2();
+            const double sumM = rjr_jets[i].M() + rjr_jets[j].M();
+            const double R = ( M2 > 0. ) ? ( M2 - sumM*sumM ) / M2 : 0.;
+            if( R < Rmin ){ Rmin = R; imin = i; jmin = j; }//<<>>if(R < Rmin)
+        }//<<>>for(int j = i+1; j < N; j++)
+    }//<<>>for(int i = 0; i < N-1; i++)
+
+    std::vector< TLorentzVector > merged_rjr_jets;
+    merged_rjr_jets.reserve(N - 1);
+    merged_rjr_jets.push_back( rjr_jets[imin] + rjr_jets[jmin] );
+    for(int i = 0; i < N; i++){ if( i != imin && i != jmin ) merged_rjr_jets.push_back( rjr_jets[i] ); }
+
+  return BinaryMerge( merged_rjr_jets, Nmax );
+
+}//<<>>void KUCMSAodSkimmer::BinaryMerge( std::vector< TLorentzVector > rjr_jets )
+
+void KUCMSAodSkimmer::BinaryMergeInPlace( std::vector<TLorentzVector>& jets, int Nmax ){
+
+    if( jets.size() <= Nmax ) return;
+
+    auto ptDesc = []( const TLorentzVector& a, const TLorentzVector& b ){ return a.Pt() > b.Pt(); };
+
+    // Ensure initial ordering: lead jet first
+    std::sort(jets.begin(), jets.end(), ptDesc);
+
+
+    while( (int)jets.size() > Nmax ){
+
+        const int N = (int)jets.size();
+        if( N < Nmax ) break;
+
+        //std::cout << " - Jet Merge for RJR ISR " << std::endl;
+        //for( uInt it = 0; it < N; it++ ){
+        //  TLorentzVector jet = jets[it];
+        //  std::cout << " - Jet " << it << " Pt: " << jet.Pt() << " Eta: " << jet.Eta();
+        //  std::cout << " Phi: " << jet.Phi() << " M: " << jet.M() << std::endl;
+        //}//<<>>for( int i = 0; i < nSelJets; i++ )
+
+        // Default: merge two smallest-pT jets (last two entries)
+        int imin = N - 2;
+        int jmin = N - 1;
+
+        double Rmin = 100000000.0;
+        // Search for best pair with R < 2
+        for( int i = 0; i < N - 1; ++i ){
+            for( int j = i + 1; j < N; ++j ){
+
+                const double M2 = (jets[i] + jets[j]).M2();
+                const double sumM = jets[i].M() + jets[j].M();
+                const double R = ( M2 > 0.0 ) ? ( M2 - sumM * sumM ) : 0.0;
+                if( R < Rmin ){ Rmin = R; imin = i; jmin = j; }
+
+            }//<<>>for( int j = i + 1; j < N; ++j )
+        }//<<>>for( int i = 0; i < N - 1; ++i )
+
+        // Merge jmin into imin
+        jets[imin] += jets[jmin];
+        // Remove the merged-away jet. Use erase to keep list clean.
+        jets.erase(jets.begin() + jmin);
+        // Restore pT ordering so lead jet is first for next iteration
+        std::sort(jets.begin(), jets.end(), ptDesc);
+
+    }//while( (int)jets.size() > Nmax )
+
+}//<<>>BinaryMergeInPlace(std::vector<TLorentzVector>& jets, int Nmax)
+
