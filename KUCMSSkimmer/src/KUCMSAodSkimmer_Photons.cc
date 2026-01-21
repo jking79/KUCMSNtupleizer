@@ -1107,11 +1107,16 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch("selPho_GJetsCR",VBOOL);
   selPhotons.makeBranch("selPho_DiJetsCR",VBOOL);
 
-  selPhotons.makeBranch("passNPhoGe1SelectionBeamHaloCR",BOOL);
-  selPhotons.makeBranch("passNPhoGe1SelectionEarlyBeamHaloCR",BOOL);
-  selPhotons.makeBranch("passNPhoGe1SelectionLateBeamHaloCR",BOOL); 
-  selPhotons.makeBranch("passNPhoGe1SelectionEarlyPhysBkgCR",BOOL); 
-  selPhotons.makeBranch("passNPhoGe1SelectionEndcapNonIsoCR",BOOL); 
+  selPhotons.makeBranch("passNPhoEq1SelectionBeamHaloCR", BOOL);
+  selPhotons.makeBranch("passNPhoGe2SelectionBeamHaloCR", BOOL);
+  selPhotons.makeBranch("passNPhoEq1SelectionEarlyBeamHaloCR", BOOL);
+  selPhotons.makeBranch("passNPhoGe2SelectionEarlyBeamHaloCR", BOOL);
+  selPhotons.makeBranch("passNPhoEq1SelectionLateBeamHaloCR", BOOL);
+  selPhotons.makeBranch("passNPhoGe2SelectionLateBeamHaloCR", BOOL);
+  selPhotons.makeBranch("passNPhoEq1SelectionPhysBkgCR", BOOL);
+  selPhotons.makeBranch("passNPhoGe2SelectionPhysBkgCR", BOOL);
+  selPhotons.makeBranch("passNPhoEq1SelectionEndcapNonIsoCR", BOOL);
+  selPhotons.makeBranch("passNPhoGe2SelectionEndcapNonIsoCR", BOOL);
 
   selPhotons.makeBranch( "selPhoGenPt", VFLOAT );
   selPhotons.makeBranch( "selPhoPhoIsoDr", VFLOAT );
