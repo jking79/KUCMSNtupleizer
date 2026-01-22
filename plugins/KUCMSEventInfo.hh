@@ -106,6 +106,8 @@ class KUCMSEventInfoObject : public KUCMSObjectBase {
 	// for fillFlagBranch to work the branch reffrence name and the cms process path name for the flag must be the same !!!!!!
 	// and the flags map must also use the branch/path name as its key !!!!!!!
 
+	std::map<std::string,int> triggerCnt;
+
     // Other object(s) need by this object - BASE CLASS USED HERE FOR REFRENCE ONLY -
     // exampleObject* otherObjectPtr;
 
@@ -149,6 +151,7 @@ void KUCMSEventInfoObject::InitObject( TTree* fOutTree ){
 	for( auto trigName : triggerList ){
 	
 		Branches.makeBranch( trigName, trigName, BOOL );
+		triggerCnt[trigName] = 0;
 
 	}//<<>>for( auto trigName : triggerList )
 
@@ -290,7 +293,8 @@ void KUCMSEventInfoObject::ProcessEvent( ItemManager<float>& geVar ){
 
     for( auto filterName : metFilterList ){ fillFlagBranch( filterName ); }
     for( auto trigName : triggerList ){ fillHltBranch( trigName ); }
-	
+	for( const auto& kv : hltpaths ){ if( kv.second ) triggerCnt[ kv.first ]++; }
+
 
 /*
 	//std::cout << " -------------------------- Trigger Event :" << std::endl;
@@ -336,8 +340,9 @@ void KUCMSEventInfoObject::EndJobs(){
 		std::cout << "List of Triggers appearing in the events processed in this dataset : " << std::endl;
 		for( auto trigName : fullTriggerList ) std::cout << trigName << std::endl;
 
-
 	}//<<>>if( cfFlag("makeTriggerList") )
+
+	for (const auto& kv : triggerCnt) { std::cout << kv.first << " : " << kv.second << "\n"; }
 
 }//<<>>void KUCMSEventInfoObject::EndJobs()
 

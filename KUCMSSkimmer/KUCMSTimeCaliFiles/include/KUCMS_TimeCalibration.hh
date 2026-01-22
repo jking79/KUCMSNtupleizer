@@ -62,7 +62,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
     std::string caliTFileName;
     std::string caliR3TFileName;
     std::string cali2DResPlotsTFileName;
-    std::string caliSmearConfig;
+    std::string caliResConfig;
 
     std::string xtalHistMapName;
     std::string ttHistMapName;
@@ -81,7 +81,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 	std::string curTag; // used to change rereco version or campaian calibrations are for
     std::string curLumiTag;
 
-    std::string smearTag;
+    std::string resTag; // NOTE: resolution used for PDs in set in master file lists, this is resoltion of MC for smearing
 
 	std::string xBinStr;
     std::string yBinStr;
@@ -101,7 +101,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
     std::map<std::string,std::map<int,kucms_lumiRunStruct>> lumiRunMaps;// str is settag, int is run - ref for maps - give lumi by run
     std::map<std::string,std::map<int,int>> iovMaps; // < tag, < start run, end rn >>
 
-    std::map<std::string,kucms_smearTagStruct> SmearTagSet;
+    std::map<std::string,kucms_resTagStruct> ResTagSet;
 
 	std::vector<int> ebx_ranges, ebtt_ranges, epmx_ranges, epmtt_ranges;
 
@@ -133,8 +133,9 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
     void SaveCaliRunFile();
     void ReadTTRunFile();
     void SaveTTRunFile();
-	void ReadSmearFile();
-    void SaveSmearFile();
+	void ReadResFile();
+    void SaveResFile();
+	void SetResParamters( std::string tag, float ebnoise, float ebstoch, float ebstant, float eenoise, float eestoch, float eestant );
 	void ReadLumiFile( std::string lumifile, std::string tag );// only need to create caliRunMap entries - made with brilcalc
 
     void LoadCaliHists( bool stayOpen = false, bool makeNew = false );// loads up all starting info
@@ -174,13 +175,14 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 			{ return rhtime - getCalibration( rhid, run, gainID ); };
 	float getCalibTime( float rhtime, uInt rhid, int run, bool gs6, bool gs1 )
 			{ int gid = ( gs6 || gs1 ) ? 2 : 1; return rhtime - getCalibration( rhid, run, gid ); };
-	//tag indicates which smear to use
+
+	//tag indicates which smear to use  ---  this is all depreciated - needs to be reworked for current statagy
 	float getSmearedTime(  float rhtime, float rhamp, std::string stag );
     float getSmearedTime(  float rhtime, float rhamp )
-            { return getSmearedTime( rhtime, rhamp, smearTag ); };
+            { return getSmearedTime( rhtime, rhamp, resTag ); };
     float getSmrdCalibTime( float rhtime, float rhamp, uInt rhid, int run, std::string ctag, std::string stag );
     float getSmrdCalibTime( float rhtime, float rhamp, uInt rhid, int run )
-			{ return getSmrdCalibTime( rhtime, rhamp, rhid, run, curTag, smearTag ); }; 
+			{ return getSmrdCalibTime( rhtime, rhamp, rhid, run, curTag, resTag ); }; 
 
 
 	// --------------------------------------------------------------------------
@@ -202,7 +204,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
     void setTTIov( std::string tag ){ curTTIov = tag; };
     void setLumiTag( std::string tag ){ curLumiTag = tag; };
 
-    void setSmearTag( std::string tag ){ smearTag = tag; };
+    void setMCResTag( std::string tag ){ resTag = tag; }; // NOTE: resolution for PDs set in master file lists,this is resoltion of MC for smearing
 
     void SetXBinStr( std::string xbins ){ xBinStr = xbins; };
     void SetYBinStr( std::string ybins ){ yBinStr = ybins; };

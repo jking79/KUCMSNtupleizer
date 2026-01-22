@@ -12,7 +12,7 @@ options.register('eventFilter','MET100',VarParsing.multiplicity.singleton,VarPar
 options.register('doSV',True,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to run displaced SVs');
 options.register('doDisEle',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag ro run displaced electrons');
 options.register('doECALTrackOnly',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to run ECAL Tracks only');
-options.register('runera','Run2',VarParsing.multiplicity.singleton,VarParsing.varType.string,'filter to use in event processing');
+options.register('runera','Run3',VarParsing.multiplicity.singleton,VarParsing.varType.string,'filter to use in event processing');
 
 ## object prep cuts
 #options.register('jetpTmin',15.0,VarParsing.multiplicity.singleton,VarParsing.varType.float,'jet pT minimum cut');
@@ -39,6 +39,7 @@ options.register('globalTag','106X_upgrade2018_realistic_v11_L1v1',VarParsing.mu
 #options.register('globalTag','133X_mcRun3_2024_realistic_v10',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','94X_mc2017_realistic_v14',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for GMSB MC');
 ##options.register('globalTag','112X_mcRun3_2021_realistic_v16',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
+#options.register('globalTag','140X_dataRun3_v17',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for R3 22,23');
 
 ##------------------ data gt  
 #options.register('globalTag','106X_dataRun2_v36',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
@@ -125,6 +126,14 @@ process.source = cms.Source("PoolSource",
     #fileNames=readFiles,
     fileNames = cms.untracked.vstring(
 
+        #root://cmsxrootd.fnal.gov/
+        #'root://xrootd-cms.cern.ch//store/data/Run2022C/JetMET/AOD/EXODelayedJetMET-27Jun2023-v1/40000/a346eb6b-170c-4e4c-b403-e57a70cec129.root',
+        #'root://xrootd-cms.cern.ch//store/data/Run2022C/JetMET/AOD/EXODelayedJetMET-27Jun2023-v1/40000/113cb54d-48b1-43f5-96c1-f4725ee59eca.root',
+        #'root://xrootd-cms.infn.it//store/data/Run2022C/JetMET/AOD/EXODelayedJetMET-27Jun2023-v1/40000/a346eb6b-170c-4e4c-b403-e57a70cec129.root',
+
+    #'root://cmsxrootd.fnal.gov//store/data/Run2023D/JetMET1/AOD/EXODelayedJetMET-PromptReco-v2/000/370/667/00000/89178b58-f461-478d-a2cf-142842257adc.root',
+
+        #'root://cmsxrootd.fnal.gov//store/data/Run2016G/MET/AOD/21Feb2020_UL2016-v1/20000/090027EF-E362-DA48-9977-6E3CE8BB6410.root'
 
         #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/2430000/010FAEF3-D41F-D340-B7E9-E3BBD6498B3E.root',
         #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/2430000/0FB1FACF-237F-1749-9878-CA52BC077610.root',
@@ -214,7 +223,7 @@ process.source = cms.Source("PoolSource",
         # WJets
         #'root://cmsxrootd-site.fnal.gov//store/mc/RunIISummer20UL18RECO/WJetsToLNu_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/106X_upgrade2018_realistic_v11_L1v1_ext2-v3/40000/6021A8AE-9B41-7A4F-8E33-470F73F3D4FC.root',
 
-        'file:WJets_72B9C618-FE23-1E41-872E-57314D7CB454.root',
+        'file:root_files/WJets_72B9C618-FE23-1E41-872E-57314D7CB454.root',
 
         # DiPhotonJetsBox
         #'root://cmsxrootd-site.fnal.gov//store/mc/RunIISummer20UL18RECO/DiPhotonJetsBox_MGG-80toInf_13TeV-sherpa/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/50000/E1C9ABB4-D708-D14E-8E97-803013F321E6.root',
@@ -228,19 +237,17 @@ process.source = cms.Source("PoolSource",
         #QCD
         #'root://cmsxrootd-site.fnal.gov//store/mc/RunIIFall17DRPremix/QCD_HT200to300_TuneCP5_13TeV-madgraph-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/110000/1E29BF8B-5F60-E811-AD1D-0663CE00010C.root',
 
+        #### AOD Run3   MUST BE IN CMSSW  14 or 15 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        ####3'root://cmseos.fnal.gov//store/data/Run2023B/JetMET1/AOD/EXODelayedJetMET-PromptReco-v1/000/366/892/00000/dccdb4dd-2e6e-4a1f-ae81-70af305d9f2e.root',
+
         # AOD Data MET
-        #'file:Met_UL18B_AOD_973EEF0C-44AB-E94A-8591-04DCD00D8B4B.root',
-        #'file:met_18d_2EB077EB-75AC-4C4B-8487-5A738424146F.root',
-        #'file:met_18d_E9289BB4-1970-764D-A256-62776020C585.root',
-        #'file:met_18d_746C3653-29BC-9444-A930-546D498E615D.root',
+        #'file:root_files/Met_UL18B_AOD_973EEF0C-44AB-E94A-8591-04DCD00D8B4B.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2018B/MET/AOD/15Feb2022_UL2018-v1/25210000/CD3E4875-8B2E-ED4E-B1C9-43BB906B0555.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2018B/MET/AOD/15Feb2022_UL2018-v1/2520000/F672D9DC-50E8-684C-BE01-8E73D82651FF.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2018B/MET/AOD/15Feb2022_UL2018-v1/25210000/2325D400-4654-D64A-B3A3-9C96703D9207.root',
-        #'file:/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/test/Met_UL18B_AOD_973EEF0C-44AB-E94A-8591-04DCD00D8B4B.root'      
-        #'file:/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/test/MetPD_003A2484-A2DC-E711-9D0A-02163E019C46.root'
         #'root://cms-xrd-global.cern.ch//store/data/Run2022C/MET/AOD/27Jun2023-v2/2820000/35c49035-7557-4a77-99c8-065844b3649d.root'
         #'root://cmsxrootd-site.fnal.gov//store/data/Run2022E/JetMET/AOD/EXODelayedJetMET-27Jun2023-v1/40000/08fd72c7-1be9-4328-9a38-85979d340331.root',
-        #'root://cms-xrd-global.cern.ch//store/data/Run2022E/JetMET/AOD/EXODelayedJetMET-27Jun2023-v1/40000/08fd72c7-1be9-4328-9a38-85979d340331.root',
+        #`'root://cms-xrd-global.cern.ch//store/data/Run2022E/JetMET/AOD/EXODelayedJetMET-27Jun2023-v1/40000/08fd72c7-1be9-4328-9a38-85979d340331.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2018C/DisplacedJet/AOD/15Feb2022_UL2018-v1/60000/E11CE7E4-249F-0D42-AD15-344870056EF4.root',
 
          # AODSIM DPJB model
@@ -256,9 +263,9 @@ process.source = cms.Source("PoolSource",
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250))#KT
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500))#QT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(5000))#BT
@@ -288,12 +295,12 @@ filterselect = 'none'
 #filterselect = 'AL1SelEle'
 if options.multicrab == True : filterselect = options.eventFilter
 
-#runera = "Run3"  # current siganl model
-runera = "Run2" # BG models
+runera = "Run3"  # current siganl model   !!!!!!!!  Run3 must be in CMSSW 14 or 15
+#runera = "Run2" # BG models
 if options.multicrab == True : runera = options.runera
 
-#dosv = True
-dosv = False # with v30 this is the only SV flag that matters, doDisEle and doECALTrackOnly are depreciated
+dosv = True
+#dosv = False # with v30 this is the only SV flag that matters, doDisEle and doECALTrackOnly are depreciated
 if options.multicrab == True : dosv = options.doSV
 
 ############dode = True
@@ -312,7 +319,10 @@ probeout = False
 if options.multicrab == True : probeout = False
 
 ecalIsoInputs = ecalIsoInputsF17
-if "Run3" in runera :  ecalIsoInputs = ecalruneraIsoInputsW22
+if "Run3" in runera :  
+    ecalIsoInputs = ecalruneraIsoInputsW22
+    if 'CASTOR' in process.CaloGeometryBuilder.SelectedCalos : 
+        process.CaloGeometryBuilder.SelectedCalos.remove('CASTOR') 
 
 #genMomChase = True
 genMomChase = False
@@ -392,6 +402,7 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
                               beamSpot = cms.InputTag("offlineBeamSpot"),
                               ## trigger
                               triggerFlagResults = cms.InputTag("TriggerResults","","RECO"),
+                              #triggerFlagResults = cms.InputTag("TriggerResults","","Pat"),
                               #triggerFlagResults = cms.InputTag("TriggerResults"),
                               triggerHLTResults = cms.InputTag("TriggerResults","","HLT"),
                               triggerEvent = cms.InputTag("hltTriggerSummaryAOD"),
@@ -521,6 +532,10 @@ process.pattriger = cms.Path( process.patTrigger )
 process.eventcount_path = cms.Path(process.eventCounter)
 process.tree_step = cms.EndPath(process.tree)
 process.endjob_step = cms.EndPath(process.endOfProcess)
+
+#done above now
+#if 'CASTOR' in process.CaloGeometryBuilder.SelectedCalos :
+#    process.CaloGeometryBuilder.SelectedCalos.remove('CASTOR')
 
 #########process.schedule = cms.Schedule( process.kuDisplaced_path, process.setFlags_path, process.tree_step, process.endjob_step )
 # Flags must be run as a path in the Schedule in order to appear in the trigger results for KUCMSEventInfo 
