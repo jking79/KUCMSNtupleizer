@@ -316,8 +316,8 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
     #lat_cms = '#bf{CMS} #it{Work in Progress}' + ptitle[0]
     #lat_title = 'Run2018D 3206730-320824' #   7 fb^{-1} (#sqrt{s} = 13 TeV)'
     #lat_title = 'Run2018D 1Tier miniAOD'
-    lat_title = ptitle[1]+' (13 TeV)'
-    #lat_title = ptitle[1]+' (13.6 TeV)'
+    #lat_title = ptitle[1]+' (13 TeV)'
+    lat_title = ptitle[1]+' (13.6 TeV)'
     ##lat_title = ptitle[1]+' (13.8 TeV)'
     if not dostoch : lat_form = '#sigma^{2}_{i} = (#frac{N}{A_{eff}/#sigma_{n}})^{2} + 2C^{2}'
     if dostoch : lat_form = '#sigma^{2}_{i} = (#frac{N}{A_{eff}/#sigma_{n}})^{2} + #frac{S^{2}}{A_{eff}/#sigma_{n}} + 2C^{2}'
@@ -391,8 +391,8 @@ legtitle = ''
 #legtitle = 'KuStc'
 #legtitle = 'KuNotStc'
 
-rtitle = 'Run2' # (13TeV)'
-#rtitle = 'Run3' # (13TeV)'
+#rtitle = 'Run2' # (13TeV)'
+rtitle = 'Run3' # (13.6TeV)'
 
 gi_legtitle = 'Global Inclusive'
 li_legtitle = 'Local Inclusive'
@@ -634,17 +634,17 @@ rfend = '_NSC_resfit.root'
 shend = '_sigma'
 
 hl_r3_24_ebee = [
-    [sro24eb+shend,"",sro24eb+rfend,"24 SRO EB"],
-    [sro24ee+shend,"",sro24ee+rfend,"24 SRO EE"],
-    [dro24eb+shend,"",dro24eb+rfend,"24 DRO EB"],
-    [dro24ee+shend,"",dro24ee+rfend,"24 DRO EE"],
+    [sro24eb+shend,"",sro24eb+rfend,"SRO EB"],
+    [sro24ee+shend,"",sro24ee+rfend,"SRO EE"],
+    [dro24eb+shend,"",dro24eb+rfend,"DRO EB"],
+    [dro24ee+shend,"",dro24ee+rfend,"DRO EE"],
 ]
 
 hl_r3_24_ebeenc = [
-    [sro24ebnc+shend,"",sro24ebnc+rfend,"24 SRO EB"],
-    [sro24eenc+shend,"",sro24eenc+rfend,"24 SRO EE"],
-    [dro24ebnc+shend,"",dro24ebnc+rfend,"24 DRO EB"],
-    [dro24eenc+shend,"",dro24eenc+rfend,"24 DRO EE"],
+    [sro24ebnc+shend,"",sro24ebnc+rfend,"SRO EB"],
+    [sro24eenc+shend,"",sro24eenc+rfend,"SRO EE"],
+    [dro24ebnc+shend,"",dro24ebnc+rfend,"DRO EB"],
+    [dro24eenc+shend,"",dro24eenc+rfend,"DRO EE"],
 ]
 
 hl_r2_18mc_ebeenc = [
@@ -655,31 +655,31 @@ hl_r2_18mc_ebeenc = [
 ]
 
 hl_r3_23_ebeenc = [
-    [sro23ebnc+shend,"",sro23ebnc+rfend,"23 SRO EB"],
-    [sro23eenc+shend,"",sro23eenc+rfend,"23 SRO EE"],
-    [dro23ebnc+shend,"",dro23ebnc+rfend,"23 DRO EB"],
-    [dro23eenc+shend,"",dro23eenc+rfend,"23 DRO EE"],
+    [sro23ebnc+shend,"",sro23ebnc+rfend,"SRO EB"],
+    [sro23eenc+shend,"",sro23eenc+rfend,"SRO EE"],
+    [dro23ebnc+shend,"",dro23ebnc+rfend,"DRO EB"],
+    [dro23eenc+shend,"",dro23eenc+rfend,"DRO EE"],
 ]
 
 hl_r3_23_ebee = [
-    [sro23eb+shend,"",sro23eb+rfend,"23 SRO EB"],
-    [sro23ee+shend,"",sro23ee+rfend,"23 SRO EE"],
-    [dro23eb+shend,"",dro23eb+rfend,"23 DRO EB"],
-    [dro23ee+shend,"",dro23ee+rfend,"23 DRO EE"],
+    [sro23eb+shend,"",sro23eb+rfend,"SRO EB"],
+    [sro23ee+shend,"",sro23ee+rfend,"SRO EE"],
+    [dro23eb+shend,"",dro23eb+rfend,"DRO EB"],
+    [dro23ee+shend,"",dro23ee+rfend,"DRO EE"],
 ]
 
 hl_r3_22_ebee = [
-    [sro22eb+shend,"",sro22eb+rfend,"22 SRO EB"],
-    [sro22ee+shend,"",sro22ee+rfend,"22 SRO EE"],
-    [dro22eb+shend,"",dro22eb+rfend,"22 DRO EB"],
-    [dro22ee+shend,"",dro22ee+rfend,"22 DRO EE"],
+    [sro22eb+shend,"",sro22eb+rfend,"SRO EB"],
+    [sro22ee+shend,"",sro22ee+rfend,"SRO EE"],
+    [dro22eb+shend,"",dro22eb+rfend,"DRO EB"],
+    [dro22ee+shend,"",dro22ee+rfend,"DRO EE"],
 ]
 
 hl_r3_22_ebeenc = [
-    [sro22ebnc+shend,"",sro22ebnc+rfend,"22 SRO EB"],
-    [sro22eenc+shend,"",sro22eenc+rfend,"22 SRO EE"],
-    [dro22ebnc+shend,"",dro22ebnc+rfend,"22 DRO EB"],
-    [dro22eenc+shend,"",dro22eenc+rfend,"22 DRO EE"],
+    [sro22ebnc+shend,"",sro22ebnc+rfend,"SRO EB"],
+    [sro22eenc+shend,"",sro22eenc+rfend,"SRO EE"],
+    [dro22ebnc+shend,"",dro22ebnc+rfend,"DRO EB"],
+    [dro22eenc+shend,"",dro22eenc+rfend,"DRO EE"],
 ]
 
 hl_r2_18_ebeenc = [
@@ -826,8 +826,11 @@ hl_r3_25b = [
 #ptitle=['','Run 2','#splitline{Online Calibration}{ECAL Barrel}'] #{GT 106X_dataRun2_v28}'
 #ptitle=['','Run 2','#splitline{Online Calibration}{ECAL Endcaps}'] #{GT 106X_dataRun2_v28}'
 
-ptitle=['','Run 2','#splitline{Chronus Calibration}{2016 UL}'] #{}'
+#ptitle=['','Run 2','#splitline{Chronus Calibration}{2016 UL}'] #{}'
 #ptitle=['','Run 2','#splitline{Online Calibration}{2016 UL}'] #{}'
+
+#ptitle=['','Run 3','#splitline{Chronus Calibration}{2024 UL}'] #{}'
+ptitle=['','Run 3','#splitline{Online Calibration}{2024 UL}'] #{}'
 
 #y = [ 0.4, 0.04 ]
 #y = [ 0.7, -0.05 ]
@@ -847,8 +850,8 @@ t = [0.325,0.85,0.1,0.175,0.285]#adjsuting lumi-sqrt(s) in title bar
 #outname = 'downloads/tr_hl_r3_24d_part_trvcc_ccgt_v7'
 #outname = 'downloads/tr_hl_r3_25c2'
 #outname = 'downloads/tr_hl_r3_25bc_xa'
-outname = 'tr_hl_r2_16'
-dostack(hl_r2_16_ebee, outname, date, Ic_layout, ptitle,  y, x, l, t)
+outname = 'tr_hl_r3_24nc'
+dostack(hl_r3_24_ebeenc, outname, date, Ic_layout, ptitle,  y, x, l, t)
 
 #
 ##---------------------------------------------------------------
