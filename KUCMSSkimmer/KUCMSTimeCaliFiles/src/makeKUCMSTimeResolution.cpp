@@ -80,16 +80,16 @@ int main ( int argc, char *argv[] ){
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	// set resoltuions
-	//theCali.SetResParamters( "default", 26.04, 1.19, 0.1078, 38.69, 0.00, 0.0843 );
-	//theCali.SetResParamters( "RunIISummer20UL18RECO", 26.04, 1.19, 0.1078, 38.69, 0.00, 0.0843 );
+	theCali.SetResParamters( "default", 26.04, 1.19, 0.1078, 38.69, 0.00, 0.0843 );
+	theCali.SetResParamters( "RunIISummer20UL18RECO", 26.04, 1.19, 0.1078, 38.69, 0.00, 0.0843 );
 	theCali.SetResParamters( "r2_ul18", 26.12, 7.60, 0.1006, 42.03, 0.00, 0.3041 );
-    //theCali.SetResParamters( "r2_ul18_mc",  26.23, 1.72, 0.1391, 33.36, 1.72, 0.2039 );
+    theCali.SetResParamters( "r2_ul18_mc",  26.23, 1.72, 0.1391, 33.36, 1.72, 0.2039 );
     theCali.SetResParamters( "r2_ul17", 26.55, 1.51, 0.1447, 33.14, 1.59, 0.2075 );
     theCali.SetResParamters( "r2_ul16", 26.30, 1.87, 0.1606, 34.48, 1.05, 0.1933 );
-    //theCali.SetResParamters( "r2_eoy17", 31.3, 2.9, 0.1608, 31.3, 2.9, 0.1608 );
-    //theCali.SetResParamters( "r3_p22", 25.52, 1.23, 0.1722, 42.94, 8.28, 0.2490 );
-    //theCali.SetResParamters( "r3_p23", 27.81, 7.36, 0.1338, 41.49, 5.52, 0.3146 );
-	//theCali.SetResParamters( "r3_p24", 23.41, 1.79, 0.1707, 35.09, 0.00, 0.2533 );
+    theCali.SetResParamters( "r2_eoy17", 31.3, 2.9, 0.1608, 31.3, 2.9, 0.1608 );
+    theCali.SetResParamters( "r3_p22", 25.50, 3.09, 0.1728, 43.00, 0.00, 0.2495 );
+    theCali.SetResParamters( "r3_p23", 27.81, 7.36, 0.1338, 41.49, 5.52, 0.3146 );
+	theCali.SetResParamters( "r3_p24", 23.41, 1.79, 0.1707, 35.09, 0.00, 0.2533 );
     theCali.SaveResFile();
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
