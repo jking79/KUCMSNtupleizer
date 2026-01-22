@@ -265,8 +265,8 @@ process.source = cms.Source("PoolSource",
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250))#KT
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500))#QT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(5000))#BT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10000))#LT
@@ -295,8 +295,8 @@ filterselect = 'none'
 #filterselect = 'AL1SelEle'
 if options.multicrab == True : filterselect = options.eventFilter
 
-#runera = "Run3"  # current siganl model   !!!!!!!!  Run3 must be in CMSSW 14 or 15
-runera = "Run2" # BG models
+runera = "Run3"  # current siganl model   !!!!!!!!  Run3 must be in CMSSW 14 or 15
+#runera = "Run2" # BG models
 if options.multicrab == True : runera = options.runera
 
 dosv = True
@@ -327,8 +327,8 @@ if "Run3" in runera :
 #genMomChase = True
 genMomChase = False
 if options.multicrab == True : genMomChase = False
-makeTrigList = True
-#makeTrigList = False
+#makeTrigList = True
+makeTrigList = False
 if options.multicrab == True : makeTrigList = False
 
 print( "Using options : mutlicrab = ",options.multicrab," geninfo = ",genInfo," filter = ",filterselect )
@@ -533,8 +533,9 @@ process.eventcount_path = cms.Path(process.eventCounter)
 process.tree_step = cms.EndPath(process.tree)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 
-if 'CASTOR' in process.CaloGeometryBuilder.SelectedCalos :
-    process.CaloGeometryBuilder.SelectedCalos.remove('CASTOR')
+#done above now
+#if 'CASTOR' in process.CaloGeometryBuilder.SelectedCalos :
+#    process.CaloGeometryBuilder.SelectedCalos.remove('CASTOR')
 
 #########process.schedule = cms.Schedule( process.kuDisplaced_path, process.setFlags_path, process.tree_step, process.endjob_step )
 # Flags must be run as a path in the Schedule in order to appear in the trigger results for KUCMSEventInfo 
