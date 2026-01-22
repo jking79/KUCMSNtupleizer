@@ -522,6 +522,10 @@ void KUCMSAodSkimmer::processPhotons(){
 		selPhoIsEarly.push_back(false);
 		selPhoIsLate.push_back(true);
 	}
+	else{
+		selPhoIsEarly.push_back(false);
+		selPhoIsLate.push_back(false);
+	}
 	//endcap noniso selection
 	if(overMaxEta && nonisobkg_score > nonIsoCutVal){
 		selPhoIsEEnonIso.push_back(true);
@@ -933,7 +937,6 @@ void KUCMSAodSkimmer::processPhotons(){
   bool leadPhoIsEEnonIso = selPhoIsEEnonIso[0];
   if(nSelPhotons > 1)
 	  leadPhoIsEEnonIso = selPhoIsEEnonIso[0] || selPhoIsEEnonIso[1];
-
   //do bh CR selection
   selPhotons.fillBranch("passNPhoEq1SelectionBeamHaloCR", bool(leadPhoIsBH && nSelPhotons == 1));
   selPhotons.fillBranch("passNPhoGe2SelectionBeamHaloCR", bool(leadPhoIsBH && nSelPhotons > 1));
