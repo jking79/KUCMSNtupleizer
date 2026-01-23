@@ -928,15 +928,24 @@ void KUCMSAodSkimmer::processPhotons(){
   bool anyLatePB = (nPhoLatePB > 0);
   bool anyLateBH = (nPhoLateBH > 0);
   bool anyEarlyBH = (nPhoEarlyBH > 0);
+  
+  bool leadPhoIsBH = false;
+  bool leadPhoIsPB = false;
+  bool leadPhoIsEarlyBH = false;
+  bool leadPhoIsLateBH = false ;
 
-  bool leadPhoIsBH = selPhoIsBH[0];
-  bool leadPhoIsPB = selPhoIsPB[0];
-  bool leadPhoIsEarlyBH = (selPhoIsBH[0] && selPhoIsEarly[0]);
-  bool leadPhoIsLateBH = (selPhoIsBH[0] && selPhoIsLate[0]);
+  bool leadPhoIsEEnonIso = false;
+  if(nSelPhotons > 0){
+	  leadPhoIsBH = selPhoIsBH[0];
+	  leadPhoIsPB = selPhoIsPB[0];
+	  leadPhoIsEarlyBH = (selPhoIsBH[0] && selPhoIsEarly[0]);
+	  leadPhoIsLateBH = (selPhoIsBH[0] && selPhoIsLate[0]);
+	
+	  leadPhoIsEEnonIso = selPhoIsEEnonIso[0];
+	  if(nSelPhotons > 1)
+		  leadPhoIsEEnonIso = selPhoIsEEnonIso[0] || selPhoIsEEnonIso[1];
+  }
 
-  bool leadPhoIsEEnonIso = selPhoIsEEnonIso[0];
-  if(nSelPhotons > 1)
-	  leadPhoIsEEnonIso = selPhoIsEEnonIso[0] || selPhoIsEEnonIso[1];
   //do bh CR selection
   selPhotons.fillBranch("passNPhoEq1SelectionBeamHaloCR", bool(leadPhoIsBH && nSelPhotons == 1));
   selPhotons.fillBranch("passNPhoGe2SelectionBeamHaloCR", bool(leadPhoIsBH && nSelPhotons > 1));
