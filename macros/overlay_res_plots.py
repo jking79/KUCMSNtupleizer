@@ -213,7 +213,10 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
         #k = [kGray+2,kGray+3,kGray+4,kBlack]
         #k = [kGreen+2,kBlue+2,kMagenta+2,kRed+2]
         #k = [kViolet-1,kViolet-6,kBlue+2,kAzure+3]
-        k = [kGreen+2,kBlue+2,kSpring-1,kAzure+3]
+        #k = [kGreen+2,kBlue+2,kSpring-1,kAzure+3]
+        #k = [kGreen-1,kSpring+3,kBlue+1,kAzure+4]
+        #k = [kYellow+3,kGreen+2,kCyan+3,kBlue+2]
+        k = [kBlue+2,kCyan+3,kGreen+2,kYellow+3]
         h1[n].SetLineColor(k[n])
         #h1[n].SetLineWidth(1)
         #h1[n].SetLineStyle(9-n)
@@ -225,7 +228,7 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
         h1[n].SetMarkerColor(k[n])
         #msz = 0.2
         #msz = 0.8 # my standard
-        msz = 1.4 # prsentaion plots
+        msz = 1.5 # prsentaion plots
         #msz = 1.0
         if( n == 1 ) : h1[n].SetMarkerSize(msz+0.3)
         elif( n == 2 ) : h1[n].SetMarkerSize(msz+0.5)
@@ -317,7 +320,8 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
     #lat_title = 'Run2018D 3206730-320824' #   7 fb^{-1} (#sqrt{s} = 13 TeV)'
     #lat_title = 'Run2018D 1Tier miniAOD'
     #lat_title = ptitle[1]+' (13 TeV)'
-    lat_title = ptitle[1]+' (13.6 TeV)'
+    #lat_title = ptitle[1]+' (13.6 TeV)'
+    lat_title = ptitle[1]
     ##lat_title = ptitle[1]+' (13.8 TeV)'
     if not dostoch : lat_form = '#sigma^{2}_{i} = (#frac{N}{A_{eff}/#sigma_{n}})^{2} + 2C^{2}'
     if dostoch : lat_form = '#sigma^{2}_{i} = (#frac{N}{A_{eff}/#sigma_{n}})^{2} + #frac{S^{2}}{A_{eff}/#sigma_{n}} + 2C^{2}'
@@ -391,8 +395,8 @@ legtitle = ''
 #legtitle = 'KuStc'
 #legtitle = 'KuNotStc'
 
-#rtitle = 'Run2' # (13TeV)'
-rtitle = 'Run3' # (13.6TeV)'
+##rtitle = 'Run2' # (13TeV)'
+##rtitle = 'Run3' # (13.6TeV)'
 
 gi_legtitle = 'Global Inclusive'
 li_legtitle = 'Local Inclusive'
@@ -422,8 +426,8 @@ ytitle = '#sigma(t_{1}-t_{2}) [ns]'
 htitle = ''
 islogx = True
 #islogx = False
-#islogy = True
-islogy = False
+islogy = True
+#islogy = False
 
 gll_layout = { 'xtitle' : xtitle, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'legtitle' : legtitle }
 loc_layout = { 'xtitle' : xtitle, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'legtitle' : legtitle + li_legtitle }
@@ -647,6 +651,13 @@ hl_r3_24_ebeenc = [
     [dro24eenc+shend,"",dro24eenc+rfend,"DRO EE"],
 ]
 
+hl_r3_24_ebeedro = [
+    [dro24eb+shend,"",dro24eb+rfend,"EB Chronus"],
+    [dro24ee+shend,"",dro24ee+rfend,"EE Chronus"],
+    [dro24ebnc+shend,"",dro24ebnc+rfend,"EB"],
+    [dro24eenc+shend,"",dro24eenc+rfend,"EE"],
+]
+
 hl_r2_18mc_ebeenc = [
     [sro18mceb+shend,"",sro18mceb+rfend,"18MC SRO EB"],
     [sro18mcee+shend,"",sro18mcee+rfend,"18MC SRO EE"],
@@ -668,6 +679,13 @@ hl_r3_23_ebee = [
     [dro23ee+shend,"",dro23ee+rfend,"DRO EE"],
 ]
 
+hl_r3_23_ebeedro = [
+    [dro23eb+shend,"",dro23eb+rfend,"EB Chronus"],
+    [dro23ee+shend,"",dro23ee+rfend,"EE Chronus"],
+    [dro23ebnc+shend,"",dro23ebnc+rfend,"EB"],
+    [dro23eenc+shend,"",dro23eenc+rfend,"EE"],
+]
+
 hl_r3_22_ebee = [
     [sro22eb+shend,"",sro22eb+rfend,"SRO EB"],
     [sro22ee+shend,"",sro22ee+rfend,"SRO EE"],
@@ -682,36 +700,18 @@ hl_r3_22_ebeenc = [
     [dro22eenc+shend,"",dro22eenc+rfend,"DRO EE"],
 ]
 
+hl_r3_22_ebeedro = [
+    [dro22eb+shend,"",dro22eb+rfend,"EB Chronus"],
+    [dro22ee+shend,"",dro22ee+rfend,"EE Chronus"],
+    [dro22ebnc+shend,"",dro22ebnc+rfend,"EB"],
+    [dro22eenc+shend,"",dro22eenc+rfend,"EE"],
+]
+
 hl_r2_18_ebeenc = [
     [sro18ebnc+shend,"",sro18ebnc+rfend,"SRO EB"],
     [sro18eenc+shend,"",sro18eenc+rfend,"SRO EE"],
     [dro18ebnc+shend,"",dro18ebnc+rfend,"DRO EB"],
     [dro18eenc+shend,"",dro18eenc+rfend,"DRO EE"], 
-]
-
-hl_r2_17_ebeenc = [
-    [sro17ebnc+shend,"",sro17ebnc+rfend,"SRO EB"],
-    [sro17eenc+shend,"",sro17eenc+rfend,"SRO EE"],
-    [dro17ebnc+shend,"",dro17ebnc+rfend,"DRO EB"],
-    [dro17eenc+shend,"",dro17eenc+rfend,"DRO EE"],
-]
-
-hl_r2_16_ebeenc = [
-    [sro16ebnc+shend,"",sro16ebnc+rfend,"SRO EB"],
-    [sro16eenc+shend,"",sro16eenc+rfend,"SRO EE"],
-    [dro16ebnc+shend,"",dro16ebnc+rfend,"DRO EB"],
-    [dro16eenc+shend,"",dro16eenc+rfend,"DRO EE"],
-]
-
-
-
-hl_r2_16_ebee = [
-    #[sro16ebhg+shend,"",sro16ebhg+rfend,"16 UL EB"],
-    #[sro16eehg+shend,"",sro16eehg+rfend,"16 UL EE"],
-    [sro16eb+shend,"",sro16eb+rfend,"SRO EB"],
-    [sro16ee+shend,"",sro16ee+rfend,"SRO EE"],
-    [dro16eb+shend,"",dro16eb+rfend,"DRO EB"],
-    [dro16ee+shend,"",dro16ee+rfend,"DRO EE"],
 ]
 
 hl_r2_18_ebee = [
@@ -722,8 +722,20 @@ hl_r2_18_ebee = [
     [sro18ee+shend,"",sro18ee+rfend,"SRO EE"],
     [dro18eb+shend,"",dro18eb+rfend,"DRO EB"],
     [dro18ee+shend,"",dro18ee+rfend,"DRO EE"],
+]
 
+hl_r2_18_ebeedro = [
+    [dro18eb+shend,"",dro18eb+rfend,"EB Chronus"],
+    [dro18ee+shend,"",dro18ee+rfend,"EE Chronus"],
+    [dro18ebnc+shend,"",dro18ebnc+rfend,"EB"],
+    [dro18eenc+shend,"",dro18eenc+rfend,"EE"],
+]
 
+hl_r2_17_ebeenc = [
+    [sro17ebnc+shend,"",sro17ebnc+rfend,"SRO EB"],
+    [sro17eenc+shend,"",sro17eenc+rfend,"SRO EE"],
+    [dro17ebnc+shend,"",dro17ebnc+rfend,"DRO EB"],
+    [dro17eenc+shend,"",dro17eenc+rfend,"DRO EE"],
 ]
 
 hl_r2_17_ebee = [
@@ -731,6 +743,36 @@ hl_r2_17_ebee = [
     [sro17ee+shend,"",sro17ee+rfend,"SRO EE"],
     [dro17eb+shend,"",dro17eb+rfend,"DRO EB"],
     [dro17ee+shend,"",dro17ee+rfend,"DRO EE"],
+]
+
+hl_r2_17_ebeedro = [
+    [dro17eb+shend,"",dro17eb+rfend,"EB Chronus"],
+    [dro17ee+shend,"",dro17ee+rfend,"EE Chronus"],
+    [dro17ebnc+shend,"",dro17ebnc+rfend,"EB"],
+    [dro17eenc+shend,"",dro17eenc+rfend,"EE"],
+]
+
+hl_r2_16_ebeenc = [
+    [sro16ebnc+shend,"",sro16ebnc+rfend,"SRO EB"],
+    [sro16eenc+shend,"",sro16eenc+rfend,"SRO EE"],
+    [dro16ebnc+shend,"",dro16ebnc+rfend,"DRO EB"],
+    [dro16eenc+shend,"",dro16eenc+rfend,"DRO EE"],
+]
+
+hl_r2_16_ebee = [
+    #[sro16ebhg+shend,"",sro16ebhg+rfend,"16 UL EB"],
+    #[sro16eehg+shend,"",sro16eehg+rfend,"16 UL EE"],
+    [sro16eb+shend,"",sro16eb+rfend,"SRO EB"],
+    [sro16ee+shend,"",sro16ee+rfend,"SRO EE"],
+    [dro16eb+shend,"",dro16eb+rfend,"DRO EB"],
+    [dro16ee+shend,"",dro16ee+rfend,"DRO EE"],
+]
+
+hl_r2_16_ebeedro = [
+    [dro16eb+shend,"",dro16eb+rfend,"EB Chronus"],
+    [dro16ee+shend,"",dro16ee+rfend,"EE Chronus"],
+    [dro16ebnc+shend,"",dro16ebnc+rfend,"EB"],
+    [dro16eenc+shend,"",dro16eenc+rfend,"EE"],
 ]
 
 hl_r2_1817_ee = [
@@ -826,15 +868,19 @@ hl_r3_25b = [
 #ptitle=['','Run 2','#splitline{Online Calibration}{ECAL Barrel}'] #{GT 106X_dataRun2_v28}'
 #ptitle=['','Run 2','#splitline{Online Calibration}{ECAL Endcaps}'] #{GT 106X_dataRun2_v28}'
 
-#ptitle=['','Run 2','#splitline{Chronus Calibration}{2016 UL}'] #{}'
-#ptitle=['','Run 2','#splitline{Online Calibration}{2016 UL}'] #{}'
+ptitle=['','Run 2 (13 TeV)','#splitline{DRU Resolution}{2018 UL}'] #{}'
+#ptitle=['','Run 2 (13 TeV)','#splitline{Chronus Calibration}{2016 UL}'] #{}'
+#ptitle=['','Run 2 (13 TeV)','#splitline{Online Calibration}{2016 UL}'] #{}'
 
-#ptitle=['','Run 3','#splitline{Chronus Calibration}{2024 UL}'] #{}'
-ptitle=['','Run 3','#splitline{Online Calibration}{2024 UL}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{DRU Resolution}{2024 Prompt}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2022 Prompt}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{Online Calibration}{2022 Prompt}'] #{}'
 
 #y = [ 0.4, 0.04 ]
 #y = [ 0.7, -0.05 ]
-y = [ 2.5, -0.5 ]
+#y = [ 2.5, -0.5 ]
+#y = [ 5.0, 0.05 ]
+y = [ 3.0, 0.06 ]
 #y = [ 5, 0.01 ]
 x = [ 5.0, 1600.0 ]
 #x = [ 5.0, 800.0 ]
@@ -850,8 +896,8 @@ t = [0.325,0.85,0.1,0.175,0.285]#adjsuting lumi-sqrt(s) in title bar
 #outname = 'downloads/tr_hl_r3_24d_part_trvcc_ccgt_v7'
 #outname = 'downloads/tr_hl_r3_25c2'
 #outname = 'downloads/tr_hl_r3_25bc_xa'
-outname = 'tr_hl_r3_24nc'
-dostack(hl_r3_24_ebeenc, outname, date, Ic_layout, ptitle,  y, x, l, t)
+outname = 'tr_hl_r2_18'
+dostack(hl_r2_18_ebeedro, outname, date, Ic_layout, ptitle,  y, x, l, t)
 
 #
 ##---------------------------------------------------------------

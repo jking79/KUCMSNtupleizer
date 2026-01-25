@@ -60,6 +60,9 @@ void KUCMSAodSkimmer::processRJRISR(){
   auto phoRMetCPy = geVars("metPy"); //selMet.getFLBranchValue("metPy");
   float unCorMet = hypo(phoRMetCPx,phoRMetCPy);
 
+  if( nSelPhotons > 10 ) nSelPhotons = 10;
+  int maxJetCount = 14 - nSelPhotons;
+
   if( RJRDEBUG ) std::cout << " - Loading Photons." << std::endl;
 
   int nRJRPhos = 0;
@@ -117,7 +120,7 @@ void KUCMSAodSkimmer::processRJRISR(){
 
   if( RJRDEBUG ) std::cout << " -- nRJRJets Pre : " << nSelJets << std::endl;
   std::vector<RFKey> leadJetKey;
-  BinaryMergeInPlace( rjr_jets, 16 -  nRJRPhos );
+  BinaryMergeInPlace( rjr_jets, maxJetCount );
   nSelJets = rjr_jets.size();
   if( RJRDEBUG ) std::cout << " -- nRJRJets Post : " << nSelJets << std::endl;
   for( uInt it = 0; it < nSelJets; it++ ){
@@ -149,7 +152,7 @@ void KUCMSAodSkimmer::processRJRISR(){
   int xtraPhos = ( nSelPhotons > nRJRPhos ) ? nSelPhotons - nRJRPhos : 0;
   int nVisObjects = jetID.size();
   if( nVisObjects != nRJRPhos + nSelJets + xtraPhos ){ 
-    std::cout << " !!!!!!    nVisObjects != ( nRJRPhos + nSelJets )  !!!!!!!!! " << std::endl;
+    std::cout << " !!!!! ISR nVisObjects != ( nRJRPhos + nSelJets )  !!!!!!!!! " << std::endl;
     std::cout << " !!!!!!    " << nVisObjects << " != ( " << nRJRPhos + xtraPhos << " + " << nSelJets << " )  !!!!!!!!! " << std::endl;
   }//<<>>if( nVisObjects != ( nRJRPhos + nSelJets ) )
 
@@ -174,6 +177,8 @@ void KUCMSAodSkimmer::processRJRISR(){
 	if( COMB_J_c->GetFrame(jetID[1]) == *ISR_c ){ subPhoSide = 2; nPhosISR++; }
 	else subPhoSide = ( COMB_J_c->GetFrame(jetID[1]) == *J1a_c || COMB_J_c->GetFrame(jetID[1]) == *J2a_c ) ? 0 : 1;
   }//<<>>if( ( nRJRPhos > 1 ) )
+
+  if( nVisObjects > maxJetCount + nSelPhotons ) std::cout << " !!!!!!!! RJRISR nVisObjects exceeds # of Visible Objects Max Threshold !!!!!!! " << std::endl;
 
   int nIsrVisObjects = nPhosISR + nJetsISR;
   int nSVisObjects = nVisObjects - nIsrVisObjects;
