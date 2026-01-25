@@ -121,10 +121,10 @@ int main ( int argc, char *argv[] ){
 	//----///////////  make gainid 2 calibrations
     //theCali.makeTTCaliMapEGR( inputfilename, 2, false, false ); // do gainID 2 no calibration step
     //theCali.makeTTCaliMapEGR( inputfilename, 2, true ); // do gainID 2; true == run only subset of events 
-    theCali.makeTTCaliMapEGR( inputfilename, 2 ); // do gainID 2
-    theCali.makeCaliHists();
-    theCali.SaveCaliHists();
-    theCali.SaveTTRunFile();
+    //theCali.makeTTCaliMapEGR( inputfilename, 2 ); // do gainID 2
+    //theCali.makeCaliHists();
+    //theCali.SaveCaliHists();
+    //theCali.SaveTTRunFile();
 
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////

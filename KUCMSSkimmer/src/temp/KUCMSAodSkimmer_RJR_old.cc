@@ -64,8 +64,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
   auto phoBMetPy = geVars("metBPy"); //selMet.getFLBranchValue("metPy");
   float unCorBMet = hypo(phoBMetPx,phoBMetPy);
 
-  if( nSelPhotons > 10 ) nSelPhotons = 10;
-  int maxJetCount = 14 - nSelPhotons;
+  int maxJetCount = 12;
 
   if( RJRDEBUG ) std::cout << " - Loading Photons." << std::endl;
 
@@ -86,9 +85,9 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
         }//<<>>if( type == 0 )
         TLorentzVector phojet;
         phojet.SetPtEtaPhiM( sPhoPt[spidx], sPhoEta[spidx], sPhoPhi[spidx], 0 );
-        jetID.push_back( COMB_J->AddLabFrameFourVector(phojet) );
+        jetID.push_back( COMB_J_c->AddLabFrameFourVector(phojet) );
         if( spidx < nRJRPhos ) pho4vec.push_back(phojet);
-		else jet4vec.push_back(phojet);		
+        else jet4vec.push_back(phojet);
 
   	}//<<>>for( spidx = 0; spidx < nSelPhotons; spidx++ )
 /*
@@ -172,11 +171,11 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     if( verbose ) std::cout << " Phi: " << sjetPhi << " M: " << sjetMass << std::endl;
   }//<<>>for( int i = 0; i < nSelJets; i++ )
 
-  if( RJRDEBUG ) std::cout << " -- nRJRJets Pre : " << nSelJets << std::endl;
+  //if( RJRDEBUG ) std::cout << " -- nRJRJets Pre : " << nSelJets << std::endl;
   std::vector<RFKey> leadJetKey;
   BinaryMergeInPlace( rjr_jets, maxJetCount );
   nSelJets = rjr_jets.size();
-  if( RJRDEBUG ) std::cout << " -- nRJRJets Post : " << nSelJets << std::endl;
+  //if( RJRDEBUG ) std::cout << " -- nRJRJets Post : " << nSelJets << std::endl;
   for( uInt it = 0; it < nSelJets; it++ ){
     TLorentzVector jet = rjr_jets[it];
     if( verbose ) std::cout << " - Loading Jet Pt: " << jet.Pt() << " Eta: " << jet.Eta();
@@ -221,7 +220,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 		subPhoLocation = ( COMB_J->GetFrame(jetID[1]) == *J1a || COMB_J->GetFrame(jetID[1]) == *J2a ) ? 1 : 2;
   }//<<>>if( ( type < 2 ) && ( nRJRPhos == 2 ) )
 
-  if( nVisObjects > maxJetCount + nSelPhotons ) std::cout << " !!!!!!!! RJRISR nVisObjects exceeds # of Visible Objects Max Threshold !!!!!!! " << std::endl;
+  if( nVisObjects > maxJetCount ) std::cout << " !!!!!!!! RJR nVisObjects exceeds # of Visible Objects Max Threshold !!!!!!! " << std::endl;
 
   selRjrVars.fillBranch( "rjrType", type );
   selRjrVars.fillBranch( "rjrABSide", isALeadPhoSide );
