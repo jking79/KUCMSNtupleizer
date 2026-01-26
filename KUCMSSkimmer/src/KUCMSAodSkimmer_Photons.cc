@@ -847,6 +847,7 @@ void KUCMSAodSkimmer::processPhotons(){
   if( nPhotons == 0 ){ hemBits.set( "pho1hvl", false ); hemBits.set( "pho2hvm", false ); }
   if( DEBUG ) std::cout << " -- pho loop finished" << std::endl;
   // fill ( other )
+  // ------------------------------------------------------------------------------------------------------------------------
 
   /*
     std::vector<unsigned int> phoPtOrder;

@@ -60,8 +60,9 @@ void KUCMSAodSkimmer::processRJRISR(){
   auto phoRMetCPy = geVars("metPy"); //selMet.getFLBranchValue("metPy");
   float unCorMet = hypo(phoRMetCPx,phoRMetCPy);
 
-  if( nSelPhotons > 10 ) nSelPhotons = 10;
-  int maxJetCount = 14 - nSelPhotons;
+  //if( nSelPhotons > 10 ) nSelPhotons = 10;
+  //int maxJetCount = 14 - nSelPhotons;
+  int maxJetCount = 14;
 
   if( RJRDEBUG ) std::cout << " - Loading Photons." << std::endl;
 
@@ -69,6 +70,7 @@ void KUCMSAodSkimmer::processRJRISR(){
   std::vector<RFKey> jetID;
   std::vector<TLorentzVector> pho4vec;
   std::vector<TLorentzVector> jet4vec;
+  std::vector< TLorentzVector > rjr_jets;
   bool zsig = ( geVars("noSVorPho") == 1 ) ? true : false;	
   if( zsig ) std::cout << " ------------ noSVorPho is True !!!!!!!!!!!!!!!!!!!!!!!! " << std::endl;
   if( true ){ // old : if( not zsig ){ ?? never do this ??
@@ -78,9 +80,11 @@ void KUCMSAodSkimmer::processRJRISR(){
     	if( RJRDEBUG ) std::cout << " - Loading Pho " << spidx << std::endl;
         TLorentzVector phojet;
         phojet.SetPtEtaPhiM( sPhoPt[spidx], sPhoEta[spidx], sPhoPhi[spidx], 0 );
-        jetID.push_back( COMB_J_c->AddLabFrameFourVector(phojet) );
-        if( spidx < nRJRPhos ) pho4vec.push_back(phojet);
-		else jet4vec.push_back(phojet);		
+        //jetID.push_back( COMB_J_c->AddLabFrameFourVector(phojet) );
+        //if( spidx < nRJRPhos ) pho4vec.push_back(phojet);
+		//else jet4vec.push_back(phojet);		
+        if( spidx < nRJRPhos ){ jetID.push_back( COMB_J_c->AddLabFrameFourVector(phojet) ); pho4vec.push_back(phojet); }
+        else rjr_jets.push_back(phojet);
 
   	}//<<>>for( spidx = 0; spidx < nSelPhotons; spidx++ )
   }//<<>>if( not zsig )
@@ -105,7 +109,7 @@ void KUCMSAodSkimmer::processRJRISR(){
 
   if( RJRDEBUG ) std::cout << " - Loading Jets." << std::endl;
 
-  std::vector< TLorentzVector > rjr_jets;
+  //std::vector< TLorentzVector > rjr_jets;
   for( uInt it = 0; it < nSelJets; it++ ){
 	float sjetPt = selJetPt[it]; //selJets.getFLBranchValue( "selJetPt", it );
     float sjetEta = selJetEta[it]; //selJets.getFLBranchValue( "selJetEta", it );
@@ -118,19 +122,21 @@ void KUCMSAodSkimmer::processRJRISR(){
     if( verbose ) std::cout << " Phi: " << sjetPhi << " M: " << sjetMass << std::endl;
   }//<<>>for( int i = 0; i < nSelJets; i++ )
 
-  if( RJRDEBUG ) std::cout << " -- nRJRJets Pre : " << nSelJets << std::endl;
+  if( RJRDEBUG ) std::cout << " -- nSelJets Pre : " << nSelJets << std::endl;
+  if( RJRDEBUG ) std::cout << " -- nRJRJets Pre : " << rjr_jets.size() << std::endl; 
+  BinaryMergeInPlace( rjr_jets, maxJetCount - nRJRPhos );
+  int nMergedJets = rjr_jets.size();
+  if( RJRDEBUG ) std::cout << " -- nRJRJets Merged Post : " << nMergedJets << std::endl;
+
   std::vector<RFKey> leadJetKey;
-  BinaryMergeInPlace( rjr_jets, maxJetCount );
-  nSelJets = rjr_jets.size();
-  if( RJRDEBUG ) std::cout << " -- nRJRJets Post : " << nSelJets << std::endl;
-  for( uInt it = 0; it < nSelJets; it++ ){
+  for( uInt it = 0; it < nMergedJets; it++ ){
     TLorentzVector jet = rjr_jets[it];
     if( verbose ) std::cout << " - Loading Jet Pt: " << jet.Pt() << " Eta: " << jet.Eta();
     if( verbose ) std::cout << " Phi: " << jet.Phi() << " M: " << jet.M() << std::endl;
     if( it == 0 ){ leadJetKey.push_back( COMB_J_c->AddLabFrameFourVector(jet) ); jetID.push_back(leadJetKey[0]); }
     else jetID.push_back(COMB_J_c->AddLabFrameFourVector(jet));
     jet4vec.push_back(jet);
-  }//<<>>for( int i = 0; i < nSelJets; i++ )
+  }//<<>>for( int i = 0; i < nMergedJets; i++ )
 
   if( RJRDEBUG ) std::cout << " -- Processing RJR Tree ------ " << std::endl;
 
@@ -149,12 +155,12 @@ void KUCMSAodSkimmer::processRJRISR(){
   int subPhoSide = ( nRJRPhos > 1 ) ? 0 : -1;
   int leadPhoSide = ( nRJRPhos > 0 ) ? 0 : -1;
   int leadPhoIndx = ( nRJRPhos > 0 ) ? 0 : -1;
-  int xtraPhos = ( nSelPhotons > nRJRPhos ) ? nSelPhotons - nRJRPhos : 0;
+  //int xtraPhos = ( nSelPhotons > nRJRPhos ) ? nSelPhotons - nRJRPhos : 0;
   int nVisObjects = jetID.size();
-  if( nVisObjects != nRJRPhos + nSelJets + xtraPhos ){ 
-    std::cout << " !!!!! ISR nVisObjects != ( nRJRPhos + nSelJets )  !!!!!!!!! " << std::endl;
-    std::cout << " !!!!!!    " << nVisObjects << " != ( " << nRJRPhos + xtraPhos << " + " << nSelJets << " )  !!!!!!!!! " << std::endl;
-  }//<<>>if( nVisObjects != ( nRJRPhos + nSelJets ) )
+  if( nVisObjects != nRJRPhos + nMergedJets ){ 
+    std::cout << " !!!!! ISR nVisObjects != ( nRJRPhos + nMergedJets )  !!!!!!!!! " << std::endl;
+    std::cout << " !!!!!!    " << nVisObjects << " != ( " << nMergedJets << " + " << nRJRPhos << " )  !!!!!!!!! " << std::endl;
+  }//<<>>if( nVisObjects != ( nRJRPhos + nMergedJets ) )
 
   if( nRJRPhos > 0 ){
 	if( COMB_J_c->GetFrame(jetID[0]) == *ISR_c ){ nPhosISR++; isALeadPhoSide = false; leadPhoSide = 2; }	
@@ -171,14 +177,14 @@ void KUCMSAodSkimmer::processRJRISR(){
 	// one per frame 
     else { isALeadPhoSide ? nJetsJb++ : nJetsJa++; }
 
-  }//<<>>for( int i = 0; i < nSelJets; i++ )
+  }//<<>>for( int i = 0; i < nVisObjects; i++ )
   float abDiffSide = isALeadPhoSide ? 1 : -1;
   if( ( nRJRPhos > 1 ) ){ 
 	if( COMB_J_c->GetFrame(jetID[1]) == *ISR_c ){ subPhoSide = 2; nPhosISR++; }
 	else subPhoSide = ( COMB_J_c->GetFrame(jetID[1]) == *J1a_c || COMB_J_c->GetFrame(jetID[1]) == *J2a_c ) ? 0 : 1;
   }//<<>>if( ( nRJRPhos > 1 ) )
 
-  if( nVisObjects > maxJetCount + nSelPhotons ) std::cout << " !!!!!!!! RJRISR nVisObjects exceeds # of Visible Objects Max Threshold !!!!!!! " << std::endl;
+  if( nVisObjects > maxJetCount ) std::cout << " !!!!!!!! RJRISR nVisObjects exceeds # of Visible Objects Max Threshold !!!!!!! " << std::endl;
 
   int nIsrVisObjects = nPhosISR + nJetsISR;
   int nSVisObjects = nVisObjects - nIsrVisObjects;
@@ -188,7 +194,7 @@ void KUCMSAodSkimmer::processRJRISR(){
   selRjrIsrVars.fillBranch( "rjrIsrNJetsJa", nJetsJa );
   selRjrIsrVars.fillBranch( "rjrIsrNJetsJb", nJetsJb );
   selRjrIsrVars.fillBranch( "rjrIsrNJetsISR", nJetsISR );
-  selRjrIsrVars.fillBranch( "rjrIsrNJets", int(geCnts("nSelJets")) );
+  selRjrIsrVars.fillBranch( "rjrIsrNJets", nMergedJets );
   selRjrIsrVars.fillBranch( "rjrIsrNPhotons", nRJRPhos );
   selRjrIsrVars.fillBranch( "rjrIsrNVisObjects", nVisObjects );
   selRjrIsrVars.fillBranch( "rjrIsrLeadPhoLocation", leadPhoSide );
