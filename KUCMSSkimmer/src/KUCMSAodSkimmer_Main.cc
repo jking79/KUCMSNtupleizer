@@ -1032,8 +1032,8 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
 	if( doBHC ){ processBHCJets(); }
     if( debugl1 ) std::cout << "KUCMSAodSkimmer : processRJR 0" << std::endl;
 	processRJR(0,true); 
-    if( debugl1 ) std::cout << "KUCMSAodSkimmer : processRJR 1" << std::endl;
-	processRJR(1,false); 
+    //if( debugl1 ) std::cout << "KUCMSAodSkimmer : processRJR 1" << std::endl;
+	//processRJR(1,false); 
     if( debugl1 ) std::cout << "KUCMSAodSkimmer : processRJR ISR" << std::endl;
 	processRJRISR();
 
