@@ -388,6 +388,7 @@ void KUCMS_TimeCalibration::SetupIovMap( std::string tag, float minLumi ){
 	std::map<int,int> theIovMap;
 	auto promptIovMap = iovMaps["prompt"];
 	// go through runs by lumi and add up lumi > check for end conditions
+	bool yearchanged = false;
 	for( auto& lumirun : lumiRunMaps[curLumiTag] ){
 		currentrun = lumirun.second.run;
 		if( newrange ){ // if we are starting a new range - find curent iov period for this run and set end/start of periods
@@ -401,23 +402,26 @@ void KUCMS_TimeCalibration::SetupIovMap( std::string tag, float minLumi ){
 				}//<<>>if( start >= xiov.first && start <= xiov.second )
 			}//<<>>for( auto& xiov : promptIovMap ) 
 		}//<<>>if( newrange )
-		if( currentrun > curxiovend ){ // tack small portion to previous and start new run period with this run
-			bool yearend = false;
-			if( curxiovend == 284044 ) yearend = true;
-            if( curxiovend == 306460 ) yearend = true;
-            if( curxiovend == 325172 ) yearend = true;
-            if( curxiovend == 362760 ) yearend = true;
-            if( curxiovend == 370790 ) yearend = true;
-            if( curxiovend == 386951 ) yearend = true;
-			if( ( prev > 0 ) and ( yearend or ( lumisum < ( minLumi*0.4 ) ) ) ){
-				std::cout << " IOV JUMP !!!!! Lumi Sum : " <<  lumisum << " min lumi : " << minLumi << std::endl;
+        bool yearend = false;
+        if( currentrun > 284044 && start <= 284044 ) yearend = true;
+        if( currentrun > 306460 && start <= 306460 ) yearend = true;
+        if( currentrun > 362760 && start <= 362760 ) yearend = true;
+        if( currentrun > 370790 && start <= 370790 ) yearend = true;
+        if( currentrun > 386951 && start <= 386951 ) yearend = true;
+        //else if( currentrun > 284044 && start <= 284044 ) yearend = true;
+		//if( yearend ) std::cout << " --- END OF YEAR : " << currentrun << " start " << start << std::endl; 
+		if( currentrun > curxiovend || yearend ){ // tack small portion to previous and start new run period with this run
+			if(  ( prev > 0 ) and ( yearend or ( lumisum < ( minLumi*0.4 ) ) ) and not yearchanged ){
+				//std::cout << " IOV JUMP !! Add to Previous  !! Lumi Sum : " <<  lumisum << " min lumi : " << minLumi << std::endl;
 				end = curxiovend;
 				if( end < start ) end = start;
 				theIovMap[prev] = end;
 				start = currentrun;
 				lumisum = lumirun.second.lumi;
+				if( yearend ) yearchanged = true;
 			}//<<>>if( prev > 0 )
 			else {
+				//std::cout << " IOV JUMP !! Continue !! Lumi Sum : " <<  lumisum << " min lumi : " << minLumi << std::endl;
 				lumisum += lumirun.second.lumi; 
             }//<<>>else { if( prev > 0 ){ 
             for( auto& xiov : promptIovMap ){
@@ -429,20 +433,21 @@ void KUCMS_TimeCalibration::SetupIovMap( std::string tag, float minLumi ){
 		} else {
 			lumisum += lumirun.second.lumi;
         }//<<>>if( lumirun.second.run > promptIovMap[curxiov] )
-		std::cout << " Lumi Sum : " <<  lumisum << " min lumi : " << minLumi << std::endl;
+		//std::cout << " Lumi Sum : " <<  lumisum << " min lumi : " << minLumi << std::endl;
 		if( lumisum > minLumi ){ 
-			std::cout << " JUMP !!!!! Lumi Sum : " <<  lumisum << " min lumi : " << minLumi << std::endl;
+			//std::cout << " JUMP !!!!! Lumi Sum : " <<  lumisum << " min lumi : " << minLumi << std::endl;
 			end = currentrun;
 			if( end < start ) end = start;
 			theIovMap[start] = end;
 			lumisum = 0; 
 			newrange = true;
+			if( yearchanged ) yearchanged = false;
 		}//<<>>if( lumisum > minTTLumi )
 	}//<<>>for( auto& lumirun : lumiRunMap )
 	if( not newrange ) theIovMap[prev] = currentrun;
 	iovMaps[tag] = theIovMap;		
 
-	for( auto& iov : theIovMap ){ std::cout << "Iov map " << tag << " : " << iov.first << " " << iov.second << std::endl; }
+	//for( auto& iov : theIovMap ){ std::cout << "Iov map " << tag << " : " << iov.first << " " << iov.second << std::endl; }
 
 }//<<>>void KUCMS_TimeCalibration::makeTTIovMap()
 
