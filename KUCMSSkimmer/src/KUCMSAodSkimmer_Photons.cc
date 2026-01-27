@@ -401,6 +401,11 @@ void KUCMSAodSkimmer::processPhotons(){
 			_ca.AddRecHit(erx, ery, erz, erhe, erhct, pscrhid, hasBadTime);
         }//<<>>if( scrhid == rhid )
     }//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
+
+    //adding criteria for 'selected' photons - need at least 2 rechits that are within [-20, 20] ns
+    bool badNRechits  = (_ca.GetNRecHits() < 2);
+    phoskip = phoskip || badNRechits;
+
     if( sumw == 0 ){ sumw = 1; sumtw = -100; sumtrw = -1000; }
     float phoWTime = sumtw/sumw;
     float phoWRes = sumtrw/sumw;
@@ -452,7 +457,6 @@ void KUCMSAodSkimmer::processPhotons(){
 	bool dijetscr = false;
 	bool spikecr = false;
 	bool bhcr = false;
-    if(_ca.GetNRecHits() > 2){
     	ClusterObj phoobj;
         _ca.NoClusterRhs(phoobj, true);
      	map<string, double> isomap;
@@ -535,8 +539,6 @@ void KUCMSAodSkimmer::processPhotons(){
 		selPhoIsEEnonIso.push_back(false);
 
     	if(DEBUG) cout << "photon " << it << " iso score " << isobkg_score << " noniso score " << nonisobkg_score << endl;
-	}//<<>>if(_ca.GetNRecHits() > 2)
-    //do photon id score
  
   	_ca.ClearRecHitList();
 
