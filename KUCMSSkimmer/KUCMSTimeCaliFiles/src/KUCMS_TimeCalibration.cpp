@@ -1331,6 +1331,7 @@ float KUCMS_TimeCalibration::getSmrdCalibTime( float rhtime, float rhamp, uInt r
     float smrdCalibTime = getSmearedTime( crhtime, rhamp, stag );
     return smrdCalibTime;
 */
+
 	return 1.f;
 
 }//<<>>float KUCMS_TimeCalibration::getSmearedTime( std::string tag , float time, uInt rhid )
@@ -1418,7 +1419,7 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
             eestant = ResTagSet[resTag].eestant;
 			
 		}//<<>>if( resTag != "default" )
-		else if( dataSetKey.substr(1,2) == "r2" ){ // use smear tag?  -- check first for set tag ! 
+		else if( resTag == "default" || dataSetKey.substr(1,2) == "r2" ){ // use smear tag?  -- check first for set tag ! 
 
             std::string tag= "r2_ul18";
             ebnoise = ResTagSet[tag].ebnoise;
@@ -2487,6 +2488,13 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
                                     lyf1 = getSmearedTime( lyf1, (*resAmp)[1] );
                                     gyf0 = getSmearedTime( gyf0, (*resAmp)[2] );
                                     gyf1 = getSmearedTime( gyf1, (*resAmp)[3] );
+
+                                    //getCorrectedTime( time, amplitude, rechitID, Evt_run, dataSetKey, mctype, gainID )
+									lyf0 = getCorrectedTime( lyf0, (*resAmp)[0], (*resRhID)[0], run, tag, 0, rhGainId[0] );
+                                    lyf0 = getCorrectedTime( lyf1, (*resAmp)[0], (*resRhID)[0], run, tag, 0, rhGainId[0] );
+                                    lyf0 = getCorrectedTime( gyf0, (*resAmp)[0], (*resRhID)[0], run, tag, 0, rhGainId[0] );
+                                    lyf0 = getCorrectedTime( gyf1, (*resAmp)[0], (*resRhID)[0], run, tag, 0, rhGainId[0] );
+
 
                                 }//<<>>if( smear )
                                 double lyfill = lyf0-lyf1+ldTOF;
