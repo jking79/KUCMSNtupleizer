@@ -847,19 +847,19 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
   // ----- parse input batch file ---------------------------------------------------------------------
 
   std::string masterstr;
-  std::cout << "Processing Input Lists for : " << infilelist << std::endl;
+  std::cout << "Processing Input Lists for : " << listdir+infilelist << std::endl;
   std::ifstream masterInfile(listdir+infilelist);
   //while( masterInfile >> inFilePath >> inFileName >> key >> crossSection >> gmsblam >> gmsbct >> mcwgt >> mctype ){
   while( std::getline( masterInfile, masterstr ) ){
 
     // ---- parse input params
 
-    if( DEBUG ) std:: cout << masterstr << std::endl;
+    //if( DEBUG ) std:: cout << masterstr << std::endl;
     if( masterstr[0] == '#' ) continue;
     if( masterstr == "" ) continue;
     auto instrs = splitString( masterstr, " " );
-    if( DEBUG ) std:: cout << instrs.size() << std::endl;
-    if( instrs.size() < 9 ) continue;
+    if( DEBUG ) std::cout << instrs.size() << std::endl;
+    if( instrs.size() != 9 ) continue;
 
     inFilePath = instrs[0];
     inFileName = instrs[1];

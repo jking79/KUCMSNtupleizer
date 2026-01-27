@@ -2481,7 +2481,7 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 								//std::cout << " " << (*resRhID)[0] << std::endl;
 
                                 if( smear ){
-                                    std::cout << "Times are smeared !!!!!" << std::endl;
+                                    //std::cout << "Times are smeared !!!!!" << std::endl;
 
                                     lyf0 = getSmearedTime( lyf0, (*resAmp)[0] );
                                     lyf1 = getSmearedTime( lyf1, (*resAmp)[1] );
