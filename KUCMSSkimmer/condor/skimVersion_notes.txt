@@ -1,0 +1,20 @@
+version notes + commit tracking for skims
+
+version 47
+- introduced binary merging for RJR jets to reduce runtime due to combinatorics
+
+
+version 46
+- updated RJR jet pt threshold from 30 to 20 GeV
+
+
+version 45
+
+
+version 44
+
+
+version 43
+
+
+version 42
