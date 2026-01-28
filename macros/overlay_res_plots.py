@@ -213,7 +213,10 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
         #k = [kGray+2,kGray+3,kGray+4,kBlack]
         #k = [kGreen+2,kBlue+2,kMagenta+2,kRed+2]
         #k = [kViolet-1,kViolet-6,kBlue+2,kAzure+3]
-        k = [kGreen+2,kBlue+2,kSpring-1,kAzure+3]
+        #k = [kGreen+2,kBlue+2,kSpring-1,kAzure+3]
+        #k = [kGreen-1,kSpring+3,kBlue+1,kAzure+4]
+        #k = [kYellow+3,kGreen+2,kCyan+3,kBlue+2]
+        k = [kBlue+2,kCyan+3,kGreen+2,kYellow+3]
         h1[n].SetLineColor(k[n])
         #h1[n].SetLineWidth(1)
         #h1[n].SetLineStyle(9-n)
@@ -225,7 +228,7 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
         h1[n].SetMarkerColor(k[n])
         #msz = 0.2
         #msz = 0.8 # my standard
-        msz = 1.4 # prsentaion plots
+        msz = 1.5 # prsentaion plots
         #msz = 1.0
         if( n == 1 ) : h1[n].SetMarkerSize(msz+0.3)
         elif( n == 2 ) : h1[n].SetMarkerSize(msz+0.5)
@@ -317,7 +320,8 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
     #lat_title = 'Run2018D 3206730-320824' #   7 fb^{-1} (#sqrt{s} = 13 TeV)'
     #lat_title = 'Run2018D 1Tier miniAOD'
     #lat_title = ptitle[1]+' (13 TeV)'
-    lat_title = ptitle[1]+' (13.6 TeV)'
+    #lat_title = ptitle[1]+' (13.6 TeV)'
+    lat_title = ptitle[1]
     ##lat_title = ptitle[1]+' (13.8 TeV)'
     if not dostoch : lat_form = '#sigma^{2}_{i} = (#frac{N}{A_{eff}/#sigma_{n}})^{2} + 2C^{2}'
     if dostoch : lat_form = '#sigma^{2}_{i} = (#frac{N}{A_{eff}/#sigma_{n}})^{2} + #frac{S^{2}}{A_{eff}/#sigma_{n}} + 2C^{2}'
@@ -391,8 +395,8 @@ legtitle = ''
 #legtitle = 'KuStc'
 #legtitle = 'KuNotStc'
 
-#rtitle = 'Run2' # (13TeV)'
-rtitle = 'Run3' # (13TeV)'
+##rtitle = 'Run2' # (13TeV)'
+##rtitle = 'Run3' # (13.6TeV)'
 
 gi_legtitle = 'Global Inclusive'
 li_legtitle = 'Local Inclusive'
@@ -422,8 +426,8 @@ ytitle = '#sigma(t_{1}-t_{2}) [ns]'
 htitle = ''
 islogx = True
 #islogx = False
-#islogy = True
-islogy = False
+islogy = True
+#islogy = False
 
 gll_layout = { 'xtitle' : xtitle, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'legtitle' : legtitle }
 loc_layout = { 'xtitle' : xtitle, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'legtitle' : legtitle + li_legtitle }
@@ -488,6 +492,8 @@ zeep = 'ResMap_0_999999__ZEE_Data_Hist_NoCali_deg24fprmt_xa_pm9b1800_v417_sigma'
 hist = '_sigma'
 mdir = 'run3/'
 froot = '_resfit.root'
+
+
 sro25b = 'ResMap_0_999999__SRO_Data_Hist_NoCali_deg25b_xa_pm6b480_v519'
 zee25b = 'ResMap_0_999999__ZEE_Data_Hist_NoCali_deg25b_xa_pm6b480_v519'
 sro25bc = 'ResMap_0_999999__SRO_Data_Hist_NoCali_deg25bc_xa_pm6b480_v616'
@@ -511,7 +517,6 @@ sru25df = 'run3/ResMap_0_999999__SRO_Data_Hist_NoCali_eg25d_xa_pm6b480_v810_resf
 sru25d = 'ResMap_0_999999__SRO_Data_Hist_NoCali_eg24d_xa_pm6b480_v810_sigma'
 zee25df = 'run3/ResMap_0_999999__ZEE_Data_Hist_NoCali_eg25d_xa_pm6b480_v810_resfit.root'
 zee25d = 'ResMap_0_999999__ZEE_Data_Hist_NoCali_eg24d_xa_pm6b480_v810_sigma'
-
 
 dro17eenc = 'ResMap_296399_306460__DRO_Data_Hist_NoCali_deg_17_UL_EE_xa_pm24b1200_v113_NSC_resfit.root'
 dro17ebnc = 'ResMap_296399_306460__DRO_Data_Hist_NoCali_deg_17_UL_xa_pm24b1200_v113_NSC_resfit.root'
@@ -540,36 +545,73 @@ sro17eelg = 'ResMap_296399_306460__SRO_Data_Hist_eg_17UL_LG_EE_xa_pm24b1200_v010
 sro16eblg = 'ResMap_315257_325172__SRO_Data_Hist_eg_18UL_LG_EB_xa_pm24b1200_v0106'
 sro16eelg = 'ResMap_315257_325172__SRO_Data_Hist_eg_18UL_LG_EE_xa_pm24b1200_v0106'
 
-dro16ebnc = 'ResMap_275600_283900__DRO_Data_Hist_NoCali_eg_16UL_EB_xa_pm24b1200_v0108'
-dro16eenc = 'ResMap_275600_283900__DRO_Data_Hist_NoCali_eg_16UL_EE_xa_pm24b1200_v0108'
-sro16ebnc = 'ResMap_275600_283900__SRO_Data_Hist_NoCali_eg_16UL_EB_xa_pm24b1200_v0108'
-sro16eenc = 'ResMap_275600_283900__SRO_Data_Hist_NoCali_eg_16UL_EE_xa_pm24b1200_v0108'
-
-dro17ebnc = 'ResMap_296399_306460__DRO_Data_Hist_NoCali_eg_17UL_EB_xa_pm24b1200_v0108'
-dro17eenc = 'ResMap_296399_306460__DRO_Data_Hist_NoCali_eg_17UL_EE_xa_pm24b1200_v0108'
-sro17ebnc = 'ResMap_296399_306460__SRO_Data_Hist_NoCali_eg_17UL_EB_xa_pm24b1200_v0108'
-sro17eenc = 'ResMap_296399_306460__SRO_Data_Hist_NoCali_eg_17UL_EE_xa_pm24b1200_v0108'
-
-dro18ebnc = 'ResMap_315257_325172__DRO_Data_Hist_NoCali_eg_18UL_EB_xa_pm24b1200_v0108'
-dro18eenc = 'ResMap_315257_325172__DRO_Data_Hist_NoCali_eg_18UL_EE_xa_pm24b1200_v0108'
-sro18ebnc = 'ResMap_315257_325172__SRO_Data_Hist_NoCali_eg_18UL_EB_xa_pm24b1200_v0108'
-sro18eenc = 'ResMap_315257_325172__SRO_Data_Hist_NoCali_eg_18UL_EE_xa_pm24b1200_v0108'
-
-
-dro22ebnc = 'ResMap_355794_362760__DRO_Data_Hist_NoCali_eg_22p_EB_xa_pm24b1200_v0112'
-dro22eenc = 'ResMap_355794_362760__DRO_Data_Hist_NoCali_eg_22p_EE_xa_pm24b1200_v0112'
-dro22eb = 'ResMap_355794_362760__DRO_Data_Hist_eg_22p_EB_xa_pm24b1200_v0112'
-dro22ee = 'ResMap_355794_362760__DRO_Data_Hist_eg_22p_EE_xa_pm24b1200_v0112'
-sro22ebnc = 'ResMap_355794_362760__SRO_Data_Hist_NoCali_eg_22p_EB_xa_pm24b1200_v0112'
-sro22eenc = 'ResMap_355794_362760__SRO_Data_Hist_NoCali_eg_22p_EE_xa_pm24b1200_v0112'
-sro22eb = 'ResMap_355794_362760__SRO_Data_Hist_eg_22p_EB_xa_pm24b1200_v0112'
-sro22ee = 'ResMap_355794_362760__SRO_Data_Hist_eg_22p_EE_xa_pm24b1200_v0112'
+#////////////////////////////////////////////////////////////////////////////////////////
 
 
 dro18mceb = 'ResMap_0_999999_DRO_Data_Hist_NoCali_eg_18MC_xa_pm24b1200_v0116_EB'
 dro18mcee = 'ResMap_0_999999_DRO_Data_Hist_NoCali_eg_18MC_xa_pm24b1200_v0116_EE'
 sro18mceb = 'ResMap_0_999999_SRO_Data_Hist_NoCali_eg_18MC_xa_pm24b1200_v0116_EB'
 sro18mcee = 'ResMap_0_999999_SRO_Data_Hist_NoCali_eg_18MC_xa_pm24b1200_v0116_EE'
+
+#dro16ebnc = 'ResMap_275600_283900__DRO_Data_Hist_NoCali_eg_16UL_EB_xa_pm24b1200_v0108'
+#dro16eenc = 'ResMap_275600_283900__DRO_Data_Hist_NoCali_eg_16UL_EE_xa_pm24b1200_v0108'
+#sro16ebnc = 'ResMap_275600_283900__SRO_Data_Hist_NoCali_eg_16UL_EB_xa_pm24b1200_v0108'
+#sro16eenc = 'ResMap_275600_283900__SRO_Data_Hist_NoCali_eg_16UL_EE_xa_pm24b1200_v0108'
+
+#dro17ebnc = 'ResMap_296399_306460__DRO_Data_Hist_NoCali_eg_17UL_EB_xa_pm24b1200_v0108'
+#dro17eenc = 'ResMap_296399_306460__DRO_Data_Hist_NoCali_eg_17UL_EE_xa_pm24b1200_v0108'
+#sro17ebnc = 'ResMap_296399_306460__SRO_Data_Hist_NoCali_eg_17UL_EB_xa_pm24b1200_v0108'
+#sro17eenc = 'ResMap_296399_306460__SRO_Data_Hist_NoCali_eg_17UL_EE_xa_pm24b1200_v0108'
+
+#dro18ebnc = 'ResMap_315257_325172__DRO_Data_Hist_NoCali_eg_18UL_EB_xa_pm24b1200_v0108'
+#dro18eenc = 'ResMap_315257_325172__DRO_Data_Hist_NoCali_eg_18UL_EE_xa_pm24b1200_v0108'
+#sro18ebnc = 'ResMap_315257_325172__SRO_Data_Hist_NoCali_eg_18UL_EB_xa_pm24b1200_v0108'
+#sro18eenc = 'ResMap_315257_325172__SRO_Data_Hist_NoCali_eg_18UL_EE_xa_pm24b1200_v0108'
+
+#dro18eb = 'ResMap_315257_325172_DRO_Data_Hist_eg_18UL_xa_pm24b1200_v0114_EB'
+#dro18ee = 'ResMap_315257_325172_DRO_Data_Hist_eg_18UL_xa_pm24b1200_v0114_EE'
+#sro18eb = 'ResMap_315257_325172_SRO_Data_Hist_eg_18UL_xa_pm24b1200_v0114_EB'
+#sro18ee = 'ResMap_315257_325172_SRO_Data_Hist_eg_18UL_xa_pm24b1200_v0114_EE'
+
+dro16ebnc = 'ResMap_275600_283900_DRO_Data_Hist_NoCali_eg_16UL_xa_pm24b1200_v0121_EB'
+dro16eenc = 'ResMap_275600_283900_DRO_Data_Hist_NoCali_eg_16UL_xa_pm24b1200_v0121_EE'
+sro16ebnc = 'ResMap_275600_283900_SRO_Data_Hist_NoCali_eg_16UL_xa_pm24b1200_v0121_EB'
+sro16eenc = 'ResMap_275600_283900_SRO_Data_Hist_NoCali_eg_16UL_xa_pm24b1200_v0121_EE'
+
+dro16eb = 'ResMap_275600_283900_DRO_Data_Hist_eg_16UL_xa_pm24b1200_v0121_EB'
+dro16ee = 'ResMap_275600_283900_DRO_Data_Hist_eg_16UL_xa_pm24b1200_v0121_EE'
+sro16eb = 'ResMap_275600_283900_SRO_Data_Hist_eg_16UL_xa_pm24b1200_v0121_EB'
+sro16ee = 'ResMap_275600_283900_SRO_Data_Hist_eg_16UL_xa_pm24b1200_v0121_EE'
+
+dro17ebnc = 'ResMap_296399_306460_DRO_Data_Hist_NoCali_eg_17UL_xa_pm24b1200_v0121_EB'
+dro17eenc = 'ResMap_296399_306460_DRO_Data_Hist_NoCali_eg_17UL_xa_pm24b1200_v0121_EE'
+sro17ebnc = 'ResMap_296399_306460_SRO_Data_Hist_NoCali_eg_17UL_xa_pm24b1200_v0121_EB'
+sro17eenc = 'ResMap_296399_306460_SRO_Data_Hist_NoCali_eg_17UL_xa_pm24b1200_v0121_EE'
+
+dro17eb = 'ResMap_296399_306460_DRO_Data_Hist_eg_17UL_xa_pm24b1200_v0121_EB'
+dro17ee = 'ResMap_296399_306460_DRO_Data_Hist_eg_17UL_xa_pm24b1200_v0121_EE'
+sro17eb = 'ResMap_296399_306460_SRO_Data_Hist_eg_17UL_xa_pm24b1200_v0121_EB'
+sro17ee = 'ResMap_296399_306460_SRO_Data_Hist_eg_17UL_xa_pm24b1200_v0121_EE'
+
+dro18ebnc = 'ResMap_315257_325172_DRO_Data_Hist_NoCali_eg_18UL_xa_pm24b1200_v0121_EB'
+dro18eenc = 'ResMap_315257_325172_DRO_Data_Hist_NoCali_eg_18UL_xa_pm24b1200_v0121_EE'
+sro18ebnc = 'ResMap_315257_325172_SRO_Data_Hist_NoCali_eg_18UL_xa_pm24b1200_v0121_EB'
+sro18eenc = 'ResMap_315257_325172_SRO_Data_Hist_NoCali_eg_18UL_xa_pm24b1200_v0121_EE'
+
+dro18eb = 'ResMap_315257_325172_DRO_Data_Hist_eg_18UL_xa_pm24b1200_v0121_EB'
+dro18ee = 'ResMap_315257_325172_DRO_Data_Hist_eg_18UL_xa_pm24b1200_v0121_EE' 
+sro18eb = 'ResMap_315257_325172_SRO_Data_Hist_eg_18UL_xa_pm24b1200_v0121_EB'
+sro18ee = 'ResMap_315257_325172_SRO_Data_Hist_eg_18UL_xa_pm24b1200_v0121_EE' 
+
+dro22ebnc = 'ResMap_355794_362760_DRO_Data_Hist_NoCali_eg_22p_xa_pm24b1200_v0120_EB'
+dro22eenc = 'ResMap_355794_362760_DRO_Data_Hist_NoCali_eg_22p_xa_pm24b1200_v0120_EE'
+sro22ebnc = 'ResMap_355794_362760_SRO_Data_Hist_NoCali_eg_22p_xa_pm24b1200_v0120_EB'
+sro22eenc = 'ResMap_355794_362760_SRO_Data_Hist_NoCali_eg_22p_xa_pm24b1200_v0120_EE'
+
+dro22eb = 'ResMap_355794_362760__DRO_Data_Hist_eg_22p_EB_xa_pm24b1200_v0112'
+dro22ee = 'ResMap_355794_362760__DRO_Data_Hist_eg_22p_EE_xa_pm24b1200_v0112'
+sro22eb = 'ResMap_355794_362760__SRO_Data_Hist_eg_22p_EB_xa_pm24b1200_v0112'
+sro22ee = 'ResMap_355794_362760__SRO_Data_Hist_eg_22p_EE_xa_pm24b1200_v0112'
 
 dro23ebnc = 'ResMap_366365_372415_DRO_Data_Hist_NoCali_eg_23p_xa_pm24b1200_v0115_EB'
 dro23eenc = 'ResMap_366365_372415_DRO_Data_Hist_NoCali_eg_23p_xa_pm24b1200_v0115_EE'
@@ -586,16 +628,34 @@ dro24eenc = 'ResMap_378971_387721_DRO_Data_Hist_NoCali_eg_24p_xa_pm24b1200_v0119
 sro24ebnc = 'ResMap_378971_387721_SRO_Data_Hist_NoCali_eg_24p_xa_pm24b1200_v0119_EB'
 sro24eenc = 'ResMap_378971_387721_SRO_Data_Hist_NoCali_eg_24p_xa_pm24b1200_v0119_EE'
 
+dro24eb = 'ResMap_378971_387721_DRO_Data_Hist_eg_24p_xa_pm24b1200_v0119_EB'
+dro24ee = 'ResMap_378971_387721_DRO_Data_Hist_eg_24p_xa_pm24b1200_v0119_EE'
+sro24eb = 'ResMap_378971_387721_SRO_Data_Hist_eg_24p_xa_pm24b1200_v0119_EB'
+sro24ee = 'ResMap_378971_387721_SRO_Data_Hist_eg_24p_xa_pm24b1200_v0119_EE'
+
 
 rfend = '_NSC_resfit.root'
 shend = '_sigma'
 
+hl_r3_24_ebee = [
+    [sro24eb+shend,"",sro24eb+rfend,"SRO EB"],
+    [sro24ee+shend,"",sro24ee+rfend,"SRO EE"],
+    [dro24eb+shend,"",dro24eb+rfend,"DRO EB"],
+    [dro24ee+shend,"",dro24ee+rfend,"DRO EE"],
+]
 
 hl_r3_24_ebeenc = [
-    [sro24ebnc+shend,"",sro24ebnc+rfend,"24 SRO EB"],
-    [sro24eenc+shend,"",sro24eenc+rfend,"24 SRO EE"],
-    [dro24ebnc+shend,"",dro24ebnc+rfend,"24 DRO EB"],
-    [dro24eenc+shend,"",dro24eenc+rfend,"24 DRO EE"],
+    [sro24ebnc+shend,"",sro24ebnc+rfend,"SRO EB"],
+    [sro24eenc+shend,"",sro24eenc+rfend,"SRO EE"],
+    [dro24ebnc+shend,"",dro24ebnc+rfend,"DRO EB"],
+    [dro24eenc+shend,"",dro24eenc+rfend,"DRO EE"],
+]
+
+hl_r3_24_ebeedro = [
+    [dro24eb+shend,"",dro24eb+rfend,"EB Chronus"],
+    [dro24ee+shend,"",dro24ee+rfend,"EE Chronus"],
+    [dro24ebnc+shend,"",dro24ebnc+rfend,"EB"],
+    [dro24eenc+shend,"",dro24eenc+rfend,"EE"],
 ]
 
 hl_r2_18mc_ebeenc = [
@@ -606,69 +666,113 @@ hl_r2_18mc_ebeenc = [
 ]
 
 hl_r3_23_ebeenc = [
-    [sro23ebnc+shend,"",sro23ebnc+rfend,"23 SRO EB"],
-    [sro23eenc+shend,"",sro23eenc+rfend,"23 SRO EE"],
-    [dro23ebnc+shend,"",dro23ebnc+rfend,"23 DRO EB"],
-    [dro23eenc+shend,"",dro23eenc+rfend,"23 DRO EE"],
+    [sro23ebnc+shend,"",sro23ebnc+rfend,"SRO EB"],
+    [sro23eenc+shend,"",sro23eenc+rfend,"SRO EE"],
+    [dro23ebnc+shend,"",dro23ebnc+rfend,"DRO EB"],
+    [dro23eenc+shend,"",dro23eenc+rfend,"DRO EE"],
 ]
 
 hl_r3_23_ebee = [
-    [sro23eb+shend,"",sro23eb+rfend,"23 SRO EB"],
-    [sro23ee+shend,"",sro23ee+rfend,"23 SRO EE"],
-    [dro23eb+shend,"",dro23eb+rfend,"23 DRO EB"],
-    [dro23ee+shend,"",dro23ee+rfend,"23 DRO EE"],
+    [sro23eb+shend,"",sro23eb+rfend,"SRO EB"],
+    [sro23ee+shend,"",sro23ee+rfend,"SRO EE"],
+    [dro23eb+shend,"",dro23eb+rfend,"DRO EB"],
+    [dro23ee+shend,"",dro23ee+rfend,"DRO EE"],
+]
+
+hl_r3_23_ebeedro = [
+    [dro23eb+shend,"",dro23eb+rfend,"EB Chronus"],
+    [dro23ee+shend,"",dro23ee+rfend,"EE Chronus"],
+    [dro23ebnc+shend,"",dro23ebnc+rfend,"EB"],
+    [dro23eenc+shend,"",dro23eenc+rfend,"EE"],
 ]
 
 hl_r3_22_ebee = [
-    [sro22eb+shend,"",sro22eb+rfend,"22 SRO EB"],
-    [sro22ee+shend,"",sro22ee+rfend,"22 SRO EE"],
-    [dro22eb+shend,"",dro22eb+rfend,"22 DRO EB"],
-    [dro22ee+shend,"",dro22ee+rfend,"22 DRO EE"],
+    [sro22eb+shend,"",sro22eb+rfend,"SRO EB"],
+    [sro22ee+shend,"",sro22ee+rfend,"SRO EE"],
+    [dro22eb+shend,"",dro22eb+rfend,"DRO EB"],
+    [dro22ee+shend,"",dro22ee+rfend,"DRO EE"],
 ]
 
 hl_r3_22_ebeenc = [
-    [sro22ebnc+shend,"",sro22ebnc+rfend,"22 SRO EB"],
-    [sro22eenc+shend,"",sro22eenc+rfend,"22 SRO EE"],
-    [dro22ebnc+shend,"",dro22ebnc+rfend,"22 DRO EB"],
-    [dro22eenc+shend,"",dro22eenc+rfend,"22 DRO EE"],
+    [sro22ebnc+shend,"",sro22ebnc+rfend,"SRO EB"],
+    [sro22eenc+shend,"",sro22eenc+rfend,"SRO EE"],
+    [dro22ebnc+shend,"",dro22ebnc+rfend,"DRO EB"],
+    [dro22eenc+shend,"",dro22eenc+rfend,"DRO EE"],
 ]
 
-hl_r2_18_ebee_nc = [
-    [sro18ebnc+shend,"",sro18ebnc+rfend,"18 SRO EB"],
-    [sro18eenc+shend,"",sro18eenc+rfend,"18 SRO EE"],
-    [dro18ebnc+shend,"",dro18ebnc+rfend,"18 DRO EB"],
-    [dro18eenc+shend,"",dro18eenc+rfend,"18 DRO EE"], 
+hl_r3_22_ebeedro = [
+    [dro22eb+shend,"",dro22eb+rfend,"EB Chronus"],
+    [dro22ee+shend,"",dro22ee+rfend,"EE Chronus"],
+    [dro22ebnc+shend,"",dro22ebnc+rfend,"EB"],
+    [dro22eenc+shend,"",dro22eenc+rfend,"EE"],
 ]
 
-hl_r2_17_ebee_nc = [
-    [sro17ebnc+shend,"",sro17ebnc+rfend,"17 SRO EB"],
-    [sro17eenc+shend,"",sro17eenc+rfend,"17 SRO EE"],
-    [dro17ebnc+shend,"",dro17ebnc+rfend,"17 DRO EB"],
-    [dro17eenc+shend,"",dro17eenc+rfend,"17 DRO EE"],
+hl_r2_18_ebeenc = [
+    [sro18ebnc+shend,"",sro18ebnc+rfend,"SRO EB"],
+    [sro18eenc+shend,"",sro18eenc+rfend,"SRO EE"],
+    [dro18ebnc+shend,"",dro18ebnc+rfend,"DRO EB"],
+    [dro18eenc+shend,"",dro18eenc+rfend,"DRO EE"], 
 ]
 
-hl_r2_16_ebee_nc = [
-    [sro16ebnc+shend,"",sro16ebnc+rfend,"16 SRO EB"],
-    [sro16eenc+shend,"",sro16eenc+rfend,"16 SRO EE"],
-    [dro16ebnc+shend,"",dro16ebnc+rfend,"16 DRO EB"],
-    [dro16eenc+shend,"",dro16eenc+rfend,"16 DRO EE"],
+hl_r2_18_ebee = [
+
+    #[sro18eblg+shend,"",sro18eblg+rfend,"18 UL EB"],
+    #[sro18eelg+shend,"",sro18eelg+rfend,"18 UL EE"],
+    [sro18eb+shend,"",sro18eb+rfend,"SRO EB"],
+    [sro18ee+shend,"",sro18ee+rfend,"SRO EE"],
+    [dro18eb+shend,"",dro18eb+rfend,"DRO EB"],
+    [dro18ee+shend,"",dro18ee+rfend,"DRO EE"],
+]
+
+hl_r2_18_ebeedro = [
+    [dro18eb+shend,"",dro18eb+rfend,"EB Chronus"],
+    [dro18ee+shend,"",dro18ee+rfend,"EE Chronus"],
+    [dro18ebnc+shend,"",dro18ebnc+rfend,"EB"],
+    [dro18eenc+shend,"",dro18eenc+rfend,"EE"],
+]
+
+hl_r2_17_ebeenc = [
+    [sro17ebnc+shend,"",sro17ebnc+rfend,"SRO EB"],
+    [sro17eenc+shend,"",sro17eenc+rfend,"SRO EE"],
+    [dro17ebnc+shend,"",dro17ebnc+rfend,"DRO EB"],
+    [dro17eenc+shend,"",dro17eenc+rfend,"DRO EE"],
+]
+
+hl_r2_17_ebee = [
+    [sro17eb+shend,"",sro17eb+rfend,"SRO EB"],
+    [sro17ee+shend,"",sro17ee+rfend,"SRO EE"],
+    [dro17eb+shend,"",dro17eb+rfend,"DRO EB"],
+    [dro17ee+shend,"",dro17ee+rfend,"DRO EE"],
+]
+
+hl_r2_17_ebeedro = [
+    [dro17eb+shend,"",dro17eb+rfend,"EB Chronus"],
+    [dro17ee+shend,"",dro17ee+rfend,"EE Chronus"],
+    [dro17ebnc+shend,"",dro17ebnc+rfend,"EB"],
+    [dro17eenc+shend,"",dro17eenc+rfend,"EE"],
+]
+
+hl_r2_16_ebeenc = [
+    [sro16ebnc+shend,"",sro16ebnc+rfend,"SRO EB"],
+    [sro16eenc+shend,"",sro16eenc+rfend,"SRO EE"],
+    [dro16ebnc+shend,"",dro16ebnc+rfend,"DRO EB"],
+    [dro16eenc+shend,"",dro16eenc+rfend,"DRO EE"],
 ]
 
 hl_r2_16_ebee = [
     #[sro16ebhg+shend,"",sro16ebhg+rfend,"16 UL EB"],
     #[sro16eehg+shend,"",sro16eehg+rfend,"16 UL EE"],
-    [sro16eblg+shend,"",sro16eblg+rfend,"16 UL EB"],
-    [sro16eelg+shend,"",sro16eelg+rfend,"16 UL EE"],
+    [sro16eb+shend,"",sro16eb+rfend,"SRO EB"],
+    [sro16ee+shend,"",sro16ee+rfend,"SRO EE"],
+    [dro16eb+shend,"",dro16eb+rfend,"DRO EB"],
+    [dro16ee+shend,"",dro16ee+rfend,"DRO EE"],
 ]
 
-hl_r2_18_ebee = [
-    [sro18eblg+shend,"",sro18eblg+rfend,"18 UL EB"],
-    [sro18eelg+shend,"",sro18eelg+rfend,"18 UL EE"],
-]
-
-hl_r2_17_ebee = [
-    [sro17eblg+shend,"",sro17eblg+rfend,"17 UL EB"],
-    [sro17eelg+shend,"",sro17eelg+rfend,"17 UL EE"],
+hl_r2_16_ebeedro = [
+    [dro16eb+shend,"",dro16eb+rfend,"EB Chronus"],
+    [dro16ee+shend,"",dro16ee+rfend,"EE Chronus"],
+    [dro16ebnc+shend,"",dro16ebnc+rfend,"EB"],
+    [dro16eenc+shend,"",dro16eenc+rfend,"EE"],
 ]
 
 hl_r2_1817_ee = [
@@ -763,12 +867,20 @@ hl_r3_25b = [
 #ptitle=['','','#splitline{Online Calibration}{ECAL EndCaps}'] #{GT 106X_dataRun2_v28}'
 #ptitle=['','Run 2','#splitline{Online Calibration}{ECAL Barrel}'] #{GT 106X_dataRun2_v28}'
 #ptitle=['','Run 2','#splitline{Online Calibration}{ECAL Endcaps}'] #{GT 106X_dataRun2_v28}'
-#ptitle=['','Run 3','#splitline{Chronus Calibration}{}'] #{}'
-ptitle=['','Run 3','#splitline{Online}{}'] #{}'
+
+ptitle=['','Run 2 (13 TeV)','#splitline{DRU Resolution}{2018 UL}'] #{}'
+#ptitle=['','Run 2 (13 TeV)','#splitline{Chronus Calibration}{2016 UL}'] #{}'
+#ptitle=['','Run 2 (13 TeV)','#splitline{Online Calibration}{2016 UL}'] #{}'
+
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{DRU Resolution}{2024 Prompt}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2022 Prompt}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{Online Calibration}{2022 Prompt}'] #{}'
 
 #y = [ 0.4, 0.04 ]
 #y = [ 0.7, -0.05 ]
-y = [ 2.5, -0.5 ]
+#y = [ 2.5, -0.5 ]
+#y = [ 5.0, 0.05 ]
+y = [ 3.0, 0.06 ]
 #y = [ 5, 0.01 ]
 x = [ 5.0, 1600.0 ]
 #x = [ 5.0, 800.0 ]
@@ -784,17 +896,8 @@ t = [0.325,0.85,0.1,0.175,0.285]#adjsuting lumi-sqrt(s) in title bar
 #outname = 'downloads/tr_hl_r3_24d_part_trvcc_ccgt_v7'
 #outname = 'downloads/tr_hl_r3_25c2'
 #outname = 'downloads/tr_hl_r3_25bc_xa'
-outname = 'tr_hl_r2_24nc'
-#dostack(hl_r3_24d_part, outname, date, Ic_layout, ptitle,  y, x, l, t)
-#dostack(hl_r3_24d_part_cc, outname_cc, date, Ic_layout, ptitle_cc,  y, x, l, t)
-#dostack(hl_r3_24f_EE_rtvcc, outname, date, Ic_layout, ptitle,  y, x, l, t)
-#dostack(hl_r3_25b, outname, date, Ic_layout, ptitle,  y, x, l, t)
-#dostack(hl_r3_24f_EE_rtvcc, outname, date, Ic_layout, ptitle,  y, x, l, t)
-#dostack(hl_r3_25c2_prmt, outname, date, Ic_layout, ptitle,  y, x, l, t)
-#dostack(hl_r3_25d_prmt, outname, date, Ic_layout, ptitle,  y, x, l, t)
-#dostack(hl_r2_1817, outname, date, Ic_layout, ptitle,  y, x, l, t)
-#dostack(hl_r2_1817_ee, outname, date, Ic_layout, ptitle,  y, x, l, t)
-dostack(hl_r3_24_ebeenc, outname, date, Ic_layout, ptitle,  y, x, l, t)
+outname = 'tr_hl_r2_18'
+dostack(hl_r2_18_ebeedro, outname, date, Ic_layout, ptitle,  y, x, l, t)
 
 #
 ##---------------------------------------------------------------

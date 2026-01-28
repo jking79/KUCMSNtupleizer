@@ -333,7 +333,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
     _ca.SetVerbosity(-1); //can turn on to see low-level warnings
     _ca.SetDetIDs(_detidmap);
     _ca.SetCNNModel("config/json/KU-CNN_detector_1000epochs_archsmall3_2017and2018_CMS.json");
-    _ca.SetBarrelDNNModel("config/json/KU-DNN_photonID_JetHT18RunBC_EGamma18RunC_shape_1000epochs_large8_barrelOnly.json");
+    _ca.SetBarrelDNNModel("config/json/KU-DNN_photonID_JetHT18RunBC_EGamma18RunC_SMSGlGl_StandardNorm_shape_1000epochs_large8_barrelOnly.json");
     _ca.SetEndcapDNNModel("config/json/KU-DNN_photonID_testIsoPresel_100JetHTChunks_isoShape_1200epochs_large8_endcapOnly.json");
 
 }//<<>>KUCMSAodSkimmer::KUCMSAodSkimmer()
@@ -847,19 +847,19 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
   // ----- parse input batch file ---------------------------------------------------------------------
 
   std::string masterstr;
-  std::cout << "Processing Input Lists for : " << infilelist << std::endl;
+  std::cout << "Processing Input Lists for : " << listdir+infilelist << std::endl;
   std::ifstream masterInfile(listdir+infilelist);
   //while( masterInfile >> inFilePath >> inFileName >> key >> crossSection >> gmsblam >> gmsbct >> mcwgt >> mctype ){
   while( std::getline( masterInfile, masterstr ) ){
 
     // ---- parse input params
 
-    if( DEBUG ) std:: cout << masterstr << std::endl;
+    //if( DEBUG ) std:: cout << masterstr << std::endl;
     if( masterstr[0] == '#' ) continue;
     if( masterstr == "" ) continue;
     auto instrs = splitString( masterstr, " " );
-    if( DEBUG ) std:: cout << instrs.size() << std::endl;
-    if( instrs.size() < 9 ) continue;
+    if( DEBUG ) std::cout << instrs.size() << std::endl;
+    if( instrs.size() != 9 ) continue;
 
     inFilePath = instrs[0];
     inFileName = instrs[1];
@@ -1032,8 +1032,8 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
 	if( doBHC ){ processBHCJets(); }
     if( debugl1 ) std::cout << "KUCMSAodSkimmer : processRJR 0" << std::endl;
 	processRJR(0,true); 
-    if( debugl1 ) std::cout << "KUCMSAodSkimmer : processRJR 1" << std::endl;
-	processRJR(1,false); 
+    //if( debugl1 ) std::cout << "KUCMSAodSkimmer : processRJR 1" << std::endl;
+	//processRJR(1,false); 
     if( debugl1 ) std::cout << "KUCMSAodSkimmer : processRJR ISR" << std::endl;
 	processRJRISR();
 

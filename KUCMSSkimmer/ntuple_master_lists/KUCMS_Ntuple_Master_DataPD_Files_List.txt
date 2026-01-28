@@ -28,7 +28,6 @@ KUCMSNtuple/kucmsntuple_DisJet_R18_SVIPM100_v31/ kucmsntuple_DisJet_R18_SVIPM100
 KUCMSNtuple/kucmsntuple_DisJet_R18_SVIPM100_v31/ kucmsntuple_DisJet_R18_SVIPM100_v31_DisplacedJet_AOD_Run2018C_v29.txt DisJet18 1 0 0 0 1 r2_ul18
 KUCMSNtuple/kucmsntuple_DisJet_R18_SVIPM100_v31/ kucmsntuple_DisJet_R18_SVIPMet100_v31_DisplacedJet_AOD_Run2018D_v29.txt DisJet18 1 0 0 0 1 r2_ul18
 
-
 #beam halo training samples
 KUCMSNtuple/kucmsntuple_MET_R18_AL1NpSC_DEOnly_v31/ MET_R18_AL1NpSC_DEOnly_v31_MET_AOD_Run2018B-15Feb2022_UL2018-v1.txt MET18B 1 0 0 0 1 r2_ul18
 KUCMSNtuple/kucmsntuple_MET_R18_AL1NpSC_v31/ MET_R18_AL1NpSC_v31_MET_AOD_Run2018C-15Feb2022_UL2018-v1.txt MET18C 1 0 0 0 1 r2_ul18

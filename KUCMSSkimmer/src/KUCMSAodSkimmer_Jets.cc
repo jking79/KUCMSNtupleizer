@@ -56,7 +56,6 @@ void KUCMSAodSkimmer::processJets(){
     float mass = (*Jet_mass)[it];
     //if( DEBUG ) std::cout << " - Finding Jet Quality" << std::endl;
     int quality = getJetQuality(it);
-	int isllpjet = getJetQuality(it);
     float pt = (*Jet_pt)[it];
     float eta = (*Jet_eta)[it];
     float phi = (*Jet_phi)[it];

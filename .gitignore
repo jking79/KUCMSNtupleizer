@@ -18,6 +18,7 @@ test/mySmallWorkSpace/
 test/oldWorkingSpace/
 test/myOldWorkSpaces/
 test/myGMSBWorkingSpace/
+test/myFinishedWork/
 macros/*.obj
 KUCMSSkimmer/condor/Output/
 .nfs*
