@@ -96,7 +96,7 @@ int main ( int argc, char *argv[] ){
 	//const std::string infilename = "KUCMS_Ntuple_Master_DataPD_Files_List.txt"; hasGenInfo = false;
 
     	int skipCnt = 0; // used to skip files ( in tchian ) for fast processing - if( nFiles%skipCnt != 0 ) continue; --  disabled in code  --  
-    	std::string eosdir = "root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/";
+    	std::string eosdir = "root://cmseos.fnal.gov//store/group/lpcsusylep/jaking/";
     	KUCMSAodSkimmer llpgana;
 	llpgana.SetEventRange(evti, evtj);
 	llpgana.SetGenInfoFlag( hasGenInfo );
