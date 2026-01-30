@@ -58,6 +58,9 @@ EXE_MAIN = runKUCMSAodSVSkimmer.obj
 EXE_LOCAL = runLocalKUCMSAodSVSkimmer.obj
 EXE_CALI = makeKUCMSTimeCalibration.obj
 EXE_RES = makeKUCMSTimeResolution.obj
+EXE_RJR = rjr_plotting.obj
+RJR_SRC = $(SRCDIR)/rjr_plotting.cpp
+RJR_OBJ = $(MAINOBJDIR)/rjr_plotting.o
 
 # Colored output
 
@@ -97,6 +100,7 @@ local: $(EXE_LOCAL)
 time: $(EXE_CALI) $(EXE_RES)
 cali: $(EXE_CALI)
 res: $(EXE_RES)
+rjr_plotting: $(EXE_RJR)
 
 $(EXE_MAIN): $(OBJ_FILES) $(MAIN_OBJ)
 	@echo -e "$(COLOR_GREEN)Linking $@$(COLOR_RESET)"
@@ -105,6 +109,10 @@ $(EXE_MAIN): $(OBJ_FILES) $(MAIN_OBJ)
 $(EXE_LOCAL): $(OBJ_FILES) $(LOCAL_OBJ)
 	@echo -e "$(COLOR_GREEN)Linking $@$(COLOR_RESET)"
 	$(CC) -o $@ $(OBJ_FILES) $(LOCAL_OBJ) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCGLIBS) -pthread
+
+$(EXE_RJR): $(RJR_OBJ)
+	@echo -e "$(COLOR_GREEN)Linking $@$(COLOR_RESET)"
+	$(CC) -o $@ $(RJR_OBJ) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) -pthread
 
 $(EXE_CALI): $(TCALI_OBJ) $(OBJDIR)/KUCMS_TimeCalibration.o
 	@echo -e "$(COLOR_GREEN)Linking $@$(COLOR_RESET)"
@@ -144,5 +152,5 @@ clean:
 
 # Phony targets
 
-.PHONY: all clean configtar
+.PHONY: all clean configtar rjr_plotting
 

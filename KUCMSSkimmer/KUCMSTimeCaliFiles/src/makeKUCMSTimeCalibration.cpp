@@ -51,8 +51,8 @@ int main ( int argc, char *argv[] ){
     ////std::string inputfilename( "ecal_config/kucmsTimeCaliR17EOYTFile.txt");
 
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR18ULTFile.txt");
-    //std::string inputfilename( "ecal_config/kucmsTimeCaliR17ULTFile.txt");
-    std::string inputfilename( "ecal_config/kucmsTimeCaliR16ULTFile.txt"); 
+    std::string inputfilename( "ecal_config/kucmsTimeCaliR17ULTFile.txt");
+    //std::string inputfilename( "ecal_config/kucmsTimeCaliR16ULTFile.txt"); 
 	//std::string inputfilename( "ecal_config/kucmsTimeCaliR22PrmptTFile.txt"); 
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR23PrmptTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR24PrmptTFile.txt");
@@ -66,8 +66,8 @@ int main ( int argc, char *argv[] ){
     //std::string indir("kuncali/gammares_cali/DoubleEG/");
 
     //std::string indir("KUCMSNtuple/gammares_ul18/");
-    //std::string indir("KUCMSNtuple/gammares_ul17/");
-    std::string indir("KUCMSNtuple/gammares_ul16/DoubleEG/");
+    std::string indir("KUCMSNtuple/gammares_ul17/");
+    //std::string indir("KUCMSNtuple/gammares_ul16/DoubleEG/");
     //std::string indir("KUCMSNtuple/gammares_prmt22/EGamma/");
     //std::string indir("KUCMSNtuple/");
 
@@ -113,18 +113,18 @@ int main ( int argc, char *argv[] ){
     //-----//////////  making xtal cali :
     //theCali.makeXCaliMapEGR( inputfilename, true ); // true == run only subset of events
 	//theCali.makeXCaliMapEGR( inputfilename, 1, true ); // true == run only subset of events
-    //theCali.makeXCaliMapEGR( inputfilename );
-    //theCali.makeCaliHists();
-    //theCali.SaveCaliHists();
-    //theCali.SaveCaliRunFile();
+    theCali.makeXCaliMapEGR( inputfilename );
+    theCali.makeCaliHists();
+    theCali.SaveCaliHists();
+    theCali.SaveCaliRunFile();
 
 	//----///////////  make gainid 2 calibrations
     //theCali.makeTTCaliMapEGR( inputfilename, 2, false, false ); // do gainID 2 no calibration step
     //theCali.makeTTCaliMapEGR( inputfilename, 2, true ); // do gainID 2; true == run only subset of events 
-    theCali.makeTTCaliMapEGR( inputfilename, 2 ); // do gainID 2
-    theCali.makeCaliHists();
-    theCali.SaveCaliHists();
-    theCali.SaveTTRunFile();
+    //theCali.makeTTCaliMapEGR( inputfilename, 2 ); // do gainID 2
+    //theCali.makeCaliHists();
+    //theCali.SaveCaliHists();
+    //theCali.SaveTTRunFile();
 
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////

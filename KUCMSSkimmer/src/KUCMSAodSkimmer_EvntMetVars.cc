@@ -91,8 +91,8 @@ void KUCMSAodSkimmer::processEvntVars(){
 
   }//<<>>if( not doGenInfo )
 
-  bool metFlags = BadChargedCandidateFilter && BadPFMuonDzFilter && BadPFMuonFilter && EcalDeadCellTriggerPrimitiveFilter; 
-  metFlags = metFlags && HBHENoiseFilter && HBHENoiseIsoFilter && ecalBadCalibFilter && eeBadScFilter && goodVertices && hfNoisyHitsFilter;
+  bool metFlags = BadChargedCandidateFilter && BadPFMuonFilter && EcalDeadCellTriggerPrimitiveFilter; 
+  metFlags = metFlags && HBHENoiseFilter && HBHENoiseIsoFilter && ecalBadCalibFilter && eeBadScFilter && goodVertices;
 
   selEvtVars.fillBranch( "Flag_BadChargedCandidateFilter", BadChargedCandidateFilter );//not suggested
   selEvtVars.fillBranch( "Flag_BadPFMuonDzFilter", BadPFMuonDzFilter );//suggested

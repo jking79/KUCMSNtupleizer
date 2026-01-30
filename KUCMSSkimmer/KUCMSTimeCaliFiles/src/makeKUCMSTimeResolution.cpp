@@ -50,10 +50,10 @@ int main ( int argc, char *argv[] ){
 	//std::string inputfilename( "ecal_config/kucmsTimeCaliTestTFile.txt");
     ////std::string inputfilename( "ecal_config/kucmsTimeCaliR17EOYTFile.txt");
 
-    //std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCGjetsTFile.txt");
+    std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCGjetsTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR18ULTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR17ULTFile.txt");
-    std::string inputfilename( "ecal_config/kucmsTimeCaliR16ULTFile.txt");
+    //std::string inputfilename( "ecal_config/kucmsTimeCaliR16ULTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR22PrmptTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR23PrmptTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR24PrmptTFile.txt");
@@ -66,9 +66,9 @@ int main ( int argc, char *argv[] ){
     ////std::string indir("kuncali/gammares_mc18/");
     ////std::string indir("kuncali/gammares_cali/DoubleEG/");
 
-    //std::string indir("KUCMSNtuple/gammares_ul18/");
+    std::string indir("KUCMSNtuple/gammares_ul18/");
     //std::string indir("KUCMSNtuple/gammares_ul17/");
-    std::string indir("KUCMSNtuple/gammares_ul16/DoubleEG/");
+    //std::string indir("KUCMSNtuple/gammares_ul16/DoubleEG/");
     //std::string indir("KUCMSNtuple/gammares_prmt22/EGamma/");
     //std::string indir("KUCMSNtuple/");
 
@@ -204,7 +204,9 @@ int main ( int argc, char *argv[] ){
     //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_24p_xa_pm24b1200_v0119" );
     //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_24p_xa_pm24b1200_v0119" );
 
+	theCali.setMCResTag("r2_ul17");
 	//theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_18MC_xa_pm24b1200_v0116" );
+    theCali.plot2dResolutionEGR( inputfilename, true, false, true, "_eg_18MC_xa_pm24b1200_v0130" );
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -319,8 +321,9 @@ int main ( int argc, char *argv[] ){
     //theCali.Set2DResTFileName( "egres_DEGPD_AODSIM_R24_ECAL_v3_14011_v12_resplots.root" );
 	//
 
-
-	std::string histName = "ResMap_275600_283900_DRO_Data_Hist_eg_16UL_xa_pm24b1200_v0127_EB";
+	//std::string histName = "ResMap_275600_283900_DRO_Data_Hist_eg_16UL_xa_pm24b1200_v0127_EB";
+    std::string histName = "ResMap_0_999999_DRO_Data_Hist_NoCali_Smeared_eg_18MC_xa_pm24b1200_v0129_EB";
+    //std::string histName = "ResMap_0_999999_DRO_Data_Hist_NoCali_Smeared_eg_18MC_xa_pm24b1200_v0129_EE";
 
     //theCali.setLowEnergy( false ); // true is default
 
@@ -332,14 +335,15 @@ int main ( int argc, char *argv[] ){
     ////theCali.SetXBinStr( "VARIABLE 10 15 20 25 30 40 50 60 80 100 125 150 175 200 225 250 300 400 600" ); // : xr
     ////theCali.SetXBinStr( "VARIABLE 1.0 2.0 3.0 4.0 5.0 7.5 10.0 12.5 15.0 17.5 20.0 25.0 30.0 40.0 50.0 70.0 90.0" ); // xer
     ////theCali.SetXBinStr( "VARIABLE 10 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1200 1600 2200" ); // : xgs ecal
-	////theCali.SetXBinStr( "VARIABLE 5 10 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 1200 1800 2200" );  // : xa ( xaext+ 2200 )
+	////theCali.SetXBinStr( "VARIABLE 5 10 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 1200 1800 2200" );  
+	/////////////////////////////// : xa ( xaext+ 2200 )
 
 	////theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600" ); // : xa 2018UL DRO
-    ////theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600" ); // : xa  llpana LG resfit
-	theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600 3200" ); // : xa  llpana HG resfit
+    ////theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600" ); // : xa llpana LG resfit
+	theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600 3200" ); // : xa llpana HG resfit
 
-    theCali.load2DResHist( histName );
-	theCali.doResTimeFit( histName );
+    //theCali.load2DResHist( histName );
+	//theCali.doResTimeFit( histName );
 
 	/*
     theCali.load2DResHist( histName1 );
