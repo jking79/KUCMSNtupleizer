@@ -1331,6 +1331,7 @@ float KUCMS_TimeCalibration::getSmrdCalibTime( float rhtime, float rhamp, uInt r
     float smrdCalibTime = getSmearedTime( crhtime, rhamp, stag );
     return smrdCalibTime;
 */
+
 	return 1.f;
 
 }//<<>>float KUCMS_TimeCalibration::getSmearedTime( std::string tag , float time, uInt rhid )
@@ -1395,7 +1396,7 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
 float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsigned int rechitID, 
 												unsigned int Evt_run, std::string dataSetKey, int mctype, int gainID ){
 
-	float rtime = 0;
+	double rtime = 0;
     //if( Evt_run > 388000 || Evt_run < 253984 ) return time; // within calibrated run range check
 
     if( mctype == 1 ){ // data
@@ -1405,9 +1406,14 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
 
     } else { // MC
 
+		//std::cout << " Pre Check amplitude : " << amplitude << std::endl;
+		if( amplitude < 1 ) return time;
+        if( time == 0 ) return time;
+		//std::cout << " Post Check amplitude : " << amplitude << std::endl;
+
 		bool isEB( DetIDMap[rechitID].ecal == ECAL::EB );
-        float ebnoise, ebstoch, ebstant, eenoise, eestoch, eestant;
-		float mcebnoise(0), mcebstoch(0), mcebstant(0), mceenoise(0), mceestoch(0), mceestant(0);
+        double ebnoise, ebstoch, ebstant, eenoise, eestoch, eestant;
+		double mcebnoise(0), mcebstoch(0), mcebstant(0), mceenoise(0), mceestoch(0), mceestant(0);
 		if( resTag != "default" && ResTagSet.find(resTag) != ResTagSet.end() ){  // TARGET RESOLUTION
 
             ebnoise = ResTagSet[resTag].ebnoise;
@@ -1418,7 +1424,7 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
             eestant = ResTagSet[resTag].eestant;
 			
 		}//<<>>if( resTag != "default" )
-		else if( dataSetKey.substr(1,2) == "r2" ){ // use smear tag?  -- check first for set tag ! 
+		else if( resTag == "default" || dataSetKey.substr(1,2) == "r2" ){ // use smear tag?  -- check first for set tag ! 
 
             std::string tag= "r2_ul18";
             ebnoise = ResTagSet[tag].ebnoise;
@@ -1455,15 +1461,31 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
 		}//<<>>if( ResTagSet.find(tag) != ResTagSet.end() )
 
 		//0.00691415 1.60666 0.133913  smearing for 2017 MC -> Data ( original smearing values )
-		float noise = isEB ? std::abs( pow(ebnoise,2) - pow(mcebnoise,2) ) : std::abs( pow(eenoise,2) - pow(mceenoise,2) );
-		float stoch = isEB ? std::abs( pow(ebstoch,2) - pow(mcebstoch,2) ) : std::abs( pow(eestoch,2) - pow(mceestoch,2) );
-		float stant = isEB ? std::abs( pow(ebstant,2) - pow(mcebstant,2) ) : std::abs( pow(eestant,2) - pow(mceestant,2) );
-		if( mcebnoise == 0 ){ noise = pow(0.00691415,2); stoch = pow(1.60666,2); stant = pow(0.133913,2); }
-    	//std::cout << " stag smearing : " << stnoise << " " << ststoch << " " << ststant << " " << srun << std::endl;
-    	double resolution = std::sqrt( ( noise/pow(amplitude,2) + stoch/amplitude  + 2*stant )/2 );
-    	//std::cout << " getSmearedTime : " << resolution << " " << noise << " " << stoch << " " << stant << std::endl;
-    	if( resolution <= 0 ){ std::cout << "No smearing values set for this tag : " << dataSetKey << std::endl; rtime = time; }
+		double tnoise = isEB ? ebnoise : eenoise;
+        double tstoch = isEB ? ebstoch : eestoch;
+        double tstant = isEB ? ebstant : eestant;
+        double snoise = isEB ? mcebnoise : mceenoise;
+        double sstoch = isEB ? mcebstoch : mceestoch;
+        double sstant = isEB ? mcebstant : mceestant;
+		double amp = amplitude;
+		//double tresv = ( ((tnoise/amp)*(tnoise/amp)) + ((tstoch*tstoch)/amp) + (2*tstant*tstant) )/2;
+        //double sresv = ( ((snoise/amp)*(snoise/amp)) + ((sstoch*sstoch)/amp) + (2*sstant*sstant) )/2;
+        double tresv = ( ((tnoise/amp)*(tnoise/amp)) + (2*tstant*tstant) )/2;
+        double sresv = ( ((snoise/amp)*(snoise/amp)) + (2*sstant*sstant) )/2;
+        double smvar = std::max( 0.0, tresv - sresv );
+        double resolution = ( smvar > 0.0 ) ? std::sqrt(smvar) : 0.0;
+    	if( tnoise <= 0 ){ 
+        //if( true ){
+			std::cout << "No smearing values set for this tag : " << dataSetKey << " time " << time << std::endl;
+        	if( isEB ) std::cout << " stag eb tg smearing : " << ebnoise << " " << ebstoch << " " << ebstant << std::endl;
+            else std::cout << " stag ee tg smearing : " << eenoise << " " << eestoch << " " << eestant << std::endl;
+        	if( isEB ) std::cout << " stag eb mc smearing : " << mcebnoise << " " << mcebstoch << " " << mcebstant << std::endl;
+            else std::cout << " stag ee mc smearing : " << mceenoise << " " << mceestoch << " " << mceestant << std::endl;
+			std::cout << " smearing parameters:  t " << tresv << " s " << sresv << " amp " << amp << std::endl;
+        	std::cout << " getSmeared Res: " << resolution << " time " << time << std::endl;
+		}//<<>>if( resolution <= 0 )
     	rtime = getRandom->Gaus( time, resolution );
+		//std::cout << " getSmeared rtime: " << rtime << std::endl;
 
     }//<<>>if( mctype == 0 )
 
@@ -2483,10 +2505,22 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
                                 if( smear ){
                                     //std::cout << "Times are smeared !!!!!" << std::endl;
 
-                                    lyf0 = getSmearedTime( lyf0, (*resAmp)[0] );
-                                    lyf1 = getSmearedTime( lyf1, (*resAmp)[1] );
-                                    gyf0 = getSmearedTime( gyf0, (*resAmp)[2] );
-                                    gyf1 = getSmearedTime( gyf1, (*resAmp)[3] );
+                                    //lyf0 = getSmearedTime( lyf0, (*resAmp)[0] );
+                                    //lyf1 = getSmearedTime( lyf1, (*resAmp)[1] );
+                                    //gyf0 = getSmearedTime( gyf0, (*resAmp)[2] );
+                                    //gyf1 = getSmearedTime( gyf1, (*resAmp)[3] );
+
+									float amp0 = ( (*resRhID)[0] > 0 ) ? (*resAmp)[0] : -999;
+                                    float amp1 = ( (*resRhID)[1] > 0 ) ? (*resAmp)[1] : -999;
+                                    float amp2 = ( (*resRhID)[2] > 0 ) ? (*resAmp)[2] : -999;
+                                    float amp3 = ( (*resRhID)[3] > 0 ) ? (*resAmp)[3] : -999;
+
+                                    //getCorrectedTime( time, amplitude, rechitID, Evt_run, dataSetKey, mctype, gainID )
+									lyf0 = getCorrectedTime( lyf0, amp0, (*resRhID)[0], run, tag, 0, rhGainId[0] );
+                                    lyf1 = getCorrectedTime( lyf1, amp1, (*resRhID)[1], run, tag, 0, rhGainId[1] );
+                                    gyf0 = getCorrectedTime( gyf0, amp2, (*resRhID)[2], run, tag, 0, rhGainId[2] );
+                                    gyf1 = getCorrectedTime( gyf1, amp3, (*resRhID)[3], run, tag, 0, rhGainId[3] );
+
 
                                 }//<<>>if( smear )
                                 double lyfill = lyf0-lyf1+ldTOF;
