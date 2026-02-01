@@ -130,10 +130,7 @@ configtar: remote
 	@echo -e "$(COLOR_GREEN)Creating condor tarball$(COLOR_RESET)"
 	cp $(EXE_MAIN) config/
 	cp -r ntuple_master_lists/ config/
-<<<<<<< Updated upstream
-=======
 	#cp -r json/ config/
->>>>>>> Stashed changes
 	cp -r ecal_config/ config/
 	tar -czf condor/config.tgz config 
 
