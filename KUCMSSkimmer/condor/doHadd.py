@@ -27,7 +27,7 @@ def main():
         #write cmds to bash script
         if(args.big):
             for i in range(10):
-                oname = d.name+"_"+proc+"_"+str(i)+".root"
+                oname = "rjrskim_"+proc+"_"+str(i)+".root"
                 oname = "condor_"+oname
                 oname = scratch_path+"/"+oname
                 cmd = ""
@@ -65,7 +65,7 @@ def main():
         else:
             oname = d.path
             oname = oname[:oname.find("/"+d.name)]
-            oname = d.path+"/"+oname[oname.rfind("/")+1:]+"_"+d.name+".root"
+            oname = d.path+"/"+oname[oname.rfind("/")+1:]+"_rjrskim.root"
             print("oname",oname,"d.name",d.name,"proc",proc,"d.path",d.path)
             cmd = cmdHadd
             #check if file exists
