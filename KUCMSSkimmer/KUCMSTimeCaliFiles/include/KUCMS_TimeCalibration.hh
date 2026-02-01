@@ -18,6 +18,7 @@
 #include "TChain.h"
 #include "TGraphErrors.h"
 #include "TMultiGraph.h"
+#include <cmath>
 
 #ifndef KUCMS_TimeCalibrationClass_hh
 #define KUCMS_TimeCalibrationClass_hh

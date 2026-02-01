@@ -216,7 +216,7 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
         #k = [kGreen+2,kBlue+2,kSpring-1,kAzure+3]
         #k = [kGreen-1,kSpring+3,kBlue+1,kAzure+4]
         #k = [kYellow+3,kGreen+2,kCyan+3,kBlue+2]
-        k = [kBlue+2,kCyan+3,kGreen+2,kYellow+3]
+        k = [kBlue+2,kCyan+3,kGreen+2,kYellow+3,kViolet+7,kOrange+7]
         h1[n].SetLineColor(k[n])
         #h1[n].SetLineWidth(1)
         #h1[n].SetLineStyle(9-n)
@@ -633,6 +633,12 @@ dro24ee = 'ResMap_378971_387721_DRO_Data_Hist_eg_24p_xa_pm24b1200_v0119_EE'
 sro24eb = 'ResMap_378971_387721_SRO_Data_Hist_eg_24p_xa_pm24b1200_v0119_EB'
 sro24ee = 'ResMap_378971_387721_SRO_Data_Hist_eg_24p_xa_pm24b1200_v0119_EE'
 
+dro16eb_v2 = 'ResMap_275600_283900_DRO_Data_Hist_eg_16UL_xa_pm24b1200_v0127_EB'
+
+#dro18mcebs = 'ResMap_0_999999_DRO_Data_Hist_NoCali_Smeared_eg_18MC_xa_pm24b1200_v0129_EB'
+dro18mcebs = 'ResMap_0_999999_DRO_Data_Hist_NoCali_Smeared_eg_18MC_xa_pm24b1200_v0128_EB'
+dro18mcees = 'ResMap_0_999999_DRO_Data_Hist_NoCali_Smeared_eg_18MC_xa_pm24b1200_v0128_EE'
+
 
 rfend = '_NSC_resfit.root'
 shend = '_sigma'
@@ -659,10 +665,14 @@ hl_r3_24_ebeedro = [
 ]
 
 hl_r2_18mc_ebeenc = [
-    [sro18mceb+shend,"",sro18mceb+rfend,"18MC SRO EB"],
-    [sro18mcee+shend,"",sro18mcee+rfend,"18MC SRO EE"],
-    [dro18mceb+shend,"",dro18mceb+rfend,"18MC DRO EB"],
-    [dro18mcee+shend,"",dro18mcee+rfend,"18MC DRO EE"],
+    #[sro18mceb+shend,"",sro18mceb+rfend,"18MC SRO EB"],
+    #[sro18mcee+shend,"",sro18mcee+rfend,"18MC SRO EE"],
+    [dro18eb+shend,"",dro18eb+rfend,"UL Data"],#target in data for smear
+    #[dro18ee+shend,"",dro18ee+rfend,"UL Data"],#target in data for smear
+    [dro18mceb+shend,"",dro18mceb+rfend,"UL MC"],#MC
+    #[dro18mcee+shend,"",dro18mcee+rfend,"UL MC"],#MC
+    [dro18mcebs+shend,"",dro18mcebs+rfend,"UL MC Smeared"],
+    #[dro18mcees+shend,"",dro18mcees+rfend,"UL MC Smeared"],
 ]
 
 hl_r3_23_ebeenc = [
@@ -762,8 +772,9 @@ hl_r2_16_ebeenc = [
 hl_r2_16_ebee = [
     #[sro16ebhg+shend,"",sro16ebhg+rfend,"16 UL EB"],
     #[sro16eehg+shend,"",sro16eehg+rfend,"16 UL EE"],
-    [sro16eb+shend,"",sro16eb+rfend,"SRO EB"],
-    [sro16ee+shend,"",sro16ee+rfend,"SRO EE"],
+    #[dro16eb_v2+shend,"",dro16eb_v2+rfend,"DRO EB V2"],
+    #[sro16eb+shend,"",sro16eb+rfend,"SRO EB"],
+    #[sro16ee+shend,"",sro16ee+rfend,"SRO EE"],
     [dro16eb+shend,"",dro16eb+rfend,"DRO EB"],
     [dro16ee+shend,"",dro16ee+rfend,"DRO EE"],
 ]
@@ -868,7 +879,9 @@ hl_r3_25b = [
 #ptitle=['','Run 2','#splitline{Online Calibration}{ECAL Barrel}'] #{GT 106X_dataRun2_v28}'
 #ptitle=['','Run 2','#splitline{Online Calibration}{ECAL Endcaps}'] #{GT 106X_dataRun2_v28}'
 
-ptitle=['','Run 2 (13 TeV)','#splitline{DRU Resolution}{2018 UL}'] #{}'
+ptitle=['','Run 2 (13 TeV)','#splitline{DRU Resolution}{2018 UL EB}'] #{}'
+#ptitle=['','Run 2 (13 TeV)','#splitline{DRU Resolution}{2018 UL EE}'] #{}'
+#ptitle=['','Run 2 (13 TeV)','#splitline{DRU Resolution}{2018 UL}'] #{}'
 #ptitle=['','Run 2 (13 TeV)','#splitline{Chronus Calibration}{2016 UL}'] #{}'
 #ptitle=['','Run 2 (13 TeV)','#splitline{Online Calibration}{2016 UL}'] #{}'
 
@@ -879,8 +892,8 @@ ptitle=['','Run 2 (13 TeV)','#splitline{DRU Resolution}{2018 UL}'] #{}'
 #y = [ 0.4, 0.04 ]
 #y = [ 0.7, -0.05 ]
 #y = [ 2.5, -0.5 ]
-#y = [ 5.0, 0.05 ]
-y = [ 3.0, 0.06 ]
+y = [ 5.0, 0.05 ]
+#y = [ 3.0, 0.06 ]
 #y = [ 5, 0.01 ]
 x = [ 5.0, 1600.0 ]
 #x = [ 5.0, 800.0 ]
@@ -896,8 +909,10 @@ t = [0.325,0.85,0.1,0.175,0.285]#adjsuting lumi-sqrt(s) in title bar
 #outname = 'downloads/tr_hl_r3_24d_part_trvcc_ccgt_v7'
 #outname = 'downloads/tr_hl_r3_25c2'
 #outname = 'downloads/tr_hl_r3_25bc_xa'
-outname = 'tr_hl_r2_18'
-dostack(hl_r2_18_ebeedro, outname, date, Ic_layout, ptitle,  y, x, l, t)
+outname = 'tr_hl_r2_18mc_eb_sm'
+dostack(hl_r2_18mc_ebeenc, outname, date, Ic_layout, ptitle,  y, x, l, t)
+#outname = 'tr_hl_r2_16v2'
+#dostack(hl_r2_16_ebee, outname, date, Ic_layout, ptitle,  y, x, l, t)
 
 #
 ##---------------------------------------------------------------
