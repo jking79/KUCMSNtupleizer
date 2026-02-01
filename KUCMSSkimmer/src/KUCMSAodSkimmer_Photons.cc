@@ -466,10 +466,10 @@ void KUCMSAodSkimmer::processPhotons(){
 		phoobj.CalculateEndcapPhotonIDScores(pt, isomap);
 	}
 	else{ //barrel
-		//phoobj.CalculateBarrelPhotonIDScores(pt, isomap);
+		phoobj.CalculateBarrelPhotonIDScores(pt, isomap);
 		//under development - fill with -999
-		photonIDscores.push_back(-999);
-		photonIDscores.push_back(-999);
+		//photonIDscores.push_back(-999);
+		//photonIDscores.push_back(-999);
 	}
 	phoobj.GetPhotonIDScores(photonIDscores);
         isobkg_score = photonIDscores[0];
