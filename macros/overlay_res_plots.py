@@ -635,8 +635,11 @@ sro24ee = 'ResMap_378971_387721_SRO_Data_Hist_eg_24p_xa_pm24b1200_v0119_EE'
 
 dro16eb_v2 = 'ResMap_275600_283900_DRO_Data_Hist_eg_16UL_xa_pm24b1200_v0127_EB'
 
-#dro18mcebs = 'ResMap_0_999999_DRO_Data_Hist_NoCali_Smeared_eg_18MC_xa_pm24b1200_v0129_EB'
-dro18mcebs = 'ResMap_0_999999_DRO_Data_Hist_NoCali_Smeared_eg_18MC_xa_pm24b1200_v0128_EB'
+
+dro18mc17ebs = 'ResMap_0_999999_DRO_Data_Hist_NoCali_Smeared_eg_18MC_smUL17_xa_pm24b1200_v0201_EB'
+dro18mc17ees = 'ResMap_0_999999_DRO_Data_Hist_NoCali_Smeared_eg_18MC_smUL17_xa_pm24b1200_v0201_EE'
+dro18mcebs = 'ResMap_0_999999_DRO_Data_Hist_NoCali_Smeared_eg_18MC_xa_pm24b1200_v0129_EB'
+#dro18mcebs = 'ResMap_0_999999_DRO_Data_Hist_NoCali_Smeared_eg_18MC_xa_pm24b1200_v0128_EB'
 dro18mcees = 'ResMap_0_999999_DRO_Data_Hist_NoCali_Smeared_eg_18MC_xa_pm24b1200_v0128_EE'
 
 
@@ -665,13 +668,16 @@ hl_r3_24_ebeedro = [
 ]
 
 hl_r2_18mc_ebeenc = [
+    #[dro17eb+shend,"",dro17eb+rfend,"UL17 Data"],#target in data for smear (17)
+    [dro17ee+shend,"",dro17ee+rfend,"UL17 Data"],#target in data for smear (17)
     #[sro18mceb+shend,"",sro18mceb+rfend,"18MC SRO EB"],
     #[sro18mcee+shend,"",sro18mcee+rfend,"18MC SRO EE"],
-    [dro18eb+shend,"",dro18eb+rfend,"UL Data"],#target in data for smear
+    #[dro18eb+shend,"",dro18eb+rfend,"UL Data"],#target in data for smear
     #[dro18ee+shend,"",dro18ee+rfend,"UL Data"],#target in data for smear
-    [dro18mceb+shend,"",dro18mceb+rfend,"UL MC"],#MC
-    #[dro18mcee+shend,"",dro18mcee+rfend,"UL MC"],#MC
-    [dro18mcebs+shend,"",dro18mcebs+rfend,"UL MC Smeared"],
+    #[dro18mceb+shend,"",dro18mceb+rfend,"UL MC"],#MC
+    [dro18mcee+shend,"",dro18mcee+rfend,"UL MC"],#MC
+    #[dro18mc17ebs+shend,"",dro18mc17ebs+rfend,"UL MC Smeared"],
+    [dro18mc17ees+shend,"",dro18mc17ees+rfend,"UL MC Smeared"],
     #[dro18mcees+shend,"",dro18mcees+rfend,"UL MC Smeared"],
 ]
 
@@ -879,8 +885,8 @@ hl_r3_25b = [
 #ptitle=['','Run 2','#splitline{Online Calibration}{ECAL Barrel}'] #{GT 106X_dataRun2_v28}'
 #ptitle=['','Run 2','#splitline{Online Calibration}{ECAL Endcaps}'] #{GT 106X_dataRun2_v28}'
 
-ptitle=['','Run 2 (13 TeV)','#splitline{DRU Resolution}{2018 UL EB}'] #{}'
-#ptitle=['','Run 2 (13 TeV)','#splitline{DRU Resolution}{2018 UL EE}'] #{}'
+#ptitle=['','Run 2 (13 TeV)','#splitline{DRU Resolution}{2018 UL EB}'] #{}'
+ptitle=['','Run 2 (13 TeV)','#splitline{DRU Resolution}{2018 UL EE}'] #{}'
 #ptitle=['','Run 2 (13 TeV)','#splitline{DRU Resolution}{2018 UL}'] #{}'
 #ptitle=['','Run 2 (13 TeV)','#splitline{Chronus Calibration}{2016 UL}'] #{}'
 #ptitle=['','Run 2 (13 TeV)','#splitline{Online Calibration}{2016 UL}'] #{}'
@@ -909,7 +915,7 @@ t = [0.325,0.85,0.1,0.175,0.285]#adjsuting lumi-sqrt(s) in title bar
 #outname = 'downloads/tr_hl_r3_24d_part_trvcc_ccgt_v7'
 #outname = 'downloads/tr_hl_r3_25c2'
 #outname = 'downloads/tr_hl_r3_25bc_xa'
-outname = 'tr_hl_r2_18mc_eb_sm'
+outname = 'tr_hl_r2_18mc_ee_sm17'
 dostack(hl_r2_18mc_ebeenc, outname, date, Ic_layout, ptitle,  y, x, l, t)
 #outname = 'tr_hl_r2_16v2'
 #dostack(hl_r2_16_ebee, outname, date, Ic_layout, ptitle,  y, x, l, t)
