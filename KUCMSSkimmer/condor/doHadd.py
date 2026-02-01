@@ -47,7 +47,7 @@ def main():
                 #print("Wrote to "+oname)
             big_oname = d.path
             big_oname = big_oname[:big_oname.find("/"+d.name)]
-            big_oname = scratch_path+"/"+big_oname[big_oname.rfind("/")+1:]+"_"+d.name+".root"
+            big_oname = scratch_path+"/"+big_oname[big_oname.rfind("/")+1:]+"_rjrskim.root"
             #check if file exists
             if os.path.exists(oname):
             	if(args.force):
