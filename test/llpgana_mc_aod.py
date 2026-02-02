@@ -31,10 +31,10 @@ options.register('runera','Run3',VarParsing.multiplicity.singleton,VarParsing.va
 ## GT to be used
 ##------------------ mc gt
 #options.register('globalTag','106X_mc2017_realistic_v6',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
-options.register('globalTag','106X_upgrade2018_realistic_v11_L1v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
+#options.register('globalTag','106X_upgrade2018_realistic_v11_L1v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','94X_mc2017_realistic_v11',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for sig22 MC');
-#options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
+options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','130X_mcRun3_2023_realistic_v14',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','133X_mcRun3_2024_realistic_v10',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','94X_mc2017_realistic_v14',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for GMSB MC');
@@ -223,7 +223,7 @@ process.source = cms.Source("PoolSource",
         # WJets
         #'root://cmsxrootd-site.fnal.gov//store/mc/RunIISummer20UL18RECO/WJetsToLNu_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/106X_upgrade2018_realistic_v11_L1v1_ext2-v3/40000/6021A8AE-9B41-7A4F-8E33-470F73F3D4FC.root',
 
-        'file:root_files/WJets_72B9C618-FE23-1E41-872E-57314D7CB454.root',
+        #'file:root_files/WJets_72B9C618-FE23-1E41-872E-57314D7CB454.root',
 
         # DiPhotonJetsBox
         #'root://cmsxrootd-site.fnal.gov//store/mc/RunIISummer20UL18RECO/DiPhotonJetsBox_MGG-80toInf_13TeV-sherpa/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/50000/E1C9ABB4-D708-D14E-8E97-803013F321E6.root',
@@ -241,7 +241,7 @@ process.source = cms.Source("PoolSource",
         ####3'root://cmseos.fnal.gov//store/data/Run2023B/JetMET1/AOD/EXODelayedJetMET-PromptReco-v1/000/366/892/00000/dccdb4dd-2e6e-4a1f-ae81-70af305d9f2e.root',
 
         # AOD Data MET
-        #'file:root_files/Met_UL18B_AOD_973EEF0C-44AB-E94A-8591-04DCD00D8B4B.root',
+        'file:root_files/Met_UL18B_AOD_973EEF0C-44AB-E94A-8591-04DCD00D8B4B.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2018B/MET/AOD/15Feb2022_UL2018-v1/25210000/CD3E4875-8B2E-ED4E-B1C9-43BB906B0555.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2018B/MET/AOD/15Feb2022_UL2018-v1/2520000/F672D9DC-50E8-684C-BE01-8E73D82651FF.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2018B/MET/AOD/15Feb2022_UL2018-v1/25210000/2325D400-4654-D64A-B3A3-9C96703D9207.root',
