@@ -183,20 +183,12 @@ egamma16cali = [
 
 jmet_23 = [
 
-    'cms:/JetMET0/Run2023B-EXODelayedJetMET-PromptReco-v1/AOD',
-    #'cms:/JetMET0/Run2023C-EXODelayedJetMET-PromptReco-v4/AOD',
-    #'cms:/JetMET0/Run2023D-EXODelayedJetMET-PromptReco-v2/AOD',
-
-    'cms:/JetMET1/Run2023B-EXODelayedJetMET-PromptReco-v1/AOD',
-    #'cms:/JetMET1/Run2023C-EXODelayedJetMET-PromptReco-v4/AOD',
-    #'cms:/JetMET1/Run2023D-EXODelayedJetMET-PromptReco-v2/AOD',
-
     'cms:/JetMET0/Run2023B-19Dec2023-v1/AOD',
     #'cms:/JetMET0/Run2023C-19Dec2023-v1/AOD',
     #'cms:/JetMET0/Run2023D-19Dec2023-v1/AOD',
-    'cms:/JetMET1/Run2023B-19Dec2023-v1/AOD',
+    #'cms:/JetMET1/Run2023B-19Dec2023-v1/AOD',
     #'cms:/JetMET1/Run2023C-19Dec2023-v1/AOD',
-    #'cms:/JetMET1/Run2023D-19Dec2023-v1/AOD',
+    'cms:/JetMET1/Run2023D-19Dec2023-v1/AOD',
 
 ]
 

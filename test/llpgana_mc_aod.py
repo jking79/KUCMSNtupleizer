@@ -42,10 +42,10 @@ options.register('runera','Run3',VarParsing.multiplicity.singleton,VarParsing.va
 #options.register('globalTag','140X_dataRun3_v17',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for R3 22,23');
 
 ##------------------ data gt  
-options.register('globalTag','106X_dataRun2_v36',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
+#options.register('globalTag','106X_dataRun2_v36',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 ##options.register('globalTag','106X_dataRun2_v28',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 #options.register('globalTag','124X_dataRun3_v15',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2022');
-
+options.register('globalTag','140X_dataRun3_v17',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 ##options.register('globalTag','106X_dataRun2_v24',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2018UL');
 #112X_mcRun3_2021_realistic_v16
 
@@ -133,7 +133,7 @@ process.source = cms.Source("PoolSource",
 
     #'root://cmsxrootd.fnal.gov//store/data/Run2023D/JetMET1/AOD/EXODelayedJetMET-PromptReco-v2/000/370/667/00000/89178b58-f461-478d-a2cf-142842257adc.root',
 
-        'root://cmsxrootd.fnal.gov//store/data/Run2016G/MET/AOD/21Feb2020_UL2016-v1/20000/090027EF-E362-DA48-9977-6E3CE8BB6410.root'
+        #'root://cmsxrootd.fnal.gov//store/data/Run2016G/MET/AOD/21Feb2020_UL2016-v1/20000/090027EF-E362-DA48-9977-6E3CE8BB6410.root'
 
         #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/2430000/010FAEF3-D41F-D340-B7E9-E3BBD6498B3E.root',
         #'root://cmseos.fnal.gov//store/data/Run2018D/MET/AOD/15Feb2022_UL2018-v1/2430000/0FB1FACF-237F-1749-9878-CA52BC077610.root',
@@ -245,10 +245,16 @@ process.source = cms.Source("PoolSource",
         #'root://cms-xrd-global.cern.ch//store/data/Run2018B/MET/AOD/15Feb2022_UL2018-v1/25210000/CD3E4875-8B2E-ED4E-B1C9-43BB906B0555.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2018B/MET/AOD/15Feb2022_UL2018-v1/2520000/F672D9DC-50E8-684C-BE01-8E73D82651FF.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2018B/MET/AOD/15Feb2022_UL2018-v1/25210000/2325D400-4654-D64A-B3A3-9C96703D9207.root',
-        #'root://cms-xrd-global.cern.ch//store/data/Run2022C/MET/AOD/27Jun2023-v2/2820000/35c49035-7557-4a77-99c8-065844b3649d.root'
-        #'root://cmsxrootd-site.fnal.gov//store/data/Run2022E/JetMET/AOD/EXODelayedJetMET-27Jun2023-v1/40000/08fd72c7-1be9-4328-9a38-85979d340331.root',
+        #'root://cms-xrd-global.cern.ch//store/data/Run2022C/MET/AOD/27Jun2023-v2/2820000/35c49035-7557-4a77-99c8-065844b3649d.root'#
+
+        # JetMet
+        #'root://cmsxrootd-site.fnal.gov//store/data/Run2022F/JetMET/AOD/PromptReco-v1/000/360/390/00000/0401b399-e626-492f-9849-24eb67c7f647.root',# file open error
+        #'root://cmsxrootd-site.fnal.gov//store/data/Run2022G/JetMET/AOD/19Dec2023-v1/25410000/2572a8de-86c0-4e95-bc8d-9f2bb8397188.root',
+        #'root://cmsxrootd-site.fnal.gov//store/data/Run2022E/JetMET/AOD/EXODelayedJetMET-27Jun2023-v1/40000/08fd72c7-1be9-4328-9a38-85979d340331.root',#reco
         #`'root://cms-xrd-global.cern.ch//store/data/Run2022E/JetMET/AOD/EXODelayedJetMET-27Jun2023-v1/40000/08fd72c7-1be9-4328-9a38-85979d340331.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2018C/DisplacedJet/AOD/15Feb2022_UL2018-v1/60000/E11CE7E4-249F-0D42-AD15-344870056EF4.root',
+        #'file:JetMet_22G_026f1000-0881-4fc1-a256-385c9cb6cf3d.root',
+        'file:JetMet_23C_0d0f0b4a-8fb0-4777-9aed-25f2416791e5.root',
 
          # AODSIM DPJB model
 
@@ -265,8 +271,8 @@ process.source = cms.Source("PoolSource",
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250))#KT
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500))#QT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(5000))#BT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10000))#LT
@@ -284,11 +290,11 @@ if options.multicrab == True : genInfo = options.hasGenInfo
 ecalIsoInputsF17 = 'RecoEgamma/ElectronIdentification/data/Fall17/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_94X.txt'
 ecalruneraIsoInputsW22 = 'RecoEgamma/ElectronIdentification/data/Run3_Winter22/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_122X.txt'
 
-filterselect = 'none'
+#filterselect = 'none'
 #filterselect = 'InvMet100IP'
 #filterselect = 'AL1NpSC'
 #filterselect = 'AL1DisSV'
-#filterselect = 'SVIPMet100'
+filterselect = 'SVIPMet100'
 #filterselect = 'MET100'
 #filterselect = 'AL1IsoPho'
 #filterselect = 'IsoPhoMet100'
@@ -318,8 +324,10 @@ doet = True ## with v30 no longer optional when using ( "ecalTracks", "displaced
 probeout = False
 if options.multicrab == True : probeout = False
 
+triggerSet = "RECO"
 ecalIsoInputs = ecalIsoInputsF17
-if "Run3" in runera :  
+if "Run3" in runera :
+    triggerSet = "PAT"
     ecalIsoInputs = ecalruneraIsoInputsW22
     if 'CASTOR' in process.CaloGeometryBuilder.SelectedCalos : 
         process.CaloGeometryBuilder.SelectedCalos.remove('CASTOR') 
@@ -401,8 +409,8 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
                               ## beamSpot
                               beamSpot = cms.InputTag("offlineBeamSpot"),
                               ## trigger
-                              triggerFlagResults = cms.InputTag("TriggerResults","","RECO"),
-                              #triggerFlagResults = cms.InputTag("TriggerResults","","Pat"),
+                              #triggerFlagResults = cms.InputTag("TriggerResults","","RECO"),
+                              triggerFlagResults = cms.InputTag("TriggerResults","",triggerSet),
                               #triggerFlagResults = cms.InputTag("TriggerResults"),
                               triggerHLTResults = cms.InputTag("TriggerResults","","HLT"),
                               triggerEvent = cms.InputTag("hltTriggerSummaryAOD"),
@@ -484,17 +492,35 @@ process.tree.triggerList = cms.vstring(  #"hltPFMET100", "hltMETClean100", "hltH
 
 process.tree.metFilters = cms.vstring( #"bla" )
 
-    "Flag_goodVertices",
-    "Flag_globalSuperTightHalo2016Filter",    
+    "Flag_BadChargedCandidateFilter",
+    "Flag_BadChargedCandidateSummer16Filter",
+    "Flag_BadPFMuonDzFilter",
+    "Flag_BadPFMuonFilter",
+    "Flag_BadPFMuonSummer16Filter",
+    "Flag_CSCTightHalo2015Filter",
+    "Flag_CSCTightHaloFilter",
+    "Flag_CSCTightHaloTrkMuUnvetoFilter",
+    "Flag_EcalDeadCellBoundaryEnergyFilter",
+    "Flag_EcalDeadCellTriggerPrimitiveFilter",
     "Flag_HBHENoiseFilter",
     "Flag_HBHENoiseIsoFilter",
-    "Flag_EcalDeadCellTriggerPrimitiveFilter",
-    "Flag_BadPFMuonFilter",
-    "Flag_BadPFMuonDzFilter",
-    "Flag_hfNoisyHitsFilter",
-    "Flag_BadChargedCandidateFilter",
+    "Flag_HcalStripHaloFilter",
+    "Flag_METFilters",
+    "Flag_chargedHadronTrackResolutionFilter",
+    "Flag_ecalBadCalibFilter",
+    "Flag_ecalLaserCorrFilter",
     "Flag_eeBadScFilter",
-    "Flag_ecalBadCalibFilter"
+    "Flag_globalSuperTightHalo2016Filter",
+    "Flag_globalTightHalo2016Filter",
+    "Flag_goodVertices",
+    "Flag_hcalLaserEventFilter",
+    "Flag_hfNoisyHitsFilter",
+    "Flag_muonBadTrackFilter",
+    "Flag_trkPOGFilters",
+    "Flag_trkPOG_logErrorTooManyClusters",
+    "Flag_trkPOG_manystripclus53X",
+    "Flag_trkPOG_toomanystripclus53X"
+
 
 )##<<>>process.tree.metFilters = cms.vstring(
 

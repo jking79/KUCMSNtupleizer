@@ -191,35 +191,30 @@ dl2023data = [
     '/JetMET1/Run2023B-19Dec2023-v1/AOD',		
     '/JetMET1/Run2023C-19Dec2023-v1/AOD',		
     '/JetMET1/Run2023D-19Dec2023-v1/AOD',		
-
 ]
 
 dl2024data = [
 
     '/JetMET0/Run2024A-PromptReco-v1/AOD',
-    '/JetMET0/Run2024B-PromptReco-v1/AOD',
-    '/JetMET0/Run2024C-PromptReco-v1/AOD',
-    '/JetMET0/Run2024D-PromptReco-v1/AOD',
-    '/JetMET0/Run2024E-PromptReco-v1/AOD',
-    '/JetMET0/Run2024E-PromptReco-v2/AOD',
-    '/JetMET0/Run2024F-PromptReco-v1/AOD',
-    '/JetMET0/Run2024G-PromptReco-v1/AOD',
-    '/JetMET0/Run2024H-PromptReco-v1/AOD',
-    '/JetMET0/Run2024I-PromptReco-v1/AOD',
+    '/JetMET0/Run2024B-PromptReco-v1/AOD ',
+    '/JetMET0/Run2024C-2024CDEReprocessing-v1/AOD',
+    '/JetMET0/Run2024D-2024CDEReprocessing-v1/AOD',
+    '/JetMET0/Run2024E-2024CDEReprocessing-v1/AOD',
+    '/JetMET0/Run2024F-PromptReco-v1/AOD ',
+    '/JetMET0/Run2024G-PromptReco-v1/AOD ',
+    '/JetMET0/Run2024H-PromptReco-v1/AOD ',
     '/JetMET0/Run2024I-PromptReco-v2/AOD',
     '/JetMET0/Run2024J-PromptReco-v1/AOD',
     '/JetMET1/Run2024A-PromptReco-v1/AOD',
-    '/JetMET1/Run2024B-PromptReco-v1/AOD',
-    '/JetMET1/Run2024C-PromptReco-v1/AOD',
-    '/JetMET1/Run2024D-PromptReco-v1/AOD',
-    '/JetMET1/Run2024E-PromptReco-v1/AOD',
-    '/JetMET1/Run2024E-PromptReco-v2/AOD',
+    '/JetMET1/Run2024B-PromptReco-v1/AOD ',
+    '/JetMET1/Run2024C-2024CDEReprocessing-v1/AOD',
+    '/JetMET1/Run2024D-2024CDEReprocessing-v1/AOD',
+    '/JetMET1/Run2024E-2024CDEReprocessing-v1/AOD',
     '/JetMET1/Run2024F-PromptReco-v1/AOD',
-    '/JetMET1/Run2024G-PromptReco-v1/AOD',
-    '/JetMET1/Run2024H-PromptReco-v1/AOD',
-    '/JetMET1/Run2024I-PromptReco-v1/AOD',
+    '/JetMET1/Run2024G-PromptReco-v1/AOD ',
+    '/JetMET1/Run2024H-PromptReco-v1/AOD ',
     '/JetMET1/Run2024I-PromptReco-v2/AOD',
-    '/JetMET1/Run2024J-PromptReco-v1/AOD',
+    '/JetMET1/Run2024J-PromptReco-v1/AOD ',
 
 ]
 
@@ -464,10 +459,7 @@ dlEGMAOD16 = [
 
 
 dl22 = [ 
-'/MET/Run2022A-27Jun2023-v1/AOD', 
-'/MET/Run2022B-27Jun2023-v2/AOD', 
-'/MET/Run2022C-27Jun2023-v2/AOD', 
-'/JetMET/Run2022C-27Jun2023-v1/AOD', 
+'/JetMET/Run2022C-19Dec2023-v1/AOD', 
 '/JetMET/Run2022D-19Dec2023-v1/AOD', 
 '/JetMET/Run2022E-19Dec2023-v1/AOD', 
 '/JetMET/Run2022F-19Dec2023-v2/AOD', 
@@ -507,7 +499,7 @@ dl_met_24 = [
 #query = 'dasgoclient --json -query=\'dataset='
 query = 'dasgoclient --json -query=\'site dataset=' 
 
-datalist = dl2023ExoData
+datalist = dl2024data
 
 for data in datalist :
     
