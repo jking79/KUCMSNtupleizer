@@ -44,11 +44,13 @@ TCALI_INCDIR = $(TCALIDIR)/include
 # Source and object files
 
 SRCDIR = ./src
+RJR_SRC = $(SRCDIR)/rjr_plotting.cpp
 
 MAIN_CPP := $(SRCDIR)/runKUCMSAodSVSkimmer.cpp $(SRCDIR)/runLocalKUCMSAodSVSkimmer.cpp 
 MAIN_CPP += $(TCALI_SRCDIR)/makeKUCMSTimeCalibration.cpp $(TCALI_SRCDIR)/makeKUCMSTimeResolution.cpp
 SUPPORT_CPP := $(filter-out $(MAIN_CPP), $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/*.cc) ) 
 SUPPORT_CPP += $(filter-out $(MAIN_CPP), $(wildcard $(TCALI_SRCDIR)/*.cpp) $(wildcard $(TCALI_SRCDIR)/*.cc))
+SUPPORT_CPP := $(filter-out $(MAIN_CPP) $(RJR_SRC), $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/*.cc))
 OBJ_FILES := $(patsubst %,$(OBJDIR)/%,$(notdir $(SUPPORT_CPP:.cpp=.o)))
 OBJ_FILES := $(OBJ_FILES:.cc=.o) # handle .cc extension
 
@@ -59,7 +61,6 @@ EXE_LOCAL = runLocalKUCMSAodSVSkimmer.obj
 EXE_CALI = makeKUCMSTimeCalibration.obj
 EXE_RES = makeKUCMSTimeResolution.obj
 EXE_RJR = rjr_plotting.obj
-RJR_SRC = $(SRCDIR)/rjr_plotting.cpp
 RJR_OBJ = $(MAINOBJDIR)/rjr_plotting.o
 
 # Colored output
@@ -129,6 +130,7 @@ configtar: remote
 	@echo -e "$(COLOR_GREEN)Creating condor tarball$(COLOR_RESET)"
 	cp $(EXE_MAIN) config/
 	cp -r ntuple_master_lists/ config/
+	#cp -r json/ config/
 	cp -r ecal_config/ config/
 	tar -czf condor/config.tgz config 
 

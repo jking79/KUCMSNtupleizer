@@ -1468,14 +1468,15 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
         double sstoch = isEB ? mcebstoch : mceestoch;
         double sstant = isEB ? mcebstant : mceestant;
 		double amp = amplitude;
-		//double tresv = ( ((tnoise/amp)*(tnoise/amp)) + ((tstoch*tstoch)/amp) + (2*tstant*tstant) )/2;
-        //double sresv = ( ((snoise/amp)*(snoise/amp)) + ((sstoch*sstoch)/amp) + (2*sstant*sstant) )/2;
-        double tresv = ( ((tnoise/amp)*(tnoise/amp)) + (2*tstant*tstant) )/2;
-        double sresv = ( ((snoise/amp)*(snoise/amp)) + (2*sstant*sstant) )/2;
-        double smvar = std::max( 0.0, tresv - sresv );
+		double sqamp = amp*amp;
+		double tresv = ( ((tnoise*tnoise)/(sqamp)) + ((tstoch*tstoch)/amp) + (2*tstant*tstant) )/2;
+        double sresv = ( ((snoise*snoise)/(sqamp)) + ((sstoch*sstoch)/amp) + (2*sstant*sstant) )/2;
+        //double tresv = ( ((tnoise/amp)*(tnoise/amp)) + (2*tstant*tstant) )/2;
+        //double sresv = ( ((snoise/amp)*(snoise/amp)) + (2*sstant*sstant) )/2;
+        double smvar = ( tresv > sresv ) ? tresv - sresv : 0.0;//      std::max( 0.0, tresv - sresv );
         double resolution = ( smvar > 0.0 ) ? std::sqrt(smvar) : 0.0;
-    	if( tnoise <= 0 ){ 
-        //if( true ){
+    	//if( tresv - sresv < 0.0 ){ 
+        if( false ){
 			std::cout << "No smearing values set for this tag : " << dataSetKey << " time " << time << std::endl;
         	if( isEB ) std::cout << " stag eb tg smearing : " << ebnoise << " " << ebstoch << " " << ebstant << std::endl;
             else std::cout << " stag ee tg smearing : " << eenoise << " " << eestoch << " " << eestant << std::endl;

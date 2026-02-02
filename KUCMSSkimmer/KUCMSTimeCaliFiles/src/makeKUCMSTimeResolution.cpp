@@ -204,9 +204,9 @@ int main ( int argc, char *argv[] ){
     //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_24p_xa_pm24b1200_v0119" );
     //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_24p_xa_pm24b1200_v0119" );
 
-	theCali.setMCResTag("r2_ul17");
+	theCali.setMCResTag("r2_ul16");
 	//theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_18MC_xa_pm24b1200_v0116" );
-    theCali.plot2dResolutionEGR( inputfilename, true, false, true, "_eg_18MC_xa_pm24b1200_v0130" );
+    theCali.plot2dResolutionEGR( inputfilename, true, false, true, "_eg_18MC_smUL16_xa_pm24b1200_v0201" );
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -322,8 +322,9 @@ int main ( int argc, char *argv[] ){
 	//
 
 	//std::string histName = "ResMap_275600_283900_DRO_Data_Hist_eg_16UL_xa_pm24b1200_v0127_EB";
-    std::string histName = "ResMap_0_999999_DRO_Data_Hist_NoCali_Smeared_eg_18MC_xa_pm24b1200_v0129_EB";
+    //std::string histName = "ResMap_0_999999_DRO_Data_Hist_NoCali_Smeared_eg_18MC_xa_pm24b1200_v0130_EB";
     //std::string histName = "ResMap_0_999999_DRO_Data_Hist_NoCali_Smeared_eg_18MC_xa_pm24b1200_v0129_EE";
+    std::string histName = "ResMap_0_999999_DRO_Data_Hist_NoCali_Smeared_eg_18MC_smUL17_xa_pm24b1200_v0201_EE";
 
     //theCali.setLowEnergy( false ); // true is default
 
