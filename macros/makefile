@@ -33,6 +33,7 @@ p18=skimRJRMultiHistMakerZ5_batch
 p19=skimRJRMultiHistMakerBatch6
 p20=skimRJRMultiHistMakerBatch7
 p21=skimRJRMultiHistMakerBatch_EGJets
+p22=rjr_plotting
 
 all: $(p1) 
 
@@ -98,4 +99,7 @@ $(p20): $(p20).cpp
 
 $(p21): $(p21).cpp
 	$(CC) -o $(p21).obj $(p21).cpp $(RTCFLAGS) $(RTGLIBS)
+
+$(p22): $(p22).cpp
+	$(CC) -o $(p22).obj $(p22).cpp $(RTCFLAGS) $(RTGLIBS)
 

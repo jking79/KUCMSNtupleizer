@@ -142,8 +142,14 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
 
     //promptIovMap[253984] = 276811;//11/08/2015
     //promptIovMap[276812] = 293998;//14/07/2016
-    promptIovMap[253984] = 273157;
-    promptIovMap[273158] = 284044;
+
+	promptIovMap[1] = 253983; // 2012
+    promptIovMap[253984] = 273157; // 2015
+
+    promptIovMap[273158] = 275656; 
+    promptIovMap[275657] = 283830;
+    promptIovMap[283831] = 284044; // 2016
+
 
 //gldenjson
 //2016
@@ -159,12 +165,16 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
 // iov  253984 284044
 // lumi 273158 284044
 
-    //promptIovMap[293999] = 296398;
-    promptIovMap[296399] = 297726;
+    promptIovMap[284045] = 296398; //16-17
+
+    promptIovMap[296399] = 297049;
+    promptIovMap[297050] = 297113;
+    promptIovMap[297114] = 297726;
     promptIovMap[297727] = 300201;
     promptIovMap[300202] = 301486;
     promptIovMap[301487] = 304475;
-    promptIovMap[304476] = 306460;//05/10/2017
+    promptIovMap[304476] = 305081;
+    promptIovMap[305082] = 306460;//05/10/2017
   
 //gldenjson
 //2017
@@ -179,18 +189,22 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
 // iov  296399 306460
 // lumi 297050 306460
 
-    //promptIovMap[307555] = 314766;
-    promptIovMap[314767] = 315343;
+    promptIovMap[306461] = 314766;// 17-18
+
+    promptIovMap[314767] = 315256;
+    promptIovMap[315257] = 315343;
     promptIovMap[315344] = 316360;
     promptIovMap[316361] = 316569;
     promptIovMap[316570] = 318744;
     promptIovMap[318745] = 319329;
     promptIovMap[319330] = 321506;
-    promptIovMap[321507] = 322717;
+    promptIovMap[321507] = 322356;
+    promptIovMap[322357] = 322717;
     promptIovMap[322718] = 323412;
     promptIovMap[323413] = 324305;
     promptIovMap[324306] = 325172;
-    promptIovMap[327239] = 356513;//25/11/2018
+
+    promptIovMap[327239] = 355373;//25/11/2018  18-22
 
 //gldenjson
 //2018
@@ -206,6 +220,8 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
 
 //Run 3
 
+    promptIovMap[355374] = 355793;
+    promptIovMap[355794] = 356513;
     promptIovMap[356514] = 357289;
     promptIovMap[357290] = 358883;
     promptIovMap[358884] = 359420;
@@ -213,24 +229,33 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
     promptIovMap[360090] = 360981;
     promptIovMap[360982] = 361416;
     promptIovMap[361417] = 362522;
-    promptIovMap[362523] = 367094;//24/11/2022
-    promptIovMap[367095] = 367190;//EOY 2022
+    promptIovMap[362523] = 362349;//24/11/2022
+    promptIovMap[362350] = 362760;//EOY 2022
+
+    promptIovMap[362761] = 366364;// 22-23
 
 // 2022
+// lumi  355374 362760
 
-    promptIovMap[367191] = 367515;
+    promptIovMap[366365] = 366726;
+    promptIovMap[366727] = 367079;
+    promptIovMap[367080] = 367515;
     promptIovMap[367516] = 367882;
     promptIovMap[367884] = 368825;
     promptIovMap[368826] = 369801;
     promptIovMap[369802] = 369912;
     promptIovMap[369913] = 370496;
-    //promptIovMap[370497] = 372308;// CC period only?
-	promptIovMap[370497] = 373577;
-	promptIovMap[373578] = 378745;// EOY 2023
+    promptIovMap[370497] = 370790;
+	promptIovMap[370791] = 373577;
+	promptIovMap[373578] = 373861;// EOY 2023
+
+    promptIovMap[373862] = 378745;// 23-24
 
 /// 2023
+// lumi 366727 370790 
 
-    promptIovMap[378746] = 381306;//CC? 
+    promptIovMap[378746] = 378984; 
+    promptIovMap[378985] = 381306;
     promptIovMap[381307] = 382007;//ratio timing algorithm 28/05/2024
     promptIovMap[382008] = 382298;
     promptIovMap[382299] = 382721;
@@ -242,12 +267,24 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
     promptIovMap[384756] = 385152;
     promptIovMap[385153] = 385727;
     promptIovMap[385728] = 386662;
-    promptIovMap[386663] = 387741;
-    promptIovMap[387742] = 390755;
-    promptIovMap[390756] = 999999;// EOY 2024
+    promptIovMap[386663] = 386951;
+    promptIovMap[386952] = 387741;// EOY 2024 
+
+    promptIovMap[387742] = 390734;// 24-25
+
 
 // 2024
+// lumi 378985 386951 
 
+    promptIovMap[390735] = 391530;
+
+// 2025 - (390735) 391531 - 398903
+
+	promptIovMap[391531] = 398903;
+	
+
+// END
+	promptIovMap[398904] = 999999;
 /*
  	// CC calibration periods in 2024
     promptIovMap[372309] = 372750;//"29/08/2023";//cc start
@@ -345,57 +382,67 @@ void KUCMS_TimeCalibration::SetupIovMap( std::string tag, float minLumi ){
 	int start = 0;
 	int end = 0;
 	int prev = 0;
-	int oldrun = 0;
     int curxiovend = 0;
 	float lumisum = 0;
 	int currentrun = 0;
 	std::map<int,int> theIovMap;
 	auto promptIovMap = iovMaps["prompt"];
 	// go through runs by lumi and add up lumi > check for end conditions
+	bool yearchanged = false;
 	for( auto& lumirun : lumiRunMaps[curLumiTag] ){
 		currentrun = lumirun.second.run;
 		if( newrange ){ // if we are starting a new range - find curent iov period for this run and set end/start of periods
 			prev = start;
 			start = ( prev == 0 ) ? currentrun : theIovMap[prev] + 1;
-			int iovbound = ( start < oldrun ) ? oldrun : start;
-			oldrun = 0;
 			newrange = false;
 			for( auto& xiov : promptIovMap ){ 
-				if( iovbound >= xiov.first && iovbound <= xiov.second ){ 
+				if( currentrun >= xiov.first && currentrun <= xiov.second ){ 
                     curxiovend = xiov.second; 
 					break; 
 				}//<<>>if( start >= xiov.first && start <= xiov.second )
 			}//<<>>for( auto& xiov : promptIovMap ) 
 		}//<<>>if( newrange )
-		if( currentrun > curxiovend ){ // tack small portion to previous and start new run period with this run
-			if( prev > 0 ){
+        bool yearend = false;
+        if( currentrun > 284044 && start <= 284044 ) yearend = true;
+        if( currentrun > 306460 && start <= 306460 ) yearend = true;
+        if( currentrun > 362760 && start <= 362760 ) yearend = true;
+        if( currentrun > 370790 && start <= 370790 ) yearend = true;
+        if( currentrun > 386951 && start <= 386951 ) yearend = true;
+        //else if( currentrun > 284044 && start <= 284044 ) yearend = true;
+		//if( yearend ) std::cout << " --- END OF YEAR : " << currentrun << " start " << start << std::endl; 
+		if( currentrun > curxiovend || yearend ){ // tack small portion to previous and start new run period with this run
+			if(  ( prev > 0 ) and ( yearend or ( lumisum < ( minLumi*0.4 ) ) ) and not yearchanged ){
+				//std::cout << " IOV JUMP !! Add to Previous  !! Lumi Sum : " <<  lumisum << " min lumi : " << minLumi << std::endl;
 				end = curxiovend;
-				if( end <= start ) end = start;
+				if( end < start ) end = start;
 				theIovMap[prev] = end;
-				start = prev;
-				oldrun = currentrun;
+				start = currentrun;
 				lumisum = lumirun.second.lumi;
-				newrange = true;
+				if( yearend ) yearchanged = true;
 			}//<<>>if( prev > 0 )
-			else { 
-				for( auto& xiov : promptIovMap ){
-                	if( currentrun >= xiov.first && currentrun <= xiov.second ){
-                    	curxiovend = xiov.second;
-                    	break;
-                	}//<<>>if( start >= xiov.first && start <= xiov.second )
-            	}//<<>>for( auto& xiov : promptIovMap ) 
+			else {
+				//std::cout << " IOV JUMP !! Continue !! Lumi Sum : " <<  lumisum << " min lumi : " << minLumi << std::endl;
+				lumisum += lumirun.second.lumi; 
             }//<<>>else { if( prev > 0 ){ 
+            for( auto& xiov : promptIovMap ){
+                if( currentrun >= xiov.first && currentrun <= xiov.second ){
+                    curxiovend = xiov.second;
+                    break;
+                }//<<>>if( start >= xiov.first && start <= xiov.second )
+            }//<<>>for( auto& xiov : promptIovMap )
 		} else {
 			lumisum += lumirun.second.lumi;
-			if( lumisum > minLumi ){ 
-				end = currentrun;
-				if( end <= start ) end = start;
-				theIovMap[start] = end;
-				oldrun = 0;
-				lumisum = 0; 
-				newrange = true;
-			}//<<>>if( lumisum > minTTLumi )
-		}//<<>>if( lumirun.second.run > promptIovMap[curxiov] )
+        }//<<>>if( lumirun.second.run > promptIovMap[curxiov] )
+		//std::cout << " Lumi Sum : " <<  lumisum << " min lumi : " << minLumi << std::endl;
+		if( lumisum > minLumi ){ 
+			//std::cout << " JUMP !!!!! Lumi Sum : " <<  lumisum << " min lumi : " << minLumi << std::endl;
+			end = currentrun;
+			if( end < start ) end = start;
+			theIovMap[start] = end;
+			lumisum = 0; 
+			newrange = true;
+			if( yearchanged ) yearchanged = false;
+		}//<<>>if( lumisum > minTTLumi )
 	}//<<>>for( auto& lumirun : lumiRunMap )
 	if( not newrange ) theIovMap[prev] = currentrun;
 	iovMaps[tag] = theIovMap;		
@@ -1284,6 +1331,7 @@ float KUCMS_TimeCalibration::getSmrdCalibTime( float rhtime, float rhamp, uInt r
     float smrdCalibTime = getSmearedTime( crhtime, rhamp, stag );
     return smrdCalibTime;
 */
+
 	return 1.f;
 
 }//<<>>float KUCMS_TimeCalibration::getSmearedTime( std::string tag , float time, uInt rhid )
@@ -1348,7 +1396,7 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
 float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsigned int rechitID, 
 												unsigned int Evt_run, std::string dataSetKey, int mctype, int gainID ){
 
-	float rtime = 0;
+	double rtime = 0;
     //if( Evt_run > 388000 || Evt_run < 253984 ) return time; // within calibrated run range check
 
     if( mctype == 1 ){ // data
@@ -1358,9 +1406,14 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
 
     } else { // MC
 
+		//std::cout << " Pre Check amplitude : " << amplitude << std::endl;
+		if( amplitude < 1 ) return time;
+        if( time == 0 ) return time;
+		//std::cout << " Post Check amplitude : " << amplitude << std::endl;
+
 		bool isEB( DetIDMap[rechitID].ecal == ECAL::EB );
-        float ebnoise, ebstoch, ebstant, eenoise, eestoch, eestant;
-		float mcebnoise(0), mcebstoch(0), mcebstant(0), mceenoise(0), mceestoch(0), mceestant(0);
+        double ebnoise, ebstoch, ebstant, eenoise, eestoch, eestant;
+		double mcebnoise(0), mcebstoch(0), mcebstant(0), mceenoise(0), mceestoch(0), mceestant(0);
 		if( resTag != "default" && ResTagSet.find(resTag) != ResTagSet.end() ){  // TARGET RESOLUTION
 
             ebnoise = ResTagSet[resTag].ebnoise;
@@ -1371,7 +1424,7 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
             eestant = ResTagSet[resTag].eestant;
 			
 		}//<<>>if( resTag != "default" )
-		else if( dataSetKey.substr(1,2) == "r2" ){ // use smear tag?  -- check first for set tag ! 
+		else if( resTag == "default" || dataSetKey.substr(1,2) == "r2" ){ // use smear tag?  -- check first for set tag ! 
 
             std::string tag= "r2_ul18";
             ebnoise = ResTagSet[tag].ebnoise;
@@ -1408,15 +1461,32 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
 		}//<<>>if( ResTagSet.find(tag) != ResTagSet.end() )
 
 		//0.00691415 1.60666 0.133913  smearing for 2017 MC -> Data ( original smearing values )
-		float noise = isEB ? std::abs( pow(ebnoise,2) - pow(mcebnoise,2) ) : std::abs( pow(eenoise,2) - pow(mceenoise,2) );
-		float stoch = isEB ? std::abs( pow(ebstoch,2) - pow(mcebstoch,2) ) : std::abs( pow(eestoch,2) - pow(mceestoch,2) );
-		float stant = isEB ? std::abs( pow(ebstant,2) - pow(mcebstant,2) ) : std::abs( pow(eestant,2) - pow(mceestant,2) );
-		if( mcebnoise == 0 ){ noise = pow(0.00691415,2); stoch = pow(1.60666,2); stant = pow(0.133913,2); }
-    	//std::cout << " stag smearing : " << stnoise << " " << ststoch << " " << ststant << " " << srun << std::endl;
-    	double resolution = std::sqrt( ( noise/pow(amplitude,2) + stoch/amplitude  + 2*stant )/2 );
-    	//std::cout << " getSmearedTime : " << resolution << " " << noise << " " << stoch << " " << stant << std::endl;
-    	if( resolution <= 0 ){ std::cout << "No smearing values set for this tag : " << dataSetKey << std::endl; rtime = time; }
+		double tnoise = isEB ? ebnoise : eenoise;
+        double tstoch = isEB ? ebstoch : eestoch;
+        double tstant = isEB ? ebstant : eestant;
+        double snoise = isEB ? mcebnoise : mceenoise;
+        double sstoch = isEB ? mcebstoch : mceestoch;
+        double sstant = isEB ? mcebstant : mceestant;
+		double amp = amplitude;
+		double sqamp = amp*amp;
+		double tresv = ( ((tnoise*tnoise)/(sqamp)) + ((tstoch*tstoch)/amp) + (2*tstant*tstant) )/2;
+        double sresv = ( ((snoise*snoise)/(sqamp)) + ((sstoch*sstoch)/amp) + (2*sstant*sstant) )/2;
+        //double tresv = ( ((tnoise/amp)*(tnoise/amp)) + (2*tstant*tstant) )/2;
+        //double sresv = ( ((snoise/amp)*(snoise/amp)) + (2*sstant*sstant) )/2;
+        double smvar = ( tresv > sresv ) ? tresv - sresv : 0.0;//      std::max( 0.0, tresv - sresv );
+        double resolution = ( smvar > 0.0 ) ? std::sqrt(smvar) : 0.0;
+    	//if( tresv - sresv < 0.0 ){ 
+        if( false ){
+			std::cout << "No smearing values set for this tag : " << dataSetKey << " time " << time << std::endl;
+        	if( isEB ) std::cout << " stag eb tg smearing : " << ebnoise << " " << ebstoch << " " << ebstant << std::endl;
+            else std::cout << " stag ee tg smearing : " << eenoise << " " << eestoch << " " << eestant << std::endl;
+        	if( isEB ) std::cout << " stag eb mc smearing : " << mcebnoise << " " << mcebstoch << " " << mcebstant << std::endl;
+            else std::cout << " stag ee mc smearing : " << mceenoise << " " << mceestoch << " " << mceestant << std::endl;
+			std::cout << " smearing parameters:  t " << tresv << " s " << sresv << " amp " << amp << std::endl;
+        	std::cout << " getSmeared Res: " << resolution << " time " << time << std::endl;
+		}//<<>>if( resolution <= 0 )
     	rtime = getRandom->Gaus( time, resolution );
+		//std::cout << " getSmeared rtime: " << rtime << std::endl;
 
     }//<<>>if( mctype == 0 )
 
@@ -2434,12 +2504,24 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 								//std::cout << " " << (*resRhID)[0] << std::endl;
 
                                 if( smear ){
-                                    std::cout << "Times are smeared !!!!!" << std::endl;
+                                    //std::cout << "Times are smeared !!!!!" << std::endl;
 
-                                    lyf0 = getSmearedTime( lyf0, (*resAmp)[0] );
-                                    lyf1 = getSmearedTime( lyf1, (*resAmp)[1] );
-                                    gyf0 = getSmearedTime( gyf0, (*resAmp)[2] );
-                                    gyf1 = getSmearedTime( gyf1, (*resAmp)[3] );
+                                    //lyf0 = getSmearedTime( lyf0, (*resAmp)[0] );
+                                    //lyf1 = getSmearedTime( lyf1, (*resAmp)[1] );
+                                    //gyf0 = getSmearedTime( gyf0, (*resAmp)[2] );
+                                    //gyf1 = getSmearedTime( gyf1, (*resAmp)[3] );
+
+									float amp0 = ( (*resRhID)[0] > 0 ) ? (*resAmp)[0] : -999;
+                                    float amp1 = ( (*resRhID)[1] > 0 ) ? (*resAmp)[1] : -999;
+                                    float amp2 = ( (*resRhID)[2] > 0 ) ? (*resAmp)[2] : -999;
+                                    float amp3 = ( (*resRhID)[3] > 0 ) ? (*resAmp)[3] : -999;
+
+                                    //getCorrectedTime( time, amplitude, rechitID, Evt_run, dataSetKey, mctype, gainID )
+									lyf0 = getCorrectedTime( lyf0, amp0, (*resRhID)[0], run, tag, 0, rhGainId[0] );
+                                    lyf1 = getCorrectedTime( lyf1, amp1, (*resRhID)[1], run, tag, 0, rhGainId[1] );
+                                    gyf0 = getCorrectedTime( gyf0, amp2, (*resRhID)[2], run, tag, 0, rhGainId[2] );
+                                    gyf1 = getCorrectedTime( gyf1, amp3, (*resRhID)[3], run, tag, 0, rhGainId[3] );
+
 
                                 }//<<>>if( smear )
                                 double lyfill = lyf0-lyf1+ldTOF;

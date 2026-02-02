@@ -154,6 +154,7 @@ class KUCMSGenObject : public KUCMSObjectBase {
     std::vector<int> fgpLlp;
     std::vector<int> fgpMomIdx;
     std::vector<int> fgpGMomIdx;
+    std::vector<int> fgpKidIdx;
 
     std::vector<reco::GenParticle> tgenparts;
     std::vector<int> tgpLlp;
@@ -267,6 +268,37 @@ void KUCMSGenObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("hasLWZX","Evt_hasLWZX",BOOL);
     Branches.makeBranch("nLWZX","Evt_nLWZX",INT);
     Branches.makeBranch("hasLWZQ","Evt_hasLWZQ",BOOL);
+    Branches.makeBranch("isGG","Evt_isGG", BOOL);
+    Branches.makeBranch("isZZ", "Evt_isZZ", BOOL);
+    Branches.makeBranch("isGZ","Evt_isGZ", BOOL);
+    Branches.makeBranch("fsType","Evt_fsType", INT);
+    Branches.makeBranch("nXs","Evt_nXs", INT);
+
+    Branches.makeBranch("Xa_MomDisplacment","Xa_Displacment",FLOAT);
+    Branches.makeBranch("Xa_PdgId","Xa_pdgId",UINT);
+    Branches.makeBranch("Xa_Vx","Xa_vx",FLOAT);
+    Branches.makeBranch("Xa_Vy","Xa_vy",FLOAT);
+    Branches.makeBranch("Xa_Vz","Xa_vz",FLOAT);
+    Branches.makeBranch("Xa_Pt","Xa_pt",FLOAT);
+    Branches.makeBranch("Xa_P","Xa_p",FLOAT);
+    Branches.makeBranch("Xa_beta","Xa_beta",FLOAT);
+    Branches.makeBranch("Xa_Mass","Xa_mass",FLOAT);
+    Branches.makeBranch("Xa_Phi","Xa_phi",FLOAT);
+    Branches.makeBranch("Xa_Eta","Xa_phi",FLOAT);
+    Branches.makeBranch("Xa_Energy","Xa_energy",FLOAT);
+
+    Branches.makeBranch("Xb_MomDisplacment","Xb_Displacment",FLOAT);
+    Branches.makeBranch("Xb_PdgId","Xb_pdgId",UINT);
+    Branches.makeBranch("Xb_Vx","Xb_vx",FLOAT);
+    Branches.makeBranch("Xb_Vy","Xb_vy",FLOAT);
+    Branches.makeBranch("Xb_Vz","Xb_vz",FLOAT);
+    Branches.makeBranch("Xb_Pt","Xb_pt",FLOAT);
+    Branches.makeBranch("Xb_P","Xb_p",FLOAT);
+    Branches.makeBranch("Xb_beta","Xb_beta",FLOAT);
+    Branches.makeBranch("Xb_Mass","Xb_mass",FLOAT);
+    Branches.makeBranch("Xb_Phi","Xb_phi",FLOAT);
+    Branches.makeBranch("Xb_Eta","Xb_phi",FLOAT);
+    Branches.makeBranch("Xb_Energy","Xb_energy",FLOAT);
 
     Branches.attachBranches(fOutTree);
 
@@ -288,6 +320,7 @@ void KUCMSGenObject::LoadEvent( const edm::Event& iEvent, const edm::EventSetup&
     fgpLlp.clear();
     fgpMomIdx.clear();
     fgpGMomIdx.clear();
+    fgpKidIdx.clear();
 
 	matdr.clear();
     matde.clear();
@@ -420,6 +453,7 @@ void KUCMSGenObject::LoadEvent( const edm::Event& iEvent, const edm::EventSetup&
 		    fgenparts.push_back( tgenparts[gpit] );
     		fgpLlp.push_back( tgpLlp[gpit] );
 			fgpMomIdx.push_back( -1 );
+			fgpKidIdx.push_back( -1 );
             fgpGMomIdx.push_back( -1 );
 			matdr.push_back( -10.f );
             matde.push_back( -10.f );
@@ -466,7 +500,8 @@ void KUCMSGenObject::LoadEvent( const edm::Event& iEvent, const edm::EventSetup&
 			//if( canpdg == 1000023 && mpdg == 1000023 ) std::cout << " Matching: 1000023 dr: " << std::abs( canr - mr ) << std::endl;
             if( canpdg == mpdg && std::abs( canr - mr ) == 0 ){
 				//std::cout << " ------- Matched" << std::endl;
-                fgpMomIdx[gpit] = cangpit;
+                fgpMomIdx[gpit] = cangpit;		
+				fgpKidIdx[cangpit] = gpit;
 				matched = true;
                 break;
             }//<<>>if( canpt == mpt && canpdg == mpdg )
@@ -585,10 +620,16 @@ void KUCMSGenObject::ProcessEvent( ItemManager<float>& geVar ){
     //if( GenDEBUG ) std::cout << " - enetering Gen loop" << std::endl;
 	//std::cout << " - enetering Gen loop" << std::endl;	
 
+	bool isGG = false;
+	bool isZZ = false;
+	bool isGZ = false;
+	int nXG = 0;
+	int nXZ = 0;
 	bool hasLWZX = false;
     bool hasLWZQ = false;
 	int nLWZX = 0;
 	int nGenParts = 0;
+	int nXs = 0;
     for (const auto & genpart : fgenparts ){
 
         const float genPt = genpart.pt();
@@ -611,6 +652,9 @@ void KUCMSGenObject::ProcessEvent( ItemManager<float>& geVar ){
         const float genVz = genpart.vz();
         const float genMass = genpart.mass();		
 
+		if( genSusId == 22 or genSusId == 25 ) nXG++;
+        if( genSusId == 23 or genSusId == 24 ) nXZ++;
+
 		const float momVx = ( genMomIdx > -1 ) ? fgenparts[genMomIdx].vx() : -999;
         const float momVy = ( genMomIdx > -1 ) ? fgenparts[genMomIdx].vy() : -999;
         const float momVz = ( genMomIdx > -1 ) ? fgenparts[genMomIdx].vz() : -999;
@@ -623,6 +667,49 @@ void KUCMSGenObject::ProcessEvent( ItemManager<float>& geVar ){
 		bool isLWZQ = ( genPdgId == 11 || genPdgId == 13 ) && ( genMomPdgId == 23 || genMomPdgId == 24 ) && genGMomPdgId < 10;
 		if( isLWZX ){ hasLWZX = true; nLWZX++; }
         if( isLWZQ ) hasLWZQ = true;
+
+		const int genKidIdx = fgpKidIdx[nGenParts];
+		bool isX = ( genPdgId > 1000022 ) and ( genPdgId < 1000038 );
+		bool fsGZ = ( genKidIdx > -1 ) ? ( ( fgenparts[genKidIdx].pdgId() == 22 ) or ( fgenparts[genKidIdx].pdgId() == 23 ) ) : false;
+		bool fsLSP = ( genKidIdx > -1 ) ? ( fgenparts[genKidIdx].pdgId() == 1000022 ) : false;
+		if( isX and ( fsGZ or fsLSP ) ){
+			nXs++;
+        	const float kVx = ( genKidIdx > -1 ) ? fgenparts[genKidIdx].vx() : -999;
+        	const float kVy = ( genKidIdx > -1 ) ? fgenparts[genKidIdx].vy() : -999;
+        	const float kVz = ( genKidIdx > -1 ) ? fgenparts[genKidIdx].vz() : -999;
+        	const float ctau = ( genKidIdx > -1 ) ? hypo( genVx-kVx, genVy-kVy, genVz-kVz ) : -10;
+			float xp = hypo( genPx, genPy, genPz ); 
+			float beta = xp/genEnergy;
+			if( nXs == 1 ){
+        		Branches.fillBranch("Xa_MomDisplacment",ctau);
+                Branches.fillBranch("Xa_beta",beta);
+        		Branches.fillBranch("Xa_PdgId",genPdgId);
+        		Branches.fillBranch("Xa_Vx",genVx);
+        		Branches.fillBranch("Xa_Vy",genVy);
+        		Branches.fillBranch("Xa_Vz",genVz);
+        		Branches.fillBranch("Xa_Pt",genPt);
+                Branches.fillBranch("Xa_P",xp);
+        		Branches.fillBranch("Xa_Mass",genMass);
+        		Branches.fillBranch("Xa_Phi",genPhi);
+        		Branches.fillBranch("Xa_Eta",genEta);
+        		Branches.fillBranch("Xa_Energy",genEnergy);
+			}//<<>>if( nXs == 1 )
+            if( nXs == 2 ){
+                Branches.fillBranch("Xb_MomDisplacment",ctau);
+                Branches.fillBranch("Xb_PdgId",genPdgId);
+                Branches.fillBranch("Xb_Vx",genVx);
+                Branches.fillBranch("Xb_Vy",genVy);
+                Branches.fillBranch("Xb_Vz",genVz);
+                Branches.fillBranch("Xb_Pt",genPt);
+                Branches.fillBranch("Xb_P",xp);
+                Branches.fillBranch("Xb_beta",beta);
+                Branches.fillBranch("Xb_Mass",genMass);
+                Branches.fillBranch("Xb_Phi",genPhi);
+                Branches.fillBranch("Xb_Eta",genEta);
+                Branches.fillBranch("Xb_Energy",genEnergy);
+            }//<<>>if( nXs == 2 )
+		}//<<>>if( genPdgId > 1000021 and genPdgId < 1000038 )
+
 
 		//if( GenDEBUG ) std::cout << "GenPart : genSusId = " << genSusId << std::endl;
 		Branches.fillBranch("genNtotal", unsigned(fgenparts.size()) );
@@ -650,6 +737,11 @@ void KUCMSGenObject::ProcessEvent( ItemManager<float>& geVar ){
 
 		nGenParts++;
     }//<<>> for (const auto genpart : fgenparts )
+
+	int fsType = 0;
+	if( nXG == 2 ){ isGG = true; fsType = 1; }
+	if( nXZ == 2 ){ isZZ = true; fsType = 2; }
+	if( nXG == 1 and nXZ == 1 ){ isGZ = true; fsType = 3; }
 
 	//"1=squark, 2=gluino, 3=Xino" 
 	int nNue = nueEvntId.size();
@@ -680,6 +772,12 @@ void KUCMSGenObject::ProcessEvent( ItemManager<float>& geVar ){
     Branches.fillBranch("hasLWZX",hasLWZX);
     Branches.fillBranch("nLWZX",nLWZX);
     Branches.fillBranch("hasLWZQ",hasLWZQ);
+    Branches.fillBranch("isGG",isGG);
+    Branches.fillBranch("isZZ", isZZ);
+    Branches.fillBranch("isGZ",isGZ);
+    Branches.fillBranch("fsType",fsType);
+	Branches.fillBranch("nXs",nXs);
+
 	geVar.fill("genWgt",wgt);
     //if( GenDEBUG ) std::cout << "GenPart : Done " << std::endl;
 

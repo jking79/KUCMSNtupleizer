@@ -196,7 +196,7 @@ def generateSubmission(args):
             	shutil.rmtree(fulldirname)
             # Create directories for work area.
             SH.createWorkArea(fulldirname)
-            eosdir = "root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/"+eospath
+            eosdir = "root://cmseos.fnal.gov//store/group/lpcsusylep/jaking/"+eospath
             #eventnums = SH.eventsSplit(eosdir, inputlist, args.split,True, args.maxnevts)
             print("inputlist",inputlist)
             filearr = SH.filesSplit(eosdir, inputlist, args.maxnevts, args.maxnfiles)

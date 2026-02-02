@@ -44,11 +44,13 @@ TCALI_INCDIR = $(TCALIDIR)/include
 # Source and object files
 
 SRCDIR = ./src
+RJR_SRC = $(SRCDIR)/rjr_plotting.cpp
 
 MAIN_CPP := $(SRCDIR)/runKUCMSAodSVSkimmer.cpp $(SRCDIR)/runLocalKUCMSAodSVSkimmer.cpp 
 MAIN_CPP += $(TCALI_SRCDIR)/makeKUCMSTimeCalibration.cpp $(TCALI_SRCDIR)/makeKUCMSTimeResolution.cpp
 SUPPORT_CPP := $(filter-out $(MAIN_CPP), $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/*.cc) ) 
 SUPPORT_CPP += $(filter-out $(MAIN_CPP), $(wildcard $(TCALI_SRCDIR)/*.cpp) $(wildcard $(TCALI_SRCDIR)/*.cc))
+SUPPORT_CPP := $(filter-out $(MAIN_CPP) $(RJR_SRC), $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/*.cc))
 OBJ_FILES := $(patsubst %,$(OBJDIR)/%,$(notdir $(SUPPORT_CPP:.cpp=.o)))
 OBJ_FILES := $(OBJ_FILES:.cc=.o) # handle .cc extension
 
@@ -58,6 +60,8 @@ EXE_MAIN = runKUCMSAodSVSkimmer.obj
 EXE_LOCAL = runLocalKUCMSAodSVSkimmer.obj
 EXE_CALI = makeKUCMSTimeCalibration.obj
 EXE_RES = makeKUCMSTimeResolution.obj
+EXE_RJR = rjr_plotting.obj
+RJR_OBJ = $(MAINOBJDIR)/rjr_plotting.o
 
 # Colored output
 
@@ -97,6 +101,7 @@ local: $(EXE_LOCAL)
 time: $(EXE_CALI) $(EXE_RES)
 cali: $(EXE_CALI)
 res: $(EXE_RES)
+rjr_plotting: $(EXE_RJR)
 
 $(EXE_MAIN): $(OBJ_FILES) $(MAIN_OBJ)
 	@echo -e "$(COLOR_GREEN)Linking $@$(COLOR_RESET)"
@@ -105,6 +110,10 @@ $(EXE_MAIN): $(OBJ_FILES) $(MAIN_OBJ)
 $(EXE_LOCAL): $(OBJ_FILES) $(LOCAL_OBJ)
 	@echo -e "$(COLOR_GREEN)Linking $@$(COLOR_RESET)"
 	$(CC) -o $@ $(OBJ_FILES) $(LOCAL_OBJ) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCGLIBS) -pthread
+
+$(EXE_RJR): $(RJR_OBJ)
+	@echo -e "$(COLOR_GREEN)Linking $@$(COLOR_RESET)"
+	$(CC) -o $@ $(RJR_OBJ) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) -pthread
 
 $(EXE_CALI): $(TCALI_OBJ) $(OBJDIR)/KUCMS_TimeCalibration.o
 	@echo -e "$(COLOR_GREEN)Linking $@$(COLOR_RESET)"
@@ -121,6 +130,7 @@ configtar: remote
 	@echo -e "$(COLOR_GREEN)Creating condor tarball$(COLOR_RESET)"
 	cp $(EXE_MAIN) config/
 	cp -r ntuple_master_lists/ config/
+	#cp -r json/ config/
 	cp -r ecal_config/ config/
 	tar -czf condor/config.tgz config 
 
@@ -144,5 +154,5 @@ clean:
 
 # Phony targets
 
-.PHONY: all clean configtar
+.PHONY: all clean configtar rjr_plotting
 
