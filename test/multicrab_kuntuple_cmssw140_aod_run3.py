@@ -98,7 +98,7 @@ def docrab( dataset ):
         #config.Data.unitsPerJob   = 14 # 14 for eg c 18ul ~ 2 files & 19 hours too much disk space -> 1 file worth & break up to keep under 2000 jobs
         #config.Data.unitsPerJob   =  24 # MET C 
         #config.Data.unitsPerJob   =  48 # MET D
-        #config.Data.runRange = '306458-306460' #
+        #config.Data.runRange = '369927-369999' #
             
     
         #config.JobType.allowUndistributedCMSSW = True
@@ -145,7 +145,8 @@ def docrab( dataset ):
 
             trial          = "kucmsntuple_JetMET_R23_SVIPM100" + version # 
             #trial          = "kucmsntuple_JetMET_R24_SVIPM100" + version # 
-
+            #trial          = "kucmsntuple_JetMET_R23_NoFilter" + version # 
+            #trial          = "kucmsntuple_JetMET_R23_MET100" + version # 
 
             print( 'processing for : ',trial )
 
@@ -157,6 +158,7 @@ def docrab( dataset ):
             fSVIPM125 = 'eventFilter=SVIPMet125'
             fSVIPM100 = 'eventFilter=SVIPMet100'
             fM100 = 'eventFilter=MET100'
+            fM150 = 'eventFilter=MET150'
             fAL1P = 'eventFilter=AL1IsoPho'
             fIPM100 = 'eventFilter=IsoPhoMet100'
             fNone = 'eventFilter=None'
@@ -173,11 +175,13 @@ def docrab( dataset ):
             mDoDEle = 'doDisEle=true'
             mDoETOnly = 'doECALTrackOnly=true'
 
+            #efilter = fM100
             #efilter = fNpSC
             ##efilter = fM100
             ##efilter = fIPM100
             ##efilter = fAL1E
             efilter = fSVIPM100 #!!!!!!!!!!!!!!!!
+            #efilter = fNone # for EXO Jet Met
             print( 'using :', efilter )
             print( 'using :', inputJSON )
             #####print( 'using :', geninfo )
@@ -243,44 +247,18 @@ def run_multi():
 
     runDataset = [
 
-        #['/MET/Run2022A-27Jun2023-v1/AOD',1],
-        #['/MET/Run2022B-27Jun2023-v2/AOD',1],
-        #['/MET/Run2022C-27Jun2023-v2/AOD',1],
-
-        ##['/JetMET0/Run2024A-PromptReco-v1/AOD',1],
-        #['/JetMET0/Run2024B-PromptReco-v1/AOD',1],
-        #['/JetMET0/Run2024C-PromptReco-v1/AOD',2],
-        #['/JetMET0/Run2024D-PromptReco-v1/AOD',3],
-        #['/JetMET0/Run2024E-PromptReco-v2/AOD',2],
-        #['/JetMET0/Run2024F-PromptReco-v1/AOD',10],
-        #['/JetMET0/Run2024G-PromptReco-v1/AOD',10],
-        #['/JetMET0/Run2024H-PromptReco-v1/AOD',2],
-        #['/JetMET0/Run2024I-PromptReco-v2/AOD',2],
-        ##['/JetMET0/Run2024J-PromptReco-v1/AOD',1],
-
-        ##['/JetMET1/Run2024A-PromptReco-v1/AOD',1],
-        #['/JetMET1/Run2024B-PromptReco-v1/AOD',1],
-        #['/JetMET1/Run2024C-PromptReco-v1/AOD',2], 
-        #['/JetMET1/Run2024D-PromptReco-v1/AOD',3],
-        #['/JetMET1/Run2024E-PromptReco-v2/AOD',2],
-        #['/JetMET1/Run2024F-PromptReco-v1/AOD',10],
-        #['/JetMET1/Run2024G-PromptReco-v1/AOD',10],
-        #['/JetMET1/Run2024H-PromptReco-v1/AOD',2],
-        #['/JetMET1/Run2024I-PromptReco-v2/AOD',2],
-        ##['/JetMET1/Run2024J-PromptReco-v1/AOD',1],
-
-
-        #['/JetMET1/Run2023B-EXODelayedJetMET-PromptReco-v1/AOD',1],
-        ['/JetMET1/Run2023C-EXODelayedJetMET-PromptReco-v4/AOD',1],
-        ['/JetMET1/Run2023D-EXODelayedJetMET-PromptReco-v2/AOD',1],
-
-        #['/JetMET0/Run2023B-EXODelayedJetMET-PromptReco-v1/AOD',1],
-        ['/JetMET0/Run2023D-EXODelayedJetMET-PromptReco-v2/AOD',1],
-        ['/JetMET0/Run2023C-EXODelayedJetMET-PromptReco-v4/AOD',1],
+        #['/JetMET/Run2022C-19Dec2023-v1/AOD',1],
+        #['/JetMET/Run2022D-19Dec2023-v1/AOD',1],
+        #['/JetMET/Run2022E-19Dec2023-v1/AOD',1],
+        #['/JetMET/Run2022F-19Dec2023-v2/AOD',1],
+        #['/JetMET/Run2022G-19Dec2023-v1/AOD',1],
 
         #['/JetMET0/Run2023B-19Dec2023-v1/AOD',1],
-        #['/JetMET1/Run2023B-19Dec2023-v1/AOD',1],
+        #['/JetMET0/Run2023C-19Dec2023-v1/AOD',1],
         ['/JetMET0/Run2023D-19Dec2023-v1/AOD',1],
+        ['/JetMET1/Run2023B-19Dec2023-v1/AOD',1],
+        #['/JetMET1/Run2023C-19Dec2023-v1/AOD',1],
+        #['/JetMET1/Run2023D-19Dec2023-v1/AOD',1],
 
     ] 
 

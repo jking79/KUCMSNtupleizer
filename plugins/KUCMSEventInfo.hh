@@ -145,6 +145,7 @@ void KUCMSEventInfoObject::InitObject( TTree* fOutTree ){
     for( auto filterName : metFilterList ){
 
         Branches.makeBranch( filterName, filterName, BOOL );
+		triggerCnt[filterName] = 0;
 
     }//<<>>for( auto trigName : triggerList )
 
@@ -292,6 +293,7 @@ void KUCMSEventInfoObject::ProcessEvent( ItemManager<float>& geVar ){
 */
 
     for( auto filterName : metFilterList ){ fillFlagBranch( filterName ); }
+    for( const auto& kv : flags ){ if( kv.second ) triggerCnt[ kv.first ]++; }
     for( auto trigName : triggerList ){ fillHltBranch( trigName ); }
 	for( const auto& kv : hltpaths ){ if( kv.second ) triggerCnt[ kv.first ]++; }
 
