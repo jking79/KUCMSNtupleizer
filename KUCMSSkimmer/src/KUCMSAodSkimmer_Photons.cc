@@ -459,14 +459,15 @@ void KUCMSAodSkimmer::processPhotons(){
 	bool bhcr = false;
     	ClusterObj phoobj;
         _ca.NoClusterRhs(phoobj, true);
-     	map<string, double> isomap;
-        MakePhotonIsoMap(it, isomap);
         vector<float> photonIDscores;
+	cout << "\nPhoton eta " << eta << " pt " << pt << endl; 
 	if(overMaxEta){ //endcap
+     		map<string, double> isomap;
+        	MakePhotonIsoMap(it, isomap);
 		phoobj.CalculateEndcapPhotonIDScores(pt, isomap);
 	}
 	else{ //barrel
-		phoobj.CalculateBarrelPhotonIDScores(pt, isomap);
+		phoobj.CalculateBarrelPhotonIDScores();
 	}
 	phoobj.GetPhotonIDScores(photonIDscores);
         isobkg_score = photonIDscores[0];
