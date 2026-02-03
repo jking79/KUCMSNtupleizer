@@ -43,7 +43,7 @@ def main():
             #append cmds to write
             if(args.big):
                 for i in range(10):
-                    oname = d.name+"_"+proc+"_"+str(i)+".root"
+                    oname = "rjrskim_"+proc+"_"+str(i)+".root"
                     oname = "condor_"+oname
                     oname = scratch_space+"/"+oname
                     cmd = ""
@@ -65,7 +65,7 @@ def main():
                     #print("Wrote to "+oname)
                 big_oname = d.path
                 big_oname = big_oname[:big_oname.find("/"+d.name)]
-                big_oname = scratch_space+"/"+big_oname[big_oname.rfind("/")+1:]+"_"+d.name+".root"
+                big_oname = scratch_space+"/"+big_oname[big_oname.rfind("/")+1:]+"_rjrskim.root"
                 #check if file exists
                 if(args.force):
                 	cmd = cmdHadd+" -f"
@@ -81,7 +81,7 @@ def main():
             else:
                 oname = d.path
                 oname = oname[:oname.find("/"+d.name)]
-                oname = d.path+"/"+oname[oname.rfind("/")+1:]+"_"+d.name+".root"
+                oname = d.path+"/"+oname[oname.rfind("/")+1:]+"_rjrskim.root"
                 #print("oname",oname,"d.name",d.name,"proc",proc,"d.path",d.path)
                 cmd = cmdHadd
                 #check if file exists
