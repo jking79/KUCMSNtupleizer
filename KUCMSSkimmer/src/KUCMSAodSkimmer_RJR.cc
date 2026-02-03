@@ -82,7 +82,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
   if( zsig ) std::cout << " ------------ noSVorPho is True !!!!!!!!!!!!!!!!!!!!!!!! " << std::endl;
   if( true ){ // old : if( not zsig ){ ?? never do this ??
 	//nRJRPhos = ( nSelPhotons > 1 ) ? 2 : ( nSelPhotons > 0 ) ? 1 : 0;
-    nRJRPhos = ( slSigPhoIndx > 0 ) ? 2 : ( lSigPhoIndx > 0 ) ? 1 : 0;
+    nRJRPhos = ( slSigPhoIndx > -1 ) ? 2 : ( lSigPhoIndx > -1 ) ? 1 : 0;
   	for( int spidx = 0; spidx < nSelPhotons; spidx++ ){
     
     	if( RJRDEBUG ) std::cout << " - Loading Pho " << spidx << std::endl;

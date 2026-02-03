@@ -994,7 +994,7 @@ void KUCMSAodSkimmer::processPhotons(){
 			ePhoMy += ePhoPt*std::sin(ePhoPhi);
 		}//<<>>if( exIdx > -1 )
 	}//<<>>if( isOOT && exIdx > -1 )
-	if( isSigPho[spidx] ){ if( lSigPhoIndx > 0 ) lSigPhoIndx = spidx; else if( slSigPhoIndx > 0 ) slSigPhoIndx = spidx; }
+	if( isSigPho[spidx] ){ if( lSigPhoIndx < 0 ) lSigPhoIndx = spidx; else if( slSigPhoIndx < 0 ) slSigPhoIndx = spidx; }
 	selpho_pt.push_back(lPhoPt);
     selpho_eta.push_back(lPhoEta);
     selpho_phi.push_back(lPhoPhi);
