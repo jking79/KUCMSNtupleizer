@@ -143,7 +143,8 @@ def docrab( dataset ):
             # 30 consoladated Track objects in single Tracks object w/ SC matching
             # 31 reduced track pt min to 5 unless SC match, ? fixed SC rechit ID bug ?
 
-            trial          = "kucmsntuple_JetMET_R23_SVIPM100" + version # 
+            trial          = "kucmsntuple_JetMET_R23_Met150" + version # 
+            #trial          = "kucmsntuple_JetMET_R23_SVIPM100" + version # 
             #trial          = "kucmsntuple_JetMET_R24_SVIPM100" + version # 
             #trial          = "kucmsntuple_JetMET_R23_NoFilter" + version # 
             #trial          = "kucmsntuple_JetMET_R23_MET100" + version # 
@@ -175,12 +176,12 @@ def docrab( dataset ):
             mDoDEle = 'doDisEle=true'
             mDoETOnly = 'doECALTrackOnly=true'
 
-            #efilter = fM100
+            efilter = fM150
             #efilter = fNpSC
             ##efilter = fM100
             ##efilter = fIPM100
             ##efilter = fAL1E
-            efilter = fSVIPM100 #!!!!!!!!!!!!!!!!
+            ##efilter = fSVIPM100 #!!!!!!!!!!!!!!!!
             #efilter = fNone # for EXO Jet Met
             print( 'using :', efilter )
             print( 'using :', inputJSON )
@@ -255,7 +256,7 @@ def run_multi():
 
         #['/JetMET0/Run2023B-19Dec2023-v1/AOD',1],
         #['/JetMET0/Run2023C-19Dec2023-v1/AOD',1],
-        ['/JetMET0/Run2023D-19Dec2023-v1/AOD',1],
+        #['/JetMET0/Run2023D-19Dec2023-v1/AOD',1],
         ['/JetMET1/Run2023B-19Dec2023-v1/AOD',1],
         #['/JetMET1/Run2023C-19Dec2023-v1/AOD',1],
         #['/JetMET1/Run2023D-19Dec2023-v1/AOD',1],
