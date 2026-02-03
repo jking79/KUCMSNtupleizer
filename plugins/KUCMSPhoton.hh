@@ -857,7 +857,8 @@ bool KUCMSPhotonObject::passPhoQuality( const reco::Photon & photon ){
     bool overMinPt = photon.pt() > 30;
     auto underMaxEta = std::abs(photon.eta()) < 1.479;
 
-    bool passPhoQuality = noPixSeed && underMaxEta && overMinPt && passPhoIso;
+    //bool passPhoQuality = noPixSeed && underMaxEta && overMinPt && passPhoIso;
+    bool passPhoQuality = noPixSeed && overMinPt && passPhoIso;
 
     return passPhoQuality;
 

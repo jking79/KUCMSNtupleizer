@@ -13,6 +13,7 @@ options.register('doSV',True,VarParsing.multiplicity.singleton,VarParsing.varTyp
 options.register('doDisEle',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag ro run displaced electrons');
 options.register('doECALTrackOnly',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to run ECAL Tracks only');
 options.register('runera','Run3',VarParsing.multiplicity.singleton,VarParsing.varType.string,'filter to use in event processing');
+options.register('runMETFilters',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to run Met Filters');
 
 ## object prep cuts
 #options.register('jetpTmin',15.0,VarParsing.multiplicity.singleton,VarParsing.varType.float,'jet pT minimum cut');
@@ -213,7 +214,8 @@ process.source = cms.Source("PoolSource",
         #'root://cmseos.fnal.gov//store/mc/RunIISummer20UL18RECO/QCD_HT2000toInf_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/2520000/0184321F-08CA-3740-9700-89D3C169F771.root',
 
         #SMS_Sig
-        'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoG/SMS-GlGl_mGl-2000_mN2-1900_mN1-250_gam_N2ctau-0p1_AOD/250317_234753/0000/SMS-GlGl_mGl-2000_mN2-1900_mN1-250_gam_N2ctau-0p1_AOD_41.root'
+        'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ/SMS-GlGl_mGl-2500_mN2-2400_mN1-2300_GZ_N2ctau-0p5_AOD/260110_210547/0000/SMS-GlGl_mGl-2500_mN2-2400_mN1-2300_GZ_N2ctau-0p5_AOD_107.root'
+        #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoG/SMS-GlGl_mGl-2000_mN2-1900_mN1-250_gam_N2ctau-0p1_AOD/250317_234753/0000/SMS-GlGl_mGl-2000_mN2-1900_mN1-250_gam_N2ctau-0p1_AOD_41.root'
         #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoG/SMS-GlGl_mGl-1500_mN2-500_mN1-100_gam_N2ctau-0p1_AOD/250123_145920/0000/SMS-GlGl_mGl-1500_mN2-500_mN1-100_gam_N2ctau-0p1_AOD_99.root'
         #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoZ/SMS-GlGl_mGl-2000_mN2-1900_mN1-200_Zff_N2ctau-0p3_AOD/250607_191347/0000/SMS-GlGl_mGl-2000_mN2-1900_mN1-200_Zff_N2ctau-0p3_AOD_2.root',
         #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoZ/SMS-GlGl_mGl-2000_mN2-1900_mN1-200_Zff_N2ctau-0p3_AOD/250607_191347/0000/SMS-GlGl_mGl-2000_mN2-1900_mN1-200_Zff_N2ctau-0p3_AOD_4.root'
@@ -269,7 +271,7 @@ process.source = cms.Source("PoolSource",
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
@@ -281,7 +283,7 @@ process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100000))#MS
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250000))#MD
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500000))#LG
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
 
 genInfo = True
 #genInfo = False
@@ -320,8 +322,9 @@ doet = True ## with v30 no longer optional when using ( "ecalTracks", "displaced
 #    dosv = False
 #    dode = False
 
-#runMETFilters = True
-runMETFilters = False
+runMETFilters = True
+#runMETFilters = False
+if options.runMETFilters == True : runMETFilters = False
 
 #probeout = True
 probeout = False
@@ -331,11 +334,12 @@ triggerSet = "RECO"
 ecalIsoInputs = ecalIsoInputsF17
 if "Run3" in runera :
     triggerSet = "PAT"
-    if genInfo is True : 
-        triggerSet = "RECO"
     ecalIsoInputs = ecalruneraIsoInputsW22
     if 'CASTOR' in process.CaloGeometryBuilder.SelectedCalos : 
         process.CaloGeometryBuilder.SelectedCalos.remove('CASTOR') 
+
+if runMETFilters is True :
+    triggerSet = ""
 
 #genMomChase = True
 genMomChase = False
@@ -497,29 +501,29 @@ process.tree.triggerList = cms.vstring(  #"hltPFMET100", "hltMETClean100", "hltH
 
 process.tree.metFilters = cms.vstring( #"bla" )
 
-    "Flag_BadChargedCandidateFilter",
+    "Flag_BadChargedCandidateFilter", # 16 - 17 - 18 ?
     "Flag_BadChargedCandidateSummer16Filter",
-    "Flag_BadPFMuonDzFilter",
-    "Flag_BadPFMuonFilter",
+    "Flag_BadPFMuonDzFilter", # all
+    "Flag_BadPFMuonFilter", # all
     "Flag_BadPFMuonSummer16Filter",
     "Flag_CSCTightHalo2015Filter",
     "Flag_CSCTightHaloFilter",
     "Flag_CSCTightHaloTrkMuUnvetoFilter",
     "Flag_EcalDeadCellBoundaryEnergyFilter",
-    "Flag_EcalDeadCellTriggerPrimitiveFilter",
-    "Flag_HBHENoiseFilter",
-    "Flag_HBHENoiseIsoFilter",
+    "Flag_EcalDeadCellTriggerPrimitiveFilter", # all
+    "Flag_HBHENoiseFilter", # 16 - 17 - 18
+    "Flag_HBHENoiseIsoFilter", # 16 - 17 - 18
     "Flag_HcalStripHaloFilter",
     "Flag_METFilters",
     "Flag_chargedHadronTrackResolutionFilter",
-    "Flag_ecalBadCalibFilter",
+    "Flag_ecalBadCalibFilter", # all but not good in 22 - 23 - 24
     "Flag_ecalLaserCorrFilter",
-    "Flag_eeBadScFilter",
-    "Flag_globalSuperTightHalo2016Filter",
+    "Flag_eeBadScFilter", # all
+    "Flag_globalSuperTightHalo2016Filter", # all
     "Flag_globalTightHalo2016Filter",
-    "Flag_goodVertices",
+    "Flag_goodVertices", # all
     "Flag_hcalLaserEventFilter",
-    "Flag_hfNoisyHitsFilter",
+    "Flag_hfNoisyHitsFilter", # all
     "Flag_muonBadTrackFilter",
     "Flag_trkPOGFilters",
     "Flag_trkPOG_logErrorTooManyClusters",
@@ -552,18 +556,24 @@ metFilterPaths = [
 
     process.Flag_goodVertices,
     process.Flag_globalSuperTightHalo2016Filter,
-    process.Flag_HBHENoiseFilter,
-    process.Flag_HBHENoiseIsoFilter,
     process.Flag_EcalDeadCellTriggerPrimitiveFilter,
     process.Flag_BadPFMuonFilter,
     process.Flag_BadPFMuonDzFilter,
     process.Flag_hfNoisyHitsFilter,
-    process.Flag_BadChargedCandidateFilter,
-    process.Flag_eeBadScFilter,
-    process.Flag_ecalBadCalibFilter,
-    process.pattriger
+    process.Flag_eeBadScFilter
 
 ]
+
+# Run 2 only except Flag_ecalBadCalibFilter ( Run 2 & 3 ) but is bad in Run 3
+metFilterPaths += [
+
+    process.Flag_HBHENoiseFilter,
+    process.Flag_HBHENoiseIsoFilter,
+    process.Flag_BadChargedCandidateFilter,
+    process.Flag_ecalBadCalibFilter
+
+]
+
 
 # SVs & ecaltracks aka merged SC collection
 process.kuEcalTracks = cms.Sequence( ecalTracks )
