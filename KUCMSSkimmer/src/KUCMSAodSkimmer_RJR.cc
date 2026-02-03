@@ -56,6 +56,9 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 
   auto nSelPhotons = geCnts("nSelPhotons");
 
+  auto lSigPhoIndx = geCnts("lSigPhoIndx");
+  auto slSigPhoIndx = geCnts("slSigPhoIndx");
+
   auto phoRMetCPx = geVars("metPx"); //selMet.getFLBranchValue("metPx");
   auto phoRMetCPy = geVars("metPy"); //selMet.getFLBranchValue("metPy");
   float unCorMet = hypo(phoRMetCPx,phoRMetCPy);
@@ -78,7 +81,8 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
   bool zsig = ( geVars("noSVorPho") == 1 ) ? true : false;	
   if( zsig ) std::cout << " ------------ noSVorPho is True !!!!!!!!!!!!!!!!!!!!!!!! " << std::endl;
   if( true ){ // old : if( not zsig ){ ?? never do this ??
-	nRJRPhos = ( nSelPhotons > 1 ) ? 2 : ( nSelPhotons > 0 ) ? 1 : 0;
+	//nRJRPhos = ( nSelPhotons > 1 ) ? 2 : ( nSelPhotons > 0 ) ? 1 : 0;
+    nRJRPhos = ( slSigPhoIndx > 0 ) ? 2 : ( lSigPhoIndx > 0 ) ? 1 : 0;
   	for( int spidx = 0; spidx < nSelPhotons; spidx++ ){
     
     	if( RJRDEBUG ) std::cout << " - Loading Pho " << spidx << std::endl;
@@ -92,7 +96,9 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
         //jetID.push_back( COMB_J->AddLabFrameFourVector(phojet) );
         //if( spidx < nRJRPhos ) pho4vec.push_back(phojet);
 		//else jet4vec.push_back(phojet);		
-		if( spidx < nRJRPhos ){ jetID.push_back( COMB_J->AddLabFrameFourVector(phojet) ); pho4vec.push_back(phojet); }
+        //if( spidx < nRJRPhos ){ jetID.push_back( COMB_J_c->AddLabFrameFourVector(phojet) ); pho4vec.push_back(phojet); }
+		if( spidx == lSigPhoIndx ){ jetID.push_back( COMB_J->AddLabFrameFourVector(phojet) ); pho4vec.push_back(phojet); }
+        else if( spidx == slSigPhoIndx ){ jetID.push_back( COMB_J->AddLabFrameFourVector(phojet) ); pho4vec.push_back(phojet); }
 		else rjr_jets.push_back(phojet);
 
   	}//<<>>for( spidx = 0; spidx < nSelPhotons; spidx++ )
