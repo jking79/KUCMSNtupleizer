@@ -282,6 +282,7 @@ void KUCMSGenObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("Xa_Pt","Xa_pt",FLOAT);
     Branches.makeBranch("Xa_P","Xa_p",FLOAT);
     Branches.makeBranch("Xa_beta","Xa_beta",FLOAT);
+    Branches.makeBranch("Xa_ctau","Xa_ctau",FLOAT);
     Branches.makeBranch("Xa_Mass","Xa_mass",FLOAT);
     Branches.makeBranch("Xa_Phi","Xa_phi",FLOAT);
     Branches.makeBranch("Xa_Eta","Xa_phi",FLOAT);
@@ -295,6 +296,7 @@ void KUCMSGenObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("Xb_Pt","Xb_pt",FLOAT);
     Branches.makeBranch("Xb_P","Xb_p",FLOAT);
     Branches.makeBranch("Xb_beta","Xb_beta",FLOAT);
+    Branches.makeBranch("Xb_ctau","Xb_ctau",FLOAT);
     Branches.makeBranch("Xb_Mass","Xb_mass",FLOAT);
     Branches.makeBranch("Xb_Phi","Xb_phi",FLOAT);
     Branches.makeBranch("Xb_Eta","Xb_phi",FLOAT);
@@ -677,12 +679,14 @@ void KUCMSGenObject::ProcessEvent( ItemManager<float>& geVar ){
         	const float kVx = ( genKidIdx > -1 ) ? fgenparts[genKidIdx].vx() : -999;
         	const float kVy = ( genKidIdx > -1 ) ? fgenparts[genKidIdx].vy() : -999;
         	const float kVz = ( genKidIdx > -1 ) ? fgenparts[genKidIdx].vz() : -999;
-        	const float ctau = ( genKidIdx > -1 ) ? hypo( genVx-kVx, genVy-kVy, genVz-kVz ) : -10;
+        	const float dis = ( genKidIdx > -1 ) ? hypo( genVx-kVx, genVy-kVy, genVz-kVz ) : -10;
 			float xp = hypo( genPx, genPy, genPz ); 
 			float beta = xp/genEnergy;
+			float ct = dis/beta;
 			if( nXs == 1 ){
-        		Branches.fillBranch("Xa_MomDisplacment",ctau);
+        		Branches.fillBranch("Xa_MomDisplacment",dis);
                 Branches.fillBranch("Xa_beta",beta);
+                Branches.fillBranch("Xa_ctau",ct);
         		Branches.fillBranch("Xa_PdgId",genPdgId);
         		Branches.fillBranch("Xa_Vx",genVx);
         		Branches.fillBranch("Xa_Vy",genVy);
@@ -695,7 +699,7 @@ void KUCMSGenObject::ProcessEvent( ItemManager<float>& geVar ){
         		Branches.fillBranch("Xa_Energy",genEnergy);
 			}//<<>>if( nXs == 1 )
             if( nXs == 2 ){
-                Branches.fillBranch("Xb_MomDisplacment",ctau);
+                Branches.fillBranch("Xb_MomDisplacment",dis);
                 Branches.fillBranch("Xb_PdgId",genPdgId);
                 Branches.fillBranch("Xb_Vx",genVx);
                 Branches.fillBranch("Xb_Vy",genVy);
@@ -703,6 +707,7 @@ void KUCMSGenObject::ProcessEvent( ItemManager<float>& geVar ){
                 Branches.fillBranch("Xb_Pt",genPt);
                 Branches.fillBranch("Xb_P",xp);
                 Branches.fillBranch("Xb_beta",beta);
+                Branches.fillBranch("Xb_ctau",ct);
                 Branches.fillBranch("Xb_Mass",genMass);
                 Branches.fillBranch("Xb_Phi",genPhi);
                 Branches.fillBranch("Xb_Eta",genEta);

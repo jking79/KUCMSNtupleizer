@@ -46,7 +46,7 @@ def eos_find_rootfiles(path):
             continue
         if p.endswith(".root"):
             # make sure there’s exactly one leading slash after EOS_PREFIX
-            files.append(EOS_PREFIX + p.lstrip("/"))
+            files.append(EOS_PREFIX + '/' + p.replace("/eos/uscms/", "/").lstrip("/"))
 
     return files
 
