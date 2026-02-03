@@ -460,7 +460,6 @@ void KUCMSAodSkimmer::processPhotons(){
     	ClusterObj phoobj;
         _ca.NoClusterRhs(phoobj, true);
         vector<float> photonIDscores;
-	cout << "\nPhoton eta " << eta << " pt " << pt << endl; 
 	if(overMaxEta){ //endcap
      		map<string, double> isomap;
         	MakePhotonIsoMap(it, isomap);
