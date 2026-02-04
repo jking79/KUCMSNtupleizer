@@ -522,8 +522,8 @@ void KUCMSAodSkimmer::processPhotons(){
 
     selPhotons.fillBranch( "selPhoTSigId", phoTSigId );	
     selPhotons.fillBranch( "selPhoObjId", phoObjId );
-
-	bool isRjrSigPho = overMaxEta ? nonisobkg_score > nonIsoCutVal : isoPho;
+	//we want to reject (endcap) photons that are at the most noniso edge of the noniso sideband. 
+	bool isRjrSigPho = overMaxEta ? nonisobkg_score < EEVeryVeryNonIsoCutVal : isoPho;
 	if( isRjrSigPho ) isSigPho.push_back(true);
 	else isSigPho.push_back(false);
 
@@ -739,7 +739,7 @@ void KUCMSAodSkimmer::processPhotons(){
 				else{
 					selPhoIsEEexclnonIso[selphoidx] = true;
 				}	
-			}
+			}//else, fails RJR presel
 			if(isobkg_score >= EEIsoCutVal){
 				selPhoIsEEIso[selphoidx] = true;
 			}
