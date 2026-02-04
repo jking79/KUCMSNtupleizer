@@ -324,7 +324,7 @@ doet = True ## with v30 no longer optional when using ( "ecalTracks", "displaced
 
 runMETFilters = True
 #runMETFilters = False
-if options.runMETFilters == True : runMETFilters = False
+if options.multicrab == True : runMETFilters = options.runMETFilters
 
 #probeout = True
 probeout = False
@@ -338,8 +338,7 @@ if "Run3" in runera :
     if 'CASTOR' in process.CaloGeometryBuilder.SelectedCalos : 
         process.CaloGeometryBuilder.SelectedCalos.remove('CASTOR') 
 
-if runMETFilters is True :
-    triggerSet = ""
+if runMETFilters == True : triggerSet = ""
 
 #genMomChase = True
 genMomChase = False
@@ -351,7 +350,7 @@ if options.multicrab == True : makeTrigList = False
 print( "Using options : mutlicrab = ",options.multicrab," geninfo = ",genInfo," filter = ",filterselect )
 print( "Using options : momChase = ",genMomChase," trgiList = ",makeTrigList," probeout = ",probeout ) 
 print( "Using options : doDisEle = (NU) ",dode," doSVs = ",dosv," doECALTrackOnly = (NU) ",doet )
-print( "Using options : globalTag = ",options.globalTag )
+print( "Using options : globalTag = ",options.globalTag," trigger set = ",triggerSet )
 print( "With output file name : ",options.outputFileName )
 
 #test = cms.vstring( "hltPFMET100", "hltMETClean100", "hltHIPhoton20Eta3p1" )

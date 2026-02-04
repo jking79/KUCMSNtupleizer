@@ -227,7 +227,7 @@ void KUCMSAodSkimmer::processPhotons(){
   //----------------- photons ------------------
 
   std::vector<int> phoOrderIndx;
-  //std::vector<int> phoOrderId;
+  std::vector<bool> isSigPho;
   std::vector<int> phoExcIndx;
   uInt nSelPhotons = 0; 
   uInt nBasePhos = 0;
@@ -565,6 +565,10 @@ void KUCMSAodSkimmer::processPhotons(){
 
     selPhotons.fillBranch( "selPhoTSigId", phoTSigId );	
     selPhotons.fillBranch( "selPhoObjId", phoObjId );
+
+	bool isRjrSigPho = overMaxEta ? nonisobkg_score > nonIsoCutVal : isoPho;
+	if( isRjrSigPho ) isSigPho.push_back(true);
+	else isSigPho.push_back(false);
 
     if( DEBUG ) std::cout << " -- pho pull info" << std::endl;
     auto isOOT = (*Photon_isOot)[it];
@@ -962,12 +966,15 @@ void KUCMSAodSkimmer::processPhotons(){
 
   //TODO - add for barrel too
 
+  float lSigPhoIndx = -1;
+  float slSigPhoIndx = -1;
   std::vector<float> selpho_pt;
   std::vector<float> selpho_eta;
   std::vector<float> selpho_phi;
   std::vector<float> selpho_Mx;
   std::vector<float> selpho_My;
   for( int spidx = 0; spidx < nSelPhotons; spidx++ ){
+
 	//if( phoOrderId[spidx] == objID::Base ) continue;
 	uInt pIdx = phoOrderIndx[spidx];
 	uInt exIdx = phoExcIndx[spidx];
@@ -987,17 +994,25 @@ void KUCMSAodSkimmer::processPhotons(){
 			ePhoMy += ePhoPt*std::sin(ePhoPhi);
 		}//<<>>if( exIdx > -1 )
 	}//<<>>if( isOOT && exIdx > -1 )
+	bool isSig = isSigPho[spidx];
+	if( isSig ){ if( lSigPhoIndx < 0 ) lSigPhoIndx = spidx; else if( slSigPhoIndx < 0 ) slSigPhoIndx = spidx; }
+	//std::cout << " -- is sig pho " << isSig << " index " << spidx << std::endl;
 	selpho_pt.push_back(lPhoPt);
     selpho_eta.push_back(lPhoEta);
     selpho_phi.push_back(lPhoPhi);
     selpho_Mx.push_back(ePhoMx);
     selpho_My.push_back(ePhoMy);
+
   }//<<>>if( nSelPhotons > 0 )
   geVects.set( "selPhoPt", selpho_pt );
   geVects.set( "selPhoEta", selpho_eta );
   geVects.set( "selPhoPhi", selpho_phi );
   geVects.set( "selPhoEMx", selpho_Mx );
   geVects.set( "selPhoEMy", selpho_My );
+  //std::cout << " -- lead : " << lSigPhoIndx << " sub " << slSigPhoIndx << " --------------------- " << std::endl;
+  geVars.set( "lSigPhoIndx", lSigPhoIndx );
+  geVars.set( "slSigPhoIndx", slSigPhoIndx );
+  //std::cout << " -- is sig pho done --------------------- " << std::endl;
 
 }//<<>>void KUCMSAodSkimmer::processPhoton(){
 
