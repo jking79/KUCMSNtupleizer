@@ -56,8 +56,8 @@ void KUCMSAodSkimmer::processRJRISR(){
 
   auto nSelPhotons = geCnts("nSelPhotons");
 
-  auto lSigPhoIndx = geCnts("lSigPhoIndx");
-  auto slSigPhoIndx = geCnts("slSigPhoIndx");
+  auto lSigPhoIndx = geVars("lSigPhoIndx");
+  auto slSigPhoIndx = geVars("slSigPhoIndx");
 
   auto phoRMetCPx = geVars("metPx"); //selMet.getFLBranchValue("metPx");
   auto phoRMetCPy = geVars("metPy"); //selMet.getFLBranchValue("metPy");
@@ -88,8 +88,10 @@ void KUCMSAodSkimmer::processRJRISR(){
         //if( spidx < nRJRPhos ) pho4vec.push_back(phojet);
 		//else jet4vec.push_back(phojet);		
         //if( spidx < nRJRPhos ){ jetID.push_back( COMB_J_c->AddLabFrameFourVector(phojet) ); pho4vec.push_back(phojet); }
-        if( spidx == lSigPhoIndx ){ jetID.push_back( COMB_J->AddLabFrameFourVector(phojet) ); pho4vec.push_back(phojet); }
-        else if( spidx == slSigPhoIndx ){ jetID.push_back( COMB_J->AddLabFrameFourVector(phojet) ); pho4vec.push_back(phojet); }
+        if( spidx == lSigPhoIndx or spidx == slSigPhoIndx ){
+            jetID.push_back( COMB_J_c->AddLabFrameFourVector(phojet) );
+            pho4vec.push_back(phojet);
+        }//<<>>if( spidx == lSigPhoIndx or spidx == slSigPhoIndx  )
         else rjr_jets.push_back(phojet);
 
   	}//<<>>for( spidx = 0; spidx < nSelPhotons; spidx++ )

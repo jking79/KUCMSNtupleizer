@@ -56,8 +56,9 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 
   auto nSelPhotons = geCnts("nSelPhotons");
 
-  auto lSigPhoIndx = geCnts("lSigPhoIndx");
-  auto slSigPhoIndx = geCnts("slSigPhoIndx");
+  auto lSigPhoIndx = geVars("lSigPhoIndx");
+  auto slSigPhoIndx = geVars("slSigPhoIndx");
+  if( RJRDEBUG || verbose ) std::cout << " -- in RJR sigpho idx : " << lSigPhoIndx << " and " << slSigPhoIndx << std::endl;
 
   auto phoRMetCPx = geVars("metPx"); //selMet.getFLBranchValue("metPx");
   auto phoRMetCPy = geVars("metPy"); //selMet.getFLBranchValue("metPy");
@@ -82,7 +83,8 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
   if( zsig ) std::cout << " ------------ noSVorPho is True !!!!!!!!!!!!!!!!!!!!!!!! " << std::endl;
   if( true ){ // old : if( not zsig ){ ?? never do this ??
 	//nRJRPhos = ( nSelPhotons > 1 ) ? 2 : ( nSelPhotons > 0 ) ? 1 : 0;
-    nRJRPhos = ( slSigPhoIndx > -1 ) ? 2 : ( lSigPhoIndx > -1 ) ? 1 : 0;
+    nRJRPhos = ( slSigPhoIndx >= 0 ) ? 2 : ( lSigPhoIndx >= 0 ) ? 1 : 0;
+	if( RJRDEBUG || verbose ) std::cout << " -- in RJR nRJRPhos : " << nRJRPhos << std::endl;
   	for( int spidx = 0; spidx < nSelPhotons; spidx++ ){
     
     	if( RJRDEBUG ) std::cout << " - Loading Pho " << spidx << std::endl;
@@ -97,8 +99,10 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
         //if( spidx < nRJRPhos ) pho4vec.push_back(phojet);
 		//else jet4vec.push_back(phojet);		
         //if( spidx < nRJRPhos ){ jetID.push_back( COMB_J_c->AddLabFrameFourVector(phojet) ); pho4vec.push_back(phojet); }
-		if( spidx == lSigPhoIndx ){ jetID.push_back( COMB_J->AddLabFrameFourVector(phojet) ); pho4vec.push_back(phojet); }
-        else if( spidx == slSigPhoIndx ){ jetID.push_back( COMB_J->AddLabFrameFourVector(phojet) ); pho4vec.push_back(phojet); }
+		if( spidx == lSigPhoIndx or spidx == slSigPhoIndx ){ 
+			jetID.push_back( COMB_J->AddLabFrameFourVector(phojet) ); 
+			pho4vec.push_back(phojet); 
+		}//<<>>if( spidx == lSigPhoIndx or spidx == slSigPhoIndx  )
 		else rjr_jets.push_back(phojet);
 
   	}//<<>>for( spidx = 0; spidx < nSelPhotons; spidx++ )
@@ -134,8 +138,8 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 
   if( RJRDEBUG ) std::cout << " - Loading MET." << std::endl;
   if( verbose && nSelPhotons > 0 ){
-    std::cout << " - Loading MET lPt: " << sPhoPt[0] << " lPhi: " << sPhoPhi[0] << std::endl;
-    std::cout << " - Loading MET slPt: " << sPhoPt[1] << " slPhi: " << sPhoPhi[1] << std::endl; 
+    std::cout << " - Loading Pho lPt: " << sPhoPt[lSigPhoIndx] << " lPhi: " << sPhoPhi[lSigPhoIndx] << std::endl;
+    std::cout << " - Loading Pho slPt: " << sPhoPt[slSigPhoIndx] << " slPhi: " << sPhoPhi[slSigPhoIndx] << std::endl; 
     std::cout << " - Loading MET x: " << geVars("metPx") << " -> " << phoRMetCPx;
     std::cout << " y: " << geVars("metPy") << " -> " << phoRMetCPy << std::endl;
   }//<<>>if( verbose )
@@ -180,15 +184,16 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     TLorentzVector jet;
     jet.SetPtEtaPhiM( sjetPt, sjetEta, sjetPhi, sjetMass );
     rjr_jets.push_back(jet);
-    if( verbose ) std::cout << " - Loading Jet Pt: " << sjetPt << " Eta: " << sjetEta;
-    if( verbose ) std::cout << " Phi: " << sjetPhi << " M: " << sjetMass << std::endl;
+    //if( verbose ) std::cout << " - Loading Jet Pt: " << sjetPt << " Eta: " << sjetEta;
+    //if( verbose ) std::cout << " Phi: " << sjetPhi << " M: " << sjetMass << std::endl;
   }//<<>>for( int i = 0; i < nSelJets; i++ )
 
-  //if( RJRDEBUG ) std::cout << " -- nSelJets Pre : " << nSelJets << std::endl;
-  //if( RJRDEBUG ) std::cout << " -- nRJRJets Pre : " << rjr_jets.size() << std::endl;
+  if( RJRDEBUG || verbose ) std::cout << " -- nSelJets Pre : " << nSelJets << std::endl;
+  if( RJRDEBUG || verbose ) std::cout << " -- nRJRJets Pre : " << rjr_jets.size() << std::endl;
+  if( verbose ) std::cout << "-----  Merging -------------- " << std::endl;
   BinaryMergeInPlace( rjr_jets, maxJetCount - nRJRPhos );
   int nMergedJets = rjr_jets.size();
-  //if( RJRDEBUG ) std::cout << " -- nRJRJets Merged Post : " << nMergedJets << std::endl;
+  if( RJRDEBUG || verbose ) std::cout << " -- nRJRJets Merged Post : " << nMergedJets << std::endl;
 
   std::vector<RFKey> leadJetKey;
   for( uInt it = 0; it < nMergedJets; it++ ){
@@ -236,7 +241,7 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
 		subPhoLocation = ( COMB_J->GetFrame(jetID[1]) == *J1a || COMB_J->GetFrame(jetID[1]) == *J2a ) ? 1 : 2;
   }//<<>>if( ( type < 2 ) && ( nRJRPhos == 2 ) )
 
-  if( nVisObjects > maxJetCount  ) std::cout << " !!!!!!!! RJRISR nVisObjects exceeds # of Visible Objects Max Threshold !!!!!!! " << std::endl;
+  if( nVisObjects > maxJetCount  ) std::cout << " !! RJRISR nVisObjects exceeds # of Visible Objects Max Threshold !!!!!!! " << std::endl;
 
   selRjrVars.fillBranch( "rjrType", type );
   selRjrVars.fillBranch( "rjrABSide", isALeadPhoSide );

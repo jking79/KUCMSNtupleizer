@@ -50,7 +50,8 @@ int main ( int argc, char *argv[] ){
 	//std::string inputfilename( "ecal_config/kucmsTimeCaliTestTFile.txt");
     ////std::string inputfilename( "ecal_config/kucmsTimeCaliR17EOYTFile.txt");
 
-    std::string inputfilename( "ecal_config/kucmsTimeCaliR18ULTFile.txt");
+    std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCGjetsTFile.txt");
+    //std::string inputfilename( "ecal_config/kucmsTimeCaliR18ULTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR17ULTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR16ULTFile.txt"); 
 	//std::string inputfilename( "ecal_config/kucmsTimeCaliR22PrmptTFile.txt"); 
@@ -87,11 +88,11 @@ int main ( int argc, char *argv[] ){
     //-----//////////  making tt cali  :
     theCali.SetupIovMaps();
 	// for PD R2UL
-    theCali.setTTIov( r2ulTag );
-    theCali.setXIov( xiovtag );
+    //theCali.setTTIov( r2ulTag );
+    //theCali.setXIov( xiovtag );
 	// for MC
-    //theCali.setTTIov( mctag );
-    //theCali.setXIov( mctag );
+    theCali.setTTIov( mctag );
+    theCali.setXIov( mctag );
     // for PD R3
 	//theCali.setTTIov( r3TagTT );
 	//theCali.setXIov( r3TagX );
@@ -113,18 +114,18 @@ int main ( int argc, char *argv[] ){
     //-----//////////  making xtal cali :
     //theCali.makeXCaliMapEGR( inputfilename, true ); // true == run only subset of events
 	//theCali.makeXCaliMapEGR( inputfilename, 1, true ); // true == run only subset of events
-    theCali.makeXCaliMapEGR( inputfilename );
-    theCali.makeCaliHists();
-    theCali.SaveCaliHists();
-    theCali.SaveCaliRunFile();
+    //theCali.makeXCaliMapEGR( inputfilename );
+    //theCali.makeCaliHists();
+    //theCali.SaveCaliHists();
+    //theCali.SaveCaliRunFile();
 
 	//----///////////  make gainid 2 calibrations
     //theCali.makeTTCaliMapEGR( inputfilename, 2, false, false ); // do gainID 2 no calibration step
     //theCali.makeTTCaliMapEGR( inputfilename, 2, true ); // do gainID 2; true == run only subset of events 
-    //theCali.makeTTCaliMapEGR( inputfilename, 2 ); // do gainID 2
-    //theCali.makeCaliHists();
-    //theCali.SaveCaliHists();
-    //theCali.SaveTTRunFile();
+    theCali.makeTTCaliMapEGR( inputfilename, 2 ); // do gainID 2
+    theCali.makeCaliHists();
+    theCali.SaveCaliHists();
+    theCali.SaveTTRunFile();
 
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////

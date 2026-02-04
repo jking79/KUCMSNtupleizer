@@ -949,15 +949,15 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
 	setEvtVarMetBranches( fOutTree );
     setTrackBranches( fOutTree );
     setEcalBranches( fOutTree );
-    if( hasGenInfoFlag ) setGenBranches( fOutTree );
+    setGenBranches( fOutTree );
     setPhotonBranches( fOutTree );
     setRJRBranches( fOutTree );
 	setRJRISRBranches( fOutTree );
     setElectronBranches( fOutTree );
     setJetsBranches( fOutTree );
     setMuonsBranches( fOutTree );
-    if( doSVs ) setSVBranches( fOutTree );
-    if( doBHC ) setBCBranches( fOutTree );
+    setSVBranches( fOutTree );
+    setBCBranches( fOutTree );
 
 }//<<>>void KUCMSAodSkimmer::setOutputBranches(fOutTree)
 
@@ -1063,8 +1063,10 @@ bool KUCMSAodSkimmer::eventSelection(){
   int vetoJets = geCnts("jetEventVeto");
 
   float nSelPhotons = geCnts("nSelPhotons"); //selPhotons.getUIBranchValue("nSelPhotons");
-  float leadPhoPt = ( nSelPhotons > 0 ) ? geVects("selPhoPt").at(0) : 0;
-  float subLeadPhoPt = ( nSelPhotons > 1 ) ? geVects("selPhoPt").at(1) : 0;
+  auto lSigPhoIndx = geVars("lSigPhoIndx");
+  auto slSigPhoIndx = geVars("slSigPhoIndx");
+  float leadPhoPt = ( lSigPhoIndx > -1 ) ? geVects("selPhoPt").at(lSigPhoIndx) : 0;
+  float subLeadPhoPt = ( slSigPhoIndx > -1 ) ? geVects("selPhoPt").at(slSigPhoIndx) : 0;
 
   bool hasLepSV = doSVs ? geVars("nSVLep") > 0 : false;
   bool hasHadSV = doSVs ? geVars("nSVHad") > 0 : false;
@@ -1072,12 +1074,12 @@ bool KUCMSAodSkimmer::eventSelection(){
 
   bool met100 = evtMet >= 100;
   bool met150 = evtMet >= 150;
-  bool gt1phos = nSelPhotons >= 1;
+  bool gt1phos = lSigPhoIndx > -1;
   bool gt2jets = nSelJets >= 2;
   bool gt2qjets = nQJets >= 2;
   bool allgjets = vetoJets < 1;
 
-  bool gt2phos = nSelPhotons >= 2;
+  bool gt2phos = lSigPhoIndx > -1 and slSigPhoIndx > -1;
   bool leadPhoPt70 = leadPhoPt >= 70;
   bool leadPhoPt30 = leadPhoPt >= 30;
   bool subLeadPhoPt40 = subLeadPhoPt >= 40; 
