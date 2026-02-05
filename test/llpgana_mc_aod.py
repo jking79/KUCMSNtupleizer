@@ -132,7 +132,7 @@ process.source = cms.Source("PoolSource",
         #'root://xrootd-cms.cern.ch//store/data/Run2022C/JetMET/AOD/EXODelayedJetMET-27Jun2023-v1/40000/113cb54d-48b1-43f5-96c1-f4725ee59eca.root',
         #'root://xrootd-cms.infn.it//store/data/Run2022C/JetMET/AOD/EXODelayedJetMET-27Jun2023-v1/40000/a346eb6b-170c-4e4c-b403-e57a70cec129.root',
 
-    #'root://cmsxrootd.fnal.gov//store/data/Run2023D/JetMET1/AOD/EXODelayedJetMET-PromptReco-v2/000/370/667/00000/89178b58-f461-478d-a2cf-142842257adc.root',
+        #'root://cmsxrootd.fnal.gov//store/data/Run2023D/JetMET1/AOD/EXODelayedJetMET-PromptReco-v2/000/370/667/00000/89178b58-f461-478d-a2cf-142842257adc.root',
 
         #'root://cmsxrootd.fnal.gov//store/data/Run2016G/MET/AOD/21Feb2020_UL2016-v1/20000/090027EF-E362-DA48-9977-6E3CE8BB6410.root'
 
@@ -214,7 +214,7 @@ process.source = cms.Source("PoolSource",
         #'root://cmseos.fnal.gov//store/mc/RunIISummer20UL18RECO/QCD_HT2000toInf_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/2520000/0184321F-08CA-3740-9700-89D3C169F771.root',
 
         #SMS_Sig
-        'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ/SMS-GlGl_mGl-2500_mN2-2400_mN1-2300_GZ_N2ctau-0p5_AOD/260110_210547/0000/SMS-GlGl_mGl-2500_mN2-2400_mN1-2300_GZ_N2ctau-0p5_AOD_107.root'
+        #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ/SMS-GlGl_mGl-2500_mN2-2400_mN1-2300_GZ_N2ctau-0p5_AOD/260110_210547/0000/SMS-GlGl_mGl-2500_mN2-2400_mN1-2300_GZ_N2ctau-0p5_AOD_107.root'
         #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoG/SMS-GlGl_mGl-2000_mN2-1900_mN1-250_gam_N2ctau-0p1_AOD/250317_234753/0000/SMS-GlGl_mGl-2000_mN2-1900_mN1-250_gam_N2ctau-0p1_AOD_41.root'
         #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoG/SMS-GlGl_mGl-1500_mN2-500_mN1-100_gam_N2ctau-0p1_AOD/250123_145920/0000/SMS-GlGl_mGl-1500_mN2-500_mN1-100_gam_N2ctau-0p1_AOD_99.root'
         #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoZ/SMS-GlGl_mGl-2000_mN2-1900_mN1-200_Zff_N2ctau-0p3_AOD/250607_191347/0000/SMS-GlGl_mGl-2000_mN2-1900_mN1-200_Zff_N2ctau-0p3_AOD_2.root',
@@ -234,7 +234,7 @@ process.source = cms.Source("PoolSource",
         #'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18RECO/WJetsToLNu_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/106X_upgrade2018_realistic_v11_L1v1_ext2-v3/40000/72B9C618-FE23-1E41-872E-57314D7CB454.root',
 
         #GJets
-	#'/store/mc/RunIISummer20UL18RECO/GJets_HT-40To100_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/2550000/06CC60F3-D74E-174E-8AD7-DCDAB14FB26F.root',
+	    #'/store/mc/RunIISummer20UL18RECO/GJets_HT-40To100_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/2550000/06CC60F3-D74E-174E-8AD7-DCDAB14FB26F.root',
 
         #QCD
         #'root://cmsxrootd-site.fnal.gov//store/mc/RunIIFall17DRPremix/QCD_HT200to300_TuneCP5_13TeV-madgraph-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/110000/1E29BF8B-5F60-E811-AD1D-0663CE00010C.root',
@@ -256,7 +256,7 @@ process.source = cms.Source("PoolSource",
         #`'root://cms-xrd-global.cern.ch//store/data/Run2022E/JetMET/AOD/EXODelayedJetMET-27Jun2023-v1/40000/08fd72c7-1be9-4328-9a38-85979d340331.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2018C/DisplacedJet/AOD/15Feb2022_UL2018-v1/60000/E11CE7E4-249F-0D42-AD15-344870056EF4.root',
         #'file:JetMet_22G_026f1000-0881-4fc1-a256-385c9cb6cf3d.root',
-        #'file:JetMet_23C_0d0f0b4a-8fb0-4777-9aed-25f2416791e5.root',
+        'file:JetMet_23C_0d0f0b4a-8fb0-4777-9aed-25f2416791e5.root',
 
          # AODSIM DPJB model
 
