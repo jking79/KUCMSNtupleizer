@@ -915,7 +915,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
     std::string str;
     if( not DEBUG ) std::cout << "--  adding files";
     int nfiles = 0;
-	int skipCnt = 0;
+	int skipCnt = 20;
     if( skipCnt != 0 ) std::cout << "-- !! Skipping every " << skipCnt << std::endl;
     if( dataSetKey !=  "Single" ){
         std::ifstream infile(listDirPath+inFileName);
