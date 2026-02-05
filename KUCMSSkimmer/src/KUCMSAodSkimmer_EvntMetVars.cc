@@ -112,7 +112,7 @@ void KUCMSAodSkimmer::processEvntVars(){
   bool PFMET120_PFMHT120_IDTight_PFHT60 = true;
   bool PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60 = true;
 
-  if( doHTLPaths ){
+  if( doHTLPathsBase ){
 
 	PFMET120_PFMHT120_IDTight = HLT_PFMET120_PFMHT120_IDTight_v;
 	PFMETNoMu120_PFMHTNoMu120_IDTight = HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_v;
