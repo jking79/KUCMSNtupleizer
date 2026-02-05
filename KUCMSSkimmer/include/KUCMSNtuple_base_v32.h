@@ -28,12 +28,14 @@ public :
    TTree          *fChain;   //!pointer to the analyzed TTree or TChain
    Int_t           fCurrent; //!current Tree number in a TChain
 
-   bool doGenInfoBase( false );
-   void setGenInfoBase( bool flag ){ doGenInfo = flag; };
-   bool doSVsBase( false );
-   void setDoSVsBase( bool flag ){ doSVs = flag; };
-   bool doNewSigBase( false );
+   bool doGenInfoBase;
+   void setGenInfoBase( bool flag ){ doGenInfoBase = flag; };
+   bool doSVsBase;
+   void setDoSVsBase( bool flag ){ doSVsBase = flag; };
+   bool doNewSigBase;
    void setNewSigBase( bool flag ){ doNewSigBase = flag; };
+   bool doHTLPathsBase;
+   void setHTLPathsBase( bool flag ){ doHTLPathsBase = flag; };
 
 // Fixed size dimensions of array or collections stored in the TTree if any.
 
@@ -273,7 +275,6 @@ public :
    Float_t         Xa_Displacment;
    Float_t         Xa_p;
    UInt_t          Xa_pdgId;
-   Float_t         Xa_phi;
    Float_t         Xa_pt;
    Float_t         Xa_vx;
    Float_t         Xa_vy;
@@ -286,7 +287,6 @@ public :
    Float_t         Xb_Displacment;
    Float_t         Xb_p;
    UInt_t          Xb_pdgId;
-   Float_t         Xb_phi;
    Float_t         Xb_pt;
    Float_t         Xb_vx;
    Float_t         Xb_vy;
@@ -712,7 +712,6 @@ public :
    TBranch        *b_Xa_Displacment;   //!
    TBranch        *b_Xa_p;   //!
    TBranch        *b_Xa_pdgId;   //!
-   TBranch        *b_Xa_phi;   //!
    TBranch        *b_Xa_pt;   //!
    TBranch        *b_Xa_vx;   //!
    TBranch        *b_Xa_vy;   //!
@@ -720,7 +719,6 @@ public :
    TBranch        *b_Xa_beta;   //!
    TBranch        *b_Xa_ctau;   //!
    TBranch        *b_Xb_energy;   //!
-   TBranch        *b_Xb_phi;   //!
    TBranch        *b_Xb_mass;   //!
    TBranch        *b_Xb_Displacment;   //!
    TBranch        *b_Xb_p;   //!
@@ -918,7 +916,7 @@ public :
    public:
 
 
-void Init(TTree *tree, bool doGenInfoBase, bool doSVsBase ){
+void Init(TTree *tree ){
 
    // The Init() function is called when the selector needs to initialize
    // a new tree or chain. Typically here the branch addresses and branch
@@ -1493,6 +1491,7 @@ void Init(TTree *tree, bool doGenInfoBase, bool doSVsBase ){
    //fChain->SetBranchAddress("Flag_trkPOG_toomanystripclus53X", &Flag_trkPOG_toomanystripclus53X, &b_Flag_trkPOG_toomanystripclus53X);
 
 
+    if( doHTLPathsBase ){
    //fChain->SetBranchAddress("HLT_PFMET100_PFMHT100_IDTight_v", &HLT_PFMET100_PFMHT100_IDTight_v, &b_HLT_PFMET100_PFMHT100_IDTight_v);
    fChain->SetBranchAddress("HLT_PFMET120_PFMHT120_IDTight_PFHT60_v", &HLT_PFMET120_PFMHT120_IDTight_PFHT60_v, &b_HLT_PFMET120_PFMHT120_IDTight_PFHT60_v);
    fChain->SetBranchAddress("HLT_PFMET120_PFMHT120_IDTight_v", &HLT_PFMET120_PFMHT120_IDTight_v, &b_HLT_PFMET120_PFMHT120_IDTight_v);
@@ -1505,6 +1504,7 @@ void Init(TTree *tree, bool doGenInfoBase, bool doSVsBase ){
    //fChain->SetBranchAddress("HLT_PFMETNoMu130_PFMHTNoMu130_IDTighti_v", &HLT_PFMETNoMu130_PFMHTNoMu130_IDTighti_v, &b_HLT_PFMETNoMu130_PFMHTNoMu130_IDTighti_v);
    //fChain->SetBranchAddress("HLT_PFMETNoMu140_PFMHTNoMu140_IDTight_v", &HLT_PFMETNoMu140_PFMHTNoMu140_IDTight_v, &b_HLT_PFMETNoMu140_PFMHTNoMu140_IDTight_v);
    //fChain->SetBranchAddress("HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_v", &HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_v, &b_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_v);
+   }//<<>>if( doHTLPathsBase )
 
    fChain->SetBranchAddress("Evt_luminosityBlock", &Evt_luminosityBlock, &b_Evt_luminosityBlock);
    fChain->SetBranchAddress("Evt_run", &Evt_run, &b_Evt_run);
@@ -1985,6 +1985,7 @@ void getBranches( Long64_t entry ){
    //TBranch        *b_Flag_trkPOG_manystripclus53X->GetEntry(entry);
    //TBranch        *b_Flag_trkPOG_toomanystripclus53X->GetEntry(entry);
 
+   if( doHTLPathsBase ){
    //TBranch        *b_HLT_PFMET100_PFMHT100_IDTight_v->GetEntry(entry);
    b_HLT_PFMET120_PFMHT120_IDTight_PFHT60_v->GetEntry(entry);
    b_HLT_PFMET120_PFMHT120_IDTight_v->GetEntry(entry);
@@ -1997,6 +1998,7 @@ void getBranches( Long64_t entry ){
    //TBranch        *b_HLT_PFMETNoMu130_PFMHTNoMu130_IDTighti_v->GetEntry(entry);
    //TBranch        *b_HLT_PFMETNoMu140_PFMHTNoMu140_IDTight_v->GetEntry(entry);
    //TBranch        *b_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_v->GetEntry(entry);
+   }//<<>>if( doHTLPathsBase )
 
    b_Evt_luminosityBlock->GetEntry(entry);
    b_Evt_run->GetEntry(entry);
@@ -2015,7 +2017,6 @@ void getBranches( Long64_t entry ){
    b_Xa_Displacment->GetEntry(entry);
    b_Xa_p->GetEntry(entry);
    b_Xa_pdgId->GetEntry(entry);
-   b_Xa_phi->GetEntry(entry);
    b_Xa_pt->GetEntry(entry);
    b_Xa_vx->GetEntry(entry);
    b_Xa_vy->GetEntry(entry);
@@ -2028,7 +2029,6 @@ void getBranches( Long64_t entry ){
    b_Xb_Displacment->GetEntry(entry);
    b_Xb_p->GetEntry(entry);
    b_Xb_pdgId->GetEntry(entry);
-   b_Xb_phi->GetEntry(entry);
    b_Xb_pt->GetEntry(entry);
    b_Xb_vx->GetEntry(entry);
    b_Xb_vy->GetEntry(entry);
