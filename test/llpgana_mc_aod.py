@@ -214,7 +214,7 @@ process.source = cms.Source("PoolSource",
         #'root://cmseos.fnal.gov//store/mc/RunIISummer20UL18RECO/QCD_HT2000toInf_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/2520000/0184321F-08CA-3740-9700-89D3C169F771.root',
 
         #SMS_Sig
-        'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ/SMS-GlGl_mGl-2500_mN2-2400_mN1-2300_GZ_N2ctau-0p5_AOD/260110_210547/0000/SMS-GlGl_mGl-2500_mN2-2400_mN1-2300_GZ_N2ctau-0p5_AOD_107.root'
+        #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ/SMS-GlGl_mGl-2500_mN2-2400_mN1-2300_GZ_N2ctau-0p5_AOD/260110_210547/0000/SMS-GlGl_mGl-2500_mN2-2400_mN1-2300_GZ_N2ctau-0p5_AOD_107.root'
         #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoG/SMS-GlGl_mGl-2000_mN2-1900_mN1-250_gam_N2ctau-0p1_AOD/250317_234753/0000/SMS-GlGl_mGl-2000_mN2-1900_mN1-250_gam_N2ctau-0p1_AOD_41.root'
         #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoG/SMS-GlGl_mGl-1500_mN2-500_mN1-100_gam_N2ctau-0p1_AOD/250123_145920/0000/SMS-GlGl_mGl-1500_mN2-500_mN1-100_gam_N2ctau-0p1_AOD_99.root'
         #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoZ/SMS-GlGl_mGl-2000_mN2-1900_mN1-200_Zff_N2ctau-0p3_AOD/250607_191347/0000/SMS-GlGl_mGl-2000_mN2-1900_mN1-200_Zff_N2ctau-0p3_AOD_2.root',
@@ -256,7 +256,7 @@ process.source = cms.Source("PoolSource",
         #`'root://cms-xrd-global.cern.ch//store/data/Run2022E/JetMET/AOD/EXODelayedJetMET-27Jun2023-v1/40000/08fd72c7-1be9-4328-9a38-85979d340331.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2018C/DisplacedJet/AOD/15Feb2022_UL2018-v1/60000/E11CE7E4-249F-0D42-AD15-344870056EF4.root',
         #'file:JetMet_22G_026f1000-0881-4fc1-a256-385c9cb6cf3d.root',
-        #'file:JetMet_23C_0d0f0b4a-8fb0-4777-9aed-25f2416791e5.root',
+        'file:JetMet_23C_0d0f0b4a-8fb0-4777-9aed-25f2416791e5.root',
 
          # AODSIM DPJB model
 
@@ -271,8 +271,8 @@ process.source = cms.Source("PoolSource",
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250))#KT
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500))#QT
@@ -283,16 +283,17 @@ process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100000))#MS
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250000))#MD
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500000))#LG
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
 
-genInfo = True
-#genInfo = False
+#genInfo = True
+genInfo = False
 if options.multicrab == True : genInfo = options.hasGenInfo		   
 
 ecalIsoInputsF17 = 'RecoEgamma/ElectronIdentification/data/Fall17/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_94X.txt'
 ecalruneraIsoInputsW22 = 'RecoEgamma/ElectronIdentification/data/Run3_Winter22/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_122X.txt'
 
-filterselect = 'none'
+#filterselect = 'none'
+filterselect = 'SVHPMet100'
 #filterselect = 'InvMet100IP'
 #filterselect = 'AL1NpSC'
 #filterselect = 'AL1DisSV'
@@ -322,8 +323,8 @@ doet = True ## with v30 no longer optional when using ( "ecalTracks", "displaced
 #    dosv = False
 #    dode = False
 
-runMETFilters = True
-#runMETFilters = False
+#runMETFilters = True
+runMETFilters = False
 if options.runMETFilters == True : runMETFilters = False
 
 #probeout = True

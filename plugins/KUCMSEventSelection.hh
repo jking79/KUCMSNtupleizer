@@ -68,6 +68,7 @@ const bool KUCMSEventSelection::selectEvent( ItemManager<float>& geVar ){
 	bool hasInvMet100ALP = hasAL1IsoPhoton && not hasMinMet100;
 	bool hasInvMetHardPho = hasHardPho && not hasMinMet100;
 	bool hasSVorHardPhoPlusMet150 = ( hasHardPho or hasAL1DisSV ) and hasMinMet150;
+    bool hasSVorHardPhoPlusMet100 = ( hasHardPho or hasAL1DisSV ) and hasMinMet100;
 
 	selectionMap["none"] = true;
 	selectionMap["MET150"] = hasMinMet150;
@@ -86,6 +87,10 @@ const bool KUCMSEventSelection::selectEvent( ItemManager<float>& geVar ){
     selectionMap["Pho30"] = hasHardPho;
     selectionMap["InvMetPho30"] = hasInvMetHardPho;
     selectionMap["SVHPMet150"] = hasSVorHardPhoPlusMet150;
+    selectionMap["SVHPMet100"] = hasSVorHardPhoPlusMet100;
+
+    //std::cout << "SVHPMet150 " << hasSVorHardPhoPlusMet150 << " hasHardPho " << hasHardPho << " hasMinMet150 " << hasMinMet100; 
+    //std::cout << " hasAL1DisSV " << hasAL1DisSV << std::endl;
 
 	metFilter = hasMinMet100;
 	phoFilter = hasAL1DisSV;
