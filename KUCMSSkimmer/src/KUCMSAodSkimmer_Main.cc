@@ -260,6 +260,13 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 
   }//<<>>treeplot on off
 
+  // -------------  default root branch intilization -------------
+
+  doGenInfoBase = false;
+  doSVsBase = true;
+  doNewSigBase = false;
+  doHTLPathsBase = true;
+
   // -----------  Time Calibration -----------------
 
   // Cali Tags : Tags for calibrations to use 
@@ -334,8 +341,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
     _ca.SetDetIDs(_detidmap);
     _ca.SetCNNModel("config/json/KU-CNN_detector_1000epochs_archsmall3_2017and2018_CMS.json");
     _ca.SetBarrelDNNModel("config/json/KU-DNN_photonID_JetHT18RunBC_EGamma18RunC_SMSGlGl_StandardNorm_shape_1000epochs_large8_barrelOnly.json");
-    //TODO - update endcap network with "standardNorm" version
-    _ca.SetEndcapDNNModel("config/json/KU-DNN_photonID_testIsoPresel_100JetHTChunks_isoShape_1200epochs_large8_endcapOnly.json");
+    _ca.SetEndcapDNNModel("config/json/KU-DNN_photonID_JetHT18RunBC700chunks_EGamma18RunC_SMSGlGl_StandardNorm_isoShape_1000epochs_large8_endcapOnly.json");
 
 }//<<>>KUCMSAodSkimmer::KUCMSAodSkimmer()
 
@@ -399,7 +405,14 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
     TTree* fOutTree = new TTree("kuSkimTree","output root file for kUCMSSkimmer");
     TTree* fConfigTree = new TTree("kuSkimConfigTree","config root file for kUCMSSkimmer");
 
-    Init( fInTree, hasGenInfoFlag, doSVs );
+	//bool doNewSig = false;
+	//bool doHTLPaths = true;
+	setGenInfoBase( hasGenInfoFlag );
+	setDoSVsBase( doSVs );
+	//setNewSigBase( doNewSig );
+    //setHTLPathsBase( doHTLPaths );
+	Init( fInTree );
+    ////Init( fInTree, hasGenInfoFlag, doSVs );
     auto nEntries = fInTree->GetEntries();
 
     //loop over events
@@ -440,8 +453,9 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
         }//<<>>if( centry%loopCounter == 0 )
  	    auto entry = fInTree->LoadTree(centry);
         if(DEBUG) std::cout << " -- Getting Branches " << std::endl;
-        getBranches( entry, hasGenInfoFlag, doSVs );
-		//std::cout << " -- Checking Valid Lumi with mctype " << mctype << " run " << Evt_run << " block " << Evt_luminosityBlock << std::endl;
+        getBranches( entry );
+        ////getBranches( entry, hasGenInfoFlag, doSVs );
+		//std::cout << " -- Check Valid Lumi with mctype " << mctype << " run " << Evt_run << " block " << Evt_luminosityBlock << std::endl;
         if( mctype==1 && not isValidLumisection( Evt_run, Evt_luminosityBlock ) ) continue;
 		//std::cout << " --- Valid Lumi Processing Event " << std::endl;
 
@@ -459,7 +473,7 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
         if( saveToTree ){ fOutTree->Fill(); }
 
     }//<<>>for (Long64_t centry = 0; centry < nEntries; centry++)  end entry loop
-	if( count_of_events != nEvents ) std::cout << " !!!!!!! nEvents " << nEvents << " not = event count " << count_of_events << " !!!!!!!" << std::endl;
+	if( count_of_events != nEvents ) std::cout << " ! nEvents " << nEvents << " not = count " << count_of_events << " !" << std::endl;
 
     // -- main end jobs
 
@@ -901,14 +915,14 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
     std::string str;
     if( not DEBUG ) std::cout << "--  adding files";
     int nfiles = 0;
-	//int skipCnt = 10;
-    //if( skipCnt != 0 ) std::cout << "-- !! Skipping every " << skipCnt << std::endl;
+	int skipCnt = 20;
+    if( skipCnt != 0 ) std::cout << "-- !! Skipping every " << skipCnt << std::endl;
     if( dataSetKey !=  "Single" ){
         std::ifstream infile(listDirPath+inFileName);
         while( std::getline( infile, str ) ){
             if(str.find("#") != string::npos) continue;
             nfiles++;
-            //if( skipCnt != 0 && ( nfiles%skipCnt != 0 ) ) continue;
+            if( skipCnt != 0 && ( nfiles%skipCnt != 0 ) ) continue;
             auto tfilename = eosDirPath + inFilePath + str;
             fInTree->Add(tfilename.c_str());
             fInConfigTree->Add(tfilename.c_str());
@@ -948,15 +962,15 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
 	setEvtVarMetBranches( fOutTree );
     setTrackBranches( fOutTree );
     setEcalBranches( fOutTree );
-    if( hasGenInfoFlag ) setGenBranches( fOutTree );
+    setGenBranches( fOutTree );
     setPhotonBranches( fOutTree );
     setRJRBranches( fOutTree );
 	setRJRISRBranches( fOutTree );
     setElectronBranches( fOutTree );
     setJetsBranches( fOutTree );
     setMuonsBranches( fOutTree );
-    if( doSVs ) setSVBranches( fOutTree );
-    if( doBHC ) setBCBranches( fOutTree );
+    setSVBranches( fOutTree );
+    setBCBranches( fOutTree );
 
 }//<<>>void KUCMSAodSkimmer::setOutputBranches(fOutTree)
 
@@ -1062,8 +1076,10 @@ bool KUCMSAodSkimmer::eventSelection(){
   int vetoJets = geCnts("jetEventVeto");
 
   float nSelPhotons = geCnts("nSelPhotons"); //selPhotons.getUIBranchValue("nSelPhotons");
-  float leadPhoPt = ( nSelPhotons > 0 ) ? geVects("selPhoPt").at(0) : 0;
-  float subLeadPhoPt = ( nSelPhotons > 1 ) ? geVects("selPhoPt").at(1) : 0;
+  auto lSigPhoIndx = geVars("lSigPhoIndx");
+  auto slSigPhoIndx = geVars("slSigPhoIndx");
+  float leadPhoPt = ( lSigPhoIndx > -1 ) ? geVects("selPhoPt").at(lSigPhoIndx) : 0;
+  float subLeadPhoPt = ( slSigPhoIndx > -1 ) ? geVects("selPhoPt").at(slSigPhoIndx) : 0;
 
   bool hasLepSV = doSVs ? geVars("nSVLep") > 0 : false;
   bool hasHadSV = doSVs ? geVars("nSVHad") > 0 : false;
@@ -1071,12 +1087,12 @@ bool KUCMSAodSkimmer::eventSelection(){
 
   bool met100 = evtMet >= 100;
   bool met150 = evtMet >= 150;
-  bool gt1phos = nSelPhotons >= 1;
+  bool gt1phos = lSigPhoIndx > -1;
   bool gt2jets = nSelJets >= 2;
   bool gt2qjets = nQJets >= 2;
   bool allgjets = vetoJets < 1;
 
-  bool gt2phos = nSelPhotons >= 2;
+  bool gt2phos = lSigPhoIndx > -1 and slSigPhoIndx > -1;
   bool leadPhoPt70 = leadPhoPt >= 70;
   bool leadPhoPt30 = leadPhoPt >= 30;
   bool subLeadPhoPt40 = subLeadPhoPt >= 40; 

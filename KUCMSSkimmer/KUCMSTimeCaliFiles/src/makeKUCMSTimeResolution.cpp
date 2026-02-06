@@ -205,6 +205,7 @@ int main ( int argc, char *argv[] ){
     //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_24p_xa_pm24b1200_v0119" );
 
 	//theCali.setMCResTag("r2_ul16");
+	theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18MC_xa_pm24b1200_v0204" );
 	//theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_18MC_xa_pm24b1200_v0116" );
     //theCali.plot2dResolutionEGR( inputfilename, true, false, true, "_eg_18MC_smUL16_xa_pm24b1200_v0201" );
 

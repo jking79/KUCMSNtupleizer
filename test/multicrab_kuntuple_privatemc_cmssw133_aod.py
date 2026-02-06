@@ -136,7 +136,7 @@ def docrab( dataset ):
             #trial          = "kucmsntuple_sqsqG_Sig_SVIPM100_v27" #
             #trial          = "kucmsntuple_SMS_Sig_SVIPM100_v31" #
             #trial          = "kucmsntuple_MET_R17_SVIPM100_p9_v31"# 
-            trial          = "kucmsntuple_SMS_Sig_SVIPM100_v32" #
+            trial          = "kucmsntuple_SMS_Sig_SVIPM100_v33" #
 
             # set trial name - used in output path ?
 
@@ -158,7 +158,7 @@ def docrab( dataset ):
             mcrab = 'multicrab=True'
 
             runinfo = 'runera=Run3'
-            doMF = 'runMETFilters=True'
+            doMetFilters = 'runMETFilters=True'
 
             
             #efilter = fIPM100
@@ -200,7 +200,7 @@ def docrab( dataset ):
 #>>>>>      #MC Justin
             #gt = 'globalTag=124X_mcRun3_2022_realistic_v12'
             gt = 'globalTag=124X_mcRun3_2022_realistic_postEE_v1'
-            config.JobType.pyCfgParams   = [gt,mcrab,geninfo,efilter,runinfo,doMF]
+            config.JobType.pyCfgParams   = [gt,mcrab,geninfo,efilter,runinfo,doMetFilters]
 #-----------------------------------------------------------------------------------------------------------------------------
 
             # Submit.

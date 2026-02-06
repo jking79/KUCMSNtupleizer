@@ -210,6 +210,42 @@ void KUCMSAodSkimmer::processGenParticles(){
   selGenPart.fillBranch( "genSTFlagQP", isSTqp );
   selGenPart.fillBranch( "genSigType", Gen_susEvtType->at(0) );
 
+  if( doNewSigBase ){
+
+	//selGenPart.fillBranch( "", 
+    selGenPart.fillBranch( "Xa_energy", Xa_energy );
+    selGenPart.fillBranch( "Xa_phi", Xa_phi ); // opps -> missed eta : actually did phi twice :(
+    selGenPart.fillBranch( "Xa_mass", Xa_mass );
+    selGenPart.fillBranch( "Xa_Displacment", Xa_Displacment );
+    selGenPart.fillBranch( "Xa_p", Xa_p );
+    selGenPart.fillBranch( "Xa_pdgId", Xa_pdgId );
+    selGenPart.fillBranch( "Xa_pt", Xa_pt );
+    selGenPart.fillBranch( "Xa_vx", Xa_vx );
+    selGenPart.fillBranch( "Xa_vy", Xa_vy );
+    selGenPart.fillBranch( "Xa_vz", Xa_vz );
+    selGenPart.fillBranch( "Xa_beta", Xa_beta );
+    selGenPart.fillBranch( "Xa_ctau", Xa_ctau );
+
+    selGenPart.fillBranch( "Xb_energy", Xb_energy );
+    selGenPart.fillBranch( "Xb_phi", Xb_phi );
+    selGenPart.fillBranch( "Xb_mass", Xb_mass );
+    selGenPart.fillBranch( "Xb_Displacment", Xb_Displacment );
+    selGenPart.fillBranch( "Xb_p", Xb_p );
+    selGenPart.fillBranch( "Xb_pdgId", Xb_pdgId );
+    selGenPart.fillBranch( "Xb_pt", Xb_pt );
+    selGenPart.fillBranch( "Xb_vx", Xb_vx );
+    selGenPart.fillBranch( "Xb_vy", Xb_vy );
+    selGenPart.fillBranch( "Xb_vz", Xb_vz );
+    selGenPart.fillBranch( "Xb_beta", Xb_beta );
+    selGenPart.fillBranch( "Xb_ctau", Xb_ctau );
+
+    selGenPart.fillBranch( "Evt_isGG", Evt_isGG );
+    selGenPart.fillBranch( "Evt_isGZ", Evt_isGZ );
+    selGenPart.fillBranch( "Evt_isZZ", Evt_isZZ );
+    selGenPart.fillBranch( "Evt_nXs", Evt_nXs );
+
+  }//<<>>if( doNewSigBase )
+
 }//<<>>void KUCMSAodSkimmer::processGenParticles()
 
 //------------------------------------------------------------------------------------------------------------
@@ -248,6 +284,37 @@ void KUCMSAodSkimmer::setGenBranches( TTree* fOutTree ){
   selGenPart.makeBranch( "genLLPMass", VFLOAT );   //! 
   selGenPart.makeBranch( "genLSPMass", VFLOAT );   //! 
   selGenPart.makeBranch( "genGrvtinoMass", VFLOAT );   //! 
+
+  selGenPart.makeBranch( "Xa_energy", FLOAT );
+  selGenPart.makeBranch( "Xa_phi", FLOAT ); // opps -> missed eta : actually did phi twice :(
+  selGenPart.makeBranch( "Xa_mass", FLOAT );
+  selGenPart.makeBranch( "Xa_Displacment", FLOAT );
+  selGenPart.makeBranch( "Xa_p", FLOAT );
+  selGenPart.makeBranch( "Xa_pdgId", UINT );
+  selGenPart.makeBranch( "Xa_pt", FLOAT );
+  selGenPart.makeBranch( "Xa_vx", FLOAT );
+  selGenPart.makeBranch( "Xa_vy", FLOAT );
+  selGenPart.makeBranch( "Xa_vz", FLOAT );
+  selGenPart.makeBranch( "Xa_beta", FLOAT );
+  selGenPart.makeBranch( "Xa_ctau", FLOAT );
+
+  selGenPart.makeBranch( "Xb_energy", FLOAT );
+  selGenPart.makeBranch( "Xb_phi", FLOAT );
+  selGenPart.makeBranch( "Xb_mass", FLOAT );
+  selGenPart.makeBranch( "Xb_Displacment", FLOAT );
+  selGenPart.makeBranch( "Xb_p", FLOAT );
+  selGenPart.makeBranch( "Xb_pdgId", UINT );
+  selGenPart.makeBranch( "Xb_pt", FLOAT );
+  selGenPart.makeBranch( "Xb_vx", FLOAT );
+  selGenPart.makeBranch( "Xb_vy", FLOAT );
+  selGenPart.makeBranch( "Xb_vz", FLOAT );
+  selGenPart.makeBranch( "Xb_beta", FLOAT );
+  selGenPart.makeBranch( "Xb_ctau", FLOAT );
+
+  selGenPart.makeBranch( "Evt_isGG", BOOL );
+  selGenPart.makeBranch( "Evt_isGZ", BOOL );
+  selGenPart.makeBranch( "Evt_isZZ", BOOL );
+  selGenPart.makeBranch( "Evt_nXs", INT );
 
   selGenPart.attachBranches( fOutTree );
 

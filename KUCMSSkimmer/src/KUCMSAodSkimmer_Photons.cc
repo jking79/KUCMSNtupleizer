@@ -227,7 +227,7 @@ void KUCMSAodSkimmer::processPhotons(){
   //----------------- photons ------------------
 
   std::vector<int> phoOrderIndx;
-  //std::vector<int> phoOrderId;
+  std::vector<bool> isSigPho;
   std::vector<int> phoExcIndx;
   uInt nSelPhotons = 0; 
   uInt nBasePhos = 0;
@@ -243,18 +243,22 @@ void KUCMSAodSkimmer::processPhotons(){
   uInt nPTPhos = 0;
   uInt nLTPhos = 0;
   uInt nPhotons = Photon_excluded->size();
-  //Final State Counters
-  int nPhoBH(0), nPhoEarlyBH(0), nPhoLateBH(0), nPhoEarlyPB(0), nPhoPB(0), nPhoLatePB(0);
-  int nPhoEndcapNonIso(0);
-  vector<bool> selPhoIsBH, selPhoIsPB, selPhoIsEarly, selPhoIsLate, selPhoIsEEnonIso;
+  //tracking (first 5) selected photons
+  vector<bool> selPhoIsBH(5), selPhoIsPB(5), selPhoIsEarly(5), selPhoIsLate(5), selPhoIsPrompt(5); 
+  vector<bool> selPhoIsEEnonIso(5), selPhoIsEEIso(5), selPhoIsEEVnonIso(5), selPhoIsEEexclnonIso(5);
+  vector<bool> selPhoIsEBnonIso(5), selPhoIsEBIso(5);
   //Discriminant Score Cut Values
   float bhCutVal = 0.917252;
   float pbCutVal = 0.81476355;
-  float nonIsoCutVal = 0.9290591;
-  float veryNonIsoCutVal = 0.9939665;
-  //Time window cut values
-  float earlyTimeCut = -2;
-  float lateTimeCut = 2;
+  float EEnonIsoCutVal = 0.9290591;
+  float EEVeryNonIsoCutVal = 0.95;
+  float EEIsoCutVal = 0.9994431;
+  float EBnonIsoCutVal = 0.99661630;
+  float EBIsoCutVal = 0.003383696;
+  float EEVeryVeryNonIsoCutVal = 0.9939665; //loosest isolation selection on baseline/selected photons
+  //Time sigma window cut values
+  float earlyTimeCut = -2.5;
+  float lateTimeCut = 2.5;
   if( DEBUG || verbose ) std::cout << " - Looping over for " << nPhotons << " photons" << std::endl;
   for( uInt it = 0; it < nPhotons; it++ ){
 
@@ -459,14 +463,14 @@ void KUCMSAodSkimmer::processPhotons(){
 	bool bhcr = false;
     	ClusterObj phoobj;
         _ca.NoClusterRhs(phoobj, true);
-     	map<string, double> isomap;
-        MakePhotonIsoMap(it, isomap);
         vector<float> photonIDscores;
 	if(overMaxEta){ //endcap
+     		map<string, double> isomap;
+        	MakePhotonIsoMap(it, isomap);
 		phoobj.CalculateEndcapPhotonIDScores(pt, isomap);
 	}
 	else{ //barrel
-		phoobj.CalculateBarrelPhotonIDScores(pt, isomap);
+		phoobj.CalculateBarrelPhotonIDScores();
 	}
 	phoobj.GetPhotonIDScores(photonIDscores);
         isobkg_score = photonIDscores[0];
@@ -487,53 +491,6 @@ void KUCMSAodSkimmer::processPhotons(){
 	if(detbkgcr == 3)
 		spikecr = true;
 
-	//values that provide a 0.1% FPR with a >98% efficiency for the relevant class
-	//beam halo > 0.917252
-	//phys bkg > 0.81476355 (derived from gogoG ROC)
-	if(bh_score > bhCutVal){
-		selPhoIsBH.push_back(true);
-		nPhoBH++;
-		if(phoWTime < earlyTimeCut){
-			nPhoEarlyBH++;
-		}
-		if(phoWTime > lateTimeCut){
-			nPhoLateBH++;
-		}
-	}
-	else{
-		selPhoIsBH.push_back(false);
-	}
-	if(physbkg_score > pbCutVal){
-		selPhoIsPB.push_back(true);
-		nPhoPB++;
-		if(phoWTime < earlyTimeCut){
-			nPhoEarlyPB++;
-		}
-		if(phoWTime > lateTimeCut)
-			nPhoLatePB++;
-	}
-	else
-		selPhoIsPB.push_back(false);
-	//time selection
-	if(phoWTime < earlyTimeCut){
-		selPhoIsEarly.push_back(true);
-		selPhoIsLate.push_back(false);
-	}
-	else if(phoWTime > lateTimeCut){
-		selPhoIsEarly.push_back(false);
-		selPhoIsLate.push_back(true);
-	}
-	else{
-		selPhoIsEarly.push_back(false);
-		selPhoIsLate.push_back(false);
-	}
-	//endcap noniso selection
-	if(overMaxEta && nonisobkg_score > nonIsoCutVal){
-		selPhoIsEEnonIso.push_back(true);
-		nPhoEndcapNonIso++;
-	}
-	else
-		selPhoIsEEnonIso.push_back(false);
 
     	if(DEBUG) cout << "photon " << it << " iso score " << isobkg_score << " noniso score " << nonisobkg_score << endl;
  
@@ -565,6 +522,10 @@ void KUCMSAodSkimmer::processPhotons(){
 
     selPhotons.fillBranch( "selPhoTSigId", phoTSigId );	
     selPhotons.fillBranch( "selPhoObjId", phoObjId );
+	//we want to reject (endcap) photons that are at the most noniso edge of the noniso sideband. 
+	bool isRjrSigPho = overMaxEta ? nonisobkg_score < EEVeryVeryNonIsoCutVal : isoPho;
+	if( isRjrSigPho ) isSigPho.push_back(true);
+	else isSigPho.push_back(false);
 
     if( DEBUG ) std::cout << " -- pho pull info" << std::endl;
     auto isOOT = (*Photon_isOot)[it];
@@ -738,6 +699,60 @@ void KUCMSAodSkimmer::processPhotons(){
     }//for( uInt it2 = it+1; it2 < nPhotons; it2++ )
 	//bool matchPhoExc = ( phoIsoIndx > -1 ) ? (*Photon_excluded)[it] : false;
 	if( phoPhoIsoDr < 0.3 ) phoExcIndx.push_back( phoIsoIndx ); else phoExcIndx.push_back( -1 );
+	
+	//do flags for photon CRs
+	//values that provide a 0.1% FPR with a >98% efficiency for the relevant class
+	//beam halo > 0.917252
+	//phys bkg > 0.81476355 (derived from gogoG ROC)
+	//
+
+	//only looking at first 5 selected photons
+	int selphoidx = nSelPhotons;
+	if(selphoidx < 5){
+		//time sig	
+		if(phoWTimeSig <= lateTimeCut && phoWTimeSig >= earlyTimeCut){
+			selPhoIsPrompt[selphoidx] = true;
+		}
+		else{
+			if(phoWTimeSig > lateTimeCut){
+				selPhoIsLate[selphoidx] = true;
+			}
+			else{
+				selPhoIsEarly[selphoidx] = true;
+			}
+		}
+
+		//bh/pb selection
+		if(bh_score >= bhCutVal){
+			selPhoIsBH[selphoidx] = true;
+		}
+		if(physbkg_score >= pbCutVal){
+			selPhoIsPB[selphoidx] = true;
+		}
+		//endcap noniso selection
+		if(overMaxEta){ 
+			if(nonisobkg_score >= EEnonIsoCutVal && nonisobkg_score < EEVeryVeryNonIsoCutVal){
+				selPhoIsEEnonIso[selphoidx] = true;
+				if(nonisobkg_score >= EEVeryNonIsoCutVal){
+					selPhoIsEEVnonIso[selphoidx] = true;
+				}
+				else{
+					selPhoIsEEexclnonIso[selphoidx] = true;
+				}	
+			}//else, fails RJR presel
+			if(isobkg_score >= EEIsoCutVal){
+				selPhoIsEEIso[selphoidx] = true;
+			}
+		}
+		else{ //barrel
+			if(nonisobkg_score >= EBnonIsoCutVal){
+				selPhoIsEBnonIso[selphoidx] = true;
+			}
+			if(isobkg_score >= EBIsoCutVal){
+				selPhoIsEBIso[selphoidx] = true;
+			}
+		}
+	}
 
     /*
     // pho object selection ------------------------------------------
@@ -923,51 +938,156 @@ void KUCMSAodSkimmer::processPhotons(){
   selPhotons.fillBranch( "nSelPhotons",  nSelPhotons );
   selPhotons.fillBranch( "nPhotons", nPhotons );
 
-  bool anyPB = (nPhoPB > 0);
-  bool anyBH = (nPhoBH > 0);
-  bool anyLatePB = (nPhoLatePB > 0);
-  bool anyLateBH = (nPhoLateBH > 0);
-  bool anyEarlyBH = (nPhoEarlyBH > 0);
-  
-  bool leadPhoIsBH = false;
-  bool leadPhoIsPB = false;
-  bool leadPhoIsEarlyBH = false;
-  bool leadPhoIsLateBH = false ;
+  map<string, int> region_defs;
+  region_defs["BHearly"] = 5;
+  region_defs["BHlate"] = 6;
+  region_defs["notBHearly"] = 7; //physbkg
+  region_defs["notBHlate"] = 8; //SR //phys bkg
+  region_defs["EBnonIso"] = 3;
+  region_defs["EEnonIso"] = 1; //includes vnoniso
+  region_defs["EEvnonIso"] = 10; 
+  region_defs["EEexclnonIso"] = 100; //noniso exclusive with vnoniso
+  region_defs["EEIso"] = 2; //SR
+  region_defs["EBIso"] = 4; //SR
 
-  bool leadPhoIsEEnonIso = false;
+  if(selPhoIsPB[0] && selPhoIsBH[0])
+	  cout << "lead photon is bh and pb!!!" << endl;
+  if(selPhoIsPB[1] && selPhoIsBH[1])
+	  cout << "sublead photon is bh and pb!!!" << endl;
+  if(selPhoIsEEnonIso[0] && selPhoIsEEIso[0])
+	cout << "lead photon is noniso and iso!!!!" << endl;
+  if(selPhoIsEEnonIso[1] && selPhoIsEEIso[1])
+	cout << "sublead photon is noniso and iso!!!!" << endl;
+
+  int regidx = -1;
   if(nSelPhotons > 0){
-	  leadPhoIsBH = selPhoIsBH[0];
-	  leadPhoIsPB = selPhoIsPB[0];
-	  leadPhoIsEarlyBH = (selPhoIsBH[0] && selPhoIsEarly[0]);
-	  leadPhoIsLateBH = (selPhoIsBH[0] && selPhoIsLate[0]);
-	
-	  leadPhoIsEEnonIso = selPhoIsEEnonIso[0];
-	  if(nSelPhotons > 1)
-		  leadPhoIsEEnonIso = selPhoIsEEnonIso[0] || selPhoIsEEnonIso[1];
+	  if(selPhoIsPrompt[0]){
+		//assuming veryveryNonIso cut will be applied before this
+		//endcap
+		if(selPhoIsEEnonIso[0]){
+			regidx = region_defs["EEnonIso"];
+			if(selPhoIsEEVnonIso[0]){
+				regidx = region_defs["EEvnonIso"];
+			}
+			if(selPhoIsEEexclnonIso[0]){
+				regidx = region_defs["EEexclnonIso"];
+			}
+		}	
+		else if(selPhoIsEEIso[0]){
+			regidx = region_defs["EEIso"];
+		}
+		//barrel (photon cannot be selPhoIsEE* and selPhoIsEB*)
+		if(selPhoIsEBnonIso[0]){
+			regidx = region_defs["EBnonIso"];
+		}	
+		else if(selPhoIsEBIso[0]){
+			regidx = region_defs["EBIso"];
+		}
+	  }
+	  else{
+		if(selPhoIsBH[0]){
+			if(selPhoIsEarly[0]){
+				regidx = region_defs["BHearly"];
+			}
+			else if(selPhoIsLate[0]){
+				regidx = region_defs["BHlate"];
+			}
+		}
+		else if(selPhoIsPB[0]){
+			if(selPhoIsEarly[0]){
+				regidx = region_defs["notBHearly"];
+			}
+			else if(selPhoIsLate[0]){
+				regidx = region_defs["notBHlate"];
+			}
+		
+		}
+	  }
+	  //if lead photon could not be placed and there are multiple, look at lead photon
+	  if(nSelPhotons > 1 && regidx == -1){
+	  	if(selPhoIsPrompt[1]){
+	  	      //assuming veryveryNonIso cut will be applied before this
+	  	      //endcap
+	  	      if(selPhoIsEEnonIso[1]){
+	  	      	regidx = region_defs["EEnonIso"];
+	  	      	if(selPhoIsEEVnonIso[1]){
+	  	      		regidx = region_defs["EEvnonIso"];
+	  	      	}
+	  	      	if(selPhoIsEEexclnonIso[1]){
+	  	      		regidx = region_defs["EEexclnonIso"];
+	  	      	}
+	  	      }	
+	  	      else if(selPhoIsEEIso[1]){
+	  	      	regidx = region_defs["EEIso"];
+	  	      }
+	  	      //barrel (photon cannot be selPhoIsEE* and selPhoIsEB*)
+	  	      if(selPhoIsEBnonIso[1]){
+	  	      	regidx = region_defs["EBnonIso"];
+	  	      }	
+	  	      else if(selPhoIsEBIso[1]){
+	  	      	regidx = region_defs["EBIso"];
+	  	      }
+	  	}
+	  	else{
+	  	      if(selPhoIsBH[1]){
+	  	      	if(selPhoIsEarly[1]){
+	  	      		regidx = region_defs["BHearly"];
+	  	      	}
+	  	      	else if(selPhoIsLate[1]){
+	  	      		regidx = region_defs["BHlate"];
+	  	      	}
+	  	      }
+	  	      else if(selPhoIsPB[1]){
+	  	      	if(selPhoIsEarly[1]){
+	  	      		regidx = region_defs["notBHearly"];
+	  	      	}
+	  	      	else if(selPhoIsLate[1]){
+	  	      		regidx = region_defs["notBHlate"];
+	  	      	}
+	  	      
+	  	      }
+	  	}
+	  }
   }
+  //delayed CRs
+  selPhotons.fillBranch("passNPhoEq1SelectionEarlyBeamHaloCR", bool(regidx == region_defs["BHearly"] && nSelPhotons == 1));
+  selPhotons.fillBranch("passNPhoGe2SelectionEarlyBeamHaloCR", bool(regidx == region_defs["BHearly"] && nSelPhotons > 1));
+  selPhotons.fillBranch("passNPhoEq1SelectionLateBeamHaloCR", bool(regidx == region_defs["BHlate"] && nSelPhotons == 1));
+  selPhotons.fillBranch("passNPhoGe2SelectionLateBeamHaloCR", bool(regidx == region_defs["BHlate"] && nSelPhotons > 1));
+  selPhotons.fillBranch("passNPhoEq1SelectionEarlyPhysBkgCR", bool(regidx == region_defs["notBHearly"] && nSelPhotons == 1));
+  selPhotons.fillBranch("passNPhoGe2SelectionEarlyPhysBkgCR", bool(regidx == region_defs["notBHearly"] && nSelPhotons > 1));
 
-  //do bh CR selection
-  selPhotons.fillBranch("passNPhoEq1SelectionBeamHaloCR", bool(leadPhoIsBH && nSelPhotons == 1));
-  selPhotons.fillBranch("passNPhoGe2SelectionBeamHaloCR", bool(leadPhoIsBH && nSelPhotons > 1));
-  selPhotons.fillBranch("passNPhoEq1SelectionEarlyBeamHaloCR", bool(leadPhoIsEarlyBH && nSelPhotons == 1));
-  selPhotons.fillBranch("passNPhoGe2SelectionEarlyBeamHaloCR", bool(leadPhoIsEarlyBH && nSelPhotons > 1));
-  selPhotons.fillBranch("passNPhoEq1SelectionLateBeamHaloCR", bool(leadPhoIsEarlyBH && nSelPhotons == 1));
-  selPhotons.fillBranch("passNPhoGe2SelectionLateBeamHaloCR", bool(leadPhoIsEarlyBH && nSelPhotons > 1));
-  selPhotons.fillBranch("passNPhoEq1SelectionPhysBkgCR", bool(leadPhoIsPB && nSelPhotons == 1));
-  selPhotons.fillBranch("passNPhoGe2SelectionPhysBkgCR", bool(leadPhoIsPB && nSelPhotons > 1));
+  //delayed SR
+  selPhotons.fillBranch("passNPhoEq1SelectionLatePhysBkgSR", bool(regidx == region_defs["notBHlate"] && nSelPhotons == 1));
+  selPhotons.fillBranch("passNPhoGe2SelectionLatePhysBkgSR", bool(regidx == region_defs["notBHlate"] && nSelPhotons > 1));
   
-  //do endcap noniso CR selection
-  selPhotons.fillBranch("passNPhoEq1SelectionEndcapNonIsoCR", bool(leadPhoIsEEnonIso && nSelPhotons == 1));
-  selPhotons.fillBranch("passNPhoGe2SelectionEndcapNonIsoCR", bool(leadPhoIsEEnonIso && nSelPhotons > 1));
+  //prompt CRs
+  selPhotons.fillBranch("passNPhoEq1SelectionPromptEENonIsoCR", bool(regidx == region_defs["EEnonIso"] && nSelPhotons == 1));
+  selPhotons.fillBranch("passNPhoGe2SelectionPromptEENonIsoCR", bool(regidx == region_defs["EEnonIso"] && nSelPhotons > 1));
+  selPhotons.fillBranch("passNPhoEq1SelectionPromptEBNonIsoCR", bool(regidx == region_defs["EBnonIso"] && nSelPhotons == 1));
+  selPhotons.fillBranch("passNPhoGe2SelectionPromptEBNonIsoCR", bool(regidx == region_defs["EBnonIso"] && nSelPhotons > 1));
+  //very non iso and noniso notvery (ie excl) to stud discriminator correlation with kinematics - nonIso is the superset of both
+  selPhotons.fillBranch("passNPhoEq1SelectionPromptEEVNonIsoCR", bool(regidx == region_defs["EEvnonIso"] && nSelPhotons == 1));
+  selPhotons.fillBranch("passNPhoGe2SelectionPromptEEVNonIsoCR", bool(regidx == region_defs["EEvnonIso"] && nSelPhotons > 1));
+  selPhotons.fillBranch("passNPhoEq1SelectionPromptEEexclNonIsoCR", bool(regidx == region_defs["EEexclnonIso"] && nSelPhotons == 1));
+  selPhotons.fillBranch("passNPhoGe2SelectionPromptEEexclNonIsoCR", bool(regidx == region_defs["EEexclnonIso"] && nSelPhotons > 1));
 
-  //TODO - add for barrel too
 
+  //prompt SRs
+  selPhotons.fillBranch("passNPhoEq1SelectionPromptEEIsoSR", bool(regidx == region_defs["EEIso"] && nSelPhotons == 1));
+  selPhotons.fillBranch("passNPhoGe2SelectionPromptEEIsoSR", bool(regidx == region_defs["EEIso"] && nSelPhotons > 1));
+  selPhotons.fillBranch("passNPhoEq1SelectionPromptEBIsoSR", bool(regidx == region_defs["EBIso"] && nSelPhotons == 1));
+  selPhotons.fillBranch("passNPhoGe2SelectionPromptEBIsoSR", bool(regidx == region_defs["EBIso"] && nSelPhotons > 1));
+
+  float lSigPhoIndx = -1;
+  float slSigPhoIndx = -1;
   std::vector<float> selpho_pt;
   std::vector<float> selpho_eta;
   std::vector<float> selpho_phi;
   std::vector<float> selpho_Mx;
   std::vector<float> selpho_My;
   for( int spidx = 0; spidx < nSelPhotons; spidx++ ){
+
 	//if( phoOrderId[spidx] == objID::Base ) continue;
 	uInt pIdx = phoOrderIndx[spidx];
 	uInt exIdx = phoExcIndx[spidx];
@@ -987,17 +1107,25 @@ void KUCMSAodSkimmer::processPhotons(){
 			ePhoMy += ePhoPt*std::sin(ePhoPhi);
 		}//<<>>if( exIdx > -1 )
 	}//<<>>if( isOOT && exIdx > -1 )
+	bool isSig = isSigPho[spidx];
+	if( isSig ){ if( lSigPhoIndx < 0 ) lSigPhoIndx = spidx; else if( slSigPhoIndx < 0 ) slSigPhoIndx = spidx; }
+	//std::cout << " -- is sig pho " << isSig << " index " << spidx << std::endl;
 	selpho_pt.push_back(lPhoPt);
     selpho_eta.push_back(lPhoEta);
     selpho_phi.push_back(lPhoPhi);
     selpho_Mx.push_back(ePhoMx);
     selpho_My.push_back(ePhoMy);
+
   }//<<>>if( nSelPhotons > 0 )
   geVects.set( "selPhoPt", selpho_pt );
   geVects.set( "selPhoEta", selpho_eta );
   geVects.set( "selPhoPhi", selpho_phi );
   geVects.set( "selPhoEMx", selpho_Mx );
   geVects.set( "selPhoEMy", selpho_My );
+  //std::cout << " -- lead : " << lSigPhoIndx << " sub " << slSigPhoIndx << " --------------------- " << std::endl;
+  geVars.set( "lSigPhoIndx", lSigPhoIndx );
+  geVars.set( "slSigPhoIndx", slSigPhoIndx );
+  //std::cout << " -- is sig pho done --------------------- " << std::endl;
 
 }//<<>>void KUCMSAodSkimmer::processPhoton(){
 
@@ -1119,16 +1247,26 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch("selPho_GJetsCR",VBOOL);
   selPhotons.makeBranch("selPho_DiJetsCR",VBOOL);
 
-  selPhotons.makeBranch("passNPhoEq1SelectionBeamHaloCR", BOOL);
-  selPhotons.makeBranch("passNPhoGe2SelectionBeamHaloCR", BOOL);
   selPhotons.makeBranch("passNPhoEq1SelectionEarlyBeamHaloCR", BOOL);
   selPhotons.makeBranch("passNPhoGe2SelectionEarlyBeamHaloCR", BOOL);
   selPhotons.makeBranch("passNPhoEq1SelectionLateBeamHaloCR", BOOL);
   selPhotons.makeBranch("passNPhoGe2SelectionLateBeamHaloCR", BOOL);
-  selPhotons.makeBranch("passNPhoEq1SelectionPhysBkgCR", BOOL);
-  selPhotons.makeBranch("passNPhoGe2SelectionPhysBkgCR", BOOL);
-  selPhotons.makeBranch("passNPhoEq1SelectionEndcapNonIsoCR", BOOL);
-  selPhotons.makeBranch("passNPhoGe2SelectionEndcapNonIsoCR", BOOL);
+  selPhotons.makeBranch("passNPhoEq1SelectionLatePhysBkgSR", BOOL);
+  selPhotons.makeBranch("passNPhoGe2SelectionLatePhysBkgSR", BOOL);
+  selPhotons.makeBranch("passNPhoEq1SelectionEarlyPhysBkgCR", BOOL);
+  selPhotons.makeBranch("passNPhoGe2SelectionEarlyPhysBkgCR", BOOL);
+  selPhotons.makeBranch("passNPhoEq1SelectionPromptEENonIsoCR", BOOL);
+  selPhotons.makeBranch("passNPhoGe2SelectionPromptEENonIsoCR", BOOL);
+  selPhotons.makeBranch("passNPhoEq1SelectionPromptEEVNonIsoCR", BOOL);
+  selPhotons.makeBranch("passNPhoGe2SelectionPromptEEVNonIsoCR", BOOL);
+  selPhotons.makeBranch("passNPhoEq1SelectionPromptEEexclNonIsoCR", BOOL);
+  selPhotons.makeBranch("passNPhoGe2SelectionPromptEEexclNonIsoCR", BOOL);
+  selPhotons.makeBranch("passNPhoEq1SelectionPromptEBNonIsoCR", BOOL);
+  selPhotons.makeBranch("passNPhoGe2SelectionPromptEBNonIsoCR", BOOL);
+  selPhotons.makeBranch("passNPhoEq1SelectionPromptEEIsoSR", BOOL);
+  selPhotons.makeBranch("passNPhoGe2SelectionPromptEEIsoSR", BOOL);
+  selPhotons.makeBranch("passNPhoEq1SelectionPromptEBIsoSR", BOOL);
+  selPhotons.makeBranch("passNPhoGe2SelectionPromptEBIsoSR", BOOL);
 
   selPhotons.makeBranch( "selPhoGenPt", VFLOAT );
   selPhotons.makeBranch( "selPhoPhoIsoDr", VFLOAT );
