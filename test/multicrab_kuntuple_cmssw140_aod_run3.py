@@ -143,7 +143,8 @@ def docrab( dataset ):
             # 30 consoladated Track objects in single Tracks object w/ SC matching
             # 31 reduced track pt min to 5 unless SC match, ? fixed SC rechit ID bug ?
 
-            trial          = "kucmsntuple_JetMET_R23_Met150" + version # 
+            trial          = "kucmsntuple_JetMET_R23_SVHPMet100" + version # 
+            #trial          = "kucmsntuple_JetMET_R23_Met150" + version # 
             #trial          = "kucmsntuple_JetMET_R23_SVIPM100" + version # 
             #trial          = "kucmsntuple_JetMET_R24_SVIPM100" + version # 
             #trial          = "kucmsntuple_JetMET_R23_NoFilter" + version # 
@@ -156,6 +157,8 @@ def docrab( dataset ):
             config.General.requestName   = trial+"_"+primaryDataset+"_"+dataset+"_"+runEra+"_request"
             config.Data.outputDatasetTag = trial+"_"+primaryDataset+"_"+dataset+"_"+runEra
 
+            fSVHPM100 = 'eventFilter=SVHPMet100'
+            fSVHPM150 = 'eventFilter=SVHPMet150'
             fSVIPM125 = 'eventFilter=SVIPMet125'
             fSVIPM100 = 'eventFilter=SVIPMet100'
             fM100 = 'eventFilter=MET100'
@@ -176,7 +179,7 @@ def docrab( dataset ):
             mDoDEle = 'doDisEle=true'
             mDoETOnly = 'doECALTrackOnly=true'
 
-            efilter = fM150
+            efilter = fSVHPM100
             #efilter = fNpSC
             ##efilter = fM100
             ##efilter = fIPM100
