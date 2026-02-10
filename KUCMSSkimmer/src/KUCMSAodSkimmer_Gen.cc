@@ -224,7 +224,9 @@ void KUCMSAodSkimmer::processGenParticles(){
     selGenPart.fillBranch( "Xa_vy", Xa_vy );
     selGenPart.fillBranch( "Xa_vz", Xa_vz );
     selGenPart.fillBranch( "Xa_beta", Xa_beta );
-    selGenPart.fillBranch( "Xa_ctau", Xa_ctau );
+    float xagbeta = Xa_p/Xa_mass;
+    float xactau = Xa_Displacment/xagbeta;
+    selGenPart.fillBranch( "Xa_ctau", xactau );
 
     selGenPart.fillBranch( "Xb_energy", Xb_energy );
     selGenPart.fillBranch( "Xb_phi", Xb_phi );
@@ -237,7 +239,9 @@ void KUCMSAodSkimmer::processGenParticles(){
     selGenPart.fillBranch( "Xb_vy", Xb_vy );
     selGenPart.fillBranch( "Xb_vz", Xb_vz );
     selGenPart.fillBranch( "Xb_beta", Xb_beta );
-    selGenPart.fillBranch( "Xb_ctau", Xb_ctau );
+    float xbgbeta = Xb_p/Xb_mass;
+    float xbctau = Xb_Displacment/xbgbeta;
+    selGenPart.fillBranch( "Xb_ctau", xbctau );
 
     selGenPart.fillBranch( "Evt_isGG", Evt_isGG );
     selGenPart.fillBranch( "Evt_isGZ", Evt_isGZ );
