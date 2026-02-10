@@ -682,7 +682,8 @@ void KUCMSGenObject::ProcessEvent( ItemManager<float>& geVar ){
         	const float dis = ( genKidIdx > -1 ) ? hypo( genVx-kVx, genVy-kVy, genVz-kVz ) : -10;
 			float xp = hypo( genPx, genPy, genPz ); 
 			float beta = xp/genEnergy;
-			float ct = dis/beta;
+            float gbeta = xp/genMass;
+			float ct = dis/gbeta;
 			if( nXs == 1 ){
         		Branches.fillBranch("Xa_MomDisplacment",dis);
                 Branches.fillBranch("Xa_beta",beta);
