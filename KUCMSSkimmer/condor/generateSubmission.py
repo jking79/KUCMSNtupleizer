@@ -136,7 +136,8 @@ def generateSubmission(args):
         recotag = args.year+"_MC"
         inputMainList = cmsswpath+"ntuple_master_lists/KUCMS_Ntuple_Master_BG_SVIPM100_Files_List.txt"
     elif(MCsig): #gluino only right now!
-        inputMainList = cmsswpath+"ntuple_master_lists/KUCMS_Ntuple_Master_SMS_Sig_Files_List.txt"
+        #inputMainList = cmsswpath+"ntuple_master_lists/KUCMS_Ntuple_Master_SMS_Sig_Files_List.txt"
+        inputMainList = cmsswpath+"ntuple_master_lists/KUCMS_Ntuple_Master_SMS_Sig_Files_List_v33.txt"
     else:
     	print("Input list"+args.inputMainList+" not found")
     	exit()
