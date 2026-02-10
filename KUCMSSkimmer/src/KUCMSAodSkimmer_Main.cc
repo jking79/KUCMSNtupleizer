@@ -334,6 +334,10 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
     nEvents = 0, 
     nSelectedEvents = 0;
     sumEvtGenWgt = 0;
+	setGenInfoBase(hasGenInfoFlag); 
+	setDoSVsBase(doSVs);
+	setNewSigBase(false;
+	setHTLPathsBase(true);
 
 	// BNC Intiation
 
@@ -405,12 +409,8 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
     TTree* fOutTree = new TTree("kuSkimTree","output root file for kUCMSSkimmer");
     TTree* fConfigTree = new TTree("kuSkimConfigTree","config root file for kUCMSSkimmer");
 
-	//bool doNewSig = false;
-	//bool doHTLPaths = true;
 	setGenInfoBase( hasGenInfoFlag );
 	setDoSVsBase( doSVs );
-	//setNewSigBase( doNewSig );
-    //setHTLPathsBase( doHTLPaths );
 	Init( fInTree );
     ////Init( fInTree, hasGenInfoFlag, doSVs );
     auto nEntries = fInTree->GetEntries();

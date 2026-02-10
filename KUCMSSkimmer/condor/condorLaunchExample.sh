@@ -12,15 +12,15 @@
 #python3 generateSubmission.py --directory testOutput --inputSample WJets --year 2018 --max_mat 100 
 #python3 generateSubmission.py --directory testOutput --inputSample ZJets --year 2018 --max_mat 100 
 
-python3 generateSubmission.py --directory testOutput --inputSample TTXJets --year 2018 --max_mat 100
+#python3 generateSubmission.py --directory testOutput --inputSample TTXJets --year 2018 --max_mat 100
 #python3 generateSubmission.py --directory testOutput --inputSample DiPJBox --year 2018 --max_mat 100
 #python3 generateSubmission.py --directory testOutput --inputSample GJets --year 2018 --max_mat 100 
 
-#python3 generateSubmission.py --directory testOutput --inputSample gogoG --year 2022 --max_mat 10 --noBHC
-#python3 generateSubmission.py --directory testOutput --inputSample gogoZ --year 2022 --max_mat 15 --noBHC
+#python3 generateSubmission.py --directory testOutput --inputSample gogoG --year 2022 --max_mat 10 
+#python3 generateSubmission.py --directory testOutput --inputSample gogoZ --year 2022 --max_mat 15
 
-#python3 generateSubmission.py --directory testOutput --inputSample gogoG --year 2022 --max_mat 100 --mGl 2000 --mN2 1950 --mN1 1900
-
+#python3 generateSubmission.py --directory testOutput --inputSample gogoGZ --year 2022 --max_mat 10 --mGl 2300 --mN2 2200 --mN1 2100
+python3 generateSubmission.py --directory testOutput --inputSample gogoGZ --year 2022 --max_mat 10
 
 
 
