@@ -260,6 +260,13 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 
   }//<<>>treeplot on off
 
+  // -------------  default root branch intilization -------------
+
+  doGenInfoBase = false;
+  doSVsBase = true;
+  doNewSigBase = false;
+  doHTLPathsBase = true;
+
   // -----------  Time Calibration -----------------
 
   // Cali Tags : Tags for calibrations to use 
@@ -327,6 +334,10 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
     nEvents = 0, 
     nSelectedEvents = 0;
     sumEvtGenWgt = 0;
+	setGenInfoBase(hasGenInfoFlag); 
+	setDoSVsBase(doSVs);
+	setNewSigBase(false);
+	setHTLPathsBase(false);
 
 	// BNC Intiation
 
@@ -398,7 +409,10 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
     TTree* fOutTree = new TTree("kuSkimTree","output root file for kUCMSSkimmer");
     TTree* fConfigTree = new TTree("kuSkimConfigTree","config root file for kUCMSSkimmer");
 
-    Init( fInTree, hasGenInfoFlag, doSVs );
+	setGenInfoBase( hasGenInfoFlag );
+	setDoSVsBase( doSVs );
+	Init( fInTree );
+    ////Init( fInTree, hasGenInfoFlag, doSVs );
     auto nEntries = fInTree->GetEntries();
 
     //loop over events
@@ -439,8 +453,9 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
         }//<<>>if( centry%loopCounter == 0 )
  	    auto entry = fInTree->LoadTree(centry);
         if(DEBUG) std::cout << " -- Getting Branches " << std::endl;
-        getBranches( entry, hasGenInfoFlag, doSVs );
-		//std::cout << " -- Checking Valid Lumi with mctype " << mctype << " run " << Evt_run << " block " << Evt_luminosityBlock << std::endl;
+        getBranches( entry );
+        ////getBranches( entry, hasGenInfoFlag, doSVs );
+		//std::cout << " -- Check Valid Lumi with mctype " << mctype << " run " << Evt_run << " block " << Evt_luminosityBlock << std::endl;
         if( mctype==1 && not isValidLumisection( Evt_run, Evt_luminosityBlock ) ) continue;
 		//std::cout << " --- Valid Lumi Processing Event " << std::endl;
 
@@ -458,7 +473,7 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
         if( saveToTree ){ fOutTree->Fill(); }
 
     }//<<>>for (Long64_t centry = 0; centry < nEntries; centry++)  end entry loop
-	if( count_of_events != nEvents ) std::cout << " !!!!!!! nEvents " << nEvents << " not = event count " << count_of_events << " !!!!!!!" << std::endl;
+	if( count_of_events != nEvents ) std::cout << " ! nEvents " << nEvents << " not = count " << count_of_events << " !" << std::endl;
 
     // -- main end jobs
 
@@ -900,14 +915,14 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
     std::string str;
     if( not DEBUG ) std::cout << "--  adding files";
     int nfiles = 0;
-	//int skipCnt = 10;
-    //if( skipCnt != 0 ) std::cout << "-- !! Skipping every " << skipCnt << std::endl;
+	int skipCnt = 20;
+    if( skipCnt != 0 ) std::cout << "-- !! Skipping every " << skipCnt << std::endl;
     if( dataSetKey !=  "Single" ){
         std::ifstream infile(listDirPath+inFileName);
         while( std::getline( infile, str ) ){
             if(str.find("#") != string::npos) continue;
             nfiles++;
-            //if( skipCnt != 0 && ( nfiles%skipCnt != 0 ) ) continue;
+            if( skipCnt != 0 && ( nfiles%skipCnt != 0 ) ) continue;
             auto tfilename = eosDirPath + inFilePath + str;
             fInTree->Add(tfilename.c_str());
             fInConfigTree->Add(tfilename.c_str());

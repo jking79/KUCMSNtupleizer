@@ -2,7 +2,11 @@ version notes + commit tracking for skims
 
 version 47
 - introduced binary merging for RJR jets to reduce runtime due to combinatorics
-
+- produced v33 ntuples for SMS ( SMS_SVIPM100_v33_gogoGZ_AODSIM_mGl-2500_mN2-2450_mN1-2400_ct0p5_rjrskim.root ) 
+-- ntuples add new branches for gen info for the N2s ( a & b ) - adds correct HTL path and MET flags for SMS 
+-- added new N2 gen info branches to skimmer, turned on all output branches for all productions
+-- added flag to turn on/off processing of new ntuple branches in skimmer ( llpgana.setNewSigBase(true); )
+-- this starts with commmit https://github.com/jking79/KUCMSNtupleizer/commit/648eadf6b5de92f810df6c4f89969f1d2268e5ce
 
 version 46
 - updated RJR jet pt threshold from 30 to 20 GeV

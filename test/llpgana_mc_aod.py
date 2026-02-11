@@ -132,7 +132,7 @@ process.source = cms.Source("PoolSource",
         #'root://xrootd-cms.cern.ch//store/data/Run2022C/JetMET/AOD/EXODelayedJetMET-27Jun2023-v1/40000/113cb54d-48b1-43f5-96c1-f4725ee59eca.root',
         #'root://xrootd-cms.infn.it//store/data/Run2022C/JetMET/AOD/EXODelayedJetMET-27Jun2023-v1/40000/a346eb6b-170c-4e4c-b403-e57a70cec129.root',
 
-    #'root://cmsxrootd.fnal.gov//store/data/Run2023D/JetMET1/AOD/EXODelayedJetMET-PromptReco-v2/000/370/667/00000/89178b58-f461-478d-a2cf-142842257adc.root',
+        #'root://cmsxrootd.fnal.gov//store/data/Run2023D/JetMET1/AOD/EXODelayedJetMET-PromptReco-v2/000/370/667/00000/89178b58-f461-478d-a2cf-142842257adc.root',
 
         #'root://cmsxrootd.fnal.gov//store/data/Run2016G/MET/AOD/21Feb2020_UL2016-v1/20000/090027EF-E362-DA48-9977-6E3CE8BB6410.root'
 
@@ -238,7 +238,7 @@ process.source = cms.Source("PoolSource",
         #'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18RECO/WJetsToLNu_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/106X_upgrade2018_realistic_v11_L1v1_ext2-v3/40000/72B9C618-FE23-1E41-872E-57314D7CB454.root',
 
         #GJets
-	#'/store/mc/RunIISummer20UL18RECO/GJets_HT-40To100_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/2550000/06CC60F3-D74E-174E-8AD7-DCDAB14FB26F.root',
+	    #'/store/mc/RunIISummer20UL18RECO/GJets_HT-40To100_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/2550000/06CC60F3-D74E-174E-8AD7-DCDAB14FB26F.root',
 
         #QCD
         #'root://cmsxrootd-site.fnal.gov//store/mc/RunIIFall17DRPremix/QCD_HT200to300_TuneCP5_13TeV-madgraph-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v1/110000/1E29BF8B-5F60-E811-AD1D-0663CE00010C.root',
@@ -260,7 +260,7 @@ process.source = cms.Source("PoolSource",
         #`'root://cms-xrd-global.cern.ch//store/data/Run2022E/JetMET/AOD/EXODelayedJetMET-27Jun2023-v1/40000/08fd72c7-1be9-4328-9a38-85979d340331.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2018C/DisplacedJet/AOD/15Feb2022_UL2018-v1/60000/E11CE7E4-249F-0D42-AD15-344870056EF4.root',
         #'file:JetMet_22G_026f1000-0881-4fc1-a256-385c9cb6cf3d.root',
-        #'file:JetMet_23C_0d0f0b4a-8fb0-4777-9aed-25f2416791e5.root',
+        'file:JetMet_23C_0d0f0b4a-8fb0-4777-9aed-25f2416791e5.root',
 
          # AODSIM DPJB model
 
@@ -275,8 +275,8 @@ process.source = cms.Source("PoolSource",
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250))#KT
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500))#QT
@@ -287,16 +287,17 @@ process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100000))#MS
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250000))#MD
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500000))#LG
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
 
-genInfo = True
-#genInfo = False
+#genInfo = True
+genInfo = False
 if options.multicrab == True : genInfo = options.hasGenInfo		   
 
 ecalIsoInputsF17 = 'RecoEgamma/ElectronIdentification/data/Fall17/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_94X.txt'
 ecalruneraIsoInputsW22 = 'RecoEgamma/ElectronIdentification/data/Run3_Winter22/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_122X.txt'
 
-filterselect = 'none'
+#filterselect = 'none'
+filterselect = 'SVHPMet100'
 #filterselect = 'InvMet100IP'
 #filterselect = 'AL1NpSC'
 #filterselect = 'AL1DisSV'
@@ -326,8 +327,8 @@ doet = True ## with v30 no longer optional when using ( "ecalTracks", "displaced
 #    dosv = False
 #    dode = False
 
-runMETFilters = True
-#runMETFilters = False
+#runMETFilters = True
+runMETFilters = False
 if options.multicrab == True : runMETFilters = options.runMETFilters
 
 #probeout = True

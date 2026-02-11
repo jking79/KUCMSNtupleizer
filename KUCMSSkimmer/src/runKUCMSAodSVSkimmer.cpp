@@ -113,6 +113,7 @@ int main ( int argc, char *argv[] ){
     	llpgana.SetMCType(mctype);
     	llpgana.SetTimeCalibrationTag(ttag);
 	llpgana.SetMCWeight(mcw);
+    //llpgana.setNewSigBase(true);
 	//this method takes in 1 list at a time
 	eosdir = eosdir+"KUCMSNtuple/";
 	if(in_file.find(eosdir) == string::npos)
