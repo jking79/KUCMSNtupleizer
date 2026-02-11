@@ -50,13 +50,14 @@ int main ( int argc, char *argv[] ){
 	//std::string inputfilename( "ecal_config/kucmsTimeCaliTestTFile.txt");
     ////std::string inputfilename( "ecal_config/kucmsTimeCaliR17EOYTFile.txt");
 
-    std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCGjetsTFile.txt");
+    //std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCGjetsTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR18ULTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR17ULTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR16ULTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR22PrmptTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR23PrmptTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR24PrmptTFile.txt");
+    std::string inputfilename( "ecal_config/kucmsTimeCaliR25PrmptTFile.txt");
 
 	//std::string eosdir("root://cmseos.fnal.gov//store/user/jaking/");// input parameter!
     std::string eosdir("root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/");
@@ -66,11 +67,12 @@ int main ( int argc, char *argv[] ){
     ////std::string indir("kuncali/gammares_mc18/");
     ////std::string indir("kuncali/gammares_cali/DoubleEG/");
 
-    std::string indir("KUCMSNtuple/gammares_ul18/");
+    //std::string indir("KUCMSNtuple/gammares_ul18/");
     //std::string indir("KUCMSNtuple/gammares_ul17/");
     //std::string indir("KUCMSNtuple/gammares_ul16/DoubleEG/");
     //std::string indir("KUCMSNtuple/gammares_prmt22/EGamma/");
-    //std::string indir("KUCMSNtuple/");
+    //std::string indir("KUCMSNtuple/");// 23 & 24
+    std::string indir("KUCMSNtuple/gammares_prmt25/");
 
     KUCMS_TimeCalibration theCali;
     theCali.SetEosDir(eosdir);
@@ -204,6 +206,8 @@ int main ( int argc, char *argv[] ){
     //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_24p_xa_pm24b1200_v0119" );
     //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_24p_xa_pm24b1200_v0119" );
 
+    //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_25p_xa_pm24b1200_v0210" );
+
 	//theCali.setMCResTag("r2_ul16");
 	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18MC_xa_pm24b1200_v0204" );
 	//theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_18MC_xa_pm24b1200_v0116" );
@@ -328,7 +332,13 @@ int main ( int argc, char *argv[] ){
     //std::string histName = "ResMap_0_999999_DRO_Data_Hist_NoCali_Smeared_eg_18MC_smUL17_xa_pm24b1200_v0201_EE";
     //std::string histName = "ResMap_0_999999_DRO_Data_Hist_NoCali_Smeared_eg_18MC_smUL16_xa_pm24b1200_v0201_EE";
 
-    std::string histName = "ResMap_0_999999_DRO_Data_Hist_eg_18MC_xa_pm24b1200_v0204_EE";
+    //std::string histName = "ResMap_0_999999_DRO_Data_Hist_eg_18MC_xa_pm24b1200_v0204_EE";
+
+    std::string histName1 = "ResMap_387900_400000_DRO_Data_Hist_NoCali_eg_25p_xa_pm24b1200_v0210_EB";
+    std::string histName2 = "ResMap_387900_400000_DRO_Data_Hist_NoCali_eg_25p_xa_pm24b1200_v0210_EE";
+    std::string histName3 = "ResMap_387900_400000_SRO_Data_Hist_NoCali_eg_25p_xa_pm24b1200_v0210_EB";
+    std::string histName4 = "ResMap_387900_400000_SRO_Data_Hist_NoCali_eg_25p_xa_pm24b1200_v0210_EE";
+
 
     //theCali.setLowEnergy( false ); // true is default
 
@@ -347,10 +357,10 @@ int main ( int argc, char *argv[] ){
     ////theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600" ); // : xa llpana LG resfit
 	theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600 3200" ); // : xa llpana HG resfit
 
-    theCali.load2DResHist( histName );
-	theCali.doResTimeFit( histName );
+    //theCali.load2DResHist( histName );
+	//theCali.doResTimeFit( histName );
 
-	/*
+	
     theCali.load2DResHist( histName1 );
     theCali.doResTimeFit( histName1 );
     theCali.load2DResHist( histName2 );
@@ -359,7 +369,7 @@ int main ( int argc, char *argv[] ){
     theCali.doResTimeFit( histName3 );
     theCali.load2DResHist( histName4 );
     theCali.doResTimeFit( histName4 );
-	*/
+	
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

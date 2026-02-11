@@ -64,6 +64,8 @@ KUCMS_TimeCalibration::KUCMS_TimeCalibration( bool stayOpen, bool makeNew ){
 	doEE = false;
 	useGain = 1;
 	doAllGain = true;
+	isCC = false;
+	doUnCC = false;
 
     std::cout << " - setup DetID & IOV Maps " << std::endl;
     SetupDetIDsEB();
@@ -1396,6 +1398,7 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
 float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsigned int rechitID, 
 												unsigned int Evt_run, std::string dataSetKey, int mctype, int gainID ){
 
+	// NOTE :: dataSetKey is the tctag in this function!!!!    named wring here - please correct
 	double rtime = 0;
     //if( Evt_run > 388000 || Evt_run < 253984 ) return time; // within calibrated run range check
 
@@ -1409,6 +1412,8 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
 		//std::cout << " Pre Check amplitude : " << amplitude << std::endl;
 		if( amplitude < 1 ) return time;
         if( time == 0 ) return time;
+		if( resTag == "None" ) return time;
+		if( dataSetKey == "None" ) return time;
 		//std::cout << " Post Check amplitude : " << amplitude << std::endl;
 
 		bool isEB( DetIDMap[rechitID].ecal == ECAL::EB );
@@ -1487,10 +1492,11 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
 		}//<<>>if( resolution <= 0 )
     	rtime = getRandom->Gaus( time, resolution );
 		//std::cout << " getSmeared rtime: " << rtime << std::endl;
+		return rtime;
 
     }//<<>>if( mctype == 0 )
 
-	return rtime;
+	return time;
 
 }//<<>>float KUCMS_TimeCalibration::getCorrectedTime
 
@@ -2208,6 +2214,7 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
     std::vector<float>   *resAmp;
     std::vector<float>   *resE;
     std::vector<float>   *resRtTime;
+    std::vector<float>   *resCCTime;
     std::vector<float>   *resTOF;
 
     std::vector<unsigned int> *rhID;
@@ -2220,6 +2227,7 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
     TBranch        *b_resAmp;   //!
     TBranch        *b_resE;   //!
     TBranch        *b_resRtTime;   //!
+    TBranch        *b_resCCTime;   //!
     TBranch        *b_resTOF;   //!
 
     TBranch        *b_rhID;   //!
@@ -2301,6 +2309,7 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
         resAmp = 0;
         resE = 0;
         resRtTime = 0;
+		resCCTime = 0;
         resTOF = 0;
 
         rhID = 0;
@@ -2312,6 +2321,7 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
         fInTree->SetBranchAddress( "resAmp", &resAmp, &b_resAmp);   //!
         fInTree->SetBranchAddress( "resE", &resE, &b_resE);   //!
         fInTree->SetBranchAddress( "resRtTime", &resRtTime, &b_resRtTime);   //!
+		if( isCC ) fInTree->SetBranchAddress("resCCTime", &resCCTime, &b_resCCTime);
         fInTree->SetBranchAddress( "resTOF" , &resTOF, &b_resTOF);   //!
 
         fInTree->SetBranchAddress("rhID", &rhID, &b_rhID);
@@ -2344,6 +2354,7 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
             b_resAmp->GetEntry(entry);   //!
             b_resE->GetEntry(entry);   //!
             b_resRtTime->GetEntry(entry);   //!
+			if( isCC ) b_resCCTime->GetEntry(entry);   //!
             b_resTOF->GetEntry(entry);   //!
 
             b_rhisGS6->GetEntry(entry);   //!
@@ -2494,13 +2505,18 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
                                 double gxfill = (geffa0*geffa1)/sqrt(pow(geffa0,2)+pow(geffa1,2));
                                 double gxfille = (geffe0*geffe1)/sqrt(pow(geffe0,2)+pow(geffe1,2));
 
+								double Time0 = ( isCC && doUnCC ) ? (*resRtTime)[0] : (*resCCTime)[0];
+                                double Time1 = ( isCC && doUnCC ) ? (*resRtTime)[1] : (*resCCTime)[1];
+                                double Time2 = ( isCC && doUnCC ) ? (*resRtTime)[2] : (*resCCTime)[2];
+                                double Time3 = ( isCC && doUnCC ) ? (*resRtTime)[3] : (*resCCTime)[3];
+
                                 double ldTOF = (*resTOF)[0]-(*resTOF)[1]; //phoseedTOF_0-phoseedTOF_1;
                                 double gdTOF = (*resTOF)[2]-(*resTOF)[3]; //phoseedTOF_0-phoseedTOF_1;
-                                double lyf0 = (*resRtTime)[0]-seedTimeIC00;
-                                double lyf1 = (*resRtTime)[1]-seedTimeIC10;
-                                double gyf0 = (*resRtTime)[2]-seedTimeIC01;
-                                double gyf1 = (*resRtTime)[3]-seedTimeIC11;
-								//std::cout << " -- : " << (*resRtTime)[0] << " - " << seedTimeIC00 << " " << usecali << " " << doEE;
+                                double lyf0 = Time0-seedTimeIC00;
+                                double lyf1 = Time1-seedTimeIC10;
+                                double gyf0 = Time2-seedTimeIC01;
+                                double gyf1 = Time3-seedTimeIC11;
+								//std::cout << " -- : " << Time0 << " - " << seedTimeIC00 << " " << usecali << " " << doEE;
 								//std::cout << " " << (*resRhID)[0] << std::endl;
 
                                 if( smear ){
@@ -2542,8 +2558,8 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
                                 bool geta_cut_eb = (idinfoG0.ecal == ECAL::EB)&&(idinfoG1.ecal == ECAL::EB);
                                 bool leta_cut_ee = (idinfoL0.ecal != ECAL::EB)&&(idinfoL1.ecal != ECAL::EB);
                                 bool geta_cut_ee = (idinfoG0.ecal != ECAL::EB)&&(idinfoG1.ecal != ECAL::EB);
-                                bool goodLocTime = (*resRtTime)[0] != 0 && (*resRtTime)[1] != 0 && (*resRtTime)[0] != (*resRtTime)[1];
-                                bool goodGloTime = (*resRtTime)[2] != 0 && (*resRtTime)[3] != 0 && (*resRtTime)[2] != (*resRtTime)[3];
+                                bool goodLocTime = Time0 != 0 && Time1 != 0 && Time0 != Time1;
+                                bool goodGloTime = Time2 != 0 && Time3 != 0 && Time2 != Time3;
                                 bool goodLocRHs = (*resRhID)[0] != 0 && (*resRhID)[1] != 0;
                                 bool goodGloRHs = (*resRhID)[2] != 0 && (*resRhID)[3] != 0;
 
