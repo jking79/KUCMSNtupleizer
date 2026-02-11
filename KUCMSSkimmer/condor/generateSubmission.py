@@ -128,7 +128,7 @@ def generateSubmission(args):
     else:
         print("Lists for input sample",args.inputSample,"not found")
         exit()
-    
+
     if(data):
         recotag = args.year+"_"+args.inputSample
         inputMainList = cmsswpath+"ntuple_master_lists/KUCMS_Ntuple_Master_DataPD_Files_List.txt"
@@ -137,7 +137,10 @@ def generateSubmission(args):
         inputMainList = cmsswpath+"ntuple_master_lists/KUCMS_Ntuple_Master_BG_SVIPM100_Files_List.txt"
     elif(MCsig): #gluino only right now!
         #inputMainList = cmsswpath+"ntuple_master_lists/KUCMS_Ntuple_Master_SMS_Sig_Files_List.txt"
-        inputMainList = cmsswpath+"ntuple_master_lists/KUCMS_Ntuple_Master_SMS_Sig_Files_List_v33.txt"
+        if args.fastAOD:
+            inputMainList = cmsswpath+"ntuple_master_lists/KUCMS_Ntuple_Master_SMS_Sig_Files_List_v33_FASTSIMAOD.txt"
+        else:
+            inputMainList = cmsswpath+"ntuple_master_lists/KUCMS_Ntuple_Master_SMS_Sig_Files_List_v33.txt"
     else:
     	print("Input list"+args.inputMainList+" not found")
     	exit()
@@ -270,7 +273,8 @@ def main():
     parser.add_argument('--genSigPerfect',help='set genSigPerfect flag',default=False,action="store_true")
     parser.add_argument('--noSV',help='do not run SV collection',default=False,action="store_true")
     #parser.add_argument('--noSVorPho',help='set noSVorPho flag',default=False,action="store_true")
-   
+    parser.add_argument('--fastAOD',help='run over fastsim aod ntuples',default=False,action='store_true')
+
     args = parser.parse_args()
     generateSubmission(args)
 
