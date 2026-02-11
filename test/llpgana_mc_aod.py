@@ -222,6 +222,10 @@ process.source = cms.Source("PoolSource",
         #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoZ/SMS-GlGl_mGl-2000_mN2-400_mN1-200_Zff_N2ctau-0p1_AOD/250610_030144/0000/SMS-GlGl_mGl-2000_mN2-400_mN1-200_Zff_N2ctau-0p1_AOD_78.root'
         #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoZ/SMS-GlGl_mGl-1500_mN2-500_mN1-100_Zll_N2ctau-0p1_AOD/250123_153207/0000/SMS-GlGl_mGl-1500_mN2-500_mN1-100_Zll_N2ctau-0p1_AOD_83.root'
 
+        #FastSim AOD SMS
+        '',
+
+
         # WJets
         #'root://cmsxrootd-site.fnal.gov//store/mc/RunIISummer20UL18RECO/WJetsToLNu_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/106X_upgrade2018_realistic_v11_L1v1_ext2-v3/40000/6021A8AE-9B41-7A4F-8E33-470F73F3D4FC.root',
 
@@ -334,7 +338,7 @@ if options.multicrab == True : probeout = False
 triggerSet = "RECO"
 ecalIsoInputs = ecalIsoInputsF17
 if "Run3" in runera :
-    triggerSet = "PAT"
+    #triggerSet = "PAT"
     ecalIsoInputs = ecalruneraIsoInputsW22
     if 'CASTOR' in process.CaloGeometryBuilder.SelectedCalos : 
         process.CaloGeometryBuilder.SelectedCalos.remove('CASTOR') 
@@ -421,7 +425,7 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
                               #triggerFlagResults = cms.InputTag("TriggerResults","","RECO"),
                               triggerFlagResults = cms.InputTag("TriggerResults","",triggerSet),
                               #triggerFlagResults = cms.InputTag("TriggerResults"),
-                              triggerHLTResults = cms.InputTag("TriggerResults","","HLT"),
+                              triggerHLTResults = cms.InputTag("TriggerResults","",""),
                               triggerEvent = cms.InputTag("hltTriggerSummaryAOD"),
                               ## METs
                               #mets = cms.InputTag("slimmedMETs"),

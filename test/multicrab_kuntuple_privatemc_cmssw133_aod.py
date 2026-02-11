@@ -128,7 +128,7 @@ def docrab( dataset ):
             print( dataset )
 
             print( 'with : ',inDO[1] )
-            print( 'current KUCMSNtuple version : 31' )            
+            #print( 'current KUCMSNtuple version : 31' )            
 
             #trial          = "kucmsntuple_gogoG_Sig_IPM100_v26" #
             #trial          = "kucmsntuple_gogoZ_Sig_IPM100_v27" # 
@@ -153,12 +153,14 @@ def docrab( dataset ):
             fIPM100 = 'eventFilter=IsoPhoMet100'
             fNone = 'eventFilter=None'
             fAL1E = 'eventFilter=AL1SelEle'
+            fHardPho='eventFilter=Pho30'
 
             geninfo = 'hasGenInfo=True'
             mcrab = 'multicrab=True'
 
             runinfo = 'runera=Run3'
-            doMetFilters = 'runMETFilters=True'
+            doMetFilters = 'runMETFilters=False'
+            doSV = 'doSV=False'
 
             
             #efilter = fIPM100
@@ -200,7 +202,7 @@ def docrab( dataset ):
 #>>>>>      #MC Justin
             #gt = 'globalTag=124X_mcRun3_2022_realistic_v12'
             gt = 'globalTag=124X_mcRun3_2022_realistic_postEE_v1'
-            config.JobType.pyCfgParams   = [gt,mcrab,geninfo,efilter,runinfo,doMetFilters]
+            config.JobType.pyCfgParams   = [gt,mcrab,geninfo,efilter,runinfo,doMetFilters,doSV]
 #-----------------------------------------------------------------------------------------------------------------------------
 
             # Submit.
@@ -240,6 +242,8 @@ def run_multi():
     inlist = 'sig_aod_lists/filelist_SMS-'
     runDataset = [
 
+        #['/SMS-GlGl/mGl-2300_mN2-2200_mN1-2100/AODSIM',inlist+'GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p5_FASTAOD.txt'],
+        ['/SMS-GlGl/mGl-2300_mN2-2250_mN1-2200_ct-0p5/AODSIM',inlist+'GlGl_mGl-2300_mN2-2250_mN1-2200_GZ_N2ctau-0p5_FASTAOD.txt'],
         #['/SMS-GlGl/mGl-1500_mN2-500_mN1-100/AODSIM',inlist+'GlGl_mGl-1500_mN2-500_mN1-100_gam_N2ctau-0p1_AOD_v23.txt'],
         #['/SMS-GlGl/mGl-2000_mN2-1900_mN1-1000/AODSIM',inlist+'GlGl_mGl-2000_mN2-1900_mN1-1000_gam_N2ctau-0p1_AOD_v23.txt'],
         #['/SMS-GlGl/mGl-2000_mN2-1900_mN1-1500/AODSIM',inlist+'GlGl_mGl-2000_mN2-1900_mN1-1500_gam_N2ctau-0p1_AOD_v23.txt'],
@@ -291,74 +295,74 @@ def run_multi():
 
         #['/MET/Run2017F-09Aug2019_UL2017_rsb-v1/AOD','fileslist_missing_17F.txt'],
 
-        ['/SMS-GlGl-GZ/2300_N2-1300_N1-1000_ct1/AODSIM',inlist+'GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GZ/2300_N2-1300_N1-1000_ct5/AODSIM',inlist+'GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p5_AOD.txt'],
-        ['/SMS-GlGl-GZ/2300_N2-1600_N1-1000_ct1/AODSIM',inlist+'GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GZ/2300_N2-1600_N1-1000_ct5/AODSIM',inlist+'GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_AOD.txt'],
-        ['/SMS-GlGl-GZ/2300_N2-1600_N1-500_ct1/AODSIM',inlist+'GlGl_mGl-2300_mN2-1600_mN1-500_GZ_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GZ/2300_N2-1600_N1-500_ct5/AODSIM',inlist+'GlGl_mGl-2300_mN2-1600_mN1-500_GZ_N2ctau-0p5_AOD.txt'],
-        ['/SMS-GlGl-GZ/2300_N2-2200_N1-2100_ct1/AODSIM',inlist+'GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GZ/2300_N2-2200_N1-2100_ct5/AODSIM',inlist+'GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p5_AOD.txt'],
-        ['/SMS-GlGl-GZ/2300_N2-2200_N1-2150_ct1/AODSIM',inlist+'GlGl_mGl-2300_mN2-2200_mN1-2150_GZ_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GZ/2300_N2-2200_N1-2150_ct5/AODSIM',inlist+'GlGl_mGl-2300_mN2-2200_mN1-2150_GZ_N2ctau-0p5_AOD.txt'],
-        ['/SMS-GlGl-GZ/2300_N2-2250_N1-2150_ct1/AODSIM',inlist+'GlGl_mGl-2300_mN2-2250_mN1-2150_GZ_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GZ/2300_N2-2250_N1-2150_ct5/AODSIM',inlist+'GlGl_mGl-2300_mN2-2250_mN1-2150_GZ_N2ctau-0p5_AOD.txt'],
-        ['/SMS-GlGl-GZ/2300_N2-2250_N1-2200_ct1/AODSIM',inlist+'GlGl_mGl-2300_mN2-2250_mN1-2200_GZ_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GZ/2300_N2-2250_N1-2200_ct5/AODSIM',inlist+'GlGl_mGl-2300_mN2-2250_mN1-2200_GZ_N2ctau-0p5_AOD.txt'],
-        ['/SMS-GlGl-GZ/2500_N2-1200_N1-500_ct1/AODSIM',inlist+'GlGl_mGl-2500_mN2-1200_mN1-500_GZ_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GZ/2500_N2-1200_N1-500_ct5/AODSIM',inlist+'GlGl_mGl-2500_mN2-1200_mN1-500_GZ_N2ctau-0p5_AOD.txt'],
-        ['/SMS-GlGl-GZ/2500_N2-2000_N1-1000_ct1/AODSIM',inlist+'GlGl_mGl-2500_mN2-2000_mN1-1000_GZ_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GZ/2500_N2-2000_N1-1000_ct5/AODSIM',inlist+'GlGl_mGl-2500_mN2-2000_mN1-1000_GZ_N2ctau-0p5_AOD.txt'],
-        ['/SMS-GlGl-GZ/2500_N2-2000_N1-1500_ct1/AODSIM',inlist+'GlGl_mGl-2500_mN2-2000_mN1-1500_GZ_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GZ/2500_N2-2000_N1-1500_ct5/AODSIM',inlist+'GlGl_mGl-2500_mN2-2000_mN1-1500_GZ_N2ctau-0p5_AOD.txt'],
-        ['/SMS-GlGl-GZ/2500_N2-2400_N1-2300_ct1/AODSIM',inlist+'GlGl_mGl-2500_mN2-2400_mN1-2300_GZ_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GZ/2500_N2-2400_N1-2300_ct5/AODSIM',inlist+'GlGl_mGl-2500_mN2-2400_mN1-2300_GZ_N2ctau-0p5_AOD.txt'],
-        ['/SMS-GlGl-GZ/2500_N2-2400_N1-2350_ct1/AODSIM',inlist+'GlGl_mGl-2500_mN2-2400_mN1-2350_GZ_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GZ/2500_N2-2400_N1-2350_ct5/AODSIM',inlist+'GlGl_mGl-2500_mN2-2400_mN1-2350_GZ_N2ctau-0p5_AOD.txt'],
-        ['/SMS-GlGl-GZ/2500_N2-2450_N1-2350_ct1/AODSIM',inlist+'GlGl_mGl-2500_mN2-2450_mN1-2350_GZ_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GZ/2500_N2-2450_N1-2350_ct5/AODSIM',inlist+'GlGl_mGl-2500_mN2-2450_mN1-2350_GZ_N2ctau-0p5_AOD.txt'],
-        ['/SMS-GlGl-GZ/2500_N2-2450_N1-2400_ct1/AODSIM',inlist+'GlGl_mGl-2500_mN2-2450_mN1-2400_GZ_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GZ/2500_N2-2450_N1-2400_ct5/AODSIM',inlist+'GlGl_mGl-2500_mN2-2450_mN1-2400_GZ_N2ctau-0p5_AOD.txt'],
+        #['/SMS-GlGl-GZ/2300_N2-1300_N1-1000_ct1/AODSIM',inlist+'GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GZ/2300_N2-1300_N1-1000_ct5/AODSIM',inlist+'GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p5_AOD.txt'],
+        #['/SMS-GlGl-GZ/2300_N2-1600_N1-1000_ct1/AODSIM',inlist+'GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GZ/2300_N2-1600_N1-1000_ct5/AODSIM',inlist+'GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_AOD.txt'],
+        #['/SMS-GlGl-GZ/2300_N2-1600_N1-500_ct1/AODSIM',inlist+'GlGl_mGl-2300_mN2-1600_mN1-500_GZ_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GZ/2300_N2-1600_N1-500_ct5/AODSIM',inlist+'GlGl_mGl-2300_mN2-1600_mN1-500_GZ_N2ctau-0p5_AOD.txt'],
+        #['/SMS-GlGl-GZ/2300_N2-2200_N1-2100_ct1/AODSIM',inlist+'GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GZ/2300_N2-2200_N1-2100_ct5/AODSIM',inlist+'GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p5_AOD.txt'],
+        #['/SMS-GlGl-GZ/2300_N2-2200_N1-2150_ct1/AODSIM',inlist+'GlGl_mGl-2300_mN2-2200_mN1-2150_GZ_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GZ/2300_N2-2200_N1-2150_ct5/AODSIM',inlist+'GlGl_mGl-2300_mN2-2200_mN1-2150_GZ_N2ctau-0p5_AOD.txt'],
+        #['/SMS-GlGl-GZ/2300_N2-2250_N1-2150_ct1/AODSIM',inlist+'GlGl_mGl-2300_mN2-2250_mN1-2150_GZ_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GZ/2300_N2-2250_N1-2150_ct5/AODSIM',inlist+'GlGl_mGl-2300_mN2-2250_mN1-2150_GZ_N2ctau-0p5_AOD.txt'],
+        #['/SMS-GlGl-GZ/2300_N2-2250_N1-2200_ct1/AODSIM',inlist+'GlGl_mGl-2300_mN2-2250_mN1-2200_GZ_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GZ/2300_N2-2250_N1-2200_ct5/AODSIM',inlist+'GlGl_mGl-2300_mN2-2250_mN1-2200_GZ_N2ctau-0p5_AOD.txt'],
+        #['/SMS-GlGl-GZ/2500_N2-1200_N1-500_ct1/AODSIM',inlist+'GlGl_mGl-2500_mN2-1200_mN1-500_GZ_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GZ/2500_N2-1200_N1-500_ct5/AODSIM',inlist+'GlGl_mGl-2500_mN2-1200_mN1-500_GZ_N2ctau-0p5_AOD.txt'],
+        #['/SMS-GlGl-GZ/2500_N2-2000_N1-1000_ct1/AODSIM',inlist+'GlGl_mGl-2500_mN2-2000_mN1-1000_GZ_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GZ/2500_N2-2000_N1-1000_ct5/AODSIM',inlist+'GlGl_mGl-2500_mN2-2000_mN1-1000_GZ_N2ctau-0p5_AOD.txt'],
+        #['/SMS-GlGl-GZ/2500_N2-2000_N1-1500_ct1/AODSIM',inlist+'GlGl_mGl-2500_mN2-2000_mN1-1500_GZ_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GZ/2500_N2-2000_N1-1500_ct5/AODSIM',inlist+'GlGl_mGl-2500_mN2-2000_mN1-1500_GZ_N2ctau-0p5_AOD.txt'],
+        #['/SMS-GlGl-GZ/2500_N2-2400_N1-2300_ct1/AODSIM',inlist+'GlGl_mGl-2500_mN2-2400_mN1-2300_GZ_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GZ/2500_N2-2400_N1-2300_ct5/AODSIM',inlist+'GlGl_mGl-2500_mN2-2400_mN1-2300_GZ_N2ctau-0p5_AOD.txt'],
+        #['/SMS-GlGl-GZ/2500_N2-2400_N1-2350_ct1/AODSIM',inlist+'GlGl_mGl-2500_mN2-2400_mN1-2350_GZ_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GZ/2500_N2-2400_N1-2350_ct5/AODSIM',inlist+'GlGl_mGl-2500_mN2-2400_mN1-2350_GZ_N2ctau-0p5_AOD.txt'],
+        #['/SMS-GlGl-GZ/2500_N2-2450_N1-2350_ct1/AODSIM',inlist+'GlGl_mGl-2500_mN2-2450_mN1-2350_GZ_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GZ/2500_N2-2450_N1-2350_ct5/AODSIM',inlist+'GlGl_mGl-2500_mN2-2450_mN1-2350_GZ_N2ctau-0p5_AOD.txt'],
+        #['/SMS-GlGl-GZ/2500_N2-2450_N1-2400_ct1/AODSIM',inlist+'GlGl_mGl-2500_mN2-2450_mN1-2400_GZ_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GZ/2500_N2-2450_N1-2400_ct5/AODSIM',inlist+'GlGl_mGl-2500_mN2-2450_mN1-2400_GZ_N2ctau-0p5_AOD.txt'],
 
-        ['/SMS-GlGl-GG/1500_N2-1000_N1-500_ct1/AODSIM',inlist+'GlGl_mGl-1500_mN2-1000_mN1-500_gam_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GG/1500_N2-500_N1-100_ct1/AODSIM',inlist+'GlGl_mGl-1500_mN2-500_mN1-100_gam_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GG/2000_N2-1000_N1-1_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1000_mN1-1_gam_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GG/2000_N2-1000_N1-250_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1000_mN1-250_gam_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GG/2000_N2-1000_N1-500_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1000_mN1-500_gam_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GG/2000_N2-1500_N1-1000_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1500_mN1-1000_gam_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GG/2000_N2-1500_N1-1_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1500_mN1-1_gam_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GG/2000_N2-1500_N1-250_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1500_mN1-250_gam_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GG/2000_N2-1500_N1-500_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1500_mN1-500_gam_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GG/2000_N2-1900_N1-1000_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1900_mN1-1000_gam_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GG/2000_N2-1900_N1-1500_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1900_mN1-1500_gam_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GG/2000_N2-1900_N1-1_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1900_mN1-1_gam_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GG/2000_N2-1900_N1-250_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1900_mN1-250_gam_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GG/2000_N2-1900_N1-500_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1900_mN1-500_gam_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GG/2000_N2-1950_N1-1000_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1950_mN1-1000_gam_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GG/2000_N2-1950_N1-1500_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1950_mN1-1500_gam_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GG/2000_N2-1950_N1-1900_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1950_mN1-1900_gam_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GG/2000_N2-1950_N1-1_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1950_mN1-1_gam_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GG/2000_N2-1950_N1-250_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1950_mN1-250_gam_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GG/2000_N2-1950_N1-500_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1950_mN1-500_gam_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GG/2000_N2-500_N1-1_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-500_mN1-1_gam_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GG/2000_N2-500_N1-250_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-500_mN1-250_gam_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-GG/2500_N2-1500_N1-1500_ct1/AODSIM',inlist+'GlGl_mGl-2500_mN2-1500_mN1-1000_gam_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GG/1500_N2-1000_N1-500_ct1/AODSIM',inlist+'GlGl_mGl-1500_mN2-1000_mN1-500_gam_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GG/1500_N2-500_N1-100_ct1/AODSIM',inlist+'GlGl_mGl-1500_mN2-500_mN1-100_gam_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GG/2000_N2-1000_N1-1_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1000_mN1-1_gam_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GG/2000_N2-1000_N1-250_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1000_mN1-250_gam_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GG/2000_N2-1000_N1-500_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1000_mN1-500_gam_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GG/2000_N2-1500_N1-1000_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1500_mN1-1000_gam_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GG/2000_N2-1500_N1-1_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1500_mN1-1_gam_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GG/2000_N2-1500_N1-250_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1500_mN1-250_gam_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GG/2000_N2-1500_N1-500_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1500_mN1-500_gam_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GG/2000_N2-1900_N1-1000_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1900_mN1-1000_gam_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GG/2000_N2-1900_N1-1500_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1900_mN1-1500_gam_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GG/2000_N2-1900_N1-1_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1900_mN1-1_gam_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GG/2000_N2-1900_N1-250_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1900_mN1-250_gam_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GG/2000_N2-1900_N1-500_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1900_mN1-500_gam_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GG/2000_N2-1950_N1-1000_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1950_mN1-1000_gam_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GG/2000_N2-1950_N1-1500_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1950_mN1-1500_gam_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GG/2000_N2-1950_N1-1900_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1950_mN1-1900_gam_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GG/2000_N2-1950_N1-1_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1950_mN1-1_gam_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GG/2000_N2-1950_N1-250_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1950_mN1-250_gam_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GG/2000_N2-1950_N1-500_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1950_mN1-500_gam_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GG/2000_N2-500_N1-1_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-500_mN1-1_gam_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GG/2000_N2-500_N1-250_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-500_mN1-250_gam_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-GG/2500_N2-1500_N1-1500_ct1/AODSIM',inlist+'GlGl_mGl-2500_mN2-1500_mN1-1000_gam_N2ctau-0p1_AOD.txt'],
 
-        ['/SMS-GlGl-ZZ/1500_N2-500_N1-100_ct1/AODSIM',inlist+'GlGl_mGl-1500_mN2-500_mN1-100_Zff_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-ZZ/1500_N2-500_N1-100_ll_ct1/AODSIM',inlist+'GlGl_mGl-1500_mN2-500_mN1-100_Zll_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-ZZ/2000_N2-1900_N1-200_ct001/AODSIM',inlist+'GlGl_mGl-2000_mN2-1900_mN1-200_Zff_N2ctau-0p001_AOD.txt'],
-        ['/SMS-GlGl-ZZ/2000_N2-1900_N1-200_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1900_mN1-200_Zff_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-ZZ/2000_N2-1900_N1-200_ct3/AODSIM',inlist+'GlGl_mGl-2000_mN2-1900_mN1-200_Zff_N2ctau-0p3_AOD.txt'],
-        ['/SMS-GlGl-ZZ/2000_N2-1900_N1-350_ct001/AODSIM',inlist+'GlGl_mGl-2000_mN2-1900_mN1-350_Zff_N2ctau-0p001_AOD.txt'],
-        ['/SMS-GlGl-ZZ/2000_N2-1900_N1-350_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1900_mN1-350_Zff_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-ZZ/2000_N2-1900_N1-350_ct3/AODSIM',inlist+'GlGl_mGl-2000_mN2-1900_mN1-350_Zff_N2ctau-0p3_AOD.txt'],
-        ['/SMS-GlGl-ZZ/2000_N2-1950_N1-1900_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1950_mN1-1900_Zff_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-ZZ/2000_N2-400_N1-200_ct001/AODSIM',inlist+'GlGl_mGl-2000_mN2-400_mN1-200_Zff_N2ctau-0p001_AOD.txt'],
-        ['/SMS-GlGl-ZZ/2000_N2-400_N1-200_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-400_mN1-200_Zff_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-ZZ/2000_N2-400_N1-200_ct3/AODSIM',inlist+'GlGl_mGl-2000_mN2-400_mN1-200_Zff_N2ctau-0p3_AOD.txt'],
-        ['/SMS-GlGl-ZZ/2000_N2-400_N1-350_ct001/AODSIM',inlist+'GlGl_mGl-2000_mN2-400_mN1-350_Zff_N2ctau-0p001_AOD.txt'],
-        ['/SMS-GlGl-ZZ/2000_N2-400_N1-350_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-400_mN1-350_Zff_N2ctau-0p1_AOD.txt'],
-        ['/SMS-GlGl-ZZ/2000_N2-400_N1-350_ct3/AODSIM',inlist+'GlGl_mGl-2000_mN2-400_mN1-350_Zff_N2ctau-0p3_AOD.txt'],
+        #['/SMS-GlGl-ZZ/1500_N2-500_N1-100_ct1/AODSIM',inlist+'GlGl_mGl-1500_mN2-500_mN1-100_Zff_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-ZZ/1500_N2-500_N1-100_ll_ct1/AODSIM',inlist+'GlGl_mGl-1500_mN2-500_mN1-100_Zll_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-ZZ/2000_N2-1900_N1-200_ct001/AODSIM',inlist+'GlGl_mGl-2000_mN2-1900_mN1-200_Zff_N2ctau-0p001_AOD.txt'],
+        #['/SMS-GlGl-ZZ/2000_N2-1900_N1-200_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1900_mN1-200_Zff_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-ZZ/2000_N2-1900_N1-200_ct3/AODSIM',inlist+'GlGl_mGl-2000_mN2-1900_mN1-200_Zff_N2ctau-0p3_AOD.txt'],
+        #['/SMS-GlGl-ZZ/2000_N2-1900_N1-350_ct001/AODSIM',inlist+'GlGl_mGl-2000_mN2-1900_mN1-350_Zff_N2ctau-0p001_AOD.txt'],
+        #['/SMS-GlGl-ZZ/2000_N2-1900_N1-350_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1900_mN1-350_Zff_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-ZZ/2000_N2-1900_N1-350_ct3/AODSIM',inlist+'GlGl_mGl-2000_mN2-1900_mN1-350_Zff_N2ctau-0p3_AOD.txt'],
+        #['/SMS-GlGl-ZZ/2000_N2-1950_N1-1900_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-1950_mN1-1900_Zff_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-ZZ/2000_N2-400_N1-200_ct001/AODSIM',inlist+'GlGl_mGl-2000_mN2-400_mN1-200_Zff_N2ctau-0p001_AOD.txt'],
+        #['/SMS-GlGl-ZZ/2000_N2-400_N1-200_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-400_mN1-200_Zff_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-ZZ/2000_N2-400_N1-200_ct3/AODSIM',inlist+'GlGl_mGl-2000_mN2-400_mN1-200_Zff_N2ctau-0p3_AOD.txt'],
+        #['/SMS-GlGl-ZZ/2000_N2-400_N1-350_ct001/AODSIM',inlist+'GlGl_mGl-2000_mN2-400_mN1-350_Zff_N2ctau-0p001_AOD.txt'],
+        #['/SMS-GlGl-ZZ/2000_N2-400_N1-350_ct1/AODSIM',inlist+'GlGl_mGl-2000_mN2-400_mN1-350_Zff_N2ctau-0p1_AOD.txt'],
+        #['/SMS-GlGl-ZZ/2000_N2-400_N1-350_ct3/AODSIM',inlist+'GlGl_mGl-2000_mN2-400_mN1-350_Zff_N2ctau-0p3_AOD.txt'],
 
 
     ] 
