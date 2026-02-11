@@ -337,7 +337,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 	setGenInfoBase(hasGenInfoFlag); 
 	setDoSVsBase(doSVs);
 	setNewSigBase(false);
-	setHTLPathsBase(true);
+	setHTLPathsBase(false);
 
 	// BNC Intiation
 
