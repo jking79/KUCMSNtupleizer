@@ -114,6 +114,8 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 	bool doEE;
 	int useGain;
 	bool doAllGain;
+	bool isCC;
+    bool doUnCC;
 
     TRandom* getRandom;
 
@@ -245,6 +247,8 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
     void useGainSwitch( bool gs, bool all ){ useGSwitch = gs; doAllGain = all; };
     void setDoEE( bool doee ){ doEE = doee; }
     void setUseGainID( int id ){ useGain = id; }
+    void setIsCC( bool iscc ){ isCC = iscc; }
+	void setDoUnCC( bool douncc ){ doUnCC = douncc; }
 
 };//<<>>class KUCMS_TimeCalibration : KUCMSRootHelperBaseClass
 
