@@ -49,8 +49,8 @@ RJR_SRC = $(SRCDIR)/rjr_plotting.cpp
 MAIN_CPP := $(SRCDIR)/runKUCMSAodSVSkimmer.cpp $(SRCDIR)/runLocalKUCMSAodSVSkimmer.cpp 
 MAIN_CPP += $(TCALI_SRCDIR)/makeKUCMSTimeCalibration.cpp $(TCALI_SRCDIR)/makeKUCMSTimeResolution.cpp
 SUPPORT_CPP := $(filter-out $(MAIN_CPP), $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/*.cc) ) 
-SUPPORT_CPP += $(filter-out $(MAIN_CPP), $(wildcard $(TCALI_SRCDIR)/*.cpp) $(wildcard $(TCALI_SRCDIR)/*.cc))
-SUPPORT_CPP := $(filter-out $(MAIN_CPP) $(RJR_SRC), $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/*.cc))
+SUPPORT_CPP := $(filter-out $(MAIN_CPP), $(wildcard $(TCALI_SRCDIR)/*.cpp) $(wildcard $(TCALI_SRCDIR)/*.cc))
+SUPPORT_CPP += $(filter-out $(MAIN_CPP) $(RJR_SRC), $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/*.cc))
 OBJ_FILES := $(patsubst %,$(OBJDIR)/%,$(notdir $(SUPPORT_CPP:.cpp=.o)))
 OBJ_FILES := $(OBJ_FILES:.cc=.o) # handle .cc extension
 

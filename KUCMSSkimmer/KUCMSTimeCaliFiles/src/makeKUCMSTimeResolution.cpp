@@ -360,7 +360,7 @@ int main ( int argc, char *argv[] ){
     //theCali.load2DResHist( histName );
 	//theCali.doResTimeFit( histName );
 
-	
+/*	
     theCali.load2DResHist( histName1 );
     theCali.doResTimeFit( histName1 );
     theCali.load2DResHist( histName2 );
@@ -369,7 +369,7 @@ int main ( int argc, char *argv[] ){
     theCali.doResTimeFit( histName3 );
     theCali.load2DResHist( histName4 );
     theCali.doResTimeFit( histName4 );
-	
+*/	
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -1373,7 +1373,7 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
 
     if( amplitude == 0 ) return 100.f;
     bool isEB( DetIDMap[rechitID].ecal == ECAL::EB );
-    float res = -1;
+    float res = ( dataSetKey == "None" ) ? -1 : -99;
     if( mctype < 100 ){ // data
 		if( ResTagSet.find(dataSetKey) != ResTagSet.end() ){
 			float noise = isEB ? ResTagSet[dataSetKey].ebnoise : ResTagSet[dataSetKey].eenoise;
@@ -1382,8 +1382,8 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
 			res = sq2(noise/amplitude) + sq2(stoch)/amplitude + 2*sq2(stant);
 		}//<<>>if( ResTagSet.find(tag) != ResTagSet.end() )
     }//<<>>if( mctype == 0 )
-    if( res == -1 ){
-		std::cout << " -- Resolution for dataSetKey " << dataSetKey << " not found !!!!!!" << std::endl; 
+    if( res < -10 ) std::cout << " -- Resolution for ResTag : " << dataSetKey << " -- not found !!!!!!" << std::endl;
+    if( res < 0 ){
 		std::string tag = "default";
         float noise = isEB ? ResTagSet[tag].ebnoise : ResTagSet[tag].eenoise;
         float stoch = isEB ? ResTagSet[tag].ebstoch : ResTagSet[tag].eestoch;
@@ -1527,6 +1527,7 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
     UInt_t run;
     std::vector<uInt> *rhID = 0;
     std::vector<float> *rhRtTime = 0;
+    std::vector<float> *rhCCTime = 0;
     std::vector<float> *rhEnergy = 0;
     std::vector<bool> *rhisGS6 = 0;
     std::vector<bool> *rhisGS1 = 0;
@@ -1538,6 +1539,7 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
     TBranch *b_run;   //!
     TBranch *b_rhID;   //!
     TBranch *b_rhRtTime;   //!
+    TBranch *b_rhCCTime;   //!
     TBranch *b_rhEnergy;   //!
     TBranch *b_rhisGS6;   //!
     TBranch *b_rhisGS1;   //!
@@ -1617,6 +1619,7 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
        	run = 0;
         rhID = 0;
         rhRtTime = 0;
+        rhCCTime = 0;
         rhEnergy = 0;
 		rhisGS6 = 0;
 		rhisGS1 = 0;
@@ -1625,6 +1628,7 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
         fInTree->SetBranchAddress("run", &run, &b_run);
         fInTree->SetBranchAddress("rhCaliID", &rhID, &b_rhID);
         fInTree->SetBranchAddress("rhCaliRtTime", &rhRtTime, &b_rhRtTime);
+        if( isCC ) fInTree->SetBranchAddress("rhCaliCCTime", &rhCCTime, &b_rhCCTime);
         fInTree->SetBranchAddress("rhCaliEnergy", &rhEnergy, &b_rhEnergy);
    		fInTree->SetBranchAddress("rhisGS6", &rhisGS6, &b_rhisGS6);
    		fInTree->SetBranchAddress("rhisGS1", &rhisGS1, &b_rhisGS1);
@@ -1638,7 +1642,11 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
         for (Long64_t centry = 0; centry < nEntries; centry++){
 
             if( centry%modbreak == 0 or centry == 0){
+            	std::time_t now = std::time(nullptr);
+            	std::string curtime = std::ctime(&now);
+            	curtime.pop_back();
                 std::cout << "Proccessed " << centry << " of " << nEntries;
+                std::cout << " " << curtime;
                 std::cout << " (" << static_cast<float>((10000*centry)/nEntries)/(100) << "%)" << std::endl;
             }//<<>>if( centry%1000000 == 0 or centry == 0)
 
@@ -1647,6 +1655,7 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
             b_run->GetEntry(entry);   //!
             b_rhID->GetEntry(entry);   //!
             b_rhRtTime->GetEntry(entry);   //!
+			if( isCC ) b_rhCCTime->GetEntry(entry);   //!
             b_rhEnergy->GetEntry(entry);
             b_rhisGS6->GetEntry(entry);
             b_rhisGS1->GetEntry(entry);
@@ -1706,8 +1715,8 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
                                 uInt id = rhID->at(idx);
                                 float errorThres = gid1 ? 0.61 : 0.6;
 								if( DetIDMap[id].ecal != ECAL::EB ) errorThres = gid1 ? 1.01 : 1.0;
-								if( rhTimeError->at(idx) <= errorThres ) skiprechit = true; 
-								if( rhTimeError->at(idx) > 900 ) skiprechit = true;
+								if( not isCC and rhTimeError->at(idx) <= errorThres ) skiprechit = true; 
+								if( not isCC and rhTimeError->at(idx) > 900 ) skiprechit = true;
                                 //std::cout << " -- : GID " << GID << " gs6 " << gs6 << " gs1 " << gs1 << " e " << rhEnergy->at(idx) << std::endl;
 								if( skiprechit ) continue;
 								//std::cout << " -- : time error " << rhTimeError->at(idx) << std::endl;
@@ -1717,7 +1726,7 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 								//if( debug) std::cout << " - : GID " << GID << " gs6 " << gs6 << " gs1 " << gs1 << " e " << rhEnergy->at(idx) << std::endl;
 								//if( debug) std::cout << " - EB check --- " << id << " / " << DetIDMap[id].ecal;
 								//if( debug) std::cout << " - " << ECAL::EB << std::endl;
-								float time = rhRtTime->at(idx);
+								float time = ( isCC and doUnCC ) ? rhCCTime->at(idx) : rhRtTime->at(idx);
            						uInt crsid = doTT ? getTTId( id, GID ) : id;
                         		float bcrstime = ( not doTT && doCali ) ? time - getTTCali( id, run, tag ) : time;
                         		float crstime = ( doTT && doCali && gainid != 1  ) ? bcrstime - getCalibration( id, run, tag ) : bcrstime;
@@ -1778,11 +1787,11 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
                        	uInt id = rhID->at(idx);
 						float errorThres = gid1 ? 0.61 : 0.6;
                         if( DetIDMap[id].ecal != ECAL::EB ) errorThres = gid1 ? 1.01 : 1.0;
-                        if( rhTimeError->at(idx) <= errorThres ) skiprechit = true;
-                        if( rhTimeError->at(idx) > 900 ) skiprechit = true;
+                        if( not isCC and rhTimeError->at(idx) <= errorThres ) skiprechit = true;
+                        if( not isCC and rhTimeError->at(idx) > 900 ) skiprechit = true;
 						if( skiprechit ) continue;
                         if( rhEnergy->at(idx) < minRhEnergy ) continue;
-                        float time = rhRtTime->at(idx);
+						float time = ( isCC and doUnCC ) ? rhCCTime->at(idx) : rhRtTime->at(idx);
                         uInt crsid = doTT ? getTTId( id, GID ) : id;
                         float bcrstime = ( not doTT && doCali ) ? time - getTTCali( id, run, tag ) : time;
 						float crstime = ( doTT && doCali && gainid != 1  ) ? bcrstime - getCalibration( id, run, tag ) : bcrstime;
@@ -2339,7 +2348,11 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
         for (auto centry = 0U; centry < nEntries; centry++){
 
             if( centry%report == 0 or centry == 0){
+                std::time_t now = std::time(nullptr);
+                std::string curtime = std::ctime(&now);
+                curtime.pop_back();
                 std::cout << "Proccessed " << centry << " of " << nEntries;
+                std::cout << " " << curtime;
                 std::cout << " " << (1000.0*static_cast<float>(centry)/static_cast<float>(nEntries))/10.0 << "%" << std::endl;
             }//<<>>if( centry%10000000 == 0 or centry == 0)
 
@@ -2505,10 +2518,11 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
                                 double gxfill = (geffa0*geffa1)/sqrt(pow(geffa0,2)+pow(geffa1,2));
                                 double gxfille = (geffe0*geffe1)/sqrt(pow(geffe0,2)+pow(geffe1,2));
 
-								double Time0 = ( isCC && doUnCC ) ? (*resRtTime)[0] : (*resCCTime)[0];
-                                double Time1 = ( isCC && doUnCC ) ? (*resRtTime)[1] : (*resCCTime)[1];
-                                double Time2 = ( isCC && doUnCC ) ? (*resRtTime)[2] : (*resCCTime)[2];
-                                double Time3 = ( isCC && doUnCC ) ? (*resRtTime)[3] : (*resCCTime)[3];
+								bool useUnCCTime = isCC && doUnCC;
+								double Time0 = ( useUnCCTime ) ? (*resCCTime)[0] : (*resRtTime)[0];
+                                double Time1 = ( useUnCCTime ) ? (*resCCTime)[1] : (*resRtTime)[1];
+                                double Time2 = ( useUnCCTime ) ? (*resCCTime)[2] : (*resRtTime)[2];
+                                double Time3 = ( useUnCCTime ) ? (*resCCTime)[3] : (*resRtTime)[3];
 
                                 double ldTOF = (*resTOF)[0]-(*resTOF)[1]; //phoseedTOF_0-phoseedTOF_1;
                                 double gdTOF = (*resTOF)[2]-(*resTOF)[3]; //phoseedTOF_0-phoseedTOF_1;

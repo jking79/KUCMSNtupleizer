@@ -65,7 +65,7 @@ int main ( int argc, char *argv[] ){
     ////llpgana.SetNoSVorPhoFlag(noSVorPho);
     ////llpgana.SetGenSigPerfectFlag(genSigPerfect);
     //llpgana.SetDoSV(false);
-	llpgana.setNewSigBase(true);
+	llpgana.setNewSigBase(false);
     llpgana.SetDoBHC(false);
 	llpgana.SetGenInfoFlag(hasGenInfo); 
 	llpgana.SetUseEvtGenWgtFlag(useEvtGenWgt);
