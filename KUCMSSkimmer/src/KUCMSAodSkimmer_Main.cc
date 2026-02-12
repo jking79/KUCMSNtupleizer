@@ -411,7 +411,10 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
 
 	setGenInfoBase( hasGenInfoFlag );
 	setDoSVsBase( doSVs );
+	setNewSigBase( doNewSigBase );
+	setHTLPathsBase( doHTLPathsBase );
 	Init( fInTree );
+	
     ////Init( fInTree, hasGenInfoFlag, doSVs );
     auto nEntries = fInTree->GetEntries();
 
@@ -970,7 +973,7 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
     setJetsBranches( fOutTree );
     setMuonsBranches( fOutTree );
     setSVBranches( fOutTree );
-    setBCBranches( fOutTree );
+    //setBCBranches( fOutTree );
 
 }//<<>>void KUCMSAodSkimmer::setOutputBranches(fOutTree)
 
