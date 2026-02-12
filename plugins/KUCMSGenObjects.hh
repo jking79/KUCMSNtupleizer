@@ -285,7 +285,7 @@ void KUCMSGenObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("Xa_ctau","Xa_ctau",FLOAT);
     Branches.makeBranch("Xa_Mass","Xa_mass",FLOAT);
     Branches.makeBranch("Xa_Phi","Xa_phi",FLOAT);
-    Branches.makeBranch("Xa_Eta","Xa_phi",FLOAT);
+    Branches.makeBranch("Xa_Eta","Xa_eta",FLOAT);
     Branches.makeBranch("Xa_Energy","Xa_energy",FLOAT);
 
     Branches.makeBranch("Xb_MomDisplacment","Xb_Displacment",FLOAT);
@@ -299,7 +299,7 @@ void KUCMSGenObject::InitObject( TTree* fOutTree ){
     Branches.makeBranch("Xb_ctau","Xb_ctau",FLOAT);
     Branches.makeBranch("Xb_Mass","Xb_mass",FLOAT);
     Branches.makeBranch("Xb_Phi","Xb_phi",FLOAT);
-    Branches.makeBranch("Xb_Eta","Xb_phi",FLOAT);
+    Branches.makeBranch("Xb_Eta","Xb_eta",FLOAT);
     Branches.makeBranch("Xb_Energy","Xb_energy",FLOAT);
 
     Branches.attachBranches(fOutTree);

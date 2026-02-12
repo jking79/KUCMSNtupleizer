@@ -348,6 +348,7 @@ void KUCMSAodSkimmer::processPhotons(){
     uInt leadRHID = 0;
     float seedE = 0;
     float seedTime = -99;
+    float rawTime = -99;
     float seedAres = 0;
     float seedTres = 2000000;
     float seedSX = -1;
@@ -370,6 +371,7 @@ void KUCMSAodSkimmer::processPhotons(){
             float erhe = (*ECALRecHit_energy)[erhiter];
             float erampres = (*ECALRecHit_ampres)[erhiter];
             float erhct = erh_corTime[erhiter];
+			float rawerhct = (*ECALRecHit_time)[erhiter];
             float erx = (*ECALRecHit_rhx)[erhiter];
             float ery = (*ECALRecHit_rhy)[erhiter];
             float erz = (*ECALRecHit_rhz)[erhiter];
@@ -397,7 +399,7 @@ void KUCMSAodSkimmer::processPhotons(){
                 leadTres = ertres; leadSX = swcrss; leadWried = isWeird;
             }//<<>>if( erhe*gainwt > leadE )
             if( erhe > seedE ){
-                seedE = erhe; seedTime = ertoftime; seedAres = erampres; seedRHID = pscrhid;
+                seedE = erhe; seedTime = ertoftime; seedAres = erampres; seedRHID = pscrhid; rawTime = rawerhct;
                 seedTres = ertres; seedSX = swcrss; seedWried = isWeird; seedGS = hasGainSwitch;
             }//<<>>if( erhe > seedE ) 
 			bool hasBadTime = hasGainSwitch || !(*ECALRecHit_isTimeValid)[erhiter];
@@ -611,7 +613,7 @@ void KUCMSAodSkimmer::processPhotons(){
     float tofPVtoRH = hypo(scx-PV_x,scy-PV_y,scz-PV_z);
     float pvtof = tofPVtoRH/SOL;
 	float tofcor = calcor - pvtof;
-    float crtime = rtime - pvtof;
+    float crtime = rtime - tofcor;
     float tmeasured = rtime*SOL;
     float m1 = std::sqrt(sq2(tofPVtoRH)+8*sq2(tmeasured));
     float m2 = (tofPVtoRH+m1)*(tofPVtoRH/(4*sq2(tmeasured)));
@@ -625,7 +627,7 @@ void KUCMSAodSkimmer::processPhotons(){
 
 	for( auto as : erhamps ){ hist1d[20]->Fill(as/sumerha); }
 
-    //selPhotons.fillBranch( "selPhoWTime1", phoWTime1 );
+    selPhotons.fillBranch( "selPhoRawTime", rawTime );
     selPhotons.fillBranch( "selPhoWTimeSig", phoWTimeSig );
     selPhotons.fillBranch( "selPhoLTimeSig", leadtimesig );
     selPhotons.fillBranch( "selPhoSTimeSig", seedtimesig );
@@ -1167,7 +1169,7 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch( "selPhoTSigId", VINT );     
   selPhotons.makeBranch( "selPhoObjId", VINT );
 
-  //selPhotons.makeBranch( "selPhoWTime1", VFLOAT );
+  selPhotons.makeBranch( "selPhoRawTime", VFLOAT );
   selPhotons.makeBranch( "selPhoWTimeSig", VFLOAT );
   selPhotons.makeBranch( "selPhoLTimeSig", VFLOAT );
   selPhotons.makeBranch( "selPhoSTimeSig", VFLOAT );
