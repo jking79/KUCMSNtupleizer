@@ -107,14 +107,13 @@ typedef std::vector<reco::SuperCluster> scGroup;
 typedef std::vector<reco::CaloCluster> bcGroup;
 typedef std::vector<uInt> rhIdGroup;
 
-enum class ECAL {EB, EM, EP, EE, NONE};
-
 typedef reco::SuperClusterCollection supClusterCol;
 
 class KUCMSEcalRecHitObject : public KUCMSObjectBase {
 
     public:
 
+	enum class ECAL {EB, EM, EP, EE, NONE};
     // use base class constructor
     KUCMSEcalRecHitObject( const edm::ParameterSet& iConfig );
 	~KUCMSEcalRecHitObject(){};

@@ -1,0 +1,205 @@
+[FERMIHTC-APPTAINER]: INFO -- ApptainerImage classAd detected
+[FERMIHTC-APPTAINER]: INFO -- Attempting to run job in /cvmfs/singularity.opensciencegrid.org/cmssw/cms:rhel9
+[FERMIHTC-APPTAINER]: INFO -- Running /cvmfs/oasis.opensciencegrid.org/mis/apptainer/current/bin/apptainer exec --pid --ipc --contain --bind /cvmfs --bind /etc/hosts --bind /etc/grid-security --home /storage/local/data1/condor/execute/dir_1508234:/srv --pwd /srv /cvmfs/singularity.opensciencegrid.org/cmssw/cms:rhel9 ./execute_script.sh -i root://cmseos.fnal.gov//store/group/lpcsusylep/jaking/KUCMSNtuple/kucmsntuple_SMS_Sig_SVIPM100_v33/CRAB_UserFiles//kucmsntuple_SMS_Sig_SVIPM100_v33_SMS-GlGl-GZ_AODSIM_2500_N2-2450_N1-2400_ct5/260203_232149/0000/kucmsntuple_109.root --xsec .0001687 --dataSetKey gogoGZ_AODSIM_mGl-2500_mN2-2450_mN1-2400_ct0p5 --gluinoMass 2500 --N2Mass 2450 --timeCaliTag r2_ul18 --MCweight 1 --hasGenInfo --MCtype 0 --noBHC -o condor_SMS_SVIPM100_v33_gogoGZ_AODSIM_mGl-2500_mN2-2450_mN1-2400_ct0p5_rjrskim.11
+>>> creating new release CMSSW_13_3_3
+WARNING: Release CMSSW_13_3_3 is not available for architecture el9_amd64_gcc11
+         Developer's area is created for available architecture el9_amd64_gcc12.
+>>> preparing sandbox release CMSSW_13_3_3
+[2026-02-12 21:08:15] wrapper ready
+current directory: /srv
+/srv/cmssw-tmp/CMSSW_13_3_3
+_condor_stderr
+_condor_stdout
+cmssw-tmp
+config
+config.tgz
+docker_stderror
+ecal_config
+execute_script.sh
+fullMask60cm_Data.root
+ntuple_master_lists
+sandbox-CMSSW_13_3_3.tar.bz2
+tmp
+var
+x509up_u54995
+
+[36mRestFrames v1.0.0 -- Developed by Christopher Rogan (crogan@cern.ch)
+                     Copyright (c) 2014-2019, Christopher Rogan
+                     http://RestFrames.com
+[0m
+outfile tag condor_SMS_SVIPM100_v33_gogoGZ_AODSIM_mGl-2500_mN2-2450_mN1-2400_ct0p5_rjrskim.11
+Initiating KUCMS_TimeCalibrationClass for EE && EB
+ - setup DetID & IOV Maps 
+ - reading in TTrun, Xrun, & smear cali files 
+ - Reading CaliRunFile ecal_config/caliRunConfig.txt
+ - Reading TTCaliRunFile ecal_config/caliTTConfig.txt
+ - Reading ResFile ecal_config/caliResConfig.txt
+ - Loading CaliHists 
+ - opening caliHistsTFile 
+ - Making CaliMaps 
+ - Making TTCaliMaps 
+Loading json ... done. elapsed time: 0.012085 s
+Building model ... done. elapsed time: 0.000935 s
+Running test 1 of 1 ... done. elapsed time: 0.000132 s
+Loading, constructing, testing of config/json/KU-CNN_detector_1000epochs_archsmall3_2017and2018_CMS.json took 0.014476 s overall.
+Loading json ... done. elapsed time: 0.434032 s
+Building model ... done. elapsed time: 0.000871 s
+Running test 1 of 1 ... done. elapsed time: 0.000096 s
+Loading, constructing, testing of config/json/KU-DNN_photonID_JetHT18RunBC_EGamma18RunC_SMSGlGl_StandardNorm_shape_1000epochs_large8_barrelOnly.json took 0.435158 s overall.
+Loading json ... done. elapsed time: 0.000477 s
+Building model ... done. elapsed time: 0.000846 s
+Running test 1 of 1 ... done. elapsed time: 0.000076 s
+Loading, constructing, testing of config/json/KU-DNN_photonID_JetHT18RunBC700chunks_EGamma18RunC_SMSGlGl_StandardNorm_isoShape_1000epochs_large8_endcapOnly.json took 0.001536 s overall.
+Processing Input Lists for : root://cmseos.fnal.gov//store/group/lpcsusylep/jaking/KUCMSNtuple/kucmsntuple_SMS_Sig_SVIPM100_v33/CRAB_UserFiles//kucmsntuple_SMS_Sig_SVIPM100_v33_SMS-GlGl-GZ_AODSIM_2500_N2-2450_N1-2400_ct5/260203_232149/0000/kucmsntuple_109.root
+Processing Events for : root://cmseos.fnal.gov//store/group/lpcsusylep/jaking/KUCMSNtuple/kucmsntuple_SMS_Sig_SVIPM100_v33/CRAB_UserFiles//kucmsntuple_SMS_Sig_SVIPM100_v33_SMS-GlGl-GZ_AODSIM_2500_N2-2450_N1-2400_ct5/260203_232149/0000/kucmsntuple_109.root
+ - Making Branches for EvtVarMet.
+ - Making Branches for Tracks.
+ - Making Branches for ECAL.
+ - Making Branches for Gen.
+ - Making Branches for RJR.
+ - Making Branches for RJRISR.
+ - Making Branches for Electron.
+ - Making Branches for Jets.
+ - Making Branches for Muons.
+ - Making Branches for SV.
+Runing StartJobs.
+Finished StartJobs.
+Proccessing 1 config entries.
+configCnts ( nFltrdEvts 67 nMetFltrdEvts 140 nPhoFltrdEvts 22 nTotEvts 300 )
+configWgts ( sumEvtWgt 0.0398073 sumFltrdEvtWgt 0.00889028 )
+ -- reading config/EventCount.txt 
+ -- ConfigFile : DiPho_M0t40_UL18 : total=5.176e+06, sum=4.73255e+06
+ -- ConfigFile : DiPho_M40t80_UL18 : total=4.81597e+06, sum=3.56326e+06
+ -- ConfigFile : DiPho_M80Inf_UL18 : total=2.04779e+07, sum=9.59267e+06
+ -- ConfigFile : GJets_100t200_UL18 : total=3.17017e+07, sum=3.17017e+07
+ -- ConfigFile : GJets_200t400_UL18 : total=6.11653e+07, sum=6.11653e+07
+ -- ConfigFile : GJets_400t600_UL18 : total=1.68843e+07, sum=1.68843e+07
+ -- ConfigFile : GJets_40t100_UL18 : total=3.05441e+07, sum=3.05441e+07
+ -- ConfigFile : GJets_600up_UL18 : total=1.66661e+07, sum=1.66661e+07
+ -- ConfigFile : QCD_1000t1500_UL18 : total=1.5221e+07, sum=1.5221e+07
+ -- ConfigFile : QCD_100t200_UL18 : total=8.15054e+07, sum=8.15054e+07
+ -- ConfigFile : QCD_1500t2000_UL18 : total=1.20657e+07, sum=1.20657e+07
+ -- ConfigFile : QCD_2000up_UL18 : total=5.60901e+06, sum=5.60901e+06
+ -- ConfigFile : QCD_200t300_UL18 : total=6.02729e+07, sum=6.02729e+07
+ -- ConfigFile : QCD_300t500_UL18 : total=5.71614e+07, sum=5.71614e+07
+ -- ConfigFile : QCD_500t700_UL18 : total=6.13358e+07, sum=6.13358e+07
+ -- ConfigFile : QCD_50t100_UL18 : total=3.85102e+07, sum=3.85102e+07
+ -- ConfigFile : QCD_700t1000_UL18 : total=4.75762e+07, sum=4.75762e+07
+ -- ConfigFile : TGJets_UL18 : total=2.413e+06, sum=7.28276e+06
+ -- ConfigFile : TTGJets_UL18 : total=5.96867e+06, sum=3.74057e+07
+ -- ConfigFile : TTJets_UL18 : total=1.04965e+07, sum=1.04965e+07
+ -- ConfigFile : WGG_UL18 : total=1e+06, sum=2.00653e+06
+ -- ConfigFile : WJets_100t200_UL18 : total=6.86776e+07, sum=6.86776e+07
+ -- ConfigFile : WJets_1200t2500_UL18 : total=1.41553e+07, sum=1.41553e+07
+ -- ConfigFile : WJets_200t400_UL18 : total=5.93376e+07, sum=5.93376e+07
+ -- ConfigFile : WJets_2500up_UL18 : total=1.52265e+07, sum=1.52265e+07
+ -- ConfigFile : WJets_400t600_UL18 : total=1.01287e+07, sum=1.01287e+07
+ -- ConfigFile : WJets_600t800_UL18 : total=1.56433e+07, sum=1.56433e+07
+ -- ConfigFile : WJets_800t1200_UL18 : total=1.45416e+07, sum=1.45416e+07
+ -- ConfigFile : WWG_UL18 : total=2.41e+06, sum=815041
+ -- ConfigFile : WWW_UL18 : total=9.894e+06, sum=2.13578e+06
+ -- ConfigFile : WWZ_UL18 : total=9.996e+06, sum=1.70707e+06
+ -- ConfigFile : WZG_UL18 : total=2e+06, sum=157958
+ -- ConfigFile : WZ_UL18 : total=7.988e+06, sum=7.988e+06
+ -- ConfigFile : ZJets_100To200_UL18 : total=2.90775e+07, sum=2.90775e+07
+ -- ConfigFile : ZJets_1200To2500_UL18 : total=381695, sum=381695
+ -- ConfigFile : ZJets_200To400_UL18 : total=2.35057e+07, sum=2.35057e+07
+ -- ConfigFile : ZJets_2500ToInf_UL18 : total=268224, sum=268224
+ -- ConfigFile : ZJets_400To600_UL18 : total=2.06811e+07, sum=2.06811e+07
+ -- ConfigFile : ZJets_600To800_UL18 : total=5.96891e+06, sum=5.96891e+06
+ -- ConfigFile : ZJets_800To1200_UL18 : total=2.12555e+06, sum=2.12555e+06
+ -- ConfigFile : gogoGZ_AODSIM_mGl-2300_mN2-1300_mN1-1000_ct0p1 : total=24641, sum=8.28963
+ -- ConfigFile : gogoGZ_AODSIM_mGl-2300_mN2-1300_mN1-1000_ct0p5 : total=24767, sum=8.32822
+ -- ConfigFile : gogoGZ_AODSIM_mGl-2300_mN2-1600_mN1-1000_ct0p1 : total=24758, sum=8.31453
+ -- ConfigFile : gogoGZ_AODSIM_mGl-2300_mN2-1600_mN1-1000_ct0p5 : total=24531, sum=8.25172
+ -- ConfigFile : gogoGZ_AODSIM_mGl-2300_mN2-1600_mN1-500_ct0p1 : total=24614, sum=8.28453
+ -- ConfigFile : gogoGZ_AODSIM_mGl-2300_mN2-1600_mN1-500_ct0p5 : total=24809, sum=8.33836
+ -- ConfigFile : gogoGZ_AODSIM_mGl-2300_mN2-2200_mN1-2100_ct0p1 : total=46360, sum=15.5858
+ -- ConfigFile : gogoGZ_AODSIM_mGl-2300_mN2-2200_mN1-2100_ct0p5 : total=46377, sum=15.5922
+ -- ConfigFile : gogoGZ_AODSIM_mGl-2300_mN2-2200_mN1-2150_ct0p1 : total=77356, sum=26.0091
+ -- ConfigFile : gogoGZ_AODSIM_mGl-2300_mN2-2200_mN1-2150_ct0p5 : total=76889, sum=25.837
+ -- ConfigFile : gogoGZ_AODSIM_mGl-2300_mN2-2250_mN1-2150_ct0p1 : total=77178, sum=25.9322
+ -- ConfigFile : gogoGZ_AODSIM_mGl-2300_mN2-2250_mN1-2150_ct0p5 : total=77435, sum=26.0333
+ -- ConfigFile : gogoGZ_AODSIM_mGl-2300_mN2-2250_mN1-2200_ct0p1 : total=77359, sum=26.0185
+ -- ConfigFile : gogoGZ_AODSIM_mGl-2300_mN2-2250_mN1-2200_ct0p5 : total=77148, sum=25.9233
+ -- ConfigFile : gogoGZ_AODSIM_mGl-2500_mN2-1200_mN1-500_ct0p1 : total=25710, sum=3.3915
+ -- ConfigFile : gogoGZ_AODSIM_mGl-2500_mN2-1200_mN1-500_ct0p5 : total=26000, sum=3.42583
+ -- ConfigFile : gogoGZ_AODSIM_mGl-2500_mN2-2000_mN1-1000_ct0p1 : total=25944, sum=3.42293
+ -- ConfigFile : gogoGZ_AODSIM_mGl-2500_mN2-2000_mN1-1000_ct0p5 : total=25942, sum=3.41899
+ -- ConfigFile : gogoGZ_AODSIM_mGl-2500_mN2-2000_mN1-1500_ct0p1 : total=25917, sum=3.42135
+ -- ConfigFile : gogoGZ_AODSIM_mGl-2500_mN2-2000_mN1-1500_ct0p5 : total=25928, sum=3.42457
+ -- ConfigFile : gogoGZ_AODSIM_mGl-2500_mN2-2400_mN1-2300_ct0p1 : total=48493, sum=6.39989
+ -- ConfigFile : gogoGZ_AODSIM_mGl-2500_mN2-2400_mN1-2300_ct0p5 : total=48816, sum=6.44187
+ -- ConfigFile : gogoGZ_AODSIM_mGl-2500_mN2-2400_mN1-2350_ct0p5 : total=81115, sum=10.6999
+ -- ConfigFile : gogoGZ_AODSIM_mGl-2500_mN2-2450_mN1-2350_ct0p1 : total=81031, sum=10.6932
+ -- ConfigFile : gogoGZ_AODSIM_mGl-2500_mN2-2450_mN1-2350_ct0p5 : total=80897, sum=10.6664
+ -- ConfigFile : gogoGZ_AODSIM_mGl-2500_mN2-2450_mN1-2400_ct0p5 : total=80735, sum=10.6493
+ -- ConfigFile : gogoG_AODSIM_mGl-1500_mN2-500_mN1-100_ct0p1 : total=47920, sum=1198.95
+ -- ConfigFile : gogoG_AODSIM_mGl-2000_mN2-1000_mN1-1_ct0p1 : total=55229, sum=84.1743
+ -- ConfigFile : gogoG_AODSIM_mGl-2000_mN2-1000_mN1-250_ct0p1 : total=55196, sum=84.1124
+ -- ConfigFile : gogoG_AODSIM_mGl-2000_mN2-1000_mN1-500_ct0p1 : total=55281, sum=84.2936
+ -- ConfigFile : gogoG_AODSIM_mGl-2000_mN2-1500_mN1-1000_ct0p1 : total=56322, sum=85.7769
+ -- ConfigFile : gogoG_AODSIM_mGl-2000_mN2-1500_mN1-1_ct0p1 : total=56577, sum=86.161
+ -- ConfigFile : gogoG_AODSIM_mGl-2000_mN2-1500_mN1-250_ct0p1 : total=56564, sum=86.225
+ -- ConfigFile : gogoG_AODSIM_mGl-2000_mN2-1500_mN1-500_ct0p1 : total=55337, sum=84.2723
+ -- ConfigFile : gogoG_AODSIM_mGl-2000_mN2-1900_mN1-1000_ct0p1 : total=56425, sum=85.9701
+ -- ConfigFile : gogoG_AODSIM_mGl-2000_mN2-1900_mN1-1500_ct0p1 : total=55296, sum=84.2359
+ -- ConfigFile : gogoG_AODSIM_mGl-2000_mN2-1900_mN1-1_ct0p1 : total=56506, sum=86.0639
+ -- ConfigFile : gogoG_AODSIM_mGl-2000_mN2-1900_mN1-250_ct0p1 : total=56618, sum=86.2071
+ -- ConfigFile : gogoG_AODSIM_mGl-2000_mN2-1900_mN1-500_ct0p1 : total=56368, sum=85.8475
+ -- ConfigFile : gogoG_AODSIM_mGl-2000_mN2-1950_mN1-1000_ct0p1 : total=56999, sum=86.7531
+ -- ConfigFile : gogoG_AODSIM_mGl-2000_mN2-1950_mN1-1500_ct0p1 : total=57221, sum=87.2247
+ -- ConfigFile : gogoG_AODSIM_mGl-2000_mN2-1950_mN1-1900_ct0p1 : total=57224, sum=87.17
+ -- ConfigFile : gogoG_AODSIM_mGl-2000_mN2-1950_mN1-1_ct0p1 : total=54653, sum=83.2611
+ -- ConfigFile : gogoG_AODSIM_mGl-2000_mN2-1950_mN1-250_ct0p1 : total=54841, sum=83.5778
+ -- ConfigFile : gogoG_AODSIM_mGl-2000_mN2-1950_mN1-500_ct0p1 : total=56617, sum=86.1897
+ -- ConfigFile : gogoG_AODSIM_mGl-2000_mN2-500_mN1-1_ct0p1 : total=55370, sum=84.3742
+ -- ConfigFile : gogoG_AODSIM_mGl-2000_mN2-500_mN1-250_ct0p1 : total=56589, sum=86.2856
+ -- ConfigFile : gogoG_AODSIM_mGl-2500_mN2-1500_mN1-1000_ct0p1 : total=63508, sum=8.38111
+ -- ConfigFile : gogoZ_AODSIM_mGl-1500_mN2-500_mN1-100_ct0p1 : total=48589, sum=1215.95
+ -- ConfigFile : gogoZ_AODSIM_mGl-2000_mN2-1900_mN1-200_ct0p001 : total=55939, sum=85.2706
+ -- ConfigFile : gogoZ_AODSIM_mGl-2000_mN2-1900_mN1-200_ct0p1 : total=53655, sum=81.7185
+ -- ConfigFile : gogoZ_AODSIM_mGl-2000_mN2-1900_mN1-200_ct0p3 : total=54244, sum=82.5642
+ -- ConfigFile : gogoZ_AODSIM_mGl-2000_mN2-1900_mN1-350_ct0p001 : total=52268, sum=79.6228
+ -- ConfigFile : gogoZ_AODSIM_mGl-2000_mN2-1900_mN1-350_ct0p1 : total=54543, sum=83.0619
+ -- ConfigFile : gogoZ_AODSIM_mGl-2000_mN2-1900_mN1-350_ct0p3 : total=55830, sum=85.1169
+ -- ConfigFile : gogoZ_AODSIM_mGl-2000_mN2-1950_mN1-1900_ct0p1 : total=53382, sum=81.3187
+ -- ConfigFile : gogoZ_AODSIM_mGl-2000_mN2-400_mN1-200_ct0p001 : total=56374, sum=85.8682
+ -- ConfigFile : gogoZ_AODSIM_mGl-2000_mN2-400_mN1-200_ct0p1 : total=52695, sum=80.2525
+ -- ConfigFile : gogoZ_AODSIM_mGl-2000_mN2-400_mN1-200_ct0p3 : total=56133, sum=85.434
+ -- ConfigFile : gogoZ_AODSIM_mGl-2000_mN2-400_mN1-350_ct0p001 : total=54071, sum=82.4334
+ -- ConfigFile : gogoZ_AODSIM_mGl-2000_mN2-400_mN1-350_ct0p1 : total=53527, sum=81.5504
+ -- ConfigFile : gogoZ_AODSIM_mGl-2000_mN2-400_mN1-350_ct0p3 : total=52844, sum=80.4594
+ -- ConfigFile : sqsqG_AODSIM_mGl-1700_mN2-1500_mN1-100_ct0p1 : total=38330, sum=53.3132
+ -- ConfigFile : sqsqG_AODSIM_mGl-1700_mN2-300_mN1-100_ct0p1 : total=38032, sum=52.8305
+ -- ConfigFile : sqsqG_AODSIM_mGl-1850_mN2-1650_mN1-100_ct0p1 : total=40968, sum=24.6842
+ -- ConfigFile : sqsqG_AODSIM_mGl-1850_mN2-300_mN1-100_ct0p1 : total=40387, sum=24.374
+ -- ConfigFile : sqsqG_AODSIM_mGl-2000_mN2-1800_mN1-100_ct0p1 : total=41933, sum=11.276
+ -- ConfigFile : sqsqG_AODSIM_mGl-2000_mN2-300_mN1-100_ct0p1 : total=42916, sum=11.5466
+ -- ConfigFile : sqsqG_AODSIM_mGl-2150_mN2-1950_mN1-100_ct0p1 : total=43390, sum=5.3177
+ -- ConfigFile : sqsqG_AODSIM_mGl-2150_mN2-300_mN1-100_ct0p1 : total=42546, sum=5.21943
+ -- ConfigFile : ttWJets_UL18 : total=2.76869e+07, sum=2.76869e+07
+ -- ConfigFile : ttZJets_UL18 : total=3.27082e+07, sum=3.27082e+07
+Setting up For Main Loop.
+Processing 67 entries.
+Running over events 0 to 67
+loopCounter 6 nEventsProcessed 67 nForPrecent 10
+Proccessed 0 of 67 entries at Thu Feb 12 21:08:23 2026
+Proccessed 6 of 67 entries at Thu Feb 12 21:08:25 2026
+Proccessed 12 of 67 entries at Thu Feb 12 21:08:25 2026
+Proccessed 18 of 67 entries at Thu Feb 12 21:08:25 2026
+Proccessed 24 of 67 entries at Thu Feb 12 21:08:26 2026
+Proccessed 30 of 67 entries at Thu Feb 12 21:08:26 2026
+Proccessed 36 of 67 entries at Thu Feb 12 21:08:26 2026
+Proccessed 42 of 67 entries at Thu Feb 12 21:08:26 2026
+Proccessed 48 of 67 entries at Thu Feb 12 21:08:27 2026
+Proccessed 54 of 67 entries at Thu Feb 12 21:08:27 2026
+Proccessed 60 of 67 entries at Thu Feb 12 21:08:27 2026
+Proccessed 66 of 67 entries at Thu Feb 12 21:08:27 2026
+Filling ConfigTree.
+Running EndJobs.
+<<<<<<<< Write Output Maps and Hists <<<<<<<<<<<<<< 
+Writing to condor_SMS_SVIPM100_v33_gogoGZ_AODSIM_mGl-2500_mN2-2450_mN1-2400_ct0p5_rjrskim.11.root
+Finished processing events for : root://cmseos.fnal.gov//store/group/lpcsusylep/jaking/KUCMSNtuple/kucmsntuple_SMS_Sig_SVIPM100_v33/CRAB_UserFiles//kucmsntuple_SMS_Sig_SVIPM100_v33_SMS-GlGl-GZ_AODSIM_2500_N2-2450_N1-2400_ct5/260203_232149/0000/kucmsntuple_109.root
+KUCMSAodSkimmer : Thats all Folks!!
+Wrapping KUCMS_TimeCalibrationClass

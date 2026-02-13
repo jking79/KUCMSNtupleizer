@@ -74,7 +74,7 @@
 // KUCMSObjectBase----------------------------------------------------------------------------
 //.............................................................................................
 
-typedef edm::View<reco::Candidate> CandidateView;
+//typedef edm::View<reco::Candidate> CandidateView;
 
 typedef ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<float>,ROOT::Math::DefaultCoordinateSystemTag> Point3D;
 
