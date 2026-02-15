@@ -583,23 +583,32 @@ dl_jm_23 = [
 
 ]
 
+dl2018MetMini = [
+
+    "/MET/Run2018A-15Feb2022_UL2018-v1/MINIAOD",
+    "/MET/Run2018B-15Feb2022_UL2018-v1/MINIAOD",
+    "/MET/Run2018C-15Feb2022_UL2018-v1/MINIAOD",
+    "/MET/Run2018D-15Feb2022_UL2018-v1/MINIAOD",
+
+]
+
 query = 'dasgoclient --json -query=\'dataset='
 
-datalist = dl_jm_23
+datalist = dl2018MetMini
 
 for data in datalist :
     
     command = query + data + '\''
     #output = bashout( command ).splitlines()
-    #output = bashout( command ).split('size":')
+    output = bashout( command ).split('size":')
     #output = bashout( command ).split('num_lumi":')
     #output = bashout( command ).split('files":')
-    output = bashout( command ).split('events":')
+    #output = bashout( command ).split('events":')
     #fir = output[1].split('size":')[0]
     #sec = output[1].split('size":')[1] 
     #.split('}],')[0]
-    #size = int(output[1].split('}]')[0])/1000000000000
-    size = output[1].split('}]')[0]
+    size = int(output[1].split('}]')[0])/1000000000000
+    #size = output[1].split('}]')[0]
     print( data,  size )
     #print( data, '\n',  fir, '\n', sec )
 

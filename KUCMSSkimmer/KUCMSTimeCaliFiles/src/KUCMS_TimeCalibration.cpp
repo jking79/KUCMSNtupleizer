@@ -223,7 +223,7 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
 //Run 3
 
     promptIovMap[355374] = 355793;
-    promptIovMap[355794] = 356513;
+    promptIovMap[355794] = 356513; // Run2022C -v1
     promptIovMap[356514] = 357289;
     promptIovMap[357290] = 358883;
     promptIovMap[358884] = 359420;
@@ -232,30 +232,32 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
     promptIovMap[360982] = 361416;
     promptIovMap[361417] = 362522;
     promptIovMap[362523] = 362349;//24/11/2022
-    promptIovMap[362350] = 362760;//EOY 2022
+    promptIovMap[362350] = 362760;//EOY 2022 Run2022G -v1
 
     promptIovMap[362761] = 366364;// 22-23
 
 // 2022
 // lumi  355374 362760
 
-    promptIovMap[366365] = 366726;
+
+    promptIovMap[366365] = 366726; //Run2023B -v1 
     promptIovMap[366727] = 367079;
     promptIovMap[367080] = 367515;
     promptIovMap[367516] = 367882;
     promptIovMap[367884] = 368825;
     promptIovMap[368826] = 369801;
-    promptIovMap[369802] = 369912;
+    promptIovMap[369802] = 369912;//Run2023D -v1
     promptIovMap[369913] = 370496;
     promptIovMap[370497] = 370790;
 	promptIovMap[370791] = 373577;
-	promptIovMap[373578] = 373861;// EOY 2023
+	promptIovMap[373578] = 373861;// EOY 2023  ? Run2023F
 
     promptIovMap[373862] = 378745;// 23-24
 
 /// 2023
 // lumi 366727 370790 
 
+/*
     promptIovMap[378746] = 378984; 
     promptIovMap[378985] = 381306;
     promptIovMap[381307] = 382007;//ratio timing algorithm 28/05/2024
@@ -271,19 +273,56 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
     promptIovMap[385728] = 386662;
     promptIovMap[386663] = 386951;
     promptIovMap[386952] = 387741;// EOY 2024 
+*/
 
-    promptIovMap[387742] = 390734;// 24-25
+
+ //   promptIovMap[387742] = 390734;// 24-25
 
 
 // 2024
 // lumi 378985 386951 
 
-    promptIovMap[390735] = 391530;
+    promptIovMap[376370] = 378141;
+    promptIovMap[378142] = 378970;
+    promptIovMap[378971] = 379411;
+    promptIovMap[379412] = 380252;
+    promptIovMap[380253] = 380947;
+    promptIovMap[380948] = 381383;
+    promptIovMap[381384] = 381943;
+    promptIovMap[381944] = 383779;
+    promptIovMap[383780] = 385813;
+    promptIovMap[385814] = 386408;
+    promptIovMap[386409] = 386797;
+    promptIovMap[386798] = 387121;
+    promptIovMap[387203] = 387721;
+
+// 2025
+
+    promptIovMap[387722] = 390734;
+
+    //promptIovMap[390735] = 391530;
+
+    promptIovMap[390735] = 	390936;
+    promptIovMap[390937] = 	391530;
+    promptIovMap[391531] = 	392158;
+    promptIovMap[392159] = 	393108;
+    promptIovMap[393111] = 	393609;
+    promptIovMap[393610] = 	394033;
+    promptIovMap[394034] = 	394217;
+    promptIovMap[394218] = 	394285;
+    promptIovMap[394286] = 	395967;
+    promptIovMap[395968] = 	396597;
+    promptIovMap[396598] = 	397853;
+    promptIovMap[397854] = 	398903;
+
 
 // 2025 - (390735) 391531 - 398903
 
-	promptIovMap[391531] = 398903;
+	////promptIovMap[391531] = 398903;
 	
+
+
+
 
 // END
 	promptIovMap[398904] = 999999;
