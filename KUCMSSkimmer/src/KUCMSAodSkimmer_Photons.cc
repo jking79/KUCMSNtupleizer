@@ -741,7 +741,7 @@ void KUCMSAodSkimmer::processPhotons(){
 				else{
 					selPhoIsEEexclnonIso[selphoidx] = true;
 				}	
-			}//else, fails RJR presel
+			}
 			if(isobkg_score >= EEIsoCutVal){
 				selPhoIsEEIso[selphoidx] = true;
 			}
@@ -1005,7 +1005,7 @@ void KUCMSAodSkimmer::processPhotons(){
 		
 		}
 	  }
-	  //if lead photon could not be placed and there are multiple, look at lead photon
+	  //if lead photon could not be placed and there are multiple, look at sublead photon
 	  if(nSelPhotons > 1 && regidx == -1){
 	  	if(selPhoIsPrompt[1]){
 	  	      //assuming veryveryNonIso cut will be applied before this
