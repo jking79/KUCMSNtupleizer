@@ -155,16 +155,16 @@ class KUCMSGenObjectMini : public KUCMSObjectBase {
 
     private:
 
-    std::vector<pat::PackedGenParticle> fgenparts;
-    std::vector<int> fgpLlp;
-    std::vector<int> fgpMomIdx;
-    std::vector<int> fgpGMomIdx;
+    std::vector<pat::PackedGenParticle> fgenpacks;
+    std::vector<int> fgpkLlp;
+    std::vector<int> fgpkMomIdx;
+    std::vector<int> fgpkGMomIdx;
     std::vector<int> fgpKidIdx;
 
-    std::vector<pat::PackedGenParticle> tgenparts;
-    std::vector<int> tgpLlp;
-    std::vector<bool> tgpGetMom;
-    std::vector<bool> tgpKeep;
+    std::vector<pat::PackedGenParticle> tgenpacks;
+    std::vector<int> tgpkLlp;
+    std::vector<bool> tgpkGetMom;
+    std::vector<bool> tgpkKeep;
 
     std::vector<reco::GenParticle> fpgenparts;
     std::vector<int> fpgpLlp;
@@ -176,6 +176,9 @@ class KUCMSGenObjectMini : public KUCMSObjectBase {
     std::vector<int> tpgpLlp;
     std::vector<bool> tpgpGetMom;
     std::vector<bool> tpgpKeep;
+
+	std::vector<bool> isPacked;
+	int nfPacked;
 
     std::vector<reco::GenJet> fgenjets;
     std::vector<int> fgenjetllp;
@@ -218,7 +221,7 @@ class KUCMSGenObjectMini : public KUCMSObjectBase {
     edm::Handle<std::vector<pat::PackedGenParticle>> genParticles_;
     const edm::InputTag genParticlesPTag;
     edm::EDGetTokenT<std::vector<reco::GenParticle>> genParticlesPToken_;
-    edm::Handle<std::vector<pat::PackedGenParticle>> genParticlesP_;
+    edm::Handle<std::vector<reco::GenParticle>> genParticlesP_;
 
     // GenJets ----------------------------------------------------------
 
@@ -236,10 +239,24 @@ class KUCMSGenObjectMini : public KUCMSObjectBase {
 	public:
 
 	// gen particle info accessors
-    int getGenLlpId( uInt genIndex ) const { return ( genIndex < fgpLlp.size() ) ? fgpLlp[genIndex] : -10; };
-    int getGenMomIdx( uInt genIndex ) const { return ( genIndex < fgpMomIdx.size() ) ? fgpMomIdx[genIndex] : -10; };
-    int getGenPdgId( uInt genIndex ) const { return ( genIndex < fgpLlp.size() ) ? fgenparts[genIndex].pdgId() : -10; };
-
+    int getGenLlpId( uInt genIndex ) const { 
+		int val = -10;
+		if( isPacked[genIndex] ){ if( genIndex < fgpkLlp.size() ) val = fgpkLlp[genIndex]; }
+		else{ genIndex -= nfPacked; if( genIndex < fpgpLlp.size() ) val = fpgpLlp[genIndex]; }
+		return val;
+	};//<<>>int getGenLlpId( uInt genIndex ) const 
+    int getGenMomIdx( uInt genIndex ) const {
+        int val = -10;
+        if( isPacked[genIndex] ){ if( genIndex < fgpkMomIdx.size() ) val = fgpkMomIdx[genIndex]; }
+        else{ genIndex -= nfPacked; if( genIndex < fpgpMomIdx.size() ) val = fpgpLlp[genIndex]; }
+        return val;
+    };//<<>>int getGenLlpId( uInt genIndex ) const 
+    int getGenPdgId( uInt genIndex ) const {
+        int val = -10;
+        if( isPacked[genIndex] ){ if( genIndex < fgenpacks.size() ) val = fgenpacks[genIndex].pdgId(); }
+        else{ genIndex -= nfPacked; if( genIndex < fpgenparts.size() ) val = fpgenparts[genIndex].pdgId(); }
+        return val;
+    };//<<>>int getGenLlpId( uInt genIndex ) const 
 
     // Other object(s) need by this object - BASE CLASS USED HERE FOR REFRENCE ONLY -
     // exampleObject* otherObjectPtr;
@@ -340,10 +357,10 @@ void KUCMSGenObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventSe
     iEvent.getByToken(genParticlesPToken_, genParticlesP_);
     iEvent.getByToken(genJetsToken_, genJets_);
 
-	fgenparts.clear();
-    fgpLlp.clear();
-    fgpMomIdx.clear();
-    fgpGMomIdx.clear();
+	fgenpacks.clear();
+    fgpkLlp.clear();
+    fgpkMomIdx.clear();
+    fgpkGMomIdx.clear();
     fgpKidIdx.clear();
 
     fpgenparts.clear();
@@ -357,10 +374,10 @@ void KUCMSGenObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventSe
     pmatdr.clear();
     pmatde.clear();
 
-    tgenparts.clear();
-    tgpLlp.clear();
-    tgpGetMom.clear();
-    tgpKeep.clear();
+    tgenpacks.clear();
+    tgpkLlp.clear();
+    tgpkGetMom.clear();
+    tgpkKeep.clear();
 
     tpgenparts.clear();
     tpgpLlp.clear();
@@ -371,6 +388,9 @@ void KUCMSGenObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventSe
     fgenjetllp.clear();
     //genElectrons_.clear();
     //genSignalElectrons_.clear();
+
+    isPacked.clear();
+	nfPacked = -1;
 
     if( GenDEBUG ) std::cout << "Collecting Gen Particles" << std::endl;
 	if( cfFlag("motherChase") ){
@@ -386,10 +406,10 @@ void KUCMSGenObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventSe
         int genPdgId = std::abs( genPart.pdgId() );
         auto genPartSUSID = llpGenChaseP(genPart,0);
 
-		tgenparts.push_back(genPart);
-		tgpLlp.push_back(genPartSUSID);
-        tgpGetMom.push_back(false);
-        tgpKeep.push_back(false);
+		tgenpacks.push_back(genPart);
+		tgpkLlp.push_back(genPartSUSID);
+        tgpkGetMom.push_back(false);
+        tgpkKeep.push_back(false);
 
         if( genPart.pt() < cfPrm("minGenE") ){ oIndx++; continue; }
 
@@ -404,11 +424,11 @@ void KUCMSGenObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventSe
 		//}//<<>>if( cfFlag("motherChase") )
 		/// ------------------      motherChase ------------------------------------------------------------------------
 		
-        //std::cout << "Select Gen Particles to keep ----------------------------------------------" << std::endl;
+        if( GenDEBUG ) std::cout << "Select Gen Particles to keep ----------------------------------------------" << std::endl;
 		bool goodPdgId( abs(genPart.pdgId()) < 100 || abs(genPart.pdgId()) == 1000022 || abs(genPart.pdgId()) == 1000023 );
         if( genPart.status() == 1 && goodPdgId ){
-			tgpKeep[oIndx] = true;
-            tgpGetMom[oIndx] = true; // <<<<<<<<  turn on
+			tgpkKeep[oIndx] = true;
+            tgpkGetMom[oIndx] = true; // <<<<<<<<  turn on
 			//if( genPart.pdgId() == 22 && genPartSUSID == 22 )
 			//	{ std::cout << "Stable Gen Photon : " << std::endl; motherChase( genPart, "" ); }
 			//if( genPdgId < 100 && genPart.pt() > 10.0 && genPartSUSID < 40 )
@@ -435,20 +455,20 @@ void KUCMSGenObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventSe
             //bool isGrvtino( genPdgId == 1000039 );
             if( isQuark && isTree ){
                 if( genPartSUSID == 41 || genPartSUSID == 42 || genPartSUSID == 43 || genPartSUSID == 33 || genPartSUSID == 34 ){
-                    tgpKeep[oIndx] = true;
-                    //tgpGetMom[oIndx] = true; //<<<<<<<<<<<<< turn on
+                    tgpkKeep[oIndx] = true;
+                    //tgpkGetMom[oIndx] = true; //<<<<<<<<<<<<< turn on
                 }//<<>>if( genPartSUSID < 50 )
             }//<<>>if( ( isSQuark || isGlino ) )
             if( isWZ && isTree ){
                 //std::cout << "Gen Virt Q/WZ Particle Status : " << genPart.status() << std::endl;
                 if( genPartSUSID == 23 || genPartSUSID == 24 ){
-                    tgpKeep[oIndx] = true;
-                    tgpGetMom[oIndx] = true; //<<<<<<<<<<<<< turn on
+                    tgpkKeep[oIndx] = true;
+                    tgpkGetMom[oIndx] = true; //<<<<<<<<<<<<< turn on
                 }//<<>>if( genPartSUSID < 50 )
             }//<<>>if( ( isSQuark || isGlino ) )
             if( isSusy && isTree ){
-                tgpKeep[oIndx] = true;
-                tgpGetMom[oIndx] = true;
+                tgpkKeep[oIndx] = true;
+                tgpkGetMom[oIndx] = true;
             }//<<>>if( isSusy && isTree ( 
             if( isNtlino1 || isNtlino2 || isChrino1 ){
                 int kPdgId = genPart.pdgId();
@@ -464,6 +484,7 @@ void KUCMSGenObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventSe
         oIndx++;
     }//<<>>for(const auto& genPart : *genParticles_ )
 
+	oIndx = 0;
     for( const auto &genPart : *genParticlesP_ ){
 
         int genPdgId = std::abs( genPart.pdgId() );
@@ -478,7 +499,7 @@ void KUCMSGenObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventSe
 
 		bool isDup = false;
 	    for( const auto &fgenPart : *genParticles_ ){ 
-			if( ( reco::deltaR( fgenPart, genPart ) < 1e-6 ) && ( fgenPart.pdgId() == genPart.pdgId() ) ) isDup = true;
+			if( ( reco::deltaR( fgenPart, genPart ) < 1e-3 ) && ( fgenPart.pdgId() == genPart.pdgId() ) ) isDup = true;
 		}//<<>>for( const auto &genPart : *genParticles_ )
 		if( isDup ) continue;
 
@@ -541,33 +562,36 @@ void KUCMSGenObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventSe
 		oIndx++;
     }//<<>>for(const auto& genPart : *genParticles_ )
 
-	//std::cout << "Flagging Moms -------------------------------------------------------------" << std::endl;
-    int nTgenparts = tgenparts.size();
+	if( GenDEBUG ) std::cout << "Flagging Moms -------------------------------------------------------------" << std::endl;
+    int nTgenparts = tgenpacks.size();
     for( int gpit = 0; gpit < nTgenparts; gpit++ ){
-		if( tgpGetMom[gpit] ){
-			keepMothers( tgenparts[gpit] );
-		}//<<>>if( tgpGetMom[gpidx] ) 
-	}//<<>>for (const auto & gp : tgenparts )
+		if( tgpkGetMom[gpit] ){
+			keepMothers( tgenpacks[gpit] );
+		}//<<>>if( tgpkGetMom[gpidx] ) 
+	}//<<>>for (const auto & gp : tgenpacks )
 
     int nTpgenparts = tpgenparts.size();
     for( int gpit = 0; gpit < nTpgenparts; gpit++ ){
         if( tpgpGetMom[gpit] ){
             keepMothers( tpgenparts[gpit] );
-        }//<<>>if( tgpGetMom[gpidx] ) 
-    }//<<>>for (const auto & gp : tgenparts )
+        }//<<>>if( tgpkGetMom[gpidx] ) 
+    }//<<>>for (const auto & gp : tgenpacks )
 
-    //std::cout << "Saving Genparitcle to keep -------------------------------------------------------------" << std::endl;
+    if( GenDEBUG ) std::cout << "Saving Genparitcle to keep -------------------------------------------------------------" << std::endl;
     for( int gpit = 0; gpit < nTgenparts; gpit++ ){
-		if( tgpKeep[gpit] ){
-		    fgenparts.push_back( tgenparts[gpit] );
-    		fgpLlp.push_back( tgpLlp[gpit] );
-			fgpMomIdx.push_back( -1 );
+		if( tgpkKeep[gpit] ){
+		    fgenpacks.push_back( tgenpacks[gpit] );
+    		fgpkLlp.push_back( tgpkLlp[gpit] );
+			fgpkMomIdx.push_back( -1 );
 			fgpKidIdx.push_back( -1 );
-            fgpGMomIdx.push_back( -1 );
+            fgpkGMomIdx.push_back( -1 );
 			matdr.push_back( -10.f );
             matde.push_back( -10.f );
-		}//<<>>if( tgpKeep[gpidx] )
-	}//<<>>for (const auto & gp : tgenparts )
+			isPacked.push_back( true );
+		}//<<>>if( tgpkKeep[gpidx] )
+	}//<<>>for (const auto & gp : tgenpacks )
+
+	nfPacked = fgenpacks.size();
 
     for( int gpit = 0; gpit < nTpgenparts; gpit++ ){
         if( tpgpKeep[gpit] ){
@@ -578,17 +602,18 @@ void KUCMSGenObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventSe
             fpgpGMomIdx.push_back( -1 );
             pmatdr.push_back( -10.f );
             pmatde.push_back( -10.f );
-        }//<<>>if( tgpKeep[gpidx] )
-    }//<<>>for (const auto & gp : tgenparts )
+            isPacked.push_back( false );
+        }//<<>>if( tgpkKeep[gpidx] )
+    }//<<>>for (const auto & gp : tgenpacks )
 
+    if( GenDEBUG ) std::cout << "Getting GenPart mom indexes -------------------------------------------------------------" << std::endl;
 
+	// moms for packs
+	int nFgenpacks = fgenpacks.size();
+	int nFpgenparts = fpgenparts.size();
+	for( int gpit = 0; gpit < nFgenpacks; gpit++ ){
 
-	///   stopped working last frday feb 13 26
-    //std::cout << "Getting GenPart mom indexes -------------------------------------------------------------" << std::endl;
-	int nFgenparts = fgenparts.size();
-	for( int gpit = 0; gpit < nFgenparts; gpit++ ){
-
-		auto gp = fgenparts[gpit];
+		auto gp = fgenpacks[gpit];
 		if( gp.numberOfMothers() < 1 ) continue;;
 
 		auto gpm = gp.mother(0);
@@ -603,28 +628,27 @@ void KUCMSGenObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventSe
         float mr = hypo(gpm->eta(),gpm->phi());
         int mpdg = gpm->pdgId();
 		bool matched( false );
-		int nFpgenparts = fpgenparts.size();
 		for( int cangpit = 0; cangpit < nFpgenparts; cangpit++ ){
 			//if( gpit == cangpit ) continue;
 			auto cangp = fpgenparts[cangpit];
             float canr = hypo(cangp.eta(),cangp.phi());
             int canpdg = cangp.pdgId();
             if( canpdg == mpdg && std::abs( canr - mr ) == 0 ){
-                fgpMomIdx[gpit] = cangpit;		
+                fgpkMomIdx[gpit] = cangpit+nfPacked;		
 				fpgpKidIdx[cangpit] = gpit;
 				matched = true;
                 break;
             }//<<>>if( canpt == mpt && canpdg == mpdg )
-		}//<<>>for( auto cangp : fgenparts )
-		if( fgpMomIdx[gpit] == -1 && matched ) std::cout << " gen part mom index bad !!!!" << std::endl;
-		if( gp.pdgId() != fpgenparts[gpit].pdgId() ) std::cout << " gen part index bad !!!!" << std::endl;
-	}//<<>>for (const auto & gp : tgenparts )
+		}//<<>>for( auto cangp : fgenpacks )
+		if( fgpkMomIdx[gpit] == -1 && matched ) std::cout << " gen pack mom index bad !!!!" << std::endl;
+		if( gp.pdgId() != fgenpacks[gpit].pdgId() ) std::cout << " gen pack index bad 1 !!!!" << std::endl;
+	}//<<>>for (const auto & gp : tgenpacks )
 
-    for( int gpit = 0; gpit < nFgenparts; gpit++ ){
+    for( int gpit = 0; gpit < nFgenpacks; gpit++ ){
 
-		auto mgpit = fgpMomIdx[gpit];
+		auto mgpit = fgpkMomIdx[gpit];
 		if( mgpit < 0 ) continue;
-        auto gp = fgenparts[mgpit];
+        auto gp = fpgenparts[mgpit-nfPacked];
         if( gp.numberOfMothers() < 1 ) continue;;
 
         auto gpm = gp.mother(0);
@@ -639,25 +663,92 @@ void KUCMSGenObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventSe
         float mr = hypo(gpm->eta(),gpm->phi());
         int mpdg = gpm->pdgId();
         bool matched( false );
-        int nFpgenparts = fpgenparts.size();
         for( int cangpit = 0; cangpit < nFpgenparts; cangpit++ ){
             //if( mgpit == cangpit ) continue;
             auto cangp = fpgenparts[cangpit];
             float canr = hypo(cangp.eta(),cangp.phi());
             int canpdg = cangp.pdgId();
             if( canpdg == mpdg && std::abs( canr - mr ) == 0 ){
-                fgpGMomIdx[gpit] = cangpit;
+                fgpkGMomIdx[gpit] = cangpit+nfPacked;
                 matched = true;
                 break;
             }//<<>>if( canpt == mpt && canpdg == mpdg )
-        }//<<>>for( auto cangp : fgenparts )
-        if( fgpGMomIdx[gpit] == -1 && matched ) std::cout << " gen part gmom index bad !!!!" << std::endl;
-        if( gp.pdgId() != fpgenparts[mgpit].pdgId() ) std::cout << " gen part index bad !!!!" << std::endl;
+        }//<<>>for( auto cangp : fgenpacks)
+        if( fgpkGMomIdx[gpit] == -1 && matched ) std::cout << " gen packed grandmom index bad !!!!" << std::endl;
+        if( gp.pdgId() != fpgenparts[mgpit-nfPacked].pdgId() ) std::cout << " gen packed index bad 2 !!!!" << std::endl;
 
-    }//<<>>for (const auto & gp : tgenparts )
+    }//<<>>for (const auto & gp : tgenpacks )
 
+    if( GenDEBUG ) std::cout << "Getting GenPart mom indexes -------------------------------------------------------------" << std::endl;
+	// moms for parts
+    int nFgenparts = fpgenparts.size();
+    for( int gpit = 0; gpit < nFgenparts; gpit++ ){
 
-	//std::cout << " -- # Nuetral - # Charge : " << nNuet << " - " << nChar << std::endl;
+        auto gp = fpgenparts[gpit];
+        if( gp.numberOfMothers() < 1 ) continue;;
+
+        auto gpm = gp.mother(0);
+        bool done = false;
+        while( not done ){
+            bool notLastInChain( ( gpm->numberOfMothers() == 1 ) && ( gp.pdgId() == gpm->pdgId() ) );
+            bool validStatus( gpm->status() < 40 );
+            if( notLastInChain || not validStatus ){ gpm = gpm->mother(0); }
+            else done = true;
+        }//<<>>while( not done )
+
+        float mr = hypo(gpm->eta(),gpm->phi());
+        int mpdg = gpm->pdgId();
+        bool matched( false );
+        for( int cangpit = 0; cangpit < nFpgenparts; cangpit++ ){
+            //if( gpit == cangpit ) continue;
+            auto cangp = fpgenparts[cangpit];
+            float canr = hypo(cangp.eta(),cangp.phi());
+            int canpdg = cangp.pdgId();
+            if( canpdg == mpdg && std::abs( canr - mr ) == 0 ){
+                fpgpMomIdx[gpit] = cangpit+nfPacked;
+                fpgpKidIdx[cangpit] = gpit+nfPacked;
+                matched = true;
+                break;
+            }//<<>>if( canpt == mpt && canpdg == mpdg )
+        }//<<>>for( auto cangp : fpgenparts )
+        if( fpgpMomIdx[gpit] == -1 && matched ) std::cout << " gen part mom index bad !!!!" << std::endl;
+        if( gp.pdgId() != fpgenparts[gpit].pdgId() ) std::cout << " gen part index bad 1 !!!!" << std::endl;
+    }//<<>>for (const auto & gp : tgenpacks )
+
+    for( int gpit = 0; gpit < nFgenparts; gpit++ ){
+
+        auto mgpit = fpgpMomIdx[gpit];
+        if( mgpit < 0 ) continue;
+        auto gp = fpgenparts[mgpit-nfPacked];
+        if( gp.numberOfMothers() < 1 ) continue;;
+
+        auto gpm = gp.mother(0);
+        bool done = false;
+        while( not done ){
+            bool notLastInChain( ( gpm->numberOfMothers() == 1 ) && ( gp.pdgId() == gpm->pdgId() ) );
+            bool validStatus( gpm->status() < 40 );
+            if( notLastInChain || not validStatus ){ gpm = gpm->mother(0); }
+            else done = true;
+        }//<<>>while( not done )
+
+        float mr = hypo(gpm->eta(),gpm->phi());
+        int mpdg = gpm->pdgId();
+        bool matched( false );
+        for( int cangpit = 0; cangpit < nFpgenparts; cangpit++ ){
+            //if( mgpit == cangpit ) continue;
+            auto cangp = fpgenparts[cangpit];
+            float canr = hypo(cangp.eta(),cangp.phi());
+            int canpdg = cangp.pdgId();
+            if( canpdg == mpdg && std::abs( canr - mr ) == 0 ){
+                fpgpGMomIdx[gpit] = cangpit+nfPacked;
+                matched = true;
+                break;
+            }//<<>>if( canpt == mpt && canpdg == mpdg )
+        }//<<>>for( auto cangp : fgenpacks )
+        if( fpgpGMomIdx[gpit] == -1 && matched ) std::cout << " gen part grandmom index bad !!!!" << std::endl;
+        if( gp.pdgId() != fpgenparts[mgpit-nfPacked].pdgId() ) std::cout << " gen part index bad 2 !!!!" << std::endl;
+
+    }//<<>>for (const auto & gp : tgenpacks )
 
     if( GenDEBUG ) std::cout << "Collecting GenJets" << std::endl;
     for(const auto &genjet : *genJets_ ){ 
@@ -670,9 +761,9 @@ void KUCMSGenObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventSe
 
 void KUCMSGenObjectMini::PostProcessEvent( ItemManager<float>& geVar ){
 
-	int ngen = matdr.size();
-	if( ngen != int(fgenparts.size()) ) std::cout << " !!!! -- MDR v fGen mismatch !!!! " << std::endl;
-	for( int idx = 0; idx < ngen; idx++ ){
+	int ngenpack = matdr.size();
+	if( ngenpack != int(fgenpacks.size()) ) std::cout << " !!!! -- MDR v fGenPack mismatch !!!! " << std::endl;
+	for( int idx = 0; idx < ngenpack; idx++ ){
 		if( matde[idx] < 1000 ){
     		Branches.fillBranch("genMatchDr",matdr[idx]);
     		Branches.fillBranch("genMatchDe",matde[idx]);
@@ -681,17 +772,27 @@ void KUCMSGenObjectMini::PostProcessEvent( ItemManager<float>& geVar ){
             Branches.fillBranch("genMatchDe",-10.f);
 		}//<<>>if( matde[idx] < 1000 )
 	}//<<>>for( int idx = 0; idx < ngen; idx++ )
+    int ngenpart = pmatdr.size();
+    if( ngenpart != int(fpgenparts.size()) ) std::cout << " !!!! -- MDR v fGenPack mismatch !!!! " << std::endl;
+    for( int idx = 0; idx < ngenpart; idx++ ){
+        if( matde[idx] < 1000 ){
+            Branches.fillBranch("genMatchDr",pmatdr[idx]);
+            Branches.fillBranch("genMatchDe",pmatde[idx]);
+        } else {
+            Branches.fillBranch("genMatchDr",-1.f);
+            Branches.fillBranch("genMatchDe",-10.f);
+        }//<<>>if( matde[idx] < 1000 )
+    }//<<>>for( int idx = 0; idx < ngen; idx++ )
 
 }//<<>>void KUCMSGenObjectMini::PostProcessEvent( ItemManager<float>& geVar )
 
 void KUCMSGenObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 
-    //if( GenDEBUG ) std::cout << "Processing Gens" << std::endl;
+    if( GenDEBUG ) std::cout << "Processing Gens" << std::endl;
 
     Branches.clearBranches();
 
-    //if( GenDEBUG ) std::cout << " - enetering Gen loop" << std::endl;
-	//std::cout << " - enetering Gen loop" << std::endl;	
+    //if( GenDEBUG ) std::cout << " - enetering Gen loop fgenpacks" << std::endl;	
 
 	bool isGG = false;
 	bool isZZ = false;
@@ -701,9 +802,9 @@ void KUCMSGenObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 	bool hasLWZX = false;
     bool hasLWZQ = false;
 	int nLWZX = 0;
-	int nGenParts = 0;
+	int nGenPacks = 0;
 	int nXs = 0;
-    for (const auto & genpart : fgenparts ){
+    for (const auto & genpart : fgenpacks ){
 
         const float genPt = genpart.pt();
         const float genEnergy = genpart.energy();
@@ -716,9 +817,9 @@ void KUCMSGenObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 		//if( GenDEBUG ) std::cout << "GenPart : 1/2 WAY " << std::endl;
         const int genStatus = genpart.status();
 		//const int genSusId = llpGenChaseP( genpart, 0 );
-        const int genSusId = fgpLlp[nGenParts];
-		const int genMomIdx = fgpMomIdx[nGenParts];
-        const int genGMomIdx = fgpGMomIdx[nGenParts];
+        const int genSusId = fgpkLlp[nGenPacks];
+		const int genMomIdx = fgpkMomIdx[nGenPacks];
+        const int genGMomIdx = fgpkGMomIdx[nGenPacks];
         const int genCharge = genpart.charge();
         const float genVx = genpart.vx();
         const float genVy = genpart.vy();
@@ -728,28 +829,38 @@ void KUCMSGenObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 		if( genSusId == 22 or genSusId == 25 ) nXG++;
         if( genSusId == 23 or genSusId == 24 ) nXZ++;
 
-		const float momVx = ( genMomIdx > -1 ) ? fgenparts[genMomIdx].vx() : -999;
-        const float momVy = ( genMomIdx > -1 ) ? fgenparts[genMomIdx].vy() : -999;
-        const float momVz = ( genMomIdx > -1 ) ? fgenparts[genMomIdx].vz() : -999;
-		const float displacment = ( genMomIdx > -1 ) ? hypo( genVx-momVx, genVy-momVy, genVz-momVz ) : -10;		
+		int partMomIdx = genMomIdx-nfPacked;
+        if( partMomIdx < 0 && genMomIdx > -1 ) std::cout << " - blown packed : genMomIdx-nfPacked " << std::endl;
+		const float momVx = ( partMomIdx > -1 ) ? fpgenparts[partMomIdx].vx() : -999;
+        const float momVy = ( partMomIdx > -1 ) ? fpgenparts[partMomIdx].vy() : -999;
+        const float momVz = ( partMomIdx > -1 ) ? fpgenparts[partMomIdx].vz() : -999;
+		const float displacment = ( partMomIdx > -1 ) ? hypo( genVx-momVx, genVy-momVy, genVz-momVz ) : -10;		
 		
-		const int genMomPdgId = ( genMomIdx > -1 ) ? std::abs(fgenparts[genMomIdx].pdgId()) : -9;
-        const int genGMomPdgId = ( genGMomIdx > -1 ) ? std::abs(fgenparts[genGMomIdx].pdgId()) : -9;
+		const int genMomPdgId = ( genMomIdx > -1 ) ? std::abs(fpgenparts[genMomIdx-nfPacked].pdgId()) : -9;
+        const int genGMomPdgId = ( genGMomIdx > -1 ) ? std::abs(fpgenparts[genGMomIdx-nfPacked].pdgId()) : -9;
 
 		bool isLWZX = ( genPdgId == 11 || genPdgId == 13 ) && ( genMomPdgId == 23 || genMomPdgId == 24 ) && genGMomPdgId == 1000023;
 		bool isLWZQ = ( genPdgId == 11 || genPdgId == 13 ) && ( genMomPdgId == 23 || genMomPdgId == 24 ) && genGMomPdgId < 10;
 		if( isLWZX ){ hasLWZX = true; nLWZX++; }
         if( isLWZQ ) hasLWZQ = true;
 
-		const int genKidIdx = fgpKidIdx[nGenParts];
+		int genKidIdx = fgpKidIdx[nGenPacks];
+		uInt kidPdgId = 0;
+		if( genKidIdx > -1 ){ 
+			if( genKidIdx < nfPacked ) kidPdgId = fgenpacks[genKidIdx].pdgId(); 
+			else kidPdgId = fpgenparts[genKidIdx-nfPacked].pdgId();
+		}//<<>>if( genKidIdx > -1 )
 		bool isX = ( genPdgId > 1000022 ) and ( genPdgId < 1000038 );
-		bool fsGZ = ( genKidIdx > -1 ) ? ( ( fgenparts[genKidIdx].pdgId() == 22 ) or ( fgenparts[genKidIdx].pdgId() == 23 ) ) : false;
-		bool fsLSP = ( genKidIdx > -1 ) ? ( fgenparts[genKidIdx].pdgId() == 1000022 ) : false;
+		bool fsGZ = ( kidPdgId > 0 ) ? ( ( kidPdgId == 22 ) or ( kidPdgId == 23 ) ) : false;
+		bool fsLSP = ( kidPdgId > 0 ) ? ( kidPdgId == 1000022 ) : false;
 		if( isX and ( fsGZ or fsLSP ) ){
 			nXs++;
-        	const float kVx = ( genKidIdx > -1 ) ? fgenparts[genKidIdx].vx() : -999;
-        	const float kVy = ( genKidIdx > -1 ) ? fgenparts[genKidIdx].vy() : -999;
-        	const float kVz = ( genKidIdx > -1 ) ? fgenparts[genKidIdx].vz() : -999;
+			float kVx = -999; float kVy = -999; float kVz = -999; 
+			if( genKidIdx > -1 ){
+        		kVx = ( genKidIdx < nfPacked ) ? fgenpacks[genKidIdx].vx() : fpgenparts[genKidIdx-nfPacked].vx();
+        		kVy = ( genKidIdx < nfPacked ) ? fgenpacks[genKidIdx].vy() : fpgenparts[genKidIdx-nfPacked].vy();
+        		kVz = ( genKidIdx < nfPacked ) ? fgenpacks[genKidIdx].vz() : fpgenparts[genKidIdx-nfPacked].vz();
+			}//<<>>if( genKidIdx > -1 )
         	const float dis = ( genKidIdx > -1 ) ? hypo( genVx-kVx, genVy-kVy, genVz-kVz ) : -10;
 			float xp = hypo( genPx, genPy, genPz ); 
 			float beta = xp/genEnergy;
@@ -789,7 +900,6 @@ void KUCMSGenObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 
 
 		//if( GenDEBUG ) std::cout << "GenPart : genSusId = " << genSusId << std::endl;
-		Branches.fillBranch("genNtotal", unsigned(fgenparts.size()) );
         Branches.fillBranch("genPt",genPt);
         Branches.fillBranch("genEnergy",genEnergy);
         Branches.fillBranch("genPhi",genPhi);
@@ -812,8 +922,148 @@ void KUCMSGenObjectMini::ProcessEvent( ItemManager<float>& geVar ){
         Branches.fillBranch("genLWZX",isLWZX);
         Branches.fillBranch("genLWXQ",isLWZQ);
 
-		nGenParts++;
-    }//<<>> for (const auto genpart : fgenparts )
+		nGenPacks++;
+    }//<<>> for (const auto genpart : fgenpacks )
+
+    //std::cout << " - enetering Gen loop fpgenparts" << std::endl; 
+
+    int nGenParts = 0;
+    for (const auto & genpart : fpgenparts ){
+
+        const float genPt = genpart.pt();
+        const float genEnergy = genpart.energy();
+        const float genPhi = genpart.phi();
+        const float genEta = genpart.eta();
+        const uInt genPdgId = std::abs(genpart.pdgId());
+        const float genPx = genpart.px();
+        const float genPy = genpart.py();
+        const float genPz = genpart.pz();
+        //if( GenDEBUG ) std::cout << "GenPart : 1/2 WAY " << std::endl;
+        const int genStatus = genpart.status();
+        //const int genSusId = llpGenChaseP( genpart, 0 );
+        const int genSusId = fpgpLlp[nGenParts];
+        const int genMomIdx = fpgpMomIdx[nGenParts];
+        const int genGMomIdx = fpgpGMomIdx[nGenParts];
+        const int genCharge = genpart.charge();
+        const float genVx = genpart.vx();
+        const float genVy = genpart.vy();
+        const float genVz = genpart.vz();
+        const float genMass = genpart.mass();
+
+        if( genSusId == 22 or genSusId == 25 ) nXG++;
+        if( genSusId == 23 or genSusId == 24 ) nXZ++;
+
+		//std::cout << " ---- get mother info" << std::endl;
+        int partMomIdx = genMomIdx-nfPacked;
+		if( partMomIdx >= int(fpgenparts.size()) ) std::cout << " - blown part : genMomIdx-nfPacked > nGenParts " << std::endl;
+		if( genMomIdx > -1 && partMomIdx < 0 ) std::cout << " - blown part : genMomIdx-nfPacked < 0 " << std::endl;
+        const float momVx = ( partMomIdx > -1 ) ? fpgenparts[partMomIdx].vx() : -999;
+        const float momVy = ( partMomIdx > -1 ) ? fpgenparts[partMomIdx].vy() : -999;
+        const float momVz = ( partMomIdx > -1 ) ? fpgenparts[partMomIdx].vz() : -999;
+        const float displacment = ( partMomIdx > -1 ) ? hypo( genVx-momVx, genVy-momVy, genVz-momVz ) : -10;
+
+        const int genMomPdgId = ( partMomIdx > -1 ) ? std::abs(fpgenparts[partMomIdx].pdgId()) : -9;
+        //std::cout << " ---- get grand mother info" << std::endl;
+		if( genGMomIdx-nfPacked >= int(fpgenparts.size()) ) std::cout << " - blown part : genGMomIdx-nfPacked > nGenParts " << std::endl;
+        const int genGMomPdgId = ( genGMomIdx-nfPacked > -1 ) ? std::abs(fpgenparts[genGMomIdx-nfPacked].pdgId()) : -9;
+
+        bool isLWZX = ( genPdgId == 11 || genPdgId == 13 ) && ( genMomPdgId == 23 || genMomPdgId == 24 ) && genGMomPdgId == 1000023;
+        bool isLWZQ = ( genPdgId == 11 || genPdgId == 13 ) && ( genMomPdgId == 23 || genMomPdgId == 24 ) && genGMomPdgId < 10;
+        if( isLWZX ){ hasLWZX = true; nLWZX++; }
+        if( isLWZQ ) hasLWZQ = true;
+
+        //std::cout << " ---- get kid pdgid info" << std::endl;
+        int genKidIdx = fpgpKidIdx[nGenParts];
+        uInt kidPdgId = 0;
+        if( genKidIdx > -1 ){
+			if( genKidIdx-nfPacked >= int(fpgenparts.size()) ) std::cout << " ---- genpart kid index too large" << std::endl;
+            if( genKidIdx < nfPacked ) kidPdgId = fgenpacks[genKidIdx].pdgId();
+            else if( genKidIdx-nfPacked < int(fpgenparts.size()) ) kidPdgId = fpgenparts[genKidIdx-nfPacked].pdgId();
+        }//<<>>if( genKidIdx > -1 )
+        //std::cout << " ---- use kid pdgid info" << std::endl;
+        bool isX = ( genPdgId > 1000022 ) and ( genPdgId < 1000038 );
+        bool fsGZ = ( kidPdgId > 0 ) ? ( ( kidPdgId == 22 ) or ( kidPdgId == 23 ) ) : false;
+        bool fsLSP = ( kidPdgId > 0 ) ? ( kidPdgId == 1000022 ) : false;
+        if( isX and ( fsGZ or fsLSP ) ){
+            nXs++;
+            float kVx = -999; float kVy = -999; float kVz = -999;
+			//std::cout << " ---- get kid vertex info" << std::endl;
+            if( genKidIdx > -1 ){
+				if( genKidIdx-nfPacked >= int(fpgenparts.size()) ) std::cout << " ---- genpart kid index too large" << std::endl;
+                kVx = ( genKidIdx < nfPacked ) ? fgenpacks[genKidIdx].vx() : fpgenparts[genKidIdx-nfPacked].vx();
+                kVy = ( genKidIdx < nfPacked ) ? fgenpacks[genKidIdx].vy() : fpgenparts[genKidIdx-nfPacked].vy();
+                kVz = ( genKidIdx < nfPacked ) ? fgenpacks[genKidIdx].vz() : fpgenparts[genKidIdx-nfPacked].vz();
+            }//<<>>if( genKidIdx > -1 )
+			//std::cout << " ---- get ctau info" << std::endl;
+            const float dis = ( genKidIdx > -1 ) ? hypo( genVx-kVx, genVy-kVy, genVz-kVz ) : -10;
+            float xp = hypo( genPx, genPy, genPz );
+            float beta = xp/genEnergy;
+            float gbeta = xp/genMass;
+            float ct = dis/gbeta;
+			//std::cout << " ----fill xa/b info" << std::endl;
+            if( nXs == 1 ){
+                Branches.fillBranch("Xa_MomDisplacment",dis);
+                Branches.fillBranch("Xa_beta",beta);
+                Branches.fillBranch("Xa_ctau",ct);
+                Branches.fillBranch("Xa_PdgId",genPdgId);
+                Branches.fillBranch("Xa_Vx",genVx);
+                Branches.fillBranch("Xa_Vy",genVy);
+                Branches.fillBranch("Xa_Vz",genVz);
+                Branches.fillBranch("Xa_Pt",genPt);
+                Branches.fillBranch("Xa_P",xp);
+                Branches.fillBranch("Xa_Mass",genMass);
+                Branches.fillBranch("Xa_Phi",genPhi);
+                Branches.fillBranch("Xa_Eta",genEta);
+                Branches.fillBranch("Xa_Energy",genEnergy);
+            }//<<>>if( nXs == 1 )
+            if( nXs == 2 ){
+                Branches.fillBranch("Xb_MomDisplacment",dis);
+                Branches.fillBranch("Xb_PdgId",genPdgId);
+                Branches.fillBranch("Xb_Vx",genVx);
+                Branches.fillBranch("Xb_Vy",genVy);
+                Branches.fillBranch("Xb_Vz",genVz);
+                Branches.fillBranch("Xb_Pt",genPt);
+                Branches.fillBranch("Xb_P",xp);
+                Branches.fillBranch("Xb_beta",beta);
+                Branches.fillBranch("Xb_ctau",ct);
+                Branches.fillBranch("Xb_Mass",genMass);
+                Branches.fillBranch("Xb_Phi",genPhi);
+                Branches.fillBranch("Xb_Eta",genEta);
+                Branches.fillBranch("Xb_Energy",genEnergy);
+            }//<<>>if( nXs == 2 )
+        }//<<>>if( genPdgId > 1000021 and genPdgId < 1000038 )
+
+		//std::cout << " ---- Fill branches" << std::endl;
+        //if( GenDEBUG ) std::cout << "GenPart : genSusId = " << genSusId << std::endl;
+        Branches.fillBranch("genPt",genPt);
+        Branches.fillBranch("genEnergy",genEnergy);
+        Branches.fillBranch("genPhi",genPhi);
+        Branches.fillBranch("genEta",genEta);
+        Branches.fillBranch("genPdgId",genPdgId);
+        Branches.fillBranch("genPx",genPx);
+        Branches.fillBranch("genPy",genPy);
+        Branches.fillBranch("genPz",genPz);
+        Branches.fillBranch("genVx",genVx);
+        Branches.fillBranch("genVy",genVy);
+        Branches.fillBranch("genVz",genVz);
+        Branches.fillBranch("genMomIdx",genMomIdx);
+        Branches.fillBranch("genSusId",genSusId);
+        Branches.fillBranch("genStatus",genStatus);
+        Branches.fillBranch("genCharge",genCharge);
+        Branches.fillBranch("genMass",genMass);
+        Branches.fillBranch("genMomDisplacment",displacment);
+        Branches.fillBranch("genMomPdgId",genMomPdgId);
+        Branches.fillBranch("genGMomPdgId",genGMomPdgId);
+        Branches.fillBranch("genLWZX",isLWZX);
+        Branches.fillBranch("genLWXQ",isLWZQ);
+
+        nGenParts++;
+    }//<<>> for (const auto genpart : fpgenparts )
+
+
+    //std::cout << " - Gen loop Endjobs with nXs " << nXs << std::endl;
+	// nfPacked  --------------------------------------------------------------------
+    Branches.fillBranch("genNtotal", unsigned( fpgenparts.size() + nfPacked  ));
 
 	int fsType = 0;
 	if( nXG == 2 ){ isGG = true; fsType = 1; }
@@ -907,10 +1157,10 @@ std::vector<int> KUCMSGenObjectMini::getGenMatch( const std::vector<v3fPoint> sc
 	std::vector<int> genRecoIndx;
 	float drthres = 0.1;
 	float demax = 1.0;
-	int nGenPart = fgenparts.size();
+	int nGenPart = fgenpacks.size();
     for( int idx = 0; idx < nGenPart; idx++ ){
-		if( fgenparts[idx].status() != 1 ) continue;
-		if( select != 0 && std::abs(fgenparts[idx].pdgId()) != select ) continue;
+		if( fgenpacks[idx].status() != 1 ) continue;
+		if( select != 0 && std::abs(fgenpacks[idx].pdgId()) != select ) continue;
         genPartIndx.push_back(idx);
         genMDR.push_back(drthres);
 		genMDE.push_back(1000);
@@ -935,12 +1185,12 @@ std::vector<int> KUCMSGenObjectMini::getGenMatch( const std::vector<v3fPoint> sc
         		const auto rhZ = sc[it].z();
                 //const auto rhe = reco_e[it];
                 //if( GenDEBUG ) std::cout << " -- Getting genpart info " << std::endl;
-                const auto gnEta = fgenparts[partidx].eta();
-                const auto gnPhi = fgenparts[partidx].phi();
-        		const auto gnX = fgenparts[partidx].vx();
-        		const auto gnY = fgenparts[partidx].vy();
-        		const auto gnZ = fgenparts[partidx].vz();
-        		//const auto ge = fgenparts[partidx].energy();
+                const auto gnEta = fgenpacks[partidx].eta();
+                const auto gnPhi = fgenpacks[partidx].phi();
+        		const auto gnX = fgenpacks[partidx].vx();
+        		const auto gnY = fgenpacks[partidx].vy();
+        		const auto gnZ = fgenpacks[partidx].vz();
+        		//const auto ge = fgenpacks[partidx].energy();
                 //if( GenDEBUG ) std::cout << " -- calc dr match " << std::endl;
                 //float cmEta = std::asinh((rhZ-gnZ)/hypo(rhX-gnX,rhY-gnY));
 				//float cmPhi = std::atan2(rhY-gnY,rhX-gnX);
@@ -964,7 +1214,7 @@ std::vector<int> KUCMSGenObjectMini::getGenMatch( const std::vector<v3fPoint> sc
 					//std::cout << " = " << cmPhi << std::endl;
 				}//<<>>else if( select == 11 || select == 13 )
         		float dr = std::sqrt(reco::deltaR2( gnEta, gnPhi, cmEta, cmPhi ));
-				float de = std::abs( en[it] - fgenparts[partidx].energy() )/fgenparts[partidx].energy();
+				float de = std::abs( en[it] - fgenpacks[partidx].energy() )/fgenpacks[partidx].energy();
 				bool passDr = dr < genMDR[pgidx];
 				bool passDe = de < demax;
                 if( passDr && passDe ){ genMDR[pgidx] = dr; genMDE[pgidx] = de; genRecoIndx[pgidx] = it; }
@@ -1014,7 +1264,7 @@ std::vector<float> KUCMSGenObjectMini::getGenPartMatch( const reco::SuperCluster
     int matchedIdx(-10);// 1
     int matchedSIdx(-10);// 1
     int index(0);
-    for(const auto & genPart : fgenparts ){
+    for(const auto & genPart : fgenpacks ){
 
 		if( genPart.status() != 1 ) continue;
 
@@ -1035,12 +1285,12 @@ std::vector<float> KUCMSGenObjectMini::getGenPartMatch( const reco::SuperCluster
             minDr = dr;
             minRe = re;
             matchedIdx = index;
-            llpId = fgpLlp[index];
+            llpId = fpgpLlp[index];
         } else if( dr < minSDr ){
             minSDr = dr;
             minSRe = re;
             matchedSIdx = index;
-            llpSId = fgpLlp[index];
+            llpSId = fpgpLlp[index];
         }//<<>>if( dr < minDr && dp < minDp )
         index++;
 
@@ -1075,25 +1325,25 @@ std::pair<int,std::pair<float,float>> KUCMSGenObjectMini::getGenLeptonMatch( con
 	int matchedIdx(-9);
 	//std::cout << " -- Getting fgenparts size " << std::endl;
 
-    int nGenPart = fgenparts.size();
+    int nGenPart = fgenpacks.size();
     //std::cout << " - Starting fgenparts loop for : " << nGenPart << std::endl;
     for( int idx = 0; idx < nGenPart; idx++ ){
 
         //std::cout << " -- in loop with :: " << std::endl;
-        if( fgenparts[idx].status() != 1 ) continue;
+        if( fgenpacks[idx].status() != 1 ) continue;
 
-		int pdgId = std::abs( fgenparts[idx].pdgId() );
+		int pdgId = std::abs( fgenpacks[idx].pdgId() );
 		if( pdgId != parPdgId ) continue;
 		//std::cout << " -- pdgID: " << pdgId << std::endl;		
 
-		int genMomIdx = fgpMomIdx[idx];
-		int genMomPdgId = ( genMomIdx > -1 ) ? std::abs(fgenparts[genMomIdx].pdgId()) : -9;
+		int genMomIdx = fpgpMomIdx[idx];
+		int genMomPdgId = ( genMomIdx > -1 ) ? std::abs(fgenpacks[genMomIdx].pdgId()) : -9;
 		if( genMomPdgId != 23 && genMomPdgId != 24 && genMomPdgId != 1000023  ) continue;
 		//std::cout << " -- momPdgID: " << genMomPdgId << std::endl;
 
-		float geta = fgenparts[idx].eta();
-		float gphi = fgenparts[idx].phi();
-		float gen = fgenparts[idx].energy();
+		float geta = fgenpacks[idx].eta();
+		float gphi = fgenpacks[idx].phi();
+		float gen = fgenpacks[idx].energy();
         float dr = std::sqrt(reco::deltaR2(geta,gphi,eta,phi));
         float re = std::abs( (en/gen) - 1 );
 		bool dRmatch = ( dr < minDr );
@@ -1113,23 +1363,27 @@ std::pair<int,std::pair<float,float>> KUCMSGenObjectMini::getGenLeptonMatch( con
 
 }//<<>> int KUCMSGenObjectMini::getGenPartMatch( const T &lepton )
 
+//std::vector<bool> isPacked;
+//int nfPacked;
 int KUCMSGenObjectMini::getGenSigPhoXMother( uInt genIndex ){
 
     if( GenDEBUG ) std::cout << "Getting phoSigGenPhoXMother for " << genIndex << std::endl;
     int result( -1 );
-    if( genIndex >= fgpLlp.size() ){ std::cout << " --- INDEX Blown !!!!  getGenSigPhoInfo " << std::endl; return result; }
+    if( genIndex >= isPacked.size() ){ std::cout << " --- INDEX Blown !!!!  getGenSigPhoInfo " << std::endl; return result; }
 	else { 
 
-		if( genIndex >= fgpMomIdx.size() ) return -10;
-		int momidx = fgpMomIdx[genIndex];
-		if( momidx < 0 ) return -11;
-        if( momidx >= int(fgenparts.size()) ) return -12;
-		if( fgenparts[momidx].pdgId() > 1000000 ) result = momidx;
+		uInt nMomIndex = isPacked[genIndex] ? fgpkMomIdx.size() : fpgpMomIdx.size();
+		if( genIndex >= nMomIndex ) return -10;
+		int momidx = isPacked[genIndex] ? fgpkMomIdx[genIndex] : fpgpMomIdx[genIndex-nfPacked];
+        int gp_momidx = momidx-nfPacked;
+		if( gp_momidx < 0 ) return -11;
+        if( gp_momidx >= int(fpgenparts.size()) ) return -12;
+		if( fpgenparts[gp_momidx].pdgId() > 1000000 ) result = momidx;
 		else result = getGenSigPhoXMother( momidx, 0 );
 
 	}//<<>>else
-	//if( result < -10 ) std::cout << " - Found " << result << " of " << fgenparts[genIndex].pdgId() << std::endl;
-	//if( result >= 0 ) std::cout << " - Found phoSigGenPhoXMother " << result << " of " << fgenparts[result].pdgId() << std::endl;
+	//if( result < -10 ) std::cout << " - Found " << result << " of " << fpgenparts[genIndex].pdgId() << std::endl;
+	//if( result >= 0 ) std::cout << " - Found phoSigGenPhoXMother " << result << " of " << fpgenparts[result].pdgId() << std::endl;
 	//else std::cout << " - Found phoSigGenPhoXMother result of " << result << " on Index Bounds Error !" << std::endl;
 	return result;
 
@@ -1139,26 +1393,29 @@ int KUCMSGenObjectMini::getGenSigPhoXMother( uInt genIndex, int loopcnt ){
 
     if( GenDEBUG ) std::cout << "Looping phoSigGenPhoXMother with " << genIndex << " on loop " << loopcnt << std::endl;
     int result( -1 );
-    if( genIndex >= fgpLlp.size() ){ std::cout << " --- INDEX Blown !!!! phoSigGenPhoXMother " << std::endl; return result; }
+    if( genIndex >= isPacked.size() ){ std::cout << " --- INDEX Blown !!!! phoSigGenPhoXMother " << std::endl; return result; }
     else {
 
-        if( genIndex >= fgpMomIdx.size() ) return -10;
-        int momidx = fgpMomIdx[genIndex];
-        if( momidx < 0 ) return -11;
-        if( momidx >= int(fgenparts.size()) ) return -12;
-        if( fgenparts[momidx].pdgId() > 1000000 ) result = momidx;
+        uInt nMomIndex = isPacked[genIndex] ? fgpkMomIdx.size() : fpgpMomIdx.size();
+        if( genIndex >= nMomIndex ) return -10;
+        int momidx = isPacked[genIndex] ? fgpkMomIdx[genIndex] : fpgpMomIdx[genIndex-nfPacked];
+		int gp_momidx = momidx-nfPacked;
+        if( gp_momidx < 0 ) return -11;
+        if( gp_momidx >= int(fpgenparts.size()) ) return -12;
+        if( fpgenparts[gp_momidx].pdgId() > 1000000 ) result = momidx;
         else {  
 			if( momidx == int(genIndex) ){
-				std::cout << " -- CJ!!! On pgdid: " << fgenparts[momidx].pdgId() << " for " << momidx << std::endl;
+				std::cout << " -- CJ!!! On pgdid: " << fpgenparts[gp_momidx].pdgId() << " for " << momidx << std::endl;
 				return -99;
 			}//<<>>if( momidx == int(genIndex) )
 			loopcnt++; 
+			if( loopcnt > 1000 ){ std::cout << " -- Looping forever getGenSigPhoXMother " << std::endl; return -99; } 
 			result = getGenSigPhoXMother( momidx, loopcnt );
 		}//<<>> else 
 
     }//<<>>else
-    //if( result < -10 ) std::cout << " - Found " << result << " of " << fgenparts[genIndex].pdgId() << std::endl;
-    //if( result >= 0 ) std::cout << " - Found phoSigGenPhoXMother of " << result << " for pdgId " << fgenparts[result].pdgId() << std::endl;
+    //if( result < -10 ) std::cout << " - Found " << result << " of " << fpgenparts[genIndex].pdgId() << std::endl;
+    //if( result >= 0 ) std::cout << " - Found phoSigGenPhoXMother of " << result << " for pdgId " << fpgenparts[result].pdgId() << std::endl;
     //else std::cout << " - Found phoSigGenPhoXMother result of " << result << " on Index Bounds Error " << std::endl;
     return result;
 
@@ -1797,7 +2054,7 @@ std::vector<float> KUCMSGenObjectMini::getGenJetInfo( float jetEta, float jetPhi
     float genPartRe(-1.0);
     int mGenPartIdx(-1);
     int idx(0);
-    for(const auto &genPart : fgenparts ){
+    for(const auto &genPart : fpgenparts ){
 
 		if( std::abs(genPart.pdgId()) > 9 ){ idx++; continue; }
         auto gjeta = genPart.eta();
@@ -1816,7 +2073,7 @@ std::vector<float> KUCMSGenObjectMini::getGenJetInfo( float jetEta, float jetPhi
     }//<<>>for(const auto& genJet : fgenjets ) 
 
     if( mGenPartIdx > -1 ){ 
-		genPartLlpId = float(fgpLlp[mGenPartIdx]);
+		genPartLlpId = float(fpgpLlp[mGenPartIdx]);
     	//if( genPartLlpId == 51 ) motherChase( fgjquarks[mGenPartIdx], "" );
 	} else { genPartDr = -1.0; }
 
