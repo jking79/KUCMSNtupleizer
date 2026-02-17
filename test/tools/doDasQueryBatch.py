@@ -592,23 +592,44 @@ dl2018MetMini = [
 
 ]
 
+dl2022JetMetMini = [
+
+    "/JetMET/Run2022C-19Dec2023-v1/MINIAOD",
+    "/JetMET/Run2022D-19Dec2023-v1/MINIAOD",
+    "/JetMET/Run2022E-19Dec2023-v1/MINIAOD",
+    "/JetMET/Run2022F-19Dec2023-v2/MINIAOD",
+    "/JetMET/Run2022G-19Dec2023-v1/MINIAOD",
+
+]
+
+dl2023Mini = [
+
+    "/JetMET0/Run2023B-19Dec2023-v1/MINIAOD",
+    "/JetMET0/Run2023C-19Dec2023-v1/MINIAOD",
+    "/JetMET0/Run2023D-19Dec2023-v1/MINIAOD",
+    "/JetMET1/Run2023B-19Dec2023-v1/MINIAOD",
+    "/JetMET1/Run2023C-19Dec2023-v1/MINIAOD",
+    "/JetMET1/Run2023D-19Dec2023-v1/MINIAOD",
+
+]
+
 query = 'dasgoclient --json -query=\'dataset='
 
-datalist = dl2018MetMini
+datalist = dl2023Mini
 
 for data in datalist :
     
     command = query + data + '\''
     #output = bashout( command ).splitlines()
-    output = bashout( command ).split('size":')
+    #output = bashout( command ).split('size":')
     #output = bashout( command ).split('num_lumi":')
-    #output = bashout( command ).split('files":')
+    output = bashout( command ).split('files":')
     #output = bashout( command ).split('events":')
     #fir = output[1].split('size":')[0]
     #sec = output[1].split('size":')[1] 
     #.split('}],')[0]
-    size = int(output[1].split('}]')[0])/1000000000000
-    #size = output[1].split('}]')[0]
+    #size = int(output[1].split('}]')[0])/1000000000000
+    size = output[1].split('}]')[0]
     print( data,  size )
     #print( data, '\n',  fir, '\n', sec )
 

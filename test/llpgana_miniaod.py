@@ -150,7 +150,7 @@ process.source = cms.Source("PoolSource",
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500))#QT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(5000))#BT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10000))#LT
@@ -208,7 +208,7 @@ probeout = False
 if options.multicrab == True : probeout = False
 
 era = "2022"
-triggerSet = "RECO"
+triggerSet = "PAT"
 ecalIsoInputs = ecalIsoInputsF17
 if "Run3" in runera :
     if "2022" not in era : triggerSet = "PAT"
@@ -335,7 +335,7 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizerMini",
                               pileups = cms.InputTag("slimmedAddPileupInfo", ""),
                               #Phoronpileups = cms.InputTag("mixData", ""),
                               genParticles = cms.InputTag("packedGenParticles", ""),
-                              genPartPruned = cms.InputTag("prunedGenParticles","PAT"),
+                              genPartPruned = cms.InputTag("prunedGenParticles",""),
                               genjets = cms.InputTag("slimmedGenJets","")
                               
 )##<<>>process.tree = cms.EDAnalyzer("LLPgammaAnalyzer_aod"

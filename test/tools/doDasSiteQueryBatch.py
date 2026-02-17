@@ -615,7 +615,7 @@ dl2018MetMini = [
 #query = 'dasgoclient --json -query=\'dataset='
 query = 'dasgoclient --json -query=\'site dataset=' 
 
-datalist = dl2018MetMini
+datalist = dl2023Mini
 
 for data in datalist :
     
