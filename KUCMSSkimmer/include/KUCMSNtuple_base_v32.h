@@ -926,6 +926,8 @@ void Init(TTree *tree ){
    // Init() will be called many times when running on PROOF
    // (once per file to be processed).
 
+   //std::cout << " --- in Init Branches " << std::endl;
+
    Evt_genWgt = 1.f;
 
    // Set object pointer
@@ -1261,6 +1263,8 @@ void Init(TTree *tree ){
    fChain = tree;
    fCurrent = -1;
 
+   //std::cout << " --- in Init Branches set" << std::endl;
+
   if( doSVsBase ){
    if( doGenInfoBase ){
    fChain->SetBranchAddress("GenVertex_dxy", &GenVertex_dxy, &b_GenVertex_dxy);
@@ -1313,6 +1317,8 @@ void Init(TTree *tree ){
    fChain->SetBranchAddress("Vertex_dxyError", &Vertex_dxyError, &b_Vertex_dxyError);
    fChain->SetBranchAddress("Vertex_eta", &Vertex_eta, &b_Vertex_eta);
 
+   //std::cout << " --- in Init Branches set 2" << std::endl;
+
    if( doGenInfoBase ){ 
    fChain->SetBranchAddress("Vertex_genVertexIndex", &Vertex_genVertexIndex, &b_Vertex_genVertexIndex);
    fChain->SetBranchAddress("Vertex_isBronze", &Vertex_isBronze, &b_Vertex_isBronze);
@@ -1344,6 +1350,8 @@ void Init(TTree *tree ){
    fChain->SetBranchAddress("Vertex_y", &Vertex_y, &b_Vertex_y);
    fChain->SetBranchAddress("Vertex_z", &Vertex_z, &b_Vertex_z);
   }//<<>> doSVsBase
+
+   //std::cout << " --- in Init Branches set 3" << std::endl;
 
    fChain->SetBranchAddress("ECALRecHit_energy", &ECALRecHit_energy, &b_ECALRecHit_energy);
    fChain->SetBranchAddress("ECALRecHit_ID", &ECALRecHit_ID, &b_ECALRecHit_ID);
@@ -1416,6 +1424,8 @@ void Init(TTree *tree ){
    fChain->SetBranchAddress("SuperCluster_y_calo", &SuperCluster_y_calo, &b_SuperCluster_y_calo);
    fChain->SetBranchAddress("SuperCluster_z_calo", &SuperCluster_z_calo, &b_SuperCluster_z_calo);
 
+   //std::cout << " --- in Init Branches set 3" << std::endl;
+
    fChain->SetBranchAddress("Electron_DetaSCTV", &Electron_DetaSCTV, &b_Electron_DetaSCTV);
    fChain->SetBranchAddress("Electron_DphiSCTV", &Electron_DphiSCTV, &b_Electron_DphiSCTV);
    fChain->SetBranchAddress("Electron_energy", &Electron_energy, &b_Electron_energy);
@@ -1460,6 +1470,7 @@ void Init(TTree *tree ){
    fChain->SetBranchAddress("Electron_scIndex", &Electron_scIndex, &b_Electron_scIndex);
    fChain->SetBranchAddress("Electron_hasSVMatch", &Electron_hasSVMatch, &b_Electron_hasSVMatch);
 
+   //std::cout << " --- in Init Branches set 4" << std::endl;
 
    fChain->SetBranchAddress("Flag_BadChargedCandidateFilter", &Flag_BadChargedCandidateFilter, &b_Flag_BadChargedCandidateFilter);
    //fChain->SetBranchAddress("Flag_BadChargedCandidateSummer16Filter", &Flag_BadChargedCandidateSummer16Filter, &b_Flag_BadChargedCandidateSummer16Filter);
@@ -1506,6 +1517,8 @@ void Init(TTree *tree ){
    //fChain->SetBranchAddress("HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_v", &HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_v, &b_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_v);
    }//<<>>if( doHTLPathsBase )
 
+   //std::cout << " --- in Init Branches set 4" << std::endl;
+
    fChain->SetBranchAddress("Evt_luminosityBlock", &Evt_luminosityBlock, &b_Evt_luminosityBlock);
    fChain->SetBranchAddress("Evt_run", &Evt_run, &b_Evt_run);
    fChain->SetBranchAddress("Evt_event", &Evt_event, &b_Evt_event);
@@ -1514,6 +1527,8 @@ void Init(TTree *tree ){
    fChain->SetBranchAddress("PV_x", &PV_x, &b_PV_x);
    fChain->SetBranchAddress("PV_y", &PV_y, &b_PV_y);
    fChain->SetBranchAddress("PV_z", &PV_z, &b_PV_z);
+
+   //std::cout << " --- in Init Branches set 5" << std::endl;
 
    if( doGenInfoBase ){
    if( doNewSigBase ){
@@ -1546,6 +1561,8 @@ void Init(TTree *tree ){
    fChain->SetBranchAddress("Evt_fsType", &Evt_fsType, &b_Evt_fsType);
    }//<<>>if( doGenInfoBase )
    }//<<>>if( doNewSigBase )
+
+   //std::cout << " --- in Init Branches set 5" << std::endl;
 
    if( doGenInfoBase ){
    fChain->SetBranchAddress("Gen_charge", &Gen_charge, &b_Gen_charge);
@@ -1585,6 +1602,8 @@ void Init(TTree *tree ){
    }//<<>>if( doNewSigBase )
    }//<<>>if( doGenInfoBase )
 
+   //std::cout << " --- in Init Branches set 6" << std::endl;
+
    fChain->SetBranchAddress("Jet_area", &Jet_area, &b_Jet_area);
    fChain->SetBranchAddress("Jet_chEmEF", &Jet_chEmEF, &b_Jet_chEmEF);
    fChain->SetBranchAddress("Jet_chHEF", &Jet_chHEF, &b_Jet_chHEF);
@@ -1622,6 +1641,9 @@ void Init(TTree *tree ){
    fChain->SetBranchAddress("Jet_pt", &Jet_pt, &b_Jet_pt);
    fChain->SetBranchAddress("Jet_nConstituents", &Jet_nConstituents, &b_Jet_nConstituents);
 
+   //std::cout << " --- in Init Branches set 6" << std::endl;
+
+  if( doSVsBase ){
    fChain->SetBranchAddress("Muon_energy", &Muon_energy, &b_Muon_energy);
    fChain->SetBranchAddress("Muon_eta", &Muon_eta, &b_Muon_eta);
 
@@ -1649,6 +1671,9 @@ void Init(TTree *tree ){
    fChain->SetBranchAddress("Muon_passPrompt", &Muon_passPrompt, &b_Muon_passPrompt);
    fChain->SetBranchAddress("Muon_hasSVMatch", &Muon_hasSVMatch, &b_Muon_hasSVMatch);
    fChain->SetBranchAddress("Muon_isTight", &Muon_isTight, &b_Muon_isTight);
+  }//<<>>if( doSVsBase )
+
+   //std::cout << " --- in Init Branches set 7" << std::endl;
 
    fChain->SetBranchAddress("Met_CPt", &Met_CPt, &b_Met_CPt);
    fChain->SetBranchAddress("Met_Cpx", &Met_Cpx, &b_Met_Cpx);
@@ -1660,6 +1685,8 @@ void Init(TTree *tree ){
    fChain->SetBranchAddress("Met_px", &Met_px, &b_Met_px);
    fChain->SetBranchAddress("Met_py", &Met_py, &b_Met_py);
    fChain->SetBranchAddress("Met_sumEt", &Met_sumEt, &b_Met_sumEt);
+
+   //std::cout << " --- in Init Branches set 8" << std::endl;
 
    fChain->SetBranchAddress("Photon_ecalRHSumEtConeDR04", &Photon_ecalRHSumEtConeDR04, &b_Photon_ecalRHSumEtConeDR04);
    fChain->SetBranchAddress("Photon_energy", &Photon_energy, &b_Photon_energy);
@@ -1710,6 +1737,9 @@ void Init(TTree *tree ){
    fChain->SetBranchAddress("Photon_sieip", &Photon_sieip, &b_Photon_sieip);
    fChain->SetBranchAddress("Photon_sipip", &Photon_sipip, &b_Photon_sipip);
 
+   //std::cout << " --- in Init Branches set 8" << std::endl;
+
+  if( doSVsBase ){
    fChain->SetBranchAddress("Track_absIso", &Track_absIso, &b_Track_absIso);
    fChain->SetBranchAddress("Track_charge", &Track_charge, &b_Track_charge);
    fChain->SetBranchAddress("Track_chi2", &Track_chi2, &b_Track_chi2);
@@ -1749,9 +1779,13 @@ void Init(TTree *tree ){
    fChain->SetBranchAddress("Track_vx", &Track_vx, &b_Track_vx);
    fChain->SetBranchAddress("Track_vy", &Track_vy, &b_Track_vy);
    fChain->SetBranchAddress("Track_vz", &Track_vz, &b_Track_vz);
-}
+  }//<<>> doSVsBase
+
+}//void Init(TTree *tree )
 
 void getBranches( Long64_t entry ){
+
+   //std::cout << " --- in Init Branches " << std::endl;
 
    // List of branches
 
@@ -2114,6 +2148,7 @@ void getBranches( Long64_t entry ){
    b_Jet_pt->GetEntry(entry);
    b_Jet_nConstituents->GetEntry(entry);
 
+  if( doSVsBase ){
    b_Muon_energy->GetEntry(entry);
    b_Muon_eta->GetEntry(entry);
 
@@ -2141,6 +2176,7 @@ void getBranches( Long64_t entry ){
    b_Muon_passPrompt->GetEntry(entry);
    b_Muon_hasSVMatch->GetEntry(entry);
    b_Muon_isTight->GetEntry(entry);
+  }//<<>>if( doSVsBase )
 
    b_Met_CPt->GetEntry(entry);
    b_Met_Cpx->GetEntry(entry);
@@ -2202,6 +2238,7 @@ void getBranches( Long64_t entry ){
    b_Photon_sieip->GetEntry(entry);
    b_Photon_sipip->GetEntry(entry);
 
+  if( doSVsBase ){
    b_Track_absIso->GetEntry(entry);
    b_Track_charge->GetEntry(entry);
    b_Track_chi2->GetEntry(entry);
@@ -2241,6 +2278,7 @@ void getBranches( Long64_t entry ){
    b_Track_vx->GetEntry(entry);
    b_Track_vy->GetEntry(entry);
    b_Track_vz->GetEntry(entry);
+  }//<<>> doSVsBase
 
 }//<<>>void root_base::getBranches(Long64_t entry)
 

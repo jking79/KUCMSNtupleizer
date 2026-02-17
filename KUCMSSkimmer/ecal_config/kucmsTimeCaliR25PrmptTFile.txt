@@ -1,4 +1,4 @@
 ecal_config/Run3_2025_EGamma0.txt 387900 400000 r3_p25
-#ecal_config/Run3_2025_EGamma1.txt 387900 400000 r3_p25
+ecal_config/Run3_2025_EGamma1.txt 387900 400000 r3_p25
 #ecal_config/Run3_2025_EGamma2.txt 387900 400000 r3_p25
 #ecal_config/Run3_2025_EGamma3.txt 387900 400000 r3_p25
