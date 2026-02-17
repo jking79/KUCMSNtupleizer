@@ -136,7 +136,7 @@ def docrab( dataset ):
             #trial          = "kucmsntuple_sqsqG_Sig_SVIPM100_v27" #
             #trial          = "kucmsntuple_SMS_Sig_SVIPM100_v31" #
             #trial          = "kucmsntuple_MET_R17_SVIPM100_p9_v31"# 
-            trial          = "kucmsntuple_SMS_Sig_SVIHPM100_FullMini_v33" #
+            trial          = "kucmsntuple_SMS_Sig_SVHPM100_FullMini_v33" #
 
             # set trial name - used in output path ?
 
@@ -364,11 +364,11 @@ def run_multi():
         #['/SMS-GlGl-ZZ/2000_N2-400_N1-350_ct3/AODSIM',inlist+'GlGl_mGl-2000_mN2-400_mN1-350_Zff_N2ctau-0p3_AOD.txt'],
 
         ['/SMS-GlGl-GZ/2300_N2-1600_N1-1000_ct1/AODSIM',inlist2+'full_mini_SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p1_MINI.txt'],
-        ['/SMS-GlGl-GZ/2300_N2-1600_N1-1000_ct2/AODSIM',inlist2+'full_mini_SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_MINI.txt'],
+        ['/SMS-GlGl-GZ/2300_N2-1600_N1-1000_ct5/AODSIM',inlist2+'full_mini_SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_MINI.txt'],
         ['/SMS-GlGl-GZ/2300_N2-2200_N1-2100_ct1/AODSIM',inlist2+'full_mini_SMS-GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p1_MINI.txt'],
-        ['/SMS-GlGl-GZ/2300_N2-2200_N1-2100_ct2/AODSIM',inlist2+'full_mini_SMS-GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p5_MINI.txt'],
+        ['/SMS-GlGl-GZ/2300_N2-2200_N1-2100_ct5/AODSIM',inlist2+'full_mini_SMS-GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p5_MINI.txt'],
         ['/SMS-GlGl-GZ/2300_N2-2250_N1-2200_ct1/AODSIM',inlist2+'full_mini_SMS-GlGl_mGl-2300_mN2-2250_mN1-2200_GZ_N2ctau-0p1_MINI.txt'],
-        ['/SMS-GlGl-GZ/2300_N2-2250_N1-2200_ct32/AODSIM',inlist2+'full_mini_SMS-GlGl_mGl-2300_mN2-2250_mN1-2200_GZ_N2ctau-0p5_MINI.txt'],
+        ['/SMS-GlGl-GZ/2300_N2-2250_N1-2200_ct5/AODSIM',inlist2+'full_mini_SMS-GlGl_mGl-2300_mN2-2250_mN1-2200_GZ_N2ctau-0p5_MINI.txt'],
 
 
     ] 
