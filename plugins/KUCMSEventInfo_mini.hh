@@ -1,0 +1,351 @@
+// -*- C++ -*-
+//
+//
+// Original Author:  Jack W King III
+// 
+// KUCMS EventInfo Object
+//
+
+//--------------------   hh file -------------------------------------------------------------
+//--------------------------------------------------------------------------------------------
+
+// Includes for all object types
+
+#include "FWCore/Framework/interface/Frameworkfwd.h"
+#include "FWCore/Framework/interface/one/EDAnalyzer.h"
+
+#include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/MakerMacros.h"
+
+#include "FWCore/Framework/interface/ESHandle.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/Utilities/interface/InputTag.h"
+#include "FWCore/ServiceRegistry/interface/Service.h"
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
+
+#include "DataFormats/PatCandidates/interface/PackedCandidate.h"
+#include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
+#include "DataFormats/Candidate/interface/CandidateFwd.h"
+
+#include "DataFormats/Common/interface/ValueMap.h"
+#include "DataFormats/Common/interface/View.h"
+#include "DataFormats/Common/interface/Handle.h"
+
+// Add includes for specfic collections
+//#include "DataFormats/EventInfo/interface/EventInfo.h"
+
+//  KUCMS Object includes
+#include "KUCMSObjectBase.hh"
+
+#ifndef KUCMSEventInfoObjectMiniHeader
+#define KUCMSEventInfoObjectMiniHeader
+
+//#define EventInfoDEBUG true
+#define EventInfoDEBUG false
+
+using namespace edm; 
+
+class KUCMSEventInfoObjectMini : public KUCMSObjectBase {
+
+    public:
+
+    // use base class constructor
+    KUCMSEventInfoObjectMini( const edm::ParameterSet& iConfig );
+    ~KUCMSEventInfoObjectMini(){};
+
+    // object setup : 1) construct object 2) InitObject 3) CrossLoad 4) load into Object Manager
+    // load tokens for eventt based collections
+    void LoadVertexTokens( edm::EDGetTokenT<std::vector<reco::Vertex>> verticesToken_ ){ verticesToken = verticesToken_; }; 
+    void LoadTriggerTokens( edm::EDGetTokenT<edm::TriggerResults> triggerRecoResultsToken_ , edm::EDGetTokenT<trigger::TriggerEvent> triggerEventToken_ ){ triggerRecoResultsToken = triggerRecoResultsToken_; triggerEventToken = triggerEventToken_; }; 
+    void LoadTriggerTokens( edm::EDGetTokenT<edm::TriggerResults> triggerFlagResultsToken_ , edm::EDGetTokenT<edm::TriggerResults> triggerHLTResultsToken_ ){ triggerFlagResultsToken = triggerFlagResultsToken_; triggerHLTResultsToken = triggerHLTResultsToken_; };
+    // sets up branches, do preloop jobs 
+    void InitObject( TTree* fOutTree ); 
+    void InitConfigTree( TTree* fConfigTree );
+    // new function needed for crosstalk - EXAMPLE CLASS USED HERE FOR REFRENCE ONLY -
+    // void LoadObject( exampleObject* otherObject ){ otherObjectPtr = otherObject; }; // define with specific KUCMS object(s) needed 
+
+
+    // object processing : 1) LoadEvent prior to event loop 2) ProcessEvent during event loop via objectManager
+    // get collections, do initial processing
+    void LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar );
+    // do cross talk jobs with other objects, do event processing, and load branches
+    void ProcessEvent( ItemManager<float>& geVar );
+    void PostProcessEvent( ItemManager<float>& geVar );
+
+    // if there are any final tasks be to done after the event loop via objectManager
+    void EndJobs(); // do any jobs that need to be done after main event loop
+
+    // New functions specific to this collection
+    // void answerCrossTalk(); // define functions that will be called in another object - this is an example
+    // ect ...
+
+    private:
+
+    ItemManager<uInt> eventVar;
+
+    edm::EDGetTokenT<edm::TriggerResults> triggerFlagResultsToken;
+    edm::Handle<edm::TriggerResults> triggerFlagResults;
+    edm::EDGetTokenT<edm::TriggerResults> triggerHLTResultsToken;
+    edm::Handle<edm::TriggerResults> triggerHLTResults;
+    edm::EDGetTokenT<edm::TriggerResults> triggerRecoResultsToken;
+    edm::Handle<edm::TriggerResults> triggerRecoResults;
+    edm::EDGetTokenT<trigger::TriggerEvent> triggerEventToken;
+    edm::Handle<trigger::TriggerEvent> triggerEvent;
+    edm::EDGetTokenT<std::vector<reco::Vertex>> verticesToken;
+    edm::Handle<std::vector<reco::Vertex>> vertices_;   
+
+	//std::map<std::string,bool> trigFlags;
+	std::vector<std::string> triggerList;
+	std::vector<std::string> fullTriggerList;
+    std::vector<std::string> metFilterList;
+
+    std::map<std::string,bool> flags;
+    std::map<std::string,bool> hltpaths;
+	void fillFlagBranch( std::string flag ){ if( flags.find(flag) != flags.end() ) Branches.fillBranch( flag, flags[flag] ); }
+    void fillHltBranch( std::string path ){ if( hltpaths.find(path) != hltpaths.end() ) Branches.fillBranch( path, hltpaths[path] ); }
+	// for fillFlagBranch to work the branch reffrence name and the cms process path name for the flag must be the same !!!!!!
+	// and the flags map must also use the branch/path name as its key !!!!!!!
+
+	std::map<std::string,int> triggerCnt;
+
+    // Other object(s) need by this object - BASE CLASS USED HERE FOR REFRENCE ONLY -
+    // exampleObject* otherObjectPtr;
+
+};//<<>>class KUCMSEventInfo : public KUCMSObjectBase
+
+KUCMSEventInfoObjectMini::KUCMSEventInfoObjectMini( const edm::ParameterSet& iConfig ){   
+// ---- end constructor initilizations  --------------------------
+
+    cfFlag.set( "hasGenInfo", iConfig.existsAs<bool>("hasGenInfo") ? iConfig.getParameter<bool>("hasGenInfo") : true );
+	cfFlag.set( "onlyEB", iConfig.existsAs<bool>("onlyEB") ? iConfig.getParameter<bool>("onlyEB") : true );
+	cfFlag.set( "makeTriggerList", iConfig.existsAs<bool>("makeTriggerList") ? iConfig.getParameter<bool>("makeTriggerList") : false );
+
+	if( iConfig.existsAs<std::vector<std::string>>("triggerList") ){ 
+		triggerList = iConfig.getParameter<std::vector<std::string>>("triggerList");
+	}//<<>>if( iConfig.existsAs<std::vector<std::string>>("triggerList") )
+
+    if( iConfig.existsAs<std::vector<std::string>>("metFilters") ){
+        metFilterList = iConfig.getParameter<std::vector<std::string>>("metFilters");
+    }//<<>>if( iConfig.existsAs<std::vector<std::string>>("triggerList") )
+
+	fullTriggerList.clear();
+
+}//<<>>KUCMSEventInfo::KUCMSEventInfo( const edm::ParameterSet& iConfig, const ItemManager<bool>& cfFlag )
+
+void KUCMSEventInfoObjectMini::InitObject( TTree* fOutTree ){
+
+    Branches.makeBranch("erun","Evt_run",UINT,"Run number of event");
+    Branches.makeBranch("elumi","Evt_luminosityBlock",UINT,"Lumi section of event");
+    Branches.makeBranch("event","Evt_event",UINT);
+    Branches.makeBranch("vnVtx","PV_npvs",UINT);
+    Branches.makeBranch("vtxX","PV_x",FLOAT);
+    Branches.makeBranch("vtxY","PV_y",FLOAT);
+    Branches.makeBranch("vtxZ","PV_z",FLOAT);
+
+    for( auto filterName : metFilterList ){
+
+        Branches.makeBranch( filterName, filterName, BOOL );
+		triggerCnt[filterName] = 0;
+
+    }//<<>>for( auto trigName : triggerList )
+
+	for( auto trigName : triggerList ){
+	
+		Branches.makeBranch( trigName, trigName, BOOL );
+		triggerCnt[trigName] = 0;
+
+	}//<<>>for( auto trigName : triggerList )
+
+    //Branches.makeBranch("triggerList","Evt_triggerList",VSTR,"Name of all triggers the event passed");
+
+    Branches.attachBranches(fOutTree);
+
+}//<<>>void KUCMSEventInfo::InitObject( TTree* fOutTree )
+
+void KUCMSEventInfoObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar ){
+
+    if( EventInfoDEBUG ) std::cout << "LoadEvent EventInfo" << std::endl;
+    // Load handels from tokens
+    iEvent.getByToken( verticesToken, vertices_ );
+    iEvent.getByToken( triggerFlagResultsToken, triggerFlagResults );
+    iEvent.getByToken( triggerHLTResultsToken, triggerHLTResults );
+    //iEvent.getByToken( triggerEventToken, triggerEvent );
+
+    const edm::TriggerNames& triggerFlagNames = iEvent.triggerNames( *triggerFlagResults );
+    const uInt nTriggerFlagNames = triggerFlagNames.size();
+	flags.clear();
+    //std::cout << " ---- Trigger Results Flags:" << std::endl;
+	for (auto itrig = 0U; itrig < nTriggerFlagNames; itrig++){ 
+		auto name = triggerFlagNames.triggerName(itrig);
+		auto result = triggerFlagResults->accept(itrig);	
+		flags[name] = result;
+        if( cfFlag("makeTriggerList") ){
+            if( std::find( fullTriggerList.begin(), fullTriggerList.end(), name ) == fullTriggerList.end() ){
+                fullTriggerList.push_back(name);
+            }//<<>>if( std::find( fullTriggerList.begin(), fullTriggerList.end(), nameFilter ) == fullTriggerList.end() )
+        }//<<>>if( cfFlag("makeTriggerList") )
+		//std::cout << " " << name << " = " << result << std::endl; 
+	}//for (auto itrig = 0U; itrig < nTriggerNames; itrig++)
+
+/*	
+    const edm::TriggerNames& triggerHLTNames = iEvent.triggerNames( *triggerHLTResults );
+    const uInt nTriggerHLTNames = triggerHLTNames.size();
+    hltpaths.clear();
+    //std::cout << " ---- Trigger Results HLT:" << std::endl;
+    for (auto itrig = 0U; itrig < nTriggerHLTNames; itrig++){
+        auto name = triggerHLTNames.triggerName(itrig);
+        auto result = triggerHLTResults->accept(itrig);
+        hltpaths[name] = result;
+        if( cfFlag("makeTriggerList") ){
+            if( std::find( fullTriggerList.begin(), fullTriggerList.end(), name ) == fullTriggerList.end() ){
+                fullTriggerList.push_back(name);
+            }//<<>>if( std::find( fullTriggerList.begin(), fullTriggerList.end(), nameFilter ) == fullTriggerList.end() )
+        }//<<>>if( cfFlag("makeTriggerList") )
+        //std::cout << " " << name << " = " << result << std::endl;
+    }//for (auto itrig = 0U; itrig < nTriggerNames; itrig++)
+*/
+
+
+    //std::cout << " ---- Trigger Results Flags:" << std::endl;
+    const edm::TriggerNames& triggerHLTNames = iEvent.triggerNames( *triggerHLTResults );
+	const uInt nTriggerHLTNames = triggerHLTNames.size();
+	
+	if( cfFlag("makeTriggerList") ){
+		for( auto itrig = 0U; itrig < nTriggerHLTNames; itrig++ ){
+			std::string triggerName = triggerHLTNames.triggerName(itrig);
+            if( std::find( fullTriggerList.begin(), fullTriggerList.end(), triggerName ) == fullTriggerList.end() ){
+                fullTriggerList.push_back( triggerName );
+            }//<<>>if( std::find( fullTriggerList.begin(), fullTriggerList.end(), nameFilter ) == fullTriggerList.end() )
+		}//<<>>for( auto itrig = 0U; itrig < nTriggerHLTNames; itrig++ )
+	}//<<>>if( cfFlag("makeTriggerList") )
+
+    hltpaths.clear();
+	for( auto path : triggerList ){
+    	for( auto itrig = 0U; itrig < nTriggerHLTNames; itrig++ ){
+        	std::string triggerName = triggerHLTNames.triggerName(itrig);
+			if( triggerName.find( path ) != std::string::npos ){
+				auto result = triggerHLTResults->accept(itrig);
+				hltpaths[path] = result;
+				//std::cout << " " << path << " (" << itrig << ") " << triggerName << " = " << result << std::endl;
+			}//<<>>if( std::regex_match(triggerName, pathRegex) )
+    	}//for (auto itrig = 0U; itrig < nTriggerNames; itrig++)
+	}//<<>>for( auto path : hltpaths )
+
+    if( EventInfoDEBUG ) std::cout << "Collecting EventInfos" << std::endl;
+
+	//edm::Hadndle<bool> goodVerticesFilter;
+    //iEvent.getByLabel("metfilters_path",goodVerticesFilter);
+	//std::cout << " -- goodVerticesFilter : " << *goodVerticesFilter << std::endl;
+
+    eventVar.set("run",iEvent.id().run());
+    eventVar.set("lumi", iEvent.luminosityBlock());
+    eventVar.set("event", iEvent.id().event());
+
+    if( EventInfoDEBUG ) std::cout << "Processing event: " << eventVar("event");
+    if( EventInfoDEBUG ) std::cout << " in run: " << eventVar("run") << " and lumiblock: " << eventVar("lumi") << std::endl;
+
+    const auto & primevtx = vertices_->front();
+    const float vtxX = primevtx.position().x();
+    const float vtxY = primevtx.position().y();
+    const float vtxZ = primevtx.position().z();
+
+    // set global event varibles for vertix
+    geVar.set("vtxX",vtxX);
+    geVar.set("vtxY",vtxY);
+    geVar.set("vtxZ",vtxZ);
+
+}//<<>>void KUCMSEventInfo::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
+
+void KUCMSEventInfoObjectMini::ProcessEvent( ItemManager<float>& geVar ){
+
+    if( EventInfoDEBUG ) std::cout << "Processing EventInfo" << std::endl;
+
+    Branches.clearBranches();
+
+    Branches.fillBranch("erun",eventVar("run"));
+    Branches.fillBranch("elumi",eventVar("lumi"));
+    Branches.fillBranch("event",eventVar("event"));
+
+    // do not need to pass in collectioon handel -> class varible   --  Fix This
+    //edm::Handle<std::vector<reco::Vertex>> vertices_
+    uInt nvtx = vertices_->size();
+
+    Branches.fillBranch("vnVtx",nvtx);
+    Branches.fillBranch("vtxX",geVar("vtxX"));
+    Branches.fillBranch("vtxY",geVar("vtxY"));
+    Branches.fillBranch("vtxZ",geVar("vtxZ"));
+
+
+/*
+    //if( flags.find("metfilters_path") != flags.end() ) std::cout << "metfilters_path = " << flags["metfilters_path"] << std::endl;
+	//if( flags.find("Flag_goodVertices") != flags.end() ) Branches.fillBranch( "Flag_goodVertices", flags["Flag_goodVertices"] );
+	fillFlagBranch("Flag_goodVertices");
+    fillFlagBranch("Flag_globalSuperTightHalo2016Filter");
+    fillFlagBranch("Flag_HBHENoiseFilter");
+    fillFlagBranch("Flag_HBHENoiseIsoFilter");
+    fillFlagBranch("Flag_EcalDeadCellTriggerPrimitiveFilter");
+    fillFlagBranch("Flag_BadPFMuonFilter");
+    fillFlagBranch("Flag_BadPFMuonDzFilter");
+    fillFlagBranch("Flag_hfNoisyHitsFilter");
+    fillFlagBranch("Flag_BadChargedCandidateFilter");
+    fillFlagBranch("Flag_eeBadScFilter");
+    fillFlagBranch("Flag_ecalBadCalibFilter");
+*/
+
+    for( auto filterName : metFilterList ){ fillFlagBranch( filterName ); }
+    for( const auto& kv : flags ){ if( kv.second ) triggerCnt[ kv.first ]++; }
+    for( auto trigName : triggerList ){ fillHltBranch( trigName ); }
+	for( const auto& kv : hltpaths ){ if( kv.second ) triggerCnt[ kv.first ]++; }
+
+
+/*
+	//std::cout << " -------------------------- Trigger Event :" << std::endl;
+	const unsigned sizeFilters(triggerEvent->sizeFilters());
+    for (size_t iF = 0; iF < sizeFilters; ++iF){
+    
+		const std::string nameFilter( triggerEvent->filterLabel(iF) );
+		//std::cout << " nameFilter " << nameFilter << " tag " << triggerEvent->filterTagEncoded(iF) << std::endl;
+		//Branches.fillBranch("triggerList",nameFilter);
+		if( cfFlag("makeTriggerList") ){
+			if( std::find( fullTriggerList.begin(), fullTriggerList.end(), nameFilter ) == fullTriggerList.end() ){
+				fullTriggerList.push_back(nameFilter);
+			}//<<>>if( std::find( fullTriggerList.begin(), fullTriggerList.end(), nameFilter ) == fullTriggerList.end() )
+		}//<<>>if( cfFlag("makeTriggerList") )
+
+		if( std::find( triggerList.begin(), triggerList.end(), nameFilter ) != triggerList.end() ){
+			trigFlags[nameFilter] = true;
+		}//<<>>if( std::find( triggerList.begin(), triggerList.end(), nameFilter ) == triggerList.end() )
+		//std::cout << " : " << nameFilter << std::endl;
+
+		//const trigger::Keys& keys = triggerEvent->filterKeys(iF);
+		//const trigger::Vids& types = triggerEvent->filterIds(iF);
+		//const unsigned nTriggers = types.size();
+		//for (unsigned iTrig = 0; iTrig < nTriggers; ++iTrig){
+		//	trigger::TriggerObject trigObj = trigObjs[keys[iTrig]];
+		//	std::cout << " " << nameFilter << std::endl;
+		//}//<<>>for (unsigned iTrig = 0; iTrig < nTriggers; ++iTrig)
+    
+	}//<<>>for (size_t iF = 0; iF < sizeFilters; ++iF)
+	// this section access the actual trigger flags - move to load event section simular to flags with triggerResults
+
+	for( auto trigName : triggerList ){ Branches.fillBranch( trigName, trigFlags[trigName] ); }
+*/
+
+}//<<>>void KUCMSEventInfo::ProcessEvent()
+
+void KUCMSEventInfoObjectMini::PostProcessEvent( ItemManager<float>& geVar ){}
+
+void KUCMSEventInfoObjectMini::EndJobs(){
+
+	if( cfFlag("makeTriggerList") ){
+		
+		std::cout << "List of Triggers appearing in the events processed in this dataset : " << std::endl;
+		for( auto trigName : fullTriggerList ) std::cout << trigName << std::endl;
+
+	}//<<>>if( cfFlag("makeTriggerList") )
+
+	for (const auto& kv : triggerCnt) { std::cout << kv.first << " : " << kv.second << "\n"; }
+
+}//<<>>void KUCMSEventInfoObjectMini::EndJobs()
+
+#endif

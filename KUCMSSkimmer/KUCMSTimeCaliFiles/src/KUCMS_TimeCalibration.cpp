@@ -241,7 +241,7 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
 // lumi  355374 362760
 
     promptIovMap[355374] = 355793;
-    promptIovMap[355794] = 356513;
+    promptIovMap[355794] = 356513; // Run2022C -v1
     promptIovMap[356514] = 357289;
     promptIovMap[357290] = 358883;
     promptIovMap[358884] = 359420;
@@ -250,7 +250,7 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
     promptIovMap[360982] = 361416;
     promptIovMap[361417] = 362522;
     promptIovMap[362523] = 362349;//24/11/2022
-    promptIovMap[362350] = 362760;//EOY 2022
+    promptIovMap[362350] = 362760;//EOY 2022 Run2022G -v1
 
 // 2022
 // lumi  355374 362760
@@ -266,11 +266,11 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
     promptIovMap[367516] = 367882;
     promptIovMap[367884] = 368825;
     promptIovMap[368826] = 369801;
-    promptIovMap[369802] = 369912;
+    promptIovMap[369802] = 369912;//Run2023D -v1
     promptIovMap[369913] = 370496;
     promptIovMap[370497] = 370790;
 	promptIovMap[370791] = 373577;
-	promptIovMap[373578] = 373861;// EOY 2023
+	promptIovMap[373578] = 373861;// EOY 2023  ? Run2023F
 
 /// 2023
 // lumi 366727 370790 
@@ -295,6 +295,8 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
     promptIovMap[385728] = 386662;
     promptIovMap[386663] = 386951;
     promptIovMap[386952] = 387741;// EOY 2024 
+*/
+
 
 // 2024
 // lumi 378985 386951 
@@ -322,6 +324,9 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
 
 	////promptIovMap[391531] = 398903;
 	
+
+
+
 
 // END
 	promptIovMap[398904] = 999999;
