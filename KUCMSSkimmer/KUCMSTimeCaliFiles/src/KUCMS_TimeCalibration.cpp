@@ -148,6 +148,11 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
 	promptIovMap[1] = 253983; // 2012
     promptIovMap[253984] = 273157; // 2015
 
+//gldenjson
+//2016
+//273158
+//284044
+
     promptIovMap[273158] = 275656; 
     promptIovMap[275657] = 283830;
     promptIovMap[283831] = 284044; // 2016
@@ -168,6 +173,11 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
 // lumi 273158 284044
 
     promptIovMap[284045] = 296398; //16-17
+
+//gldenjson
+//2017
+//297050
+//306460
 
     promptIovMap[296399] = 297049;
     promptIovMap[297050] = 297113;
@@ -193,6 +203,11 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
 
     promptIovMap[306461] = 314766;// 17-18
 
+//gldenjson
+//2018
+//315257
+//325172
+
     promptIovMap[314767] = 315256;
     promptIovMap[315257] = 315343;
     promptIovMap[315344] = 316360;
@@ -206,12 +221,12 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
     promptIovMap[323413] = 324305;
     promptIovMap[324306] = 325172;
 
-    promptIovMap[327239] = 355373;//25/11/2018  18-22
-
 //gldenjson
 //2018
 //315257
 //325172
+
+    promptIovMap[327239] = 355373;//25/11/2018  18-22
 
 //2018A		315257	316993
 //2018B		317435	317435
@@ -221,6 +236,9 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
 // lumi 315257 325172
 
 //Run 3
+
+// 2022
+// lumi  355374 362760
 
     promptIovMap[355374] = 355793;
     promptIovMap[355794] = 356513; // Run2022C -v1
@@ -234,13 +252,15 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
     promptIovMap[362523] = 362349;//24/11/2022
     promptIovMap[362350] = 362760;//EOY 2022 Run2022G -v1
 
-    promptIovMap[362761] = 366364;// 22-23
-
 // 2022
 // lumi  355374 362760
 
+    promptIovMap[362761] = 366364;// 22-23
 
-    promptIovMap[366365] = 366726; //Run2023B -v1 
+/// 2023
+// lumi 366727 370790 
+
+    promptIovMap[366365] = 366726;
     promptIovMap[366727] = 367079;
     promptIovMap[367080] = 367515;
     promptIovMap[367516] = 367882;
@@ -252,12 +272,14 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
 	promptIovMap[370791] = 373577;
 	promptIovMap[373578] = 373861;// EOY 2023  ? Run2023F
 
-    promptIovMap[373862] = 378745;// 23-24
-
 /// 2023
 // lumi 366727 370790 
 
-/*
+    promptIovMap[373862] = 378745;// 23-24
+
+// 2024
+// lumi 378985 386951
+
     promptIovMap[378746] = 378984; 
     promptIovMap[378985] = 381306;
     promptIovMap[381307] = 382007;//ratio timing algorithm 28/05/2024
@@ -276,45 +298,27 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
 */
 
 
- //   promptIovMap[387742] = 390734;// 24-25
-
-
 // 2024
 // lumi 378985 386951 
 
-    promptIovMap[376370] = 378141;
-    promptIovMap[378142] = 378970;
-    promptIovMap[378971] = 379411;
-    promptIovMap[379412] = 380252;
-    promptIovMap[380253] = 380947;
-    promptIovMap[380948] = 381383;
-    promptIovMap[381384] = 381943;
-    promptIovMap[381944] = 383779;
-    promptIovMap[383780] = 385813;
-    promptIovMap[385814] = 386408;
-    promptIovMap[386409] = 386797;
-    promptIovMap[386798] = 387121;
-    promptIovMap[387203] = 387721;
+    promptIovMap[387742] = 390734;// 24-25
 
-// 2025
+// 2025 - (390735) 391531 - 398903
 
-    promptIovMap[387722] = 390734;
+    ////promptIovMap[390735] = 391530;
 
-    //promptIovMap[390735] = 391530;
-
-    promptIovMap[390735] = 	390936;
-    promptIovMap[390937] = 	391530;
-    promptIovMap[391531] = 	392158;
-    promptIovMap[392159] = 	393108;
-    promptIovMap[393111] = 	393609;
-    promptIovMap[393610] = 	394033;
-    promptIovMap[394034] = 	394217;
-    promptIovMap[394218] = 	394285;
-    promptIovMap[394286] = 	395967;
-    promptIovMap[395968] = 	396597;
-    promptIovMap[396598] = 	397853;
-    promptIovMap[397854] = 	398903;
-
+    promptIovMap[390735] = 390936;
+    promptIovMap[390937] = 391530;
+    promptIovMap[391531] = 392158;
+    promptIovMap[392159] = 393110;
+    promptIovMap[393111] = 393609;
+    promptIovMap[393610] = 394033;
+    promptIovMap[394034] = 394217;
+    promptIovMap[394218] = 394285;
+    promptIovMap[394286] = 395967;
+    promptIovMap[395968] = 396597;
+    promptIovMap[396598] = 397853;
+    promptIovMap[397854] = 398903;
 
 // 2025 - (390735) 391531 - 398903
 
@@ -380,6 +384,7 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
     std::string lumi22Config = "brilcalc_lumi_2022.txt";
     std::string lumi23Config = "brilcalc_lumi_2023.txt";
     std::string lumi24Config = "brilcalc_lumi_2024.txt";
+    std::string lumi25Config = "brilcalc_lumi_2025.txt";
 
     ReadLumiFile( caliFileDir+lumiUL16Config, r2ulLumiTag );
     ReadLumiFile( caliFileDir+lumiUL17Config, r2ulLumiTag );
@@ -409,6 +414,7 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
     ReadLumiFile( caliFileDir+lumi22Config, r3LumiTag );
     ReadLumiFile( caliFileDir+lumi23Config, r3LumiTag );
     ReadLumiFile( caliFileDir+lumi24Config, r3LumiTag );
+    ReadLumiFile( caliFileDir+lumi25Config, r3LumiTag );
 
     setLumiTag(r3LumiTag);
     SetupIovMap( r3TagTT, minttlumi );
@@ -418,6 +424,8 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
 }//<<>>void KUCMS_TimeCalibration::SetupEraIovMap()
 
 void KUCMS_TimeCalibration::SetupIovMap( std::string tag, float minLumi ){
+
+    std::cout << " - Read SetupIovMap : " << tag << std::endl;
 
 	bool newrange( true );
 	int start = 0;
@@ -446,9 +454,11 @@ void KUCMS_TimeCalibration::SetupIovMap( std::string tag, float minLumi ){
         bool yearend = false;
         if( currentrun > 284044 && start <= 284044 ) yearend = true;
         if( currentrun > 306460 && start <= 306460 ) yearend = true;
+        if( currentrun > 325172 && start <= 325172 ) yearend = true;
         if( currentrun > 362760 && start <= 362760 ) yearend = true;
         if( currentrun > 370790 && start <= 370790 ) yearend = true;
         if( currentrun > 386951 && start <= 386951 ) yearend = true;
+        if( currentrun > 398903 && start <= 398903 ) yearend = true;
         //else if( currentrun > 284044 && start <= 284044 ) yearend = true;
 		//if( yearend ) std::cout << " --- END OF YEAR : " << currentrun << " start " << start << std::endl; 
 		if( currentrun > curxiovend || yearend ){ // tack small portion to previous and start new run period with this run
@@ -488,6 +498,8 @@ void KUCMS_TimeCalibration::SetupIovMap( std::string tag, float minLumi ){
 	if( not newrange ) theIovMap[prev] = currentrun;
 	iovMaps[tag] = theIovMap;		
 
+    std::cout << " - Read SetupIovMap Finished : " << tag << std::endl;
+
 	//for( auto& iov : theIovMap ){ std::cout << "Iov map " << tag << " : " << iov.first << " " << iov.second << std::endl; }
 
 }//<<>>void KUCMS_TimeCalibration::makeTTIovMap()
@@ -500,14 +512,18 @@ void KUCMS_TimeCalibration::ReadLumiFile( std::string lumifile, std::string tag 
     std::string infilestr;
 	while( std::getline( infile, infilestr ) ){
 
-		if( infilestr[0] != '#' ){
+		if(!infilestr.empty() && infilestr[0] != '#'){
 
 			std::stringstream ss(infilestr);
     		std::string runfill, date, time;
     		int run, fill, nls, ncms;
     		float delivered, recorded;
 
-			ss >> runfill >> date >> time >> nls >> ncms >> delivered >> recorded;
+			if (!(ss >> runfill >> date >> time >> nls >> ncms >> delivered >> recorded)){
+    			std::cout << "Parse error in line: " << infilestr << std::endl;
+    			continue;
+			}//<<>>if (!(ss >> runfill >> date >> time >> nls >> ncms >> delivered >> recorded))
+			//ss >> runfill >> date >> time >> nls >> ncms >> delivered >> recorded;
 			auto splitRunFill = splitString( runfill, ":" );
 			std::stringstream srun( splitRunFill[0] );
 			srun >> run;
@@ -521,6 +537,7 @@ void KUCMS_TimeCalibration::ReadLumiFile( std::string lumifile, std::string tag 
 
 	}//<<>>while(std::getline(iflstream,infilestr))	
 	infile.close();
+	std::cout << " - Read LumiFile Finished : " << lumifile << std::endl;
 
 }//<<>>void KUCMS_TimeCalibration::upLoadLumiFile( std::string lumifile )
 
