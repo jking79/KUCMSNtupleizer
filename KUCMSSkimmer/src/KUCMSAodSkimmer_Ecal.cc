@@ -149,8 +149,10 @@ void KUCMSAodSkimmer::processRechits(){
 	if( nMissingRechits > 0 ) std::cout << " !! ------ !! Missing " << nMissingRechits << " rechits in " << nSCs << " SCs " << std::endl;
 
 	// fill
-    auto nETs = Track_pt->size();
-    for( int it = 0; it < nETs; it++ ){ hist1d[7]->Fill( (*Track_pt)[it], 1 ); }
+	if( doSVs ){	
+    	auto nETs = Track_pt->size();
+    	for( int it = 0; it < nETs; it++ ){ hist1d[7]->Fill( (*Track_pt)[it], 1 ); }
+	}//<<>>if( doSVs )
 
     if( DEBUGECAL ) std::cout << "Finished w/ SC - Track loops" << std::endl;
 

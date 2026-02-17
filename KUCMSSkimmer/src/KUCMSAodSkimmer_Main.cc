@@ -1027,13 +1027,13 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
   if( debugl1 ) std::cout << "KUCMSAodSkimmer : processElectrons" << std::endl;
   processElectrons();
   if( debugl1 ) std::cout << "KUCMSAodSkimmer : processMuons" << std::endl;
-  processMuons();
+  if( doSVs ) processMuons();
   if( debugl1 ) std::cout << "KUCMSAodSkimmer : processJets" << std::endl;
   processJets();
   if( debugl1 && doSVs ) std::cout << "KUCMSAodSkimmer : processSV" << std::endl;
   if( doSVs ) processSV();
   if( debugl1 ) std::cout << "KUCMSAodSkimmer : processTracks" << std::endl;
-  processTracks();
+  if( doSVs ) processTracks();
   if( debugl1 ) std::cout << "KUCMSAodSkimmer : processEvntVars" << std::endl;
   processEvntVars();// process last to catch Hem issue
   if( debugl1 && hasGenInfoFlag ) std::cout << "KUCMSAodSkimmer : processGenParticles" << std::endl;
