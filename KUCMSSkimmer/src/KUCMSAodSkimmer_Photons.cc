@@ -487,7 +487,7 @@ void KUCMSAodSkimmer::processPhotons(){
 
 	gjetscr = GetDiJetsCR(it);
 	dijetscr = GetGJetsCR(it);
-	int detbkgcr = GetDetBkgCR(it);
+	int detbkgcr = doSVs ? GetDetBkgCR(it) : -1;
 	if(detbkgcr == 2)
 		bhcr = true;
 	if(detbkgcr == 3)
