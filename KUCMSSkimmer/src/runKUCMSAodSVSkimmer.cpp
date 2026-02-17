@@ -44,6 +44,7 @@ int main ( int argc, char *argv[] ){
 	float mcw = 0;
 	bool noBHC = false;
 	bool noSV = false;
+	bool hltpaths = true;
 	for(int i = 0; i < argc; i++){
 
     		if(strncmp(argv[i],"--help", 6) == 0) 			{ hprint = true; }
@@ -66,6 +67,7 @@ int main ( int argc, char *argv[] ){
         	if(strncmp(argv[i],"--timeCaliTag", 13) == 0)	{ i++; ttag = string(argv[i]); }
         	if(strncmp(argv[i],"--MCweight", 10) == 0)		{ i++; mcw = std::stof(argv[i]); }
         	if(strncmp(argv[i],"--MCtype", 8) == 0)		{ i++; mctype = std::stoi(argv[i]); }
+        	if(strncmp(argv[i],"--HLTPathsOff", 11) == 0)	{ hltpaths = false; }
 	}
 
 	if(hprint){
@@ -79,7 +81,8 @@ int main ( int argc, char *argv[] ){
 		cout << "   --genSigPerfect                      turn on gensigperfect (default = false)" << endl;
 		cout << "   --noSVorPho                          selection doesn't have SV or photon (default = false)" << endl;
 		cout << "   --noBHC                              will not run BHC objects (default = false - BHC on)" << endl;
-		cout << "   --noSV                                will not run SV collection (default = false - SVs on)" << endl;
+		cout << "   --noSV                               will not run SV collection (default = false - SVs on)" << endl;
+		cout << "   --HLTPathsOff                        sets whether to do certain HLT path branches (default = true - on)" << endl;
         	cout << "   --dataSetKey                         set dataset key" << endl;
         	cout << "   --xsec                               set cross-section (default = 1)" << endl;
         	cout << "   --gluinoMass                         set gluino mass (default = 0)" << endl;
@@ -113,6 +116,11 @@ int main ( int argc, char *argv[] ){
     	llpgana.SetMCType(mctype);
     	llpgana.SetTimeCalibrationTag(ttag);
 	llpgana.SetMCWeight(mcw);
+	bool sigbase = false;
+	if(in_file.find("_v33_") != string::npos && in_file.find("SMS") != string::npos)
+		sigbase = true;
+	llpgana.setNewSigBase(sigbase);
+	llpgana.setHTLPathsBase(hltpaths);
     //llpgana.setNewSigBase(true);
 	//this method takes in 1 list at a time
 	eosdir = eosdir+"KUCMSNtuple/";
