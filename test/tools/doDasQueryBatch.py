@@ -583,9 +583,39 @@ dl_jm_23 = [
 
 ]
 
+dl2018MetMini = [
+
+    "/MET/Run2018A-15Feb2022_UL2018-v1/MINIAOD",
+    "/MET/Run2018B-15Feb2022_UL2018-v1/MINIAOD",
+    "/MET/Run2018C-15Feb2022_UL2018-v1/MINIAOD",
+    "/MET/Run2018D-15Feb2022_UL2018-v1/MINIAOD",
+
+]
+
+dl2022JetMetMini = [
+
+    "/JetMET/Run2022C-19Dec2023-v1/MINIAOD",
+    "/JetMET/Run2022D-19Dec2023-v1/MINIAOD",
+    "/JetMET/Run2022E-19Dec2023-v1/MINIAOD",
+    "/JetMET/Run2022F-19Dec2023-v2/MINIAOD",
+    "/JetMET/Run2022G-19Dec2023-v1/MINIAOD",
+
+]
+
+dl2023Mini = [
+
+    "/JetMET0/Run2023B-19Dec2023-v1/MINIAOD",
+    "/JetMET0/Run2023C-19Dec2023-v1/MINIAOD",
+    "/JetMET0/Run2023D-19Dec2023-v1/MINIAOD",
+    "/JetMET1/Run2023B-19Dec2023-v1/MINIAOD",
+    "/JetMET1/Run2023C-19Dec2023-v1/MINIAOD",
+    "/JetMET1/Run2023D-19Dec2023-v1/MINIAOD",
+
+]
+
 query = 'dasgoclient --json -query=\'dataset='
 
-datalist = dl_jm_23
+datalist = dl2023Mini
 
 for data in datalist :
     
@@ -593,8 +623,8 @@ for data in datalist :
     #output = bashout( command ).splitlines()
     #output = bashout( command ).split('size":')
     #output = bashout( command ).split('num_lumi":')
-    #output = bashout( command ).split('files":')
-    output = bashout( command ).split('events":')
+    output = bashout( command ).split('files":')
+    #output = bashout( command ).split('events":')
     #fir = output[1].split('size":')[0]
     #sec = output[1].split('size":')[1] 
     #.split('}],')[0]

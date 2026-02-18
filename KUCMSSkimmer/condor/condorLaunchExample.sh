@@ -20,7 +20,7 @@
 #python3 generateSubmission.py --directory testOutput --inputSample gogoZ --year 2022 --max_mat 15
 
 #python3 generateSubmission.py --directory testOutput --inputSample gogoGZ --year 2022 --max_mat 10 --mGl 2300 --mN2 2200 --mN1 2100
-python3 generateSubmission.py --directory Output --inputSample gogoGZ --year 2022 --max_mat 10
+python3 generateSubmission.py --directory Output --inputSample gogoG --year 2022 --max_mat 10
 
 
 

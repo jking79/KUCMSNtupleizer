@@ -93,12 +93,11 @@ int main ( int argc, char *argv[] ){
     //theCali.setTTIov( r2ulTag );
     //theCali.setXIov( xiovtag );
 	// for MC
-    theCali.setTTIov( mctag );
-    theCali.setXIov( mctag );
+    //theCali.setTTIov( mctag );
+    //theCali.setXIov( mctag );
     // for PD R3
-	//theCali.setTTIov( r3TagTT );
-	//theCali.setXIov( r3TagX );
-
+	theCali.setTTIov( r3TagTT );
+	theCali.setXIov( r3TagX );
 
     //-----//////////  making trigtower cali :
 	// makeCaliMapsEGR( std::string inputFileName, bool doTT, int GID,  bool small, bool doCali )
@@ -128,7 +127,6 @@ int main ( int argc, char *argv[] ){
     theCali.makeCaliHists();
     theCali.SaveCaliHists();
     theCali.SaveTTRunFile();
-
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
