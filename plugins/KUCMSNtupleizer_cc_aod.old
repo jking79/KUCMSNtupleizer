@@ -248,5 +248,5 @@ KUCMSNtupilizer::KUCMSNtupilizer(const edm::ParameterSet& iConfig):
 // ------------ define this as a plug-in --------------------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-DEFINE_FWK_MODULE(KUCMSNtupilizerMini);
+DEFINE_FWK_MODULE(KUCMSNtupilizer);
 
