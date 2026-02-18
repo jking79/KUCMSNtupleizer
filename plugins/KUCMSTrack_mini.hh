@@ -52,30 +52,30 @@
 #include "KUCMSObjectBase.hh"
 
 // includes for other KUCMSObjects
-#include "KUCMSEcalRechit.hh"
-#include "KUCMSGenObjects.hh"
-#include "KUCMSDisplacedVertex.hh"
+#include "KUCMSEcalRechit_mini.hh"
+#include "KUCMSGenObjects_mini.hh"
+#include "KUCMSDisplacedVertex_mini.hh"
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/TrackHelper.h"
 #include "TrackingTools/IPTools/interface/IPTools.h"
 
-#ifndef KUCMSTrackObjectHeader
-#define KUCMSTrackObjectHeader
+#ifndef KUCMSTrackObjectMiniHeader
+#define KUCMSTrackObjectMiniHeader
 
 //#define TrackDEBUG true
 #define TrackDEBUG false
 
 using namespace edm; 
 
-class KUCMSTrackObject : public KUCMSObjectBase {
+class KUCMSTrackObjectMini : public KUCMSObjectBase {
 
     public:
 
 	typedef pat::IsolatedTrack::PolarLorentzVector PolarLorentzVector;
 
     // use base class constructor
-    KUCMSTrackObject( const edm::ParameterSet& iConfig );
-    //KUCMSTrackObject( const edm::ParameterSet& iConfig );
-    ~KUCMSTrackObject(){};
+    KUCMSTrackObjectMini( const edm::ParameterSet& iConfig );
+    //KUCMSTrackObjectMini( const edm::ParameterSet& iConfig );
+    ~KUCMSTrackObjectMini(){};
 
     // object setup : 1) construct object 2) InitObject 3) CrossLoad 4) load into Object Manager
     // load tokens for eventt based collections
@@ -94,7 +94,7 @@ class KUCMSTrackObject : public KUCMSObjectBase {
     void LoadPfcandTokens( edm::EDGetTokenT<edm::View<pat::PackedCandidate>> pfcandToken ){ pfcandToken_ = pfcandToken; };
   	void LoadAssociationParameters(  TrackAssociatorParameters parameters){ trackAssocParameters = parameters;}
   	void LoadMagneticField( edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> token){magneticFieldToken_ = token; }
-    void LoadRecHitObject( KUCMSEcalRecHitObject* rhObj_ ){ rhObj = rhObj_; }; // define with specific KUCMS object(s) needed 
+    void LoadRecHitObject( KUCMSEcalRecHitObjectMini* rhObj_ ){ rhObj = rhObj_; }; // define with specific KUCMS object(s) needed 
 
     // object processing : 1) LoadEvent prior to event loop 2) ProcessEvent during event loop via objectManager
     // get collections, do initial processing
@@ -153,11 +153,11 @@ class KUCMSTrackObject : public KUCMSObjectBase {
     std::vector<TrackDetMatchInfo> detIdInfo;
 
 	// other object collections 
-    KUCMSEcalRecHitObject* rhObj;
+    KUCMSEcalRecHitObjectMini* rhObj;
 
 };//<<>>class KUCMSTrack : public KUCMSObjectBase
 
-KUCMSTrackObject::KUCMSTrackObject( const edm::ParameterSet& iConfig ){   
+KUCMSTrackObjectMini::KUCMSTrackObjectMini( const edm::ParameterSet& iConfig ){   
 // ---- end constructor initilizations  --------------------------
 
     cfFlag.set( "hasGenInfo", iConfig.existsAs<bool>("hasGenInfo") ? iConfig.getParameter<bool>("hasGenInfo") : true );
@@ -170,7 +170,7 @@ KUCMSTrackObject::KUCMSTrackObject( const edm::ParameterSet& iConfig ){
 
 }//<<>>KUCMSTrack::KUCMSTrack( const edm::ParameterSet& iConfig, const ItemManager<bool>& cfFlag )
 
-void KUCMSTrackObject::InitObject( TTree* fOutTree ){
+void KUCMSTrackObjectMini::InitObject( TTree* fOutTree ){
 
     Branches.makeBranch("mpdg","Track_pdgId",VINT);
     Branches.makeBranch("pt","Track_pt",VFLOAT);
@@ -223,7 +223,7 @@ void KUCMSTrackObject::InitObject( TTree* fOutTree ){
 
 }//<<>>void KUCMSTrack::InitObject( TTree* fOutTree )
 
-void KUCMSTrackObject::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar ){
+void KUCMSTrackObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar ){
 
 
     if( TrackDEBUG ) std::cout << "Getting Tokens in Tracks" << std::endl;
@@ -275,11 +275,11 @@ void KUCMSTrackObject::LoadEvent( const edm::Event& iEvent, const edm::EventSetu
 
 }//<<>>void KUCMSTrack::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
-void KUCMSTrackObject::PostProcessEvent( ItemManager<float>& geVar ){
+void KUCMSTrackObjectMini::PostProcessEvent( ItemManager<float>& geVar ){
 
-}//<<>>void KUCMSTrackObject::PostProcessEvent( ItemManager<float>& geVar )
+}//<<>>void KUCMSTrackObjectMini::PostProcessEvent( ItemManager<float>& geVar )
 
-void KUCMSTrackObject::ProcessEvent( ItemManager<float>& geVar ){
+void KUCMSTrackObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 
     if( TrackDEBUG ) std::cout << "Processing Tracks" << std::endl;
 
@@ -423,10 +423,10 @@ void KUCMSTrackObject::ProcessEvent( ItemManager<float>& geVar ){
 
 }//<<>>void KUCMSTrack::ProcessEvent()
 
-void KUCMSTrackObject::EndJobs(){}
+void KUCMSTrackObjectMini::EndJobs(){}
 
 // paramters form PhysicsTools/PatAlgos/pythin/slimming/isolatedTracks_cfi.py
-void KUCMSTrackObject::getTrkIso(const PolarLorentzVector& p4, int pc_idx, pat::PFIsolation& iso, pat::PFIsolation& miniiso) const {
+void KUCMSTrackObjectMini::getTrkIso(const PolarLorentzVector& p4, int pc_idx, pat::PFIsolation& iso, pat::PFIsolation& miniiso) const {
 
   	const auto & primevtx = vertices_->front();
   	float chiso = 0, nhiso = 0, phiso = 0, puiso = 0;      // standard isolation
@@ -485,6 +485,6 @@ void KUCMSTrackObject::getTrkIso(const PolarLorentzVector& p4, int pc_idx, pat::
   	iso = pat::PFIsolation(chiso, nhiso, phiso, puiso);
   	miniiso = pat::PFIsolation(chmiso, nhmiso, phmiso, pumiso);
 
-}//<<>>void KUCMSTrackObject::getTrkIso(const PolarLorentzVector& .....
+}//<<>>void KUCMSTrackObjectMini::getTrkIso(const PolarLorentzVector& .....
 
 #endif

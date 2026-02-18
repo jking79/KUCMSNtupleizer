@@ -21,20 +21,16 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "KUCMSNtupleizer_mini.hh"
-//#include "KUCMSHelperFunctions.hh"
-//#include "KUCMSRootHelperFunctions.hh"
 
 #include "KUCMSEventInfo_mini.hh"
 #include "KUCMSEcalRechit_mini.hh"
 #include "KUCMSPhoton_mini.hh"
 #include "KUCMSAK4Jet_mini.hh"
 #include "KUCMSPFMet_mini.hh"
-//#include "KUCMSECALTracks.hh"
 #include "KUCMSElectron_mini.hh"
-//#include "KUCMSMuon_mini.hh"
-//#include "KUCMSDisplacedElectron.hh"
+#include "KUCMSMuon_mini.hh"
 #include "KUCMSGenObjects_mini.hh"
-#include "KUCMSDisplacedVertex.hh"
+#include "KUCMSDisplacedVertex_mini.hh"
 #include "KUCMSTrack_mini.hh"
 
 using namespace std;
@@ -107,37 +103,31 @@ KUCMSNtupilizerMini::KUCMSNtupilizerMini(const edm::ParameterSet& iConfig):
     auto beamLineToken = consumes<reco::BeamSpot>(iConfig.getParameter<edm::InputTag>("beamSpot"));
     recHitsObj->LoadBeamSpotTokens( beamLineToken );
 
-	/*
+	//Track Prep 
+    edm::EDGetTokenT<edm::View<pat::PackedCandidate>> pfcandToken = consumes<edm::View<pat::PackedCandidate>>(iConfig.getParameter<edm::InputTag>("pfcandidates"));
+    auto parameters = iConfig.getParameter<edm::ParameterSet>("TrackAssociatorParameters");
+    TrackAssociatorParameters trackAssocParameters;
+    edm::ConsumesCollector iC = consumesCollector();
+    trackAssocParameters.loadParameters(parameters, iC);
+    auto transientTrackBuilderToken = esConsumes<TransientTrackBuilder,TransientTrackRecord>(edm::ESInputTag("","TransientTrackBuilder"));
+    auto magneticFieldToken = esConsumes<MagneticField, IdealMagneticFieldRecord>();
+    auto ogGeneralTracksToken = consumes<edm::View<reco::Track>>(iConfig.getParameter<edm::InputTag>("ogGeneralTracks"));
+    auto ogGsfTracksToken = consumes<edm::View<reco::GsfTrack>>(iConfig.getParameter<edm::InputTag>("ogGsfTracks"));
+
+    if( cfFlag("doSVModule") ){
     //Track General + GSF
     auto TrackObj = new KUCMSTrackObjectMini( iConfig );
-    edm::EDGetTokenT<edm::View<pat::PackedCandidate>> pfcandToken = consumes<edm::View<reco::Candidate>>(iConfig.getParameter<edm::InputTag>("pfcandidates"));
     TrackObj->LoadPfcandTokens( pfcandToken );
-    auto parameters = iConfig.getParameter<edm::ParameterSet>("TrackAssociatorParameters");
-	TrackAssociatorParameters trackAssocParameters;
-	edm::ConsumesCollector iC = consumesCollector();
-	trackAssocParameters.loadParameters(parameters, iC);
 	TrackObj->LoadAssociationParameters(trackAssocParameters);
-    auto transientTrackBuilderToken = esConsumes<TransientTrackBuilder,TransientTrackRecord>(edm::ESInputTag("","TransientTrackBuilder"));
     TrackObj->LoadTTrackBuilder(transientTrackBuilderToken);
-    auto ogGeneralTracksToken = consumes<edm::View<reco::Track>>(iConfig.getParameter<edm::InputTag>("ogGeneralTracks"));
     TrackObj->LoadGeneralTrackTokens(ogGeneralTracksToken);
-    auto ogGsfTracksToken = consumes<edm::View<reco::GsfTrack>>(iConfig.getParameter<edm::InputTag>("ogGsfTracks"));
     TrackObj->LoadGsfTrackTokens(ogGsfTracksToken);
-	auto magneticFieldToken = esConsumes<MagneticField, IdealMagneticFieldRecord>();
 	TrackObj->LoadMagneticField(magneticFieldToken);
     TrackObj->LoadBeamSpotTokens( beamLineToken );
     TrackObj->LoadVertexTokens( vertexToken );
     TrackObj->LoadRecHitObject( recHitsObj );
     ObjMan.Load( "Tracks", TrackObj );
-	*/
-
-    edm::EDGetTokenT<edm::View<pat::PackedCandidate>> pfcandToken = consumes<edm::View<pat::PackedCandidate>>(iConfig.getParameter<edm::InputTag>("pfcandidates"));
-    auto transientTrackBuilderToken = esConsumes<TransientTrackBuilder,TransientTrackRecord>(edm::ESInputTag("","TransientTrackBuilder"));
-    auto magneticFieldToken = esConsumes<MagneticField, IdealMagneticFieldRecord>();
-    auto parameters = iConfig.getParameter<edm::ParameterSet>("TrackAssociatorParameters");
-    TrackAssociatorParameters trackAssocParameters;
-    edm::ConsumesCollector iC = consumesCollector();
-    trackAssocParameters.loadParameters(parameters, iC);
+    }//<<>>if( cfFlag("doSVModule") )
 
     //Electrons 
     auto electronsObj = new KUCMSElectronObjectMini( iConfig );
@@ -147,27 +137,22 @@ KUCMSNtupilizerMini::KUCMSNtupilizerMini(const edm::ParameterSet& iConfig):
     electronsObj->LoadElectronTokens( electronToken );
     auto conversionsToken = consumes<reco::ConversionCollection>(iConfig.getParameter<edm::InputTag>("conversions"));
     electronsObj->LoadConversionTokens( conversionsToken );
-    electronsObj->LoadPfcandTokens( pfcandToken );
+    ////electronsObj->LoadPfcandTokens( pfcandToken );
 	electronsObj->LoadTTrackBuilder(transientTrackBuilderToken);
-    //electronsObj->LoadGeneralTrackTokens(ogGeneralTracksToken);
-    auto ogGsfTracksToken = consumes<edm::View<reco::GsfTrack>>(iConfig.getParameter<edm::InputTag>("ogGsfTracks"));
-    electronsObj->LoadGsfTrackTokens(ogGsfTracksToken);
+    ////electronsObj->LoadGeneralTrackTokens(ogGeneralTracksToken);
+    ////electronsObj->LoadGsfTrackTokens(ogGsfTracksToken);
     electronsObj->LoadBeamSpotTokens( beamLineToken );
-    electronsObj->LoadVertexTokens( vertexToken );
+    ////electronsObj->LoadVertexTokens( vertexToken );
     electronsObj->LoadRecHitObject( recHitsObj );
     ObjMan.Load( "Electrons", electronsObj );
 
-/*
-    issue with edm::View<reco::Muon>::const_iterator 
     //Muons    
-    auto muonObj = new KUCMSMuonObject( iConfig );
+    auto muonObj = new KUCMSMuonObjectMini( iConfig );
     auto muonToken = consumes<edm::View<pat::Muon>>(iConfig.getParameter<edm::InputTag>("muons"));
     muonObj->LoadVertexTokens( vertexToken );
     muonObj->LoadMuonTokens( muonToken );
 	muonObj->LoadTTrackBuilder(transientTrackBuilderToken);
     ObjMan.Load( "Muons", muonObj );
-*/
-
 
     KUCMSDisplacedVertexMini* displacedVertexObj = NULL;
     if( cfFlag("doSVModule") ){
@@ -190,7 +175,7 @@ KUCMSNtupilizerMini::KUCMSNtupilizerMini(const edm::ParameterSet& iConfig):
 		ObjMan.Load( "DisplacedVertex", displacedVertexObj );
 
 		electronsObj->LoadDisplacedVertexObject( displacedVertexObj );
-		//muonObj->LoadDisplacedVertexObject( displacedVertexObj );
+		muonObj->LoadDisplacedVertexObject( displacedVertexObj );
 
     }//<<>>if( cfFlag("doSVModule") )
 	if( not cfFlag("doSVModule") ) geVar.set("nDisSVs",0.f);
@@ -246,12 +231,10 @@ KUCMSNtupilizerMini::KUCMSNtupilizerMini(const edm::ParameterSet& iConfig):
 
         // Load gen object into other collections
 	    electronsObj->LoadGenObject( genObjs );
-		//muonObj->LoadGenObject( genObjs );
+		muonObj->LoadGenObject( genObjs );
         photonsObj->LoadGenObject( genObjs );
         ak4jetObj->LoadGenObject( genObjs );
-		//if( cfFlag("doSVModule") || cfFlag("doDisEleModule") ){ ecalTracksObj->LoadGenObject( genObjs ); }
 		if( cfFlag("doSVModule") ){ displacedVertexObj->LoadGenParticlesToken(genPartToken); }
-	    //if( cfFlag("doDisEleModule") ){	displacedElectronObj->LoadGenObject( genObjs ); }
 
         // Load gen object into objman last, should be no dependence with other objects
         ObjMan.Load( "GenObjects", genObjs );
