@@ -43,7 +43,7 @@ void KUCMSAodSkimmer::processTimeSig(){
 	int selPhoBHCIdx = 0;
 	for( uInt it = 0; it < nPhotons; it++ ){
 
-		if( not isSelPho[it] ) continue;
+		if( not isBaseLinePho[it] ) continue;
 		selPhoIndex++;
 
         int scIndx = (*Photon_scIndex)[it]; // vector<int>
