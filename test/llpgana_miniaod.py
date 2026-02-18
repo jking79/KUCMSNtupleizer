@@ -268,6 +268,7 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizerMini",
                               ## additional collections
                               ## tracks
                               ogGeneralTracks = cms.InputTag("generalTracks"),
+                              ##ogGeneralTracks = cms.InputTag("displacedTracks"),
                               ogGsfTracks = cms.InputTag("reducedEgamma"),
                               ecalTracks = cms.InputTag("ecalTracks", "ecalTracks"),
                               tracks = cms.InputTag("ecalTracks", "ecalGeneralTracks"),

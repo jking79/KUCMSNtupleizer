@@ -195,7 +195,7 @@ void KUCMSMuonObjectMini::InitObject( TTree* fOutTree ){
 void KUCMSMuonObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar ){
 
 
-	iEvent.getByToken(muonsToken_, muons_);
+	iEvent.getByToken( muonsToken_, muons_ );
     //iEvent.getByToken(conversionsToken_, conversions_);
     //iEvent.getByToken(beamLineToken_, beamSpot_);
     iEvent.getByToken( verticesToken, vertices_ );
@@ -206,10 +206,11 @@ void KUCMSMuonObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventS
 
     fmuons.clear();
     muIds.clear();// indexed by mu index ( 0,1,2 ) * number of ids ( 1 current, 6? possible ) + index of ID wanted
-    for (edm::View<pat::Muon>::const_iterator itMuon = muons_->begin(); itMuon != muons_->end(); itMuon++) {
+    //for (edm::View<pat::Muon>::const_iterator itMuon = muons_->begin(); itMuon != muons_->end(); itMuon++) {
+	for( const auto& muon : *muons_ ){
         //auto idx = itMuon - muons_->begin();//unsigned int
         //auto muonRef = muons_->refAt(idx);//edm::RefToBase<reco::GsfMuon> 
-        auto &muon = (*itMuon);
+        //auto &muon = (*itMuon);
         //auto passIdCut = true; //muon.muonID(muCutLoose);// pat muon ( miniAOD ) method
         //muIdBools.push_back((*muMVAIDLooseMap_)[muonRef]);// order is important, track how this vector is loaded
         auto passEnergyCut = muon.energy() > cfPrm("minMuE");
@@ -300,10 +301,12 @@ void KUCMSMuonObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 
 	    muIndx++;
 
-		//std::cout << " -- Muon getting sc : " << std::endl;
+		if( MuonDEBUG ) std::cout << " -- Muon getting sc : " << std::endl;
         const auto btptr = muon.bestTrack();
         auto ttrack = ttBuilder.build( *btptr );
 
+
+		if( MuonDEBUG ) std::cout << " -- Muon getting geninfo : " << std::endl;
         // GenParticle Info for muon  -------------------------------------------------------------------
         if( cfFlag("hasGenInfo") ){
             //scptrs.push_back(*scptr);
@@ -323,6 +326,7 @@ void KUCMSMuonObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 	Branches.fillBranch("nPrompt",nPromptMuon);
 	geVar.set("nSelMu",nSelMu);
 
+	if( MuonDEBUG ) std::cout << " -- Muon filling event geninfo : " << std::endl;
     int nGenMatched = 0;
     if( cfFlag("hasGenInfo") ){
         auto genInfo = genObjs->getGenMuonMatch( scvertex, scptres, sctrks );

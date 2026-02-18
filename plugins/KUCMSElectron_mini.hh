@@ -330,10 +330,10 @@ void KUCMSElectronObjectMini::LoadEvent( const edm::Event& iEvent, const edm::Ev
     iEvent.getByToken( conversionsToken_, conversions_ );
     iEvent.getByToken( beamLineToken_, beamSpot_ );
     iEvent.getByToken( RhoToken_, rho_ );
-    iEvent.getByToken( pfcandToken_, pfcands_ );
+    //iEvent.getByToken( pfcandToken_, pfcands_ );
   	//iEvent.getByToken( generalTracksToken_, generalTracksHandle_ );
-    iEvent.getByToken( gsfTracksToken_, gsfTracksHandle_ );
-    iEvent.getByToken( verticesToken, vertices_ );
+    //iEvent.getByToken( gsfTracksToken_, gsfTracksHandle_ );
+    //iEvent.getByToken( verticesToken, vertices_ );
 
     ttBuilder = TTBuilderWrapper( &iSetup.getData(transientTrackBuilder_) );
 
