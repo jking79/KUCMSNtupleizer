@@ -63,33 +63,18 @@ void KUCMSAodSkimmer::processEvntVars(){
   selEvtVars.fillBranch( "evtFillWgt", fillWgt );
   //std::cout << " -- ECT : fillWgt " << fillWgt << " " << xsctn << " " << evtGenWgt << " " << configSumEvtWgt << std::endl;
 
-  bool BadChargedCandidateFilter = true;
-  bool BadPFMuonDzFilter = true;
-  bool BadPFMuonFilter = true;
-  bool EcalDeadCellTriggerPrimitiveFilter = true;
-  bool HBHENoiseFilter = true;
-  bool HBHENoiseIsoFilter = true;
-  bool ecalBadCalibFilter = true;
-  bool eeBadScFilter = true;
-  bool globalSuperTightHalo2016Filter = true;
-  bool goodVertices = true;
-  bool hfNoisyHitsFilter = true;
+  bool BadChargedCandidateFilter = Flag_BadChargedCandidateFilter;
+  bool BadPFMuonDzFilter = Flag_BadPFMuonDzFilter;
+  bool BadPFMuonFilter = Flag_BadPFMuonFilter;
+  bool EcalDeadCellTriggerPrimitiveFilter = Flag_EcalDeadCellTriggerPrimitiveFilter;
+  bool HBHENoiseFilter = Flag_HBHENoiseFilter;
+  bool HBHENoiseIsoFilter = Flag_HBHENoiseIsoFilter;
+  bool ecalBadCalibFilter = Flag_ecalBadCalibFilter;
+  bool eeBadScFilter = Flag_eeBadScFilter;
+  bool globalSuperTightHalo2016Filter = Flag_globalSuperTightHalo2016Filter;
+  bool goodVertices = Flag_goodVertices;
+  bool hfNoisyHitsFilter = Flag_hfNoisyHitsFilter;
 
-  if( mctype == 1 ){
-
-	BadChargedCandidateFilter = Flag_BadChargedCandidateFilter;
-	BadPFMuonDzFilter = Flag_BadPFMuonDzFilter;
-	BadPFMuonFilter = Flag_BadPFMuonFilter;
-	EcalDeadCellTriggerPrimitiveFilter = Flag_EcalDeadCellTriggerPrimitiveFilter;
-	HBHENoiseFilter = Flag_HBHENoiseFilter;
-	HBHENoiseIsoFilter = Flag_HBHENoiseIsoFilter;
-	ecalBadCalibFilter = Flag_ecalBadCalibFilter;
-	eeBadScFilter = Flag_eeBadScFilter;
-	globalSuperTightHalo2016Filter = Flag_globalSuperTightHalo2016Filter;
-	goodVertices = Flag_goodVertices;
-	hfNoisyHitsFilter = Flag_hfNoisyHitsFilter;
-
-  }//<<>>if( not doGenInfo )
 
   bool metFlags = BadChargedCandidateFilter && BadPFMuonFilter && EcalDeadCellTriggerPrimitiveFilter; 
   metFlags = metFlags && HBHENoiseFilter && HBHENoiseIsoFilter && ecalBadCalibFilter && eeBadScFilter && goodVertices;
