@@ -295,8 +295,6 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
     promptIovMap[385728] = 386662;
     promptIovMap[386663] = 386951;
     promptIovMap[386952] = 387741;// EOY 2024 
-*/
-
 
 // 2024
 // lumi 378985 386951 

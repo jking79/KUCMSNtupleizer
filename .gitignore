@@ -23,6 +23,7 @@ macros/*.obj
 KUCMSSkimmer/condor/Output/
 KUCMSSkimmer/condor/testOutput/
 KUCMSSkimmer/condor/haddScripts/
+KUCMSSkimmer/condor/jwk_old_output/
 .nfs*
 *.txt
 *.tgz
