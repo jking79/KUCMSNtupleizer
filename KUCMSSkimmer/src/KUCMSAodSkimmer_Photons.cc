@@ -71,13 +71,17 @@ void KUCMSAodSkimmer::processPhotons(){
   float lateTimeCut = 2.5;
   if( DEBUG || verbose ) std::cout << " - Looping over for " << nPhotons << " photons" << std::endl;
 
+  //-------------------------------------------------------------------------------------------
+  ///////////  Loop over raw photons  /////////////////////////////////////////////////////////
+  //-------------------------------------------------------------------------------------------
+
   // count of # of photons that pass very loose base selection
   int nBaseRJRPhos = 0; 
   //---  main photon loop 
   for( uInt it = 0; it < nPhotons; it++ ){
 
     //---------------------------------------------------
-    ///////////  pho selection ////////////////////////////////////////////////////////////////////
+    ///////////  pho selection base information //////////////////////////////////////////////
     //---------------------------------------------------
 
     if( DEBUG ) std::cout << " -- looping photons : getting pho isEB, has min pt, not excluded, electron veto " << std::endl;
@@ -112,45 +116,11 @@ void KUCMSAodSkimmer::processPhotons(){
     bool failPhoIsoEB = not isoPho;
 	bool failPhoIsoEE = failPhoIsoEB; //not ( tspscdr4 < 7.0 && erhsecdr4 < 12.5 && htoem < 0.05 );
 
-    bool underMaxBasePhos = nBaseRJRPhos < 3;
-
-    //---------------------------------------------------------------------------------
-    ///////////  Determining photon Base selection   ////////////////////////////////////////////////////////////////////
-    //------------------------------------------------------------------------------
-
-	// Only the 2 leading photons that pass very loose criteria should be in Base selction 
-    //  change to skip jets and keep all photons regardless of photon iso with jet
-
-	bool pass_very_loose_id = isoPho; // ?  this is place holder - was not in place in v37  and prior to 2/17/26 
-	bool in_base_selection = not isExcluded and not hasPixSeed and overMinPt and pass_very_loose_id and underMaxBasePhos;
-
     //---------------------------------------------------
-    ///////////  saving hem region info  ////////////////////////////////////////////////////////////////////
+    /////////// skip all excluded photons///////////////////////////////////
     //---------------------------------------------------
 
-	bool hemEligible1 = pt > 20 && not isExcluded && not hasPixSeed;
-    bool hemEligible2 = pt > 30 && not isExcluded && not hasPixSeed; 
-
-	bool isInHemRegion = inHEMRegion( eta, phi );
-	hemBits.set( "pho1hvl", isInHemRegion && hemEligible1 );		
-    hemBits.set( "pho2hvm", isInHemRegion && hemEligible2 );
-
-    //---------------------------------------------------
-    ///////////  saving info on EE photons  ////////////////////////////////////////////////////////////////////
-    //---------------------------------------------------
-	bool isEESig = not isExcluded && not hasPixSeed && overMaxEta;
-    if( isEESig ){
-
-		selPhotons.fillBranch( "endcap_photon_baseline", in_base_selection );   //!
-    	selPhotons.fillBranch( "endcap_photon_energy", (*Photon_energy)[it] );   //!
-    	selPhotons.fillBranch( "endcap_photon_eta", (*Photon_eta)[it] );   //!
-    	selPhotons.fillBranch( "endcap_photon_phi", (*Photon_phi)[it] );   //!
-    	selPhotons.fillBranch( "endcap_photon_tspscdr4", (*Photon_trkSumPtSolidConeDR04)[it] );   //!
-        selPhotons.fillBranch( "endcap_photon_erhsecdr4", (*Photon_ecalRHSumEtConeDR04)[it] );   //!
-        selPhotons.fillBranch( "endcap_photon_htoem", (*Photon_hadTowOverEM)[it] );   //!
-        selPhotons.fillBranch( "endcap_photon_pt", (*Photon_pt)[it] );   //!
-
-    }//if( doGenInfo )
+    if( isExcluded ) continue;
 
     //---------------------------------------------------
     ///////////  processing SC rechit info for  time/res/sig ////////////////////////////////////////////////////////////
@@ -238,11 +208,6 @@ void KUCMSAodSkimmer::processPhotons(){
     }//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
 
     //---------------------------------------------------
-    //adding criteria for 'selected' or 'very loose base selection' photons - need at least 2 rechits that are within [-20, 20] ns
-    bool badNRechits  = (_ca.GetNRecHits() < 2);
-    in_base_selection = in_base_selection && not badNRechits;
-
-    //---------------------------------------------------
     // calc wieghted times and time sigs
     //===================================================
     if( sumw == 0 ){ sumw = 1; sumtw = -100; sumtrw = -1000; }
@@ -262,7 +227,16 @@ void KUCMSAodSkimmer::processPhotons(){
     float timesignum, timesigdenom;
 	float phoWTimeSig = getTimeSig( scIndx, timesignum, timesigdenom );
 
-	if( isExcluded ) continue;
+    //---------------------------------------------------
+    ///////////  saving hem region info  ////////////////////////////////////////////////////////////////////
+    //---------------------------------------------------
+
+    bool hemEligible1 = pt > 20 && not isExcluded && not hasPixSeed;
+    bool hemEligible2 = pt > 30 && not isExcluded && not hasPixSeed;
+
+    bool isInHemRegion = inHEMRegion( eta, phi );
+    hemBits.set( "pho1hvl", isInHemRegion && hemEligible1 );
+    hemBits.set( "pho2hvm", isInHemRegion && hemEligible2 );
 
     //---------------------------------------------------
     ///////////  saving info for all non excluded photons  ////////////////////////////////////////////////////////////////////
@@ -277,33 +251,36 @@ void KUCMSAodSkimmer::processPhotons(){
     selPhotons.fillBranch( "photon_E", energy );
     selPhotons.fillBranch( "photon_PixSeed", hasPixSeed );
 
-
-    ///////////  Very Loose Base Photon selection ////////////////////////////////////////////////////////////////////
     //---------------------------------------------------
-	//  phoskip all photons that do not pass selection criteria
-	//  moved to here so that EE and all photon info could be saved with WTSig info
+    ///////////  saving info on EE photons  ////////////////////////////////////////////////////////////////////
     //---------------------------------------------------
-    ///////////  pho selection ////////////////////////////////////////////////////////////////////
+    bool isEESig = not isExcluded && not hasPixSeed && overMaxEta;
+    if( isEESig ){
 
-    if( ( geVars("genSigPerfect") != 1 ) && not in_base_selection ){ isBaseLinePho.push_back(false); continue; }		
-    if( ( geVars("genSigPerfect") == 1 ) &&  ( not isGenSig ) ){ isBaseLinePho.push_back(false);  continue; }
-	isBaseLinePho.push_back(true);
-    nBaseRJRPhos++;
+        selPhotons.fillBranch( "endcap_photon_baseline", in_base_selection );   //!
+        selPhotons.fillBranch( "endcap_photon_energy", (*Photon_energy)[it] );   //!
+        selPhotons.fillBranch( "endcap_photon_eta", (*Photon_eta)[it] );   //!
+        selPhotons.fillBranch( "endcap_photon_phi", (*Photon_phi)[it] );   //!
+        selPhotons.fillBranch( "endcap_photon_tspscdr4", (*Photon_trkSumPtSolidConeDR04)[it] );   //!
+        selPhotons.fillBranch( "endcap_photon_erhsecdr4", (*Photon_ecalRHSumEtConeDR04)[it] );   //!
+        selPhotons.fillBranch( "endcap_photon_htoem", (*Photon_hadTowOverEM)[it] );   //!
+        selPhotons.fillBranch( "endcap_photon_pt", (*Photon_pt)[it] );   //!
 
-    //---------------------------------------------------
-    ///////////  pho selection ////////////////////////////////////////////////////////////////////
-    //---------------------------------------------------
+    }//if( doGenInfo )
 
-///////////////////////////////////////
-// Info Block ? old ?
-// for the tight and loose(!tight) selections the discriminant scores are as follows (with the corresponding ROC curve info):
-// - old  tight: iso score > 0.337 (5% noniso contamination with ~97% iso efficiency)
-// - old loose: iso score > 0.134 (10% noniso contamination with ~98% iso efficiency)
-// - old very loose: iso score > 0.0364 (20% noniso contamination with ~99% iso efficiency)
-// - tight: 0.875 (1% bkg eff for 90% sig eff)
-// - loose: 0.014 (30% bkg eff for 99.8% sig eff)
-/////////////////////////////////////////
+    bool isEBSig = not isExcluded && not hasPixSeed && not overMaxEta;
+    if( isEBSig ){
 
+        selPhotons.fillBranch( "barrel_photon_baseline", in_base_selection );   //!
+        selPhotons.fillBranch( "barrel_photon_energy", (*Photon_energy)[it] );   //!
+        selPhotons.fillBranch( "barrel_photon_eta", (*Photon_eta)[it] );   //!
+        selPhotons.fillBranch( "barrel_photon_phi", (*Photon_phi)[it] );   //!
+        selPhotons.fillBranch( "barrel_photon_tspscdr4", (*Photon_trkSumPtSolidConeDR04)[it] );   //!
+        selPhotons.fillBranch( "barrel_photon_erhsecdr4", (*Photon_ecalRHSumEtConeDR04)[it] );   //!
+        selPhotons.fillBranch( "barrel_photon_htoem", (*Photon_hadTowOverEM)[it] );   //!
+        selPhotons.fillBranch( "barrel_photon_pt", (*Photon_pt)[it] );   //!
+
+    }//if( doGenInfo )
 
     //---------------------------------------------------
     ///////////  pho disriminate ids ////////////////////////////////////////////////////////////////////
@@ -346,14 +323,58 @@ void KUCMSAodSkimmer::processPhotons(){
 
     if(DEBUG) cout << "photon " << it << " iso score " << isobkg_score << " noniso score " << nonisobkg_score << endl;
  
+    //---------------------------------------------------
+    //adding criteria for 'selected' or 'very loose base selection' photons - need at least 2 rechits that are within [-20, 20] ns
+    bool badNRechits  = (_ca.GetNRecHits() < 2);
+
   	_ca.ClearRecHitList();
+
+    //---------------------------------------------------
+    ///////////  saving hem region info  ////////////////////////////////////////////////////////////////////
+    //---------------------------------------------------
+
+    bool hemEligible1 = pt > 20 && not isExcluded && not hasPixSeed;
+    bool hemEligible2 = pt > 30 && not isExcluded && not hasPixSeed;
+
+    bool isInHemRegion = inHEMRegion( eta, phi );
+    hemBits.set( "pho1hvl", isInHemRegion && hemEligible1 );
+    hemBits.set( "pho2hvm", isInHemRegion && hemEligible2 );
 
 	// setting flag for photons that go into rjr - should be all that get to here now.
 
+	///////////////////////////////  depreciated but still used in process
 	//we want to reject (endcap) photons that are at the most noniso edge of the noniso sideband. 
 	bool isRjrSigPho = true; // overMaxEta ? nonisobkg_score < EEVeryVeryNonIsoCutVal : isoPho;
 	if( isRjrSigPho ) isRJRPho.push_back(true);
 	else isRJRPho.push_back(false);
+
+    //---------------------------------------------------------------------------------
+    ///////////  Determining photon Base selection   ////////////////////////////////////////////////////////////////////
+    //------------------------------------------------------------------------------
+
+    // Only the 2 leading photons that pass very loose criteria should be in Base selction 
+    //  change to skip jets and keep all photons regardless of photon iso with jet
+
+    bool underNMaxBasePhos = nBaseRJRPhos < 3;
+    bool pass_very_loose_id = isoPho; // ?  this is place holder - was not in place in v37  and prior to 2/17/26 
+    bool in_base_selection = not badNRechits and not hasPixSeed and overMinPt and pass_very_loose_id and underNMaxBasePhos;
+
+    ///////////  Very Loose Base Photon selection ////////////////////////////////////////////////////////////////////
+    //---------------------------------------------------
+    //  phoskip all photons that do not pass selection criteria
+    //  moved to here so that EE and all photon info could be saved with WTSig info
+    //---------------------------------------------------
+    ///////////  pho selection ////////////////////////////////////////////////////////////////////
+
+    if( ( geVars("genSigPerfect") != 1 ) && not in_base_selection ){ isBaseLinePho.push_back(false); continue; }
+    if( ( geVars("genSigPerfect") == 1 ) &&  ( not isGenSig ) ){ isBaseLinePho.push_back(false);  continue; }
+    isBaseLinePho.push_back(true);
+
+    // setting flag for photons that go into rjr - should be all that get to here now.
+    // we want to reject (endcap) photons that are at the most noniso edge of the noniso sideband. 
+    bool isRjrSigPho = true; // overMaxEta ? nonisobkg_score < EEVeryVeryNonIsoCutVal : isoPho;
+    if( isRjrSigPho ){ isRJRPho.push_back(true); nBaseRJRPhos++; }
+    else isRJRPho.push_back(false);
 
 	//----------------------------------------------------------------------------------
 	//  getting pho SC and Gen info
@@ -1067,6 +1088,15 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch( "endcap_photon_tspscdr4", VFLOAT );   //!
   selPhotons.makeBranch( "endcap_photon_erhsecdr4", VFLOAT );   //!
   selPhotons.makeBranch( "endcap_photon_htoem", VFLOAT );   //!
+
+  selPhotons.makeBranch( "barrel_photon_baseline", VBOOL );   //!
+  selPhotons.makeBranch( "barrel_photon_energy", VFLOAT );   //!
+  selPhotons.makeBranch( "barrel_photon_eta", VFLOAT );   //!
+  selPhotons.makeBranch( "barrel_photon_phi", VFLOAT );   //!
+  selPhotons.makeBranch( "barrel_photon_pt", VFLOAT );   //!
+  selPhotons.makeBranch( "barrel_photon_tspscdr4", VFLOAT );   //!
+  selPhotons.makeBranch( "barrel_photon_erhsecdr4", VFLOAT );   //!
+  selPhotons.makeBranch( "barrel_photon_htoem", VFLOAT );   //!
 
   selPhotons.makeBranch( "photon_WTime1", VFLOAT );
   selPhotons.makeBranch( "photon_WTimeSig1", VFLOAT );
