@@ -37,21 +37,32 @@ void KUCMSAodSkimmer::processPhotons(){
 
   // intilize
   selPhotons.clearBranches(); // <<<<<<<   must do
-  isBaseLinePho.clear();
+  isSelPho.clear();
 
   // calc
   if( DEBUG ) std::cout << "Finding photons" << std::endl;
   //----------------- photons ------------------
-  // prep fpr main photon loop
-  // counts 
-  std::vector<int> phoOrderIndx;
-  std::vector<bool> isRJRPho;
-  std::vector<int> phoExcIndx;
-  uInt nBaseLinePhotons = 0; 
-  uInt nPhotons = Photon_excluded->size();
 
-  //tracking (first 5) selected photons 
-  // -- photon region def varibles
+
+  // prep fpr main photon loop
+  std::vector<int> phoOrderIndx;
+  std::vector<bool> isSigPho;
+  std::vector<int> phoExcIndx;
+  uInt nSelPhotons = 0; 
+  uInt nBasePhos = 0;
+  uInt nLoosePhos = 0;
+  uInt nTightPhos = 0;
+  uInt nEBPhos = 0;
+  uInt nPBPhos = 0;
+  uInt nLBPhos = 0;
+  uInt nELPhos = 0;
+  uInt nPLPhos = 0;
+  uInt nLLPhos = 0;
+  uInt nETPhos = 0;
+  uInt nPTPhos = 0;
+  uInt nLTPhos = 0;
+  uInt nPhotons = Photon_excluded->size();
+  //tracking (first 5) selected photons
   vector<bool> selPhoIsBH(5), selPhoIsPB(5), selPhoIsEarly(5), selPhoIsLate(5), selPhoIsPrompt(5); 
   vector<bool> selPhoIsEEnonIso(5), selPhoIsEEIso(5), selPhoIsEEVnonIso(5), selPhoIsEEexclnonIso(5);
   vector<bool> selPhoIsEBnonIso(5), selPhoIsEBIso(5);
@@ -63,24 +74,18 @@ void KUCMSAodSkimmer::processPhotons(){
   float EEIsoCutVal = 0.9994431;
   float EBnonIsoCutVal = 0.99661630;
   float EBIsoCutVal = 0.003383696;
-  float EEVeryVeryLooseIsoCutVal = 0.0060335;//loosest isolation selection on baseline/selected photons
-
+  float EEVeryVeryNonIsoCutVal = 0.9939665; //loosest isolation selection on baseline/selected photons
   //Time sigma window cut values
   float earlyTimeCut = -2.5;
   float lateTimeCut = 2.5;
   if( DEBUG || verbose ) std::cout << " - Looping over for " << nPhotons << " photons" << std::endl;
 
-  //-------------------------------------------------------------------------------------------
-  ///////////  Loop over raw photons  /////////////////////////////////////////////////////////
-  //-------------------------------------------------------------------------------------------
-
-  // count of # of photons that pass very loose base selection
   int nBaseRJRPhos = 0; 
   //---  main photon loop 
   for( uInt it = 0; it < nPhotons; it++ ){
 
     //---------------------------------------------------
-    ///////////  pho selection base information //////////////////////////////////////////////
+    ///////////  pho selection ////////////////////////////////////////////////////////////////////
     //---------------------------------------------------
 
     if( DEBUG ) std::cout << " -- looping photons : getting pho isEB, has min pt, not excluded, electron veto " << std::endl;
@@ -102,11 +107,58 @@ void KUCMSAodSkimmer::processPhotons(){
     auto overMaxEta = std::abs(eta) > 1.479;
     auto phi = (*Photon_phi)[it];
 
+    if( DEBUG ) std::cout << " -- looping photons : getting pho iso " << std::endl;
+    auto htsecdr4 = (*Photon_hcalTowerSumEtConeDR04)[it];   //!
+    bool passHcalSum = true;
+    auto tspscdr4 = (*Photon_trkSumPtSolidConeDR04)[it];
+    bool passTrkSum = tspscdr4/pt < 0.12; // using rel = 6.0/50  ( abs = 6.0 fir pt of 50 GeV )
+    auto erhsecdr4 = (*Photon_ecalRHSumEtConeDR04)[it];
+    bool passsEcalRhSum = erhsecdr4/pt < 0.2; // using rel = 10/50 ( abs cut = 10, for pt of 50 GeV )
+    auto htoem = (*Photon_hadTowOverEM)[it];
+    bool passHOE = htoem < 0.02; // using abs value 0.02
+    bool isoPho = passHOE && passsEcalRhSum && passTrkSum && passHcalSum;
+    bool failPhoIsoEB = not isoPho;
+	bool failPhoIsoEE = failPhoIsoEB; //not ( tspscdr4 < 7.0 && erhsecdr4 < 12.5 && htoem < 0.05 );
+
+    bool underMaxBasePhos = nBaseRJRPhos < 3;
+
+    //---------------------------------------------------------------------------------
+    ///////////  Determining photon Base selection   ////////////////////////////////////////////////////////////////////
+    //------------------------------------------------------------------------------
+
+	// Only the 2 leading photons that pass very loose criteria should be in Base selction 
+    //  change to skip jets and keep all photons regardless of photon iso with jet
+
+	bool very_loose_id = isoPho; // ?  this is place holder - was not in place in v37  and prior to 2/17/26 
+	bool in_base_selection = not isExcluded and not hasPixSeed and overMinPt and pass_very_loose_id and underMaxBasePhos;
+
     //---------------------------------------------------
-    /////////// skip all excluded photons ///////////////////////////////////
+    ///////////  saving hem region info  ////////////////////////////////////////////////////////////////////
     //---------------------------------------------------
 
-    if( isExcluded ) continue;
+	bool hemEligible1 = pt > 20 && not isExcluded && not hasPixSeed;
+    bool hemEligible2 = pt > 30 && not isExcluded && not hasPixSeed; 
+
+	bool isInHemRegion = inHEMRegion( eta, phi );
+	hemBits.set( "pho1hvl", isInHemRegion && hemEligible1 );		
+    hemBits.set( "pho2hvm", isInHemRegion && hemEligible2 );
+
+    //---------------------------------------------------
+    ///////////  saving info on EE photons  ////////////////////////////////////////////////////////////////////
+    //---------------------------------------------------
+	bool isEESig = not isExcluded && not hasPixSeed && overMaxEta;
+    if( isEESig ){
+
+		selPhotons.fillBranch( "EESigPho_skipped", phoskip );   //!
+    	selPhotons.fillBranch( "EESigPho_energy", (*Photon_energy)[it] );   //!
+    	selPhotons.fillBranch( "EESigPho_eta", (*Photon_eta)[it] );   //!
+    	selPhotons.fillBranch( "EESigPho_phi", (*Photon_phi)[it] );   //!
+    	selPhotons.fillBranch( "EESigPho_tspscdr4", (*Photon_trkSumPtSolidConeDR04)[it] );   //!
+        selPhotons.fillBranch( "EESigPho_erhsecdr4", (*Photon_ecalRHSumEtConeDR04)[it] );   //!
+        selPhotons.fillBranch( "EESigPho_htoem", (*Photon_hadTowOverEM)[it] );   //!
+        selPhotons.fillBranch( "EESigPho_pt", (*Photon_pt)[it] );   //!
+
+    }//if( doGenInfo )
 
     //---------------------------------------------------
     ///////////  processing SC rechit info for  time/res/sig ////////////////////////////////////////////////////////////
@@ -194,6 +246,11 @@ void KUCMSAodSkimmer::processPhotons(){
     }//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
 
     //---------------------------------------------------
+    //adding criteria for 'selected' or 'very loose base selection' photons - need at least 2 rechits that are within [-20, 20] ns
+    bool badNRechits  = (_ca.GetNRecHits() < 2);
+    in_base_selection = in_base_selection && not badNRechits;
+
+    //---------------------------------------------------
     // calc wieghted times and time sigs
     //===================================================
     if( sumw == 0 ){ sumw = 1; sumtw = -100; sumtrw = -1000; }
@@ -213,29 +270,48 @@ void KUCMSAodSkimmer::processPhotons(){
     float timesignum, timesigdenom;
 	float phoWTimeSig = getTimeSig( scIndx, timesignum, timesigdenom );
 
-    //---------------------------------------------------
-    ///////////  saving hem region info  ////////////////////////////////////////////////////////////////////
-    //---------------------------------------------------
-
-    bool hemEligible1 = pt > 20 && not isExcluded && not hasPixSeed;
-    bool hemEligible2 = pt > 30 && not isExcluded && not hasPixSeed;
-
-    bool isInHemRegion = inHEMRegion( eta, phi );
-    hemBits.set( "pho1hvl", isInHemRegion && hemEligible1 );
-    hemBits.set( "pho2hvm", isInHemRegion && hemEligible2 );
+	if( isExcluded ) continue;
 
     //---------------------------------------------------
     ///////////  saving info for all non excluded photons  ////////////////////////////////////////////////////////////////////
     //---------------------------------------------------
-   
-    selPhotons.fillBranch( "photon_WTimeSig", phoWTimeSig );
-    selPhotons.fillBranch( "photon_WTime", phoWTime );
-    selPhotons.fillBranch( "photon_WTimeSig1", wttimesig1 );
-    selPhotons.fillBranch( "photon_Eta", eta );
-    selPhotons.fillBranch( "photon_Phi", phi );
-    selPhotons.fillBranch( "photon_Pt", pt );
-    selPhotons.fillBranch( "photon_E", energy );
-    selPhotons.fillBranch( "photon_PixSeed", hasPixSeed );
+    //selPhotons.fillBranch( "allPhoWTime1", phoWTime1 );
+    selPhotons.fillBranch( "allPhoWTimeSig", phoWTimeSig );
+    selPhotons.fillBranch( "allPhoWTime", phoWTime );
+    selPhotons.fillBranch( "allPhoWTimeSig1", wttimesig1 );
+    selPhotons.fillBranch( "allPhoEta", eta );
+    selPhotons.fillBranch( "allPhoPhi", phi );
+    selPhotons.fillBranch( "allPhoPt", pt );
+    selPhotons.fillBranch( "allPhoE", energy );
+    selPhotons.fillBranch( "allPhoPixSeed", hasPixSeed );
+
+
+    ///////////  Very Loose Base Photon selection ////////////////////////////////////////////////////////////////////
+    //---------------------------------------------------
+	//  phoskip all photons that do not pass selection criteria
+	//  moved to here so that EE and all photon info could be saved with WTSig info
+    //---------------------------------------------------
+    ///////////  pho selection ////////////////////////////////////////////////////////////////////
+
+    if( ( geVars("genSigPerfect") != 1 ) && not in_base_selection ){ isSelPho.push_back(false); continue; }		
+    if( ( geVars("genSigPerfect") == 1 ) &&  ( not isGenSig ) ){ isSelPho.push_back(false);  continue; }
+	isSelPho.push_back(true);
+    nBaseRJRPhos++;
+
+    //---------------------------------------------------
+    ///////////  pho selection ////////////////////////////////////////////////////////////////////
+    //---------------------------------------------------
+
+///////////////////////////////////////
+// Info Block ? old ?
+// for the tight and loose(!tight) selections the discriminant scores are as follows (with the corresponding ROC curve info):
+// - old  tight: iso score > 0.337 (5% noniso contamination with ~97% iso efficiency)
+// - old loose: iso score > 0.134 (10% noniso contamination with ~98% iso efficiency)
+// - old very loose: iso score > 0.0364 (20% noniso contamination with ~99% iso efficiency)
+// - tight: 0.875 (1% bkg eff for 90% sig eff)
+// - loose: 0.014 (30% bkg eff for 99.8% sig eff)
+/////////////////////////////////////////
+
 
     //---------------------------------------------------
     ///////////  pho disriminate ids ////////////////////////////////////////////////////////////////////
@@ -249,9 +325,9 @@ void KUCMSAodSkimmer::processPhotons(){
 	bool dijetscr = false;
 	bool spikecr = false;
 	bool bhcr = false;
-    	ClusterObj phoobj;
-    	_ca.NoClusterRhs(phoobj, true);
-    	vector<float> photonIDscores;
+    ClusterObj phoobj;
+    _ca.NoClusterRhs(phoobj, true);
+    vector<float> photonIDscores;
 	if(overMaxEta){ //endcap
      	map<string, double> isomap;
         MakePhotonIsoMap(it, isomap);
@@ -277,94 +353,43 @@ void KUCMSAodSkimmer::processPhotons(){
 	if(detbkgcr == 3) spikecr = true;
 
     if(DEBUG) cout << "photon " << it << " iso score " << isobkg_score << " noniso score " << nonisobkg_score << endl;
-    if( DEBUG ) std::cout << " -- looping photons : getting pho iso " << std::endl;
-    auto htsecdr4 = (*Photon_hcalTowerSumEtConeDR04)[it];   //!
-    auto tspscdr4 = (*Photon_trkSumPtSolidConeDR04)[it];
-    auto erhsecdr4 = (*Photon_ecalRHSumEtConeDR04)[it];
-    auto htoem = (*Photon_hadTowOverEM)[it];
-    bool isoPho;
-    if(overMaxEta){ //endcap
-    	if(isobkg_score >= EEVeryVeryLooseIsoCutVal)
-		isoPho = true;
-	else
-		isoPho = false;
-    }
-    else{ //barrel
-    	bool passHcalSum = true;
-    	bool passTrkSum = tspscdr4/pt < 0.12; // using rel = 6.0/50  ( abs = 6.0 fir pt of 50 GeV )
-    	bool passsEcalRhSum = erhsecdr4/pt < 0.2; // using rel = 10/50 ( abs cut = 10, for pt of 50 GeV )
-    	bool passHOE = htoem < 0.02; // using abs value 0.02
-    	isoPho = passHOE && passsEcalRhSum && passTrkSum && passHcalSum;
-    }
-
  
-    //---------------------------------------------------
-    //adding criteria for 'selected' or 'very loose base selection' photons - need at least 2 rechits that are within [-20, 20] ns
-    bool badNRechits  = (_ca.GetNRecHits() < 2);
-
   	_ca.ClearRecHitList();
 
-    //---------------------------------------------------------------------------------
-    ///////////  Determining photon Base selection   ////////////////////////////////////////////////////////////////////
-    //------------------------------------------------------------------------------
+	bool isTight = isobkg_score > 0.875;
+	bool isLoose = isobkg_score > 0.014;
+    int phoTSigId = ( phoWTimeSig <= -2.5 ) ? tSigID::Early : ( phoWTimeSig < 2.5 ) ? tSigID::Prompt : tSigID::Late;
+    int phoObjId =  ( isTight ) ? objID::Tight : ( isLoose ) ? objID::Loose : objID::Base;
 
-    // Only the 2 leading photons that pass very loose criteria should be in Base selction 
-    //  change to skip jets and keep all photons regardless of photon iso with jet
+	if( phoObjId == objID::Base ){ 
+		nBasePhos++;
+        if( phoTSigId == tSigID::Early ) nEBPhos++;
+        else if( phoTSigId == tSigID::Prompt ) nPBPhos++;
+        else if( phoTSigId == tSigID::Late ) nLBPhos++;
+    }//<<>>else if( phoObjId == objID::Base )
+	else if( phoObjId == objID::Loose ){
+		nLoosePhos++;
+    	if( phoTSigId == tSigID::Early ) nELPhos++;
+    	else if( phoTSigId == tSigID::Prompt ) nPLPhos++;
+    	else if( phoTSigId == tSigID::Late ) nLLPhos++;
+	}//<<>>else if( phoObjId == objID::Loose )
+	else if( phoObjId == objID::Tight ){ 
+		nTightPhos++;
+        if( phoTSigId == tSigID::Early ) nETPhos++;
+        else if( phoTSigId == tSigID::Prompt ) nPTPhos++;
+        else if( phoTSigId == tSigID::Late ) nLTPhos++;
+    }//<<>>else if( phoObjId == objID::Tight )
 
-    bool pass_very_loose_id = isoPho && pt > 30; // ?  this is place holder - was not in place in v37  and prior to 2/17/26 
+    selPhotons.fillBranch( "selPhoTSigId", phoTSigId );	
+    selPhotons.fillBranch( "selPhoObjId", phoObjId );
 
-	bool standard_selction = not badNRechits and not hasPixSeed and not isExcluded;
-    bool underNMaxBasePhos = nBaseRJRPhos < 3;
-    bool in_base_selection = standard_selction and overMinPt and pass_very_loose_id and underNMaxBasePhos;
 
-    //---------------------------------------------------
-    ///////////  saving info on EB/EE photon information ///////////////////////////////////////////////////////
-    //---------------------------------------------------
-    bool isEESig = not isExcluded && not hasPixSeed && overMaxEta;
-    if( isEESig ){
+	// setting flag for photons that go into rjr - should be all that get to here now.
 
-        selPhotons.fillBranch( "endcap_photon_baseline", in_base_selection );   //!
-        selPhotons.fillBranch( "endcap_photon_energy", (*Photon_energy)[it] );   //!
-        selPhotons.fillBranch( "endcap_photon_eta", (*Photon_eta)[it] );   //!
-        selPhotons.fillBranch( "endcap_photon_phi", (*Photon_phi)[it] );   //!
-        selPhotons.fillBranch( "endcap_photon_tspscdr4", (*Photon_trkSumPtSolidConeDR04)[it] );   //!
-        selPhotons.fillBranch( "endcap_photon_erhsecdr4", (*Photon_ecalRHSumEtConeDR04)[it] );   //!
-        selPhotons.fillBranch( "endcap_photon_htoem", (*Photon_hadTowOverEM)[it] );   //!
-        selPhotons.fillBranch( "endcap_photon_pt", (*Photon_pt)[it] );   //!
-
-    }//if( doGenInfo )
-
-    bool isEBSig = not isExcluded && not hasPixSeed && not overMaxEta;
-    if( isEBSig ){
-
-        selPhotons.fillBranch( "barrel_photon_baseline", in_base_selection );   //!
-        selPhotons.fillBranch( "barrel_photon_energy", (*Photon_energy)[it] );   //!
-        selPhotons.fillBranch( "barrel_photon_eta", (*Photon_eta)[it] );   //!
-        selPhotons.fillBranch( "barrel_photon_phi", (*Photon_phi)[it] );   //!
-        selPhotons.fillBranch( "barrel_photon_tspscdr4", (*Photon_trkSumPtSolidConeDR04)[it] );   //!
-        selPhotons.fillBranch( "barrel_photon_erhsecdr4", (*Photon_ecalRHSumEtConeDR04)[it] );   //!
-        selPhotons.fillBranch( "barrel_photon_htoem", (*Photon_hadTowOverEM)[it] );   //!
-        selPhotons.fillBranch( "barrel_photon_pt", (*Photon_pt)[it] );   //!
-
-    }//if( doGenInfo )
-
-    ///////////  Very Loose Base Photon selection ////////////////////////////////////////////////////////////////////
-    //---------------------------------------------------
-    //  phoskip all photons that do not pass selection criteria
-    //  moved to here so that EE and all photon info could be saved with WTSig info
-    //---------------------------------------------------
-    ///////////  pho selection ////////////////////////////////////////////////////////////////////
-
-    if( ( geVars("genSigPerfect") != 1 ) && not in_base_selection ){ isBaseLinePho.push_back(false); continue; }
-    if( ( geVars("genSigPerfect") == 1 ) &&  ( not isGenSig ) ){ isBaseLinePho.push_back(false);  continue; }
-    isBaseLinePho.push_back(true);
-
-    ///////////////////////////////  depreciated but still used in process
-    // setting flag for photons that go into rjr - should be all that get to here now.
-    // we want to reject (endcap) photons that are at the most noniso edge of the noniso sideband. 
-    bool isRjrSigPho = true; // overMaxEta ? nonisobkg_score < EEVeryVeryNonIsoCutVal : isoPho;
-    if( isRjrSigPho ){ isRJRPho.push_back(true); nBaseRJRPhos++; }
-    else isRJRPho.push_back(false);
+	//we want to reject (endcap) photons that are at the most noniso edge of the noniso sideband. 
+	bool isRjrSigPho = true; // overMaxEta ? nonisobkg_score < EEVeryVeryNonIsoCutVal : isoPho;
+	if( isRjrSigPho ) isSigPho.push_back(true);
+	else isSigPho.push_back(false);
 
 	//----------------------------------------------------------------------------------
 	//  getting pho SC and Gen info
@@ -480,31 +505,31 @@ void KUCMSAodSkimmer::processPhotons(){
 
 	for( auto as : erhamps ){ hist1d[20]->Fill(as/sumerha); }
 
-    selPhotons.fillBranch( "baseLinePhoton_RawTime", rawTime );
-    selPhotons.fillBranch( "baseLinePhoton_WTimeSig", phoWTimeSig );
-    selPhotons.fillBranch( "baseLinePhoton_LTimeSig", leadtimesig );
-    selPhotons.fillBranch( "baseLinePhoton_STimeSig", seedtimesig );
-    selPhotons.fillBranch( "baseLinePhoton_WTimeSigOld", wttimesig );
-    selPhotons.fillBranch( "baseLinePhoton_WTime", phoWTime );
-    selPhotons.fillBranch( "baseLinePhoton_LTime", leadTime );
-    selPhotons.fillBranch( "baseLinePhoton_STime", seedTime );
-    selPhotons.fillBranch( "baseLinePhoton_WTRes", phoWRes );
-    selPhotons.fillBranch( "baseLinePhoton_LTRes", leadTres );
-    selPhotons.fillBranch( "baseLinePhoton_STRes", seedTres );
-    selPhotons.fillBranch( "baseLinePhoton_LSCross", leadSX );
-    selPhotons.fillBranch( "baseLinePhoton_SSCross", seedSX );
-    selPhotons.fillBranch( "baseLinePhoton_LWeird", leadWried );
-    selPhotons.fillBranch( "baseLinePhoton_SWeird", seedWried );
-    selPhotons.fillBranch( "baseLinePhoton_ShasGS", seedGS );
+    selPhotons.fillBranch( "selPhoRawTime", rawTime );
+    selPhotons.fillBranch( "selPhoWTimeSig", phoWTimeSig );
+    selPhotons.fillBranch( "selPhoLTimeSig", leadtimesig );
+    selPhotons.fillBranch( "selPhoSTimeSig", seedtimesig );
+    selPhotons.fillBranch( "selPhoWTimeSigOld", wttimesig );
+    selPhotons.fillBranch( "selPhoWTime", phoWTime );
+    selPhotons.fillBranch( "selPhoLTime", leadTime );
+    selPhotons.fillBranch( "selPhoSTime", seedTime );
+    selPhotons.fillBranch( "selPhoWTRes", phoWRes );
+    selPhotons.fillBranch( "selPhoLTRes", leadTres );
+    selPhotons.fillBranch( "selPhoSTRes", seedTres );
+    selPhotons.fillBranch( "selPhoLSCross", leadSX );
+    selPhotons.fillBranch( "selPhoSSCross", seedSX );
+    selPhotons.fillBranch( "selPhoLWeird", leadWried );
+    selPhotons.fillBranch( "selPhoSWeird", seedWried );
+    selPhotons.fillBranch( "selPhoShasGS", seedGS );
 
-    selPhotons.fillBranch("baseLinePhoton_isoANNScore",isobkg_score);
-    selPhotons.fillBranch("baseLinePhoton_nonIsoANNScore",nonisobkg_score);
-    selPhotons.fillBranch("baseLinePhoton_physBkgCNNScore",physbkg_score);
-    selPhotons.fillBranch("baseLinePhoton_beamHaloCNNScore",bh_score);
-    selPhotons.fillBranch("baseLinePhoton_beamHaloCR",bhcr);
-    selPhotons.fillBranch("baseLinePhoton_spikeCR",spikecr);
-    selPhotons.fillBranch("baseLinePhoton_GJetsCR",gjetscr);
-    selPhotons.fillBranch("baseLinePhoton_DiJetsCR",dijetscr);
+    selPhotons.fillBranch("selPho_isoANNScore",isobkg_score);
+    selPhotons.fillBranch("selPho_nonIsoANNScore",nonisobkg_score);
+    selPhotons.fillBranch("selPho_physBkgCNNScore",physbkg_score);
+    selPhotons.fillBranch("selPho_beamHaloCNNScore",bh_score);
+    selPhotons.fillBranch("selPho_beamHaloCR",bhcr);
+    selPhotons.fillBranch("selPho_spikeCR",spikecr);
+    selPhotons.fillBranch("selPho_GJetsCR",gjetscr);
+    selPhotons.fillBranch("selPho_DiJetsCR",dijetscr);
 
     //---------------------------------------------------------------------------
     //  get Photon isolation information
@@ -544,15 +569,13 @@ void KUCMSAodSkimmer::processPhotons(){
     //auto geosmin = phoEigens2D[4];
 
     //---------------------------------------------------------------------------
-    //  check photon v photon overlap for met correction
+    //  check photon v photon overlap ?
     //---------------------------------------------------------------------------
 
     float phoPhoIsoDr = 10.0;
 	int phoIsoIndx = -1;
-	if( (*Photon_isOot)[it] ){
     for( uInt it2 = 0; it2 < nPhotons; it2++ ){
     	if( it == it2 ) continue;
-		if( not (*Photon_excluded)[it2] ) continue; 
       	float eta2 = (*Photon_eta)[it2];
       	float phi2 = (*Photon_phi)[it2];
       	auto dphi12 = dPhi( phi, phi2 );
@@ -560,7 +583,6 @@ void KUCMSAodSkimmer::processPhotons(){
       	//std::cout << " -- Eta : " << eta-eta2 << " Phi : " << dPhi(phi,phi2) << " dr : " << pho2dr << std::endl;
       	if( pho2dr < phoPhoIsoDr ){ phoPhoIsoDr = pho2dr; phoIsoIndx = it2; }
     }//for( uInt it2 = it+1; it2 < nPhotons; it2++ )
-	}//<<>>if( (*Photon_isOot)[it] )
 	//bool matchPhoExc = ( phoIsoIndx > -1 ) ? (*Photon_excluded)[it] : false;
 	if( phoPhoIsoDr < 0.3 ) phoExcIndx.push_back( phoIsoIndx ); else phoExcIndx.push_back( -1 );
 	
@@ -575,7 +597,7 @@ void KUCMSAodSkimmer::processPhotons(){
 	//
 
 	//only looking at first 5 selected photons
-	int selphoidx = nBaseLinePhotons;
+	int selphoidx = nSelPhotons;
 	if(selphoidx < 5){
 		//time sig	
 		if(phoWTimeSig <= lateTimeCut && phoWTimeSig >= earlyTimeCut){ selPhoIsPrompt[selphoidx] = true; }
@@ -585,28 +607,17 @@ void KUCMSAodSkimmer::processPhotons(){
 		if(physbkg_score >= pbCutVal){ selPhoIsPB[selphoidx] = true; }
 		//endcap noniso selection
 		if(overMaxEta){ // endcap 
-			if(nonisobkg_score >= EEnonIsoCutVal){ 
+			if(nonisobkg_score >= EEnonIsoCutVal && nonisobkg_score < EEVeryVeryNonIsoCutVal){ 
 				selPhoIsEEnonIso[selphoidx] = true;
-				if(nonisobkg_score >= EEVeryNonIsoCutVal){
-					selPhoIsEEVnonIso[selphoidx] = true;
-				}
-				else{
-					selPhoIsEEexclnonIso[selphoidx] = true;
-				}	
-			}
-			if(isobkg_score >= EEIsoCutVal){
-				selPhoIsEEIso[selphoidx] = true;
-			}
-		}
-		else{ //barrel
-			if(nonisobkg_score >= EBnonIsoCutVal){
-				selPhoIsEBnonIso[selphoidx] = true;
-			}
-			if(isobkg_score >= EBIsoCutVal){
-				selPhoIsEBIso[selphoidx] = true;
-			}
-		}
-	}
+				if(nonisobkg_score >= EEVeryNonIsoCutVal){ selPhoIsEEVnonIso[selphoidx] = true; } 
+				else { selPhoIsEEexclnonIso[selphoidx] = true; }	
+			}//else, fails RJR presel
+			if(isobkg_score >= EEIsoCutVal){ selPhoIsEEIso[selphoidx] = true; }
+		} else { //barrel
+			if(nonisobkg_score >= EBnonIsoCutVal){ selPhoIsEBnonIso[selphoidx] = true; }
+			if(isobkg_score >= EBIsoCutVal){ selPhoIsEBIso[selphoidx] = true; }
+		}//<<>>if(overMaxEta)
+	}//<<>>if(selphoidx < 5)
 
 
     //if( DEBUG ) std::cout << " -- setting pho index : " << it << " for pt : " << ordpt << std::endl;
@@ -621,84 +632,84 @@ void KUCMSAodSkimmer::processPhotons(){
 
     // fill ( vectors )
     if( DEBUG ) std::cout << " -- pho fill out branches" << std::endl;
-    selPhotons.fillBranch( "baseLinePhoton_OOT", phoOOT );
-    selPhotons.fillBranch( "baseLinePhoton_EleVeto", hasEleVeto );
-    selPhotons.fillBranch( "baseLinePhoton_Quality", phoQuality );
-    selPhotons.fillBranch( "baseLinePhoton_Time", time );
-    selPhotons.fillBranch( "baseLinePhoton_SCx", scx );
-    selPhotons.fillBranch( "baseLinePhoton_SCy", scy );
-    selPhotons.fillBranch( "baseLinePhoton_SCz", scz );
+    selPhotons.fillBranch( "selPhoOOT", phoOOT );
+    selPhotons.fillBranch( "selPhoEleVeto", hasEleVeto );
+    selPhotons.fillBranch( "selPhoQuality", phoQuality );
+    selPhotons.fillBranch( "selPhoTime", time );
+    selPhotons.fillBranch( "selPhoSCx", scx );
+    selPhotons.fillBranch( "selPhoSCy", scy );
+    selPhotons.fillBranch( "selPhoSCz", scz );
 
-    selPhotons.fillBranch( "baseLinePhoton_CorEnergy", ce );
-    selPhotons.fillBranch( "baseLinePhoton_CorPt", cpt );
-    selPhotons.fillBranch( "baseLinePhoton_MBetaEql", MBetaEqual );
-    selPhotons.fillBranch( "baseLinePhoton_MBetaPmt", MBetaPrompt );
-    selPhotons.fillBranch( "baseLinePhoton_PVtoRH", tofPVtoRH );
+    selPhotons.fillBranch( "selPhoCorEnergy", ce );
+    selPhotons.fillBranch( "selPhoCorPt", cpt );
+    selPhotons.fillBranch( "selPhoMBetaEql", MBetaEqual );
+    selPhotons.fillBranch( "selPhoMBetaPmt", MBetaPrompt );
+    selPhotons.fillBranch( "selPhoPVtoRH", tofPVtoRH );
 
-    //selPhotons.fillBranch( "baseLinePhoton_GeoEgnVal", evaluegeo );
-    selPhotons.fillBranch( "baseLinePhoton_Eta", eta );
-    selPhotons.fillBranch( "baseLinePhoton_Phi", phi );
-    selPhotons.fillBranch( "baseLinePhoton_Pt", pt );
-    selPhotons.fillBranch( "baseLinePhoton_GenPt", genpt );
-    selPhotons.fillBranch( "baseLinePhoton_SMaj", smaj );
-    selPhotons.fillBranch( "baseLinePhoton_SMin", smin );
-    selPhotons.fillBranch( "baseLinePhoton_ClstrRn", phoClstrR9 );
-    selPhotons.fillBranch( "baseLinePhoton_R9", r9 );
-    selPhotons.fillBranch( "baseLinePhoton_Sieie", sieie );
-    selPhotons.fillBranch( "baseLinePhoton_Sieip", sieip );
-    selPhotons.fillBranch( "baseLinePhoton_Sipip", sipip );
-    selPhotons.fillBranch( "baseLinePhoton_CovEtaEta", cee );
-    selPhotons.fillBranch( "baseLinePhoton_CovEtaPhi", cep );
-    selPhotons.fillBranch( "baseLinePhoton_CovPhiPhi", cpp );
-    selPhotons.fillBranch( "baseLinePhoton_S4", s4 );
-    selPhotons.fillBranch( "baseLinePhoton_SAlp", salp );
-    selPhotons.fillBranch( "baseLinePhoton_EtaWidth", etawide );
-    selPhotons.fillBranch( "baseLinePhoton_PhiWidth", phiwide );
-    selPhotons.fillBranch( "baseLinePhoton_Nrh", nrh );
-    selPhotons.fillBranch( "baseLinePhoton_Energy" , energy );
-    selPhotons.fillBranch( "baseLinePhoton_SusyId" , susId );
-    selPhotons.fillBranch( "baseLinePhoton_SigmaIEtaIEta" , sigmaieie );
-    //selPhotons.fillBranch( "baseLinePhoton_GeoSMaj", geosmaj );
-    //selPhotons.fillBranch( "baseLinePhoton_GeoSMin", geosmin );
-    selPhotons.fillBranch( "baseLinePhoton_HcalTowerSumEtBcConeDR04", htsebcdr4 );
-    selPhotons.fillBranch( "baseLinePhoton_TrkSumPtHollowConeDR03", tsphcdr3 );
-    selPhotons.fillBranch( "baseLinePhoton_TrkSumPtHollowConeDR04", tsphcdr4 );
-    selPhotons.fillBranch( "baseLinePhoton_TrkSumPtSolidConeDR04", tspscdr4 );
-    selPhotons.fillBranch( "baseLinePhoton_PixelSeed", hasPixSeed );
-    selPhotons.fillBranch( "baseLinePhoton_EcalRHSumEtConeDR04", erhsecdr4 );
-    selPhotons.fillBranch( "baseLinePhoton_HadTowOverEM", htoem );
-    selPhotons.fillBranch( "baseLinePhoton_HadOverEM", hoem );
-    selPhotons.fillBranch( "baseLinePhoton_HcalTowerSumEtConeDR04", htsecdr4  );   //!
-    selPhotons.fillBranch( "baseLinePhoton_NTrkHollowConeDR04", nthcdr4  );   //!
-    selPhotons.fillBranch( "baseLinePhoton_NTrkSolidConeDR04", ntscdr4  );   //!
-    selPhotons.fillBranch( "baseLinePhoton_EcalPFClusterIso", epfciso  );   //!
-    selPhotons.fillBranch( "baseLinePhoton_HasConversionTracks", hct  );   //!
-    selPhotons.fillBranch( "baseLinePhoton_HcalPFClusterIso", hpfciso  );   //!
-    selPhotons.fillBranch( "baseLinePhoton_Hoe_PUcorr", hoepuc  );   //!
-    selPhotons.fillBranch( "baseLinePhoton_PfChargedIso", pfciso  );   //!
-    selPhotons.fillBranch( "baseLinePhoton_PfChargedIsoPFPV", pscisopfpv  );   //!
-    selPhotons.fillBranch( "baseLinePhoton_PfChargedIsoWorstVtx", pfcisowv  );   //!
-    selPhotons.fillBranch( "baseLinePhoton_PfPhoIso03", pfphoisso  );   //!
-    selPhotons.fillBranch( "baseLinePhoton_PfRelIso03_all_quadratic", pfriso3aq  );   //!
-    selPhotons.fillBranch( "baseLinePhoton_PfRelIso03_chg_quadratic", pfrtso3cq  );   //!
+    //selPhotons.fillBranch( "selPhoGeoEgnVal", evaluegeo );
+    selPhotons.fillBranch( "selPhoEta", eta );
+    selPhotons.fillBranch( "selPhoPhi", phi );
+    selPhotons.fillBranch( "selPhoPt", pt );
+    selPhotons.fillBranch( "selPhoGenPt", genpt );
+    selPhotons.fillBranch( "selPhoSMaj", smaj );
+    selPhotons.fillBranch( "selPhoSMin", smin );
+    selPhotons.fillBranch( "selPhoClstrRn", phoClstrR9 );
+    selPhotons.fillBranch( "selPhoR9", r9 );
+    selPhotons.fillBranch( "selPhoSieie", sieie );
+    selPhotons.fillBranch( "selPhoSieip", sieip );
+    selPhotons.fillBranch( "selPhoSipip", sipip );
+    selPhotons.fillBranch( "selPhoCovEtaEta", cee );
+    selPhotons.fillBranch( "selPhoCovEtaPhi", cep );
+    selPhotons.fillBranch( "selPhoCovPhiPhi", cpp );
+    selPhotons.fillBranch( "selPhoS4", s4 );
+    selPhotons.fillBranch( "selPhoSAlp", salp );
+    selPhotons.fillBranch( "selPhoEtaWidth", etawide );
+    selPhotons.fillBranch( "selPhoPhiWidth", phiwide );
+    selPhotons.fillBranch( "selPhoNrh", nrh );
+    selPhotons.fillBranch( "selPhoEnergy" , energy );
+    selPhotons.fillBranch( "selPhoSusyId" , susId );
+    selPhotons.fillBranch( "selPhoSigmaIEtaIEta" , sigmaieie );
+    //selPhotons.fillBranch( "selPhoGeoSMaj", geosmaj );
+    //selPhotons.fillBranch( "selPhoGeoSMin", geosmin );
+    selPhotons.fillBranch( "selPhoHcalTowerSumEtBcConeDR04", htsebcdr4 );
+    selPhotons.fillBranch( "selPhoTrkSumPtHollowConeDR03", tsphcdr3 );
+    selPhotons.fillBranch( "selPhoTrkSumPtHollowConeDR04", tsphcdr4 );
+    selPhotons.fillBranch( "selPhoTrkSumPtSolidConeDR04", tspscdr4 );
+    selPhotons.fillBranch( "selPhoPixelSeed", hasPixSeed );
+    selPhotons.fillBranch( "selPhoEcalRHSumEtConeDR04", erhsecdr4 );
+    selPhotons.fillBranch( "selPhoHadTowOverEM", htoem );
+    selPhotons.fillBranch( "selPhoHadOverEM", hoem );
+    selPhotons.fillBranch( "selPhoHcalTowerSumEtConeDR04", htsecdr4  );   //!
+    selPhotons.fillBranch( "selPhoNTrkHollowConeDR04", nthcdr4  );   //!
+    selPhotons.fillBranch( "selPhoNTrkSolidConeDR04", ntscdr4  );   //!
+    selPhotons.fillBranch( "selPhoEcalPFClusterIso", epfciso  );   //!
+    selPhotons.fillBranch( "selPhoHasConversionTracks", hct  );   //!
+    selPhotons.fillBranch( "selPhoHcalPFClusterIso", hpfciso  );   //!
+    selPhotons.fillBranch( "selPhoHoe_PUcorr", hoepuc  );   //!
+    selPhotons.fillBranch( "selPhoPfChargedIso", pfciso  );   //!
+    selPhotons.fillBranch( "selPhoPfChargedIsoPFPV", pscisopfpv  );   //!
+    selPhotons.fillBranch( "selPhoPfChargedIsoWorstVtx", pfcisowv  );   //!
+    selPhotons.fillBranch( "selPhoPfPhoIso03", pfphoisso  );   //!
+    selPhotons.fillBranch( "selPhoPfRelIso03_all_quadratic", pfriso3aq  );   //!
+    selPhotons.fillBranch( "selPhoPfRelIso03_chg_quadratic", pfrtso3cq  );   //!
 
-    selPhotons.fillBranch( "baseLinePhoton_PhoIsoDr", phoPhoIsoDr );
-    selPhotons.fillBranch( "baseLinePhoton_GenIdx", genIdx );
-    selPhotons.fillBranch( "baseLinePhoton_GenSigMomEnergy", momEnergy  );   //!
-    selPhotons.fillBranch( "baseLinePhoton_GenSigMomEta", momEta  );   //!
-    selPhotons.fillBranch( "baseLinePhoton_GenSigMomMass", momMass  );   //!
-    selPhotons.fillBranch( "baseLinePhoton_GenSigMomPhi", momPhi  );   //!
-    selPhotons.fillBranch( "baseLinePhoton_GenSigMomPt", momPt  );   //!
-    selPhotons.fillBranch( "baseLinePhoton_GenSigMomPx", momPx  );   //!
-    selPhotons.fillBranch( "baseLinePhoton_GenSigMomPy", momPy  );   //!
-    selPhotons.fillBranch( "baseLinePhoton_GenSigMomPz", momPz  );   //!
-    selPhotons.fillBranch( "baseLinePhoton_GenSigMomVx", momVx  );   //!
-    selPhotons.fillBranch( "baseLinePhoton_GenSigMomVy", momVy  );   //!
-    selPhotons.fillBranch( "baseLinePhoton_GenSigMomVz", momVz  );   //!
+    selPhotons.fillBranch( "selPhoPhoIsoDr", phoPhoIsoDr );
+    selPhotons.fillBranch( "selPhoGenIdx", genIdx );
+    selPhotons.fillBranch( "selPhoGenSigMomEnergy", momEnergy  );   //!
+    selPhotons.fillBranch( "selPhoGenSigMomEta", momEta  );   //!
+    selPhotons.fillBranch( "selPhoGenSigMomMass", momMass  );   //!
+    selPhotons.fillBranch( "selPhoGenSigMomPhi", momPhi  );   //!
+    selPhotons.fillBranch( "selPhoGenSigMomPt", momPt  );   //!
+    selPhotons.fillBranch( "selPhoGenSigMomPx", momPx  );   //!
+    selPhotons.fillBranch( "selPhoGenSigMomPy", momPy  );   //!
+    selPhotons.fillBranch( "selPhoGenSigMomPz", momPz  );   //!
+    selPhotons.fillBranch( "selPhoGenSigMomVx", momVx  );   //!
+    selPhotons.fillBranch( "selPhoGenSigMomVy", momVy  );   //!
+    selPhotons.fillBranch( "selPhoGenSigMomVz", momVz  );   //!
     //if( verbose ) std::cout << " -- selPho Pt: " << pt << " phi: " << phi << " geo: " << evaluegeo << " clrn: " << phoClstrR9;
     if( verbose ) std::cout << " nrh: " << nrh << " quality: " << phoQuality << std::endl;
 
-    nBaseLinePhotons++;
+    nSelPhotons++;
 
   }//<<>>for( int it = 0; it < nPhotons; it++ )
   // --------------    End of Photon Loop ----------------------------------------------------------------------
@@ -711,7 +722,7 @@ void KUCMSAodSkimmer::processPhotons(){
   //  setting jet veto for for overlapping photons
   //---------------------------------------------------------------------------
   
-  int loopEnd = ( nBaseLinePhotons > 0 ) ? ( nBaseLinePhotons < 2  ) ? 1 : 2 : 0;
+  int loopEnd = ( nSelPhotons > 0 ) ? ( nSelPhotons < 2  ) ? 1 : 2 : 0;
   phoJetVeto.clear();
   for( int jit = 0; jit < Jet_energy->size(); jit++ ){ phoJetVeto.push_back(false); } 
   for( int pit = 0; pit < loopEnd; pit++ ){ 
@@ -745,10 +756,39 @@ void KUCMSAodSkimmer::processPhotons(){
   //  photon ID counting
   //---------------------------------------------------------------------------
 
-  if( DEBUG || verbose ) std::cout << " - Selected " << nBaseLinePhotons << " photons" << std::endl;
- 
-  geCnts.set( "nSelPhotons", nBaseLinePhotons );	
-  selPhotons.fillBranch( "nBaseLinePhotons",  nBaseLinePhotons );
+  if( DEBUG || verbose ) std::cout << " - Selected " << nSelPhotons << " photons" << std::endl;
+
+  bool has1ELPho = ( nELPhos == 1 && nBasePhos < 1 && nTightPhos < 1 ) ? 1 : 0;
+  bool has1ETPho = ( nETPhos == 1 && nBasePhos < 1 && nLoosePhos < 1 ) ? 1 : 0;
+  bool has1PLPho = ( nPLPhos == 1 && nBasePhos < 1 && nTightPhos < 1 ) ? 1 : 0;
+  bool has1PTPho = ( nPTPhos == 1 && nBasePhos < 1 && nLoosePhos < 1 ) ? 1 : 0;
+  bool has1LLPho = ( nLLPhos == 1 && nBasePhos < 1 && nTightPhos < 1 ) ? 1 : 0;
+  bool has1LTPho = ( nLTPhos == 1 && nBasePhos < 1 && nLoosePhos < 1 ) ? 1 : 0;
+  bool has1BasePho = ( nBasePhos > 0 && nLoosePhos < 1 && nTightPhos < 1 ) ? 1 : 0;
+
+  selPhotons.fillBranch( "has1ELPho", has1ELPho );
+  selPhotons.fillBranch( "has1ETPho", has1ETPho );
+  selPhotons.fillBranch( "has1PLPho", has1PLPho );
+  selPhotons.fillBranch( "has1PTPho", has1PTPho );
+  selPhotons.fillBranch( "has1LLPho", has1LLPho );
+  selPhotons.fillBranch( "has1LTPho", has1LTPho );
+  selPhotons.fillBranch( "has1BasePho", has1BasePho );
+
+  selPhotons.fillBranch( "nBasePhotons", nBasePhos );
+  selPhotons.fillBranch( "nEBPhotons", nEBPhos );
+  selPhotons.fillBranch( "nPBPhotons", nPBPhos );
+  selPhotons.fillBranch( "nLBPhotons", nLBPhos );
+  selPhotons.fillBranch( "nLoosePhotons", nLoosePhos );
+  selPhotons.fillBranch( "nELPhotons", nELPhos );
+  selPhotons.fillBranch( "nPLPhotons", nPLPhos );
+  selPhotons.fillBranch( "nLLPhotons", nLLPhos );
+  selPhotons.fillBranch( "nTightPhotons", nTightPhos );
+  selPhotons.fillBranch( "nETPhotons", nETPhos );
+  selPhotons.fillBranch( "nPTPhotons", nPTPhos );
+  selPhotons.fillBranch( "nLTPhotons", nLTPhos );
+
+  geCnts.set( "nSelPhotons", nSelPhotons );	
+  selPhotons.fillBranch( "nSelPhotons",  nSelPhotons );
   selPhotons.fillBranch( "nPhotons", nPhotons );
 
   //---------------------------------------------------------------------------
@@ -773,7 +813,7 @@ void KUCMSAodSkimmer::processPhotons(){
   if(selPhoIsEEnonIso[1] && selPhoIsEEIso[1]) cout << "sublead photon is noniso and iso!!!!" << endl;
 
   int regidx = -1;
-  if( nBaseLinePhotons > 0){
+  if(nSelPhotons > 0){
 	  if(selPhoIsPrompt[0]){
 		//assuming veryveryNonIso cut will be applied before this
 		//endcap
@@ -817,7 +857,7 @@ void KUCMSAodSkimmer::processPhotons(){
 		}
 	  }
 	  //if lead photon could not be placed and there are multiple, look at lead photon
-	  if( nBaseLinePhotons > 1 && regidx == -1){
+	  if(nSelPhotons > 1 && regidx == -1){
 	  	if(selPhoIsPrompt[1]){
 	  	      //assuming veryveryNonIso cut will be applied before this
 	  	      //endcap
@@ -868,49 +908,49 @@ void KUCMSAodSkimmer::processPhotons(){
   //---------------------------------------------------------------------------
 
   //delayed CRs
-  selPhotons.fillBranch("passNPhoEq1SelectionEarlyBeamHaloCR", bool(regidx == region_defs["BHearly"] && nBaseLinePhotons == 1));
-  selPhotons.fillBranch("passNPhoGe2SelectionEarlyBeamHaloCR", bool(regidx == region_defs["BHearly"] && nBaseLinePhotons > 1));
-  selPhotons.fillBranch("passNPhoEq1SelectionLateBeamHaloCR", bool(regidx == region_defs["BHlate"] && nBaseLinePhotons == 1));
-  selPhotons.fillBranch("passNPhoGe2SelectionLateBeamHaloCR", bool(regidx == region_defs["BHlate"] && nBaseLinePhotons > 1));
-  selPhotons.fillBranch("passNPhoEq1SelectionEarlyPhysBkgCR", bool(regidx == region_defs["notBHearly"] && nBaseLinePhotons == 1));
-  selPhotons.fillBranch("passNPhoGe2SelectionEarlyPhysBkgCR", bool(regidx == region_defs["notBHearly"] && nBaseLinePhotons > 1));
+  selPhotons.fillBranch("passNPhoEq1SelectionEarlyBeamHaloCR", bool(regidx == region_defs["BHearly"] && nSelPhotons == 1));
+  selPhotons.fillBranch("passNPhoGe2SelectionEarlyBeamHaloCR", bool(regidx == region_defs["BHearly"] && nSelPhotons > 1));
+  selPhotons.fillBranch("passNPhoEq1SelectionLateBeamHaloCR", bool(regidx == region_defs["BHlate"] && nSelPhotons == 1));
+  selPhotons.fillBranch("passNPhoGe2SelectionLateBeamHaloCR", bool(regidx == region_defs["BHlate"] && nSelPhotons > 1));
+  selPhotons.fillBranch("passNPhoEq1SelectionEarlyPhysBkgCR", bool(regidx == region_defs["notBHearly"] && nSelPhotons == 1));
+  selPhotons.fillBranch("passNPhoGe2SelectionEarlyPhysBkgCR", bool(regidx == region_defs["notBHearly"] && nSelPhotons > 1));
 
   //delayed SR
-  selPhotons.fillBranch("passNPhoEq1SelectionLatePhysBkgSR", bool(regidx == region_defs["notBHlate"] && nBaseLinePhotons == 1));
-  selPhotons.fillBranch("passNPhoGe2SelectionLatePhysBkgSR", bool(regidx == region_defs["notBHlate"] && nBaseLinePhotons > 1));
+  selPhotons.fillBranch("passNPhoEq1SelectionLatePhysBkgSR", bool(regidx == region_defs["notBHlate"] && nSelPhotons == 1));
+  selPhotons.fillBranch("passNPhoGe2SelectionLatePhysBkgSR", bool(regidx == region_defs["notBHlate"] && nSelPhotons > 1));
   
   //prompt CRs
-  selPhotons.fillBranch("passNPhoEq1SelectionPromptEENonIsoCR", bool(regidx == region_defs["EEnonIso"] && nBaseLinePhotons == 1));
-  selPhotons.fillBranch("passNPhoGe2SelectionPromptEENonIsoCR", bool(regidx == region_defs["EEnonIso"] && nBaseLinePhotons > 1));
-  selPhotons.fillBranch("passNPhoEq1SelectionPromptEBNonIsoCR", bool(regidx == region_defs["EBnonIso"] && nBaseLinePhotons == 1));
-  selPhotons.fillBranch("passNPhoGe2SelectionPromptEBNonIsoCR", bool(regidx == region_defs["EBnonIso"] && nBaseLinePhotons > 1));
+  selPhotons.fillBranch("passNPhoEq1SelectionPromptEENonIsoCR", bool(regidx == region_defs["EEnonIso"] && nSelPhotons == 1));
+  selPhotons.fillBranch("passNPhoGe2SelectionPromptEENonIsoCR", bool(regidx == region_defs["EEnonIso"] && nSelPhotons > 1));
+  selPhotons.fillBranch("passNPhoEq1SelectionPromptEBNonIsoCR", bool(regidx == region_defs["EBnonIso"] && nSelPhotons == 1));
+  selPhotons.fillBranch("passNPhoGe2SelectionPromptEBNonIsoCR", bool(regidx == region_defs["EBnonIso"] && nSelPhotons > 1));
   //very non iso and noniso notvery (ie excl) to stud discriminator correlation with kinematics - nonIso is the superset of both
-  selPhotons.fillBranch("passNPhoEq1SelectionPromptEEVNonIsoCR", bool(regidx == region_defs["EEvnonIso"] && nBaseLinePhotons == 1));
-  selPhotons.fillBranch("passNPhoGe2SelectionPromptEEVNonIsoCR", bool(regidx == region_defs["EEvnonIso"] && nBaseLinePhotons > 1));
-  selPhotons.fillBranch("passNPhoEq1SelectionPromptEEexclNonIsoCR", bool(regidx == region_defs["EEexclnonIso"] && nBaseLinePhotons == 1));
-  selPhotons.fillBranch("passNPhoGe2SelectionPromptEEexclNonIsoCR", bool(regidx == region_defs["EEexclnonIso"] && nBaseLinePhotons > 1));
+  selPhotons.fillBranch("passNPhoEq1SelectionPromptEEVNonIsoCR", bool(regidx == region_defs["EEvnonIso"] && nSelPhotons == 1));
+  selPhotons.fillBranch("passNPhoGe2SelectionPromptEEVNonIsoCR", bool(regidx == region_defs["EEvnonIso"] && nSelPhotons > 1));
+  selPhotons.fillBranch("passNPhoEq1SelectionPromptEEexclNonIsoCR", bool(regidx == region_defs["EEexclnonIso"] && nSelPhotons == 1));
+  selPhotons.fillBranch("passNPhoGe2SelectionPromptEEexclNonIsoCR", bool(regidx == region_defs["EEexclnonIso"] && nSelPhotons > 1));
 
   //prompt SRs
-  selPhotons.fillBranch("passNPhoEq1SelectionPromptEEIsoSR", bool(regidx == region_defs["EEIso"] && nBaseLinePhotons == 1));
-  selPhotons.fillBranch("passNPhoGe2SelectionPromptEEIsoSR", bool(regidx == region_defs["EEIso"] && nBaseLinePhotons > 1));
-  selPhotons.fillBranch("passNPhoEq1SelectionPromptEBIsoSR", bool(regidx == region_defs["EBIso"] && nBaseLinePhotons == 1));
-  selPhotons.fillBranch("passNPhoGe2SelectionPromptEBIsoSR", bool(regidx == region_defs["EBIso"] && nBaseLinePhotons > 1));
+  selPhotons.fillBranch("passNPhoEq1SelectionPromptEEIsoSR", bool(regidx == region_defs["EEIso"] && nSelPhotons == 1));
+  selPhotons.fillBranch("passNPhoGe2SelectionPromptEEIsoSR", bool(regidx == region_defs["EEIso"] && nSelPhotons > 1));
+  selPhotons.fillBranch("passNPhoEq1SelectionPromptEBIsoSR", bool(regidx == region_defs["EBIso"] && nSelPhotons == 1));
+  selPhotons.fillBranch("passNPhoGe2SelectionPromptEBIsoSR", bool(regidx == region_defs["EBIso"] && nSelPhotons > 1));
 
   //---------------------------------------------------------------------------
   //  saving photon information for rjr
   //---------------------------------------------------------------------------
 
-  float lRJRPhoIndx = -1;
-  float slRJRPhoIndx = -1;
-  std::vector<float> rjrpho_pt;
-  std::vector<float> rjrpho_eta;
-  std::vector<float> rjrpho_phi;
-  std::vector<float> rjrpho_Mx;
-  std::vector<float> rjrpho_My;
-  for( int spidx = 0; spidx < nBaseLinePhotons; spidx++ ){
+  float lSigPhoIndx = -1;
+  float slSigPhoIndx = -1;
+  std::vector<float> selpho_pt;
+  std::vector<float> selpho_eta;
+  std::vector<float> selpho_phi;
+  std::vector<float> selpho_Mx;
+  std::vector<float> selpho_My;
+  for( int spidx = 0; spidx < nSelPhotons; spidx++ ){
 
 	//if( phoOrderId[spidx] == objID::Base ) continue;
-	uInt pIdx = phoOrderIndx[spidx]; 
+	uInt pIdx = phoOrderIndx[spidx];
 	uInt exIdx = phoExcIndx[spidx];
 	bool isOOT = (*Photon_isOot)[pIdx];
 	float lPhoPt = (*Photon_pt)[pIdx];
@@ -928,24 +968,24 @@ void KUCMSAodSkimmer::processPhotons(){
 			ePhoMy += ePhoPt*std::sin(ePhoPhi);
 		}//<<>>if( exIdx > -1 )
 	}//<<>>if( isOOT && exIdx > -1 )
-	bool isSig = isRJRPho[spidx];
-	if( isSig ){ if( lRJRPhoIndx < 0 ) lRJRPhoIndx = spidx; else if( slRJRPhoIndx < 0 ) slRJRPhoIndx = spidx; }
+	bool isSig = isSigPho[spidx];
+	if( isSig ){ if( lSigPhoIndx < 0 ) lSigPhoIndx = spidx; else if( slSigPhoIndx < 0 ) slSigPhoIndx = spidx; }
 	//std::cout << " -- is sig pho " << isSig << " index " << spidx << std::endl;
-	rjrpho_pt.push_back(lPhoPt);
-    rjrpho_eta.push_back(lPhoEta);
-    rjrpho_phi.push_back(lPhoPhi);
-    rjrpho_Mx.push_back(ePhoMx);
-    rjrpho_My.push_back(ePhoMy);
+	selpho_pt.push_back(lPhoPt);
+    selpho_eta.push_back(lPhoEta);
+    selpho_phi.push_back(lPhoPhi);
+    selpho_Mx.push_back(ePhoMx);
+    selpho_My.push_back(ePhoMy);
 
-  }//<<>>if(  > 0 )
-  geVects.set( "selPhoPt", rjrpho_pt ); // selected for RJR 
-  geVects.set( "selPhoEta", rjrpho_eta );
-  geVects.set( "selPhoPhi", rjrpho_phi );
-  geVects.set( "selPhoEMx", rjrpho_Mx );
-  geVects.set( "selPhoEMy", rjrpho_My );
-  //std::cout << " -- lead : " << lRJRPhoIndx << " sub " << slRJRPhoIndx << " --------------------- " << std::endl;
-  geVars.set( "lSigPhoIndx", lRJRPhoIndx );
-  geVars.set( "slSigPhoIndx", slRJRPhoIndx );
+  }//<<>>if( nSelPhotons > 0 )
+  geVects.set( "selPhoPt", selpho_pt );
+  geVects.set( "selPhoEta", selpho_eta );
+  geVects.set( "selPhoPhi", selpho_phi );
+  geVects.set( "selPhoEMx", selpho_Mx );
+  geVects.set( "selPhoEMy", selpho_My );
+  //std::cout << " -- lead : " << lSigPhoIndx << " sub " << slSigPhoIndx << " --------------------- " << std::endl;
+  geVars.set( "lSigPhoIndx", lSigPhoIndx );
+  geVars.set( "slSigPhoIndx", slSigPhoIndx );
   //std::cout << " -- is sig pho done --------------------- " << std::endl;
 
 }//<<>>void KUCMSAodSkimmer::processPhoton(){
@@ -956,93 +996,117 @@ void KUCMSAodSkimmer::processPhotons(){
 
 void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
 
+  selPhotons.makeBranch( "has1ELPho", BOOL );
+  selPhotons.makeBranch( "has1ETPho", BOOL );
+  selPhotons.makeBranch( "has1PLPho", BOOL );
+  selPhotons.makeBranch( "has1PTPho", BOOL );
+  selPhotons.makeBranch( "has1LLPho", BOOL );
+  selPhotons.makeBranch( "has1LTPho", BOOL );
+  selPhotons.makeBranch( "has1BasePho", BOOL );
+
+  selPhotons.makeBranch( "nBasePhotons", UINT );
+  selPhotons.makeBranch( "nEBPhotons", UINT );
+  selPhotons.makeBranch( "nPBPhotons", UINT );
+  selPhotons.makeBranch( "nLBPhotons", UINT );
+  selPhotons.makeBranch( "nLoosePhotons", UINT );
+  selPhotons.makeBranch( "nELPhotons", UINT );
+  selPhotons.makeBranch( "nPLPhotons", UINT );
+  selPhotons.makeBranch( "nLLPhotons", UINT );
+  selPhotons.makeBranch( "nTightPhotons", UINT );
+  selPhotons.makeBranch( "nETPhotons", UINT );
+  selPhotons.makeBranch( "nPTPhotons", UINT );
+  selPhotons.makeBranch( "nLTPhotons", UINT );
+
   selPhotons.makeBranch( "nPhotons", UINT );
-  selPhotons.makeBranch( "nBaseLinePhotons", UINT ); 
-  selPhotons.makeBranch( "baseLinePhoton_EleVeto", UINT );
-  selPhotons.makeBranch( "baseLinePhoton_OOT", VBOOL );
-  selPhotons.makeBranch( "baseLinePhoton_SusyId", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_Quality", VINT ); 
-  selPhotons.makeBranch( "baseLinePhoton_Time", VFLOAT ); 
+  selPhotons.makeBranch( "nSelPhotons", UINT ); 
+  selPhotons.makeBranch( "selPhoEleVeto", UINT );
+  selPhotons.makeBranch( "selPhoOOT", VBOOL );
+  selPhotons.makeBranch( "selPhoSusyId", VFLOAT );
+  selPhotons.makeBranch( "selPhoQuality", VINT ); 
+  selPhotons.makeBranch( "selPhoTime", VFLOAT ); 
  
-  selPhotons.makeBranch( "baseLinePhoton_RawTime", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_WTimeSig", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_LTimeSig", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_STimeSig", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_WTimeSigOld", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_WTime", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_LTime", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_STime", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_WTRes", VFLOAT ); 
-  selPhotons.makeBranch( "baseLinePhoton_LTRes", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_STRes", VFLOAT );
+  selPhotons.makeBranch( "selPhoTSigId", VINT );     
+  selPhotons.makeBranch( "selPhoObjId", VINT );
 
-  selPhotons.makeBranch( "baseLinePhoton_ShasGS", VBOOL );
-  selPhotons.makeBranch( "baseLinePhoton_LSCross", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_SSCross", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_LWeird", VBOOL );
-  selPhotons.makeBranch( "baseLinePhoton_SWeird", VBOOL );
+  selPhotons.makeBranch( "selPhoRawTime", VFLOAT );
+  selPhotons.makeBranch( "selPhoWTimeSig", VFLOAT );
+  selPhotons.makeBranch( "selPhoLTimeSig", VFLOAT );
+  selPhotons.makeBranch( "selPhoSTimeSig", VFLOAT );
+  selPhotons.makeBranch( "selPhoWTimeSigOld", VFLOAT );
+  selPhotons.makeBranch( "selPhoWTime", VFLOAT );
+  selPhotons.makeBranch( "selPhoLTime", VFLOAT );
+  selPhotons.makeBranch( "selPhoSTime", VFLOAT );
+  selPhotons.makeBranch( "selPhoWTRes", VFLOAT ); 
+  selPhotons.makeBranch( "selPhoLTRes", VFLOAT );
+  selPhotons.makeBranch( "selPhoSTRes", VFLOAT );
 
-  selPhotons.makeBranch( "baseLinePhoton_Energy", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_Eta", VFLOAT ); 
-  selPhotons.makeBranch( "baseLinePhoton_Phi", VFLOAT );     
-  selPhotons.makeBranch( "baseLinePhoton_Pt", VFLOAT ); 
-  selPhotons.makeBranch( "baseLinePhoton_SCx", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_SCy", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_SCz", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_CorEnergy", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_CorPt", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_MBetaEql", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_MBetaPmt", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_PVtoRH", VFLOAT );
+  selPhotons.makeBranch( "selPhoShasGS", VBOOL );
+  selPhotons.makeBranch( "selPhoLSCross", VFLOAT );
+  selPhotons.makeBranch( "selPhoSSCross", VFLOAT );
+  selPhotons.makeBranch( "selPhoLWeird", VBOOL );
+  selPhotons.makeBranch( "selPhoSWeird", VBOOL );
 
-  selPhotons.makeBranch( "baseLinePhoton_HcalTowerSumEtBcConeDR04", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_TrkSumPtHollowConeDR03", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_TrkSumPtHollowConeDR04", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_TrkSumPtSolidConeDR04", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_PixelSeed", VBOOL );
-  selPhotons.makeBranch( "baseLinePhoton_EcalRHSumEtConeDR04", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_HadTowOverEM", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_HadOverEM", VFLOAT );
+  selPhotons.makeBranch( "selPhoEnergy", VFLOAT );
+  selPhotons.makeBranch( "selPhoEta", VFLOAT ); 
+  selPhotons.makeBranch( "selPhoPhi", VFLOAT );     
+  selPhotons.makeBranch( "selPhoPt", VFLOAT ); 
+  selPhotons.makeBranch( "selPhoSCx", VFLOAT );
+  selPhotons.makeBranch( "selPhoSCy", VFLOAT );
+  selPhotons.makeBranch( "selPhoSCz", VFLOAT );
+  selPhotons.makeBranch( "selPhoCorEnergy", VFLOAT );
+  selPhotons.makeBranch( "selPhoCorPt", VFLOAT );
+  selPhotons.makeBranch( "selPhoMBetaEql", VFLOAT );
+  selPhotons.makeBranch( "selPhoMBetaPmt", VFLOAT );
+  selPhotons.makeBranch( "selPhoPVtoRH", VFLOAT );
 
-  selPhotons.makeBranch( "baseLinePhoton_HcalTowerSumEtConeDR04", VFLOAT );   //!
-  selPhotons.makeBranch( "baseLinePhoton_NTrkHollowConeDR04", VFLOAT );   //!
-  selPhotons.makeBranch( "baseLinePhoton_NTrkSolidConeDR04", VFLOAT );   //!
-  selPhotons.makeBranch( "baseLinePhoton_EcalPFClusterIso", VFLOAT );   //!
-  selPhotons.makeBranch( "baseLinePhoton_HasConversionTracks", VBOOL );   //!
-  selPhotons.makeBranch( "baseLinePhoton_HcalPFClusterIso", VFLOAT );   //!
-  selPhotons.makeBranch( "baseLinePhoton_Hoe_PUcorr", VFLOAT );   //!
-  selPhotons.makeBranch( "baseLinePhoton_PfChargedIso", VFLOAT );   //!
-  selPhotons.makeBranch( "baseLinePhoton_PfChargedIsoPFPV", VFLOAT );   //!
-  selPhotons.makeBranch( "baseLinePhoton_PfChargedIsoWorstVtx", VFLOAT );   //!
-  selPhotons.makeBranch( "baseLinePhoton_PfPhoIso03", VFLOAT );   //!
-  selPhotons.makeBranch( "baseLinePhoton_PfRelIso03_all_quadratic", VFLOAT );   //!
-  selPhotons.makeBranch( "baseLinePhoton_PfRelIso03_chg_quadratic", VFLOAT );   //!
+  selPhotons.makeBranch( "selPhoHcalTowerSumEtBcConeDR04", VFLOAT );
+  selPhotons.makeBranch( "selPhoTrkSumPtHollowConeDR03", VFLOAT );
+  selPhotons.makeBranch( "selPhoTrkSumPtHollowConeDR04", VFLOAT );
+  selPhotons.makeBranch( "selPhoTrkSumPtSolidConeDR04", VFLOAT );
+  selPhotons.makeBranch( "selPhoPixelSeed", VBOOL );
+  selPhotons.makeBranch( "selPhoEcalRHSumEtConeDR04", VFLOAT );
+  selPhotons.makeBranch( "selPhoHadTowOverEM", VFLOAT );
+  selPhotons.makeBranch( "selPhoHadOverEM", VFLOAT );
 
-  selPhotons.makeBranch( "baseLinePhoton_SMaj", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_SMin", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_SAlp", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_ClstrRn", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_R9", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_Nrh", VUINT );
-  selPhotons.makeBranch( "baseLinePhoton_CovEtaEta", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_CovEtaPhi", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_CovPhiPhi", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_Sieie", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_Sieip", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_Sipip", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_EtaWidth", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_PhiWidth", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_S4", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_SigmaIEtaIEta", VFLOAT );   //!
+  selPhotons.makeBranch( "selPhoHcalTowerSumEtConeDR04", VFLOAT );   //!
+  selPhotons.makeBranch( "selPhoNTrkHollowConeDR04", VFLOAT );   //!
+  selPhotons.makeBranch( "selPhoNTrkSolidConeDR04", VFLOAT );   //!
+  selPhotons.makeBranch( "selPhoEcalPFClusterIso", VFLOAT );   //!
+  selPhotons.makeBranch( "selPhoHasConversionTracks", VBOOL );   //!
+  selPhotons.makeBranch( "selPhoHcalPFClusterIso", VFLOAT );   //!
+  selPhotons.makeBranch( "selPhoHoe_PUcorr", VFLOAT );   //!
+  selPhotons.makeBranch( "selPhoPfChargedIso", VFLOAT );   //!
+  selPhotons.makeBranch( "selPhoPfChargedIsoPFPV", VFLOAT );   //!
+  selPhotons.makeBranch( "selPhoPfChargedIsoWorstVtx", VFLOAT );   //!
+  selPhotons.makeBranch( "selPhoPfPhoIso03", VFLOAT );   //!
+  selPhotons.makeBranch( "selPhoPfRelIso03_all_quadratic", VFLOAT );   //!
+  selPhotons.makeBranch( "selPhoPfRelIso03_chg_quadratic", VFLOAT );   //!
+
+  selPhotons.makeBranch( "selPhoSMaj", VFLOAT );
+  selPhotons.makeBranch( "selPhoSMin", VFLOAT );
+  selPhotons.makeBranch( "selPhoSAlp", VFLOAT );
+  selPhotons.makeBranch( "selPhoClstrRn", VFLOAT );
+  selPhotons.makeBranch( "selPhoR9", VFLOAT );
+  selPhotons.makeBranch( "selPhoNrh", VUINT );
+  selPhotons.makeBranch( "selPhoCovEtaEta", VFLOAT );
+  selPhotons.makeBranch( "selPhoCovEtaPhi", VFLOAT );
+  selPhotons.makeBranch( "selPhoCovPhiPhi", VFLOAT );
+  selPhotons.makeBranch( "selPhoSieie", VFLOAT );
+  selPhotons.makeBranch( "selPhoSieip", VFLOAT );
+  selPhotons.makeBranch( "selPhoSipip", VFLOAT );
+  selPhotons.makeBranch( "selPhoEtaWidth", VFLOAT );
+  selPhotons.makeBranch( "selPhoPhiWidth", VFLOAT );
+  selPhotons.makeBranch( "selPhoS4", VFLOAT );
+  selPhotons.makeBranch( "selPhoSigmaIEtaIEta", VFLOAT );   //!
 	 
-  selPhotons.makeBranch("baseLinePhoton_isoANNScore", VFLOAT);
-  selPhotons.makeBranch("baseLinePhoton_nonIsoANNScore", VFLOAT);
-  selPhotons.makeBranch("baseLinePhoton_physBkgCNNScore", VFLOAT);
-  selPhotons.makeBranch("baseLinePhoton_beamHaloCNNScore", VFLOAT);
-  selPhotons.makeBranch("baseLinePhoton_beamHaloCR",VBOOL);
-  selPhotons.makeBranch("baseLinePhoton_spikeCR",VBOOL);
-  selPhotons.makeBranch("baseLinePhoton_GJetsCR",VBOOL);
-  selPhotons.makeBranch("baseLinePhoton_DiJetsCR",VBOOL);
+  selPhotons.makeBranch("selPho_isoANNScore", VFLOAT);
+  selPhotons.makeBranch("selPho_nonIsoANNScore", VFLOAT);
+  selPhotons.makeBranch("selPho_physBkgCNNScore", VFLOAT);
+  selPhotons.makeBranch("selPho_beamHaloCNNScore", VFLOAT);
+  selPhotons.makeBranch("selPho_beamHaloCR",VBOOL);
+  selPhotons.makeBranch("selPho_spikeCR",VBOOL);
+  selPhotons.makeBranch("selPho_GJetsCR",VBOOL);
+  selPhotons.makeBranch("selPho_DiJetsCR",VBOOL);
 
   selPhotons.makeBranch("passNPhoEq1SelectionEarlyBeamHaloCR", BOOL);
   selPhotons.makeBranch("passNPhoGe2SelectionEarlyBeamHaloCR", BOOL);
@@ -1065,49 +1129,40 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch("passNPhoEq1SelectionPromptEBIsoSR", BOOL);
   selPhotons.makeBranch("passNPhoGe2SelectionPromptEBIsoSR", BOOL);
 
-  selPhotons.makeBranch( "baseLinePhoton_GenPt", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_PhoIsoDr", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_GenIdx", VINT );
+  selPhotons.makeBranch( "selPhoGenPt", VFLOAT );
+  selPhotons.makeBranch( "selPhoPhoIsoDr", VFLOAT );
+  selPhotons.makeBranch( "selPhoGenIdx", VINT );
 
-  selPhotons.makeBranch( "baseLinePhoton_GenSigMomEnergy", VFLOAT );   //!
-  selPhotons.makeBranch( "baseLinePhoton_GenSigMomEta", VFLOAT );   //!
-  selPhotons.makeBranch( "baseLinePhoton_GenSigMomMass", VFLOAT );   //!
-  selPhotons.makeBranch( "baseLinePhoton_GenSigMomPhi", VFLOAT );   //!
-  selPhotons.makeBranch( "baseLinePhoton_GenSigMomPt", VFLOAT );   //!
-  selPhotons.makeBranch( "baseLinePhoton_GenSigMomPx", VFLOAT );   //!
-  selPhotons.makeBranch( "baseLinePhoton_GenSigMomPy", VFLOAT );   //!
-  selPhotons.makeBranch( "baseLinePhoton_GenSigMomPz", VFLOAT );   //!
-  selPhotons.makeBranch( "baseLinePhoton_GenSigMomVx", VFLOAT );   //!
-  selPhotons.makeBranch( "baseLinePhoton_GenSigMomVy", VFLOAT );   //!
-  selPhotons.makeBranch( "baseLinePhoton_GenSigMomVz", VFLOAT );   //!
+  selPhotons.makeBranch( "selPhoGenSigMomEnergy", VFLOAT );   //!
+  selPhotons.makeBranch( "selPhoGenSigMomEta", VFLOAT );   //!
+  selPhotons.makeBranch( "selPhoGenSigMomMass", VFLOAT );   //!
+  selPhotons.makeBranch( "selPhoGenSigMomPhi", VFLOAT );   //!
+  selPhotons.makeBranch( "selPhoGenSigMomPt", VFLOAT );   //!
+  selPhotons.makeBranch( "selPhoGenSigMomPx", VFLOAT );   //!
+  selPhotons.makeBranch( "selPhoGenSigMomPy", VFLOAT );   //!
+  selPhotons.makeBranch( "selPhoGenSigMomPz", VFLOAT );   //!
+  selPhotons.makeBranch( "selPhoGenSigMomVx", VFLOAT );   //!
+  selPhotons.makeBranch( "selPhoGenSigMomVy", VFLOAT );   //!
+  selPhotons.makeBranch( "selPhoGenSigMomVz", VFLOAT );   //!
 
-  selPhotons.makeBranch( "endcap_photon_baseline", VBOOL );   //!
-  selPhotons.makeBranch( "endcap_photon_energy", VFLOAT );   //!
-  selPhotons.makeBranch( "endcap_photon_eta", VFLOAT );   //!
-  selPhotons.makeBranch( "endcap_photon_phi", VFLOAT );   //!
-  selPhotons.makeBranch( "endcap_photon_pt", VFLOAT );   //!
-  selPhotons.makeBranch( "endcap_photon_tspscdr4", VFLOAT );   //!
-  selPhotons.makeBranch( "endcap_photon_erhsecdr4", VFLOAT );   //!
-  selPhotons.makeBranch( "endcap_photon_htoem", VFLOAT );   //!
+  selPhotons.makeBranch( "EESigPho_skipped", VBOOL );   //!
+  selPhotons.makeBranch( "EESigPho_energy", VFLOAT );   //!
+  selPhotons.makeBranch( "EESigPho_eta", VFLOAT );   //!
+  selPhotons.makeBranch( "EESigPho_phi", VFLOAT );   //!
+  selPhotons.makeBranch( "EESigPho_pt", VFLOAT );   //!
+  selPhotons.makeBranch( "EESigPho_tspscdr4", VFLOAT );   //!
+  selPhotons.makeBranch( "EESigPho_erhsecdr4", VFLOAT );   //!
+  selPhotons.makeBranch( "EESigPho_htoem", VFLOAT );   //!
 
-  selPhotons.makeBranch( "barrel_photon_baseline", VBOOL );   //!
-  selPhotons.makeBranch( "barrel_photon_energy", VFLOAT );   //!
-  selPhotons.makeBranch( "barrel_photon_eta", VFLOAT );   //!
-  selPhotons.makeBranch( "barrel_photon_phi", VFLOAT );   //!
-  selPhotons.makeBranch( "barrel_photon_pt", VFLOAT );   //!
-  selPhotons.makeBranch( "barrel_photon_tspscdr4", VFLOAT );   //!
-  selPhotons.makeBranch( "barrel_photon_erhsecdr4", VFLOAT );   //!
-  selPhotons.makeBranch( "barrel_photon_htoem", VFLOAT );   //!
-
-  selPhotons.makeBranch( "photon_WTime1", VFLOAT );
-  selPhotons.makeBranch( "photon_WTimeSig1", VFLOAT );
-  selPhotons.makeBranch( "photon_WTime", VFLOAT );
-  selPhotons.makeBranch( "photon_WTimeSig", VFLOAT );
-  selPhotons.makeBranch( "photon_Eta", VFLOAT );
-  selPhotons.makeBranch( "photon_Phi", VFLOAT );
-  selPhotons.makeBranch( "photon_Pt", VFLOAT );
-  selPhotons.makeBranch( "photon_E", VFLOAT );
-  selPhotons.makeBranch( "photon_PixSeed", VBOOL );
+  selPhotons.makeBranch( "allPhoWTime1", VFLOAT );
+  selPhotons.makeBranch( "allPhoWTimeSig1", VFLOAT );
+  selPhotons.makeBranch( "allPhoWTime", VFLOAT );
+  selPhotons.makeBranch( "allPhoWTimeSig", VFLOAT );
+  selPhotons.makeBranch( "allPhoEta", VFLOAT );
+  selPhotons.makeBranch( "allPhoPhi", VFLOAT );
+  selPhotons.makeBranch( "allPhoPt", VFLOAT );
+  selPhotons.makeBranch( "allPhoE", VFLOAT );
+  selPhotons.makeBranch( "allPhoPixSeed", VBOOL );
 
   // add new photon branches above
   selPhotons.attachBranches( fOutTree );
