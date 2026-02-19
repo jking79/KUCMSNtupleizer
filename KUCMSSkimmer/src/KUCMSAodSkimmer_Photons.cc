@@ -42,8 +42,6 @@ void KUCMSAodSkimmer::processPhotons(){
   // calc
   if( DEBUG ) std::cout << "Finding photons" << std::endl;
   //----------------- photons ------------------
-
-
   // prep fpr main photon loop
   // counts 
   std::vector<int> phoOrderIndx;
@@ -117,7 +115,7 @@ void KUCMSAodSkimmer::processPhotons(){
 	bool failPhoIsoEE = failPhoIsoEB; //not ( tspscdr4 < 7.0 && erhsecdr4 < 12.5 && htoem < 0.05 );
 
     //---------------------------------------------------
-    /////////// skip all excluded photons///////////////////////////////////
+    /////////// skip all excluded photons ///////////////////////////////////
     //---------------------------------------------------
 
     if( isExcluded ) continue;
@@ -241,8 +239,8 @@ void KUCMSAodSkimmer::processPhotons(){
     //---------------------------------------------------
     ///////////  saving info for all non excluded photons  ////////////////////////////////////////////////////////////////////
     //---------------------------------------------------
-    //selPhotons.fillBranch( "photon_WTime1", phoWTime1 );
-    selPhotons.fillBranch( "photon_WTimeSig", phoWTimeSig );
+   
+	selPhotons.fillBranch( "photon_WTimeSig", phoWTimeSig );
     selPhotons.fillBranch( "photon_WTime", phoWTime );
     selPhotons.fillBranch( "photon_WTimeSig1", wttimesig1 );
     selPhotons.fillBranch( "photon_Eta", eta );
@@ -250,37 +248,6 @@ void KUCMSAodSkimmer::processPhotons(){
     selPhotons.fillBranch( "photon_Pt", pt );
     selPhotons.fillBranch( "photon_E", energy );
     selPhotons.fillBranch( "photon_PixSeed", hasPixSeed );
-
-    //---------------------------------------------------
-    ///////////  saving info on EE photons  ////////////////////////////////////////////////////////////////////
-    //---------------------------------------------------
-    bool isEESig = not isExcluded && not hasPixSeed && overMaxEta;
-    if( isEESig ){
-
-        selPhotons.fillBranch( "endcap_photon_baseline", in_base_selection );   //!
-        selPhotons.fillBranch( "endcap_photon_energy", (*Photon_energy)[it] );   //!
-        selPhotons.fillBranch( "endcap_photon_eta", (*Photon_eta)[it] );   //!
-        selPhotons.fillBranch( "endcap_photon_phi", (*Photon_phi)[it] );   //!
-        selPhotons.fillBranch( "endcap_photon_tspscdr4", (*Photon_trkSumPtSolidConeDR04)[it] );   //!
-        selPhotons.fillBranch( "endcap_photon_erhsecdr4", (*Photon_ecalRHSumEtConeDR04)[it] );   //!
-        selPhotons.fillBranch( "endcap_photon_htoem", (*Photon_hadTowOverEM)[it] );   //!
-        selPhotons.fillBranch( "endcap_photon_pt", (*Photon_pt)[it] );   //!
-
-    }//if( doGenInfo )
-
-    bool isEBSig = not isExcluded && not hasPixSeed && not overMaxEta;
-    if( isEBSig ){
-
-        selPhotons.fillBranch( "barrel_photon_baseline", in_base_selection );   //!
-        selPhotons.fillBranch( "barrel_photon_energy", (*Photon_energy)[it] );   //!
-        selPhotons.fillBranch( "barrel_photon_eta", (*Photon_eta)[it] );   //!
-        selPhotons.fillBranch( "barrel_photon_phi", (*Photon_phi)[it] );   //!
-        selPhotons.fillBranch( "barrel_photon_tspscdr4", (*Photon_trkSumPtSolidConeDR04)[it] );   //!
-        selPhotons.fillBranch( "barrel_photon_erhsecdr4", (*Photon_ecalRHSumEtConeDR04)[it] );   //!
-        selPhotons.fillBranch( "barrel_photon_htoem", (*Photon_hadTowOverEM)[it] );   //!
-        selPhotons.fillBranch( "barrel_photon_pt", (*Photon_pt)[it] );   //!
-
-    }//if( doGenInfo )
 
     //---------------------------------------------------
     ///////////  pho disriminate ids ////////////////////////////////////////////////////////////////////
@@ -329,25 +296,6 @@ void KUCMSAodSkimmer::processPhotons(){
 
   	_ca.ClearRecHitList();
 
-    //---------------------------------------------------
-    ///////////  saving hem region info  ////////////////////////////////////////////////////////////////////
-    //---------------------------------------------------
-
-    bool hemEligible1 = pt > 20 && not isExcluded && not hasPixSeed;
-    bool hemEligible2 = pt > 30 && not isExcluded && not hasPixSeed;
-
-    bool isInHemRegion = inHEMRegion( eta, phi );
-    hemBits.set( "pho1hvl", isInHemRegion && hemEligible1 );
-    hemBits.set( "pho2hvm", isInHemRegion && hemEligible2 );
-
-	// setting flag for photons that go into rjr - should be all that get to here now.
-
-	///////////////////////////////  depreciated but still used in process
-	//we want to reject (endcap) photons that are at the most noniso edge of the noniso sideband. 
-	bool isRjrSigPho = true; // overMaxEta ? nonisobkg_score < EEVeryVeryNonIsoCutVal : isoPho;
-	if( isRjrSigPho ) isRJRPho.push_back(true);
-	else isRJRPho.push_back(false);
-
     //---------------------------------------------------------------------------------
     ///////////  Determining photon Base selection   ////////////////////////////////////////////////////////////////////
     //------------------------------------------------------------------------------
@@ -355,9 +303,42 @@ void KUCMSAodSkimmer::processPhotons(){
     // Only the 2 leading photons that pass very loose criteria should be in Base selction 
     //  change to skip jets and keep all photons regardless of photon iso with jet
 
-    bool underNMaxBasePhos = nBaseRJRPhos < 3;
     bool pass_very_loose_id = isoPho; // ?  this is place holder - was not in place in v37  and prior to 2/17/26 
-    bool in_base_selection = not badNRechits and not hasPixSeed and overMinPt and pass_very_loose_id and underNMaxBasePhos;
+
+	bool standard_selction = not badNRechits and not hasPixSeed and not isExcluded;
+    bool underNMaxBasePhos = nBaseRJRPhos < 3;
+    bool in_base_selection = standard_selction and overMinPt and pass_very_loose_id and underNMaxBasePhos;
+
+    //---------------------------------------------------
+    ///////////  saving info on EB/EE photon information ///////////////////////////////////////////////////////
+    //---------------------------------------------------
+    bool isEESig = not isExcluded && not hasPixSeed && overMaxEta;
+    if( isEESig ){
+
+        selPhotons.fillBranch( "endcap_photon_baseline", in_base_selection );   //!
+        selPhotons.fillBranch( "endcap_photon_energy", (*Photon_energy)[it] );   //!
+        selPhotons.fillBranch( "endcap_photon_eta", (*Photon_eta)[it] );   //!
+        selPhotons.fillBranch( "endcap_photon_phi", (*Photon_phi)[it] );   //!
+        selPhotons.fillBranch( "endcap_photon_tspscdr4", (*Photon_trkSumPtSolidConeDR04)[it] );   //!
+        selPhotons.fillBranch( "endcap_photon_erhsecdr4", (*Photon_ecalRHSumEtConeDR04)[it] );   //!
+        selPhotons.fillBranch( "endcap_photon_htoem", (*Photon_hadTowOverEM)[it] );   //!
+        selPhotons.fillBranch( "endcap_photon_pt", (*Photon_pt)[it] );   //!
+
+    }//if( doGenInfo )
+
+    bool isEBSig = not isExcluded && not hasPixSeed && not overMaxEta;
+    if( isEBSig ){
+
+        selPhotons.fillBranch( "barrel_photon_baseline", in_base_selection );   //!
+        selPhotons.fillBranch( "barrel_photon_energy", (*Photon_energy)[it] );   //!
+        selPhotons.fillBranch( "barrel_photon_eta", (*Photon_eta)[it] );   //!
+        selPhotons.fillBranch( "barrel_photon_phi", (*Photon_phi)[it] );   //!
+        selPhotons.fillBranch( "barrel_photon_tspscdr4", (*Photon_trkSumPtSolidConeDR04)[it] );   //!
+        selPhotons.fillBranch( "barrel_photon_erhsecdr4", (*Photon_ecalRHSumEtConeDR04)[it] );   //!
+        selPhotons.fillBranch( "barrel_photon_htoem", (*Photon_hadTowOverEM)[it] );   //!
+        selPhotons.fillBranch( "barrel_photon_pt", (*Photon_pt)[it] );   //!
+
+    }//if( doGenInfo )
 
     ///////////  Very Loose Base Photon selection ////////////////////////////////////////////////////////////////////
     //---------------------------------------------------
@@ -370,6 +351,7 @@ void KUCMSAodSkimmer::processPhotons(){
     if( ( geVars("genSigPerfect") == 1 ) &&  ( not isGenSig ) ){ isBaseLinePho.push_back(false);  continue; }
     isBaseLinePho.push_back(true);
 
+    ///////////////////////////////  depreciated but still used in process
     // setting flag for photons that go into rjr - should be all that get to here now.
     // we want to reject (endcap) photons that are at the most noniso edge of the noniso sideband. 
     bool isRjrSigPho = true; // overMaxEta ? nonisobkg_score < EEVeryVeryNonIsoCutVal : isoPho;
