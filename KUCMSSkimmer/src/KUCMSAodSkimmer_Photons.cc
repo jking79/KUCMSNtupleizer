@@ -331,6 +331,7 @@ void KUCMSAodSkimmer::processPhotons(){
         selPhotons.fillBranch( "endcap_photon_erhsecdr4", (*Photon_ecalRHSumEtConeDR04)[it] );   //!
         selPhotons.fillBranch( "endcap_photon_htoem", (*Photon_hadTowOverEM)[it] );   //!
         selPhotons.fillBranch( "endcap_photon_pt", (*Photon_pt)[it] );   //!
+        selPhotons.fillBranch( "endcap_photon_isoANNScore", isobkg_score );   //!
 
     }//if( doGenInfo )
 
@@ -345,6 +346,7 @@ void KUCMSAodSkimmer::processPhotons(){
         selPhotons.fillBranch( "barrel_photon_erhsecdr4", (*Photon_ecalRHSumEtConeDR04)[it] );   //!
         selPhotons.fillBranch( "barrel_photon_htoem", (*Photon_hadTowOverEM)[it] );   //!
         selPhotons.fillBranch( "barrel_photon_pt", (*Photon_pt)[it] );   //!
+        selPhotons.fillBranch( "barrel_photon_isoANNScore", isobkg_score );   //!
 
     }//if( doGenInfo )
 
@@ -1089,6 +1091,7 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch( "endcap_photon_tspscdr4", VFLOAT );   //!
   selPhotons.makeBranch( "endcap_photon_erhsecdr4", VFLOAT );   //!
   selPhotons.makeBranch( "endcap_photon_htoem", VFLOAT );   //!
+  selPhotons.makeBranch( "endcap_photon_isoANNScore", VFLOAT );   //!
 
   selPhotons.makeBranch( "barrel_photon_baseline", VBOOL );   //!
   selPhotons.makeBranch( "barrel_photon_energy", VFLOAT );   //!
@@ -1098,6 +1101,7 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch( "barrel_photon_tspscdr4", VFLOAT );   //!
   selPhotons.makeBranch( "barrel_photon_erhsecdr4", VFLOAT );   //!
   selPhotons.makeBranch( "barrel_photon_htoem", VFLOAT );   //!
+  selPhotons.makeBranch( "barrel_photon_isoANNScore", VFLOAT );   //!
 
   selPhotons.makeBranch( "photon_WTime1", VFLOAT );
   selPhotons.makeBranch( "photon_WTimeSig1", VFLOAT );
