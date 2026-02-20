@@ -80,7 +80,7 @@ int main ( int argc, char *argv[] ){
     //////KUCMS_TimeCalibration theCali( true, true ); // make a new TClifile and keep TCalifile open
 	//KUCMS_TimeCalibration theCali( true, true );
 	// if Tcalifile kept open be sure to make and save tcalifile ( saving calihist will close tcalifile )
-	// KUCMS_TimeCalibration( bool stayOpen = false, bool makeNew = false  );
+	// KUCMS_TimeCalibration( bool stayOpen = false, bool makeNew = false  ); are defaults
 
 	////KUCMS_TimeCalibration theCali; // open tfile in read only then close after setup
 	KUCMS_TimeCalibration theCali( true );
@@ -115,18 +115,18 @@ int main ( int argc, char *argv[] ){
     //-----//////////  making xtal cali :
     //theCali.makeXCaliMapEGR( inputfilename, true ); // true == run only subset of events
 	//theCali.makeXCaliMapEGR( inputfilename, 1, true ); // true == run only subset of events
-    theCali.makeXCaliMapEGR( inputfilename );
-    theCali.makeCaliHists();
-    theCali.SaveCaliHists();
-    theCali.SaveCaliRunFile();
+    //theCali.makeXCaliMapEGR( inputfilename );
+    //theCali.makeCaliHists();
+    //theCali.SaveCaliHists();
+    //theCali.SaveCaliRunFile();
 
 	//----///////////  make gainid 2 calibrations
     //theCali.makeTTCaliMapEGR( inputfilename, 2, false, false ); // do gainID 2 no calibration step
     //theCali.makeTTCaliMapEGR( inputfilename, 2, true ); // do gainID 2; true == run only subset of events 
-    theCali.makeTTCaliMapEGR( inputfilename, 2 ); // do gainID 2
-    theCali.makeCaliHists();
-    theCali.SaveCaliHists();
-    theCali.SaveTTRunFile();
+    //theCali.makeTTCaliMapEGR( inputfilename, 2 ); // do gainID 2
+    //theCali.makeCaliHists();
+    //theCali.SaveCaliHists();
+    //theCali.SaveTTRunFile();
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
