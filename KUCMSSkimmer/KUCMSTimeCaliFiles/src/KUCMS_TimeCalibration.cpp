@@ -33,7 +33,7 @@ KUCMS_TimeCalibration::KUCMS_TimeCalibration( bool stayOpen, bool makeNew ){
     //std::cout << " - opening caliHistsTFile " << std::endl;
     caliTFileName = caliFileDir + "caliHistsTFile.root";// name configurable ?
 	caliR3TFileName = caliFileDir + "caliR3HistsTFile.root";// name configurable ?
-	cali2DResPlotsTFileName = caliFileDir + "cali2dResPlotsTFile.root";
+	cali2DResPlotsTFileName = caliFileDir + "res2dPlotsTFile.root";
 	caliTFile = NULL;
     caliR3TFile = NULL;
 	cali2DResTFile = NULL;
@@ -306,25 +306,28 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
     ////promptIovMap[390735] = 391530;
 
     promptIovMap[390735] = 390936;
-    promptIovMap[390937] = 391530;
+    promptIovMap[390937] = 391260;
+    promptIovMap[391261] = 391530;
     promptIovMap[391531] = 392158;
-    promptIovMap[392159] = 393110;
-    promptIovMap[393111] = 393609;
+    promptIovMap[392159] = 391905;
+    promptIovMap[391906] = 392485;
+    promptIovMap[392486] = 393110;
+    promptIovMap[393111] = 393146;
+    promptIovMap[393147] = 393609;
     promptIovMap[393610] = 394033;
     promptIovMap[394034] = 394217;
     promptIovMap[394218] = 394285;
-    promptIovMap[394286] = 395967;
+    promptIovMap[394286] = 394297;
+    promptIovMap[394298] = 394458;
+    promptIovMap[394459] = 395967;
     promptIovMap[395968] = 396597;
-    promptIovMap[396598] = 397853;
+    promptIovMap[396598] = 397304;
+    promptIovMap[397305] = 397853;
     promptIovMap[397854] = 398903;
 
 // 2025 - (390735) 391531 - 398903
 
 	////promptIovMap[391531] = 398903;
-	
-
-
-
 
 // END
 	promptIovMap[398904] = 999999;
@@ -424,6 +427,8 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
 void KUCMS_TimeCalibration::SetupIovMap( std::string tag, float minLumi ){
 
     std::cout << " - Read SetupIovMap : " << tag << std::endl;
+	//bool db = true;
+    bool db = false;
 
 	bool newrange( true );
 	int start = 0;
@@ -461,7 +466,7 @@ void KUCMS_TimeCalibration::SetupIovMap( std::string tag, float minLumi ){
 		//if( yearend ) std::cout << " --- END OF YEAR : " << currentrun << " start " << start << std::endl; 
 		if( currentrun > curxiovend || yearend ){ // tack small portion to previous and start new run period with this run
 			if(  ( prev > 0 ) and ( yearend or ( lumisum < ( minLumi*0.4 ) ) ) and not yearchanged ){
-				//std::cout << " IOV JUMP !! Add to Previous  !! Lumi Sum : " <<  lumisum << " min lumi : " << minLumi << std::endl;
+				if( db ) std::cout << " IOV JUMP !! Add to Previous  !! Lumi Sum : " <<  lumisum << " min lumi : " << minLumi << std::endl;
 				end = curxiovend;
 				if( end < start ) end = start;
 				theIovMap[prev] = end;
@@ -470,7 +475,7 @@ void KUCMS_TimeCalibration::SetupIovMap( std::string tag, float minLumi ){
 				if( yearend ) yearchanged = true;
 			}//<<>>if( prev > 0 )
 			else {
-				//std::cout << " IOV JUMP !! Continue !! Lumi Sum : " <<  lumisum << " min lumi : " << minLumi << std::endl;
+				if( db ) std::cout << " IOV JUMP !! Continue !! Lumi Sum : " <<  lumisum << " min lumi : " << minLumi << std::endl;
 				lumisum += lumirun.second.lumi; 
             }//<<>>else { if( prev > 0 ){ 
             for( auto& xiov : promptIovMap ){
@@ -484,7 +489,7 @@ void KUCMS_TimeCalibration::SetupIovMap( std::string tag, float minLumi ){
         }//<<>>if( lumirun.second.run > promptIovMap[curxiov] )
 		//std::cout << " Lumi Sum : " <<  lumisum << " min lumi : " << minLumi << std::endl;
 		if( lumisum > minLumi ){ 
-			//std::cout << " JUMP !!!!! Lumi Sum : " <<  lumisum << " min lumi : " << minLumi << std::endl;
+			if( db ) std::cout << " JUMP !!!!! Lumi Sum : " <<  lumisum << " min lumi : " << minLumi << std::endl;
 			end = currentrun;
 			if( end < start ) end = start;
 			theIovMap[start] = end;
@@ -717,8 +722,11 @@ void KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
 		for( auto& calirunsct : calirunmap.second ){
 			std::string ttfilename( calirunsct.second.histMapName );
 			std::string prefix = ttfilename.substr(0,3);
-            bool isR2 = prefix == "r2_";
-			if( isR2 ) caliTFile->cd(); else if( prefix == "r3_" ) caliR3TFile->cd(); else continue;
+			//std::cout << " load prefix " << prefix << std::endl;
+			bool isR2 = true;
+			if( prefix == "r2_" ) caliTFile->cd(); 
+			else if( prefix == "r3_" ){ caliR3TFile->cd(); isR2 = false; }
+			else continue;
 			for( auto mapname : maptypes ){
 			for( auto ebeehist : ebeemap ){
 				std::string filename = ttfilename + ebeehist + mapname;
@@ -739,8 +747,10 @@ void KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
         for( auto& calirunsct : calirunmap.second ){
         	std::string xtfilename( calirunsct.second.histMapName );
 			std::string prefix = xtfilename.substr(0,3);
-            bool isR2 = prefix == "r2_";
-            if( isR2 ) caliTFile->cd(); else if( prefix == "r3_" ) caliR3TFile->cd(); else continue;
+            bool isR2 = true;
+            if( prefix == "r2_" ) caliTFile->cd(); 
+			else if( prefix == "r3_" ){ caliR3TFile->cd(); isR2 = false; } 
+			else continue;
             for( auto mapname : maptypes ){
             for( auto ebeehist : ebeemap ){
                 std::string filename = xtfilename + ebeehist + mapname;
@@ -806,8 +816,10 @@ void KUCMS_TimeCalibration::SaveCaliHists(){
 			//if( notNew && notResHist ) caliTFile->Delete( command.c_str() );
 			//std::cout << " -- writing : " << calihist.second.h2f << std::endl;
 			std::string prefix = std::string(calihist.second.h2f->GetName()).substr(0,3);
-            bool isR2 = prefix == "r2_";
-            if( isR2 ) caliTFile->cd(); else caliR3TFile->cd();
+            //std::cout << " save prefix " << prefix << std::endl;
+            if( prefix == "r2_" ) caliTFile->cd();
+            else if( prefix == "r3_" ) caliR3TFile->cd();
+            else continue;
 			if( notResHist ) calihist.second.h2f->Write( calihist.second.h2f->GetName(), TObject::kOverwrite );
             //if( notResHist ) calihist.second.h2f->Write();
 			//std::cout << " -- deleting : " << calihist.second.h2f << std::endl;	
@@ -815,8 +827,9 @@ void KUCMS_TimeCalibration::SaveCaliHists(){
         if( calihist.second.h1f != NULL ){
 			//if( notNew ) caliTFile->Delete( command.c_str() );
             std::string prefix = std::string(calihist.second.h1f->GetName()).substr(0,3);
-            bool isR2 = prefix == "r2_";
-            if( isR2 ) caliTFile->cd(); else caliR3TFile->cd();
+            if( prefix == "r2_" ) caliTFile->cd();
+            else if( prefix == "r3_" ) caliR3TFile->cd();
+            else continue;
             calihist.second.h1f->Write( calihist.second.h1f->GetName(), TObject::kOverwrite );
             //calihist.second.h1f->Write();
         }//<<>>if( calihist.second.h2f != NULL )
@@ -1623,12 +1636,16 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 	int finalRun = 0;
     while( std::getline( infilelist, infilestr ) ) {
 
+		std::cout << "Processing : " << infilestr;
+		if( infilestr.empty() || infilestr[0] == '#' ){ std::cout << " -> Aborted" << std::endl;  continue; }
+		std::cout << std::endl;
         std::stringstream ss(infilestr);
         std::string infilename, tag;
         int srun, erun;
 		
-        ss >> infilename >> srun >> erun >> tag;
-		if( infilename[0] == '#' ) continue;
+        //if( !( ss >> infilename >> srun >> erun >> tag )) std::cout << "[WARN] Parse error in : " << infilestr << std::endl; continue;
+		ss >> infilename >> srun >> erun >> tag;
+		if( infilename.empty() || infilename[0] == '#' ){ std::cout << " -- skipping: " << infilename << std::endl; continue; }
 		std::string wichtype = doTT ? "TT" : "X";
 
 		// SET GS TAG !!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1658,17 +1675,26 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 			}//<<>>if( CaliRunMapSet.find(tag) == CaliRunMapSet.end() )
         }//<<>>if( not doTT && TTCaliRunMapSet.find(tag) == TTCaliRunMapSet.end() )
 
+		//int fileskipcnt = 0;
+		int nAdded = 0;
+        int nLines = 0;
         std::ifstream infile(infilename);
         std::string instr;
         auto fInTree = new TChain( treename.c_str() );
         std::cout << "Adding files to TChain." << std::endl;
         while (std::getline(infile,instr)){
+			nLines++;
+			//fileskipcnt++;
+			//if( fileskipcnt%10 != 0 ) continue;
             auto tfilename = eosDir + inDir + instr;
 			//std::cout << "opening tfile : " << tfilename << std::endl;
             std::cout << "-";
-            fInTree->Add(tfilename.c_str());
+            int result = fInTree->Add(tfilename.c_str());
+			if( result > 0 ){ std::cout << "-"; nAdded++; }
+			else std::cout << "0";
         }//<<>>while (std::getline(infile,str))
         std::cout << std::endl;
+		std::cout << " -- [INFO] lines=" << nLines << " filesAdded=" << nAdded << std::endl;
 
        	run = 0;
         rhID = 0;
@@ -1696,7 +1722,7 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
         for (Long64_t centry = 0; centry < nEntries; centry++){
 
             if( centry%modbreak == 0 or centry == 0){
-            	std::time_t now = std::time(nullptr);
+           		std::time_t now = std::time(nullptr);
             	std::string curtime = std::ctime(&now);
             	curtime.pop_back();
                 std::cout << "Proccessed " << centry << " of " << nEntries;
@@ -1705,6 +1731,8 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
             }//<<>>if( centry%1000000 == 0 or centry == 0)
 
             auto entry = fInTree->LoadTree(centry);
+			if (entry < 0) { std::cout << "[WARN] LoadTree failed at centry=" << centry << std::endl; continue; }
+
 
             b_run->GetEntry(entry);   //!
             b_rhID->GetEntry(entry);   //!
@@ -1856,6 +1884,11 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 			}//<<>>if( not tagfound )
 
 		}//<<>>for (Long64_t centry = 0; centry < nEntries; cnentry++)
+
+        // Finished processing this batch
+        std::cout << "[INFO] Finished batch for " << infilename << " entries=" << nEntries << std::endl;
+        delete fInTree;
+        fInTree = nullptr;
 
 	}//<<>>while (std::getline(infilelist,infilestr))
 
@@ -2356,16 +2389,26 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
         //    return;
         //}//<<>>if( CaliRunMapSet.find(tag) == TTCaliRunMapSet.end() )
 
+        //int fileskipcnt = 0;
+        int nAdded = 0;
+        int nLines = 0;
         std::ifstream infile(infilename);
         std::string instr;
         auto fInTree = new TChain( treename.c_str() );
         std::cout << "Adding files to TChain." << std::endl;
         while (std::getline(infile,instr)){
+            nLines++;
+            //fileskipcnt++;
+            //if( fileskipcnt%10 != 0 ) continue;
             auto tfilename = eosDir + inDir + instr;
+            //std::cout << "opening tfile : " << tfilename << std::endl;
             std::cout << "-";
-            fInTree->Add(tfilename.c_str());
+            int result = fInTree->Add(tfilename.c_str());
+            if( result > 0 ){ std::cout << "-"; nAdded++; }
+            else std::cout << "0";
         }//<<>>while (std::getline(infile,str))
         std::cout << std::endl;
+        std::cout << " -- [INFO] lines=" << nLines << " filesAdded=" << nAdded << std::endl;
 
         run = 0;
         resRhID = 0;
@@ -2677,6 +2720,9 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
         } // for (auto entry = 0U; entry < nEntries; entry++)
 
         if(debug) std::cout << " -------- Next Input file " << std::endl;
+        std::cout << "[INFO] Finished batch for " << infilename << " entries=" << nEntries << std::endl;
+        delete fInTree;
+        fInTree = nullptr;
 
     } // while (std::getline(infilelist,infiles))
 

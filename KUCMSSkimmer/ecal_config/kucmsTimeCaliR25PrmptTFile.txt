@@ -1,3 +1,24 @@
-ecal_config/Run3_2025_EGamma0.txt 387900 400000 r3_p25
-ecal_config/Run3_2025_EGamma1.txt 387900 400000 r3_p25
-#ecal_config/Run3_2025_EGamma2.txt 387900 400000 r3_p25
+ecal_config/gammares_prmt25_EGamma0_Run2025C.txt 387742 398903 r3_p25
+ecal_config/gammares_prmt25_EGamma0_Run2025D.txt 387742 398903 r3_p25
+ecal_config/gammares_prmt25_EGamma0_Run2025E.txt 387742 398903 r3_p25
+ecal_config/gammares_prmt25_EGamma0_Run2025F.txt 387742 398903 r3_p25
+ecal_config/gammares_prmt25_EGamma0_Run2025G.txt 387742 398903 r3_p25
+ecal_config/gammares_prmt25_EGamma1_Run2025C.txt 387742 398903 r3_p25
+ecal_config/gammares_prmt25_EGamma1_Run2025D.txt 387742 398903 r3_p25
+ecal_config/gammares_prmt25_EGamma1_Run2025E.txt 387742 398903 r3_p25
+ecal_config/gammares_prmt25_EGamma1_Run2025F.txt 387742 398903 r3_p25
+ecal_config/gammares_prmt25_EGamma1_Run2025G.txt 387742 398903 r3_p25
+ecal_config/gammares_prmt25_EGamma2_Run2025C.txt 387742 398903 r3_p25
+ecal_config/gammares_prmt25_EGamma2_Run2025D.txt 387742 398903 r3_p25
+ecal_config/gammares_prmt25_EGamma2_Run2025E.txt 387742 398903 r3_p25
+ecal_config/gammares_prmt25_EGamma2_Run2025F.txt 387742 398903 r3_p25
+ecal_config/gammares_prmt25_EGamma2_Run2025G.txt 387742 398903 r3_p25
+##
+##ecal_config/gammares_prmt25_Run2025C.txt 387742 398903 r3_p25
+##ecal_config/gammares_prmt25_Run2025D.txt 387742 398903 r3_p25
+##ecal_config/gammares_prmt25_Run2025E.txt 387742 398903 r3_p25
+##ecal_config/gammares_prmt25_Run2025F.txt 387742 398903 r3_p25
+##
+##ecal_config/Run3_2025_EGamma0.txt 387900 400000 r3_p25
+##ecal_config/Run3_2025_EGamma1.txt 387900 400000 r3_p25
+##ecal_config/Run3_2025_EGamma2.txt 387900 400000 r3_p25
