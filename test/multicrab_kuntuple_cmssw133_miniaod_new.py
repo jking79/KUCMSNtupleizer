@@ -204,6 +204,8 @@ def run_multi():
         if args.inputSample not in sample:
             continue
         samples.append(sample)
+    if len(samples) < 1:
+        print("No samples found for given args",args)
     for dataset in samples:
         docrab( dataset, options )
 
