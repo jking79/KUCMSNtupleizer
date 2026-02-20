@@ -284,12 +284,9 @@ void KUCMSAodSkimmer::processPhotons(){
     auto htoem = (*Photon_hadTowOverEM)[it];
     bool isoPho;
     if(overMaxEta){ //endcap
-    	if(isobkg_score >= EEVeryVeryLooseIsoCutVal)
-		isoPho = true;
-	else
-		isoPho = false;
-    }
-    else{ //barrel
+    	if(isobkg_score >= EEVeryVeryLooseIsoCutVal) isoPho = true;
+	else isoPho = false;
+    } else { //barrel
     	bool passHcalSum = true;
     	bool passTrkSum = tspscdr4/pt < 0.12; // using rel = 6.0/50  ( abs = 6.0 fir pt of 50 GeV )
     	bool passsEcalRhSum = erhsecdr4/pt < 0.2; // using rel = 10/50 ( abs cut = 10, for pt of 50 GeV )
@@ -297,7 +294,6 @@ void KUCMSAodSkimmer::processPhotons(){
     	isoPho = passHOE && passsEcalRhSum && passTrkSum && passHcalSum;
     }
 
- 
     //---------------------------------------------------
     //adding criteria for 'selected' or 'very loose base selection' photons - need at least 2 rechits that are within [-20, 20] ns
     bool badNRechits  = (_ca.GetNRecHits() < 2);
@@ -311,11 +307,11 @@ void KUCMSAodSkimmer::processPhotons(){
     // Only the 2 leading photons that pass very loose criteria should be in Base selction 
     //  change to skip jets and keep all photons regardless of photon iso with jet
 
-    bool pass_very_loose_id = isoPho && pt > 30; // ?  this is place holder - was not in place in v37  and prior to 2/17/26 
+    bool pass_very_loose_id = isoPho && overMinPt; // ?  this is place holder - was not in place in v37  and prior to 2/17/26 
 
 	bool standard_selction = not badNRechits and not hasPixSeed and not isExcluded;
-    bool underNMaxBasePhos = nBaseRJRPhos < 3;
-    bool in_base_selection = standard_selction and overMinPt and pass_very_loose_id and underNMaxBasePhos;
+    bool underNMaxBasePhos = nBaseRJRPhos < 2;// checks how many RJR photons already found - need to have found less then 2 already
+    bool in_base_selection = standard_selction and pass_very_loose_id and underNMaxBasePhos;
 
     //---------------------------------------------------
     ///////////  saving info on EB/EE photon information ///////////////////////////////////////////////////////
