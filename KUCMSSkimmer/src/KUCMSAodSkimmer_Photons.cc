@@ -285,7 +285,7 @@ void KUCMSAodSkimmer::processPhotons(){
     bool isoPho;
     if(overMaxEta){ //endcap
     	if(isobkg_score >= EEVeryVeryLooseIsoCutVal) isoPho = true;
-	else isoPho = false;
+	    else isoPho = false;
     } else { //barrel
     	bool passHcalSum = true;
     	bool passTrkSum = tspscdr4/pt < 0.12; // using rel = 6.0/50  ( abs = 6.0 fir pt of 50 GeV )
