@@ -213,6 +213,86 @@ void KUCMSAodSkimmer::processPhotons(){
     float timesignum, timesigdenom;
 	float phoWTimeSig = getTimeSig( scIndx, timesignum, timesigdenom );
 
+    float scx = (*SuperCluster_x_calo)[scIndx];
+    float scy = (*SuperCluster_y_calo)[scIndx];
+    float scz = (*SuperCluster_z_calo)[scIndx];
+
+    //----------------------------------------------------------------------------------
+    //  getting pho GEN info
+    //---------------------------------------------------------------------------------
+
+    int genIdx = -1;
+    int momIdx = -1;
+    float susId = -1;
+
+    float genEnergy = -10;   //!
+    float genpt = -10;
+    float genPt = -10;   //!
+    float genPx = -10;   //!
+    float genPy = -10;   //!
+    float genPz = -10;   //!
+    float genVx = -1;   //!
+    float genVy = -1;   //!
+    float genVz = -100;   //!
+
+    float momEnergy = -10;   //!
+    float momEta = -4;   //!
+    float momMass = -10;   //!
+    float momPhi = -4;   //!
+    float momPt = -10;   //!
+    float momPx = -10;   //!
+    float momPy = -10;   //!
+    float momPz = -10;   //!
+    float momVx = -1;   //!
+    float momVy = -1;   //!
+    float momVz = -100;   //!
+
+    float labtime = -10;
+    float gentime = -10;
+
+    if( hasGenInfoFlag ){
+
+        genIdx = (*Photon_genIdx)[it];
+        momIdx = (*Gen_motherIdx)[genIdx];
+        susId = (*Gen_susId)[genIdx];
+
+        genEnergy = (*Gen_energy)[genIdx];   //!
+        genPt = (*Gen_pt)[genIdx];   //!
+        genPx = (*Gen_px)[genIdx];   //!
+        genPy = (*Gen_py)[genIdx];   //!
+        genPz = (*Gen_pz)[genIdx];   //!
+        genVx = (*Gen_vx)[genIdx];   //!
+        genVy = (*Gen_vy)[genIdx];   //!
+        genVz = (*Gen_vz)[genIdx];   //!
+
+        if( momIdx > -1.0 ){
+
+            momEnergy = (*Gen_energy)[momIdx];   //!
+            momEta = (*Gen_eta)[momIdx];   //!
+            momMass = (*Gen_mass)[momIdx];   //!
+            momPhi = (*Gen_phi)[momIdx];   //!
+            momPt = (*Gen_pt)[momIdx];   //!
+            momPx = (*Gen_px)[momIdx];   //!
+            momPy = (*Gen_py)[momIdx];   //!
+            momPz = (*Gen_pz)[momIdx];   //!
+            momVx = (*Gen_vx)[momIdx];   //!
+            momVy = (*Gen_vy)[momIdx];   //!
+            momVz = (*Gen_vz)[momIdx];   //!
+
+        }//<<>>if( momIdx > -1.0 )
+
+    }//if( doGenInfo )
+
+	if( susId == 22 ){
+
+		float distPho = hypo( genVx - scx, genVy - scy, genVz - scz );		
+		float distMom = hypo( genVx - momVx, genVy - momVy, genVz - momVz );
+		float betamom = hypo( momPx, momPy, momPz )/momEnergy;
+		labtime = (distPho + distMom/betamom)/SOL;
+		gentime = timeCali->getSmearedTime( labtime, phoWRes );
+
+	}//<<>>if( susId == 22 )
+
     //---------------------------------------------------
     ///////////  saving hem region info  ////////////////////////////////////////////////////////////////////
     //---------------------------------------------------
@@ -365,7 +445,7 @@ void KUCMSAodSkimmer::processPhotons(){
     else isRJRPho.push_back(false);
 
 	//----------------------------------------------------------------------------------
-	//  getting pho SC and Gen info
+	//  getting pho SC info
 	//---------------------------------------------------------------------------------
 
     if( DEBUG ) std::cout << " -- pho pull info" << std::endl;
@@ -383,52 +463,10 @@ void KUCMSAodSkimmer::processPhotons(){
     auto etawide = (*SuperCluster_etaWidth)[scIndx];
     auto phiwide = (*SuperCluster_phiWidth)[scIndx];
     auto sigmaieie = (*Photon_SigmaIEtaIEta)[it];   //!
-    auto scx = (*SuperCluster_x_calo)[scIndx];
-    auto scy = (*SuperCluster_y_calo)[scIndx];
-    auto scz = (*SuperCluster_z_calo)[scIndx];
-
-    int genIdx = -1;
-    int momIdx = -1;
-    float susId = -1;
-    float genpt = -10;
-    float momEnergy = -10;   //!
-    float momEta = -4;   //!
-    float momMass = -10;   //!
-    float momPhi = -4;   //!
-    float momPt = -10;   //!
-    float momPx = -10;   //!
-    float momPy = -10;   //!
-    float momPz = -10;   //!
-    float momVx = -1;   //!
-    float momVy = -1;   //!
-    float momVz = -100;   //!
-
-    float ctau = -10;
-
-    if( hasGenInfoFlag ){
-
-    	genIdx = (*Photon_genIdx)[it];
-      	momIdx = (*Gen_motherIdx)[genIdx];
-      	//momIdx = (*Photon_genSigXMomId)[it];
-      	susId = (*Gen_susId)[genIdx];
-
-      	if( momIdx > -1.0 ){
-
-			momEnergy = (*Gen_energy)[momIdx];   //!
-			momEta = (*Gen_eta)[momIdx];   //!
-			momMass = (*Gen_mass)[momIdx];   //!
-			momPhi = (*Gen_phi)[momIdx];   //!
-			momPt = (*Gen_pt)[momIdx];   //!
-			momPx = (*Gen_px)[momIdx];   //!
-			momPy = (*Gen_py)[momIdx];   //!
-			momPz = (*Gen_pz)[momIdx];   //!
-			momVx = (*Gen_vx)[momIdx];   //!
-			momVy = (*Gen_vy)[momIdx];   //!
-			momVz = (*Gen_vz)[momIdx];   //!
-
-      	}//<<>>if( momIdx > -1.0 )
-
-    }//if( doGenInfo )
+	// moved to gen time info secction
+    //auto scx = (*SuperCluster_x_calo)[scIndx];
+    //auto scy = (*SuperCluster_y_calo)[scIndx];
+    //auto scz = (*SuperCluster_z_calo)[scIndx];
 
 	//---------------------------------------------------------------------------
 	//  Calulate time based energy and pt bais corrections
@@ -452,7 +490,7 @@ void KUCMSAodSkimmer::processPhotons(){
     float cpt = pt/core;		
 
     //---------------------------------------------------------------------------
-    //  Calulate beta values photon mother - R&D project
+    //  Calulate beta values photon mother without gen info - R&D project
     //---------------------------------------------------------------------------
 
     float cms000 = hypo(scx,scy,scz);
@@ -679,6 +717,9 @@ void KUCMSAodSkimmer::processPhotons(){
     selPhotons.fillBranch( "baseLinePhoton_PfPhoIso03", pfphoisso  );   //!
     selPhotons.fillBranch( "baseLinePhoton_PfRelIso03_all_quadratic", pfriso3aq  );   //!
     selPhotons.fillBranch( "baseLinePhoton_PfRelIso03_chg_quadratic", pfrtso3cq  );   //!
+
+    selPhotons.fillBranch( "baseLinePhoton_GenLabTime", labtime );
+    selPhotons.fillBranch( "baseLinePhoton_GenTime", gentime );
 
     selPhotons.fillBranch( "baseLinePhoton_PhoIsoDr", phoPhoIsoDr );
     selPhotons.fillBranch( "baseLinePhoton_GenIdx", genIdx );
@@ -1066,6 +1107,9 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch( "baseLinePhoton_GenPt", VFLOAT );
   selPhotons.makeBranch( "baseLinePhoton_PhoIsoDr", VFLOAT );
   selPhotons.makeBranch( "baseLinePhoton_GenIdx", VINT );
+
+  selPhotons.fillBranch( "baseLinePhoton_GenLabTime", VFLOAT );
+  selPhotons.fillBranch( "baseLinePhoton_GenTime", VFLOAT );
 
   selPhotons.makeBranch( "baseLinePhoton_GenSigMomEnergy", VFLOAT );   //!
   selPhotons.makeBranch( "baseLinePhoton_GenSigMomEta", VFLOAT );   //!

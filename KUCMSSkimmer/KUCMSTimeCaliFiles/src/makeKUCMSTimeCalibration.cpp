@@ -98,6 +98,8 @@ int main ( int argc, char *argv[] ){
     // for PD R3
 	theCali.setTTIov( r3TagTT );
 	theCali.setXIov( r3TagX );
+    theCali.setIsCC(true);
+	//theCali.setIsCC(false);
 
     //-----//////////  making trigtower cali :
 	// makeCaliMapsEGR( std::string inputFileName, bool doTT, int GID,  bool small, bool doCali )

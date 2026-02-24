@@ -71,7 +71,8 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
     std::string lochist;
     std::string globhist;
 
-    TFile* caliTFile;
+    //TFile* caliTFile;
+	std::map<std::string,TFile*> caliTFile;
     TFile* caliR3TFile;
     TFile* cali2DResTFile;
 
@@ -104,6 +105,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
     std::map<std::string,std::map<int,int>> iovMaps; // < tag, < start run, end rn >>
 
     std::map<std::string,kucms_resTagStruct> ResTagSet;
+    std::map<std::string,std::string> caliHistFileNames;
 
 	std::vector<int> ebx_ranges, ebtt_ranges, epmx_ranges, epmtt_ranges;
 
