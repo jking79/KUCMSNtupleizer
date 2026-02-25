@@ -109,6 +109,15 @@ from KUCMSNtupleizer.KUCMSNtupleizer.ECALTracks_cfi import *
 process.load('KUCMSNtupleizer.KUCMSNtupleizer.MuonEnhancedTracks_cfi')
 from KUCMSNtupleizer.KUCMSNtupleizer.MuonEnhancedTracks_cfi import *
 
+process.load('KUCMSNtupleizer.KUCMSNtupleizer.miniAODTrackProducer_cfi')
+from KUCMSNtupleizer.KUCMSNtupleizer.miniAODTrackProducer_cfi import *
+
+process.load('KUCMSNtupleizer.KUCMSNtupleizer.miniAODMuonEnhancedTracksProducer_cfi')
+from KUCMSNtupleizer.KUCMSNtupleizer.miniAODMuonEnhancedTracksProducer_cfi import *
+
+process.load('KUCMSNtupleizer.KUCMSNtupleizer.hyddra_cfi')
+from KUCMSNtupleizer.KUCMSNtupleizer.hyddra_cfi import *
+
 # Set the global tag depending on the sample type
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag.globaltag = options.globalTag
@@ -281,11 +290,13 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizerMini",
                               displacedSCs = cms.InputTag("ecalTracks", "displacedElectronSCs"),
                               #displacedTracks = cms.InputTag("displacedElectrons", "displacedCandidateTracks"),
                               muonEnhancedTracks = cms.InputTag("muonEnhancedTracks", "muonEnhancedTracks"),
-                              combinedMuonTracks = cms.InputTag("muonEnhancedTracks", "combinedMuonTracks"),
-                              sip2DMuonEnhancedTracks = cms.InputTag("muonEnhancedTracks", "sip2DMuonEnhancedTracks"),
+                              combinedMuonTracks = cms.InputTag("miniAODMuonEnhancedTracks", "combinedMuonTracks"),
+                              sip2DMuonEnhancedTracks = cms.InputTag("miniAODMuonEnhancedTracks", "sip2DMuonEnhancedTracks"),
                               ## vertices
                               vertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
                               timedSVs = cms.InputTag("timedSVs", "timedSecondaryVertices"),
+                              leptonicSVs = cms.InputTag("hyddraSVs", "leptonicVertices"),
+                              hadronicSVs = cms.InputTag("hyddraSVs", "hadronicVertices"),
                               ## pfcandidates
                               pfcandidates = cms.InputTag("packedPFCandidates"),
                               #particleflow = cms.InputTag("particleFlow",""),
@@ -445,7 +456,7 @@ metFilterPaths += [
 
 # SVs & ecaltracks aka merged SC collection
 process.kuEcalTracks = cms.Sequence( ecalTracks )
-process.kuSV = cms.Sequence( muonEnhancedTracks )
+process.kuSV = cms.Sequence( miniAODTrackProducer + miniAODMuonEnhancedTracks + hyddraSVs )
 #process.kuDisEle = cms.Sequence( displacedElectrons )
 
 process.kuDisplaced_path = cms.Path()
