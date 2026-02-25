@@ -35,6 +35,8 @@ void KUCMSAodSkimmer::processPhotons(){
   //bool verbose = true;
   bool verbose = false;
 
+  bool isfastsim = ( mctype == 2 ) true: false;
+
   // intilize
   selPhotons.clearBranches(); // <<<<<<<   must do
   isBaseLinePho.clear();
@@ -213,9 +215,9 @@ void KUCMSAodSkimmer::processPhotons(){
     float timesignum, timesigdenom;
 	float phoWTimeSig = getTimeSig( scIndx, timesignum, timesigdenom );
 
-    float scx = (*SuperCluster_x_calo)[scIndx];
-    float scy = (*SuperCluster_y_calo)[scIndx];
-    float scz = (*SuperCluster_z_calo)[scIndx];
+    float scx = (*SuperCluster_clcx)[scIndx];
+    float scy = (*SuperCluster_clcy)[scIndx];
+    float scz = (*SuperCluster_clcz)[scIndx];
 
     //----------------------------------------------------------------------------------
     //  getting pho GEN info
@@ -231,8 +233,8 @@ void KUCMSAodSkimmer::processPhotons(){
     float genPx = -10;   //!
     float genPy = -10;   //!
     float genPz = -10;   //!
-    float genVx = -1;   //!
-    float genVy = -1;   //!
+    float genVx = -100;   //!
+    float genVy = -100;   //!
     float genVz = -100;   //!
 
     float momEnergy = -10;   //!
@@ -243,12 +245,17 @@ void KUCMSAodSkimmer::processPhotons(){
     float momPx = -10;   //!
     float momPy = -10;   //!
     float momPz = -10;   //!
-    float momVx = -1;   //!
-    float momVy = -1;   //!
+    float momVx = -100;   //!
+    float momVy = -100;   //!
     float momVz = -100;   //!
 
-    float labtime = -10;
-    float gentime = -10;
+	float distPho = 0;
+	float distMom = 0;
+	float betamom = 1;
+
+    float labtime = -100;
+    float gentime = -100;
+	float gentimesig = -100;
 
     if( hasGenInfoFlag ){
 
@@ -265,6 +272,8 @@ void KUCMSAodSkimmer::processPhotons(){
         genVy = (*Gen_vy)[genIdx];   //!
         genVz = (*Gen_vz)[genIdx];   //!
 
+		distPho = hypo( scx - genVx, scy - genVy, scz - enVz );
+
         if( momIdx > -1.0 ){
 
             momEnergy = (*Gen_energy)[momIdx];   //!
@@ -279,19 +288,23 @@ void KUCMSAodSkimmer::processPhotons(){
             momVy = (*Gen_vy)[momIdx];   //!
             momVz = (*Gen_vz)[momIdx];   //!
 
+			distMom = hypo( genVx - momVx, genVy - momVy, genVz - momVz );
+			betamom = hypo( momPx, momPy, momPz )/momEnergy;
+
         }//<<>>if( momIdx > -1.0 )
 
-    }//if( doGenInfo )
-
-	if( susId == 22 ){
-
-		float distPho = hypo( genVx - scx, genVy - scy, genVz - scz );		
-		float distMom = hypo( genVx - momVx, genVy - momVy, genVz - momVz );
-		float betamom = hypo( momPx, momPy, momPz )/momEnergy;
 		labtime = (distPho + distMom/betamom)/SOL;
 		gentime = timeCali->getSmearedTime( labtime, phoWRes );
+		gentimesig = gentime/phoWRes;		
 
-	}//<<>>if( susId == 22 )
+		if( susId == 22 && isfastsim ){
+
+			phoWTime = gentime;
+			phoWTimeSig = gentimesig;
+
+		}//<<>>if( susId == 22 )
+
+    }//if( doGenInfo )
 
     //---------------------------------------------------
     ///////////  saving hem region info  ////////////////////////////////////////////////////////////////////

@@ -1397,10 +1397,10 @@ float KUCMS_TimeCalibration::getTTCali( uInt rhid, int run, std::string tag, int
 //std::map<std::string,smearTagStruct> SmearTagSet;
 //  do mutiple combos 
 
-float KUCMS_TimeCalibration::getSmearedTime( float rhtime, float rhamp, std::string stag  ){
+float KUCMS_TimeCalibration::getSmearedTime( float mtime, float ampres, std::string stag  ){
 
-	if( stag == "debug" ) std::cout << " -- smeairng : " << rhtime << " with " << rhamp << std::endl;
-	return getRandom->Gaus( rhtime, rhamp );
+	if( stag == "debug" ) std::cout << " -- smeairng : " << mtime << " with " << ampres << std::endl;
+	return getRandom->Gaus( mtime, ampres );
 
 /*
     double stnoise = SmearTagSet[stag].noise;
