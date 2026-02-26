@@ -20,6 +20,7 @@
 #include "TMultiGraph.h"
 #include <cmath>
 #include <ctime>
+#include <filesystem>
 
 #ifndef KUCMS_TimeCalibrationClass_hh
 #define KUCMS_TimeCalibrationClass_hh
@@ -252,6 +253,16 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
     void setUseGainID( int id ){ useGain = id; }
     void setIsCC( bool iscc ){ isCC = iscc; }
 	void setDoUnCC( bool douncc ){ doUnCC = douncc; }
+
+	std::string getPrefix( const std::string& s ){
+
+		size_t first = s.find('_');
+    	if (first == std::string::npos) return s;
+    	size_t second = s.find('_', first + 1);
+    	if (second == std::string::npos) return s;
+    	return s.substr(0, second);
+
+	}//<<>>std::string getPrefix( const std::string& s ) 
 
 };//<<>>class KUCMS_TimeCalibration : KUCMSRootHelperBaseClass
 

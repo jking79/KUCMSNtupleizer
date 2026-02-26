@@ -38,8 +38,19 @@ KUCMS_TimeCalibration::KUCMS_TimeCalibration( bool stayOpen, bool makeNew ){
     caliR3TFile = NULL;
 	cali2DResTFile = NULL;
 
-    caliHistFileNames["r2"] = "caliHistsTFile.root";
-    caliHistFileNames["r3"] = "caliR3HistsTFile.root";
+    ///////caliHistFileNames["r2"] = "caliHistsTFile.root";
+    ///////caliHistFileNames["r3"] = "caliR3HistsTFile.root";
+
+	caliHistFileNames["r2_ul16"] = "cali_ul16_HistsTFile.root";
+    caliHistFileNames["r2_ul17"] = "cali_ul17_HistsTFile.root";
+    caliHistFileNames["r2_ul18"] = "cali_ul18_HistsTFile.root";
+    ////////caliHistFileNames["r2_ul18_mc"] = "cali_ul18_mc_HistsTFile.root";
+    caliHistFileNames["r3_p22"] = "cali_p22_HistsTFile.root";
+    caliHistFileNames["r3_p23"] = "cali_p23_HistsTFile.root";
+    caliHistFileNames["r3_p24"] = "cali_p24_HistsTFile.root";
+    caliHistFileNames["r3_p25"] = "cali_p25_HistsTFile.root";
+    caliHistFileNames["r3_p26"] = "cali_p26_HistsTFile.root";
+
 	for( auto name : caliHistFileNames ){ caliTFile[name.first] = NULL; }
 
     curTag = "EG_EOY_MINI";
@@ -713,6 +724,8 @@ void KUCMS_TimeCalibration::SaveResFile(){
 
 void KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
 
+	//bool oldstyle = false;
+
     std::cout << " - Loading CaliHists " << std::endl;
 	//caliHistFileNames  caliFileDir
 
@@ -720,8 +733,9 @@ void KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
     //caliTFileName = caliFileDir + "caliHistsTFile.root";// name configurable ?
 
 	std::string califilepath;
-	for( auto filename : caliHistFileNames ){ 
+	for( auto filename : caliHistFileNames ){
 		califilepath = caliFileDir + filename.second; 
+        //if( not std::filesystem::exists(califilepath) ) continue; 
 		if( makeNew ) caliTFile[filename.first] = TFile::Open( califilepath.c_str(), "RECREATE" );
 		if( stayOpen && not makeNew ) caliTFile[filename.first] = TFile::Open( califilepath.c_str(), "UPDATE" );
 		if( not stayOpen && not makeNew ) caliTFile[filename.first] = TFile::Open( caliTFileName.c_str(), "READ" );
@@ -734,48 +748,41 @@ void KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
     //caliTFile->cd();
 */
 
+    std::cout << " - loading TT hists from caliHistsTFile " << std::endl;
 	for( auto& calirunmap : TTCaliRunMapSet ){
+		//std::string prefix = oldstyle ? calirunmap.first.substr(0,2) : getPrefix(calirunmap.first);
+        std::string prefix = getPrefix(calirunmap.first);
 		for( auto& calirunsct : calirunmap.second ){
 			std::string ttfilename( calirunsct.second.histMapName );
-			std::string prefix = ttfilename.substr(0,2);
-			//std::cout << " load prefix " << prefix << std::endl;
-			//bool isR2 = true;
-			//if( prefix == "r2_" ) caliTFile->cd(); 
-			//else if( prefix == "r3_" ){ caliR3TFile->cd(); isR2 = false; }
-			//else continue;
 			caliTFile[prefix]->cd();
 			for( auto mapname : maptypes ){
 			for( auto ebeehist : ebeemap ){
 				std::string filename = ttfilename + ebeehist + mapname;
-				//std::cout << " -- loading : " << filename << " ( " << ttfilename << " ) ";
+				//std::cout << " -- loading : " << filename << " ( " << prefix << " ) ";
 				if( ttfilename != "none" && CaliHists.find(filename) == CaliHists.end() ){
-					//TH2F* hist = isR2 ? (TH2F*)caliTFile->Get(filename.c_str()) : (TH2F*)caliR3TFile->Get(filename.c_str());
 					TH2F* hist = (TH2F*)caliTFile[prefix]->Get(filename.c_str());
 					if( hist != NULL) hist->SetDirectory(nullptr);
                     //std::cout << " Found " << hist << std::endl;
 					if( hist ) CaliHists[filename] = { hist, filename, false, false }; // histfile histname isnew isreshist
 				}//<<>>if( TTMaps.find(calirunmap.second.TTCaliMapName) == TTMaps.end() )
-				//else { std::cout << " Not Found " << std::endl; }
+				else { std::cout << " Not Found " << std::endl; }
 			}//<<>>for( auto ebeehist : ebeemap )
 			}//<<>>for( auto mapname : mtype )
 		}//<<>>for( auto& calirunsct : calirunmap )
     }//<<>>for( auto& calirunmap : CaliRunMapSet )
 
+    std::cout << " - loading X hists from caliHistsTFile " << std::endl;
     for( auto& calirunmap : CaliRunMapSet ){
+		//std::string prefix = oldstyle ? calirunmap.first.substr(0,2) : getPrefix(calirunmap.first);
+        std::string prefix = getPrefix(calirunmap.first);
         for( auto& calirunsct : calirunmap.second ){
         	std::string xtfilename( calirunsct.second.histMapName );
-			std::string prefix = xtfilename.substr(0,2);
-            //bool isR2 = true;
-            //if( prefix == "r2_" ) caliTFile->cd(); 
-			//else if( prefix == "r3_" ){ caliR3TFile->cd(); isR2 = false; } 
-			//else continue;
 			caliTFile[prefix]->cd();
             for( auto mapname : maptypes ){
             for( auto ebeehist : ebeemap ){
                 std::string filename = xtfilename + ebeehist + mapname;
                 //std::cout << " -- loading : " << filename << " ( " << xtfilename << " ) ";
                 if( xtfilename != "none" && CaliHists.find(filename) == CaliHists.end() ){
-                    //TH2F* hist = isR2 ? (TH2F*)caliTFile->Get(filename.c_str()) : (TH2F*)caliR3TFile->Get(filename.c_str());
                     TH2F* hist = (TH2F*)caliTFile[prefix]->Get(filename.c_str());
                     if( hist != NULL) hist->SetDirectory(nullptr);
                     //std::cout << " Found " << hist << std::endl;
@@ -836,8 +843,10 @@ void KUCMS_TimeCalibration::SaveCaliHists(){
 			//std::cout << " -- tfile deleting : " << command << std::endl; 
 			//if( notNew && notResHist ) caliTFile->Delete( command.c_str() );
 			//std::cout << " -- writing : " << calihist.second.h2f << std::endl;
-			std::string prefix = std::string(calihist.second.h2f->GetName()).substr(0,2);
-            //std::cout << " save prefix " << prefix << std::endl;
+			std::string prefix = getPrefix(calihist.second.h2f->GetName()); //.substr(0,2);
+            //std::string thename = calihist.second.h2f->GetName();
+			//if( thename.rfind("r2_ul18_mc",0) == 0 ){ prefix = "r2_ul18_mc"; std::cout << " found r2_ul18_mc" << std::endl; }
+            //std::cout << " hf2 save prefix " << prefix << std::endl;
             //if( prefix == "r2_" ) caliTFile->cd();
             //else if( prefix == "r3_" ) caliR3TFile->cd();
             //else continue;
@@ -848,7 +857,10 @@ void KUCMS_TimeCalibration::SaveCaliHists(){
 		}//<<>>if( calihist.second.h2f != NULL )
         if( calihist.second.h1f != NULL ){
 			//if( notNew ) caliTFile->Delete( command.c_str() );
-            std::string prefix = std::string(calihist.second.h1f->GetName()).substr(0,2);
+            std::string prefix = getPrefix(calihist.second.h1f->GetName()); //.substr(0,2);
+            //std::string thename = calihist.second.h1f->GetName();
+            //if( thename.rfind("r2_ul18_mc",0) == 0 ){ prefix = "r2_ul18_mc"; std::cout << " found r2_ul18_mc" << std::endl; }
+            //std::cout << " hf1 save prefix " << prefix << std::endl;
             //if( prefix == "r2_" ) caliTFile->cd();
             //else if( prefix == "r3_" ) caliR3TFile->cd();
             //else continue;
