@@ -52,13 +52,13 @@ int main ( int argc, char *argv[] ){
 
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCGjetsTFile.txt");
  
-    std::string inputfilename( "ecal_config/kucmsTimeCaliR18ULTFile.txt");
+    //std::string inputfilename( "ecal_config/kucmsTimeCaliR18ULTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR17ULTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR16ULTFile.txt"); 
 	//std::string inputfilename( "ecal_config/kucmsTimeCaliR22PrmptTFile.txt"); 
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR23PrmptTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR24PrmptTFile.txt");
-    //std::string inputfilename( "ecal_config/kucmsTimeCaliR25PrmptTFile.txt");
+    std::string inputfilename( "ecal_config/kucmsTimeCaliR25PrmptTFile.txt");
 
 	//std::string eosdir("root://cmseos.fnal.gov//store/user/jaking/");// input parameter!
     std::string eosdir("root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/");
@@ -68,12 +68,12 @@ int main ( int argc, char *argv[] ){
     //std::string indir("kuncali/gammares_mc18/");
     //std::string indir("kuncali/gammares_cali/DoubleEG/");
 
-    std::string indir("KUCMSNtuple/gammares_ul18/");
+    //std::string indir("KUCMSNtuple/gammares_ul18/");
     //std::string indir("KUCMSNtuple/gammares_ul17/");
     //std::string indir("KUCMSNtuple/gammares_ul16/DoubleEG/");
     //std::string indir("KUCMSNtuple/gammares_prmt22/EGamma/");
     //std::string indir("KUCMSNtuple/");
-    //std::string indir("KUCMSNtuple/gammares_prmt25/");
+    std::string indir("KUCMSNtuple/gammares_prmt25/");
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -91,15 +91,15 @@ int main ( int argc, char *argv[] ){
     //-----//////////  making tt cali  :
     theCali.SetupIovMaps();
 	// for PD R2UL
-    theCali.setTTIov( r2ulTag );
-    theCali.setXIov( xiovtag );
+    //theCali.setTTIov( r2ulTag );
+    //theCali.setXIov( xiovtag );
 	// for MC
     //theCali.setTTIov( mctag );
     //theCali.setXIov( mctag );
     // for PD R3
-	//theCali.setTTIov( r3TagTT );
-	//theCali.setXIov( r3TagX );
-    //theCali.setIsCC(true);
+	theCali.setTTIov( r3TagTT );
+	theCali.setXIov( r3TagX );
+    theCali.setIsCC(true);
 	//theCali.setIsCC(false);
 
     //-----//////////  making trigtower cali :
@@ -110,10 +110,10 @@ int main ( int argc, char *argv[] ){
     //void makeXCaliMapEGR( std::string inputFileName, int GID = 1, bool small = false, bool doCali = true )
     //        { makeCaliMapsEGR( inputFileName, false, GID, small, doCali ); };
     //theCali.makeTTCaliMapEGR( inputfilename, 1, true ); // true == run only subset of events
-	//theCali.makeTTCaliMapEGR( inputfilename );
-    //theCali.makeCaliHists();
-    //theCali.SaveCaliHists();
-    //theCali.SaveTTRunFile();
+	theCali.makeTTCaliMapEGR( inputfilename );
+    theCali.makeCaliHists();
+    theCali.SaveCaliHists();
+    theCali.SaveTTRunFile();
 
     //-----//////////  making xtal cali :
     //theCali.makeXCaliMapEGR( inputfilename, true ); // true == run only subset of events
@@ -126,10 +126,10 @@ int main ( int argc, char *argv[] ){
 	//----///////////  make gainid 2 calibrations
     //theCali.makeTTCaliMapEGR( inputfilename, 2, false, false ); // do gainID 2 no calibration step
     //theCali.makeTTCaliMapEGR( inputfilename, 2, true ); // do gainID 2; true == run only subset of events 
-    theCali.makeTTCaliMapEGR( inputfilename, 2 ); // do gainID 2
-    theCali.makeCaliHists();
-    theCali.SaveCaliHists();
-    theCali.SaveTTRunFile();
+    //theCali.makeTTCaliMapEGR( inputfilename, 2 ); // do gainID 2
+    //theCali.makeCaliHists();
+    //theCali.SaveCaliHists();
+    //theCali.SaveTTRunFile();
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
