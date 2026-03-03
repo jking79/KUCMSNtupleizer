@@ -35,7 +35,7 @@ void KUCMSAodSkimmer::processPhotons(){
   //bool verbose = true;
   bool verbose = false;
 
-  bool isfastsim = ( mctype == 2 ) true: false;
+  bool isfastsim = ( mctype == 2 ) ? true : false;
 
   // intilize
   selPhotons.clearBranches(); // <<<<<<<   must do
@@ -272,7 +272,7 @@ void KUCMSAodSkimmer::processPhotons(){
         genVy = (*Gen_vy)[genIdx];   //!
         genVz = (*Gen_vz)[genIdx];   //!
 
-		distPho = hypo( scx - genVx, scy - genVy, scz - enVz );
+		distPho = hypo( scx - genVx, scy - genVy, scz - genVz );
 
         if( momIdx > -1.0 ){
 

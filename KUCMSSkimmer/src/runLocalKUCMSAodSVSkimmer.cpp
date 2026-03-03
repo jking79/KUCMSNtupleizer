@@ -14,7 +14,7 @@
 int main ( int argc, char *argv[] ){
 
     const std::string listdir = "ntuple_master_lists/";
-    //const string KUCMSAodSkimmer::eosdir = "root://cmseos.fnal.gov//store/user/jaking/";
+    //const string eosdir = "root://cmseos.fnal.gov//store/user/jaking/";
     const std::string eosdir = "root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/";
     //const std::string eosdir = "root://cmseos.fnal.gov//store/user/lpcsusylep/anazario/";
     //const std::string eosdir = "root://cmseos.fnal.gov//store/user/janguian/";
@@ -57,14 +57,14 @@ int main ( int argc, char *argv[] ){
     //const std::string outfilename = "_rjrskim_v43.root"; // added EE photons to RJR, set looser id reqs for jets to include photons
     //const std::string outfilename = "_rjrskim_v44.root"; // added photon object id and tsig counting
     //const std::string outfilename = "_rjrskim_v44.root"; // added jet merging to non copressed, new photon IDs
-    const std::string outfilename = "_rjrskim_v45.root"; //
+    const std::string outfilename = "_rjrskim_test.root"; //
 
     //int skipCnt = 0; // used to skip files ( in tchian ) for fast processing - if( nFiles%skipCnt != 0 ) continue; --  disabled in code  --  
 	// !!!!!!!!!!!!!!!!!!!  alternate RJR setup with invis in comb split rule
     KUCMSAodSkimmer llpgana;
     ////llpgana.SetNoSVorPhoFlag(noSVorPho);
     ////llpgana.SetGenSigPerfectFlag(genSigPerfect);
-    //llpgana.SetDoSV(false);
+    llpgana.SetDoSV(false);
 	llpgana.setNewSigBase(false);
     llpgana.SetDoBHC(false);
 	llpgana.SetGenInfoFlag(hasGenInfo); 

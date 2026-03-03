@@ -1,1 +1,6 @@
-KUCMSNtuple/kucmsntuple_SMS_Sig_SVIPM100_v33/CRAB_UserFiles/ SMS_SVIPM100_v33_gogoGZ_AODSIM_mGl-2300_mN2-2200_mN1-2100_ct0p5_FASTSIMAOD.txt gogoGZ_AODSIM_mGl-2300_mN2-2200_mN1-2100_ct0p5 .000413 2200 2100 1 2 r2_ul18
+#KUCMSNtuple/kucmsntuple_SMS_Sig_SVIPM100_v33/CRAB_UserFiles/ SMS_SVIPM100_v33_gogoGZ_AODSIM_mGl-2300_mN2-2200_mN1-2100_ct0p5_FASTSIMAOD.txt gogoGZ_AODSIM_mGl-2300_mN2-2200_mN1-2100_ct0p5 .000413 2200 2100 1 2 r2_ul18
+#
+KUCMSNtuple/kucmsntuple_SMS_test_SVHPM100_Mini_v33/CRAB_UserFiles/ filelist_kucmsntuple_SMS_test_SVHPM100_Mini_v33_SMS-GlGl_FASTMINI_mGl-23_mN2-22_mN1-21_GZ_ct5.txt .000413 2200 2100 1 2 r2_ul18
+KUCMSNtuple/kucmsntuple_SMS_test_SVHPM100_Mini_v33/CRAB_UserFiles/ filelist_kucmsntuple_SMS_test_SVHPM100_Mini_v33_SMS-GlGl_FULLMINI_mGl-23_mN2-22_mN1-21_GZ_ct5.txt .000413 2200 2100 1 1 r2_ul18
+KUCMSNtuple/kucmsntuple_SMS_test_SVHPM100_AOD_v33/CRAB_UserFiles/ filelist_kucmsntuple_SMS_test_SVHPM100_AOD_v33_SMS-GlGl_FASTAOD_mGl-23_mN2-22_mN1-21_GZ_ct5.txt .000413 2200 2100 1 2 r2_ul18
+KUCMSNtuple/kucmsntuple_SMS_test_SVHPM100_AOD_v33/CRAB_UserFiles/ filelist_kucmsntuple_SMS_test_SVHPM100_Mini_v33_SMS-GlGl_FULLMINI_mGl-23_mN2-22_mN1-21_GZ_ct5.txt .000413 2200 2100 1 2 r2_ul18

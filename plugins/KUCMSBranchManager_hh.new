@@ -1,0 +1,216 @@
+// -*- C++ -*-
+//
+//
+// Original Author:  Jack W King III
+//         Created:  Wed, 27 Jan 2021 19:19:35 GMT
+//
+// This is the declaration-only header split out of the original
+// header-only implementation to avoid multiple-definition linker errors
+// when included by multiple CMSSW plugins.
+//
+
+// basic C++ types
+#include <cstdlib>
+#include <vector>
+#include <map>
+#include <string>
+#include <cmath>
+#include <limits>
+
+//Root includes
+#include "TTree.h"
+
+#ifndef KUCMSBranchHeader
+#define KUCMSBranchHeader
+
+//.............................................................................................
+
+/* **************************************************************************************************************
+Done — I split your original header-only `KUCMSBranchManager.hh` into a **declaration-only header** + a **single implementation .cc**, which fixes the classic CMSSW “multiple definition” linker errors when the header gets included by more than one plugin TU.
+
+### Files
+
+* **Header (put in `interface/`)**: `KUCMSBranchManager.hh`
+* **Source (put in `src/`)**: `KUCMSBranchManager.cc`
+
+You can download them here:
+
+* [KUCMSBranchManager.hh](sandbox:/mnt/data/KUCMSBranchManager.hh)
+* [KUCMSBranchManager.cc](sandbox:/mnt/data/KUCMSBranchManager.cc)
+
+### Where to place them in CMSSW
+
+Assuming your package is `KUCMSNtupleizer/KUCMSNtupleizer`:
+
+* `KUCMSNtupleizer/KUCMSNtupleizer/interface/KUCMSBranchManager.hh`
+* `KUCMSNtupleizer/KUCMSNtupleizer/src/KUCMSBranchManager.cc`
+
+### BuildFile.xml notes
+
+You **don’t need** anything special beyond what you already have in the **package-level** `BuildFile.xml` (the one “one above plugins”) as long as it exports a library:
+
+```xml
+<export>
+  <lib name="1"/>
+</export>
+```
+
+And ensure the `plugins/BuildFile.xml` has:
+
+```xml
+<use name="KUCMSNtupleizer/KUCMSNtupleizer"/>
+```
+
+That way:
+
+* the code in `src/` gets compiled into the package library
+* your plugins in `plugins/` link against it
+
+### Include change in your plugins
+
+Where you previously included the header, keep:
+
+```cpp
+#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/KUCMSBranchManager.hh"
+```
+
+(Or the shorter include if your includes are set up accordingly.)
+
+If you want, paste your exact package path layout (just `ls interface src plugins`) and I’ll tell you the exact include line CMSSW will resolve cleanly.
+
+************************************************************************************************************
+*/
+
+typedef unsigned int uInt;
+
+// BranchType List
+// --------------------------
+// vector<vector<float>>  VVFLOAT
+// vector<vector<uInt>>   VVUINT
+// vector<uInt>           VUINT
+// vector<vector<int>>    VVINT
+// vector<int>            VINT
+// vector<float>          VFLOAT
+// vector<string>         VSTR
+// vector<bool>           VBOOL
+// uInt                   UINT
+// int                    INT
+// float                  FLOAT
+// string                 STR
+// bool                   BOOL
+
+enum BType { VVFLOAT, VVUINT, VUINT, VVINT, VINT, VFLOAT, VSTR, VBOOL, UINT, INT, FLOAT, STR, BOOL };
+
+class KUCMSBranch {
+
+  public:
+
+    KUCMSBranch();
+    KUCMSBranch( BType type, std::string name, std::string doc = "" );
+
+    void initBranch( TTree* fOutTree );
+    void clearBranch();
+
+    void fillBranch( std::vector<float> val );
+    void fillBranch( std::vector<uInt> val );
+    void fillBranch( std::vector<int> val );
+    void fillBranch( uInt val );
+    void fillBranch( int val );
+    void fillBranch( float val );
+    void fillBranch( std::string val );
+    void fillBranch( bool val );
+
+    void getValue( std::vector<float>& val, uInt index );
+    void getValue( std::vector<int>& val, uInt index );
+    void getValue( std::vector<uInt>& val, uInt index );
+    void getValue( uInt& val, uInt index );
+    void getValue( int& val, uInt index );
+    void getValue( float& val, uInt index );
+    void getValue( std::string& val, uInt index );
+    void getValue( bool& val, uInt index );
+
+    std::vector<float> getVFLOATValue( uInt index );
+    std::vector<int> getVINTValue( uInt index );
+    std::vector<uInt> getVUINTValue( uInt index );
+    uInt getUINTValue( uInt index );
+    int getINTValue( uInt index );
+    float getFLOATValue( uInt index );
+    std::string getSTRValue( uInt index );
+    bool getBOOLValue( uInt index );
+
+    float getMaxValue();
+    uInt getLeadIndex();
+    uInt getSubLeadIndex();
+
+    float max( std::vector<float> x );
+    uInt leadIdx( std::vector<float> x );
+    uInt subldIdx( std::vector<float> x, uInt ldx );
+
+  private:
+
+    BType BranchType;
+    std::string BranchName;
+    std::string BranchDoc;
+
+    std::vector<std::vector<float>> VVFLOATBranch;
+    std::vector<std::vector<int>> VVINTBranch;
+    std::vector<std::vector<uInt>> VVUINTBranch;
+    std::vector<uInt> VUINTBranch;
+    std::vector<int> VINTBranch;
+    std::vector<float> VFLOATBranch;
+    std::vector<std::string> VSTRBranch;
+    std::vector<bool> VBOOLBranch;
+    uInt UINTBranch;
+    int INTBranch;
+    float FLOATBranch;
+    std::string STRBranch;
+    bool BOOLBranch;
+
+};//<<>>class KUCMSBranch
+
+//......................................................................................
+
+class KUCMSBranchManager {
+
+  public:
+
+    KUCMSBranchManager();
+    ~KUCMSBranchManager();
+
+    void attachBranches( TTree* fOutTree );
+    void clearBranches();
+
+    void makeBranch( std::string key, std::string name, BType type, std::string doc = "" );
+    void makeBranch( std::string name, BType type, std::string doc = "" );
+
+    void fillBranch( std::string key, std::vector<float> val );
+    void fillBranch( std::string key, std::vector<uInt> val );
+    void fillBranch( std::string key, std::vector<int> val );
+    void fillBranch( std::string key, uInt val );
+    void fillBranch( std::string key, int val );
+    void fillBranch( std::string key, float val );
+    void fillBranch( std::string key, std::string val );
+    void fillBranch( std::string key, bool val );
+
+    std::vector<float> getVFLOATBranchValue( std::string key, uInt index );
+    std::vector<int> getVINTBranchValue( std::string key, uInt index );
+    std::vector<uInt> getVUINTBranchValue( std::string key, uInt index );
+    uInt getUINTBranchValue( std::string key, uInt index );
+    int getINTBranchValue( std::string key, uInt index );
+    float getFLOATBranchValue( std::string key, uInt index );
+    std::string getSTRBranchValue( std::string key, uInt index );
+    bool getBOOLBranchValue( std::string key, uInt index );
+
+    float getBranchMaxValue( std::string key );
+    uInt getBranchLeadIndex( std::string key );
+    uInt getBranchSubLeadIndex( std::string key );
+
+  private:
+
+    std::map< std::string, KUCMSBranch > theBranches;
+    bool valid( std::string key );
+
+};//<<>>class KUCMSBranchManager
+
+#endif
+
