@@ -10,6 +10,7 @@
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
+#include "DataFormats/PatCandidates/interface/PackedGenParticle.h"
 
 #include "TrackingTools/TransientTrack/interface/TransientTrack.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
@@ -142,5 +143,9 @@ class GenVertices : public std::vector<GenVertex> {
   GenMatches FindSignalGenCollection(const GenMatches &matchedPairs, const double deltaRCut) const;
 
 };
+
+reco::GenParticleCollection getStableChargedDaughtersFromPacked(
+    const GenVertex& genVertex,
+    const std::vector<pat::PackedGenParticle>& packedGenParticles);
 
 #endif

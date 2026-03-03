@@ -238,7 +238,10 @@ KUCMSNtupilizerMini::KUCMSNtupilizerMini(const edm::ParameterSet& iConfig):
 		muonObj->LoadGenObject( genObjs );
         photonsObj->LoadGenObject( genObjs );
         ak4jetObj->LoadGenObject( genObjs );
-		if( cfFlag("doSVModule") ){ displacedVertexObj->LoadGenParticlesToken(genPartToken); }
+		if( cfFlag("doSVModule") ){
+			displacedVertexObj->LoadGenParticlesToken(genPartToken);
+			displacedVertexObj->LoadPrunedGenParticlesToken(genPrunToken);
+		}
 
         // Load gen object into objman last, should be no dependence with other objects
         ObjMan.Load( "GenObjects", genObjs );

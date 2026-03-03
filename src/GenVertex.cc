@@ -376,6 +376,41 @@ void GenVertices::operator+=(const GenVertices &other) {
   }
 }
 
+reco::GenParticleCollection getStableChargedDaughtersFromPacked(
+    const GenVertex& genVertex,
+    const std::vector<pat::PackedGenParticle>& packedGenParticles) {
+
+  const reco::Candidate* genZ = genVertex.genPair().first.mother();
+  reco::GenParticleCollection result;
+
+  if(!genZ) return result;
+
+  for(const auto& packed : packedGenParticles) {
+    if(packed.status() != 1 || packed.charge() == 0) continue;
+
+    const reco::Candidate* mom = packed.mother(0);
+    if(!mom) continue;
+
+    bool isFromSameZ = false;
+    const reco::Candidate* prev = nullptr;
+    while(mom && mom != prev) {
+      if(mom->pdgId() == 23) {
+        if(mom == genZ) isFromSameZ = true;
+        break;
+      }
+      prev = mom;
+      mom = (mom->numberOfMothers() > 0) ? mom->mother(0) : nullptr;
+    }
+
+    if(isFromSameZ) {
+      result.emplace_back(reco::GenParticle(
+          packed.charge(), packed.p4(), packed.vertex(),
+          packed.pdgId(), packed.status(), true));
+    }
+  }
+  return result;
+}
+
 GenVertex GenVertices::getGenVertexFromTrack(const reco::Track &track) const {
 
   GenVertex genVertex;
