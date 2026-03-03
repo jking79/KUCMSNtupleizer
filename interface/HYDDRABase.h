@@ -208,7 +208,7 @@ class HYDDRABase : public TrackVertexSetCollection {
       }
     }
 
-    size_t nPassedChi2 = this->size() + nFailedCosTheta;
+    [[maybe_unused]] size_t nPassedChi2 = this->size() + nFailedCosTheta;
     HYDDRA_DBG("[HYDDRA] Seeds: " << tracks.size() << " tracks, "
                << nPairs << " pairs, "
                << nOverlapping << " overlapping, "

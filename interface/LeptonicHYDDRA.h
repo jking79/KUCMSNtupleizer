@@ -161,7 +161,7 @@ class LeptonicHYDDRA : public HYDDRABase<LeptonicHYDDRA> {
   void filteringImpl() {
     if (this->empty() || !primaryVertex_ || !primaryVertex_->isValid()) return;
 
-    const size_t nInput = this->size();
+    [[maybe_unused]] const size_t nInput = this->size();
     HYDDRA_DBG("[Leptonic] Final Filtering on " << nInput << " vertices...\n");
 
     // Cut counters

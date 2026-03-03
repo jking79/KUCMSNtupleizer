@@ -126,6 +126,7 @@ class GenVertices : public std::vector<GenVertex> {
   virtual ~GenVertices() = default;
 
   GenVertices(const GenVertices& other) : std::vector<GenVertex>(other) {}
+  GenVertices& operator=(const GenVertices& other) { std::vector<GenVertex>::operator=(other); return *this; }
   GenVertices(const GenMatches &matchedPairs, const double deltaRCut = 0.02);
   GenVertices(const std::vector<reco::GenParticle> &genParticles);
 
