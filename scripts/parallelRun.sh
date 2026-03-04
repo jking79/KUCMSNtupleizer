@@ -363,9 +363,13 @@ if cmsRun "$_KP_CONFIG" \
 else
     EXIT_CODE=$?
     echo "[$(date '+%H:%M:%S')] Job ${JOB_IDX}: FAILED (exit ${EXIT_CODE})"
-    echo "--- last 30 lines of log ---"
-    tail -30 "$LOG" 2>/dev/null || echo "(log not found: ${LOG})"
-    echo "----------------------------"
+    if [[ -f "$LOG" ]]; then
+        echo "--- error from log (${LOG}) ---"
+        grep -A 10 "An exception of category\|Fatal Exception\|%MSG-e\|Throw with message\|cmsRun: error" "$LOG" | head -60
+        echo "-------------------------------"
+    else
+        echo "(log not found: ${LOG})"
+    fi
 fi
 JOB_EOF
 chmod +x "$TEMP_JOB"
