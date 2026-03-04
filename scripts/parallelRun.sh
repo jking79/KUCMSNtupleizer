@@ -123,23 +123,22 @@ detect_config() {
 
 # ---------------------------------------------------------------------------
 # Build an input file list from a single .root, a .txt, or a glob.
-# Sets the global IDENTIFIER variable used in output naming.
-# Returns the path to a temp file containing one input per line.
+# Sets globals FILES_LIST and IDENTIFIER directly (no subshell).
 # ---------------------------------------------------------------------------
 IDENTIFIER=""
+FILES_LIST=""
 build_file_list() {
     local input="$1"
-    local tmp
-    tmp=$(mktemp)
+    FILES_LIST=$(mktemp)
 
     if [[ "$input" == *.txt && -f "$input" ]]; then
         # Text file list — strip comments and blank lines
-        grep -v '^\s*#' "$input" | grep -v '^\s*$' > "$tmp"
+        grep -v '^\s*#' "$input" | grep -v '^\s*$' > "$FILES_LIST"
         IDENTIFIER=$(basename "$input" .txt)
 
     elif [[ "$input" == *.root || "$input" == root://* || "$input" == file:* ]]; then
         # Single ROOT file (local or xrootd)
-        echo "$input" > "$tmp"
+        echo "$input" > "$FILES_LIST"
         local base
         base=$(basename "$input" .root)
         base="${base#file:}"
@@ -158,21 +157,19 @@ build_file_list() {
                 path_pattern="${input#${server}}"
                 xrdfs "$server" ls "${path_pattern%/*}" 2>/dev/null \
                     | grep "$(basename "$path_pattern" | tr '*' '.')" \
-                    | sed "s|^|${server}|" > "$tmp" || true
+                    | sed "s|^|${server}|" > "$FILES_LIST" || true
             fi
         else
-            printf '%s\n' "${found[@]}" > "$tmp"
+            printf '%s\n' "${found[@]}" > "$FILES_LIST"
         fi
 
-        if [[ ! -s "$tmp" ]]; then
+        if [[ ! -s "$FILES_LIST" ]]; then
             echo -e "${RED}Error: No files matched: $input${NC}" >&2
-            rm -f "$tmp"
+            rm -f "$FILES_LIST"
             exit 1
         fi
         IDENTIFIER="glob"
     fi
-
-    echo "$tmp"
 }
 
 # ---------------------------------------------------------------------------
@@ -234,7 +231,7 @@ fi
 # ---------------------------------------------------------------------------
 # Build file list
 # ---------------------------------------------------------------------------
-FILES_LIST=$(build_file_list "$INPUT")
+build_file_list "$INPUT"
 N_FILES=$(wc -l < "$FILES_LIST" | tr -d ' ')
 
 if [[ "$N_FILES" -eq 0 ]]; then
@@ -386,7 +383,7 @@ echo ""
 
 START_TIME=$(date +%s)
 
-parallel --bar -j "$N_JOBS" \
+parallel --bar -j "$N_JOBS" --colsep ' ' \
     bash "$TEMP_JOB" {1} {2} \
     :::: "$JOB_LIST"
 
