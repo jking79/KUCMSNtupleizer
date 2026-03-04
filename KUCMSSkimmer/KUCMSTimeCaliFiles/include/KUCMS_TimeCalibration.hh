@@ -20,6 +20,7 @@
 #include "TMultiGraph.h"
 #include <cmath>
 #include <ctime>
+#include <filesystem>
 
 #ifndef KUCMS_TimeCalibrationClass_hh
 #define KUCMS_TimeCalibrationClass_hh
@@ -71,7 +72,8 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
     std::string lochist;
     std::string globhist;
 
-    TFile* caliTFile;
+    //TFile* caliTFile;
+	std::map<std::string,TFile*> caliTFile;
     TFile* caliR3TFile;
     TFile* cali2DResTFile;
 
@@ -104,6 +106,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
     std::map<std::string,std::map<int,int>> iovMaps; // < tag, < start run, end rn >>
 
     std::map<std::string,kucms_resTagStruct> ResTagSet;
+    std::map<std::string,std::string> caliHistFileNames;
 
 	std::vector<int> ebx_ranges, ebtt_ranges, epmx_ranges, epmtt_ranges;
 
@@ -181,9 +184,9 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 			{ int gid = ( gs6 || gs1 ) ? 2 : 1; return rhtime - getCalibration( rhid, run, gid ); };
 
 	//tag indicates which smear to use  ---  this is all depreciated - needs to be reworked for current statagy
-	float getSmearedTime(  float rhtime, float rhamp, std::string stag );
-    float getSmearedTime(  float rhtime, float rhamp )
-            { return getSmearedTime( rhtime, rhamp, resTag ); };
+	float getSmearedTime(  float mtime, float rhampres, std::string stag );
+    float getSmearedTime(  float mtime, float rhampres )
+            { return getSmearedTime( mtime, rhampres, resTag ); };
     float getSmrdCalibTime( float rhtime, float rhamp, uInt rhid, int run, std::string ctag, std::string stag );
     float getSmrdCalibTime( float rhtime, float rhamp, uInt rhid, int run )
 			{ return getSmrdCalibTime( rhtime, rhamp, rhid, run, curTag, resTag ); }; 
@@ -250,6 +253,16 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
     void setUseGainID( int id ){ useGain = id; }
     void setIsCC( bool iscc ){ isCC = iscc; }
 	void setDoUnCC( bool douncc ){ doUnCC = douncc; }
+
+	std::string getPrefix( const std::string& s ){
+
+		size_t first = s.find('_');
+    	if (first == std::string::npos) return s;
+    	size_t second = s.find('_', first + 1);
+    	if (second == std::string::npos) return s;
+    	return s.substr(0, second);
+
+	}//<<>>std::string getPrefix( const std::string& s ) 
 
 };//<<>>class KUCMS_TimeCalibration : KUCMSRootHelperBaseClass
 

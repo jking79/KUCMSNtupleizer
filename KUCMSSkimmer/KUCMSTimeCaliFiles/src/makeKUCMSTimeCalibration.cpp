@@ -51,6 +51,7 @@ int main ( int argc, char *argv[] ){
     ////std::string inputfilename( "ecal_config/kucmsTimeCaliR17EOYTFile.txt");
 
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCGjetsTFile.txt");
+ 
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR18ULTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR17ULTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR16ULTFile.txt"); 
@@ -98,6 +99,8 @@ int main ( int argc, char *argv[] ){
     // for PD R3
 	theCali.setTTIov( r3TagTT );
 	theCali.setXIov( r3TagX );
+    theCali.setIsCC(true);
+	//theCali.setIsCC(false);
 
     //-----//////////  making trigtower cali :
 	// makeCaliMapsEGR( std::string inputFileName, bool doTT, int GID,  bool small, bool doCali )

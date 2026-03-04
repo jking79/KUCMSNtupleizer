@@ -310,7 +310,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
     gmass = -1.f;
     xmass = -1.f;
     mcwgt = 1.f;;
-    mctype = 0;  // what type of input PD :  0 MC (AODSIM), 1 DATA (AOD), if we need fastSim ect, add new enrty here
+    mctype = 0;  // what type of input PD :  0 MC (AODSIM), 1 DATA (AOD), if we need fastSim ( 2 ) ect, add new enrty here
     tctag = "none";
 
 	// input tree names
@@ -905,7 +905,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
     gmass = gmsbgm; // = 0 if not gmsb
     xmass = gmsbxm; // = 0 if not gmsb
     mcwgt = mcw; // default 1
-    mctype = mct; // 0 for MC, 1 for data
+    mctype = mct; // 0 for MC fullsim, 1 for data, 2 for MC fastsim
     tctag = tct; // r2_ul18 Data, r2_ul18_mc MC
 
     // ---- load files
