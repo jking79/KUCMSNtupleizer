@@ -31,6 +31,7 @@ MAX_EVENTS=-1
 EOS_BASE="/store/group/lpcsusylep/anazario"
 EOS_SERVER="root://cmseos.fnal.gov"
 TAG="kucmsntuple"
+FILTER=""           # eventFilter passed to cmsRun (empty = use config default)
 LOCAL_DIR=""        # auto-set from /tmp/parallelRun_PID if not given
 CONFIG=""           # auto-detected from CMSSW_BASE if not given
 DO_MERGE=false
@@ -59,6 +60,7 @@ print_usage() {
     echo ""
     echo "Options:"
     echo "  -c, --config   FILE   cmsRun config (default: auto-detected in CMSSW_BASE)"
+    echo "  -f, --filter   NAME   eventFilter passed to cmsRun (default: use config default)"
     echo "  -j, --nJobs    N      Parallel workers (default: 4)"
     echo "  -n, --maxEvents N     Events per job, -1 = all (default: -1)"
     echo "  -o, --outDir   DIR    EOS base directory"
@@ -71,7 +73,7 @@ print_usage() {
     echo "  -h, --help            Show this message"
     echo ""
     echo "Output structure on EOS:"
-    echo "  <outDir>/<tag>_<identifier>_<YYYYMMDD_HHMMSS>/"
+    echo "  <outDir>/<tag>_<identifier>/<YYYYMMDD_HHMMSS>/"
     echo "    <tag>_<identifier>_0.root"
     echo "    <tag>_<identifier>_1.root"
     echo "    ..."
@@ -186,6 +188,7 @@ shift
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -c|--config)     CONFIG="$2";      shift 2 ;;
+        -f|--filter)     FILTER="$2";      shift 2 ;;
         -j|--nJobs)      N_JOBS="$2";      shift 2 ;;
         -n|--maxEvents)  MAX_EVENTS="$2";  shift 2 ;;
         -o|--outDir)     EOS_BASE="$2";    shift 2 ;;
@@ -244,14 +247,14 @@ fi
 # Timestamped run directory (CRAB-style)
 # ---------------------------------------------------------------------------
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-RUN_NAME="${TAG}_${IDENTIFIER}_${TIMESTAMP}"
+RUN_NAME="${TAG}_${IDENTIFIER}"
 
 if [[ -z "$LOCAL_DIR" ]]; then
-    LOCAL_DIR="/tmp/parallelRun_$$/${RUN_NAME}"
+    LOCAL_DIR="/tmp/parallelRun_$$/${RUN_NAME}/${TIMESTAMP}"
 fi
 
 LOG_DIR="${LOCAL_DIR}/logs"
-EOS_RUN_DIR="${EOS_BASE}/${RUN_NAME}"
+EOS_RUN_DIR="${EOS_BASE}/${RUN_NAME}/${TIMESTAMP}"
 
 mkdir -p "$LOCAL_DIR" "$LOG_DIR"
 
@@ -290,7 +293,9 @@ echo "  To process:      $N_TO_RUN"
 echo "  Parallel jobs:   $N_JOBS"
 echo "  Max events/job:  $MAX_EVENTS"
 echo "  Config:          $CONFIG"
+echo "  Event filter:    ${FILTER:-<config default>}"
 echo "  Run name:        $RUN_NAME"
+echo "  Timestamp:       $TIMESTAMP"
 echo "  Local work dir:  $LOCAL_DIR"
 [[ "$DO_XRDCP" == true ]] && \
 echo "  EOS output:      ${EOS_SERVER}/${EOS_RUN_DIR}"
@@ -325,6 +330,7 @@ export _KP_LOCAL_DIR="$LOCAL_DIR"
 export _KP_TAG="$TAG"
 export _KP_IDENTIFIER="$IDENTIFIER"
 export _KP_MAX_EVENTS="$MAX_EVENTS"
+export _KP_FILTER="$FILTER"
 export _KP_EOS_SERVER="$EOS_SERVER"
 export _KP_EOS_RUN_DIR="$EOS_RUN_DIR"
 export _KP_DO_XRDCP="$DO_XRDCP"
@@ -342,10 +348,14 @@ LOG="${_KP_LOCAL_DIR}/logs/job_${JOB_IDX}.log"
 
 echo "[$(date '+%H:%M:%S')] Job ${JOB_IDX}: starting $(basename "${INPUT_FILE}")"
 
+_FILTER_ARG=()
+[[ -n "$_KP_FILTER" ]] && _FILTER_ARG=( "eventFilter=${_KP_FILTER}" )
+
 if cmsRun "$_KP_CONFIG" \
       inputFiles="$INPUT_FILE" \
       outputFile="$LOCAL_OUT"  \
       maxEvents="$_KP_MAX_EVENTS" \
+      "${_FILTER_ARG[@]}" \
       >> "$LOG" 2>&1; then
 
     echo "CMSRUN_EXIT_SUCCESS" >> "$LOG"
@@ -443,7 +453,7 @@ fi
 # ---------------------------------------------------------------------------
 echo ""
 echo -e "${GREEN}Done!${NC}"
-echo "  Run tag:  ${RUN_NAME}"
+echo "  Run tag:  ${RUN_NAME}/${TIMESTAMP}"
 echo "  Local:    ${LOCAL_DIR}/"
 [[ "$DO_XRDCP" == "true" ]] && \
     echo "  EOS:      ${EOS_SERVER}/${EOS_RUN_DIR}/"

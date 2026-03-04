@@ -30,6 +30,10 @@ sys.argv    = _saved_argv
 # secondaryInputFiles (list), maxEvents (int, default -1), section, tag.
 # ---------------------------------------------------------------------------
 _opts = VarParsing('python')
+_opts.register('eventFilter', '',
+               VarParsing.multiplicity.singleton,
+               VarParsing.varType.string,
+               'event filter / skim selection (overrides config default when set)')
 _opts.parseArguments()
 
 # Override input source
@@ -43,3 +47,7 @@ process.TFileService.fileName = cms.string(_opts.outputFile)
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(_opts.maxEvents)
 )
+
+# Override event filter if explicitly supplied
+if _opts.eventFilter:
+    process.tree.fltrSelection = cms.string(_opts.eventFilter)
