@@ -355,6 +355,7 @@ if cmsRun "$_KP_CONFIG" \
         echo "[$(date '+%H:%M:%S')] Job ${JOB_IDX}: transferring to EOS..."
         if xrdcp "$LOCAL_OUT" "${_KP_EOS_SERVER}/${_KP_EOS_RUN_DIR}/${OUTFILE}" >> "$LOG" 2>&1; then
             echo "[$(date '+%H:%M:%S')] Job ${JOB_IDX}: xrdcp done"
+            rm -f "$LOCAL_OUT"
         else
             echo "[$(date '+%H:%M:%S')] Job ${JOB_IDX}: xrdcp FAILED — local file kept at ${LOCAL_OUT}"
         fi
