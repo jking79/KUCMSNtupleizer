@@ -49,6 +49,13 @@ class GenVertex {
   bool isDefault() const {return size_==0;}
   bool isValid() const {return size_==2;}
 
+  void setVertex(double vx, double vy, double vz) {
+    vertexX_   = vx;
+    vertexY_   = vy;
+    vertexZ_   = vz;
+    vertexDxy_ = sqrt(vx*vx + vy*vy);
+  }
+
   bool operator<(const GenVertex &other) const {return this->dxy() < other.dxy(); }
   bool operator==(const GenVertex &other) const { return this->x() == other.x() && this->y() == other.y() && this->z() == other.z(); }
   

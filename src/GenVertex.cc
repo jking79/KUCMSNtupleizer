@@ -245,30 +245,53 @@ GenVertices::GenVertices(const GenMatches &matchedPairs, const double deltaRCut)
 
 GenVertices::GenVertices(const std::vector<reco::GenParticle> &genParticles) {
 
-  std::unordered_map<std::string, std::vector<reco::GenParticle>> positionMap;
-  
+  // Group signal particles by their LLP (SUSY) ancestor pointer rather than
+  // by production vertex coordinates.  In MiniAOD (prunedGenParticles) the
+  // vx/vy/vz of LLP daughters is unreliable and often collapses to (0,0,0),
+  // which caused all four signal leptons in the event to be grouped into one
+  // spurious vertex.  The ancestor pointer is stable across pruning and
+  // correctly separates decays from different LLPs.
+  std::unordered_map<const reco::Candidate*, std::vector<reco::GenParticle>> ancestorMap;
+
   for(const auto &gen : genParticles) {
-    
-    //if(gen.status() != 1) continue;
-
-    //isSignalGenJet(gen);
-    
     bool isSignal(isSignalGenElectron(gen) || isSignalGenMuon(gen) || isSignalGenJet(gen));
-    
     if(!isSignal) continue;
-    
-    std::string key = std::to_string(gen.vx()) + "_" +
-                      std::to_string(gen.vy()) + "_" +
-                      std::to_string(gen.vz());
 
-    positionMap[key].push_back(gen);
+    const reco::Candidate* llp = findSUSYAncestor(gen);
+    if(!llp) {
+      std::cerr << "Warning: signal particle (pdgId=" << gen.pdgId()
+                << ") has no SUSY ancestor — skipping" << std::endl;
+      continue;
+    }
+    ancestorMap[llp].push_back(gen);
   }
-  
-  for (auto it = positionMap.begin(); it != positionMap.end(); ++it) {
-    if(it->second.size() != 2)
-      throw std::runtime_error("Major Problem: found a gen vertex with " + std::to_string(it->second.size()) + " particles!");
 
-    this->emplace_back(GenVertex(std::make_pair(it->second[0], it->second[1])));
+  for(const auto &entry : ancestorMap) {
+    if(entry.second.size() != 2) {
+      std::cerr << "Warning: gen vertex grouped " << entry.second.size()
+                << " particles (expected 2) — skipping" << std::endl;
+      continue;
+    }
+
+    GenVertex vtx(std::make_pair(entry.second[0], entry.second[1]));
+
+    // In MiniAOD, lepton vx/vy/vz is often (0,0,0) for LLP daughters.
+    // Recover the LLP decay vertex by finding any daughter of the ancestor
+    // in the collection that carries a valid (non-zero) production vertex.
+    if(vtx.x() == 0 && vtx.y() == 0 && vtx.z() == 0) {
+      for(const auto &gen : genParticles) {
+        bool isDaughter = false;
+        for(size_t m = 0; m < gen.numberOfMothers(); ++m) {
+          if(gen.mother(m) == entry.first) { isDaughter = true; break; }
+        }
+        if(isDaughter && (gen.vx() != 0 || gen.vy() != 0 || gen.vz() != 0)) {
+          vtx.setVertex(gen.vx(), gen.vy(), gen.vz());
+          break;
+        }
+      }
+    }
+
+    this->emplace_back(vtx);
   }
 }
 
@@ -284,31 +307,42 @@ bool GenVertices::contains(const GenVertex& genVertex) const {
 }
 
 std::vector<GenMatches> GenVertices::findGenParticlePairs(const GenMatches &matchedPairs, const double deltaRCut) const {
-  std::vector<GenMatches> pairs;
-  std::unordered_map<std::string, GenMatches> positionMap;
 
-  for (const auto& pair : FindSignalGenCollection(matchedPairs, deltaRCut)) {
-    reco::GenParticle particle(pair.GetObjectB());
-    
-    // Create a unique key for each position
-    std::string key = std::to_string(particle.vx()) + "_" +
-                      std::to_string(particle.vy()) + "_" +
-                      std::to_string(particle.vz());
+  // Group matched track-gen pairs by LLP ancestor pointer when possible
+  // (MiniAOD compatible), falling back to production-vertex string for
+  // non-SUSY signals (e.g. Z→ll in AOD where positions are reliable).
+  std::unordered_map<const reco::Candidate*, GenMatches> ancestorMap;
+  std::unordered_map<std::string, GenMatches>            positionMap;
 
-    positionMap[key].push_back(pair);
-  }
-
-  for (const auto& entry : positionMap) {
-    if (entry.second.size() == 2 || entry.second.size() == 4) {
-      // We found a pair
-      pairs.push_back(entry.second);
+  for(const auto& pair : FindSignalGenCollection(matchedPairs, deltaRCut)) {
+    const reco::GenParticle particle(pair.GetObjectB());
+    const reco::Candidate* llp = findSUSYAncestor(particle);
+    if(llp) {
+      ancestorMap[llp].push_back(pair);
+    } else {
+      const std::string key = std::to_string(particle.vx()) + "_" +
+                              std::to_string(particle.vy()) + "_" +
+                              std::to_string(particle.vz());
+      positionMap[key].push_back(pair);
     }
-    if(entry.second.size() == 4)
-      std::cout << "Found a case with four signal gen particles at the same vertex!" << std::endl;
-
-    // If size is 1 or 3, we ignore it as it's not a complete pair
   }
 
+  std::vector<GenMatches> pairs;
+  for(const auto& entry : ancestorMap) {
+    if(entry.second.size() == 2)
+      pairs.push_back(entry.second);
+    else
+      std::cerr << "Warning: track grouping (ancestor) found " << entry.second.size()
+                << " tracks for ancestor pdgId=" << entry.first->pdgId()
+                << " (expected 2) — skipping\n";
+  }
+  for(const auto& entry : positionMap) {
+    if(entry.second.size() == 2)
+      pairs.push_back(entry.second);
+    else
+      std::cerr << "Warning: track grouping (position) found " << entry.second.size()
+                << " tracks (expected 2) — skipping\n";
+  }
   return pairs;
 }
 
@@ -355,24 +389,44 @@ reco::GenParticleCollection GenVertices::getAllGenParticles() const {
   return genParticles;
 }
 
+// Returns true if two gen pairs represent the same two particles (in either
+// ordering).  Exact float comparison is safe here because the particles in
+// the track-matched vertices are bitwise copies of those in the gen-only
+// vertices, all originating from the same prunedGenParticles collection.
+static bool sameGenPair(
+    const std::pair<reco::GenParticle,reco::GenParticle>& a,
+    const std::pair<reco::GenParticle,reco::GenParticle>& b) {
+  auto kinMatch = [](const reco::GenParticle& p, const reco::GenParticle& q) {
+    return p.pt() == q.pt() && p.eta() == q.eta() && p.phi() == q.phi();
+  };
+  return (kinMatch(a.first, b.first)  && kinMatch(a.second, b.second)) ||
+         (kinMatch(a.first, b.second) && kinMatch(a.second, b.first));
+}
+
 void GenVertices::operator+=(const GenVertices &other) {
-  // Use a set to merge and avoid duplicates
-  std::set<GenVertex> mergedVertices(this->begin(), this->end());
-  
-  // Insert vertices from the other set
-  for(const auto &vertex : other) {
-    if(vertex.hasTracks()) {
-      mergedVertices.erase(vertex);
-      mergedVertices.insert(vertex);
+  // Merge `other` into this collection.  For each incoming vertex:
+  //   • Match by spatial position (operator==, x/y/z) — works in AOD.
+  //   • Fall back to genPair kinematics — works in MiniAOD where the
+  //     track-matched vertex carries the original (0,0,0) coordinates.
+  // When a match is found and the incoming vertex has tracks, it replaces
+  // the existing one; the recovered position is copied over if needed.
+  for(const auto &incoming : other) {
+    bool found = false;
+    for(auto &existing : *this) {
+      if((existing == incoming) || sameGenPair(existing.genPair(), incoming.genPair())) {
+        if(incoming.hasTracks()) {
+          GenVertex enriched = incoming;
+          // Preserve the gen-only vertex's recovered position when the
+          // track-matched vertex still has (0,0,0) coordinates (MiniAOD).
+          if(enriched.x() == 0 && enriched.y() == 0 && enriched.z() == 0)
+            enriched.setVertex(existing.x(), existing.y(), existing.z());
+          existing = enriched;
+        }
+        found = true;
+        break;
+      }
     }
-    else if(mergedVertices.find(vertex) == mergedVertices.end())
-      mergedVertices.insert(vertex);
-  }
-  
-  // Clear the current container and populate it with the merged vertices
-  this->clear();
-  for(const auto &vertex : mergedVertices) {
-    this->emplace_back(vertex);
+    if(!found) this->push_back(incoming);
   }
 }
 
@@ -380,32 +434,37 @@ reco::GenParticleCollection getStableChargedDaughtersFromPacked(
     const GenVertex& genVertex,
     const std::vector<pat::PackedGenParticle>& packedGenParticles) {
 
-  const reco::Candidate* genZ = genVertex.genPair().first.mother();
+  // Walk up the first gen particle's mother chain to find the decay parent:
+  // either a Z boson (pdgId 23, prompt signal) or a SUSY LLP (|pdgId| > 1e6).
+  // Using pointer identity is robust and works for both AOD and MiniAOD.
+  const reco::Candidate* parent = nullptr;
+  {
+    const reco::Candidate* mom =
+        (genVertex.genPair().first.numberOfMothers() > 0)
+        ? genVertex.genPair().first.mother(0) : nullptr;
+    while(mom) {
+      const int id = abs(mom->pdgId());
+      if(id == 23 || id > 1000000) { parent = mom; break; }
+      mom = (mom->numberOfMothers() > 0) ? mom->mother(0) : nullptr;
+    }
+  }
+  if(!parent) return {};
+
   reco::GenParticleCollection result;
-
-  if(!genZ) return result;
-
   for(const auto& packed : packedGenParticles) {
     if(packed.status() != 1 || packed.charge() == 0) continue;
-
-    const reco::Candidate* mom = packed.mother(0);
-    if(!mom) continue;
-
-    bool isFromSameZ = false;
+    const reco::Candidate* mom =
+        (packed.numberOfMothers() > 0) ? packed.mother(0) : nullptr;
     const reco::Candidate* prev = nullptr;
     while(mom && mom != prev) {
-      if(mom->pdgId() == 23) {
-        if(mom == genZ) isFromSameZ = true;
+      if(mom == parent) {
+        result.emplace_back(reco::GenParticle(
+            packed.charge(), packed.p4(), packed.vertex(),
+            packed.pdgId(), packed.status(), true));
         break;
       }
       prev = mom;
       mom = (mom->numberOfMothers() > 0) ? mom->mother(0) : nullptr;
-    }
-
-    if(isFromSameZ) {
-      result.emplace_back(reco::GenParticle(
-          packed.charge(), packed.p4(), packed.vertex(),
-          packed.pdgId(), packed.status(), true));
     }
   }
   return result;
