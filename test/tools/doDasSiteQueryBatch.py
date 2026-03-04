@@ -624,6 +624,7 @@ for data in datalist :
     #output = bashout( command ).split('size":')
     #output = bashout( command ).split('num_lumi":')
     #output = bashout( command ).split('files":')
+
     output = bashout( command ).split('\n')
     print( '--------------------------------------------------------------------------')
     print( data )
