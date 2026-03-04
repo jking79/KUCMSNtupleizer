@@ -81,6 +81,20 @@ inline LepMomType ClassifyGenLeptonMomType(const reco::GenParticle &genLepton) {
   return AssignGenLeptonMomType(momID);
 }
 
+// Walk the mother chain and return the first SUSY ancestor (abs(pdgId) > 1000000).
+// In MiniAOD prunedGenParticles, lepton vx/vy/vz is unreliable for LLP daughters,
+// so we use the pointer identity of this ancestor as the vertex grouping key instead.
+inline const reco::Candidate* findSUSYAncestor(const reco::GenParticle &gen) {
+  const reco::Candidate* mom  = (gen.numberOfMothers() > 0) ? gen.mother(0) : nullptr;
+  const reco::Candidate* prev = nullptr;
+  while (mom && mom != prev) {
+    if (abs(mom->pdgId()) > 1000000) return mom;
+    prev = mom;
+    mom  = (mom->numberOfMothers() > 0) ? mom->mother(0) : nullptr;
+  }
+  return nullptr;
+}
+
 inline bool isSignalGenElectron(const reco::GenParticle &gen) {
   if(abs(gen.pdgId()) != 11 || gen.status() != 1) return false;
   LepMomType momType = ClassifyGenLeptonMomType(gen);

@@ -1,5 +1,7 @@
 <use name="DataFormats/TrackReco"/>
+<use name="DataFormats/PatCandidates"/>
 <use name="TrackingTools/TrajectoryState"/>
+<use name="TrackingTools/IPTools"/>
 <use name="RecoEgamma/EgammaIsolationAlgos"/>
 <use name="TrackingTools/TransientTrack"/>
 <use name="RecoVertex/AdaptiveVertexFinder"/>

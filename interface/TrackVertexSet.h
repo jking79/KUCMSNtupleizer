@@ -102,6 +102,7 @@ public:
   TrackVertexSetCollection() = default;
 
   TrackVertexSetCollection(const TrackVertexSetCollection &other) : std::set<TrackVertexSet>(other) {}
+  TrackVertexSetCollection& operator=(const TrackVertexSetCollection& other) { std::set<TrackVertexSet>::operator=(other); return *this; }
 
   virtual ~TrackVertexSetCollection() = default;
 
