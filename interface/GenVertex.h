@@ -10,6 +10,7 @@
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
+#include "DataFormats/PatCandidates/interface/PackedGenParticle.h"
 
 #include "TrackingTools/TransientTrack/interface/TransientTrack.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
@@ -47,6 +48,13 @@ class GenVertex {
   bool hasTracks() const {return hasMatch_;}
   bool isDefault() const {return size_==0;}
   bool isValid() const {return size_==2;}
+
+  void setVertex(double vx, double vy, double vz) {
+    vertexX_   = vx;
+    vertexY_   = vy;
+    vertexZ_   = vz;
+    vertexDxy_ = sqrt(vx*vx + vy*vy);
+  }
 
   bool operator<(const GenVertex &other) const {return this->dxy() < other.dxy(); }
   bool operator==(const GenVertex &other) const { return this->x() == other.x() && this->y() == other.y() && this->z() == other.z(); }
@@ -125,6 +133,7 @@ class GenVertices : public std::vector<GenVertex> {
   virtual ~GenVertices() = default;
 
   GenVertices(const GenVertices& other) : std::vector<GenVertex>(other) {}
+  GenVertices& operator=(const GenVertices& other) { std::vector<GenVertex>::operator=(other); return *this; }
   GenVertices(const GenMatches &matchedPairs, const double deltaRCut = 0.02);
   GenVertices(const std::vector<reco::GenParticle> &genParticles);
 
@@ -142,5 +151,9 @@ class GenVertices : public std::vector<GenVertex> {
   GenMatches FindSignalGenCollection(const GenMatches &matchedPairs, const double deltaRCut) const;
 
 };
+
+reco::GenParticleCollection getStableChargedDaughtersFromPacked(
+    const GenVertex& genVertex,
+    const std::vector<pat::PackedGenParticle>& packedGenParticles);
 
 #endif

@@ -34,8 +34,8 @@ options.register('runMETFilters',False,VarParsing.multiplicity.singleton,VarPars
 #options.register('globalTag','106X_mc2017_realistic_v6',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','106X_upgrade2018_realistic_v11_L1v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','94X_mc2017_realistic_v11',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
-options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for sig22 MC');
-#options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
+#options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for sig22 MC');
+options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','130X_mcRun3_2023_realistic_v14',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','133X_mcRun3_2024_realistic_v10',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','94X_mc2017_realistic_v14',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for GMSB MC');
@@ -109,6 +109,15 @@ from KUCMSNtupleizer.KUCMSNtupleizer.ECALTracks_cfi import *
 process.load('KUCMSNtupleizer.KUCMSNtupleizer.MuonEnhancedTracks_cfi')
 from KUCMSNtupleizer.KUCMSNtupleizer.MuonEnhancedTracks_cfi import *
 
+process.load('KUCMSNtupleizer.KUCMSNtupleizer.miniAODTrackProducer_cfi')
+from KUCMSNtupleizer.KUCMSNtupleizer.miniAODTrackProducer_cfi import *
+
+process.load('KUCMSNtupleizer.KUCMSNtupleizer.miniAODMuonEnhancedTracksProducer_cfi')
+from KUCMSNtupleizer.KUCMSNtupleizer.miniAODMuonEnhancedTracksProducer_cfi import *
+
+process.load('KUCMSNtupleizer.KUCMSNtupleizer.hyddra_cfi')
+from KUCMSNtupleizer.KUCMSNtupleizer.hyddra_cfi import *
+
 # Set the global tag depending on the sample type
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag.globaltag = options.globalTag
@@ -135,13 +144,16 @@ process.source = cms.Source("PoolSource",
         #### AOD Run3   MUST BE IN CMSSW  14 or 15 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         # Data
         #'file:root_files/R23C_JetMet_mini_4a8e9a72-a9af-4448-acbd-bafa6cd684b4.root',
+        #######'file:root_files/Met_UL18B_AOD_973EEF0C-44AB-E94A-8591-04DCD00D8B4B.root',
+        ##'file:root_files/R22D_JetMet_mini_1f4a97f7-de76-4ee1-a380-0d9d7a5914d2.root',
+        ######'file:root_files/WJets_72B9C618-FE23-1E41-872E-57314D7CB454.root',
         #'root://cmsxrootd.fnal.gov//store/data/Run2018B/JetHT/MINIAOD/15Feb2022_UL2018-v1/2820000/84DEEA91-CF7B-C24B-831D-7D993EB56D8D.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2018D/MET/MINIAOD/15Feb2022_UL2018-v1/510000/F5E0C00B-109F-5C4D-92F9-6D9F57EBE8C5.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2017D/DoubleEG/MINIAOD/09Aug2019_UL2017-v1/260000/3879D624-EAFF-C34B-8C0E-D4D7E23EB25C.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2018D/EGamma/MINIAOD/UL2018_MiniAODv2-v2/2810000/D5E0889C-D687-6242-8105-A147939E99C4.root',
-        'root://cmsxrootd.fnal.gov//store/data/Run2018B/JetHT/MINIAOD/15Feb2022_UL2018-v1/2820000/84DEEA91-CF7B-C24B-831D-7D993EB56D8D.root',
+        #'root://cmsxrootd.fnal.gov//store/data/Run2018B/JetHT/MINIAOD/15Feb2022_UL2018-v1/2820000/84DEEA91-CF7B-C24B-831D-7D993EB56D8D.root',
         # MC - Sig
-        #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_MINI/260203_235322/0000/SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_MiniAODv4_99.root',
+        'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_MINI/260203_235322/0000/SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_MiniAODv4_99.root',
 
         ),##<<>>fileNames = cms.untracked.vstring
         secondaryFileNames=cms.untracked.vstring()
@@ -155,7 +167,7 @@ process.source = cms.Source("PoolSource",
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500))#QT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(5000))#BT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10000))#LT
@@ -164,10 +176,10 @@ process.source = cms.Source("PoolSource",
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100000))#MS
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250000))#MD
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500000))#LG
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
 
-#genInfo = True
-genInfo = False
+genInfo = True
+#genInfo = False
 if options.multicrab == True : genInfo = options.hasGenInfo		   
 
 ecalIsoInputsF17 = 'RecoEgamma/ElectronIdentification/data/Fall17/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_94X.txt'
@@ -189,8 +201,8 @@ runera = "Run3"  # current siganl model   !!!!!!!!  Run3 must be in CMSSW 14 or 
 #runera = "Run2" # BG models
 if options.multicrab == True : runera = options.runera
 
-#dosv = True
-dosv = False # with v30 this is the only SV flag that matters, doDisEle and doECALTrackOnly are depreciated
+dosv = True
+#dosv = False # with v30 this is the only SV flag that matters, doDisEle and doECALTrackOnly are depreciated
 if options.multicrab == True : dosv = options.doSV
 
 ############dode = True
@@ -212,15 +224,19 @@ if options.multicrab == True : runMETFilters = options.runMETFilters
 probeout = False
 if options.multicrab == True : probeout = False
 
-era = "2022"
 triggerSet = "RECO"
 ecalIsoInputs = ecalIsoInputsF17
+
 if "Run3" in runera :
-    if "2022" not in era : triggerSet = "PAT"
     if genInfo : triggerSet = "PAT"
     ecalIsoInputs = ecalruneraIsoInputsW22
     if 'CASTOR' in process.CaloGeometryBuilder.SelectedCalos : 
         process.CaloGeometryBuilder.SelectedCalos.remove('CASTOR') 
+
+if "RunS" in runera :
+    ecalIsoInputs = ecalruneraIsoInputsW22
+    if 'CASTOR' in process.CaloGeometryBuilder.SelectedCalos :
+        process.CaloGeometryBuilder.SelectedCalos.remove('CASTOR')
 
 if runMETFilters == True : triggerSet = ""  # ?  "SIM" for MC
 
@@ -259,8 +275,7 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizerMini",
 
                               ##skim type selectuon 
                               fltrSelection = cms.string(filterselect),
-                            
-                              #Triggers
+
                               triggerList = cms.vstring(),
 
                               #MetFilters
@@ -272,20 +287,25 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizerMini",
 
                               ## additional collections
                               ## tracks
-                              ogGeneralTracks = cms.InputTag("generalTracks"),
+                              ogGeneralTracks = cms.InputTag("miniAODTrackProducer","merged"),
                               ##ogGeneralTracks = cms.InputTag("displacedTracks"),
-                              ogGsfTracks = cms.InputTag("reducedEgamma"),
-                              ecalTracks = cms.InputTag("ecalTracks", "ecalTracks"),
-                              tracks = cms.InputTag("ecalTracks", "ecalGeneralTracks"),
-                              gsfTracksSrc = cms.InputTag("ecalTracks", "ecalGsfTracks"),
+                              ogGsfTracks = cms.InputTag("reducedEgamma","reducedGsfTracks"),
+
+                              #ecalTracks = cms.InputTag("ecalTracks", "ecalTracks"),
+                              #tracks = cms.InputTag("ecalTracks", "ecalGeneralTracks"),
+                              #gsfTracksSrc = cms.InputTag("ecalTracks", "ecalGsfTracks"),
                               displacedSCs = cms.InputTag("ecalTracks", "displacedElectronSCs"),
                               #displacedTracks = cms.InputTag("displacedElectrons", "displacedCandidateTracks"),
-                              muonEnhancedTracks = cms.InputTag("muonEnhancedTracks", "muonEnhancedTracks"),
-                              combinedMuonTracks = cms.InputTag("muonEnhancedTracks", "combinedMuonTracks"),
-                              sip2DMuonEnhancedTracks = cms.InputTag("muonEnhancedTracks", "sip2DMuonEnhancedTracks"),
+                              #muonEnhancedTracks = cms.InputTag("muonEnhancedTracks", "muonEnhancedTracks"),
+
+                              combinedMuonTracks = cms.InputTag("miniAODMuonEnhancedTracks", "combinedMuonTracks"),
+                              sip2DMuonEnhancedTracks = cms.InputTag("miniAODMuonEnhancedTracks", "sip2DMuonEnhancedTracks"),
+ 
                               ## vertices
                               vertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
                               timedSVs = cms.InputTag("timedSVs", "timedSecondaryVertices"),
+                              leptonicSVs = cms.InputTag("hyddraSVs", "leptonicVertices"),
+                              hadronicSVs = cms.InputTag("hyddraSVs", "hadronicVertices"),
                               ## pfcandidates
                               pfcandidates = cms.InputTag("packedPFCandidates"),
                               #particleflow = cms.InputTag("particleFlow",""),
@@ -296,8 +316,7 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizerMini",
                               #rho = cms.InputTag("fixedGridRhoFastjetAll"), #fixedGridRhoAll
                               rho = cms.InputTag("fixedGridRhoAll"),
                               ## conversions
-                              #conversions = cms.InputTag("reducedEgamma","reducedConversions","PAT" ),
-                              conversions = cms.InputTag("reducedEgamma","reducedConversions","RECO" ),
+                              conversions = cms.InputTag("reducedEgamma","reducedConversions",triggerSet ),
                               ## beamSpot
                               beamSpot = cms.InputTag("offlineBeamSpot"),
                               ## trigger
@@ -329,8 +348,8 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizerMini",
                               recHitsEB = cms.InputTag("reducedEgamma", "reducedEBRecHits"),
                               recHitsEE = cms.InputTag("reducedEgamma", "reducedEERecHits"),
                               ## superclusters
-                              #superClusters = cms.InputTag("ecalTracks", "displacedElectronSCs"),
-                              superClusters = cms.InputTag("reducedEgamma", "reducedSuperClusters"),
+                              superClusters = cms.InputTag("ecalTracks", "displacedElectronSCs"),
+                              #superClusters = cms.InputTag("reducedEgamma", "reducedSuperClusters"),
                               otherSuperClusters = cms.InputTag("reducedEgamma", "reducedSuperClusters"),
                               ootSuperClusters = cms.InputTag("reducedEgamma", "reducedOOTSuperClusters"),
                               ## caloclusters
@@ -445,11 +464,11 @@ metFilterPaths += [
 
 # SVs & ecaltracks aka merged SC collection
 process.kuEcalTracks = cms.Sequence( ecalTracks )
-process.kuSV = cms.Sequence( muonEnhancedTracks )
+process.kuSV = cms.Sequence( miniAODTrackProducer + miniAODMuonEnhancedTracks + hyddraSVs )
 #process.kuDisEle = cms.Sequence( displacedElectrons )
 
-process.kuDisplaced_path = cms.Path()
-#process.kuDisplaced_path = cms.Path( process.kuEcalTracks )
+#process.kuDisplaced_path = cms.Path()
+process.kuDisplaced_path = cms.Path( process.kuEcalTracks )
 if ( dosv ) : process.kuDisplaced_path = cms.Path( process.kuEcalTracks + process.kuSV )
 
 ## Set final paths and schedule
