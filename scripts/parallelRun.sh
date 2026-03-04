@@ -337,6 +337,7 @@ INPUT_FILE="$2"
 
 OUTFILE="${_KP_TAG}_${_KP_IDENTIFIER}_${JOB_IDX}.root"
 LOCAL_OUT="${_KP_LOCAL_DIR}/${OUTFILE}"
+mkdir -p "${_KP_LOCAL_DIR}/logs"
 LOG="${_KP_LOCAL_DIR}/logs/job_${JOB_IDX}.log"
 
 echo "[$(date '+%H:%M:%S')] Job ${JOB_IDX}: starting $(basename "${INPUT_FILE}")"
@@ -360,7 +361,10 @@ if cmsRun "$_KP_CONFIG" \
     fi
 else
     EXIT_CODE=$?
-    echo "[$(date '+%H:%M:%S')] Job ${JOB_IDX}: FAILED (exit ${EXIT_CODE}) — see ${LOG}"
+    echo "[$(date '+%H:%M:%S')] Job ${JOB_IDX}: FAILED (exit ${EXIT_CODE})"
+    echo "--- last 30 lines of log ---"
+    tail -30 "$LOG" 2>/dev/null || echo "(log not found: ${LOG})"
+    echo "----------------------------"
 fi
 JOB_EOF
 chmod +x "$TEMP_JOB"
