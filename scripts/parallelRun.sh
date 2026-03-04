@@ -27,6 +27,7 @@ set -euo pipefail
 # Defaults
 # ---------------------------------------------------------------------------
 N_JOBS=4
+FILES_PER_JOB=1
 MAX_EVENTS=-1
 EOS_BASE="/store/group/lpcsusylep/anazario"
 EOS_SERVER="root://cmseos.fnal.gov"
@@ -62,6 +63,7 @@ print_usage() {
     echo "  -c, --config   FILE   cmsRun config (default: auto-detected in CMSSW_BASE)"
     echo "  -f, --filter   NAME   eventFilter passed to cmsRun (default: use config default)"
     echo "  -j, --nJobs    N      Parallel workers (default: 4)"
+    echo "  -p, --files-per-job N Input files processed per job (default: 1)"
     echo "  -n, --maxEvents N     Events per job, -1 = all (default: -1)"
     echo "  -o, --outDir   DIR    EOS base directory"
     echo "                        (default: /store/group/lpcsusylep/anazario)"
@@ -187,9 +189,10 @@ shift
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        -c|--config)     CONFIG="$2";      shift 2 ;;
-        -f|--filter)     FILTER="$2";      shift 2 ;;
-        -j|--nJobs)      N_JOBS="$2";      shift 2 ;;
+        -c|--config)     CONFIG="$2";           shift 2 ;;
+        -f|--filter)     FILTER="$2";           shift 2 ;;
+        -j|--nJobs)      N_JOBS="$2";           shift 2 ;;
+        -p|--files-per-job) FILES_PER_JOB="$2"; shift 2 ;;
         -n|--maxEvents)  MAX_EVENTS="$2";  shift 2 ;;
         -o|--outDir)     EOS_BASE="$2";    shift 2 ;;
         -t|--tag)        TAG="$2";         shift 2 ;;
@@ -291,6 +294,7 @@ echo "  Total files:     $N_FILES"
 [[ "$DO_CONTINUE" == true ]] && echo "  Already done:    $N_SKIPPED"
 echo "  To process:      $N_TO_RUN"
 echo "  Parallel jobs:   $N_JOBS"
+echo "  Files per job:   $FILES_PER_JOB"
 echo "  Max events/job:  $MAX_EVENTS"
 echo "  Config:          $CONFIG"
 echo "  Event filter:    ${FILTER:-<config default>}"
@@ -337,67 +341,92 @@ export _KP_DO_XRDCP="$DO_XRDCP"
 
 cat > "$TEMP_JOB" << 'JOB_EOF'
 #!/bin/bash
-# Called by GNU parallel as:  bash TEMP_JOB JOB_IDX INPUT_FILE
-JOB_IDX="$1"
-INPUT_FILE="$2"
+# Called by GNU parallel as:  bash TEMP_JOB START_IDX CHUNK_FILE
+START_IDX="$1"
+CHUNK_FILE="$2"
 
-OUTFILE="${_KP_TAG}_${_KP_IDENTIFIER}_${JOB_IDX}.root"
-LOCAL_OUT="${_KP_LOCAL_DIR}/${OUTFILE}"
 mkdir -p "${_KP_LOCAL_DIR}/logs"
-LOG="${_KP_LOCAL_DIR}/logs/job_${JOB_IDX}.log"
-
-echo "[$(date '+%H:%M:%S')] Job ${JOB_IDX}: starting $(basename "${INPUT_FILE}")"
 
 _FILTER_ARG=()
 [[ -n "$_KP_FILTER" ]] && _FILTER_ARG=( "eventFilter=${_KP_FILTER}" )
 
-if cmsRun "$_KP_CONFIG" \
-      inputFiles="$INPUT_FILE" \
-      outputFile="$LOCAL_OUT"  \
-      maxEvents="$_KP_MAX_EVENTS" \
-      "${_FILTER_ARG[@]}" \
-      >> "$LOG" 2>&1; then
+LOCAL_IDX=0
+while IFS= read -r INPUT_FILE; do
+    [[ -z "$INPUT_FILE" ]] && continue
 
-    echo "CMSRUN_EXIT_SUCCESS" >> "$LOG"
-    echo "[$(date '+%H:%M:%S')] Job ${JOB_IDX}: done → ${OUTFILE}"
+    GLOBAL_IDX=$((START_IDX + LOCAL_IDX))
+    OUTFILE="${_KP_TAG}_${_KP_IDENTIFIER}_${GLOBAL_IDX}.root"
+    LOCAL_OUT="${_KP_LOCAL_DIR}/${OUTFILE}"
+    LOG="${_KP_LOCAL_DIR}/logs/job_${GLOBAL_IDX}.log"
 
-    if [[ "$_KP_DO_XRDCP" == "true" ]]; then
-        echo "[$(date '+%H:%M:%S')] Job ${JOB_IDX}: transferring to EOS..."
-        if xrdcp "$LOCAL_OUT" "${_KP_EOS_SERVER}/${_KP_EOS_RUN_DIR}/${OUTFILE}" >> "$LOG" 2>&1; then
-            echo "[$(date '+%H:%M:%S')] Job ${JOB_IDX}: xrdcp done"
-            rm -f "$LOCAL_OUT"
+    echo "[$(date '+%H:%M:%S')] Job ${GLOBAL_IDX}: starting $(basename "${INPUT_FILE}")"
+
+    if cmsRun "$_KP_CONFIG" \
+          inputFiles="$INPUT_FILE" \
+          outputFile="$LOCAL_OUT"  \
+          maxEvents="$_KP_MAX_EVENTS" \
+          "${_FILTER_ARG[@]}" \
+          >> "$LOG" 2>&1; then
+
+        echo "CMSRUN_EXIT_SUCCESS" >> "$LOG"
+        echo "[$(date '+%H:%M:%S')] Job ${GLOBAL_IDX}: done → ${OUTFILE}"
+
+        if [[ "$_KP_DO_XRDCP" == "true" ]]; then
+            echo "[$(date '+%H:%M:%S')] Job ${GLOBAL_IDX}: transferring to EOS..."
+            if xrdcp "$LOCAL_OUT" "${_KP_EOS_SERVER}/${_KP_EOS_RUN_DIR}/${OUTFILE}" >> "$LOG" 2>&1; then
+                echo "[$(date '+%H:%M:%S')] Job ${GLOBAL_IDX}: xrdcp done"
+                rm -f "$LOCAL_OUT"
+            else
+                echo "[$(date '+%H:%M:%S')] Job ${GLOBAL_IDX}: xrdcp FAILED — local file kept at ${LOCAL_OUT}"
+            fi
+        fi
+    else
+        EXIT_CODE=$?
+        echo "[$(date '+%H:%M:%S')] Job ${GLOBAL_IDX}: FAILED (exit ${EXIT_CODE})"
+        if [[ -f "$LOG" ]]; then
+            echo "--- error from log (${LOG}) ---"
+            grep -A 10 "An exception of category\|Fatal Exception\|%MSG-e\|Throw with message\|cmsRun: error" "$LOG" | head -60
+            echo "-------------------------------"
         else
-            echo "[$(date '+%H:%M:%S')] Job ${JOB_IDX}: xrdcp FAILED — local file kept at ${LOCAL_OUT}"
+            echo "(log not found: ${LOG})"
         fi
     fi
-else
-    EXIT_CODE=$?
-    echo "[$(date '+%H:%M:%S')] Job ${JOB_IDX}: FAILED (exit ${EXIT_CODE})"
-    if [[ -f "$LOG" ]]; then
-        echo "--- error from log (${LOG}) ---"
-        grep -A 10 "An exception of category\|Fatal Exception\|%MSG-e\|Throw with message\|cmsRun: error" "$LOG" | head -60
-        echo "-------------------------------"
-    else
-        echo "(log not found: ${LOG})"
-    fi
-fi
+
+    LOCAL_IDX=$((LOCAL_IDX + 1))
+done < "$CHUNK_FILE"
 JOB_EOF
 chmod +x "$TEMP_JOB"
 
 # ---------------------------------------------------------------------------
-# Build indexed job list: "IDX INPUT_FILE" one per line
-# Job index starts at N_SKIPPED so output filenames stay consistent when
+# Split file list into chunks of FILES_PER_JOB, build job list:
+# "START_GLOBAL_IDX CHUNK_FILE" one per line.
+# Global index starts at N_SKIPPED so output filenames stay consistent when
 # --continue is used across multiple invocations.
 # ---------------------------------------------------------------------------
+CHUNK_DIR=$(mktemp -d)
 JOB_LIST=$(mktemp)
-START_IDX=${N_SKIPPED}
-awk -v start="$START_IDX" '{print start+NR-1, $0}' "$FILES_LIST" > "$JOB_LIST"
+chunk_idx=0
+file_pos=0
+current_chunk=""
+
+while IFS= read -r f; do
+    local_idx=$((file_pos % FILES_PER_JOB))
+    if [[ $local_idx -eq 0 ]]; then
+        current_chunk="${CHUNK_DIR}/chunk_$(printf '%04d' $chunk_idx)"
+        start_global=$((N_SKIPPED + file_pos))
+        echo "$start_global $current_chunk" >> "$JOB_LIST"
+        chunk_idx=$((chunk_idx + 1))
+    fi
+    echo "$f" >> "$current_chunk"
+    file_pos=$((file_pos + 1))
+done < "$FILES_LIST"
 rm -f "$FILES_LIST"
 
 # ---------------------------------------------------------------------------
 # Run with GNU parallel
 # ---------------------------------------------------------------------------
-echo -e "${YELLOW}Launching ${N_TO_RUN} jobs with ${N_JOBS} workers...${NC}"
+N_CHUNKS=$(wc -l < "$JOB_LIST" | tr -d ' ')
+echo -e "${YELLOW}Launching ${N_CHUNKS} chunks (${N_TO_RUN} files, ${FILES_PER_JOB} per job) with ${N_JOBS} workers...${NC}"
 echo ""
 
 START_TIME=$(date +%s)
@@ -411,6 +440,7 @@ END_TIME=$(date +%s)
 ELAPSED=$((END_TIME - START_TIME))
 
 rm -f "$TEMP_JOB" "$JOB_LIST"
+rm -rf "$CHUNK_DIR"
 
 # ---------------------------------------------------------------------------
 # Results summary

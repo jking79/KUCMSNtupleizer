@@ -253,23 +253,65 @@ GenVertices::GenVertices(const std::vector<reco::GenParticle> &genParticles) {
   // correctly separates decays from different LLPs.
   std::unordered_map<const reco::Candidate*, std::vector<reco::GenParticle>> ancestorMap;
 
+  int nSignalElectrons(0), nSignalMuons(0), nSignalJets(0), nNoAncestor(0);
   for(const auto &gen : genParticles) {
-    bool isSignal(isSignalGenElectron(gen) || isSignalGenMuon(gen) || isSignalGenJet(gen));
+    bool isElectron(isSignalGenElectron(gen));
+    bool isMuon(isSignalGenMuon(gen));
+    bool isJet(isSignalGenJet(gen));
+    bool isSignal(isElectron || isMuon || isJet);
+    if(isElectron) nSignalElectrons++;
+    if(isMuon) nSignalMuons++;
+    if(isJet) nSignalJets++;
     if(!isSignal) continue;
 
     const reco::Candidate* llp = findSUSYAncestor(gen);
     if(!llp) {
-      std::cerr << "Warning: signal particle (pdgId=" << gen.pdgId()
-                << ") has no SUSY ancestor — skipping" << std::endl;
+      nNoAncestor++;
+      // Print the full mother chain for diagnosis
+      std::cerr << "[GenVertices] SKIP: signal particle (pdgId=" << gen.pdgId()
+                << ", status=" << gen.status()
+                << ", pt=" << gen.pt()
+                << ") has no SUSY ancestor. Mother chain: ";
+      const reco::Candidate* mom = (gen.numberOfMothers() > 0) ? gen.mother(0) : nullptr;
+      while(mom) {
+        std::cerr << mom->pdgId() << "(st=" << mom->status() << ") ";
+        mom = (mom->numberOfMothers() > 0) ? mom->mother(0) : nullptr;
+      }
+      std::cerr << std::endl;
       continue;
     }
-    ancestorMap[llp].push_back(gen);
+
+    // Group by the direct Z parent (if present) rather than the N2 ancestor.
+    // This correctly splits cases where multiple Z bosons from the same N2
+    // (or from two N2s that share an ancestor in the pruned collection) would
+    // otherwise pile 4+ daughters into one map entry.
+    const reco::Candidate* groupKey = llp;
+    {
+      const reco::Candidate* mom = (gen.numberOfMothers() > 0) ? gen.mother(0) : nullptr;
+      while(mom) {
+        if(abs(mom->pdgId()) == 23) { groupKey = mom; break; }
+        if(abs(mom->pdgId()) > 1000000) break; // stop at LLP boundary
+        mom = (mom->numberOfMothers() > 0) ? mom->mother(0) : nullptr;
+      }
+    }
+    ancestorMap[groupKey].push_back(gen);
   }
+
+  std::cerr << "[GenVertices] Signal particles found: "
+            << nSignalElectrons << " e, "
+            << nSignalMuons << " mu, "
+            << nSignalJets << " jets, "
+            << nNoAncestor << " skipped (no SUSY ancestor)"
+            << std::endl;
 
   for(const auto &entry : ancestorMap) {
     if(entry.second.size() != 2) {
-      std::cerr << "Warning: gen vertex grouped " << entry.second.size()
-                << " particles (expected 2) — skipping" << std::endl;
+      std::cerr << "[GenVertices] SKIP: LLP (pdgId=" << entry.first->pdgId()
+                << ") grouped " << entry.second.size()
+                << " particles (expected 2):";
+      for(const auto &p : entry.second)
+        std::cerr << " pdgId=" << p.pdgId() << " status=" << p.status() << " pt=" << p.pt();
+      std::cerr << std::endl;
       continue;
     }
 
@@ -293,6 +335,9 @@ GenVertices::GenVertices(const std::vector<reco::GenParticle> &genParticles) {
 
     this->emplace_back(vtx);
   }
+
+  std::cerr << "[GenVertices] Built " << this->size() << " gen vertices ("
+            << ancestorMap.size() << " LLP ancestors found)" << std::endl;
 }
 
 bool GenVertices::contains(const GenVertex& genVertex) const {
