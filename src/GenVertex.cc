@@ -328,21 +328,10 @@ std::vector<GenMatches> GenVertices::findGenParticlePairs(const GenMatches &matc
   }
 
   std::vector<GenMatches> pairs;
-  for(const auto& entry : ancestorMap) {
-    if(entry.second.size() == 2)
-      pairs.push_back(entry.second);
-    else
-      std::cerr << "Warning: track grouping (ancestor) found " << entry.second.size()
-                << " tracks for ancestor pdgId=" << entry.first->pdgId()
-                << " (expected 2) — skipping\n";
-  }
-  for(const auto& entry : positionMap) {
-    if(entry.second.size() == 2)
-      pairs.push_back(entry.second);
-    else
-      std::cerr << "Warning: track grouping (position) found " << entry.second.size()
-                << " tracks (expected 2) — skipping\n";
-  }
+  for(const auto& entry : ancestorMap)
+    if(entry.second.size() == 2) pairs.push_back(entry.second);
+  for(const auto& entry : positionMap)
+    if(entry.second.size() == 2) pairs.push_back(entry.second);
   return pairs;
 }
 
