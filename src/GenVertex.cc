@@ -255,23 +255,22 @@ GenVertices::GenVertices(const std::vector<reco::GenParticle> &genParticles) {
 
   int nSignalElectrons(0), nSignalMuons(0), nSignalJets(0), nNoAncestor(0);
   for(const auto &gen : genParticles) {
-    // Debug: print quarks that have a Z ancestor but fail isSignalGenJet due to status
-    if(abs(gen.pdgId()) <= 6 && gen.status() != 23) {
+    // Debug: print quarks with status==23 and a SUSY ancestor that still fail isSignalGenJet
+    // (i.e. kOther mother type due to Z being pruned from prunedGenParticles)
+    if(abs(gen.pdgId()) <= 6 && gen.status() == 23 && findSUSYAncestor(gen) != nullptr && !isSignalGenJet(gen)) {
       LepMomType momType = ClassifyGenLeptonMomType(gen);
-      if(momType == kZ || momType == kSusy) {
-        std::cerr << "[GenVertices] QUARK status!=23: pdgId=" << gen.pdgId()
-                  << " status=" << gen.status()
-                  << " isHardProcess=" << gen.isHardProcess()
-                  << " isLastCopy=" << gen.isLastCopy()
-                  << " pt=" << gen.pt()
-                  << " mother chain: ";
-        const reco::Candidate* mom = (gen.numberOfMothers() > 0) ? gen.mother(0) : nullptr;
-        while(mom) {
-          std::cerr << mom->pdgId() << "(st=" << mom->status() << ") ";
-          mom = (mom->numberOfMothers() > 0) ? mom->mother(0) : nullptr;
-        }
-        std::cerr << std::endl;
+      std::cerr << "[GenVertices] QUARK failing isSignalGenJet: pdgId=" << gen.pdgId()
+                << " status=" << gen.status()
+                << " momType=" << int(momType)
+                << " vx=" << gen.vx() << " vy=" << gen.vy() << " vz=" << gen.vz()
+                << " pt=" << gen.pt()
+                << " mother chain: ";
+      const reco::Candidate* mom = (gen.numberOfMothers() > 0) ? gen.mother(0) : nullptr;
+      while(mom) {
+        std::cerr << mom->pdgId() << "(st=" << mom->status() << ") ";
+        mom = (mom->numberOfMothers() > 0) ? mom->mother(0) : nullptr;
       }
+      std::cerr << std::endl;
     }
 
     bool isElectron(isSignalGenElectron(gen));
