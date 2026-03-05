@@ -2,6 +2,7 @@
 
 CC = g++
 CXXFLAGS_COMMON = -O3 -march=native -ffast-math -funroll-loops -flto -fno-trapping-math -funsafe-math-optimizations -fomit-frame-pointer -fno-math-errno
+CXXFLAGS_COMMON += -std=c++17
 CXXFLAGS_DEBUG = -g -O0 -Wall -Wextra
 CXXFLAGS_RELEASE = $(CXXFLAGS_COMMON)
 CXXFLAGS ?= $(CXXFLAGS_RELEASE)

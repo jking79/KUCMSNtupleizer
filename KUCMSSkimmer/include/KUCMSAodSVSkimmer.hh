@@ -150,6 +150,7 @@ class KUCMSAodSkimmer : public llpgtree {
 
 	// TSig functions
 	//float getTimeSig( int scIndex );
+	float getTimeSig( std::vector<int> scIndexs, float& num, float& denom );
 	float getTimeSig( int scIndex, float& num, float& denom, const map<unsigned int, float>& rhIdToBHCw  = {});
 	float getTimeSig( vector<vector<unsigned int>> rhids );
 
@@ -308,6 +309,10 @@ class KUCMSAodSkimmer : public llpgtree {
 	//std::map< std::string, bool > hemBits;
 	ItemManager<bool> hemBits;
 
+  	std::vector<float> allphowtime;
+  	std::vector<float> alljetwtime;
+    std::vector<int> diJetIndex;
+    std::vector<int> gammaJetIndex;
     std::vector<bool> phoJetVeto;
 	std::vector<bool> rhused;
     std::vector<float> rhispho;

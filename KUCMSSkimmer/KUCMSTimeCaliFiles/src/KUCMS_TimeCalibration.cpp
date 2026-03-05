@@ -31,8 +31,8 @@ KUCMS_TimeCalibration::KUCMS_TimeCalibration( bool stayOpen, bool makeNew ){
     epmtt_ranges = {23,-11,12,34,1,35};
 
     //std::cout << " - opening caliHistsTFile " << std::endl;
-    caliTFileName = caliFileDir + "caliHistsTFile.root";// name configurable ?
-	caliR3TFileName = caliFileDir + "caliR3HistsTFile.root";// name configurable ?
+    //caliTFileName = caliFileDir + "caliHistsTFile.root";// name configurable ?
+	//caliR3TFileName = caliFileDir + "caliR3HistsTFile.root";// name configurable ?
 	cali2DResPlotsTFileName = caliFileDir + "res2dPlotsTFile.root";
 	//caliTFile = NULL;
     caliR3TFile = NULL;
@@ -738,7 +738,7 @@ void KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
         //if( not std::filesystem::exists(califilepath) ) continue; 
 		if( makeNew ) caliTFile[filename.first] = TFile::Open( califilepath.c_str(), "RECREATE" );
 		if( stayOpen && not makeNew ) caliTFile[filename.first] = TFile::Open( califilepath.c_str(), "UPDATE" );
-		if( not stayOpen && not makeNew ) caliTFile[filename.first] = TFile::Open( caliTFileName.c_str(), "READ" );
+		if( not stayOpen && not makeNew ) caliTFile[filename.first] = TFile::Open( califilepath.c_str(), "READ" );
 	}//<<>>for( auto filename : caliHistFileNames )
 
 /*
