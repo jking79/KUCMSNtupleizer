@@ -1,0 +1,4 @@
+#KUCMSNtuple/kucmsntuple_SMS_test_SVHPM100_Mini_v33/CRAB_UserFiles/ filelist_kucmsntuple_SMS_test_SVHPM100_Mini_v33_SMS-GlGl_FASTMINI_mGl-23_mN2-22_mN1-21_GZ_ct5.txt minifast .000413 2200 2100 1 2 r2_ul18
+#KUCMSNtuple/kucmsntuple_SMS_test_SVHPM100_Mini_v33/CRAB_UserFiles/ filelist_kucmsntuple_SMS_test_SVHPM100_Mini_v33_SMS-GlGl_FULLMINI_mGl-23_mN2-22_mN1-21_GZ_ct5.txt minifull .000413 2200 2100 1 0 r2_ul18
+#KUCMSNtuple/kucmsntuple_SMS_test_SVHPM100_AOD_v33/CRAB_UserFiles/ filelist_kucmsntuple_SMS_test_SVHPM100_AOD_v33_SMS-GlGl_FASTAOD_mGl-23_mN2-22_mN1-21_GZ_ct5.txt aodfast .000413 2200 2100 1 2 r2_ul18
+KUCMSNtuple/kucmsntuple_SMS_test_SVHPM100_AOD_v33/CRAB_UserFiles/ filelist_kucmsntuple_SMS_test_SVHPM100_AOD_v33_SMS-GlGl_FULLAOD_mGl-23_mN2-22_mN1-21_GZ_ct5.txt aodfull .000413 2200 2100 1 0 r2_ul18

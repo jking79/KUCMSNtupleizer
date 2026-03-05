@@ -339,6 +339,9 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 	setNewSigBase(false);
 	setHTLPathsBase(false);
 
+  	diJetIndex = {-1,-1};
+	gammaJetIndex = {-1,-1};
+
 	// BNC Intiation
 
     _ca.SetVerbosity(-1); //can turn on to see low-level warnings
@@ -447,7 +450,7 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
     cout << "Running over events " << _evti << " to " << _evtj << endl;
     cout << "loopCounter " << loopCounter << " nEventsProcessed " << nEventsProcessed << " nForPrecent " << nForPrecent << endl;
 	int count_of_events = 0;
-    for (Long64_t centry = _evti; centry < _evtj; centry++){
+    for( Long64_t centry = _evti; centry < _evtj; centry++ ){
         if( centry%loopCounter == 0 ){
             std::time_t now = std::time(nullptr);
             std::string curtime = std::ctime(&now);
@@ -458,7 +461,8 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
         if(DEBUG) std::cout << " -- Getting Branches " << std::endl;
         getBranches( entry );
         ////getBranches( entry, hasGenInfoFlag, doSVs );
-		//std::cout << " -- Check Valid Lumi with mctype " << mctype << " run " << Evt_run << " block " << Evt_luminosityBlock << std::endl;
+		//std::cout << " -- ? Valid Lumi with mctype " << mctype << " run " << Evt_run << " block " << Evt_luminosityBlock << std::endl;
+        count_of_events++;
         if( mctype==1 && not isValidLumisection( Evt_run, Evt_luminosityBlock ) ) continue;
 		//std::cout << " --- Valid Lumi Processing Event " << std::endl;
 
@@ -471,7 +475,6 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
         if( noSVorPhoFlag ) geVars.set( "noSVorPho", 1 ); else geVars.set( "noSVorPho", 0 );
 
         if(DEBUG) std::cout << " -- Event Loop " << std::endl;
-		count_of_events++;
         auto saveToTree = eventLoop(entry);
         if( saveToTree ){ fOutTree->Fill(); }
 
@@ -772,9 +775,9 @@ void KUCMSAodSkimmer::ProcessConfigFile(){
     while( infile >> key >> total >> sum ){ configData[key] = {total, sum}; }
 
     // Print everything
-    for( const auto& kv : configData ){
-        std::cout << " -- ConfigFile : " << kv.first << " : total=" << kv.second.first << ", sum=" << kv.second.second << std::endl;
-    }//<<>>for (const auto& kv : data)//<<>>if( DEBUG )
+    //for( const auto& kv : configData ){
+    //    std::cout << " -- ConfigFile : " << kv.first << " : total=" << kv.second.first << ", sum=" << kv.second.second << std::endl;
+    //}//<<>>for (const auto& kv : data)//<<>>if( DEBUG )
 
 }//<<>>void KUCMSAodSkimmer::ProcessConfigTreeAndFile(TChain* fInConfigTree)
 
@@ -872,7 +875,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
 
     // ---- parse input params
 
-    //if( DEBUG ) std:: cout << masterstr << std::endl;
+    if( DEBUG ) std:: cout << masterstr << std::endl;
     if( masterstr[0] == '#' ) continue;
     if( masterstr == "" ) continue;
     auto instrs = splitString( masterstr, " " );
@@ -918,7 +921,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
     std::string str;
     if( not DEBUG ) std::cout << "--  adding files";
     int nfiles = 0;
-	int skipCnt = 20;
+	int skipCnt = 0;
     if( skipCnt != 0 ) std::cout << "-- !! Skipping every " << skipCnt << std::endl;
     if( dataSetKey !=  "Single" ){
         std::ifstream infile(listDirPath+inFileName);
