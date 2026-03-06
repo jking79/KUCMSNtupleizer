@@ -506,6 +506,7 @@ void KUCMSDisplacedVertexMini::printEventSummaryTable() const {
   const int nInputTracks = (int)muonEnhancedTracksHandle_->size();
   const int nLepSVs      = (int)leptonicSVsHandle_->size();
   const int nHadSVs      = (int)hadronicSVsHandle_->size();
+  if(nLepSVs + nHadSVs == 0) return;
 
   // Collect per-Z row data
   struct ZRow {
