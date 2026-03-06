@@ -313,7 +313,7 @@ void KUCMSDisplacedVertexMini::LoadEvent( const edm::Event& iEvent, const edm::E
       auto daughters = signalZs_[i].getTrackableDaughters();
       if(daughters.empty()) continue;
       anyDaughters = true;
-      DeltaRGenMatchHungarian<reco::TransientTrack, const pat::PackedGenParticle*>
+      DeltaRMatchHungarian<reco::TransientTrack, const pat::PackedGenParticle*>
           matcher(ttracks, daughters);
       signalZs_[i].setMatches(matcher.GetPairedObjects());
     }
