@@ -11,6 +11,7 @@
 #include "DataFormats/TrajectorySeed/interface/PropagationDirection.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
+#include "DataFormats/PatCandidates/interface/PackedGenParticle.h"
 
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/TrackHelper.h"
 
@@ -28,12 +29,35 @@ inline reco::GenParticleCollection CleanGenParticles(const reco::GenParticleColl
   return statusOne;
 }
 
+// Overloaded CleanGen dispatchers used by DeltaRGenMatchHungarian
+inline reco::GenParticleCollection CleanGen(const reco::GenParticleCollection &gens, std::map<int,int> &indexMap) {
+  return CleanGenParticles(gens, indexMap);
+}
+
+inline std::vector<const pat::PackedGenParticle*> CleanGen(
+    const std::vector<const pat::PackedGenParticle*> &gens, std::map<int,int> &indexMap) {
+  std::vector<const pat::PackedGenParticle*> charged;
+  for(size_t i = 0; i < gens.size(); i++) {
+    if(gens[i]->charge() != 0) {
+      indexMap.emplace(charged.size(), i);
+      charged.push_back(gens[i]);
+    }
+  }
+  return charged;
+}
+
 template <typename A, typename B>
 inline double DeltaR2(const A &objectA, const B &objectB) {
 
   const double dEta(objectA.eta() - objectB.eta()), dPhi(objectA.phi() - objectB.phi());
   //std::cout << "delta R = " << sqrt(dEta*dEta + dPhi*dPhi) << std::endl;
   return dEta*dEta + dPhi*dPhi;
+}
+
+// Pointer overload — lets DeltaRMatchHungarian work when B is a pointer type
+template <typename A, typename B>
+inline double DeltaR2(const A &objectA, const B *objectB) {
+  return DeltaR2(objectA, *objectB);
 }
 /*
 template <typename A>
@@ -90,7 +114,10 @@ inline double DeltaR2(const reco::TransientTrack &ttrack1, const reco::Transient
   return dEta*dEta + dPhi*dPhi;
 }
 
-inline double GenDeltaR2(const reco::TransientTrack &ttrack, const reco::GenParticle &gen) {
+// Templated GenDeltaR2: works for any gen type with the reco::Candidate interface
+// (reco::GenParticle, pat::PackedGenParticle, etc.)
+template <typename GenType>
+inline double GenDeltaR2(const reco::TransientTrack &ttrack, const GenType &gen) {
 
   const reco::Track track(ttrack.track());
   const double pt(track.pt()), genPt(gen.pt()), ptRel(fabs(genPt-pt)/genPt);
@@ -99,9 +126,9 @@ inline double GenDeltaR2(const reco::TransientTrack &ttrack, const reco::GenPart
 
   if(ptRel > 0.2 || etaDiff > 0.1 || phiDiff > 1.57 || track.charge() != gen.charge())
     return DeltaR2(track, gen);
-   
+
   SteppingHelixPropagator propagator(ttrack.field(), anyDirection);
-  
+
   const GlobalPoint genLocation(gen.vx(), gen.vy(), gen.vz());
 
   // Propagate from initial track state to PCA of gen vertex location
@@ -116,8 +143,24 @@ inline double GenDeltaR2(const reco::TransientTrack &ttrack, const reco::GenPart
   const double dEta(track.eta() - gen.eta()), dPhi((track.phi() - tmin) - gen.phi());
 
   //std::cout << "delta R: " << sqrt(dEta*dEta + dPhi*dPhi) << std::endl;
-  
+
   return dEta*dEta + dPhi*dPhi;
+}
+
+// Pointer overload — dereferences and delegates to the above
+template <typename GenType>
+inline double GenDeltaR2(const reco::TransientTrack &ttrack, const GenType *gen) {
+  return GenDeltaR2(ttrack, *gen);
+}
+
+// ComputeGenCost: dispatches to GenDeltaR2 (helical correction) for TransientTrack,
+// or plain DeltaR2 for all other track types.
+template <typename A, typename GenType>
+inline double ComputeGenCost(const A &a, const GenType &b) { return sqrt(DeltaR2(a, b)); }
+
+template <typename GenType>
+inline double ComputeGenCost(const reco::TransientTrack &a, const GenType &gen) {
+  return sqrt(GenDeltaR2(a, gen));
 }
 
 template <typename T>
