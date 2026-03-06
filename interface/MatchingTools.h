@@ -54,10 +54,11 @@ inline double DeltaR2(const A &objectA, const B &objectB) {
   return dEta*dEta + dPhi*dPhi;
 }
 
-// Pointer overload — lets DeltaRMatchHungarian work when B is a pointer type
-template <typename A, typename B>
-inline double DeltaR2(const A &objectA, const B *objectB) {
-  return DeltaR2(objectA, *objectB);
+// Pointer overload for TransientTrack — lets the base class DeltaRMatchHungarian<TransientTrack, B*>
+// compile when B is a pointer type (virtual functions are instantiated even when overridden)
+template <typename B>
+inline double DeltaR2(const reco::TransientTrack &ttrack, const B *objectB) {
+  return DeltaR2(ttrack.track(), *objectB);
 }
 /*
 template <typename A>
