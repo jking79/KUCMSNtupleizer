@@ -97,7 +97,13 @@ double DisplacedGenZ::matchRatio(const reco::Vertex& vtx, double threshold) cons
     const double genPt(pair.GetObjectB()->pt());
     const double trackPt(track.pt());
     const double relPtDiff((genPt - trackPt) / genPt);
-    const double deltaR(pair.GetDeltaR());
+    // Recompute naive deltaR (track direction at beamline PCA vs gen direction).
+    // The helical-corrected cost stored in GetDeltaR() can be corrupted by imprecise
+    // PackedGenParticle vertex coordinates, producing deltaR values larger than the
+    // naive one and causing the quality cut to fail spuriously.
+    const pat::PackedGenParticle* gen(pair.GetObjectB());
+    const double dEta(track.eta() - gen->eta()), dPhi(track.phi() - gen->phi());
+    const double deltaR(std::sqrt(dEta*dEta + dPhi*dPhi));
 
     if(!VertexHelper::isInVertex(vtx, track)) continue;
 
