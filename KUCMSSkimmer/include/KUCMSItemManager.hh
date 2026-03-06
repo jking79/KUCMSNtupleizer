@@ -10,17 +10,18 @@
 //---------------------------------------------------------------------------------------------
 
 // basic C++ types
-#include <cstdlib>
+//#include <cstdlib>
 #include <vector>
 #include <map>
 #include <string>
-#include <cmath>
-#include <iostream>
+//#include <cmath>
+//#include <iostream>
 #include <limits> 
 #include <type_traits>
+#include <utility> // for std::declval (used in detection idiom)
 
 //Root includes
-#include "TTree.h"
+//#include "TTree.h"
 
 #ifndef KUCMSItemHeader
 #define KUCMSItemHeader
@@ -88,6 +89,35 @@ T Item<T>::getvalue(){
 
 }//<<>>Item::getVal<T>()
 
+// detection idiom: has_clear<T>
+template <typename U, typename = void>
+struct has_clear : std::false_type {};
+
+template <typename U>
+struct has_clear<U, std::void_t<decltype(std::declval<U&>().clear())>> : std::true_type {};
+
+template <class T>
+inline void Item<T>::clear(){
+    if constexpr (std::is_same_v<T, std::string>) {
+        iValue = "";
+    } else if constexpr (std::is_same_v<T, bool>) {
+        iValue = false;
+    } else if constexpr (std::is_same_v<T, uInt>) {
+        iValue = 0;
+    } else if constexpr (has_clear<T>::value) {
+        iValue.clear();
+    } else if constexpr (std::is_arithmetic_v<T> && std::numeric_limits<T>::is_specialized) {
+        if constexpr (std::is_unsigned_v<T>) {
+            iValue = 0;
+        } else {
+            iValue = -std::numeric_limits<T>::max();
+        }
+    } else {
+        iValue = T{}; // safest generic fallback
+    }
+}//<<>> inline void Item<T>::clear()
+
+/*
 template <class T>
 inline void Item<T>::clear() {
     if constexpr (std::is_same_v<T, std::string>) {
@@ -103,6 +133,7 @@ inline void Item<T>::clear() {
         iValue = -1.0 * std::numeric_limits<T>::max();
     }
 }//<<>>inline void Item<T>::clear() 
+*/
 
 /*
 template <class T>
@@ -205,7 +236,7 @@ VectorItem<T>::VectorItem( std::string name, T value, std::string doc ):
     iName(name),
     iDoc(doc)
 
-{ this.fill(value); }//<<>>VectorItem::VectorItem( std::string name, std::string doc, T value  )
+{ this->fill(value); }//<<>>VectorItem::VectorItem( std::string name, std::string doc, T value  )
 
 template < class T>
 std::string VectorItem<T>::getdoc(){
@@ -315,7 +346,7 @@ void ItemManager<T,C>::clear(){
 template < class T , template< class > class C >
 void ItemManager<T,C>::reset(){
 
-    for( auto & item : items ){ item.clear(); }
+    items.clear();
 
 }//<<>>T ItemManager::reset()
 

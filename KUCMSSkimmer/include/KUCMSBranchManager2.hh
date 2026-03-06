@@ -30,19 +30,23 @@ class KUCMSBranchManager {
 
 public:
 
-    KUCMSBranchManager() {}
+    KUCMSBranchManager(){}
     
     // destructor must be inline in header for header-only
-    ~KUCMSBranchManager() {
-        for (auto &b : theBranches) {
-            delete b.second;
-        }
-    }
+    ~KUCMSBranchManager(){ for (auto &b : theBranches){ delete b.second; b.second = nullptr; } theBranches.clear(); }
+
+	KUCMSBranchManager(const KUCMSBranchManager&) = delete;
+	KUCMSBranchManager& operator=(const KUCMSBranchManager&) = delete;
+	KUCMSBranchManager(KUCMSBranchManager&&) = delete;
+	KUCMSBranchManager& operator=(KUCMSBranchManager&&) = delete;
 
     // ------------ Branch creation ------------
 
-    inline void makeBranch(std::string key, std::string name, BType type, std::string doc = "") {
+    inline void makeBranch( std::string key, std::string name, BType type, std::string doc = "" ){
         
+		auto it = theBranches.find( key );
+		if( it != theBranches.end() ){ delete it->second; it->second = nullptr; theBranches.erase(it); }
+
         switch (type) {
 
             case VVFLOAT: theBranches[key] = new KUCMSBranch<std::vector<float>>(name, type, doc); break;
@@ -61,29 +65,16 @@ public:
             case BOOL:    theBranches[key] = new KUCMSBranch<bool>(name, type, doc); break;
 
             default:
-                std::cout << " -- KUCMSBranch " << name
-                          << " Error : BranchType error in makeBranch!!!! "
-                          << std::endl;
-        }
-    }
+                std::cout << " -- KUCMSBranch " << name << " Error : BranchType error in makeBranch!!!! " << std::endl;
+        }//<<>>switch (type) 
+    }//<<>>inline void makeBranch(std::string key, std::string name, BType type, std::string doc = "")
 
-    inline void makeBranch(std::string name, BType type, std::string doc = "") {
-        makeBranch(name, name, type, doc);
-    }
+    inline void makeBranch(std::string name, BType type, std::string doc = "") { makeBranch(name, name, type, doc); }
 
     // ------------ ROOT tree interface ------------
 
-    inline void attachBranches(TTree* fOutTree) {
-        for (auto &b : theBranches) {
-            b.second->attachBranch(fOutTree);
-        }
-    }
-
-    inline void clearBranches() {
-        for (auto &b : theBranches) {
-            b.second->clear();
-        }
-    }
+    inline void attachBranches(TTree* fOutTree) { for (auto &b : theBranches) { b.second->attachBranch(fOutTree); } }
+    inline void clearBranches() { for (auto &b : theBranches) { b.second->clear(); } }
 
     // ------------ Fillers ------------
 
@@ -96,18 +87,17 @@ public:
     inline void fillBranch(std::string key, std::string v) { if (valid(key)) theBranches[key]->fill(v); }
     inline void fillBranch(std::string key, bool        v) { if (valid(key)) theBranches[key]->fill(v); }
 
-private:
+	private:
 
     std::map<std::string, KUCMSBranchBase*> theBranches;
 
-    inline bool valid(std::string key) {
-        if (theBranches.find(key) == theBranches.end()) {
-            std::cout << " -- BM Error: No Such Key : " << key << " !!!!!!!!!!!!!!!!!!!!!!!!!"
-                      << std::endl;
+    inline bool valid( std::string key ){
+        if( theBranches.find(key) == theBranches.end() ){
+            std::cout << " -- BM Error: No Such Key : " << key << " !!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
             return false;
-        }
+        }//<<>>if (theBranches.find(key) == theBranches.end())
         return true;
-    }
+    }//<<>>inline bool valid(std::string key)
 
 };
 

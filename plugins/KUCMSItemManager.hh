@@ -15,6 +15,7 @@
 #include <map>
 #include <string>
 #include <cmath>
+#include <limits>
 
 //Root includes
 #include "TTree.h"
@@ -93,21 +94,21 @@ void Item<T>::clear(){
 }//<<>>void Item::clear()
 
 template <>
-void Item<std::string>::clear(){
+inline void Item<std::string>::clear(){
 
     iValue = "";
 
 }//<<>>void Item::clear()
 
 template <>
-void Item<bool>::clear(){
+inline void Item<bool>::clear(){
 
     iValue = false;
 
 }//<<>>void Item::clear()
 
 template <>
-void Item<uInt>::clear(){
+inline void Item<uInt>::clear(){
 
     iValue = 0;
 
@@ -278,9 +279,9 @@ void ItemManager<T,C>::clear(){
 }//<<>>T ItemManager::clear()
 
 template < class T , template< class > class C >
-void ItemManager<T,C>::reset(){
+void ItemManager<T,C>::reset(){ 
 
-    for( auto & item : items ){ item.erase(); }
+	items.erase();
 
 }//<<>>T ItemManager::reset()
 

@@ -1,0 +1,531 @@
+// -*- C++ -*-
+
+#include "KUCMSBranchManager_split.hh"
+
+#include <iostream>
+
+// -----------------------------
+// KUCMSBranch
+// -----------------------------
+
+KUCMSBranch::KUCMSBranch(){}
+
+KUCMSBranch::KUCMSBranch( BType type, std::string name, std::string doc ):
+
+    BranchType(type),
+    BranchName(name),
+    BranchDoc(doc)
+
+{}//<<>>KUCMSBranch::KUCMSBranch( BType type, std::string name, std::string doc )
+
+void KUCMSBranch::initBranch( TTree* fOutTree ){
+
+    switch( BranchType ){
+
+        case VVFLOAT : fOutTree->Branch( BranchName.c_str(), &this->VVFLOATBranch )->SetTitle( BranchDoc.c_str() ); break;
+        case VVUINT  : fOutTree->Branch( BranchName.c_str(), &this->VVUINTBranch )->SetTitle( BranchDoc.c_str() ); break;
+        case VUINT   : fOutTree->Branch( BranchName.c_str(), &this->VUINTBranch )->SetTitle( BranchDoc.c_str() ); break;
+        case VVINT   : fOutTree->Branch( BranchName.c_str(), &this->VVINTBranch )->SetTitle( BranchDoc.c_str() ); break;
+        case VINT    : fOutTree->Branch( BranchName.c_str(), &this->VINTBranch )->SetTitle( BranchDoc.c_str() ); break;
+        case VFLOAT  : fOutTree->Branch( BranchName.c_str(), &this->VFLOATBranch )->SetTitle( BranchDoc.c_str() ); break;
+        case VSTR    : fOutTree->Branch( BranchName.c_str(), &this->VSTRBranch )->SetTitle( BranchDoc.c_str() ); break;
+        case VBOOL   : fOutTree->Branch( BranchName.c_str(), &this->VBOOLBranch )->SetTitle( BranchDoc.c_str() ); break;
+        case UINT    : fOutTree->Branch( BranchName.c_str(), &this->UINTBranch )->SetTitle( BranchDoc.c_str() ); break;
+        case INT     : fOutTree->Branch( BranchName.c_str(), &this->INTBranch )->SetTitle( BranchDoc.c_str() ); break;
+        case FLOAT   : fOutTree->Branch( BranchName.c_str(), &this->FLOATBranch )->SetTitle( BranchDoc.c_str() ); break;
+        case STR     : fOutTree->Branch( BranchName.c_str(), &this->STRBranch )->SetTitle( BranchDoc.c_str() ); break;
+        case BOOL    : fOutTree->Branch( BranchName.c_str(), &this->BOOLBranch )->SetTitle( BranchDoc.c_str() ); break;
+        default      : std::cout << " -- KUCMSBranch " << BranchName << " Error : BranchType error in setBranch!!!! " << std::endl;
+
+    }//<<>>switch( BranchType )
+
+}//<<>>void setBranch( TTree* fOutTree )
+
+void KUCMSBranch::clearBranch(){
+
+    switch( BranchType ){
+
+        case VVFLOAT : VVFLOATBranch.clear(); break;
+        case VVUINT  : VVUINTBranch.clear(); break;
+        case VUINT   : VUINTBranch.clear(); break;
+        case VVINT   : VVINTBranch.clear(); break;
+        case VINT    : VINTBranch.clear(); break;
+        case VFLOAT  : VFLOATBranch.clear(); break;
+        case VSTR    : VSTRBranch.clear(); break;
+        case VBOOL   : VBOOLBranch.clear(); break;
+        case UINT    : UINTBranch =  std::numeric_limits<unsigned int>::max(); break;
+        case INT     : INTBranch = std::numeric_limits<int>::max(); break;
+        case FLOAT   : FLOATBranch = std::numeric_limits<float>::max(); break;
+        case STR     : STRBranch = ""; break;
+        case BOOL    : BOOLBranch = false; break;
+        default      : std::cout << " -- KUCMSBranch " << BranchName << " Error : BranchType error in clearBranch!!!! " << std::endl;
+
+    }//<<>>switch( BranchType )
+
+}//<<>>void KUCMSBranch::clearBranch()
+
+void KUCMSBranch::fillBranch( std::vector<float> val ){
+
+    switch( BranchType ){
+
+        case VVFLOAT  : VVFLOATBranch.push_back(val); break;
+        default : std::cout << " -- KUCMSBranch " << BranchName << " Error : BranchType mismatch with fillBranch type!!!! " << std::endl;
+
+    }//<<>>switch( BranchType )
+
+}//<<>>void KUCMSBranch::fillBranch( std::vector<float> val )
+
+void KUCMSBranch::fillBranch( std::vector<uInt> val ){
+
+    switch( BranchType ){
+
+        case VVUINT  : VVUINTBranch.push_back(val); break;
+        default : std::cout << " -- KUCMSBranch " << BranchName << " Error : BranchType mismatch with fillBranch type!!!! " << std::endl;
+
+    }//<<>>switch( BranchType )
+
+}//<<>>void KUCMSBranch::fillBranch( std::vector<uInt> val )
+
+void KUCMSBranch::fillBranch( std::vector<int> val ){
+
+    switch( BranchType ){
+
+        case VVINT  : VVINTBranch.push_back(val); break;
+        default : std::cout << " -- KUCMSBranch " << BranchName << " Error : BranchType mismatch with fillBranch type!!!! " << std::endl;
+
+    }//<<>>switch( BranchType )
+
+}//<<>>void KUCMSBranch::fillBranch( std::vector<int> val )
+
+void KUCMSBranch::fillBranch( uInt val ){
+
+    switch( BranchType ){
+
+        case UINT  : UINTBranch = val; break;
+        default : std::cout << " -- KUCMSBranch " << BranchName << " Error : BranchType mismatch with fillBranch type!!!! " << std::endl;
+
+    }//<<>>switch( BranchType )
+
+}//<<>>void KUCMSBranch::fillBranch( uInt val )
+
+void KUCMSBranch::fillBranch( int val ){
+
+    switch( BranchType ){
+
+        case INT  : INTBranch = val; break;
+        default : std::cout << " -- KUCMSBranch " << BranchName << " Error : BranchType mismatch with fillBranch type!!!! " << std::endl;
+
+    }//<<>>switch( BranchType )
+
+}//<<>>void KUCMSBranch::fillBranch( int val )
+
+void KUCMSBranch::fillBranch( float val ){
+
+    switch( BranchType ){
+
+        case FLOAT  : FLOATBranch = val; break;
+        default : std::cout << " -- KUCMSBranch " << BranchName << " Error : BranchType mismatch with fillBranch type!!!! " << std::endl;
+
+    }//<<>>switch( BranchType )
+
+}//<<>>void KUCMSBranch::fillBranch( float val )
+
+void KUCMSBranch::fillBranch( std::string val ){
+
+    switch( BranchType ){
+
+        case STR  : STRBranch = val; break;
+        default : std::cout << " -- KUCMSBranch " << BranchName << " Error : BranchType mismatch with fillBranch type!!!! " << std::endl;
+
+    }//<<>>switch( BranchType )
+
+}//<<>>void KUCMSBranch::fillBranch( std::string val )
+
+void KUCMSBranch::fillBranch( bool val ){
+
+    switch( BranchType ){
+
+        case BOOL  : BOOLBranch = val; break;
+        default : std::cout << " -- KUCMSBranch " << BranchName << " Error : BranchType mismatch with fillBranch type!!!! " << std::endl;
+
+    }//<<>>switch( BranchType )
+
+}//<<>>void KUCMSBranch::fillBranch( bool val )
+
+void KUCMSBranch::getValue( std::vector<float>& val, uInt index ){
+
+    switch( BranchType ){
+
+        case VVFLOAT  : val = VVFLOATBranch[index]; break;
+        default : std::cout << " -- KUCMSBranch " << BranchName << " Error : BranchType mismatch with getValue type!!!! " << std::endl;
+
+    }//<<>>switch( BranchType )
+
+}//<<>>void KUCMSBranch::getValue( std::vector<float> val, uInt index )
+
+void KUCMSBranch::getValue( std::vector<uInt>& val, uInt index ){
+
+    switch( BranchType ){
+
+        case VVUINT  : val = VVUINTBranch[index]; break;
+        default : std::cout << " -- KUCMSBranch " << BranchName << " Error : BranchType mismatch with getValue type!!!! " << std::endl;
+
+    }//<<>>switch( BranchType )
+
+}//<<>>void KUCMSBranch::getValue( std::vector<uInt> val, uInt index )
+
+void KUCMSBranch::getValue( std::vector<int>& val, uInt index ){
+
+    switch( BranchType ){
+
+        case VVINT  : val = VVINTBranch[index]; break;
+        default : std::cout << " -- KUCMSBranch " << BranchName << " Error : BranchType mismatch with getValue type!!!! " << std::endl;
+
+    }//<<>>switch( BranchType )
+
+}//<<>>void KUCMSBranch::getValue( std::vector<int> val, uInt index )
+
+void KUCMSBranch::getValue( uInt& val, uInt index ){
+
+    switch( BranchType ){
+
+        case UINT  : val = UINTBranch; break;
+        default : std::cout << " -- KUCMSBranch " << BranchName << " Error : BranchType mismatch with getValue type!!!! " << std::endl;
+
+    }//<<>>switch( BranchType )
+
+}//<<>>void KUCMSBranch::getValue( uInt val, uInt index )
+
+void KUCMSBranch::getValue( int& val, uInt index ){
+
+    switch( BranchType ){
+
+        case INT  : val = INTBranch; break;
+        default : std::cout << " -- KUCMSBranch " << BranchName << " Error : BranchType mismatch with getValue type!!!! " << std::endl;
+
+    }//<<>>switch( BranchType )
+
+}//<<>>void KUCMSBranch::getValue( int val, uInt index )
+
+void KUCMSBranch::getValue( float& val, uInt index ){
+
+    switch( BranchType ){
+
+        case FLOAT  : val = FLOATBranch; break;
+        default : std::cout << " -- KUCMSBranch " << BranchName << " Error : BranchType mismatch with getValue type!!!! " << std::endl;
+
+    }//<<>>switch( BranchType )
+
+}//<<>>void KUCMSBranch::getValue( float val, uInt index )
+
+void KUCMSBranch::getValue( std::string& val, uInt index ){
+
+    switch( BranchType ){
+
+        case STR  : val = STRBranch; break;
+        default : std::cout << " -- KUCMSBranch " << BranchName << " Error : BranchType mismatch with getValue type!!!! " << std::endl;
+
+    }//<<>>switch( BranchType )
+
+}//<<>>void KUCMSBranch::getValue( std::string val, uInt index )
+
+void KUCMSBranch::getValue( bool& val, uInt index ){
+
+    switch( BranchType ){
+
+        case BOOL  : val = BOOLBranch; break;
+        default : std::cout << " -- KUCMSBranch " << BranchName << " Error : BranchType mismatch with getValue type!!!! " << std::endl;
+
+    }//<<>>switch( BranchType )
+
+}//<<>>void KUCMSBranch::getValue( bool val, uInt index )
+
+std::vector<float> KUCMSBranch::getVFLOATValue( uInt index ){
+
+    std::vector<float> val;
+    getValue( val, index );
+    return val;
+
+}//<<>>vector<float> KUCMSBranch::getVFLOATValue( uInt index )
+
+std::vector<int> KUCMSBranch::getVINTValue( uInt index ){
+
+    std::vector<int> val;
+    getValue( val, index );
+    return val;
+
+}//<<>>vector<int> KUCMSBranch::getVINTValue( uInt index )
+
+std::vector<uInt> KUCMSBranch::getVUINTValue( uInt index ){
+
+    std::vector<uInt> val;
+    getValue( val, index );
+    return val;
+
+}//<<>>vector<uInt> KUCMSBranch::getVUINTValue( uInt index )
+
+uInt KUCMSBranch::getUINTValue( uInt index ){
+
+    uInt val;
+    getValue( val, index );
+    return val;
+
+}//<<>>uInt KUCMSBranch::getUINTValue( uInt index )
+
+int KUCMSBranch::getINTValue( uInt index ){
+
+    int val;
+    getValue( val, index );
+    return val;
+
+}//<<>>int KUCMSBranch::getINTValue( uInt index )
+
+float KUCMSBranch::getFLOATValue( uInt index ){
+
+    float val;
+    getValue( val, index );
+    return val;
+
+}//<<>>float KUCMSBranch::getFLOATValue( uInt index )
+
+std::string KUCMSBranch::getSTRValue( uInt index ){
+
+    std::string val;
+    getValue( val, index );
+    return val;
+
+}//<<>>std::string KUCMSBranch::getSTRValue( uInt index )
+
+bool KUCMSBranch::getBOOLValue( uInt index ){
+
+    bool val;
+    getValue( val, index );
+    return val;
+
+}//<<>>bool KUCMSBranch::getBOOLValue( uInt index )
+
+float KUCMSBranch::max( std::vector<float> x ){
+
+    float max = x[0];
+    for( uInt idx = 0; idx < x.size(); idx++ ) if( x[idx] > max ) max = x[idx];
+    return max;
+
+}//<<>>float KUCMSBranch::max( vector<float> x )
+
+uInt KUCMSBranch::leadIdx( std::vector<float> x ){
+
+    uInt maxidx = 0;
+    float max = x[0];
+    for( uInt idx = 0; idx < x.size(); idx++ ) if( x[idx] > max ){ max = x[idx]; maxidx = idx; }
+    return maxidx;
+
+}//<<>>float KUCMSBranch::max( vector<float> x )
+
+uInt KUCMSBranch::subldIdx( std::vector<float> x, uInt ldx ){
+
+    uInt maxidx = 0;
+    float max = 0;
+    for( uInt idx = 0; idx < x.size(); idx++ ){
+        if( idx == ldx ) continue;
+        if( x[idx] > max ){ max = x[idx]; maxidx = idx; }
+    }//<<>>for( uInt idx = 0; idx < x.size(); idx++ )
+    return maxidx;
+
+}//<<>>float KUCMSBranch::max( vector<float> x )
+
+float KUCMSBranch::getMaxValue(){
+
+    switch( BranchType ){
+
+        case VFLOAT : return max( VFLOATBranch ); break;
+        case FLOAT  : return FLOATBranch; break;
+        default : std::cout << " -- KUCMSBranch " << BranchName << " Error : BranchType mismatch with getMaxValue type!!!! " << std::endl;
+
+    }//<<>>switch( BranchType )
+
+    return -999;
+
+}//<<>>float KUCMSBranch::getMaxValue()
+
+uInt KUCMSBranch::getLeadIndex(){
+
+    switch( BranchType ){
+
+        case VFLOAT : return leadIdx( VFLOATBranch ); break;
+        default : std::cout << " -- KUCMSBranch " << BranchName << " Error : BranchType mismatch with getLeadIdx type!!!! " << std::endl;
+
+    }//<<>>switch( BranchType )
+
+    return 0;
+
+}//<<>>float KUCMSBranch::getLeadIdx()
+
+uInt KUCMSBranch::getSubLeadIndex(){
+
+    switch( BranchType ){
+
+        case VFLOAT : {
+            uInt ldx = leadIdx( VFLOATBranch );
+            return subldIdx( VFLOATBranch, ldx );
+        }
+        default : std::cout << " -- KUCMSBranch " << BranchName << " Error : BranchType mismatch with getSubldIdx type!!!! " << std::endl;
+
+    }//<<>>switch( BranchType )
+
+    return 0;
+
+}//<<>>float KUCMSBranch::getSubldIdx()
+
+// -----------------------------
+// KUCMSBranchManager
+// -----------------------------
+
+KUCMSBranchManager::KUCMSBranchManager(){}
+KUCMSBranchManager::~KUCMSBranchManager(){}
+
+bool KUCMSBranchManager::valid( std::string key ){
+
+    if( theBranches.find(key) == theBranches.end() ){
+
+        std::cout << " -- KUCMSBranchManager Error: No Such Key : " << key << " !!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+        return false;
+
+    } else return true;
+
+}//<<>>bool KUCMSBranchManager::valid( std::string key )
+
+void KUCMSBranchManager::makeBranch( std::string key, std::string name, BType type, std::string doc ){
+
+    KUCMSBranch branch( type, name, doc );
+    theBranches[key] = branch;
+
+}//<<>>void KUCMSBranchManager::makeBranch( std::string key, std::string name, BType type, std::string doc )
+
+void KUCMSBranchManager::makeBranch( std::string name, BType type, std::string doc ){
+
+    makeBranch( name, name, type, doc );
+
+}//<<>>void KUCMSBranchManager::makeBranch( std::string name, BType type, std::string doc )
+
+void KUCMSBranchManager::attachBranches( TTree* fOutTree ){
+
+    for( auto & branch : theBranches ){ (branch.second).initBranch(fOutTree); }
+
+}//<<>>void KUCMSBranchManager::attachBranches( TTree* fOutTree )
+
+void KUCMSBranchManager::clearBranches(){ for( auto & branch : theBranches ){ (branch.second).clearBranch();}}
+
+void KUCMSBranchManager::fillBranch( std::string key, std::vector<float> val ){
+
+    if( valid( key ) ) theBranches[key].fillBranch( val );
+
+}//<<>>void KUCMSBranchManager::fillBranch( std::string key, std::vector<float> val )
+
+void KUCMSBranchManager::fillBranch( std::string key, std::vector<uInt> val ){
+
+    if( valid( key ) ) theBranches[key].fillBranch( val );
+
+}//<<>>void KUCMSBranchManager::fillBranch( std::string key, std::vector<uInt> val )
+
+void KUCMSBranchManager::fillBranch( std::string key, std::vector<int> val ){
+
+    if( valid( key ) ) theBranches[key].fillBranch( val );
+
+}//<<>>void KUCMSBranchManager::fillBranch( std::string key, std::vector<int> val )
+
+void KUCMSBranchManager::fillBranch( std::string key, uInt val ){
+
+    if( valid( key ) ) theBranches[key].fillBranch( val );
+
+}//<<>>void KUCMSBranchManager::fillBranch( std::string key, uInt val )
+
+void KUCMSBranchManager::fillBranch( std::string key, int val ){
+
+    if( valid( key ) ) theBranches[key].fillBranch( val );
+
+}//<<>>void KUCMSBranchManager::fillBranch( std::string key, int val )
+
+void KUCMSBranchManager::fillBranch( std::string key, float val ){
+
+    if( valid( key ) ) theBranches[key].fillBranch( val );
+
+}//<<>>void KUCMSBranchManager::fillBranch( std::string key, float val )
+
+void KUCMSBranchManager::fillBranch( std::string key, std::string val ){
+
+    if( valid( key ) ) theBranches[key].fillBranch( val );
+
+}//<<>>void KUCMSBranchManager::fillBranch( std::string key, std::string val )
+
+void KUCMSBranchManager::fillBranch( std::string key, bool val ){
+
+    if( valid( key ) ) theBranches[key].fillBranch( val );
+
+}//<<>>void KUCMSBranchManager::fillBranch( std::string key, bool val )
+
+std::vector<float> KUCMSBranchManager::getVFLOATBranchValue( std::string key, uInt index ){
+
+    return valid( key ) ? theBranches[key].getVFLOATValue( index ) : std::vector<float>(0);
+
+}//<<>>vector<float> KUCMSBranchManager::getVFLOATBranchValue( std::string key, uInt index )
+
+std::vector<int> KUCMSBranchManager::getVINTBranchValue( std::string key, uInt index ){
+
+    return valid( key ) ? theBranches[key].getVINTValue( index ) : std::vector<int>(0);
+
+}//<<>>vector<int> KUCMSBranchManager::getVINTBranchValue( std::string key, uInt index )
+
+std::vector<uInt> KUCMSBranchManager::getVUINTBranchValue( std::string key, uInt index ){
+
+    return valid( key ) ? theBranches[key].getVUINTValue( index ) : std::vector<uInt>(0);
+
+}//<<>>vector<uInt> KUCMSBranchManager::getVUINTBranchValue( std::string key, uInt index )
+
+uInt KUCMSBranchManager::getUINTBranchValue( std::string key, uInt index ){
+
+    return valid( key ) ? theBranches[key].getUINTValue( index ) : 0;
+
+}//<<>>uInt KUCMSBranchManager::getUINTBranchValue( std::string key, uInt index )
+
+int KUCMSBranchManager::getINTBranchValue( std::string key, uInt index ){
+
+    return valid( key ) ? theBranches[key].getINTValue( index ) : 0;
+
+}//<<>>int KUCMSBranchManager::getINTBranchValue( std::string key, uInt index )
+
+float KUCMSBranchManager::getFLOATBranchValue( std::string key, uInt index ){
+
+    return valid( key ) ? theBranches[key].getFLOATValue( index ) : 0;
+
+}//<<>>float KUCMSBranchManager::getFLOATBranchValue( std::string key, uInt index )
+
+std::string KUCMSBranchManager::getSTRBranchValue( std::string key, uInt index ){
+
+    return valid( key ) ? theBranches[key].getSTRValue( index ) : "";
+
+}//<<>>string KUCMSBranchManager::getSTRBranchValue( std::string key, uInt index )
+
+bool KUCMSBranchManager::getBOOLBranchValue( std::string key, uInt index ){
+
+    return valid( key ) ? theBranches[key].getBOOLValue( index ) : false;
+
+}//<<>>bool KUCMSBranchManager::getBOOLBranchValue( std::string key, uInt index )
+
+float KUCMSBranchManager::getBranchMaxValue( std::string key ){
+
+    return valid( key ) ? theBranches[key].getMaxValue() : 0;
+
+}//<<>>float KUCMSBranchManager::getBranchMaxValue( std::string key )
+
+uInt KUCMSBranchManager::getBranchLeadIndex( std::string key ){
+
+    return valid( key ) ? theBranches[key].getLeadIndex() : 0;
+
+}//<<>>uInt KUCMSBranchManager::getBranchLeadIndex( std::string key )
+
+uInt KUCMSBranchManager::getBranchSubLeadIndex( std::string key ){
+
+    return valid( key ) ? theBranches[key].getSubLeadIndex() : 0;
+
+}//<<>>uInt KUCMSBranchManager::getBranchSubLeadIndex( std::string key )
+
