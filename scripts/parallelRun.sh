@@ -226,6 +226,7 @@ if [[ ! -f "$CONFIG" ]]; then
     echo -e "${RED}Error: Config file not found: $CONFIG${NC}"
     exit 1
 fi
+CONFIG=$(realpath "$CONFIG")
 
 if ! command -v parallel &>/dev/null; then
     echo -e "${RED}Error: GNU parallel is not installed.${NC}"
