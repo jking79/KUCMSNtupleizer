@@ -29,7 +29,7 @@ DisplacedGenZ::DisplacedGenZ(const reco::GenParticle* zBoson,
 
   for(const auto* d : daughters_) {
     p4SumAll_ += d->p4();
-    if(d->charge() != 0 && d->pt() > 0.5 && std::abs(d->eta()) < 2.5)
+    if(d->charge() != 0)
       p4SumTrackable_ += d->p4();
     else
       p4SumNeutral_ += d->p4();
@@ -39,7 +39,7 @@ DisplacedGenZ::DisplacedGenZ(const reco::GenParticle* zBoson,
 std::vector<const pat::PackedGenParticle*> DisplacedGenZ::getTrackableDaughters() const {
   std::vector<const pat::PackedGenParticle*> trackable;
   for(const auto* d : daughters_) {
-    if(d->charge() != 0 && d->pt() > 0.5 && std::abs(d->eta()) < 2.5)
+    if(d->charge() != 0)
       trackable.push_back(d);
   }
   return trackable;
