@@ -366,7 +366,7 @@ while IFS= read -r INPUT_FILE; do
     # file there regardless of how CMSSW resolves relative vs absolute paths.
     if ( cd "${_KP_LOCAL_DIR}" && cmsRun "$_KP_CONFIG" \
           inputFiles="$INPUT_FILE" \
-          outputFile="$OUTFILE"    \
+          outputFileName="$OUTFILE" \
           maxEvents="$_KP_MAX_EVENTS" \
           "${_FILTER_ARG[@]}" ) \
           >> "$LOG" 2>&1; then

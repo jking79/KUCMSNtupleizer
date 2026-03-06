@@ -40,8 +40,8 @@ _opts.parseArguments()
 if _opts.inputFiles:
     process.source.fileNames = cms.untracked.vstring(_opts.inputFiles)
 
-# Override output file
-process.TFileService.fileName = cms.string(_opts.outputFile)
+# Override output file (uses outputFileName to match llpgana_miniaod.py convention)
+process.TFileService.fileName = cms.string(_opts.outputFileName)
 
 # Override maxEvents (-1 = all events, the right default for full jobs)
 process.maxEvents = cms.untracked.PSet(
