@@ -183,9 +183,8 @@ genInfo = True
 #genInfo = False
 if options.multicrab == True : genInfo = options.hasGenInfo
 
-verboseEventTable = False
-#verboseEventTable = True
-if options.multicrab == True : verboseEventTable = options.verboseEventTable
+verboseEventTable = options.verboseEventTable  # default False; override with verboseEventTable=True on command line
+#verboseEventTable = True                        # or flip this comment to enable always
 
 ecalIsoInputsF17 = 'RecoEgamma/ElectronIdentification/data/Fall17/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_94X.txt'
 ecalruneraIsoInputsW22 = 'RecoEgamma/ElectronIdentification/data/Run3_Winter22/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_122X.txt'
