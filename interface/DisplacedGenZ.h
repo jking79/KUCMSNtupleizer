@@ -8,6 +8,12 @@
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
 #include "DataFormats/Math/interface/LorentzVector.h"
+#include "DataFormats/VertexReco/interface/Vertex.h"
+#include "DataFormats/TrackReco/interface/Track.h"
+#include "DataFormats/TrackReco/interface/TrackFwd.h"
+#include "TrackingTools/TransientTrack/interface/TransientTrack.h"
+
+#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/PairedObjects.h"
 
 #include <vector>
 #include <cmath>
@@ -16,27 +22,33 @@
 enum class ZDecayMode { Hadronic, Electron, Muon, Tau, Invisible, Unknown };
 
 class DisplacedGenZ {
- private:
+ public:
+  using ZMatchPairs = PairedObjectCollection<reco::TransientTrack, const pat::PackedGenParticle*>;
 
+ private:
   // --- encapsulated Data ---
   typedef reco::Candidate::LorentzVector LorentzVector;
   const reco::GenParticle* zBoson_;
   std::vector<const pat::PackedGenParticle*> daughters_;
   ZDecayMode decayMode_;
-  
+
   // Cached variables to avoid recomputing
   double lxy_;
   double lxyz_;
   LorentzVector p4SumNeutral_, p4SumTrackable_, p4SumAll_;
 
+  // Track-gen match results (set after global Hungarian matching)
+  ZMatchPairs matchedTracks_;
+
   void cleanDaughters();
-  
+  int nMatchedInVertex(const reco::Vertex& vtx) const;
+
  public:
   // --- Constructor ---
   DisplacedGenZ(const reco::GenParticle* zBoson,
 		const std::vector<const pat::PackedGenParticle*>& daughters,
 		ZDecayMode mode);
-  
+
   // --- Public Getters ---
   double x() const { return zBoson_->vx(); }
   double y() const { return zBoson_->vy(); }
@@ -50,16 +62,36 @@ class DisplacedGenZ {
   double phi() const { return p4SumTrackable_.phi(); }
   double mass() const { return p4SumTrackable_.M(); }
   double fullMass() const { return p4SumAll_.M(); }
-  
+
   double Lxy() const { return lxy_; }
   double Lxyz() const { return lxyz_; }
-  
+
   ZDecayMode mode() const { return decayMode_; }
   const std::vector<const pat::PackedGenParticle*>& getAllDaughters() const { return daughters_; }
   std::vector<const pat::PackedGenParticle*> getTrackableDaughters() const;
   std::vector<const pat::PackedGenParticle*> getNeutralDaughters() const;
-  
-  // --- Helper Methods for the Analyzer ---
+
+  // --- Match results (populated after global Hungarian matching) ---
+  void setMatches(const ZMatchPairs& matches) { matchedTracks_ = matches; }
+  bool hasTracks() const { return !matchedTracks_.empty(); }
+  const ZMatchPairs& getMatches() const { return matchedTracks_; }
+  reco::TrackCollection getTracks() const;
+
+  // --- Vertex quality (mirrors GenVertex::isBronze/isSilver/isGold) ---
+  // Gold:   all matched tracks are in the vertex and it has exactly that many tracks
+  // Silver: all matched tracks are in the vertex but it has extra tracks
+  // Bronze: at least one but not all matched tracks are in the vertex
+  bool isBronze(const reco::Vertex& vtx) const;
+  bool isSilver(const reco::Vertex& vtx) const;
+  bool isGold(const reco::Vertex& vtx) const;
+
+  // Fraction of matched tracks in the vertex passing the deltaR+relPt quality cuts
+  double matchRatio(const reco::Vertex& vtx, double threshold = 0.1) const;
+
+  // Raw 3D Euclidean distance between this gen vertex position and a reco vertex
+  double distance3D(const reco::Vertex& vtx) const;
+
+  // --- Mode helpers ---
   bool isLeptonic() const { return (decayMode_ == ZDecayMode::Electron || decayMode_ == ZDecayMode::Muon); }
   bool isHadronic() const { return (decayMode_ == ZDecayMode::Hadronic); }
   bool isTau() const { return decayMode_ == ZDecayMode::Tau; }
@@ -68,6 +100,5 @@ class DisplacedGenZ {
   static std::vector<DisplacedGenZ> build(
       const edm::Handle<std::vector<reco::GenParticle>>& prunedHandle,
       const edm::Handle<std::vector<pat::PackedGenParticle>>& packedHandle);
-  
-};
 
+};

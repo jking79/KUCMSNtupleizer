@@ -46,7 +46,6 @@
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/DeltaRMatch.h"
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/VertexHelper.h"
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/TrackHelper.h"
-#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/GenVertex.h"
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/TrackVertexSet.h"
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/TTBuilderWrapper.h"
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/MatchTracksToSC.h"
@@ -54,6 +53,8 @@
 
 //  KUCMS Object includes
 #include "KUCMSObjectBase.hh"
+
+#include <map>
 
 using namespace edm;
 
@@ -93,15 +94,11 @@ public:
   template<class T>
   std::pair<double, double> BestMatch(const T &lepton) const;
 
-  reco::GenParticleCollection getStableChargedDaughtersFromPacked(
-      const GenVertex& genVertex,
-      const std::vector<pat::PackedGenParticle>& packedGenParticles) const;
 private:
 
   reco::Vertex primaryVertex_;
   TrackVertexSetCollection generalVertices_;
-  GenVertices genVertices_;
-  std::map<GenVertex, GenMatches> chargedMatches_;
+  std::vector<DisplacedGenZ> signalZs_;
   reco::TrackCollection signalTracks_, electronTracks_;
 
   TrackDetectorAssociator trackAssociator_;
@@ -139,9 +136,10 @@ private:
   int FindGenVertexIndex(const reco::Vertex &vertex) const;
   int FindNearestGenVertexIndex(const reco::Vertex &vertex, double &distance) const;
   bool getSCMatch(const reco::Track &track, reco::SuperCluster &sc, double &deltaR) const;
-  double matchRatio(const reco::Vertex &vertex, const GenVertex &genVertex, const double threshold = 0.1) const;
   // Build a TrackVertexSet from a reco::Vertex using the sip2D track handle for refs
   TrackVertexSet buildTrackVertexSet(const reco::Vertex &vertex, const TransientTrackBuilder* ttBuilder) const;
+  // Look up which Z mode a track came from (returns ZDecayMode::Unknown if not a signal track)
+  ZDecayMode getZModeFromTrack(const reco::Track &track) const;
 
 };//<<>>class KUCMSDisplacedVertexMini : public KUCMSObjectBase
 
@@ -259,8 +257,7 @@ void KUCMSDisplacedVertexMini::LoadEvent( const edm::Event& iEvent, const edm::E
 
   signalTracks_.clear();
   electronTracks_.clear();
-  genVertices_.clear();
-  chargedMatches_.clear();
+  signalZs_.clear();
 
   const TransientTrackBuilder* ttBuilder = &iSetup.getData(transientTrackBuilder_);
   const edm::ESTransientHandle<MagneticField> magfield = iSetup.getTransientHandle(magneticFieldToken_);
@@ -269,9 +266,6 @@ void KUCMSDisplacedVertexMini::LoadEvent( const edm::Event& iEvent, const edm::E
   ttBuilder_ = TTBuilderWrapper(ttBuilder);
 
   // Build TrackVertexSet collection from the pre-reconstructed HYDDRA SVs.
-  // We rebuild each TrackVertexSet from the reco::Vertex track refs so that
-  // all TrackVertexSet methods (compatibility, shift*, cosTheta, etc.) are
-  // available during ProcessEvent without repeating the HYDDRA pipeline.
   generalVertices_.clear();
 
   for(const auto& vertex : *leptonicSVsHandle_) {
@@ -283,7 +277,7 @@ void KUCMSDisplacedVertexMini::LoadEvent( const edm::Event& iEvent, const edm::E
   for(const auto& vertex : *hadronicSVsHandle_) {
     TrackVertexSet tvs = buildTrackVertexSet(vertex, ttBuilder);
     if(tvs.isValid()) generalVertices_.add(tvs);
-    else cout << "An already valid hadronic vertex failed refitting" <<	endl;
+    else cout << "An already valid hadronic vertex failed refitting" << endl;
   }
 
   MatchTracksToSC<reco::Track> assigner(iEvent, iSetup, magfield, ecalGeometry, trackAssocParameters_, generalVertices_.tracks(), *mergedSCsHandle_);
@@ -302,75 +296,44 @@ void KUCMSDisplacedVertexMini::LoadEvent( const edm::Event& iEvent, const edm::E
     for(const auto &track : *muonEnhancedTracksHandle_)
       ttracks.emplace_back(ttBuilder->build(track));
 
-    // Build gen vertices from pruned gen particles, then enrich with track matches
-    GenVertices allSignalSVs(*prunedGenHandle_);
-    DeltaRGenMatchHungarian<reco::TransientTrack> genAssigner(ttracks, allSignalSVs.getAllGenParticles());
-    genVertices_ = GenVertices(genAssigner.GetPairedObjects().ConvertFromTTracks(), 0.02);
-    allSignalSVs += genVertices_;
-    genVertices_ = allSignalSVs;
+    // Build DisplacedGenZ objects from the pruned+packed gen collections
+    signalZs_ = DisplacedGenZ::build(prunedGenHandle_, genHandle_);
 
-    // Build charged particle matches (from packed gen particles) for matchRatio
-    for(const auto &genVertex : genVertices_) {
-      reco::GenParticleCollection stableChargedDaughters = getStableChargedDaughtersFromPacked(genVertex, *genHandle_);
-      DeltaRGenMatchHungarian<reco::Track> chargedAssigner(*muonEnhancedTracksHandle_, stableChargedDaughters);
-      chargedMatches_[genVertex] = chargedAssigner.GetPairedObjects();
-
-      if(!genVertex.hasTracks()) continue;
-      for(const auto &pair : genVertex.genMatches())
-        signalTracks_.emplace_back(pair.GetObjectA());
-    }
-
+    // Collect all trackable daughters across leptonic and hadronic Zs,
+    // and build a reverse pointer map so we can attribute each matched
+    // pair back to the correct Z after the global Hungarian solve.
     std::vector<const pat::PackedGenParticle*> eventGenDaughters;
-    
-    // 1. Build the objects using the factory method
-    // (Note: replacing your old prunedGenHandle_ and genHandle_ variables here)
-    std::vector<DisplacedGenZ> signalZs = DisplacedGenZ::build(prunedGenHandle_, genHandle_);
-    
-    // 2. Loop over the populated objects and print the exact same format
-    for (const auto& genZ : signalZs) {
-
-      if(genZ.isLeptonic() || genZ.isHadronic()) {
-	auto trackable = genZ.getTrackableDaughters();
-	eventGenDaughters.insert(eventGenDaughters.end(), trackable.begin(), trackable.end());
-      }
-	  
-      std::cout << "Found Signal Z (from N2) with Lxy = " << genZ.Lxy() << " cm\n";
-      
-      if (genZ.mode() == ZDecayMode::Electron) {
-        std::cout << "Z -> ee Trackable Daughters: ";
-        for (const auto* d : genZ.getTrackableDaughters()) std::cout << d->pdgId() << ", ";
-        std::cout << "\n";
-      } 
-      else if (genZ.mode() == ZDecayMode::Muon) {
-        std::cout << "Z -> mumu Trackable Daughters: ";
-        for (const auto* d : genZ.getTrackableDaughters()) std::cout << d->pdgId() << ", ";
-        std::cout << "\n";
-      } 
-      else if (genZ.mode() == ZDecayMode::Tau) {
-        std::cout << "Z -> tautau Trackable Daughters: ";
-        for (const auto* d : genZ.getTrackableDaughters()) std::cout << d->pdgId() << ", ";
-        std::cout << "\n";
-      } 
-      else if (genZ.mode() == ZDecayMode::Hadronic) {
-        std::cout << "Z -> qq (Hadronic) Trackable Daughters: ";
-        for (const auto* d : genZ.getTrackableDaughters()) std::cout << d->pdgId() << ", ";
-        std::cout << "\n";
-      } 
-      else if (genZ.mode() == ZDecayMode::Invisible) {
-        // Since we designed the class to only hold pat::PackedGenParticles, 
-        // it doesn't store the reco::GenParticle neutrino pointers. 
-        // However, the builder successfully identified the mode!
-        std::cout << "Z -> nunu (Invisible) Decay identified.\n";
+    std::map<const pat::PackedGenParticle*, int> ptrToZIndex;
+    for(int i = 0; i < (int)signalZs_.size(); i++) {
+      if(!signalZs_[i].isLeptonic() && !signalZs_[i].isHadronic()) continue;
+      for(const auto* d : signalZs_[i].getTrackableDaughters()) {
+        eventGenDaughters.push_back(d);
+        ptrToZIndex[d] = i;
       }
     }
 
-    if (eventGenDaughters.empty()) return;
-    DeltaRGenMatchHungarian<reco::TransientTrack, const pat::PackedGenParticle*> matcher(ttracks, eventGenDaughters);
-    for(const auto &pair : matcher.GetPairedObjects())
-      cout << "\tparticleID: " << pair.GetObjectB()->pdgId() << " deltaR = " << pair.GetDeltaR() << endl; 
-          
+    if(eventGenDaughters.empty()) return;
+
+    // One Hungarian match across the entire event's signal daughters
+    DeltaRGenMatchHungarian<reco::TransientTrack, const pat::PackedGenParticle*>
+        matcher(ttracks, eventGenDaughters);
+
+    // Partition the global results back to each Z by pointer identity (O(n))
+    std::vector<DisplacedGenZ::ZMatchPairs> perZMatches(signalZs_.size());
+    for(const auto& pair : matcher.GetPairedObjects()) {
+      auto it = ptrToZIndex.find(pair.GetObjectB());
+      if(it != ptrToZIndex.end())
+        perZMatches[it->second].emplace_back(pair);
+    }
+    for(int i = 0; i < (int)signalZs_.size(); i++)
+      signalZs_[i].setMatches(perZMatches[i]);
+
+    // Populate signalTracks_ from all Z match results
+    for(const auto& genZ : signalZs_)
+      for(const auto& track : genZ.getTracks())
+        signalTracks_.emplace_back(track);
   }
-  
+
 }//<<>>void KUCMSDisplacedVertexMini::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
 void KUCMSDisplacedVertexMini::ProcessEvent( ItemManager<float>& geVar ){
@@ -434,14 +397,15 @@ void KUCMSDisplacedVertexMini::ProcessEvent( ItemManager<float>& geVar ){
 	Branches.fillBranch("Vertex_genVertexIndex", int(FindGenVertexIndex(vertex)));
 	Branches.fillBranch("Vertex_nearestGenVertexIndex", int(nearestGenVertexIndex));
 	Branches.fillBranch("Vertex_min3D", float(minDistance));
-	Branches.fillBranch("Vertex_matchRatio", float(nearestGenVertexIndex>=0? matchRatio(vertex, genVertices_[nearestGenVertexIndex]) : -1));
+	Branches.fillBranch("Vertex_matchRatio", float(nearestGenVertexIndex >= 0
+	    ? signalZs_[nearestGenVertexIndex].matchRatio(vertex) : -1));
       }//<<>>if(cfFlag("hasGenInfo"))
-      
+
       for(const auto &trackRef : vertex.tracks()) {
 	const reco::TrackRef ref(trackRef.castTo<reco::TrackRef>());
 	if(ref.isNull()) continue;
 	const reco::Track track(*ref);
-	
+
 	double deltaR(-1.);
 	reco::SuperCluster sc;
 	const bool isSCMatched(getSCMatch(track, sc, deltaR));
@@ -455,30 +419,30 @@ void KUCMSDisplacedVertexMini::ProcessEvent( ItemManager<float>& geVar ){
 	Branches.fillBranch("VertexTrack_SCDR", float(deltaR));
 	Branches.fillBranch("VertexTrack_energySC", float(isSCMatched? sc.correctedEnergy() : -1.));
 	Branches.fillBranch("VertexTrack_ratioPToEnergySC", float(isSCMatched? track.p()/sc.correctedEnergy() : -1.));
-	
+
 	if(cfFlag("hasGenInfo")) {
 	  const bool isSignal(TrackHelper::FindTrackIndex(track, signalTracks_) >= 0);
 	  Branches.fillBranch("VertexTrack_isSignalTrack", isSignal);
-	  Branches.fillBranch("VertexTrack_isSignalElectron", isSignal? genVertices_.getGenVertexFromTrack(track).isGenElectron() : false);
-	  Branches.fillBranch("VertexTrack_isSignalMuon", isSignal? genVertices_.getGenVertexFromTrack(track).isGenMuon() : false);
+	  const ZDecayMode zMode = isSignal ? getZModeFromTrack(track) : ZDecayMode::Unknown;
+	  Branches.fillBranch("VertexTrack_isSignalElectron", zMode == ZDecayMode::Electron);
+	  Branches.fillBranch("VertexTrack_isSignalMuon", zMode == ZDecayMode::Muon);
 	}//<<>>if(cfFlag("hasGenInfo"))
       }//<<>>for(const auto &trackRef : vertex.tracks())
       vtxIndex++;
     }//<<>>for(const auto &tvertex : generalVertices_)
     geVar.set("nDisSVs",nDisSV);
-    
+
     if(cfFlag("hasGenInfo")) {
-      
+
       int nSigElectrons(0), nSigMuons(0), nSigHadrons(0);
-      Branches.fillBranch("GenVertex_nTotal", unsigned(genVertices_.size()));
-      for(const auto &genVertex : genVertices_) {
-	
+      Branches.fillBranch("GenVertex_nTotal", unsigned(signalZs_.size()));
+      for(const auto& genZ : signalZs_) {
+
         bool passSelectionAndCuts = false;
-        if(genVertex.hasTracks()) {
+        if(genZ.hasTracks()) {
           auto checkVertex = [&](const reco::Vertex& recoVtx) {
-            for(const auto& pair : genVertex.genMatches())
-              for(auto it = recoVtx.tracks_begin(); it != recoVtx.tracks_end(); ++it)
-                if(TrackHelper::SameTrack(pair.GetObjectA(), **it)) return true;
+            for(const auto& pair : genZ.getMatches())
+              if(VertexHelper::isInVertex(recoVtx, pair.GetObjectA().track())) return true;
             return false;
           };
           for(const auto& vtx : *leptonicSVsHandle_)
@@ -486,32 +450,32 @@ void KUCMSDisplacedVertexMini::ProcessEvent( ItemManager<float>& geVar ){
           if(!passSelectionAndCuts)
             for(const auto& vtx : *hadronicSVsHandle_)
               if(checkVertex(vtx)) { passSelectionAndCuts = true; break; }
-        }//<<>>if(genVertex.hasTracks())
-	
-        Branches.fillBranch("GenVertex_nTracks", unsigned(genVertex.tracks().size()));
-        Branches.fillBranch("GenVertex_mass", float(genVertex.mass()));
-        Branches.fillBranch("GenVertex_x", float(genVertex.x()));
-        Branches.fillBranch("GenVertex_y", float(genVertex.y()));
-        Branches.fillBranch("GenVertex_z", float(genVertex.z()));
-        Branches.fillBranch("GenVertex_p", float(genVertex.p()));
-        Branches.fillBranch("GenVertex_px", float(genVertex.px()));
-        Branches.fillBranch("GenVertex_py", float(genVertex.py()));
-        Branches.fillBranch("GenVertex_pz", float(genVertex.pz()));
-        Branches.fillBranch("GenVertex_pt", float(genVertex.pt()));
-        Branches.fillBranch("GenVertex_eta", float(genVertex.eta()));
-        Branches.fillBranch("GenVertex_phi", float(genVertex.phi()));
-        Branches.fillBranch("GenVertex_dxy", float(genVertex.dxy()));
-        Branches.fillBranch("GenVertex_isElectron", bool(genVertex.isGenElectron()));
-        Branches.fillBranch("GenVertex_isMuon", bool(genVertex.isGenMuon()));
-        Branches.fillBranch("GenVertex_isHadronic", bool(genVertex.isGenHadronic()));
-        Branches.fillBranch("GenVertex_passSelection", bool(genVertex.hasTracks()));
+        }//<<>>if(genZ.hasTracks())
+
+        Branches.fillBranch("GenVertex_nTracks", unsigned(genZ.getMatches().size()));
+        Branches.fillBranch("GenVertex_mass", float(genZ.mass()));
+        Branches.fillBranch("GenVertex_x", float(genZ.x()));
+        Branches.fillBranch("GenVertex_y", float(genZ.y()));
+        Branches.fillBranch("GenVertex_z", float(genZ.z()));
+        Branches.fillBranch("GenVertex_p", float(genZ.p()));
+        Branches.fillBranch("GenVertex_px", float(genZ.px()));
+        Branches.fillBranch("GenVertex_py", float(genZ.py()));
+        Branches.fillBranch("GenVertex_pz", float(genZ.pz()));
+        Branches.fillBranch("GenVertex_pt", float(genZ.pt()));
+        Branches.fillBranch("GenVertex_eta", float(genZ.eta()));
+        Branches.fillBranch("GenVertex_phi", float(genZ.phi()));
+        Branches.fillBranch("GenVertex_dxy", float(genZ.Lxy()));
+        Branches.fillBranch("GenVertex_isElectron", bool(genZ.mode() == ZDecayMode::Electron));
+        Branches.fillBranch("GenVertex_isMuon", bool(genZ.mode() == ZDecayMode::Muon));
+        Branches.fillBranch("GenVertex_isHadronic", bool(genZ.isHadronic()));
+        Branches.fillBranch("GenVertex_passSelection", bool(genZ.hasTracks()));
         Branches.fillBranch("GenVertex_passSelectionAndCuts", bool(passSelectionAndCuts));
 
-        if(genVertex.isGenElectron()) nSigElectrons++;
-        if(genVertex.isGenMuon()) nSigMuons++;
-        if(genVertex.isGenHadronic()) nSigHadrons++;
+        if(genZ.mode() == ZDecayMode::Electron) nSigElectrons++;
+        if(genZ.mode() == ZDecayMode::Muon) nSigMuons++;
+        if(genZ.isHadronic()) nSigHadrons++;
 
-      }//<<>>for(const auto &genVertex : genVertices_)
+      }//<<>>for(const auto& genZ : signalZs_)
       Branches.fillBranch("GenVertex_nElectron", unsigned(nSigElectrons));
       Branches.fillBranch("GenVertex_nMuon", unsigned(nSigMuons));
       Branches.fillBranch("GenVertex_nHadronic", unsigned(nSigHadrons));
@@ -525,8 +489,6 @@ TrackVertexSet KUCMSDisplacedVertexMini::buildTrackVertexSet(const reco::Vertex 
 
   std::vector<reco::TrackRef> trackRefs;
   for(auto it = vertex.tracks_begin(); it != vertex.tracks_end(); ++it) {
-    // The track refs stored in the reco::Vertex point to the sip2DMuonEnhancedTracks
-    // collection produced by miniAODMuonEnhancedTracks. Cast back to TrackRef.
     reco::TrackRef ref = it->castTo<reco::TrackRef>();
     if(ref.isNonnull()) trackRefs.emplace_back(ref);
     else
@@ -537,127 +499,84 @@ TrackVertexSet KUCMSDisplacedVertexMini::buildTrackVertexSet(const reco::Vertex 
 
 bool KUCMSDisplacedVertexMini::IsGold(const reco::Vertex &vertex) const {
 
-  bool isGold(false);
-  for(const auto &genVertex : genVertices_) {
-    if(isGold) break;
-    isGold = genVertex.isGold(vertex);
-  }
-
-  return isGold;
+  for(const auto& genZ : signalZs_)
+    if(genZ.isGold(vertex)) return true;
+  return false;
 }
 
 bool KUCMSDisplacedVertexMini::IsSilver(const reco::Vertex &vertex) const {
 
-  bool isSilver(false);
-  for(const auto &genVertex : genVertices_) {
-    if(isSilver) break;
-    isSilver = genVertex.isSilver(vertex);
-  }
-
-  return isSilver;
+  for(const auto& genZ : signalZs_)
+    if(genZ.isSilver(vertex)) return true;
+  return false;
 }
 
 bool KUCMSDisplacedVertexMini::IsBronze(const reco::Vertex &vertex) const {
 
-  bool isBronze(false);
-  for(const auto &genVertex : genVertices_) {
-    if(isBronze) break;
-    isBronze = genVertex.isBronze(vertex);
-  }
-
-  return isBronze;
+  for(const auto& genZ : signalZs_)
+    if(genZ.isBronze(vertex)) return true;
+  return false;
 }
 
 int KUCMSDisplacedVertexMini::FindGenVertexIndex(const reco::Vertex &vertex) const {
 
   int index(0);
-  for(const auto &genVertex : genVertices_) {
-    if(genVertex.hasTracks() && (genVertex.isBronze(vertex) || genVertex.isSilver(vertex) || genVertex.isGold(vertex)))
+  for(const auto& genZ : signalZs_) {
+    if(genZ.hasTracks() && (genZ.isBronze(vertex) || genZ.isSilver(vertex) || genZ.isGold(vertex)))
       return index;
     index++;
   }
-
   return -1;
 }
 
 int KUCMSDisplacedVertexMini::FindNearestGenVertexIndex(const reco::Vertex &vertex, double &distance) const {
+
   int index(0), minIndex(-1);
   distance = std::numeric_limits<double>::max();
-  for(const auto &genVertex : genVertices_) {
-    if(!genVertex.isGenHadronic()) continue;
-
-    const double tempMin(genVertex.distance3D(vertex));
-    if(tempMin < distance) {
-      distance = tempMin;
-      minIndex = index;
-    }
+  for(const auto& genZ : signalZs_) {
+    if(!genZ.isHadronic()) { index++; continue; }
+    const double d(genZ.distance3D(vertex));
+    if(d < distance) { distance = d; minIndex = index; }
     index++;
   }
-
-  if(minIndex < 0)
-    distance = -1.;
-
+  if(minIndex < 0) distance = -1.;
   return minIndex;
 }
 
 bool KUCMSDisplacedVertexMini::getSCMatch(const reco::Track &track, reco::SuperCluster &sc, double &deltaR) const {
 
-  bool isMatched(false);
   for(const auto &pair : trackSCPairs_) {
-
     if(TrackHelper::SameTrack(track, pair.GetTrack())) {
-      isMatched = true;
       sc = pair.GetSuperCluster();
       deltaR = pair.GetDeltaR();
-      break;
+      return true;
     }
   }
-
-  return isMatched;
+  return false;
 }
 
-double KUCMSDisplacedVertexMini::matchRatio(const reco::Vertex &vertex, const GenVertex &genVertex, const double threshold) const {
+ZDecayMode KUCMSDisplacedVertexMini::getZModeFromTrack(const reco::Track &track) const {
 
-  if(chargedMatches_.find(genVertex) == chargedMatches_.end()) return -1.;
-
-  int count(0);
-  for(const auto &pair : chargedMatches_.at(genVertex)) {
-    const double genPt(pair.GetObjectB().pt());
-    const double trackPt(pair.GetObjectA().pt());
-    const double relPtDiff((genPt-trackPt)/genPt);
-    const double deltaR(pair.GetDeltaR());
-
-    bool inVertex(false);
-    for(auto it = vertex.tracks_begin(); it != vertex.tracks_end(); ++it)
-      if(TrackHelper::SameTrack(pair.GetObjectA(), **it)) { inVertex = true; break; }
-
-    if(inVertex && ((deltaR < 0.01 && fabs(relPtDiff) < (-10*deltaR + 0.15)) ||
-                    (deltaR > 0.01 && deltaR < threshold && fabs(relPtDiff) < (-deltaR/2 + 0.055)))) {
-      count++;
-    }
-  }
-  return double(count)/vertex.tracksSize();
+  for(const auto& genZ : signalZs_)
+    for(const auto& pair : genZ.getMatches())
+      if(TrackHelper::SameTrack(pair.GetObjectA().track(), track))
+        return genZ.mode();
+  return ZDecayMode::Unknown;
 }
 
 template<class T>
 bool KUCMSDisplacedVertexMini::FoundLeptonMatch(const T &lepton) const {
 
-  bool foundMatch(false);
   for(const auto &sv : generalVertices_) {
     if(sv.size() > 2)
       continue;
 
     for(const auto &track : sv.tracks()) {
       const double deltaR = sqrt(DeltaR2(lepton, *track));
-      if(deltaR < 0.02) {
-        foundMatch = true;
-        break;
-      }
+      if(deltaR < 0.02) return true;
     }
-    if(foundMatch)
-      break;
   }
-  return foundMatch;
+  return false;
 }
 
 template<class T>
@@ -694,47 +613,11 @@ std::pair<double, double> KUCMSDisplacedVertexMini::BestMatch(const T &lepton) c
     if(deltaR < bestDeltaRMatch) {
       const double trackPt(track.pt()), leptonPt(lepton.pt());
       relPtDiffMin = 0.5*(trackPt-leptonPt)/(trackPt+leptonPt);
-
       bestDeltaRMatch = deltaR;
     }
   }
 
   return std::make_pair(bestDeltaRMatch, relPtDiffMin);
-}
-
-reco::GenParticleCollection KUCMSDisplacedVertexMini::getStableChargedDaughtersFromPacked(
-    const GenVertex& genVertex,
-    const std::vector<pat::PackedGenParticle>& packedGenParticles) const {
-
-  const reco::Candidate* genZ = genVertex.genPair().first.mother();
-  reco::GenParticleCollection result;
-
-  if(!genZ) return result;
-
-  for(const auto& packed : packedGenParticles) {
-    if(packed.status() != 1 || packed.charge() == 0) continue;
-
-    const reco::Candidate* mom = packed.mother(0);
-    if(!mom) continue;
-
-    bool isFromSameZ = false;
-    const reco::Candidate* prev = nullptr;
-    while(mom && mom != prev) {
-      if(mom->pdgId() == 23) {
-        if(mom == genZ) isFromSameZ = true;
-        break;
-      }
-      prev = mom;
-      mom = (mom->numberOfMothers() > 0) ? mom->mother(0) : nullptr;
-    }
-
-    if(isFromSameZ) {
-      result.emplace_back(reco::GenParticle(
-          packed.charge(), packed.p4(), packed.vertex(),
-          packed.pdgId(), packed.status(), true));
-    }
-  }
-  return result;
 }
 
 #endif
