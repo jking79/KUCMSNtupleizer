@@ -304,34 +304,21 @@ void KUCMSDisplacedVertexMini::LoadEvent( const edm::Event& iEvent, const edm::E
     // Build DisplacedGenZ objects from the pruned+packed gen collections
     signalZs_ = DisplacedGenZ::build(prunedGenHandle_, genHandle_);
 
-    // Collect all trackable daughters across leptonic and hadronic Zs,
-    // and build a reverse pointer map so we can attribute each matched
-    // pair back to the correct Z after the global Hungarian solve.
-    std::vector<const pat::PackedGenParticle*> eventGenDaughters;
-    std::map<const pat::PackedGenParticle*, int> ptrToZIndex;
+    // Match tracks to each Z boson's daughters independently (no cross-Z competition).
+    // This mirrors HyddraSVAnalyzer's per-vertex matching and ensures that daughters
+    // of one Z cannot steal good track matches from another Z's daughters.
+    bool anyDaughters = false;
     for(int i = 0; i < (int)signalZs_.size(); i++) {
       if(!signalZs_[i].isLeptonic() && !signalZs_[i].isHadronic()) continue;
-      for(const auto* d : signalZs_[i].getTrackableDaughters()) {
-        eventGenDaughters.push_back(d);
-        ptrToZIndex[d] = i;
-      }
+      auto daughters = signalZs_[i].getTrackableDaughters();
+      if(daughters.empty()) continue;
+      anyDaughters = true;
+      DeltaRGenMatchHungarian<reco::TransientTrack, const pat::PackedGenParticle*>
+          matcher(ttracks, daughters);
+      signalZs_[i].setMatches(matcher.GetPairedObjects());
     }
 
-    if(eventGenDaughters.empty()) return;
-
-    // One Hungarian match across the entire event's signal daughters
-    DeltaRGenMatchHungarian<reco::TransientTrack, const pat::PackedGenParticle*>
-        matcher(ttracks, eventGenDaughters);
-
-    // Partition the global results back to each Z by pointer identity (O(n))
-    std::vector<DisplacedGenZ::ZMatchPairs> perZMatches(signalZs_.size());
-    for(const auto& pair : matcher.GetPairedObjects()) {
-      auto it = ptrToZIndex.find(pair.GetObjectB());
-      if(it != ptrToZIndex.end())
-        perZMatches[it->second].emplace_back(pair);
-    }
-    for(int i = 0; i < (int)signalZs_.size(); i++)
-      signalZs_[i].setMatches(perZMatches[i]);
+    if(!anyDaughters) return;
 
     // Populate signalTracks_ from all Z match results
     for(const auto& genZ : signalZs_)
