@@ -514,6 +514,7 @@ void KUCMSDisplacedVertexMini::printEventSummaryTable() const {
     int         chargedDaus;
     int         inSV;
     std::string quality;
+    double      lxy;
   };
 
   std::vector<ZRow> rows;
@@ -568,6 +569,7 @@ void KUCMSDisplacedVertexMini::printEventSummaryTable() const {
         r.quality = "---";
       }
     }
+    r.lxy = z.Lxy();
     rows.emplace_back(r);
   }
 
@@ -578,8 +580,9 @@ void KUCMSDisplacedVertexMini::printEventSummaryTable() const {
   const int cw2 = 13;  // Charged  ("Charged Daus" = 12)
   const int cw3 = 9;   // In SV    ("In SV" = 5, data "99/99" = 5)
   const int cw4 = 18;  // Quality  ("ratio: 0.750" = 12)
-  // Total table width: 6 borders + 5*(col+2 padding)
-  const int tw = 6 + (cw0+2) + (cw1+2) + (cw2+2) + (cw3+2) + (cw4+2); // = 70
+  const int cw5 = 9;   // Lxy      ("Lxy [cm]" = 8)
+  // Total table width: 7 borders + 6*(col+2 padding)
+  const int tw = 7 + (cw0+2) + (cw1+2) + (cw2+2) + (cw3+2) + (cw4+2) + (cw5+2); // = 83
 
   // Helpers
   auto centered = [](const std::string& s, int w) -> std::string {
@@ -594,14 +597,14 @@ void KUCMSDisplacedVertexMini::printEventSummaryTable() const {
   auto hline = [&](const std::string& l, const std::string& m, const std::string& r) -> std::string {
     return l + std::string(cw0+2,'-') + m + std::string(cw1+2,'-') + m
              + std::string(cw2+2,'-') + m + std::string(cw3+2,'-') + m
-             + std::string(cw4+2,'-') + r;
+             + std::string(cw4+2,'-') + m + std::string(cw5+2,'-') + r;
   };
   auto dataRow = [&](const std::string& s0, const std::string& s1,
                      const std::string& s2, const std::string& s3,
-                     const std::string& s4) -> std::string {
+                     const std::string& s4, const std::string& s5) -> std::string {
     return "| " + centered(s0,cw0) + " | " + lpad(s1,cw1) + " | "
                + centered(s2,cw2) + " | " + centered(s3,cw3) + " | "
-               + lpad(s4,cw4) + " |";
+               + lpad(s4,cw4) + " | " + centered(s5,cw5) + " |";
   };
   // Full-width banner line (spans all columns)
   auto banner = [&](const std::string& s) -> std::string {
@@ -629,12 +632,14 @@ void KUCMSDisplacedVertexMini::printEventSummaryTable() const {
                  + "   [ " + std::to_string(nLepSVs) + " leptonic"
                  + "  |  " + std::to_string(nHadSVs) + " hadronic ]") << "\n";
   cout << hline("+", "+", "+") << "\n";
-  cout << dataRow("Z #", "Type", "Charged Daus", "In SV", "Quality") << "\n";
+  cout << dataRow("Z #", "Type", "Charged Daus", "In SV", "Quality", "Lxy [cm]") << "\n";
   cout << hline("+", "+", "+") << "\n";
   for(const auto& r : rows) {
     const std::string inSvStr = std::to_string(r.inSV) + "/" + std::to_string(r.chargedDaus);
+    std::ostringstream lxyOss;
+    lxyOss << std::fixed << std::setprecision(2) << r.lxy;
     cout << dataRow(std::to_string(r.idx), r.type,
-                    std::to_string(r.chargedDaus), inSvStr, r.quality) << "\n";
+                    std::to_string(r.chargedDaus), inSvStr, r.quality, lxyOss.str()) << "\n";
   }
   cout << hline("+", "+", "+") << "\n\n";
 
