@@ -8,6 +8,7 @@ options = VarParsing('python')
 ## Flags
 options.register('multicrab',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'swtich to use muticrab paramters');
 options.register('hasGenInfo',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to get pcalo in mc');
+options.register('verboseEventTable',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'print per-event displaced vertex summary table');
 options.register('eventFilter','MET100',VarParsing.multiplicity.singleton,VarParsing.varType.string,'filter to use in event processing');
 options.register('doSV',True,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to run displaced SVs');
 options.register('doDisEle',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag ro run displaced electrons');
@@ -180,7 +181,11 @@ process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
 
 genInfo = True
 #genInfo = False
-if options.multicrab == True : genInfo = options.hasGenInfo		   
+if options.multicrab == True : genInfo = options.hasGenInfo
+
+verboseEventTable = False
+#verboseEventTable = True
+if options.multicrab == True : verboseEventTable = options.verboseEventTable
 
 ecalIsoInputsF17 = 'RecoEgamma/ElectronIdentification/data/Fall17/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_94X.txt'
 ecalruneraIsoInputsW22 = 'RecoEgamma/ElectronIdentification/data/Run3_Winter22/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_122X.txt'
@@ -265,6 +270,7 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizerMini",
 
                               ## flags
                               hasGenInfo = cms.bool(genInfo),
+                              verboseEventTable = cms.bool(verboseEventTable),
                               doGenMotherChase = cms.bool(genMomChase),
                               makeTriggerList =  cms.bool(makeTrigList),
                               doProbeOut = cms.bool(probeout),

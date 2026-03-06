@@ -54,7 +54,9 @@
 //  KUCMS Object includes
 #include "KUCMSObjectBase.hh"
 
+#include <iomanip>
 #include <map>
+#include <sstream>
 
 using namespace edm;
 
@@ -140,6 +142,8 @@ private:
   TrackVertexSet buildTrackVertexSet(const reco::Vertex &vertex, const TransientTrackBuilder* ttBuilder) const;
   // Look up which Z mode a track came from (returns ZDecayMode::Unknown if not a signal track)
   ZDecayMode getZModeFromTrack(const reco::Track &track) const;
+  // Print a per-event summary table (only when leptonic/hadronic Zs are present)
+  void printEventSummaryTable() const;
 
 };//<<>>class KUCMSDisplacedVertexMini : public KUCMSObjectBase
 
@@ -148,6 +152,7 @@ KUCMSDisplacedVertexMini::KUCMSDisplacedVertexMini( const edm::ParameterSet& iCo
   // ---- end constructor initilizations  --------------------------
 
   cfFlag.set( "hasGenInfo", iConfig.existsAs<bool>("hasGenInfo") ? iConfig.getParameter<bool>("hasGenInfo") : true );
+  cfFlag.set( "verboseEventTable", iConfig.existsAs<bool>("verboseEventTable") ? iConfig.getParameter<bool>("verboseEventTable") : false );
 
   trackAssociator_.useDefaultPropagator();
 
@@ -480,9 +485,160 @@ void KUCMSDisplacedVertexMini::ProcessEvent( ItemManager<float>& geVar ){
       Branches.fillBranch("GenVertex_nMuon", unsigned(nSigMuons));
       Branches.fillBranch("GenVertex_nHadronic", unsigned(nSigHadrons));
 
+      if(cfFlag("verboseEventTable")) printEventSummaryTable();
+
     }//<<>>if(cfFlag("hasGenInfo"))
 
 }//<<>>void KUCMSDisplacedVertexMini::ProcessEvent()
+
+
+void KUCMSDisplacedVertexMini::printEventSummaryTable() const {
+
+  // Tally signal Z types (only print when there is at least one leptonic or hadronic Z)
+  int nElec(0), nMuon(0), nHad(0);
+  for(const auto& z : signalZs_) {
+    if(z.mode() == ZDecayMode::Electron)  nElec++;
+    else if(z.mode() == ZDecayMode::Muon) nMuon++;
+    else if(z.isHadronic())               nHad++;
+  }
+  if(nElec + nMuon + nHad == 0) return;
+
+  const int nInputTracks = (int)muonEnhancedTracksHandle_->size();
+  const int nLepSVs      = (int)leptonicSVsHandle_->size();
+  const int nHadSVs      = (int)hadronicSVsHandle_->size();
+
+  // Collect per-Z row data
+  struct ZRow {
+    int         idx;
+    std::string type;
+    int         chargedDaus;
+    int         inSV;
+    std::string quality;
+  };
+
+  std::vector<ZRow> rows;
+  int zIdx = 0;
+  for(const auto& z : signalZs_) {
+    if(!z.isLeptonic() && !z.isHadronic()) { zIdx++; continue; }
+
+    ZRow r;
+    r.idx        = zIdx++;
+    r.chargedDaus = (int)z.getTrackableDaughters().size();
+
+    if(z.mode() == ZDecayMode::Electron)  r.type = "Electron";
+    else if(z.mode() == ZDecayMode::Muon) r.type = "Muon";
+    else                                   r.type = "Hadronic";
+
+    // Count how many of this Z's matched tracks appear in any reco SV
+    r.inSV = 0;
+    for(const auto& pair : z.getMatches()) {
+      const reco::Track& trk = pair.GetObjectA().track();
+      bool found = false;
+      for(const auto& vtx : *leptonicSVsHandle_)
+        if(VertexHelper::isInVertex(vtx, trk)) { found = true; break; }
+      if(!found)
+        for(const auto& vtx : *hadronicSVsHandle_)
+          if(VertexHelper::isInVertex(vtx, trk)) { found = true; break; }
+      if(found) r.inSV++;
+    }
+
+    // Quality: leptonic -> GOLD/SILVER/BRONZE, hadronic -> best match ratio
+    if(z.isLeptonic()) {
+      bool gold(false), silver(false), bronze(false);
+      for(const auto& vtx : *leptonicSVsHandle_) {
+        if(z.isGold(vtx))        { gold   = true; break; }
+        if(z.isSilver(vtx))        silver = true;
+        if(z.isBronze(vtx))        bronze = true;
+      }
+      if(gold)        r.quality = "GOLD";
+      else if(silver) r.quality = "SILVER";
+      else if(bronze) r.quality = "BRONZE";
+      else            r.quality = "---";
+    } else {
+      double bestRatio = -1.;
+      for(const auto& vtx : *hadronicSVsHandle_) {
+        const double ratio = z.matchRatio(vtx);
+        if(ratio > bestRatio) bestRatio = ratio;
+      }
+      if(bestRatio >= 0.) {
+        std::ostringstream oss;
+        oss << std::fixed << std::setprecision(3) << bestRatio;
+        r.quality = "ratio: " + oss.str();
+      } else {
+        r.quality = "---";
+      }
+    }
+    rows.emplace_back(r);
+  }
+
+  // ── Layout ───────────────────────────────────────────────────────────────
+  // Column content widths (no padding)
+  const int cw0 = 4;   // Z#
+  const int cw1 = 10;  // Type     ("Hadronic" = 8)
+  const int cw2 = 13;  // Charged  ("Charged Daus" = 12)
+  const int cw3 = 9;   // In SV    ("In SV" = 5, data "99/99" = 5)
+  const int cw4 = 18;  // Quality  ("ratio: 0.750" = 12)
+  // Total table width: 6 borders + 5*(col+2 padding)
+  const int tw = 6 + (cw0+2) + (cw1+2) + (cw2+2) + (cw3+2) + (cw4+2); // = 70
+
+  // Helpers
+  auto centered = [](const std::string& s, int w) -> std::string {
+    int sp = w - (int)s.size();
+    if(sp <= 0) return s.substr(0, w);
+    return std::string(sp/2, ' ') + s + std::string(sp - sp/2, ' ');
+  };
+  auto lpad = [](const std::string& s, int w) -> std::string {
+    if((int)s.size() >= w) return s.substr(0, w);
+    return s + std::string(w - (int)s.size(), ' ');
+  };
+  auto hline = [&](const std::string& l, const std::string& m, const std::string& r) -> std::string {
+    return l + std::string(cw0+2,'-') + m + std::string(cw1+2,'-') + m
+             + std::string(cw2+2,'-') + m + std::string(cw3+2,'-') + m
+             + std::string(cw4+2,'-') + r;
+  };
+  auto dataRow = [&](const std::string& s0, const std::string& s1,
+                     const std::string& s2, const std::string& s3,
+                     const std::string& s4) -> std::string {
+    return "| " + centered(s0,cw0) + " | " + lpad(s1,cw1) + " | "
+               + centered(s2,cw2) + " | " + centered(s3,cw3) + " | "
+               + lpad(s4,cw4) + " |";
+  };
+  // Full-width banner line (spans all columns)
+  auto banner = [&](const std::string& s) -> std::string {
+    const int inner = tw - 2;
+    if((int)s.size() >= inner) return "|" + s.substr(0, inner) + "|";
+    return "|" + s + std::string(inner - (int)s.size(), ' ') + "|";
+  };
+  const std::string boxTop = "+" + std::string(tw-2, '-') + "+";
+
+  // ── Type summary string ───────────────────────────────────────────────────
+  std::string types;
+  if(nElec) types += std::to_string(nElec) + " electron";
+  if(nMuon) { if(!types.empty()) types += ", "; types += std::to_string(nMuon) + " muon"; }
+  if(nHad)  { if(!types.empty()) types += ", "; types += std::to_string(nHad)  + " hadronic"; }
+
+  // ── Print ─────────────────────────────────────────────────────────────────
+  cout << "\n";
+  cout << boxTop << "\n";
+  cout << banner("  DISPLACED VERTEX EVENT SUMMARY") << "\n";
+  cout << banner("") << "\n";
+  cout << banner("  Input tracks : " + std::to_string(nInputTracks)) << "\n";
+  cout << banner("  Z bosons found: " + std::to_string(nElec+nMuon+nHad)
+                 + "  (" + types + ")") << "\n";
+  cout << banner("  Reco SVs: " + std::to_string(nLepSVs+nHadSVs) + " total"
+                 + "   [ " + std::to_string(nLepSVs) + " leptonic"
+                 + "  |  " + std::to_string(nHadSVs) + " hadronic ]") << "\n";
+  cout << hline("+", "+", "+") << "\n";
+  cout << dataRow("Z #", "Type", "Charged Daus", "In SV", "Quality") << "\n";
+  cout << hline("+", "+", "+") << "\n";
+  for(const auto& r : rows) {
+    const std::string inSvStr = std::to_string(r.inSV) + "/" + std::to_string(r.chargedDaus);
+    cout << dataRow(std::to_string(r.idx), r.type,
+                    std::to_string(r.chargedDaus), inSvStr, r.quality) << "\n";
+  }
+  cout << hline("+", "+", "+") << "\n\n";
+
+}//<<>>void KUCMSDisplacedVertexMini::printEventSummaryTable()
 
 
 TrackVertexSet KUCMSDisplacedVertexMini::buildTrackVertexSet(const reco::Vertex &vertex, const TransientTrackBuilder* ttBuilder) const {
