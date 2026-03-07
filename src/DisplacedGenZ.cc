@@ -64,19 +64,8 @@ reco::TrackCollection DisplacedGenZ::getTracks() const {
 int DisplacedGenZ::nMatchedInVertex(const reco::Vertex& vtx) const {
   int count(0);
   for(const auto& pair : matchedTracks_) {
-    const reco::Track& matchedTrack = pair.GetObjectA().track();
-    bool found = VertexHelper::isInVertex(vtx, matchedTrack);
-    if(isLeptonic()) {
-      std::cout << "[nMatchedInVertex DEBUG] leptonic Z"
-                << " matchedTrack pt=" << matchedTrack.pt()
-                << " eta=" << matchedTrack.eta()
-                << " vtx.tracksSize=" << vtx.tracksSize()
-                << " found=" << found << "\n";
-      for(const auto& vtxTrack : vtx.tracks())
-        std::cout << "  vtxTrack pt=" << vtxTrack->pt()
-                  << " eta=" << vtxTrack->eta() << "\n";
-    }
-    if(found) count++;
+    if(VertexHelper::isInVertex(vtx, pair.GetObjectA().track()))
+      count++;
   }
   return count;
 }
@@ -190,17 +179,6 @@ std::vector<DisplacedGenZ> DisplacedGenZ::build(
     return nullptr;
   };
 
-  // DEBUG: dump every pruned gen particle and whether it passes the leptonic filter
-  std::cout << "[DisplacedGenZ::build] DEBUG --- pruned collection scan ---\n";
-  for(const auto& gp : *prunedHandle) {
-    std::cout << "  pruned pdgId=" << gp.pdgId()
-              << " status=" << gp.status()
-              << " charge=" << gp.charge()
-              << " pt=" << gp.pt()
-              << " isLastCopy=" << gp.isLastCopy()
-              << "\n";
-  }
-
   // Leptonic daughters: status=1 charged particles in the pruned collection
   for(const auto& gp : *prunedHandle) {
     if(gp.status() != 1 || gp.charge() == 0) continue;
@@ -217,15 +195,8 @@ std::vector<DisplacedGenZ> DisplacedGenZ::build(
   }
 
   // 4. Instantiate one DisplacedGenZ per signal Z
-  for(const auto* z : signalZs) {
-    ZDecayMode mode = classifyMode(z);
-    const auto& daus = daughterMap[z];
-    std::cout << "[DisplacedGenZ::build] DEBUG signal Z pdgId=23"
-              << " mode=" << int(mode)
-              << " nDaughters=" << daus.size()
-              << " Lxy=" << std::hypot(z->vx(), z->vy()) << "\n";
-    genZs.emplace_back(z, daus, mode);
-  }
+  for(const auto* z : signalZs)
+    genZs.emplace_back(z, daughterMap[z], classifyMode(z));
 
   return genZs;
 }

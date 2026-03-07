@@ -304,24 +304,35 @@ void KUCMSDisplacedVertexMini::LoadEvent( const edm::Event& iEvent, const edm::E
     // Build DisplacedGenZ objects from the pruned+packed gen collections
     signalZs_ = DisplacedGenZ::build(prunedGenHandle_, genHandle_);
 
+    // Collect tracks from pre-reconstructed leptonic SVs. Leptonic gen matching is
+    // restricted to these tracks so the Hungarian picks the actual displaced
+    // muon/electron that formed the vertex, not an unrelated high-pt track from
+    // the full muon-enhanced collection that happens to have a smaller naive DeltaR.
+    std::vector<reco::TransientTrack> lepSVTracks;
+    for(const auto& vtx : *leptonicSVsHandle_) {
+      for(auto it = vtx.tracks_begin(); it != vtx.tracks_end(); ++it) {
+        reco::TrackRef ref = it->castTo<reco::TrackRef>();
+        if(ref.isNonnull()) lepSVTracks.emplace_back(ttBuilder->build(*ref));
+      }
+    }
+
     // Match tracks to each Z boson's daughters independently (no cross-Z competition).
-    // Uses reco::Candidate* daughters: reco::GenParticle* for leptonic Z (from pruned),
-    // pat::PackedGenParticle* for hadronic Z (from packed) — both cast by build().
     bool anyDaughters = false;
     for(int i = 0; i < (int)signalZs_.size(); i++) {
-      const std::string modeStr = signalZs_[i].isLeptonic() ? "leptonic"
-                                : signalZs_[i].isHadronic() ? "hadronic" : "other";
-      auto daughters = signalZs_[i].getTrackableDaughters();
-      std::cout << "[KUCMS DEBUG] Z[" << i << "] mode=" << modeStr
-                << " trackableDaughters=" << daughters.size()
-                << " ttracks=" << ttracks.size() << "\n";
       if(!signalZs_[i].isLeptonic() && !signalZs_[i].isHadronic()) continue;
+      auto daughters = signalZs_[i].getTrackableDaughters();
       if(daughters.empty()) continue;
       anyDaughters = true;
-      DeltaRMatchHungarian<reco::TransientTrack, const reco::Candidate*>
-          matcher(ttracks, daughters);
-      signalZs_[i].setMatches(matcher.GetPairedObjects());
-      std::cout << "[KUCMS DEBUG] Z[" << i << "] matched pairs=" << matcher.GetPairedObjects().size() << "\n";
+      if(signalZs_[i].isLeptonic()) {
+        // Use only leptonic SV tracks — mirrors how HyddraSVAnalyzer does gen matching
+        DeltaRMatchHungarian<reco::TransientTrack, const reco::Candidate*>
+            matcher(lepSVTracks, daughters);
+        signalZs_[i].setMatches(matcher.GetPairedObjects());
+      } else {
+        DeltaRMatchHungarian<reco::TransientTrack, const reco::Candidate*>
+            matcher(ttracks, daughters);
+        signalZs_[i].setMatches(matcher.GetPairedObjects());
+      }
     }
 
     if(!anyDaughters) return;
@@ -466,11 +477,6 @@ void KUCMSDisplacedVertexMini::ProcessEvent( ItemManager<float>& geVar ){
         Branches.fillBranch("GenVertex_isElectron", bool(genZ.mode() == ZDecayMode::Electron));
         Branches.fillBranch("GenVertex_isMuon", bool(genZ.mode() == ZDecayMode::Muon));
         Branches.fillBranch("GenVertex_isHadronic", bool(genZ.isHadronic()));
-        if(genZ.isLeptonic())
-          std::cout << "[ProcessEvent DEBUG] leptonic Z hasTracks=" << genZ.hasTracks()
-                    << " passSelectionAndCuts=" << passSelectionAndCuts
-                    << " nLepSVs=" << leptonicSVsHandle_->size()
-                    << " nHadSVs=" << hadronicSVsHandle_->size() << "\n";
         Branches.fillBranch("GenVertex_passSelection", bool(genZ.hasTracks()));
         Branches.fillBranch("GenVertex_passSelectionAndCuts", bool(passSelectionAndCuts));
 
