@@ -2,7 +2,7 @@
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/VertexHelper.h"
 
 void DisplacedGenZ::cleanDaughters() {
-  std::vector<const pat::PackedGenParticle*> cleaned;
+  std::vector<const reco::Candidate*> cleaned;
   cleaned.reserve(daughters_.size());
   for(const auto* d : daughters_) {
     if(d->status() == 1)
@@ -12,7 +12,7 @@ void DisplacedGenZ::cleanDaughters() {
 }
 
 DisplacedGenZ::DisplacedGenZ(const reco::GenParticle* zBoson,
-			     const std::vector<const pat::PackedGenParticle*>& daughters,
+			     const std::vector<const reco::Candidate*>& daughters,
 			     ZDecayMode mode)
   : zBoson_(zBoson), daughters_(daughters), decayMode_(mode)
 {
@@ -36,8 +36,8 @@ DisplacedGenZ::DisplacedGenZ(const reco::GenParticle* zBoson,
   }
 }
 
-std::vector<const pat::PackedGenParticle*> DisplacedGenZ::getTrackableDaughters() const {
-  std::vector<const pat::PackedGenParticle*> trackable;
+std::vector<const reco::Candidate*> DisplacedGenZ::getTrackableDaughters() const {
+  std::vector<const reco::Candidate*> trackable;
   for(const auto* d : daughters_) {
     if(d->charge() != 0)
       trackable.push_back(d);
@@ -45,8 +45,8 @@ std::vector<const pat::PackedGenParticle*> DisplacedGenZ::getTrackableDaughters(
   return trackable;
 }
 
-std::vector<const pat::PackedGenParticle*> DisplacedGenZ::getNeutralDaughters() const {
-  std::vector<const pat::PackedGenParticle*> neutrals;
+std::vector<const reco::Candidate*> DisplacedGenZ::getNeutralDaughters() const {
+  std::vector<const reco::Candidate*> neutrals;
   for(const auto* d : daughters_) {
     if(d->charge() == 0) neutrals.push_back(d);
   }
@@ -94,14 +94,13 @@ double DisplacedGenZ::matchRatio(const reco::Vertex& vtx, double threshold) cons
   int count(0);
   for(const auto& pair : matchedTracks_) {
     const reco::Track track(pair.GetObjectA().track());
-    const double genPt(pair.GetObjectB()->pt());
+    const reco::Candidate* gen(pair.GetObjectB());
+    const double genPt(gen->pt());
     const double trackPt(track.pt());
     const double relPtDiff((genPt - trackPt) / genPt);
-    // Recompute naive deltaR (track direction at beamline PCA vs gen direction).
-    // The helical-corrected cost stored in GetDeltaR() can be corrupted by imprecise
-    // PackedGenParticle vertex coordinates, producing deltaR values larger than the
-    // naive one and causing the quality cut to fail spuriously.
-    const pat::PackedGenParticle* gen(pair.GetObjectB());
+    // Use naive eta/phi deltaR. The helical-corrected cost stored in GetDeltaR()
+    // can be corrupted by imprecise gen vertex coordinates (esp. PackedGenParticle),
+    // producing deltaR values larger than the naive one and causing spurious failures.
     const double dEta(track.eta() - gen->eta()), dPhi(track.phi() - gen->phi());
     const double deltaR(std::sqrt(dEta*dEta + dPhi*dPhi));
 
@@ -145,37 +144,59 @@ std::vector<DisplacedGenZ> DisplacedGenZ::build(
 
   if(signalZs.empty()) return genZs;
 
-  // 2. Map packed daughters to their parent Z
-  std::map<const reco::GenParticle*, std::vector<const pat::PackedGenParticle*>> daughterMap;
+  // 2. Determine decay mode for each Z (needed before collecting daughters)
+  auto classifyMode = [](const reco::GenParticle* z) -> ZDecayMode {
+    if(z->numberOfDaughters() == 0) return ZDecayMode::Unknown;
+    int firstDId = std::abs(z->daughter(0)->pdgId());
+    if(firstDId == 11)                                    return ZDecayMode::Electron;
+    if(firstDId == 13)                                    return ZDecayMode::Muon;
+    if(firstDId == 15)                                    return ZDecayMode::Tau;
+    if(firstDId >= 1 && firstDId <= 5)                    return ZDecayMode::Hadronic;
+    if(firstDId == 12 || firstDId == 14 || firstDId == 16) return ZDecayMode::Invisible;
+    return ZDecayMode::Unknown;
+  };
+
+  // 3. Collect daughters, routing by collection:
+  //    - Leptonic Z (e, mu, tau): search the PRUNED collection for status=1 charged
+  //      particles whose mother chain leads back to this signal Z. This correctly finds
+  //      the final-state lepton after FSR, which may not be a direct daughter of the Z.
+  //    - Hadronic Z: final-state pions/kaons live in the PACKED collection; find them by
+  //      tracing each packed particle's mother chain back to the signal Z.
+  //    Both cases use the same mother-chain pattern, just in different collections.
+  std::map<const reco::GenParticle*, std::vector<const reco::Candidate*>> daughterMap;
   for(const auto* z : signalZs)
     daughterMap[z] = {};
 
-  for(const auto& gp : *packedHandle) {
-    const reco::Candidate* mom = gp.mother(0);
+  // Helper: walk a particle's mother chain; if a signal Z is found, return its pointer.
+  auto getSignalZAncestor = [&](const reco::Candidate* mom) -> const reco::GenParticle* {
     while(mom) {
       if(mom->pdgId() == 23) {
         const reco::GenParticle* zCand = dynamic_cast<const reco::GenParticle*>(mom);
-        if(daughterMap.find(zCand) != daughterMap.end())
-          daughterMap[zCand].push_back(&gp);
-        break;
+        return (zCand && daughterMap.count(zCand)) ? zCand : nullptr;
       }
       mom = (mom->numberOfMothers() > 0) ? mom->mother(0) : nullptr;
     }
+    return nullptr;
+  };
+
+  // Leptonic daughters: status=1 charged particles in the pruned collection
+  for(const auto& gp : *prunedHandle) {
+    if(gp.status() != 1 || gp.charge() == 0) continue;
+    if(const auto* z = getSignalZAncestor(gp.mother(0)))
+      if(classifyMode(z) != ZDecayMode::Hadronic)
+        daughterMap[z].push_back(&gp);
   }
 
-  // 3. Classify decay mode and instantiate
-  for(const auto* z : signalZs) {
-    ZDecayMode mode = ZDecayMode::Unknown;
-    if(z->numberOfDaughters() > 0) {
-      int firstDId = std::abs(z->daughter(0)->pdgId());
-      if(firstDId == 11)                          mode = ZDecayMode::Electron;
-      else if(firstDId == 13)                     mode = ZDecayMode::Muon;
-      else if(firstDId == 15)                     mode = ZDecayMode::Tau;
-      else if(firstDId >= 1 && firstDId <= 5)     mode = ZDecayMode::Hadronic;
-      else if(firstDId == 12 || firstDId == 14 || firstDId == 16) mode = ZDecayMode::Invisible;
-    }
-    genZs.emplace_back(z, daughterMap[z], mode);
+  // Hadronic daughters: all particles in the packed collection
+  for(const auto& gp : *packedHandle) {
+    if(const auto* z = getSignalZAncestor(gp.mother(0)))
+      if(classifyMode(z) == ZDecayMode::Hadronic)
+        daughterMap[z].push_back(&gp);
   }
+
+  // 4. Instantiate one DisplacedGenZ per signal Z
+  for(const auto* z : signalZs)
+    genZs.emplace_back(z, daughterMap[z], classifyMode(z));
 
   return genZs;
 }

@@ -305,15 +305,15 @@ void KUCMSDisplacedVertexMini::LoadEvent( const edm::Event& iEvent, const edm::E
     signalZs_ = DisplacedGenZ::build(prunedGenHandle_, genHandle_);
 
     // Match tracks to each Z boson's daughters independently (no cross-Z competition).
-    // This mirrors HyddraSVAnalyzer's per-vertex matching and ensures that daughters
-    // of one Z cannot steal good track matches from another Z's daughters.
+    // Uses reco::Candidate* daughters: reco::GenParticle* for leptonic Z (from pruned),
+    // pat::PackedGenParticle* for hadronic Z (from packed) — both cast by build().
     bool anyDaughters = false;
     for(int i = 0; i < (int)signalZs_.size(); i++) {
       if(!signalZs_[i].isLeptonic() && !signalZs_[i].isHadronic()) continue;
       auto daughters = signalZs_[i].getTrackableDaughters();
       if(daughters.empty()) continue;
       anyDaughters = true;
-      DeltaRMatchHungarian<reco::TransientTrack, const pat::PackedGenParticle*>
+      DeltaRMatchHungarian<reco::TransientTrack, const reco::Candidate*>
           matcher(ttracks, daughters);
       signalZs_[i].setMatches(matcher.GetPairedObjects());
     }

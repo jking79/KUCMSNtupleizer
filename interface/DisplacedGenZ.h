@@ -3,6 +3,7 @@
 #include <TVector3.h>
 #include <Math/Vector4D.h>
 
+#include "DataFormats/Candidate/interface/Candidate.h"
 #include "DataFormats/PatCandidates/interface/PackedGenParticle.h"
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
@@ -23,21 +24,21 @@ enum class ZDecayMode { Hadronic, Electron, Muon, Tau, Invisible, Unknown };
 
 class DisplacedGenZ {
  public:
-  using ZMatchPairs = PairedObjectCollection<reco::TransientTrack, const pat::PackedGenParticle*>;
+  // Both reco::GenParticle (pruned, leptonic) and pat::PackedGenParticle (packed, hadronic)
+  // inherit from reco::Candidate, so one unified daughter/match type covers both cases.
+  using ZMatchPairs = PairedObjectCollection<reco::TransientTrack, const reco::Candidate*>;
 
  private:
-  // --- encapsulated Data ---
   typedef reco::Candidate::LorentzVector LorentzVector;
   const reco::GenParticle* zBoson_;
-  std::vector<const pat::PackedGenParticle*> daughters_;
+  // Unified daughter list: pruned GenParticle* for leptonic Z, PackedGenParticle* for hadronic Z
+  std::vector<const reco::Candidate*> daughters_;
   ZDecayMode decayMode_;
 
-  // Cached variables to avoid recomputing
   double lxy_;
   double lxyz_;
   LorentzVector p4SumNeutral_, p4SumTrackable_, p4SumAll_;
 
-  // Track-gen match results (set after global Hungarian matching)
   ZMatchPairs matchedTracks_;
 
   void cleanDaughters();
@@ -46,7 +47,7 @@ class DisplacedGenZ {
  public:
   // --- Constructor ---
   DisplacedGenZ(const reco::GenParticle* zBoson,
-		const std::vector<const pat::PackedGenParticle*>& daughters,
+		const std::vector<const reco::Candidate*>& daughters,
 		ZDecayMode mode);
 
   // --- Public Getters ---
@@ -67,11 +68,11 @@ class DisplacedGenZ {
   double Lxyz() const { return lxyz_; }
 
   ZDecayMode mode() const { return decayMode_; }
-  const std::vector<const pat::PackedGenParticle*>& getAllDaughters() const { return daughters_; }
-  std::vector<const pat::PackedGenParticle*> getTrackableDaughters() const;
-  std::vector<const pat::PackedGenParticle*> getNeutralDaughters() const;
+  const std::vector<const reco::Candidate*>& getAllDaughters() const { return daughters_; }
+  std::vector<const reco::Candidate*> getTrackableDaughters() const;
+  std::vector<const reco::Candidate*> getNeutralDaughters() const;
 
-  // --- Match results (populated after global Hungarian matching) ---
+  // --- Match results (populated after per-Z Hungarian matching) ---
   void setMatches(const ZMatchPairs& matches) { matchedTracks_ = matches; }
   bool hasTracks() const { return !matchedTracks_.empty(); }
   const ZMatchPairs& getMatches() const { return matchedTracks_; }
@@ -97,6 +98,8 @@ class DisplacedGenZ {
   bool isTau() const { return decayMode_ == ZDecayMode::Tau; }
   bool isInvisible() const { return decayMode_ == ZDecayMode::Invisible; }
 
+  // Factory: searches both the pruned collection (leptonic daughters) and the packed
+  // collection (hadronic daughters) so every signal Z gets the right daughter list.
   static std::vector<DisplacedGenZ> build(
       const edm::Handle<std::vector<reco::GenParticle>>& prunedHandle,
       const edm::Handle<std::vector<pat::PackedGenParticle>>& packedHandle);
