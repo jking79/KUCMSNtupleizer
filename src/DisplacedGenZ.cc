@@ -64,8 +64,19 @@ reco::TrackCollection DisplacedGenZ::getTracks() const {
 int DisplacedGenZ::nMatchedInVertex(const reco::Vertex& vtx) const {
   int count(0);
   for(const auto& pair : matchedTracks_) {
-    if(VertexHelper::isInVertex(vtx, pair.GetObjectA().track()))
-      count++;
+    const reco::Track& matchedTrack = pair.GetObjectA().track();
+    bool found = VertexHelper::isInVertex(vtx, matchedTrack);
+    if(isLeptonic()) {
+      std::cout << "[nMatchedInVertex DEBUG] leptonic Z"
+                << " matchedTrack pt=" << matchedTrack.pt()
+                << " eta=" << matchedTrack.eta()
+                << " vtx.tracksSize=" << vtx.tracksSize()
+                << " found=" << found << "\n";
+      for(const auto& vtxTrack : vtx.tracks())
+        std::cout << "  vtxTrack pt=" << vtxTrack->pt()
+                  << " eta=" << vtxTrack->eta() << "\n";
+    }
+    if(found) count++;
   }
   return count;
 }

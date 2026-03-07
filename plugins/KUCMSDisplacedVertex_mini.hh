@@ -466,6 +466,11 @@ void KUCMSDisplacedVertexMini::ProcessEvent( ItemManager<float>& geVar ){
         Branches.fillBranch("GenVertex_isElectron", bool(genZ.mode() == ZDecayMode::Electron));
         Branches.fillBranch("GenVertex_isMuon", bool(genZ.mode() == ZDecayMode::Muon));
         Branches.fillBranch("GenVertex_isHadronic", bool(genZ.isHadronic()));
+        if(genZ.isLeptonic())
+          std::cout << "[ProcessEvent DEBUG] leptonic Z hasTracks=" << genZ.hasTracks()
+                    << " passSelectionAndCuts=" << passSelectionAndCuts
+                    << " nLepSVs=" << leptonicSVsHandle_->size()
+                    << " nHadSVs=" << hadronicSVsHandle_->size() << "\n";
         Branches.fillBranch("GenVertex_passSelection", bool(genZ.hasTracks()));
         Branches.fillBranch("GenVertex_passSelectionAndCuts", bool(passSelectionAndCuts));
 
