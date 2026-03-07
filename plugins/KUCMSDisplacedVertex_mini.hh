@@ -309,13 +309,19 @@ void KUCMSDisplacedVertexMini::LoadEvent( const edm::Event& iEvent, const edm::E
     // pat::PackedGenParticle* for hadronic Z (from packed) — both cast by build().
     bool anyDaughters = false;
     for(int i = 0; i < (int)signalZs_.size(); i++) {
-      if(!signalZs_[i].isLeptonic() && !signalZs_[i].isHadronic()) continue;
+      const std::string modeStr = signalZs_[i].isLeptonic() ? "leptonic"
+                                : signalZs_[i].isHadronic() ? "hadronic" : "other";
       auto daughters = signalZs_[i].getTrackableDaughters();
+      std::cout << "[KUCMS DEBUG] Z[" << i << "] mode=" << modeStr
+                << " trackableDaughters=" << daughters.size()
+                << " ttracks=" << ttracks.size() << "\n";
+      if(!signalZs_[i].isLeptonic() && !signalZs_[i].isHadronic()) continue;
       if(daughters.empty()) continue;
       anyDaughters = true;
       DeltaRMatchHungarian<reco::TransientTrack, const reco::Candidate*>
           matcher(ttracks, daughters);
       signalZs_[i].setMatches(matcher.GetPairedObjects());
+      std::cout << "[KUCMS DEBUG] Z[" << i << "] matched pairs=" << matcher.GetPairedObjects().size() << "\n";
     }
 
     if(!anyDaughters) return;
