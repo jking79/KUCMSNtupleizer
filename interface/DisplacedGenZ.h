@@ -94,6 +94,8 @@ class DisplacedGenZ {
 
   // --- Mode helpers ---
   bool isLeptonic() const { return (decayMode_ == ZDecayMode::Electron || decayMode_ == ZDecayMode::Muon); }
+  bool isElectron() const { return decayMode_ == ZDecayMode::Electron; }
+  bool isMuon() const { return decayMode_ == ZDecayMode::Muon; }
   bool isHadronic() const { return (decayMode_ == ZDecayMode::Hadronic); }
   bool isTau() const { return decayMode_ == ZDecayMode::Tau; }
   bool isInvisible() const { return decayMode_ == ZDecayMode::Invisible; }

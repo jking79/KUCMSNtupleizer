@@ -59,6 +59,12 @@ private:
   void extractMuonTracks(const std::vector<pat::Muon>& muons,
                          reco::TrackCollection& outputTracks) const;
 
+  // Helper to add tracks to a merged collection, dropping any that fall within
+  // deltaR < 0.01 of a PF electron track in the reference collection.
+  void addTracksDeduped(const reco::TrackCollection& inputTracks,
+                        const reco::TrackCollection& electronTracks,
+                        reco::TrackCollection& outputTracks) const;
+
   // Input tokens
   edm::EDGetTokenT<pat::PackedCandidateCollection> pfCandidatesToken_;
   edm::EDGetTokenT<pat::PackedCandidateCollection> lostTracksToken_;
@@ -168,6 +174,26 @@ void MiniAODTrackProducer::extractMuonTracks(
   }
 }
 
+void MiniAODTrackProducer::addTracksDeduped(
+    const reco::TrackCollection& inputTracks,
+    const reco::TrackCollection& electronTracks,
+    reco::TrackCollection& outputTracks) const {
+
+  for (const auto& track : inputTracks) {
+    bool overlaps = false;
+    for (const auto& eTrack : electronTracks) {
+      double dEta = track.eta() - eTrack.eta();
+      double dPhi = std::fabs(track.phi() - eTrack.phi());
+      if (dPhi > M_PI) dPhi = 2.0 * M_PI - dPhi;
+      if (std::sqrt(dEta * dEta + dPhi * dPhi) < 0.01) {
+        overlaps = true;
+        break;
+      }
+    }
+    if (!overlaps) outputTracks.push_back(track);
+  }
+}
+
 void MiniAODTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   // Get input collections
   edm::Handle<pat::PackedCandidateCollection> pfCandidatesHandle;
@@ -231,36 +257,41 @@ void MiniAODTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
     extractMuonTracks(*displacedMuonsHandle, *displacedMuonGlobalTracks);
   }
 
-  // Build merged collections
-  // merged = pfCandidateTracks + lostTracks
-  mergedTracks->reserve(pfCandidateTracks->size() + lostTracks->size());
-  for (const auto& track : *pfCandidateTracks) {
-    mergedTracks->push_back(track);
-  }
-  for (const auto& track : *lostTracks) {
-    mergedTracks->push_back(track);
+  // Build PF electron reference tracks for deduplication (same quality cuts as extractTracks)
+  reco::TrackCollection pfElectronTracks;
+  if (pfCandidatesHandle.isValid()) {
+    for (const auto& cand : *pfCandidatesHandle) {
+      if (!cand.hasTrackDetails() || std::abs(cand.pdgId()) != 11) continue;
+      const reco::Track track = cand.pseudoTrack();
+      if (applyCuts_) {
+        if (track.pt() <= minPt_) continue;
+        if (track.normalizedChi2() >= maxNormalizedChi2_) continue;
+        if (ttBuilder != nullptr && pv != nullptr) {
+          reco::TransientTrack ttrack = ttBuilder->build(track);
+          auto ip2dResult = IPTools::signedTransverseImpactParameter(
+              ttrack, GlobalVector(track.px(), track.py(), track.pz()), *pv);
+          if (ip2dResult.first && std::fabs(ip2dResult.second.significance()) < minAbsSip2D_) continue;
+        }
+      }
+      pfElectronTracks.push_back(track);
+    }
   }
 
-  // mergedWithEle = pfCandidateTracks + eleLostTracks
-  mergedTracksWithEle->reserve(pfCandidateTracks->size() + eleLostTracks->size());
-  for (const auto& track : *pfCandidateTracks) {
-    mergedTracksWithEle->push_back(track);
-  }
-  for (const auto& track : *eleLostTracks) {
-    mergedTracksWithEle->push_back(track);
-  }
+  // Build merged collections: keep all PF candidates, deduplicate lost tracks vs PF electrons.
+  // Lost tracks within deltaR < 0.01 of any PF electron (abs(pdgId)==11) are dropped.
 
-  // mergedAll = pfCandidateTracks + lostTracks + eleLostTracks
-  mergedTracksAll->reserve(pfCandidateTracks->size() + lostTracks->size() + eleLostTracks->size());
-  for (const auto& track : *pfCandidateTracks) {
-    mergedTracksAll->push_back(track);
-  }
-  for (const auto& track : *lostTracks) {
-    mergedTracksAll->push_back(track);
-  }
-  for (const auto& track : *eleLostTracks) {
-    mergedTracksAll->push_back(track);
-  }
+  // merged = pfCandidateTracks + lostTracks (deduped vs PF electrons)
+  mergedTracks->insert(mergedTracks->end(), pfCandidateTracks->begin(), pfCandidateTracks->end());
+  addTracksDeduped(*lostTracks, pfElectronTracks, *mergedTracks);
+
+  // mergedWithEle = pfCandidateTracks + eleLostTracks (deduped vs PF electrons)
+  mergedTracksWithEle->insert(mergedTracksWithEle->end(), pfCandidateTracks->begin(), pfCandidateTracks->end());
+  addTracksDeduped(*eleLostTracks, pfElectronTracks, *mergedTracksWithEle);
+
+  // mergedAll = pfCandidateTracks + lostTracks (deduped) + eleLostTracks (deduped)
+  mergedTracksAll->insert(mergedTracksAll->end(), pfCandidateTracks->begin(), pfCandidateTracks->end());
+  addTracksDeduped(*lostTracks, pfElectronTracks, *mergedTracksAll);
+  addTracksDeduped(*eleLostTracks, pfElectronTracks, *mergedTracksAll);
 
   // Log some stats
   edm::LogInfo("MiniAODTrackProducer")

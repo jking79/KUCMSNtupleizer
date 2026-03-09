@@ -276,13 +276,11 @@ void KUCMSDisplacedVertexMini::LoadEvent( const edm::Event& iEvent, const edm::E
   for(const auto& vertex : *leptonicSVsHandle_) {
     TrackVertexSet tvs = buildTrackVertexSet(vertex, ttBuilder);
     if(tvs.isValid()) generalVertices_.add(tvs);
-    else cout << "An already valid leptonic vertex failed refitting" << endl;
   }
 
   for(const auto& vertex : *hadronicSVsHandle_) {
     TrackVertexSet tvs = buildTrackVertexSet(vertex, ttBuilder);
     if(tvs.isValid()) generalVertices_.add(tvs);
-    else cout << "An already valid hadronic vertex failed refitting" << endl;
   }
 
   MatchTracksToSC<reco::Track> assigner(iEvent, iSetup, magfield, ecalGeometry, trackAssocParameters_, generalVertices_.tracks(), *mergedSCsHandle_);
@@ -578,7 +576,7 @@ void KUCMSDisplacedVertexMini::printEventSummaryTable() const {
     rows.emplace_back(r);
   }
 
-  // ── Layout ───────────────────────────────────────────────────────────────
+  // Layout
   // Column content widths (no padding)
   const int cw0 = 4;   // Z#
   const int cw1 = 10;  // Type     ("Hadronic" = 8)
@@ -619,13 +617,13 @@ void KUCMSDisplacedVertexMini::printEventSummaryTable() const {
   };
   const std::string boxTop = "+" + std::string(tw-2, '-') + "+";
 
-  // ── Type summary string ───────────────────────────────────────────────────
+  // Type summary string
   std::string types;
   if(nElec) types += std::to_string(nElec) + " electron";
   if(nMuon) { if(!types.empty()) types += ", "; types += std::to_string(nMuon) + " muon"; }
   if(nHad)  { if(!types.empty()) types += ", "; types += std::to_string(nHad)  + " hadronic"; }
 
-  // ── Print ─────────────────────────────────────────────────────────────────
+  // Print
   cout << "\n";
   cout << boxTop << "\n";
   cout << banner("  DISPLACED VERTEX EVENT SUMMARY") << "\n";
@@ -657,8 +655,6 @@ TrackVertexSet KUCMSDisplacedVertexMini::buildTrackVertexSet(const reco::Vertex 
   for(auto it = vertex.tracks_begin(); it != vertex.tracks_end(); ++it) {
     reco::TrackRef ref = it->castTo<reco::TrackRef>();
     if(ref.isNonnull()) trackRefs.emplace_back(ref);
-    else
-      cout << "This is fucked" << endl;
   }
   return TrackVertexSet(trackRefs, ttBuilder);
 }
