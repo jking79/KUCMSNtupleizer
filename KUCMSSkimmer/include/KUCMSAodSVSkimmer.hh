@@ -309,6 +309,7 @@ class KUCMSAodSkimmer : public llpgtree {
 	//std::map< std::string, bool > hemBits;
 	ItemManager<bool> hemBits;
 
+    std::vector<bool> allphoBaseline;
   	std::vector<float> allphowtime;
   	std::vector<float> alljetwtime;
     std::vector<int> diJetIndex;
