@@ -226,6 +226,7 @@ if [[ ! -f "$CONFIG" ]]; then
     echo -e "${RED}Error: Config file not found: $CONFIG${NC}"
     exit 1
 fi
+CONFIG=$(realpath "$CONFIG")
 
 if ! command -v parallel &>/dev/null; then
     echo -e "${RED}Error: GNU parallel is not installed.${NC}"
@@ -361,11 +362,13 @@ while IFS= read -r INPUT_FILE; do
 
     echo "[$(date '+%H:%M:%S')] Job ${GLOBAL_IDX}: starting $(basename "${INPUT_FILE}")"
 
-    if cmsRun "$_KP_CONFIG" \
+    # Run cmsRun from inside LOCAL_DIR so TFileService writes the output
+    # file there regardless of how CMSSW resolves relative vs absolute paths.
+    if ( cd "${_KP_LOCAL_DIR}" && cmsRun "$_KP_CONFIG" \
           inputFiles="$INPUT_FILE" \
-          outputFile="$LOCAL_OUT"  \
+          outputFileName="$OUTFILE" \
           maxEvents="$_KP_MAX_EVENTS" \
-          "${_FILTER_ARG[@]}" \
+          "${_FILTER_ARG[@]}" ) \
           >> "$LOG" 2>&1; then
 
         echo "CMSRUN_EXIT_SUCCESS" >> "$LOG"

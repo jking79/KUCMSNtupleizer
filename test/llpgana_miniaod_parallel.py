@@ -34,6 +34,10 @@ _opts.register('eventFilter', '',
                VarParsing.multiplicity.singleton,
                VarParsing.varType.string,
                'event filter / skim selection (overrides config default when set)')
+_opts.register('outputFileName', 'output.root',
+               VarParsing.multiplicity.singleton,
+               VarParsing.varType.string,
+               'output file name (matches llpgana_miniaod.py convention)')
 _opts.parseArguments()
 
 # Override input source
@@ -41,7 +45,7 @@ if _opts.inputFiles:
     process.source.fileNames = cms.untracked.vstring(_opts.inputFiles)
 
 # Override output file
-process.TFileService.fileName = cms.string(_opts.outputFile)
+process.TFileService.fileName = cms.string(_opts.outputFileName)
 
 # Override maxEvents (-1 = all events, the right default for full jobs)
 process.maxEvents = cms.untracked.PSet(
