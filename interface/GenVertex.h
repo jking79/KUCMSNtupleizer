@@ -34,6 +34,7 @@ class GenVertex {
 
   GenVertex(const GenMatches &matchedPairs);
   GenVertex(const std::pair<reco::GenParticle, reco::GenParticle> &genPair);
+  GenVertex(const reco::GenParticle &zBoson);
   
   bool isGenElectron() const {return isGenElectron_;}
   bool isGenMuon() const {return isGenMuon_;}
