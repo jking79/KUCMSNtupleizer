@@ -72,6 +72,7 @@ void KUCMSAodSkimmer::processPhotons(){
   float EBIsoCutVal = 0.003383696;
   float EEVeryVeryLooseIsoCutVal = 0.0060335;//loosest isolation selection on baseline/selected photons
 
+  allphoBaseline.clear();
   allphowtime.clear();
   //Time sigma window cut values
   float earlyTimeCut = -2.5;
@@ -356,20 +357,6 @@ void KUCMSAodSkimmer::processPhotons(){
     hemBits.set( "pho2hvm", isInHemRegion && hemEligible2 );
 
     //---------------------------------------------------
-    ///////////  saving info for all non excluded photons  ////////////////////////////////////////////////////////////////////
-    //---------------------------------------------------
-   
-    selPhotons.fillBranch( "photon_WTimeSig", phoWTimeSig );
-    selPhotons.fillBranch( "photon_WTime", phoWTime );
-    selPhotons.fillBranch( "photon_LeadTime", leadTime );
-    selPhotons.fillBranch( "photon_LeadTimeSig", leadtimesig );
-    selPhotons.fillBranch( "photon_Eta", eta );
-    selPhotons.fillBranch( "photon_Phi", phi );
-    selPhotons.fillBranch( "photon_Pt", pt );
-    selPhotons.fillBranch( "photon_E", energy );
-    selPhotons.fillBranch( "photon_PixSeed", hasPixSeed );
-
-    //---------------------------------------------------
     ///////////  pho disriminate ids ////////////////////////////////////////////////////////////////////
     //---------------------------------------------------
 
@@ -477,6 +464,22 @@ void KUCMSAodSkimmer::processPhotons(){
         selPhotons.fillBranch( "barrel_photon_isoANNScore", isobkg_score );   //!
 
     }//if( doGenInfo )
+
+    //---------------------------------------------------
+    ///////////  saving info for all non excluded photons  ////////////////////////////////////////////////////////////////////
+    //---------------------------------------------------
+
+	allphoBaseline.push_back( in_base_selection );
+    selPhotons.fillBranch( "photon_baseline", in_base_selection );   //!
+    selPhotons.fillBranch( "photon_WTimeSig", phoWTimeSig );
+    selPhotons.fillBranch( "photon_WTime", phoWTime );
+    selPhotons.fillBranch( "photon_LeadTime", leadTime );
+    selPhotons.fillBranch( "photon_LeadTimeSig", leadtimesig );
+    selPhotons.fillBranch( "photon_Eta", eta );
+    selPhotons.fillBranch( "photon_Phi", phi );
+    selPhotons.fillBranch( "photon_Pt", pt );
+    selPhotons.fillBranch( "photon_E", energy );
+    selPhotons.fillBranch( "photon_PixSeed", hasPixSeed );
 
     ///////////  Very Loose Base Photon selection ////////////////////////////////////////////////////////////////////
     //---------------------------------------------------
@@ -1203,6 +1206,7 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch( "barrel_photon_htoem", VFLOAT );   //!
   selPhotons.makeBranch( "barrel_photon_isoANNScore", VFLOAT );   //!
 
+  selPhotons.makeBranch( "photon_baseline", VBOOL );   //!
   selPhotons.makeBranch( "photon_LeadTime", VFLOAT );
   selPhotons.makeBranch( "photon_LeadTimeSig", VFLOAT );
   selPhotons.makeBranch( "photon_WTime", VFLOAT );
@@ -1404,7 +1408,7 @@ bool KUCMSAodSkimmer::GetDiJetsCR(int phoidx){
     //dr_pho_jet > 0.5 for all photons in event
     double pho_jet1 = dR1(pho_eta, pho_phi, j_eta1, j_phi1);
     double pho_jet2 = dR1(pho_eta, pho_phi, j_eta2, j_phi2);
-    double maxdR = 0.5;
+    //double maxdR = 0.5;
     if(pho_jet1 < 0.5 || pho_jet2 < 0.5) return false;
     if( diJetIndex[0] < 0 ){ diJetIndex[0] = 0; diJetIndex[1] = 1; }
     return true;
