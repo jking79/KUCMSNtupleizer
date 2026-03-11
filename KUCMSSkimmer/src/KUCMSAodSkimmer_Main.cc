@@ -347,7 +347,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
     _ca.SetVerbosity(-1); //can turn on to see low-level warnings
     _ca.SetDetIDs(_detidmap);
     _ca.SetCNNModel("config/json/KU-CNN_detector_1000epochs_archsmall3_2017and2018_CMS.json");
-    _ca.SetBarrelDNNModel("config/json/KU-DNN_photonID_JetHT18RunBC_EGamma18RunC_SMSGlGl_StandardNorm_shape_1000epochs_large8_barrelOnly.json");
+    _ca.SetBarrelDNNModel("config/json/KU-DNN_photonID_MINIJetHT18RunB_MINIEGamma18RunC_barrelOnly_fullDatasets_isoShape_1500epochs_MINI_med8.json");
     _ca.SetEndcapDNNModel("config/json/KU-DNN_photonID_JetHT18RunBC700chunks_EGamma18RunC_SMSGlGl_StandardNorm_isoShape_1000epochs_large8_endcapOnly.json");
 
 }//<<>>KUCMSAodSkimmer::KUCMSAodSkimmer()
@@ -921,7 +921,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
     std::string str;
     if( not DEBUG ) std::cout << "--  adding files";
     int nfiles = 0;
-	int skipCnt = 0;
+	int skipCnt = 100;
     if( skipCnt != 0 ) std::cout << "-- !! Skipping every " << skipCnt << std::endl;
     if( dataSetKey !=  "Single" ){
         std::ifstream infile(listDirPath+inFileName);

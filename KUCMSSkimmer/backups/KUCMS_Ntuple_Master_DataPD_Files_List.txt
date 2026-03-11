@@ -4,6 +4,9 @@
 
 ## inpath infiles skimkey crossSection gluionmass nutralino2mass mcweight mctype(1 data, 0 MC) timecalitag
 
+#KUCMSNtuple/kucmsntuple_EGamma_R18_InvMetPho30_noSV_v31/ EGamma_R18_InvMetPho30_noSV_EGamma_MINI_Run2018C.txt EGJets 1 0 0 0 1 r2_ul18
+KUCMSNtuple/ EGamma_R18_InvMetPho30_noSV_EGamma_MINI_Run2018C.txt EGJets 1 0 0 0 1 r2_ul18
+
 #KUCMSNtuple/kucmsntuple_JetMET_R23_SVIPM100_v31/ Ntuple_list_Run3_2023B_JetMET0.txt JetMET0e23B 1 0 0 0 1 r3_p23
 #KUCMSNtuple/kucmsntuple_JetMET_R23_SVIPM100_v31/ Ntuple_list_Run3_2023B_JetMET0_EXO.txt JetMET0EXOe23B 1 0 0 0 1 r3_p23
 #KUCMSNtuple/kucmsntuple_JetMET_R23_SVIPM100_v31/ Ntuple_list_Run3_2023B_JetMET1.txt JetMET1e23B 1 0 0 0 1 r3_p23
@@ -17,7 +20,7 @@
 #KUCMSNtuple/kucmsntuple_MET_R17_SVIPM100_v31/ MET_R17_SVIPM100_v31_MET_AOD_Run2017A.txt MET17A 1 0 0 0 1 r2_ul17
 #KUCMSNtuple/kucmsntuple_MET_R17_SVIPM100_v31/ MET_R17_SVIPM100_v31_MET_AOD_Run2017B.txt MET17B 1 0 0 0 1 r2_ul17
 #KUCMSNtuple/kucmsntuple_MET_R17_SVIPM100_v31/ MET_R17_SVIPM100_v31_MET_AOD_Run2017C.txt MET17C 1 0 0 0 1 r2_ul17
-KUCMSNtuple/kucmsntuple_MET_R17_SVIPM100_v31/ MET_R17_SVIPM100_v31_MET_AOD_Run2017D.txt MET17D 1 0 0 0 1 r2_ul17
+#KUCMSNtuple/kucmsntuple_MET_R17_SVIPM100_v31/ MET_R17_SVIPM100_v31_MET_AOD_Run2017D.txt MET17D 1 0 0 0 1 r2_ul17
 #KUCMSNtuple/kucmsntuple_MET_R17_SVIPM100_v31/ MET_R17_SVIPM100_v31_MET_AOD_Run2017E.txt MET17E 1 0 0 0 1 r2_ul17
 
 #KUCMSNtuple/kucmsntuple_EGamma_R18_InvMetPho30_NoSV_v31/ EGamma_R18_InvMetPho30_NoSV_EGamma_AOD_Run2018C.txt EGJets 1 0 0 0 1 r2_ul18

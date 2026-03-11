@@ -41,6 +41,7 @@ void KUCMSAodSkimmer::processJets(){
   isSelJet.clear(); 
 
   int nJetsWithWTime = 0;
+  int nSelJetsWithWTime = 0;
   int jetEventVeto = 0;
   uInt nSelJets = 0;
   int nQJets = 0;
@@ -126,8 +127,10 @@ void KUCMSAodSkimmer::processJets(){
 	int nPhoInJet = ( nPhotons > 0 ) ? 0 : -1;
     for( uInt pit = 0; pit < nPhotons; pit++ ){
 
+        if( (*Photon_isOot)[it] ) continue;
 		if( (*Photon_excluded)[it] ) continue;
 		if( (*Photon_pixelSeed)[it] ) continue;
+		if( isBaseLinePho[it] ) continue;
 
     	float peta = (*Photon_eta)[pit];
     	float pphi = (*Photon_phi)[pit];
@@ -145,7 +148,6 @@ void KUCMSAodSkimmer::processJets(){
 	float jetTime = -40;
 	float jetTimeRes = -1;
 	float jetTimeSig = ( nSCIndexs > 0 ) ? getTimeSig( scIndexs, jetTime, jetTimeRes ) : -40; 
-	if( jetTimeRes > 0 ) nJetsWithWTime++;
 	alljetwtime.push_back( jetTime );
 
     if( DEBUG ) std::cout << " - Jet Obj selection." << std::endl;
@@ -177,7 +179,7 @@ void KUCMSAodSkimmer::processJets(){
         selJets.fillBranch( "allJetWTime", jetTime );
         selJets.fillBranch( "allJetWTimeSig", jetTimeSig );
         selJets.fillBranch( "allJetWTimeRes", jetTimeRes );
-		selJets.fillBranch( "allJetsWithWTime", nJetsWithWTime );
+		if( jetTimeRes > 0 ) nJetsWithWTime++;
 
 	}//<<>>if( isMinQuality ){
 
@@ -197,6 +199,8 @@ void KUCMSAodSkimmer::processJets(){
     seljeteta.push_back(eta);
     seljetphi.push_back(phi);
     seljetmass.push_back(mass);
+
+    if( jetTimeRes > 0 ) nSelJetsWithWTime++;
 
     // fill vectors
     selJets.fillBranch( "selJetGenLlpId", gjllpId );
@@ -248,18 +252,34 @@ void KUCMSAodSkimmer::processJets(){
 
   selJets.fillBranch( "nJets", nJets);
   selJets.fillBranch( "nSelJets", nSelJets );
+  selJets.fillBranch( "allJetsWithWTime", nJetsWithWTime );
+  selJets.fillBranch( "nSelJetsWithWTime", nSelJetsWithWTime );
 
-  float gammatime = ( gammaJetIndex[0] > -1 ) ? allphowtime[gammaJetIndex[0]] : -10;
-  float gammajettime = ( gammaJetIndex[1] > -1 ) ? alljetwtime[gammaJetIndex[1]] : -10;
-  float dijet0time = ( diJetIndex[0] > -1 ) ? alljetwtime[diJetIndex[0]] : -5;
-  float dijet1time = ( diJetIndex[1] > -1 ) ? alljetwtime[diJetIndex[1]] : -5;
+  float gammatime = ( gammaJetIndex[0] > -1 ) ? allphowtime[gammaJetIndex[0]] : -100;
+  float gammajettime = ( gammaJetIndex[1] > -1 ) ? alljetwtime[gammaJetIndex[1]] : -100;
+  float dijet0time = ( diJetIndex[0] > -1 ) ? alljetwtime[diJetIndex[0]] : -100;
+  float dijet1time = ( diJetIndex[1] > -1 ) ? alljetwtime[diJetIndex[1]] : -100;
 
-  selJets.fillBranch( "pv_gjGammaTime", gammatime );
-  selJets.fillBranch( "pv_gjJetTime", gammajettime );
-  selJets.fillBranch( "pv_dGJTime", gammatime - gammajettime );
-  selJets.fillBranch( "pv_diJet1Time", dijet0time );
-  selJets.fillBranch( "pv_diJet2Time", dijet1time );
-  selJets.fillBranch( "pv_dDiJetTime", dijet0time - dijet1time );
+  if( gammatime > -100 and gammajettime > -100 ){ 
+
+	selJets.fillBranch( "pv_gjGammaTime", gammatime );
+  	selJets.fillBranch( "pv_gjJetTime", gammajettime );
+	float digjettime = gammatime - gammajettime;
+	if( digjettime == 0 ) digjettime = -10;
+	selJets.fillBranch( "pv_dGJTime", digjettime );
+
+  }//<<>>if( gammatime > -100 and gammajettime > -100 )
+
+  if( dijet1time > -100 and dijet0time > -100 ){
+
+	selJets.fillBranch( "pv_diJet1Time", dijet0time );
+	selJets.fillBranch( "pv_diJet2Time", dijet1time );
+	float dijettime = dijet0time - dijet1time;
+    if( dijettime == 0 ) dijettime = -10;
+	selJets.fillBranch( "pv_dDiJetTime", dijettime );
+
+  }//<<>>if( gammatime > -100 and gammajettime > -100 )
+
 
 }//<<>>void KUCMSAodSkimmer::processJets()
 
@@ -285,6 +305,7 @@ void KUCMSAodSkimmer::setJetsBranches( TTree* fOutTree ){
     selJets.makeBranch( "selJetWTime", VFLOAT );
     selJets.makeBranch( "selJetWTimeSig", VFLOAT );
     selJets.makeBranch( "selJetWTimeRes", VFLOAT );
+    selJets.makeBranch( "nSelJetsWithWTime", VINT );
 
     selJets.makeBranch( "selJetArea", VFLOAT ); //*Jet_area)[it]; 
     selJets.makeBranch( "selJetChEmEF", VFLOAT ); //*Jet_chEmEF)[it]; 
