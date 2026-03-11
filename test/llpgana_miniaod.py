@@ -82,7 +82,7 @@ era_map = {
     "Run3": eras.Run3
 }
 era = era_map[options.runera]
-process = cms.Process(options.processName, era_map[year])
+process = cms.Process(options.processName, era )
 
 ## Load the standard set of configuration modules
 process.load('Configuration.StandardSequences.Services_cff')
@@ -112,10 +112,10 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 100
 #process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 if options.multicrab == True : process.MessageLogger.cerr.FwkReport.reportEvery = 100000
 
-from KUCMSNtupleizer.KUCMSNtupleizer.TrackAssociator_cfi import tkAssocParamBlock
+from KUCMSNtupleizer.KUCMSNtupleizer.TrackAssociator_mini_cfi import tkAssocParamBlock
 
-process.load('KUCMSNtupleizer.KUCMSNtupleizer.ECALTracks_cfi')
-from KUCMSNtupleizer.KUCMSNtupleizer.ECALTracks_cfi import *
+process.load('KUCMSNtupleizer.KUCMSNtupleizer.ECALTracks_mini_cfi')
+from KUCMSNtupleizer.KUCMSNtupleizer.ECALTracks_mini_cfi import *
 
 #process.load('KUCMSNtupleizer.KUCMSNtupleizer.DisplacedElectrons_cfi')
 #from KUCMSNtupleizer.KUCMSNtupleizer.DisplacedElectrons_cfi import *
