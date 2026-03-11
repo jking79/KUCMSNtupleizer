@@ -6,6 +6,7 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('python')
 
 ## Flags
+
 options.register('multicrab',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'swtich to use muticrab paramters');
 options.register('hasGenInfo',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to get pcalo in mc');
 options.register('eventFilter','MET100',VarParsing.multiplicity.singleton,VarParsing.varType.string,'filter to use in event processing');
@@ -68,7 +69,20 @@ options.parseArguments()
 
 ## Define the CMSSW process
 from Configuration.StandardSequences.Eras import eras
-process = cms.Process(options.processName,eras.Run2_2018)
+era_map = {
+    "Run2_2016": eras.Run2_2016,
+    "Run2_2017": eras.Run2_2017,
+    "Run2_2018": eras.Run2_2018,
+    "Run2": eras.Run2_2018,
+    "Run3_2022": eras.Run3,
+    "Run3_2023": eras.Run3,
+    "Run3_2024": eras.Run3,
+    "Run3_2025": eras.Run3,
+    "Run3_2026": eras.Run3,
+    "Run3": eras.Run3
+}
+era = era_map[options.runera]
+process = cms.Process(options.processName, era_map[year])
 
 ## Load the standard set of configuration modules
 process.load('Configuration.StandardSequences.Services_cff')
@@ -143,7 +157,7 @@ process.source = cms.Source("PoolSource",
 
         #### AOD Run3   MUST BE IN CMSSW  14 or 15 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         # Data
-        #'file:root_files/R23C_JetMet_mini_4a8e9a72-a9af-4448-acbd-bafa6cd684b4.root',
+        'file:root_files/R23C_JetMet_mini_4a8e9a72-a9af-4448-acbd-bafa6cd684b4.root',
         #######'file:root_files/Met_UL18B_AOD_973EEF0C-44AB-E94A-8591-04DCD00D8B4B.root',
         ##'file:root_files/R22D_JetMet_mini_1f4a97f7-de76-4ee1-a380-0d9d7a5914d2.root',
         ######'file:root_files/WJets_72B9C618-FE23-1E41-872E-57314D7CB454.root',
@@ -153,7 +167,7 @@ process.source = cms.Source("PoolSource",
         #'root://cms-xrd-global.cern.ch//store/data/Run2018D/EGamma/MINIAOD/UL2018_MiniAODv2-v2/2810000/D5E0889C-D687-6242-8105-A147939E99C4.root',
         #'root://cmsxrootd.fnal.gov//store/data/Run2018B/JetHT/MINIAOD/15Feb2022_UL2018-v1/2820000/84DEEA91-CF7B-C24B-831D-7D993EB56D8D.root',
         # MC - Sig
-        'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_MINI/260203_235322/0000/SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_MiniAODv4_99.root',
+        #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_MINI/260203_235322/0000/SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_MiniAODv4_99.root',
 
         ),##<<>>fileNames = cms.untracked.vstring
         secondaryFileNames=cms.untracked.vstring()
@@ -228,15 +242,13 @@ triggerSet = "RECO"
 ecalIsoInputs = ecalIsoInputsF17
 
 if "Run3" in runera :
-    if genInfo : triggerSet = "PAT"
+    triggerSet = "PAT"
     ecalIsoInputs = ecalruneraIsoInputsW22
     if 'CASTOR' in process.CaloGeometryBuilder.SelectedCalos : 
         process.CaloGeometryBuilder.SelectedCalos.remove('CASTOR') 
 
-if "RunS" in runera :
-    ecalIsoInputs = ecalruneraIsoInputsW22
-    if 'CASTOR' in process.CaloGeometryBuilder.SelectedCalos :
-        process.CaloGeometryBuilder.SelectedCalos.remove('CASTOR')
+if "Run3_2022" in runera :
+    triggerSet = "RECO"
 
 if runMETFilters == True : triggerSet = ""  # ?  "SIM" for MC
 
