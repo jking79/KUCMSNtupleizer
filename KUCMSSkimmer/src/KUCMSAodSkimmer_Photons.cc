@@ -227,9 +227,11 @@ void KUCMSAodSkimmer::processPhotons(){
     //===================================================
     if( sumw == 0 ){ sumw = 1; sumtw = -100; sumtrw = -1000; }
     float phoWTimeOld = sumtw/sumw;
-    float phoWVarOld = sumtrw/sumw;
+    float phoWHVarOld = sumtrw/sumw;
+    float phoWVarOld = 1/sumw;
     float phoWTime1 = sumtw1/sumw1;
-    float phoWVar1 = sumtrw1/sumw1;
+    float phoWHVar1 = sumtrw1/sumw1;
+    float phoWVar1 = 1/sumw1;
     float phoWResOld = std::sqrt(phoWVarOld);
 	float phoWRes1 = std::sqrt(phoWVar1);
 	float leadTres = std::sqrt(leadTvar);
@@ -1346,7 +1348,7 @@ bool KUCMSAodSkimmer::GetGJetsCR(int phoidx){
     	//dphi_jets_photon > pi-0.3
     	double dphi_phojet = pho_phi - phi;
     	dphi_phojet = acos(cos(dphi_phojet));
-		float da = std::abs(dphi_phojet - 4*atan(1));
+		float da = std::abs(M_PI - dphi_phojet);
     	if( da < minda ){ minda = da; thejet = j; };
     }//<<>>for(int j = 0; j < nJets; j++)
     double jet_sys_phi = atan2(j_py, j_px);

@@ -68,7 +68,20 @@ options.parseArguments()
 
 ## Define the CMSSW process
 from Configuration.StandardSequences.Eras import eras
-process = cms.Process(options.processName,eras.Run2_2018)
+era_map = {
+    "Run2_2016": eras.Run2_2016,
+    "Run2_2017": eras.Run2_2017,
+    "Run2_2018": eras.Run2_2018,
+    "Run2": eras.Run2_2018,
+    "Run3_2022": eras.Run3,
+    "Run3_2023": eras.Run3,
+    "Run3_2024": eras.Run3,
+    "Run3_2025": eras.Run3,
+    "Run3_2026": eras.Run3,
+    "Run3": eras.Run3
+}
+era = era_map[options.runera]
+process = cms.Process(options.processName, era)
 
 ## Load the standard set of configuration modules
 process.load('Configuration.StandardSequences.Services_cff')
@@ -214,7 +227,7 @@ process.source = cms.Source("PoolSource",
         #'root://cmseos.fnal.gov//store/mc/RunIISummer20UL18RECO/QCD_HT2000toInf_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/2520000/0184321F-08CA-3740-9700-89D3C169F771.root',
 
         #SMS_Sig
-        #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ/SMS-GlGl_mGl-2500_mN2-2400_mN1-2300_GZ_N2ctau-0p5_AOD/260110_210547/0000/SMS-GlGl_mGl-2500_mN2-2400_mN1-2300_GZ_N2ctau-0p5_AOD_107.root'
+        'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ/SMS-GlGl_mGl-2500_mN2-2400_mN1-2300_GZ_N2ctau-0p5_AOD/260110_210547/0000/SMS-GlGl_mGl-2500_mN2-2400_mN1-2300_GZ_N2ctau-0p5_AOD_107.root'
         #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoG/SMS-GlGl_mGl-2000_mN2-1900_mN1-250_gam_N2ctau-0p1_AOD/250317_234753/0000/SMS-GlGl_mGl-2000_mN2-1900_mN1-250_gam_N2ctau-0p1_AOD_41.root'
         #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoG/SMS-GlGl_mGl-1500_mN2-500_mN1-100_gam_N2ctau-0p1_AOD/250123_145920/0000/SMS-GlGl_mGl-1500_mN2-500_mN1-100_gam_N2ctau-0p1_AOD_99.root'
         #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoZ/SMS-GlGl_mGl-2000_mN2-1900_mN1-200_Zff_N2ctau-0p3_AOD/250607_191347/0000/SMS-GlGl_mGl-2000_mN2-1900_mN1-200_Zff_N2ctau-0p3_AOD_2.root',
@@ -247,7 +260,7 @@ process.source = cms.Source("PoolSource",
         ####3'root://cmseos.fnal.gov//store/data/Run2023B/JetMET1/AOD/EXODelayedJetMET-PromptReco-v1/000/366/892/00000/dccdb4dd-2e6e-4a1f-ae81-70af305d9f2e.root',
 
         # AOD Data MET
-        'file:root_files/Met_UL18B_AOD_973EEF0C-44AB-E94A-8591-04DCD00D8B4B.root',
+        #'file:root_files/Met_UL18B_AOD_973EEF0C-44AB-E94A-8591-04DCD00D8B4B.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2018B/MET/AOD/15Feb2022_UL2018-v1/25210000/CD3E4875-8B2E-ED4E-B1C9-43BB906B0555.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2018B/MET/AOD/15Feb2022_UL2018-v1/2520000/F672D9DC-50E8-684C-BE01-8E73D82651FF.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2018B/MET/AOD/15Feb2022_UL2018-v1/25210000/2325D400-4654-D64A-B3A3-9C96703D9207.root',
@@ -260,7 +273,7 @@ process.source = cms.Source("PoolSource",
         #`'root://cms-xrd-global.cern.ch//store/data/Run2022E/JetMET/AOD/EXODelayedJetMET-27Jun2023-v1/40000/08fd72c7-1be9-4328-9a38-85979d340331.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2018C/DisplacedJet/AOD/15Feb2022_UL2018-v1/60000/E11CE7E4-249F-0D42-AD15-344870056EF4.root',
         #'file:JetMet_22G_026f1000-0881-4fc1-a256-385c9cb6cf3d.root',
-        #'file:JetMet_23C_0d0f0b4a-8fb0-4777-9aed-25f2416791e5.root',
+        #'file:root_files/JetMet_23C_0d0f0b4a-8fb0-4777-9aed-25f2416791e5.root',
 
          # AODSIM DPJB model
 
@@ -327,8 +340,8 @@ doet = True ## with v30 no longer optional when using ( "ecalTracks", "displaced
 #    dosv = False
 #    dode = False
 
-#runMETFilters = True
-runMETFilters = False
+runMETFilters = True
+#runMETFilters = False
 if options.multicrab == True : runMETFilters = options.runMETFilters
 
 #probeout = True
@@ -424,8 +437,9 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizer",
                               ## trigger
                               #triggerFlagResults = cms.InputTag("TriggerResults","","RECO"),
                               triggerFlagResults = cms.InputTag("TriggerResults","",triggerSet),
-                              #triggerFlagResults = cms.InputTag("TriggerResults"),
-                              triggerHLTResults = cms.InputTag("TriggerResults","",""),
+                              #triggerFlagResults = cms.InputTag("TriggerResults",""),
+                              triggerHLTResults = cms.InputTag("TriggerResults","","HLT"),
+                              #triggerHLTResults = cms.InputTag("TriggerResults","","RECO"),
                               triggerEvent = cms.InputTag("hltTriggerSummaryAOD"),
                               ## METs
                               #mets = cms.InputTag("slimmedMETs"),

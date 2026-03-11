@@ -40,6 +40,7 @@ void KUCMSAodSkimmer::processJets(){
   //--------- jets --------------------------
   isSelJet.clear(); 
 
+  int nSelJetsWithWPixTime = 0;
   int nJetsWithWTime = 0;
   int nSelJetsWithWTime = 0;
   int jetEventVeto = 0;
@@ -50,6 +51,8 @@ void KUCMSAodSkimmer::processJets(){
   std::vector<float> seljeteta;
   std::vector<float> seljetphi;
   std::vector<float> seljetmass;
+  std::vector<float> alljetwtimevar;
+  std::vector<float> alljetwtenergy;
   alljetwtime.clear();
   if( DEBUG ) std::cout << " - Looping over for " << nJets << " jets" << std::endl;
   for( uInt it = 0; it < nJets; it++ ){
@@ -122,6 +125,8 @@ void KUCMSAodSkimmer::processJets(){
     auto timedist = getDistStats( rhtimes, rhenergies );
     auto time = timedist[6];
 
+    int nWithPixSeed = 0;
+    float sumwte = 0;
 	std::vector<int> scIndexs;
     uInt nPhotons = Photon_excluded->size();
 	int nPhoInJet = ( nPhotons > 0 ) ? 0 : -1;
@@ -129,18 +134,20 @@ void KUCMSAodSkimmer::processJets(){
 
         if( (*Photon_isOot)[it] ) continue;
 		if( (*Photon_excluded)[it] ) continue;
-		if( (*Photon_pixelSeed)[it] ) continue;
 		if( isBaseLinePho[it] ) continue;
+        nWithPixSeed++;
+        if( (*Photon_pixelSeed)[it] ) continue;
 
     	float peta = (*Photon_eta)[pit];
     	float pphi = (*Photon_phi)[pit];
+        float peng = (*Photon_energy)[pit];
 
       	float dpjeta = eta - peta;
       	float dpjphi = dPhi( phi, pphi );
       	float dr = hypo( dpjeta, dpjphi );
       	bool minDr = dr < 0.4;
 
-      	if( minDr ){ scIndexs.push_back( (*Photon_scIndex)[pit] ); nPhoInJet++; }
+      	if( minDr ){ scIndexs.push_back( (*Photon_scIndex)[pit] ); nPhoInJet++; sumwte += peng; }
 
 	}//<<>>for( uInt it = 0; it < nPhotons; it++ )
 
@@ -149,6 +156,8 @@ void KUCMSAodSkimmer::processJets(){
 	float jetTimeRes = -1;
 	float jetTimeSig = ( nSCIndexs > 0 ) ? getTimeSig( scIndexs, jetTime, jetTimeRes ) : -40; 
 	alljetwtime.push_back( jetTime );
+    alljetwtimevar.push_back( jetTimeRes*jetTimeRes );
+    alljetwtenergy.push_back( sumwte );
 
     if( DEBUG ) std::cout << " - Jet Obj selection." << std::endl;
     // jet object selection ------------------------------------------
@@ -201,6 +210,7 @@ void KUCMSAodSkimmer::processJets(){
     seljetmass.push_back(mass);
 
     if( jetTimeRes > 0 ) nSelJetsWithWTime++;
+    if( nWithPixSeed > 0 ) nSelJetsWithWPixTime++;
 
     // fill vectors
     selJets.fillBranch( "selJetGenLlpId", gjllpId );
@@ -254,29 +264,67 @@ void KUCMSAodSkimmer::processJets(){
   selJets.fillBranch( "nSelJets", nSelJets );
   selJets.fillBranch( "allJetsWithWTime", nJetsWithWTime );
   selJets.fillBranch( "nSelJetsWithWTime", nSelJetsWithWTime );
+  selJets.fillBranch( "nSelJetsWithWPixTime", nSelJetsWithWPixTime );
+
+  float sumt = 0;
+  float sumv = 0;
+  float nsumed = 0;
+  float sume = 0;
+  int nAllJets = alljetwtime.size();
+  for( int ijet = 0; ijet < nAllJets; ijet++ ){
+
+    if( std::abs(alljetwtime[ijet]) > 25.0 ) continue;
+    float invres = 1/alljetwtimevar[ijet];
+    sumt += invres*alljetwtime[ijet];
+    sume += alljetwtenergy[ijet];
+    sumv += invres;
+    nsumed++;
+
+  }//<<>>for( ijet = 0; ijet < nAllJets; ijet++ )
+
+  if( nsumed == 0 ){ sumv = 1; sumt = -30.0; }
+  float pvTime = sumt/sumv;
+  float pvPEnergy = sume;
+  float pvTRes = std::sqrt(1/sumv);
+  float pvHTVar = std::sqrt(nsumed/sumv);
+
+  selJets.fillBranch( "pv_wtime", pvTime );
+  selJets.fillBranch( "pv_wtimeres", pvTRes );
+  selJets.fillBranch( "pv_wpenergy", pvPEnergy );
+  selJets.fillBranch( "pv_wphartres", pvHTVar );
 
   float gammatime = ( gammaJetIndex[0] > -1 ) ? allphowtime[gammaJetIndex[0]] : -100;
   float gammajettime = ( gammaJetIndex[1] > -1 ) ? alljetwtime[gammaJetIndex[1]] : -100;
   float dijet0time = ( diJetIndex[0] > -1 ) ? alljetwtime[diJetIndex[0]] : -100;
   float dijet1time = ( diJetIndex[1] > -1 ) ? alljetwtime[diJetIndex[1]] : -100;
 
-  if( gammatime > -100 and gammajettime > -100 ){ 
+  if( gammatime > -20 and pvTime > -25 ){ 
+
+	
 
 	selJets.fillBranch( "pv_gjGammaTime", gammatime );
   	selJets.fillBranch( "pv_gjJetTime", gammajettime );
-	float digjettime = gammatime - gammajettime;
-	if( digjettime == 0 ) digjettime = -10;
+	float digjettime = gammatime - pvTime;
+	//if( digjettime == 0 ) digjettime = -25;
 	selJets.fillBranch( "pv_dGJTime", digjettime );
+    selJets.fillBranch( "pv_dGJPEnergy", pvPEnergy );
 
   }//<<>>if( gammatime > -100 and gammajettime > -100 )
 
-  if( dijet1time > -100 and dijet0time > -100 ){
+  float minJetTimePt = 20.0;
+  if( dijet1time > -25 and dijet0time > -25 ){
 
-	selJets.fillBranch( "pv_diJet1Time", dijet0time );
-	selJets.fillBranch( "pv_diJet2Time", dijet1time );
-	float dijettime = dijet0time - dijet1time;
-    if( dijettime == 0 ) dijettime = -10;
-	selJets.fillBranch( "pv_dDiJetTime", dijettime );
+    if( (*Jet_pt)[diJetIndex[0]] < minJetTimePt or (*Jet_pt)[diJetIndex[1]] < minJetTimePt ){ 
+
+		float totenergy = alljetwtenergy[diJetIndex[0]] + alljetwtenergy[diJetIndex[1]];
+		selJets.fillBranch( "pv_diJet1Time", dijet0time );
+		selJets.fillBranch( "pv_diJet2Time", dijet1time );
+		float dijettime = dijet0time - dijet1time;
+    	if( dijettime == 0 ) dijettime = -25;
+		selJets.fillBranch( "pv_dDiJetTime", dijettime );
+    	selJets.fillBranch( "pv_dDiJetPEnergy", totenergy );
+
+	}//<<>>if( (*Jet_pt)[diJetIndex[0]] < minJetTimePt or (*Jet_pt)[diJetIndex[1]] < minJetTimePt )
 
   }//<<>>if( gammatime > -100 and gammajettime > -100 )
 
@@ -306,6 +354,7 @@ void KUCMSAodSkimmer::setJetsBranches( TTree* fOutTree ){
     selJets.makeBranch( "selJetWTimeSig", VFLOAT );
     selJets.makeBranch( "selJetWTimeRes", VFLOAT );
     selJets.makeBranch( "nSelJetsWithWTime", VINT );
+    selJets.makeBranch( "nSelJetsWithWPixTime", VINT );
 
     selJets.makeBranch( "selJetArea", VFLOAT ); //*Jet_area)[it]; 
     selJets.makeBranch( "selJetChEmEF", VFLOAT ); //*Jet_chEmEF)[it]; 
@@ -345,6 +394,12 @@ void KUCMSAodSkimmer::setJetsBranches( TTree* fOutTree ){
   	selJets.makeBranch( "pv_diJet1Time", VFLOAT );
   	selJets.makeBranch( "pv_diJet2Time", VFLOAT );
   	selJets.makeBranch( "pv_dDiJetTime", VFLOAT );
+    selJets.makeBranch( "pv_wtime", VFLOAT );
+    selJets.makeBranch( "pv_wtimeres", VFLOAT );
+    selJets.makeBranch( "pv_wphartres", VFLOAT );
+    selJets.makeBranch( "pv_wpenergy", VFLOAT );
+    selJets.makeBranch( "pv_dGJPEnergy", VFLOAT );
+    selJets.makeBranch( "pv_dDiJetPEnergy", VFLOAT );
 
     // add new jet branches above
     selJets.attachBranches( fOutTree );
