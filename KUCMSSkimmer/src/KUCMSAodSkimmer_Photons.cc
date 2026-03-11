@@ -407,12 +407,12 @@ void KUCMSAodSkimmer::processPhotons(){
     if(overMaxEta){ //endcap
     	if(isobkg_score >= EEVeryVeryLooseIsoCutVal) isoPho = true;
 	    else isoPho = false;
-    } else { //barrel
-    	bool passHcalSum = true;
-    	bool passTrkSum = tspscdr4/pt < 0.12; // using rel = 6.0/50  ( abs = 6.0 fir pt of 50 GeV )
-    	bool passsEcalRhSum = erhsecdr4/pt < 0.2; // using rel = 10/50 ( abs cut = 10, for pt of 50 GeV )
-    	bool passHOE = htoem < 0.02; // using abs value 0.02
-    	isoPho = passHOE && passsEcalRhSum && passTrkSum && passHcalSum;
+    } else { //barrel - turn off any iso presel (for now) to study the discriminator in v48 skims
+    	//bool passHcalSum = true;
+    	//bool passTrkSum = tspscdr4/pt < 0.12; // using rel = 6.0/50  ( abs = 6.0 fir pt of 50 GeV )
+    	//bool passsEcalRhSum = erhsecdr4/pt < 0.2; // using rel = 10/50 ( abs cut = 10, for pt of 50 GeV )
+    	//bool passHOE = htoem < 0.02; // using abs value 0.02
+    	isoPho = true;//passHOE && passsEcalRhSum && passTrkSum && passHcalSum;
     }
 
     //---------------------------------------------------

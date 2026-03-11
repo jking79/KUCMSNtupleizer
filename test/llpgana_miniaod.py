@@ -44,7 +44,7 @@ options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.m
 #options.register('globalTag','140X_dataRun3_v17',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for R3 22,23');
 
 ##------------------ data gt  
-#options.register('globalTag','106X_dataRun2_v36',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
+options.register('globalTag','106X_dataRun2_v36',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 ##options.register('globalTag','106X_dataRun2_v28',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 #options.register('globalTag','124X_dataRun3_v15',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2022');
 #options.register('globalTag','140X_dataRun3_v17',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
@@ -200,19 +200,20 @@ ecalIsoInputsF17 = 'RecoEgamma/ElectronIdentification/data/Fall17/effAreaElectro
 ecalruneraIsoInputsW22 = 'RecoEgamma/ElectronIdentification/data/Run3_Winter22/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_122X.txt'
 
 #filterselect = 'none'
-filterselect = 'SVHPMet100'
+#filterselect = 'SVHPMet100'
 #filterselect = 'InvMet100IP'
 ####filterselect = 'AL1NpSC'
 ####filterselect = 'AL1DisSV'
 ####3#filterselect = 'SVIPMet100'
 #filterselect = 'MET100'
+filterselect = 'InvMET100'
 ####filterselect = 'AL1IsoPho'
 ####filterselect = 'IsoPhoMet100'
 #####filterselect = 'AL1SelEle'
 if options.multicrab == True : filterselect = options.eventFilter
 
-runera = "Run3"  # current siganl model   !!!!!!!!  Run3 must be in CMSSW 14 or 15
-#runera = "Run2" # BG models
+#runera = "Run3"  # current siganl model   !!!!!!!!  Run3 must be in CMSSW 14 or 15
+runera = "Run2" # BG models
 if options.multicrab == True : runera = options.runera
 
 dosv = True
