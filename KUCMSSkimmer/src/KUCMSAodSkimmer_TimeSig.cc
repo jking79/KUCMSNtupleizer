@@ -141,7 +141,8 @@ float KUCMSAodSkimmer::getTimeSig( int scIndex, float& num, float& denom, const 
 
         if( sumw == 0 ){ sumw = 1; sumtw = -25; sumrh = 0; }
         float phoWTime = sumtw/sumw;
-        float phoWVar = sumrh/sumw;
+        float phoWVar = 1/sumw;
+    	float phoWHVar = sumrh/sumw;
 		float sqrtPhoWVar = std::sqrt(phoWVar);
         float wttimesig = phoWTime/sqrtPhoWVar;
 	    num = phoWTime;
@@ -212,7 +213,8 @@ float KUCMSAodSkimmer::getTimeSig( std::vector<int> scIndexs, float& num, float&
 
     if( sumw == 0 ){ num = -42; denom = -3; return -42; }
     float phoWTime = sumtw/sumw;
-    float phoWVar = sumrh/sumw;
+    float phoWHVar = sumrh/sumw;
+    float phoWVar = 1/sumw;
     float sqrtPhoWVar = std::sqrt(phoWVar);
     float wttimesig = phoWTime/sqrtPhoWVar;
     num = phoWTime;
