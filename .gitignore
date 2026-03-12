@@ -43,6 +43,7 @@ test/*WorkSpace/
 *.png
 *.pdf
 __*
+!KUCMSSkimmer/ecal_config/cali_config/*
 !KUCMSSkimmer/config/*.sh
 !KUCMSSkimmer/ecal_config/*.txt
 !KUCMSSkimmer/config/json/*
