@@ -36,7 +36,7 @@ options.register('runMETFilters',False,VarParsing.multiplicity.singleton,VarPars
 #options.register('globalTag','106X_upgrade2018_realistic_v11_L1v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','94X_mc2017_realistic_v11',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for sig22 MC');
-options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
+#options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','130X_mcRun3_2023_realistic_v14',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','133X_mcRun3_2024_realistic_v10',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','94X_mc2017_realistic_v14',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for GMSB MC');
@@ -44,9 +44,9 @@ options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.m
 #options.register('globalTag','140X_dataRun3_v17',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for R3 22,23');
 
 ##------------------ data gt  
-options.register('globalTag','106X_dataRun2_v36',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
+#options.register('globalTag','106X_dataRun2_v36',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 ##options.register('globalTag','106X_dataRun2_v28',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
-#options.register('globalTag','124X_dataRun3_v15',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2022');
+options.register('globalTag','124X_dataRun3_v15',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2022');
 #options.register('globalTag','140X_dataRun3_v17',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 ##options.register('globalTag','106X_dataRun2_v24',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2018UL');
 #112X_mcRun3_2021_realistic_v16
@@ -54,10 +54,6 @@ options.register('globalTag','106X_dataRun2_v36',VarParsing.multiplicity.singlet
 ## processName
 options.register('processName','TREE',VarParsing.multiplicity.singleton,VarParsing.varType.string,'process name to be considered');
 
-#outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_Objectified_Test_v24.root' # ntuplizer test
-#outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_Objectified_v23_triggertest3_fullgen_oottrue.root' # ntuplizer test
-#outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_JustinAOD_Zll_ct10_fullgen_oottrue.root' # ntuplizer test
-#outfilename = 'gmsb_AODSIM_KUCMSNtuplizer_gogol_test_v16.root' # ntuplizer test
 outfilename = 'kucmsntuple.root'
 if options.multicrab == True : 
     outfilename = 'kucmsntuple.root'
@@ -157,7 +153,7 @@ process.source = cms.Source("PoolSource",
 
         #### AOD Run3   MUST BE IN CMSSW  14 or 15 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         # Data
-        'file:root_files/R23C_JetMet_mini_4a8e9a72-a9af-4448-acbd-bafa6cd684b4.root',
+        #'file:root_files/R23C_JetMet_mini_4a8e9a72-a9af-4448-acbd-bafa6cd684b4.root',
         #######'file:root_files/Met_UL18B_AOD_973EEF0C-44AB-E94A-8591-04DCD00D8B4B.root',
         ##'file:root_files/R22D_JetMet_mini_1f4a97f7-de76-4ee1-a380-0d9d7a5914d2.root',
         ######'file:root_files/WJets_72B9C618-FE23-1E41-872E-57314D7CB454.root',
@@ -178,10 +174,10 @@ process.source = cms.Source("PoolSource",
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500))#QT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(5000))#BT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10000))#LT
@@ -200,20 +196,20 @@ ecalIsoInputsF17 = 'RecoEgamma/ElectronIdentification/data/Fall17/effAreaElectro
 ecalruneraIsoInputsW22 = 'RecoEgamma/ElectronIdentification/data/Run3_Winter22/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_122X.txt'
 
 #filterselect = 'none'
-#filterselect = 'SVHPMet100'
+filterselect = 'SVHPMet100'
 #filterselect = 'InvMet100IP'
 ####filterselect = 'AL1NpSC'
 ####filterselect = 'AL1DisSV'
 ####3#filterselect = 'SVIPMet100'
 #filterselect = 'MET100'
-filterselect = 'InvMET100'
+#filterselect = 'InvMET100'
 ####filterselect = 'AL1IsoPho'
 ####filterselect = 'IsoPhoMet100'
 #####filterselect = 'AL1SelEle'
 if options.multicrab == True : filterselect = options.eventFilter
 
-#runera = "Run3"  # current siganl model   !!!!!!!!  Run3 must be in CMSSW 14 or 15
-runera = "Run2" # BG models
+runera = "Run3"  # current siganl model   !!!!!!!!  Run3 must be in CMSSW 14 or 15
+#runera = "Run2" # BG models
 if options.multicrab == True : runera = options.runera
 
 dosv = True
@@ -240,16 +236,16 @@ probeout = False
 if options.multicrab == True : probeout = False
 
 triggerSet = "RECO"
+convSet = "RECO"
 ecalIsoInputs = ecalIsoInputsF17
 
+#runera = "Run3_2022"
 if "Run3" in runera :
     triggerSet = "PAT"
+    convSet = "PAT"
     ecalIsoInputs = ecalruneraIsoInputsW22
     if 'CASTOR' in process.CaloGeometryBuilder.SelectedCalos : 
         process.CaloGeometryBuilder.SelectedCalos.remove('CASTOR') 
-
-if "Run3_2022" in runera :
-    triggerSet = "RECO"
 
 if runMETFilters == True : triggerSet = ""  # ?  "SIM" for MC
 
@@ -329,7 +325,7 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizerMini",
                               #rho = cms.InputTag("fixedGridRhoFastjetAll"), #fixedGridRhoAll
                               rho = cms.InputTag("fixedGridRhoAll"),
                               ## conversions
-                              conversions = cms.InputTag("reducedEgamma","reducedConversions",triggerSet ),
+                              conversions = cms.InputTag("reducedEgamma","reducedConversions",convSet ),
                               ## beamSpot
                               beamSpot = cms.InputTag("offlineBeamSpot"),
                               ## trigger
@@ -373,7 +369,7 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizerMini",
                               genxyz0 = cms.InputTag("genParticles", "xyz0"),
                               pileups = cms.InputTag("slimmedAddPileupInfo", ""),
                               #Phoronpileups = cms.InputTag("mixData", ""),
-                              genParticles = cms.InputTag("packedGenParticles", ""),
+                              genParticles = cms.InputTag("packedGenParticles",""),
                               genPartPruned = cms.InputTag("prunedGenParticles",""),
                               genjets = cms.InputTag("slimmedGenJets","")
                               
