@@ -59,8 +59,8 @@ def docrab( dataset ):
 
         # External files needed by CRAB
         #inputJSON    = 'certifications/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt'
-        #inputJSON    = 'certifications/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt'
-        inputJSON    = 'certifications/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt'
+        inputJSON    = 'certifications/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt'
+        #inputJSON    = 'certifications/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt'
         #inputJSON    = 'certifications/Cert_Collisions2022_355100_362760_Golden.json'	
         #inputJSON    = 'certifications/Cert_Collisions2023_366442_370790_Golden.json'
 
@@ -85,7 +85,7 @@ def docrab( dataset ):
 
         #config.Data.partialDataset = True
         config.Data.inputDataset   = None
-        #config.Data.lumiMask       = inputJSON    # Comment out for MC only set for data !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        config.Data.lumiMask       = inputJSON    # Comment out for MC only set for data !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         #config.Data.splitting     = 'Automatic' # data
         config.Data.splitting = 'FileBased' # Justin
         config.Data.unitsPerJob  =  filespjob
@@ -135,8 +135,8 @@ def docrab( dataset ):
             dataset        = inDO[0].split('/')[3]
             print( dataset )
 
-            print( 'current KUCMSNtuple version : 31' ) 
-            version = '_v31'
+            print( 'current KUCMSNtuple version : 32' ) 
+            version = '_v32'
             # 25 Adds ECAL TimeError and GS info + Adds SV processing           
             # 26 Adds Muon Object and loose Muon/electron counting
             # 27 Updated SV object
@@ -150,8 +150,8 @@ def docrab( dataset ):
             ##trial          = "kucmsntuple_MET_R18_AL1SelPho_DEOnly" + version #
             ##trial          = "kucmsntuple_MET_R18_AL1SelEle_DEOnly" + version #
             ##trial          = "kucmsntuple_EGamma_R18_AL1SelEle_DEOnly" + version #
-         
-            trial          = "kucmsntuple_MET_R18_SVHPM100" + version #  
+
+            trial          = "kucmsntuple_MET_Run2_SVHPM100_MiniAOD" + version #  
             #trial          = "kucmsntuple_MET_R17_SVIPM100_p8" + version #  
             #####trial          = "kucmsntuple_JETMET_R24_SVIPM100" + version # 
 
@@ -218,7 +218,8 @@ def docrab( dataset ):
 #>>>>>>>>>>>>>>>>>>>     #2017UL 
 #>>>>>>>>>>>>>>>>>>>     #2018UL #globalTag=106X_dataRun2_v37 # https://twiki.cern.ch/twiki/bin/view/CMS/PdmVRun2LegacyAnalysis
             gt = 'globalTag=106X_dataRun2_v37'
-            config.JobType.pyCfgParams   = [gt,mcrab,efilter]
+            runinfo = 'runera=Run2_2018'
+            config.JobType.pyCfgParams   = [gt,mcrab,efilter,runinfo]
             ###config.JobType.pyCfgParams   = [gt,mcrab,efilter,mDoETOnly]
             #config.JobType.pyCfgParams   = [gt,mcrab,fInvMetALP,mNoSV]
             #config.JobType.pyCfgParams   = [gt,mcrab,fInvMetPho30,mNoSV]
@@ -281,6 +282,23 @@ def run_multi():
     RunIISummer20UL18RECO = '/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1'
 
     runDataset = [
+
+        #['/MET/Run2018A-15Feb2022_UL2018-v1/MINIAOD',1],
+        #['/MET/Run2018B-15Feb2022_UL2018-v1/MINIAOD',1],
+        #['/MET/Run2018C-15Feb2022_UL2018-v1/MINIAOD',1],
+        #['/MET/Run2018D-15Feb2022_UL2018-v1/MINIAOD',1],
+        ['/MET/Run2017A-09Aug2019_UL2017_rsb-v1/MINIAOD',1],
+        ['/MET/Run2017B-09Aug2019_UL2017_rsb-v1/MINIAOD',1],
+        ['/MET/Run2017C-09Aug2019_UL2017_rsb-v1/MINIAOD',1],
+        ['/MET/Run2017D-09Aug2019_UL2017_rsb-v1/MINIAOD',1],
+        ['/MET/Run2017E-09Aug2019_UL2017_rsb-v1/MINIAOD',1],
+        ['/MET/Run2017F-09Aug2019_UL2017_rsb-v1/MINIAOD',1],
+        #['/MET/Run2016B-21Feb2020_ver2_UL2016_HIPM-v1/MINIAOD',1],
+        #['/MET/Run2016C-21Feb2020_UL2016_HIPM-v1/MINIAOD',1],
+        #['/MET/Run2016D-21Feb2020_UL2016_HIPM-v1/MINIAOD',1],
+        #['/MET/Run2016G-21Feb2020_UL2016-v1/MINIAOD',1],
+        #['/MET/Run2016H-21Feb2020_UL2016-v2/MINIAOD',1],
+
 
         #['/MET/Run2018A-15Feb2022_UL2018-v1/AOD',1],
         #['/MET/Run2018B-15Feb2022_UL2018-v1/AOD',1],

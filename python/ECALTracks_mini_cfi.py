@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-from KUCMSNtupleizer.KUCMSNtupleizer.TrackAssociator_cfi import tkAssocParamBlock
+from KUCMSNtupleizer.KUCMSNtupleizer.TrackAssociator_mini_cfi import tkAssocParamBlock
 
 ecalTracks = cms.EDProducer("ECALTracksProducer",
                             tkAssocParamBlock,

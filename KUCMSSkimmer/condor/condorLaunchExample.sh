@@ -22,7 +22,7 @@
 #python3 generateSubmission.py --directory testOutput --inputSample gogoGZ --year 2022 --max_mat 10 --mGl 2300 --mN2 2200 --mN1 2100
 #python3 generateSubmission.py --directory Output --inputSample gogoGZ --year 2022 --max_mat 10
 
-python3 generateSubmission_new.py --inputSample EGamma --year 2018 --max_mat 200 --filter InvMetPho30 --noSV --mini
+python3 generateSubmission.py --inputSample EGamma --year 2018 --max_mat 200 --filter InvMetPho30 --noSV --mini
 
 #commands for ld .so bhc when doin interactive
 #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/uscms/home/mlazarov/nobackup/CMSSW_13_3_3/src/BayesianClustering/lib
