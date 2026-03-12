@@ -70,8 +70,8 @@ void KUCMSAodSkimmer::processPhotons(){
   float EEIsoCutVal = 0.9994431;
   float EBnonIsoCutVal = 0.99661630;
   float EBIsoCutVal = 0.003383696;
-  float EEVeryVeryLooseIsoCutVal = 0.0060335;//loosest isolation selection on baseline/selected photons
-
+  float EEVeryVeryLooseIsoCutVal = 0.21944034;//loosest isolation selection on baseline/selected photons
+  float EBVeryVeryLooseIsoCutVal = 0.2919292;
   allphoBaseline.clear();
   allphowtime.clear();
   //Time sigma window cut values
@@ -408,11 +408,13 @@ void KUCMSAodSkimmer::processPhotons(){
     	if(isobkg_score >= EEVeryVeryLooseIsoCutVal) isoPho = true;
 	    else isoPho = false;
     } else { //barrel - turn off any iso presel (for now) to study the discriminator in v48 skims
+    	if(isobkg_score >= EBVeryVeryLooseIsoCutVal) isoPho = true;
+	    else isoPho = false;
     	//bool passHcalSum = true;
     	//bool passTrkSum = tspscdr4/pt < 0.12; // using rel = 6.0/50  ( abs = 6.0 fir pt of 50 GeV )
     	//bool passsEcalRhSum = erhsecdr4/pt < 0.2; // using rel = 10/50 ( abs cut = 10, for pt of 50 GeV )
     	//bool passHOE = htoem < 0.02; // using abs value 0.02
-    	isoPho = true;//passHOE && passsEcalRhSum && passTrkSum && passHcalSum;
+    	//isoPho = passHOE && passsEcalRhSum && passTrkSum && passHcalSum;
     }
 
     //---------------------------------------------------
