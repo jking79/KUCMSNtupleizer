@@ -5,7 +5,7 @@ from optparse import OptionParser
 import argparse
 from CRABAPI.RawCommand import crabCommand
 from CRABClient.ClientExceptions import ClientException
-from sample_lookup import MINIAOD_SAMPLES, MC_PROCS, DATA_NAMES, JSON_DICT, GLOBALTAGS_DICT
+from tools.sample_lookup import MINIAOD_SAMPLES, MC_PROCS, DATA_NAMES, JSON_DICT, GLOBALTAGS_DICT
 #from httplib import HTTPException
 
 def docrab( dataset, options ):
@@ -199,7 +199,7 @@ def run_multi():
     for sample in sample_list:
         if args.HT != '' and args.HT not in sample:
             continue
-        if args.era != 'mc' and args.era not in sample:
+        if args.era != 'mc' and f"Run{args.year}{args.era}" not in sample:
             continue
         if args.inputSample not in sample:
             continue
