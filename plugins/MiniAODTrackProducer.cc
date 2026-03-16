@@ -59,11 +59,29 @@ private:
   void extractMuonTracks(const std::vector<pat::Muon>& muons,
                          reco::TrackCollection& outputTracks) const;
 
+  // Helper to extract muon tracks using the LLPNanoAOD PatMuonVertex track selection:
+  //   isGlobalMuon()     -> combinedMuon()
+  //   isStandAloneMuon() -> standAloneMuon()
+  //   else               -> tunePMuonBestTrack()
+  void extractMuonTracksLLPNano(const std::vector<pat::Muon>& muons,
+                                reco::TrackCollection& outputTracks) const;
+
   // Helper to add tracks to a merged collection, dropping any that fall within
   // deltaR < 0.01 of a PF electron track in the reference collection.
   void addTracksDeduped(const reco::TrackCollection& inputTracks,
                         const reco::TrackCollection& electronTracks,
                         reco::TrackCollection& outputTracks) const;
+
+  // Build the muon-merged sip2D collection:
+  //   PF (|pdgId|!=13) + Lost (deduped vs electrons, |pdgId|!=13),
+  //   with any track matching a slimmedMuon (deltaR<0.001, |relPt|<0.1) replaced
+  //   by the muon bestTrack, then sip2D cuts applied uniformly to all tracks.
+  void buildMuonMergedSip2D(const pat::PackedCandidateCollection& pfCands,
+                             const pat::PackedCandidateCollection& lostCands,
+                             const std::vector<pat::Muon>& muons,
+                             const TransientTrackBuilder& ttBuilder,
+                             const reco::Vertex& pv,
+                             reco::TrackCollection& outputTracks) const;
 
   // Input tokens
   edm::EDGetTokenT<pat::PackedCandidateCollection> pfCandidatesToken_;
@@ -113,6 +131,14 @@ MiniAODTrackProducer::MiniAODTrackProducer(const edm::ParameterSet& iConfig)
   // Muon global tracks
   produces<reco::TrackCollection>("muonGlobalTracks");
   produces<reco::TrackCollection>("displacedMuonGlobalTracks");
+
+  // Muon tracks using LLPNanoAOD PatMuonVertex selection
+  produces<reco::TrackCollection>("muonLLPNanoTracks");
+  produces<reco::TrackCollection>("displacedMuonLLPNanoTracks");
+
+  // PF+Lost (no muon-ID tracks) deduped vs slimmedMuons, union with all muon bestTracks,
+  // with sip2D cuts applied uniformly
+  produces<reco::TrackCollection>("mergedMuonSip2D");
 }
 
 void MiniAODTrackProducer::extractTracks(
@@ -174,6 +200,29 @@ void MiniAODTrackProducer::extractMuonTracks(
   }
 }
 
+void MiniAODTrackProducer::extractMuonTracksLLPNano(
+    const std::vector<pat::Muon>& muons,
+    reco::TrackCollection& outputTracks) const {
+
+  // Replicates the LLPNanoAOD PatMuonVertex track selection:
+  //   isGlobalMuon()     -> combinedMuon()
+  //   isStandAloneMuon() -> standAloneMuon()
+  //   else               -> tunePMuonBestTrack()
+  for (const auto& muon : muons) {
+    reco::TrackRef trackRef;
+    if (muon.isGlobalMuon())
+      trackRef = muon.combinedMuon();
+    else if (muon.isStandAloneMuon())
+      trackRef = muon.standAloneMuon();
+    else
+      trackRef = muon.tunePMuonBestTrack();
+
+    if (trackRef.isNonnull()) {
+      outputTracks.push_back(*trackRef);
+    }
+  }
+}
+
 void MiniAODTrackProducer::addTracksDeduped(
     const reco::TrackCollection& inputTracks,
     const reco::TrackCollection& electronTracks,
@@ -194,6 +243,93 @@ void MiniAODTrackProducer::addTracksDeduped(
   }
 }
 
+void MiniAODTrackProducer::buildMuonMergedSip2D(
+    const pat::PackedCandidateCollection& pfCands,
+    const pat::PackedCandidateCollection& lostCands,
+    const std::vector<pat::Muon>& muons,
+    const TransientTrackBuilder& ttBuilder,
+    const reco::Vertex& pv,
+    reco::TrackCollection& outputTracks) const {
+
+  // Cache muon (eta, phi, pt) for fast duplicate checking
+  struct MuonKin { double eta, phi, pt; };
+  std::vector<MuonKin> muonCache;
+  muonCache.reserve(muons.size());
+  for (const auto& mu : muons)
+    muonCache.push_back({mu.eta(), mu.phi(), mu.pt()});
+
+  // Returns true if track is a duplicate of any slimmedMuon
+  auto matchesMuon = [&](const reco::Track& track) -> bool {
+    for (const auto& mu : muonCache) {
+      double dEta = track.eta() - mu.eta;
+      double dPhi = std::fabs(track.phi() - mu.phi);
+      if (dPhi > M_PI) dPhi = 2.0 * M_PI - dPhi;
+      if (std::sqrt(dEta * dEta + dPhi * dPhi) >= 0.001) continue;
+      if (mu.pt <= 0) continue;
+      if (std::fabs(track.pt() - mu.pt) / mu.pt < 0.1) return true;
+    }
+    return false;
+  };
+
+  // Cache PF electron (eta, phi) for lost-track dedup (no quality cuts here)
+  std::vector<std::pair<double, double>> eleCache;
+  for (const auto& cand : pfCands) {
+    if (!cand.hasTrackDetails() || std::abs(cand.pdgId()) != 11) continue;
+    const reco::Track tr = cand.pseudoTrack();
+    eleCache.emplace_back(tr.eta(), tr.phi());
+  }
+
+  auto overlapsElectron = [&](const reco::Track& track) -> bool {
+    for (const auto& [eEta, ePhi] : eleCache) {
+      double dEta = track.eta() - eEta;
+      double dPhi = std::fabs(track.phi() - ePhi);
+      if (dPhi > M_PI) dPhi = 2.0 * M_PI - dPhi;
+      if (std::sqrt(dEta * dEta + dPhi * dPhi) < 0.01) return true;
+    }
+    return false;
+  };
+
+  // Build raw merged collection (no sip2D cuts yet)
+  reco::TrackCollection raw;
+
+  // PF candidates: skip muon-ID'd tracks and any duplicate of a slimmedMuon
+  for (const auto& cand : pfCands) {
+    if (!cand.hasTrackDetails()) continue;
+    if (std::abs(cand.pdgId()) == 13) continue;
+    const reco::Track track = cand.pseudoTrack();
+    if (matchesMuon(track)) continue;
+    raw.push_back(track);
+  }
+
+  // Lost tracks: skip muon-ID'd, electron dedup, and muon duplicates
+  for (const auto& cand : lostCands) {
+    if (!cand.hasTrackDetails()) continue;
+    if (std::abs(cand.pdgId()) == 13) continue;
+    const reco::Track track = cand.pseudoTrack();
+    if (overlapsElectron(track)) continue;
+    if (matchesMuon(track)) continue;
+    raw.push_back(track);
+  }
+
+  // Add all slimmedMuon bestTracks unconditionally
+  for (const auto& mu : muons) {
+    if (mu.muonBestTrack().isNonnull())
+      raw.push_back(*mu.muonBestTrack());
+  }
+
+  // Apply sip2D cuts uniformly to every track in the merged collection
+  for (const auto& track : raw) {
+    if (track.pt() <= minPt_) continue;
+    if (track.normalizedChi2() >= maxNormalizedChi2_) continue;
+    reco::TransientTrack ttrack = ttBuilder.build(track);
+    auto ip2dResult = IPTools::signedTransverseImpactParameter(
+        ttrack, GlobalVector(track.px(), track.py(), track.pz()), pv);
+    if (!ip2dResult.first) continue;
+    if (std::fabs(ip2dResult.second.significance()) < minAbsSip2D_) continue;
+    outputTracks.push_back(track);
+  }
+}
+
 void MiniAODTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   // Get input collections
   edm::Handle<pat::PackedCandidateCollection> pfCandidatesHandle;
@@ -211,19 +347,14 @@ void MiniAODTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
   edm::Handle<std::vector<pat::Muon>> displacedMuonsHandle;
   iEvent.getByToken(displacedMuonsToken_, displacedMuonsHandle);
 
-  // Get PV and TransientTrackBuilder for sip2D calculation (if cuts enabled)
-  const TransientTrackBuilder* ttBuilder = nullptr;
-  const reco::Vertex* pv = nullptr;
+  // Always fetch TransientTrackBuilder and PV (needed for mergedMuonSip2D regardless of applyCuts_)
+  const TransientTrackBuilder& ttBuilderRef = iSetup.getData(ttBuilderToken_);
+  edm::Handle<reco::VertexCollection> pvHandle;
+  iEvent.getByToken(pvToken_, pvHandle);
+  const reco::Vertex* pv = (pvHandle.isValid() && !pvHandle->empty()) ? &pvHandle->at(0) : nullptr;
 
-  if (applyCuts_) {
-    ttBuilder = &iSetup.getData(ttBuilderToken_);
-
-    edm::Handle<reco::VertexCollection> pvHandle;
-    iEvent.getByToken(pvToken_, pvHandle);
-    if (pvHandle.isValid() && !pvHandle->empty()) {
-      pv = &pvHandle->at(0);
-    }
-  }
+  // For the applyCuts_ path: pass pointer (null when disabled preserves existing behavior)
+  const TransientTrackBuilder* ttBuilder = applyCuts_ ? &ttBuilderRef : nullptr;
 
   // Create output collections
   auto pfCandidateTracks = std::make_unique<reco::TrackCollection>();
@@ -234,6 +365,9 @@ void MiniAODTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
   auto mergedTracksAll = std::make_unique<reco::TrackCollection>();
   auto muonGlobalTracks = std::make_unique<reco::TrackCollection>();
   auto displacedMuonGlobalTracks = std::make_unique<reco::TrackCollection>();
+  auto muonLLPNanoTracks = std::make_unique<reco::TrackCollection>();
+  auto displacedMuonLLPNanoTracks = std::make_unique<reco::TrackCollection>();
+  auto mergedMuonSip2D = std::make_unique<reco::TrackCollection>();
 
   // Extract tracks from packed candidates
   if (pfCandidatesHandle.isValid()) {
@@ -251,10 +385,12 @@ void MiniAODTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
   // Extract global tracks from muons
   if (muonsHandle.isValid()) {
     extractMuonTracks(*muonsHandle, *muonGlobalTracks);
+    extractMuonTracksLLPNano(*muonsHandle, *muonLLPNanoTracks);
   }
 
   if (displacedMuonsHandle.isValid()) {
     extractMuonTracks(*displacedMuonsHandle, *displacedMuonGlobalTracks);
+    extractMuonTracksLLPNano(*displacedMuonsHandle, *displacedMuonLLPNanoTracks);
   }
 
   // Build PF electron reference tracks for deduplication (same quality cuts as extractTracks)
@@ -293,6 +429,14 @@ void MiniAODTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
   addTracksDeduped(*lostTracks, pfElectronTracks, *mergedTracksAll);
   addTracksDeduped(*eleLostTracks, pfElectronTracks, *mergedTracksAll);
 
+  // mergedMuonSip2D: PF+Lost (no muon-ID'd tracks) deduped vs slimmedMuons,
+  // union with all slimmedMuon bestTracks, sip2D cuts applied to everything.
+  if (pfCandidatesHandle.isValid() && lostTracksHandle.isValid() &&
+      muonsHandle.isValid() && pv != nullptr) {
+    buildMuonMergedSip2D(*pfCandidatesHandle, *lostTracksHandle,
+                         *muonsHandle, ttBuilderRef, *pv, *mergedMuonSip2D);
+  }
+
   // Log some stats
   edm::LogInfo("MiniAODTrackProducer")
       << "Extracted tracks - PF: " << pfCandidateTracks->size()
@@ -302,7 +446,10 @@ void MiniAODTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
       << ", MergedWithEle: " << mergedTracksWithEle->size()
       << ", MergedAll: " << mergedTracksAll->size()
       << ", MuonGlobal: " << muonGlobalTracks->size()
-      << ", DisplacedMuonGlobal: " << displacedMuonGlobalTracks->size();
+      << ", DisplacedMuonGlobal: " << displacedMuonGlobalTracks->size()
+      << ", MuonLLPNano: " << muonLLPNanoTracks->size()
+      << ", DisplacedMuonLLPNano: " << displacedMuonLLPNanoTracks->size()
+      << ", MergedMuonSip2D: " << mergedMuonSip2D->size();
 
   // Put collections into the event
   iEvent.put(std::move(pfCandidateTracks), "pfCandidateTracks");
@@ -313,6 +460,9 @@ void MiniAODTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
   iEvent.put(std::move(mergedTracksAll), "mergedAll");
   iEvent.put(std::move(muonGlobalTracks), "muonGlobalTracks");
   iEvent.put(std::move(displacedMuonGlobalTracks), "displacedMuonGlobalTracks");
+  iEvent.put(std::move(muonLLPNanoTracks), "muonLLPNanoTracks");
+  iEvent.put(std::move(displacedMuonLLPNanoTracks), "displacedMuonLLPNanoTracks");
+  iEvent.put(std::move(mergedMuonSip2D), "mergedMuonSip2D");
 }
 
 void MiniAODTrackProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {

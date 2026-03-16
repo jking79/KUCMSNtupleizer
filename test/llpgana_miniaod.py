@@ -307,8 +307,7 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizerMini",
                               #displacedTracks = cms.InputTag("displacedElectrons", "displacedCandidateTracks"),
                               #muonEnhancedTracks = cms.InputTag("muonEnhancedTracks", "muonEnhancedTracks"),
 
-                              combinedMuonTracks = cms.InputTag("miniAODMuonEnhancedTracks", "combinedMuonTracks"),
-                              sip2DMuonEnhancedTracks = cms.InputTag("miniAODMuonEnhancedTracks", "sip2DMuonEnhancedTracks"),
+                              sip2DMuonEnhancedTracks = cms.InputTag("miniAODTrackProducer", "mergedMuonSip2D"),
  
                               ## vertices
                               vertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
@@ -473,7 +472,7 @@ metFilterPaths += [
 
 # SVs & ecaltracks aka merged SC collection
 process.kuEcalTracks = cms.Sequence( ecalTracks )
-process.kuSV = cms.Sequence( miniAODTrackProducer + miniAODMuonEnhancedTracks + hyddraSVs )
+process.kuSV = cms.Sequence( miniAODTrackProducer + hyddraSVs )
 #process.kuDisEle = cms.Sequence( displacedElectrons )
 
 #process.kuDisplaced_path = cms.Path()

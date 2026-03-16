@@ -56,6 +56,7 @@
 #include "KUCMSGenObjects_mini.hh"
 #include "KUCMSDisplacedVertex_mini.hh"
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/TrackHelper.h"
+#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/TimingHelper.h"
 #include "TrackingTools/IPTools/interface/IPTools.h"
 
 #ifndef KUCMSTrackObjectMiniHeader
@@ -218,6 +219,7 @@ void KUCMSTrackObjectMini::InitObject( TTree* fOutTree ){
     Branches.makeBranch("ecalDetIds","Track_ecalDetIds",VVUINT);
     Branches.makeBranch("scIndex","Track_scIndexs",VVINT);
     Branches.makeBranch("hcalDetIds","Track_hcalDetIds",VVUINT);
+    Branches.makeBranch("pathLength","Track_pathLength",VFLOAT);
 
     Branches.attachBranches(fOutTree);
 
@@ -298,6 +300,7 @@ void KUCMSTrackObjectMini::ProcessEvent( ItemManager<float>& geVar ){
     //float rilepmax = 0.2;
     float trkptmin = 5.0;
 	float isoptmin = 20.0;
+    const auto & primevtx = vertices_->front();
 	for( const auto &track : prmtTracks ){
 
 		trackIndx++;
@@ -328,14 +331,23 @@ void KUCMSTrackObjectMini::ProcessEvent( ItemManager<float>& geVar ){
         std::vector<DetId> ecalDetIDs = detIdInfo[trackIndx].crossedEcalIds;
         std::vector<uInt> ecalRawIds;
         std::vector<int> scIndex{-9};
+        float pathLength = -1.f;
         if( ecalDetIDs.size() > 0 ){
             for( auto & id : ecalDetIDs ){ ecalRawIds.push_back( id.rawId() ); }
             scIndex = rhObj->getSuperClusterIndex( ecalRawIds, trackIndx );
+            if( scIndex[0] >= 0 ){
+                const reco::SuperCluster &sc = rhObj->fsupclstrs[scIndex[0]];
+                const GlobalPoint vertexPos(primevtx.x(), primevtx.y(), primevtx.z());
+                const GlobalPoint scPos(sc.x(), sc.y(), sc.z());
+                const reco::TransientTrack ttrackSC = ttBuilder.build(track);
+                pathLength = float(TimingHelper::PathLength(ttrackSC, vertexPos, scPos));
+            }
         }//<<>>if( ecalDetIDs.size() > 0 )
 
 		if( ( scIndex[0] < 0 ) && ( pt < trkptmin ) ) continue;
         Branches.fillBranch("ecalDetIds", ecalRawIds );
         Branches.fillBranch("scIndex", scIndex );
+        Branches.fillBranch("pathLength", pathLength );
 
         std::vector<DetId> hcalDetIDs = detIdInfo[trackIndx].crossedHcalIds;
         std::vector<uInt> hcalRawIds;
@@ -364,7 +376,6 @@ void KUCMSTrackObjectMini::ProcessEvent( ItemManager<float>& geVar ){
         if( trkiso ) nIsoTracks++;
 		//if( trkiso ) std::cout << " trk iso: : " << absiso << " " << reliso << " " << mrelisolep << " " << relisolep << std::endl;
 
-    	const auto & primevtx = vertices_->front();
         auto ttrack = ttBuilder.build( track );
         GlobalVector direction(track.px(), track.py(), track.pz());
 

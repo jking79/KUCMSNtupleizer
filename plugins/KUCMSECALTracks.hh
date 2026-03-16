@@ -56,8 +56,12 @@
 #include "TrackingTools/Records/interface/TransientTrackRecord.h"
 #include "RecoEgamma/EgammaIsolationAlgos/interface/ElectronTkIsolation.h"
 
+#include "DataFormats/VertexReco/interface/Vertex.h"
+#include "DataFormats/VertexReco/interface/VertexFwd.h"
+
 // Add includes for interface collections
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/DeltaRMatch.h"
+#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/TimingHelper.h"
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/TrackPropagator.h"
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/TrackInfo.h"
 
@@ -106,8 +110,10 @@ public:
   void LoadMagneticField( edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> token){magneticFieldToken_ = token; }
   void LoadGenObject(KUCMSGenObject* genObjs){ genObjs_ = genObjs; };
   void LoadBeamSpot(edm::EDGetTokenT<reco::BeamSpot> token) { beamspotToken_ = token; }
- 
-  // sets up branches, do preloop jobs 
+  void LoadPrimaryVertex(edm::EDGetTokenT<reco::VertexCollection> token) { pvToken_ = token; }
+  void LoadTTrackBuilder(edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> token) { transientTrackBuilderToken_ = token; }
+
+  // sets up branches, do preloop jobs
   void InitObject( TTree* fOutTree ); 
   
   // object processing : 1) LoadEvent prior to event loop 2) ProcessEvent during event loop via objectManager
@@ -148,10 +154,17 @@ private:
   edm::EDGetTokenT<reco::BeamSpot> beamspotToken_;
   reco::BeamSpot beamSpot_;
 
+  edm::EDGetTokenT<reco::VertexCollection> pvToken_;
+  reco::Vertex primaryVertex_;
+
+  edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> transientTrackBuilderToken_;
+  const TransientTrackBuilder* ttBuilder_;
+
   TrackDetectorAssociator trackAssociator_;
   TrackAssociatorParameters trackAssocParameters_;
 
   std::vector<trackSCMatch> trackSCMatches_;
+  std::map<unsigned, reco::SuperCluster> trackIndexToSC_;
 
   template <typename T>
   void FillTrackBranches(PropagatedTracks<T> &propagatedTracks);
@@ -160,8 +173,9 @@ private:
   void FillDetIdBranches(const std::vector<DetId> &detIDs, const PropagatedTrack<T> &trackDet, const bool isECAL);
 };//<<>>class KUCMSECALTracks : public KUCMSObjectBase
 
-KUCMSECALTracks::KUCMSECALTracks( const edm::ParameterSet& iConfig ) 
-  : caloGeometryToken_(esConsumes()) {
+KUCMSECALTracks::KUCMSECALTracks( const edm::ParameterSet& iConfig )
+  : caloGeometryToken_(esConsumes()),
+    transientTrackBuilderToken_(esConsumes<TransientTrackBuilder, TransientTrackRecord>()) {
 
   trackAssociator_.useDefaultPropagator();
   cfFlag.set( "hasGenInfo", iConfig.existsAs<bool>("hasGenInfo") ? iConfig.getParameter<bool>("hasGenInfo") : true );
@@ -203,6 +217,7 @@ void KUCMSECALTracks::InitObject( TTree* fOutTree ){
   Branches.makeBranch("ECALTrackDetID_isHCAL", "ECALTrackDetID_isHCAL", VBOOL);
   Branches.makeBranch("ECALTrack_genIndex", "ECALTrack_genIndex", VINT);
   Branches.makeBranch("ECALTrack_pdgId", "ECALTrack_pdgId", VINT);
+  Branches.makeBranch("ECALTrack_pathLength", "ECALTrack_pathLength", VFLOAT);
 
   Branches.makeBranch("TrackSCMatch_scEnergyToTrackPRatio", "TrackSCMatch_scEnergyToTrackPRatio", VFLOAT);
   Branches.makeBranch("TrackSCMatch_deltaR", "TrackSCMatch_deltaR", VFLOAT);
@@ -215,12 +230,19 @@ void KUCMSECALTracks::LoadEvent( const edm::Event& iEvent, const edm::EventSetup
   if( ETDEBUG ) std::cout << "Collecting Tracks" << std::endl;
 
   ecalTracks_.clear();
-  
+  trackSCMatches_.clear();
+  trackIndexToSC_.clear();
+
   // Get event track and super cluster information from AOD
   iEvent.getByToken( ecalTracksToken_, ecalTracksHandle_ );
   iEvent.getByToken( generalTracksToken_, generalTracksHandle_ );
   iEvent.getByToken( mergedSCsToken_, mergedSCsHandle_);
   beamSpot_ = iEvent.get(beamspotToken_);
+
+  const auto &pvCollection = iEvent.get(pvToken_);
+  primaryVertex_ = pvCollection.at(0);
+
+  ttBuilder_ = &iSetup.getData(transientTrackBuilderToken_);
 
   reco::TrackCollection generalTracks;
   
@@ -245,11 +267,12 @@ void KUCMSECALTracks::LoadEvent( const edm::Event& iEvent, const edm::EventSetup
     //std::cout << "  SuperCluster Info: eta = " << scEta << ", phi = " << scPhi << ", energy = " << sc.correctedEnergy() << std::endl;
 
     reco::Track matchedTrack;
-    //int matchedID(-999);
+    unsigned matchedIndex = 0;
+    bool foundMatch = false;
     for(const auto &propTrack : generalECALTracks_) {
 
       const TrackDetMatchInfo detInfo(propTrack.GetDetInfo());
-      
+
       for(const auto & detID : detInfo.crossedEcalIds) {
 	const GlobalPoint trackHitAtEcal(ecalGeometry.getGeometry(detID)->getPosition());
 
@@ -260,13 +283,13 @@ void KUCMSECALTracks::LoadEvent( const edm::Event& iEvent, const edm::EventSetup
 	if(deltaR < minDeltaR) {
 	  minDeltaR = deltaR;
 	  matchedTrack = propTrack.GetTrack();
-	  //matchedID = int(detID);
+	  matchedIndex = propTrack.GetIndex();
+	  foundMatch = true;
 	}
       }
     }
-    //std::cout << "  Matched track: eta " << matchedTrack.eta() << ", phi = " << matchedTrack.phi() << ", p = " << matchedTrack.p() << std::endl;
-    //std::cout << "    Match details: deltaR = " << minDeltaR << ", matched detID = " << matchedID << std::endl;
     trackSCMatches_.emplace_back(trackSCMatch(matchedTrack, sc, minDeltaR));
+    if(foundMatch) trackIndexToSC_[matchedIndex] = sc;
   }
   
   
@@ -324,7 +347,17 @@ void KUCMSECALTracks::FillTrackBranches(PropagatedTracks<T> &propagatedTracks) {
     
     FillDetIdBranches<T>(detInfo.crossedEcalIds, trackDet, true);
     FillDetIdBranches<T>(detInfo.crossedHcalIds, trackDet, false);
-    //Branches.fillBranch("",);
+
+    float pathLength = -1.f;
+    auto scIt = trackIndexToSC_.find(trackDet.GetIndex());
+    if(scIt != trackIndexToSC_.end()) {
+      const reco::SuperCluster &sc = scIt->second;
+      const GlobalPoint vertexPos(primaryVertex_.x(), primaryVertex_.y(), primaryVertex_.z());
+      const GlobalPoint scPos(sc.x(), sc.y(), sc.z());
+      const reco::TransientTrack ttrack = ttBuilder_->build(track);
+      pathLength = float(TimingHelper::PathLength(ttrack, vertexPos, scPos));
+    }
+    Branches.fillBranch("ECALTrack_pathLength", pathLength);
 
     dbgcnt++;
   }

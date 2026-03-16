@@ -91,7 +91,11 @@
 
 // KUCMS Object includes
 
+#include "DataFormats/VertexReco/interface/Vertex.h"
+#include "TrackingTools/TransientTrack/interface/TransientTrack.h"
+
 #include "KUCMSObjectBase.hh"
+#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/TimingHelper.h"
 
 #ifndef KUCMSEcalRecHitObjectMiniHeader
 #define KUCMSEcalRecHitObjectMiniHeader
@@ -147,6 +151,7 @@ class KUCMSEcalRecHitObjectMini : public KUCMSObjectBase {
 
     // sc functions
     float getSuperClusterSeedTime( reco::SuperClusterRef supercluster );
+    float getTrackTimeAtSV( const reco::SuperCluster &sc, const reco::TransientTrack &ttrack, const reco::Vertex &sv );
 	int getSuperClusterIndex( const reco::SuperCluster* supercluster, int objectPdgId, int objectIdx );
     std::vector<int> getSuperClusterIndex( const rhIdGroup crystals, int objectIdx );
 
@@ -954,6 +959,26 @@ float KUCMSEcalRecHitObjectMini::getSuperClusterSeedTime( reco::SuperClusterRef 
     return seedTime;
 
 }//<<>>getSuperClusterSeedTime( reco::SuperClusterRef supercluster )
+
+float KUCMSEcalRecHitObjectMini::getTrackTimeAtSV( const reco::SuperCluster &sc, const reco::TransientTrack &ttrack, const reco::Vertex &sv ) {
+
+    // Get seed rechit raw time
+    const auto seedDetId = sc.seed()->seed();
+    const auto recHits = ((seedDetId.subdetId() == EcalSubdetector::EcalBarrel) ? recHitsEB_ : recHitsEE_);
+    const auto seedHit = recHits->find(seedDetId);
+    if(seedHit == recHits->end()) return -9999.f;
+    const float t_raw = seedHit->time();
+
+    // Compute helical path length from SV to SC seed position
+    const GlobalPoint svPos(sv.x(), sv.y(), sv.z());
+    const GlobalPoint scPos(sc.x(), sc.y(), sc.z());
+    const double pathLength = TimingHelper::PathLength(ttrack, svPos, scPos);
+
+    // Back-propagate: t_SV = t_raw - pathLength / (beta * c), using electron mass
+    const double m_e(0.000511);
+    return t_raw - float(TimingHelper::Time(ttrack.track(), m_e, pathLength));
+
+}//<<>>getTrackTimeAtSV( const reco::SuperCluster &sc, const reco::TransientTrack &ttrack, const reco::Vertex &sv )
 
 std::vector<int> KUCMSEcalRecHitObjectMini::getSuperClusterIndex( const rhIdGroup crystals, int objectIdx ){
 
