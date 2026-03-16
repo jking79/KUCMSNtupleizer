@@ -55,7 +55,7 @@ hadronicHYDDRA = cms.PSet(
 )
 
 hyddraSVs = cms.EDProducer("HyddraSVsProducer",
-    tracks       = cms.InputTag("miniAODMuonEnhancedTracks", "sip2DMuonEnhancedTracks"),
+    tracks       = cms.InputTag("miniAODTrackProducer", "mergedMuonSip2D"),
     pvCollection = cms.InputTag("offlineSlimmedPrimaryVertices"),
     leptonic     = leptonicHYDDRA,
     hadronic     = hadronicHYDDRA,
