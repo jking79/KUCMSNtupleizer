@@ -336,7 +336,7 @@ void KUCMSTrackObjectMini::ProcessEvent( ItemManager<float>& geVar ){
             for( auto & id : ecalDetIDs ){ ecalRawIds.push_back( id.rawId() ); }
             scIndex = rhObj->getSuperClusterIndex( ecalRawIds, trackIndx );
             if( scIndex[0] >= 0 ){
-                const reco::SuperCluster &sc = rhObj->fsupclstrs[scIndex[0]];
+                const reco::SuperCluster &sc = rhObj->getSuperCluster(scIndex[0]);
                 const GlobalPoint vertexPos(primevtx.x(), primevtx.y(), primevtx.z());
                 const GlobalPoint scPos(sc.x(), sc.y(), sc.z());
                 const reco::TransientTrack ttrackSC = ttBuilder.build(track);

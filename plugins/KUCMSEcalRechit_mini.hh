@@ -152,6 +152,7 @@ class KUCMSEcalRecHitObjectMini : public KUCMSObjectBase {
     // sc functions
     float getSuperClusterSeedTime( reco::SuperClusterRef supercluster );
     float getTrackTimeAtSV( const reco::SuperCluster &sc, const reco::TransientTrack &ttrack, const reco::Vertex &sv );
+    const reco::SuperCluster& getSuperCluster( int index ) const { return fsupclstrs[index]; }
 	int getSuperClusterIndex( const reco::SuperCluster* supercluster, int objectPdgId, int objectIdx );
     std::vector<int> getSuperClusterIndex( const rhIdGroup crystals, int objectIdx );
 
