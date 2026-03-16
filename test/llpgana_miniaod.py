@@ -94,6 +94,7 @@ process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cf
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.load('TrackingTools.TransientTrack.TransientTrackBuilder_cfi')
 process.load("TrackingTools.TrackAssociator.DetIdAssociatorESProducer_cff")
+if hasattr(process, 'muonDetIdAssociator'): del process.muonDetIdAssociator
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 
 process.load('PhysicsTools.PatAlgos.triggerLayer1.triggerProducer_cfi')
