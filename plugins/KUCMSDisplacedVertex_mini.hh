@@ -31,6 +31,7 @@
 #include "DataFormats/Candidate/interface/CandidateFwd.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
+#include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
@@ -53,6 +54,8 @@
 
 //  KUCMS Object includes
 #include "KUCMSObjectBase.hh"
+#include "KUCMSEcalRechit_mini.hh"
+#include "KUCMSNtupleizer/KUCMSNtupleizer/interface/TimingHelper.h"
 
 #include <iomanip>
 #include <map>
@@ -70,10 +73,11 @@ public:
 
   void LoadSip2DMuonEnhancedTracksToken( edm::EDGetTokenT<reco::TrackCollection> token ){ muonEnhancedTracksToken_ = token; }
   void LoadMuonEnhancedTracksToken( edm::EDGetTokenT<reco::TrackCollection> token ){ muonEnhancedTracksToken_ = token; }
-  void LoadMuonTracks( edm::EDGetTokenT<reco::TrackCollection> token ) { muonTracksToken_ = token; }
+  void LoadMuonToken( edm::EDGetTokenT<edm::View<pat::Muon>> token ) { muonsToken_ = token; }
   void LoadPrimaryVertex( edm::EDGetTokenT<reco::VertexCollection> token ) {pvToken_ = token;}
   void LoadTTrackBuilder(edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> ttbuilder) {transientTrackBuilder_ = ttbuilder; }
   void LoadMagneticField( edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> token){magneticFieldToken_ = token; }
+  void LoadRecHitObject( KUCMSEcalRecHitObjectMini* rhObj ) { rhObj_ = rhObj; }
   void LoadAssociationParameters(  TrackAssociatorParameters parameters){ trackAssocParameters_ = parameters;}
   void LoadMergedSCs( edm::EDGetTokenT<reco::SuperClusterCollection> token ) {mergedSCsToken_ = token;}
   void LoadGenParticlesToken(edm::EDGetTokenT<std::vector<pat::PackedGenParticle>> token ){ genToken_ = token; }
@@ -107,10 +111,11 @@ private:
   TrackAssociatorParameters trackAssocParameters_;
 
   TTBuilderWrapper ttBuilder_;
+  KUCMSEcalRecHitObjectMini* rhObj_;
 
   std::vector<MatchedTrackSCPair<reco::Track>> trackSCPairs_;
 
-  edm::EDGetTokenT<reco::TrackCollection> muonTracksToken_;
+  edm::EDGetTokenT<edm::View<pat::Muon>> muonsToken_;
   edm::EDGetTokenT<reco::TrackCollection> muonEnhancedTracksToken_;
   edm::EDGetTokenT<std::vector<pat::PackedGenParticle>> genToken_;
   edm::EDGetTokenT<reco::VertexCollection> pvToken_;
@@ -123,7 +128,7 @@ private:
   edm::ESGetToken<CaloGeometry, CaloGeometryRecord> caloGeometryToken_;
   edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> magneticFieldToken_;
 
-  edm::Handle<reco::TrackCollection> muonTracksHandle_;
+  edm::Handle<edm::View<pat::Muon>> muonsHandle_;
   edm::Handle<reco::TrackCollection> muonEnhancedTracksHandle_;
   edm::Handle<std::vector<pat::PackedGenParticle>> genHandle_;
   edm::Handle<reco::VertexCollection> pvHandle_;
@@ -193,6 +198,7 @@ void KUCMSDisplacedVertexMini::InitObject( TTree* fOutTree ){
   Branches.makeBranch("Vertex_passLooseMuonID", "Vertex_passLooseMuonID", VBOOL);
   Branches.makeBranch("Vertex_passLooseElectronID", "Vertex_passLooseElectronID", VBOOL);
   Branches.makeBranch("Vertex_passLooseID", "Vertex_passLooseID", VBOOL);
+  Branches.makeBranch("Vertex_time", "Vertex_time", VFLOAT);
 
   // VertexTrack Branches
   Branches.makeBranch("VertexTrack_vertexIndex","VertexTrack_vertexIndex", VUINT);
@@ -205,6 +211,7 @@ void KUCMSDisplacedVertexMini::InitObject( TTree* fOutTree ){
   Branches.makeBranch("VertexTrack_SCDR", "VertexTrack_SCDR", VFLOAT);
   Branches.makeBranch("VertexTrack_energySC", "VertexTrack_energySC", VFLOAT);
   Branches.makeBranch("VertexTrack_ratioPToEnergySC", "VertexTrack_ratioPToEnergySC", VFLOAT);
+  Branches.makeBranch("VertexTrack_pathLength", "VertexTrack_pathLength", VFLOAT);
 
   // Gen Vertices
   if(cfFlag("hasGenInfo")) {
@@ -249,7 +256,7 @@ void KUCMSDisplacedVertexMini::InitObject( TTree* fOutTree ){
 
 void KUCMSDisplacedVertexMini::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar ){
 
-  iEvent.getByToken( muonTracksToken_, muonTracksHandle_);
+  iEvent.getByToken( muonsToken_, muonsHandle_);
   iEvent.getByToken( muonEnhancedTracksToken_, muonEnhancedTracksHandle_);
   if(cfFlag("hasGenInfo")) iEvent.getByToken( genToken_, genHandle_);
   iEvent.getByToken( pvToken_, pvHandle_);
@@ -355,7 +362,19 @@ void KUCMSDisplacedVertexMini::ProcessEvent( ItemManager<float>& geVar ){
 
       reco::Vertex vertex(tvertex);
       LorentzVec vertex4Vec(VertexHelper::GetVertex4Vector(vertex));
-      const bool passLooseMuonID(vertex.tracksSize() == 2 && VertexHelper::CountInstances(vertex, *muonTracksHandle_) == 2);
+      int nMuonTracks(0);
+      if(vertex.tracksSize() == 2) {
+        for(const auto &trackRef : vertex.tracks()) {
+          const reco::TrackRef ref(trackRef.castTo<reco::TrackRef>());
+          if(ref.isNull()) continue;
+          for(const auto &mu : *muonsHandle_) {
+            if(mu.muonBestTrack().isNonnull() && TrackHelper::SameTrack(*ref, *mu.muonBestTrack())) {
+              nMuonTracks++; break;
+            }
+          }
+        }
+      }
+      const bool passLooseMuonID(vertex.tracksSize() == 2 && nMuonTracks == 2);
       const bool passLooseElectronID(vertex.tracksSize() == 2 && VertexHelper::CountInstances(vertex, electronTracks_) == 2);
       const bool passLooseID(vertex.tracksSize() < 4? (passLooseMuonID || passLooseElectronID) : true);
 
@@ -395,6 +414,43 @@ void KUCMSDisplacedVertexMini::ProcessEvent( ItemManager<float>& geVar ){
       Branches.fillBranch("Vertex_passLooseElectronID", bool(passLooseElectronID));
       Branches.fillBranch("Vertex_passLooseID", bool(passLooseID));
 
+      float svTime = -9999.f;
+      if(passLooseElectronID) {
+        float timeSum = 0.f;
+        int nMatched = 0;
+        for(const auto &trackRef : vertex.tracks()) {
+          const reco::TrackRef ref(trackRef.castTo<reco::TrackRef>());
+          if(ref.isNull()) continue;
+          const reco::Track track(*ref);
+          reco::SuperCluster sc;
+          double deltaR(-1.);
+          if(getSCMatch(track, sc, deltaR)) {
+            const reco::TransientTrack ttrack = ttBuilder_.build(track);
+            const float t = rhObj_->getTrackTimeAtSV(sc, ttrack, vertex);
+            if(t > -9000.f) { timeSum += t; nMatched++; }
+          }
+        }
+        if(nMatched > 0) svTime = timeSum / float(nMatched);
+      } else if(hadsv) {
+        const double m_pi(0.13957018);
+        float timeSum = 0.f;
+        int nMatched = 0;
+        for(const auto &trackRef : vertex.tracks()) {
+          const reco::TrackRef ref(trackRef.castTo<reco::TrackRef>());
+          if(ref.isNull()) continue;
+          const reco::Track track(*ref);
+          reco::SuperCluster sc;
+          double deltaR(-1.);
+          if(getSCMatch(track, sc, deltaR)) {
+            const reco::TransientTrack ttrack = ttBuilder_.build(track);
+            const float t = rhObj_->getTrackTimeAtSV(sc, ttrack, vertex, m_pi);
+            if(t > -9000.f) { timeSum += t; nMatched++; }
+          }
+        }
+        if(nMatched > 0) svTime = timeSum / float(nMatched);
+      }
+      Branches.fillBranch("Vertex_time", svTime);
+
       if(cfFlag("hasGenInfo")) {
 	double minDistance;
 	int nearestGenVertexIndex(FindNearestGenVertexIndex(vertex, minDistance));
@@ -416,6 +472,15 @@ void KUCMSDisplacedVertexMini::ProcessEvent( ItemManager<float>& geVar ){
 	double deltaR(-1.);
 	reco::SuperCluster sc;
 	const bool isSCMatched(getSCMatch(track, sc, deltaR));
+
+	float trackPathLength = -1.f;
+	if(isSCMatched) {
+	  const reco::TransientTrack ttrack = ttBuilder_.build(track);
+	  const GlobalPoint svPos(vertex.x(), vertex.y(), vertex.z());
+	  const GlobalPoint scPos(sc.x(), sc.y(), sc.z());
+	  trackPathLength = float(TimingHelper::PathLength(ttrack, svPos, scPos));
+	}
+
 	Branches.fillBranch("VertexTrack_vertexIndex", unsigned(vtxIndex) );
 	Branches.fillBranch("VertexTrack_trackIndex", unsigned(ref.key()) );
 	Branches.fillBranch("VertexTrack_trackCosTheta", float(TrackHelper::CalculateCosTheta(primaryVertex_, vertex, track)));
@@ -426,6 +491,7 @@ void KUCMSDisplacedVertexMini::ProcessEvent( ItemManager<float>& geVar ){
 	Branches.fillBranch("VertexTrack_SCDR", float(deltaR));
 	Branches.fillBranch("VertexTrack_energySC", float(isSCMatched? sc.correctedEnergy() : -1.));
 	Branches.fillBranch("VertexTrack_ratioPToEnergySC", float(isSCMatched? track.p()/sc.correctedEnergy() : -1.));
+	Branches.fillBranch("VertexTrack_pathLength", trackPathLength);
 
 	if(cfFlag("hasGenInfo")) {
 	  const bool isSignal(TrackHelper::FindTrackIndex(track, signalTracks_) >= 0);

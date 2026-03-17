@@ -160,13 +160,12 @@ KUCMSNtupilizerMini::KUCMSNtupilizerMini(const edm::ParameterSet& iConfig):
 		auto mergedSCToken = consumes<reco::SuperClusterCollection>(iConfig.getParameter<edm::InputTag>("displacedSCs"));
 			
 	    // Displaced Vertices
-	    auto combinedMuonTracks = consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("combinedMuonTracks"));
 	    auto muonEnhancedTracks = consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("sip2DMuonEnhancedTracks"));
 	    auto leptonicSVsToken = consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("leptonicSVs"));
 	    auto hadronicSVsToken = consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("hadronicSVs"));
 
 	    displacedVertexObj = new KUCMSDisplacedVertexMini(iConfig);
-	    displacedVertexObj->LoadMuonTracks(combinedMuonTracks);
+	    displacedVertexObj->LoadMuonToken(muonToken);
 	    displacedVertexObj->LoadMuonEnhancedTracksToken(muonEnhancedTracks);
 	    displacedVertexObj->LoadPrimaryVertex(vertexToken);
 	    displacedVertexObj->LoadTTrackBuilder(transientTrackBuilderToken);
@@ -175,6 +174,7 @@ KUCMSNtupilizerMini::KUCMSNtupilizerMini(const edm::ParameterSet& iConfig):
 	    displacedVertexObj->LoadMergedSCs(mergedSCToken);
 	    displacedVertexObj->LoadLeptonicSVsToken(leptonicSVsToken);
 	    displacedVertexObj->LoadHadronicSVsToken(hadronicSVsToken);
+	    displacedVertexObj->LoadRecHitObject(recHitsObj);
   	
 		ObjMan.Load( "DisplacedVertex", displacedVertexObj );
 

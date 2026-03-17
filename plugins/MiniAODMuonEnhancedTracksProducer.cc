@@ -173,14 +173,11 @@ void MiniAODMuonEnhancedTracksProducer::produce(edm::Event& iEvent, const edm::E
   for(const auto &track : *generalTracksHandle_) {
 
     reco::TransientTrack ttrack(ttBuilder->build(track));
-    if(!ttrack.impactPointTSCP().isValid()) continue;
     GlobalVector direction(track.px(), track.py(), track.pz());
     std::pair<bool, Measurement1D> ip2D = IPTools::signedTransverseImpactParameter(ttrack, direction, pvHandle_->at(0));
 
     const double pt(track.pt());
     const double normChi2(track.normalizedChi2());
-
-    if(!ip2D.first || ip2D.second.error() == 0) continue;
     const double sip2D(ip2D.second.value() / ip2D.second.error());
 
     if(pt > 1 && normChi2 < 5 && fabs(sip2D) > 4)
@@ -198,14 +195,11 @@ void MiniAODMuonEnhancedTracksProducer::produce(edm::Event& iEvent, const edm::E
   for(const auto &track : *generalTracksAllHandle_) {
 
     reco::TransientTrack ttrack(ttBuilder->build(track));
-    if(!ttrack.impactPointTSCP().isValid()) continue;
     GlobalVector direction(track.px(), track.py(), track.pz());
     std::pair<bool, Measurement1D> ip2D = IPTools::signedTransverseImpactParameter(ttrack, direction, pvHandle_->at(0));
 
     const double pt(track.pt());
     const double normChi2(track.normalizedChi2());
-
-    if(!ip2D.first || ip2D.second.error() == 0) continue;
     const double sip2D(ip2D.second.value() / ip2D.second.error());
 
     if(pt > 1 && normChi2 < 5 && fabs(sip2D) > 4)
