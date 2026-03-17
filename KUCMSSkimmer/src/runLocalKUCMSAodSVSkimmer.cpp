@@ -65,7 +65,7 @@ int main ( int argc, char *argv[] ){
     KUCMSAodSkimmer llpgana;
     ////llpgana.SetNoSVorPhoFlag(noSVorPho);
     ////llpgana.SetGenSigPerfectFlag(genSigPerfect);
-    llpgana.SetDoSV(false);
+    //llpgana.SetDoSV(false);
 	llpgana.setNewSigBase(false);
     llpgana.SetDoBHC(false);
 	llpgana.SetGenInfoFlag(hasGenInfo); 

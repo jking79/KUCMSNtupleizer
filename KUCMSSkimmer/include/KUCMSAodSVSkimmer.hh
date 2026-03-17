@@ -312,6 +312,7 @@ class KUCMSAodSkimmer : public llpgtree {
     std::vector<bool> allphoBaseline;
   	std::vector<float> allphowtime;
   	std::vector<float> alljetwtime;
+    std::vector<float> alljetpixwtime;
     std::vector<int> diJetIndex;
     std::vector<int> gammaJetIndex;
     std::vector<bool> phoJetVeto;

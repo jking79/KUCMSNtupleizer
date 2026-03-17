@@ -121,6 +121,9 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 	bool isCC;
     bool doUnCC;
 
+    std::string eosCaliPath;
+	bool useEosRootCali;
+
     TRandom* getRandom;
 
 	public:
