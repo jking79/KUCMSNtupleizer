@@ -135,6 +135,7 @@ void HyddraSVsProducer::fillDescriptions(edm::ConfigurationDescriptions& descrip
   leptonicDesc.add<bool>  ("doCleaning",                   true);
   leptonicDesc.add<bool>  ("doDisambiguation",             true);
   leptonicDesc.add<bool>  ("doFiltering",                  true);
+  leptonicDesc.add<bool>  ("useVertexSmoothing",           false);
   desc.add<edm::ParameterSetDescription>("leptonic", leptonicDesc);
 
   // Hadronic PSet
@@ -151,6 +152,7 @@ void HyddraSVsProducer::fillDescriptions(edm::ConfigurationDescriptions& descrip
   hadronicDesc.add<bool>("doCleaning", true);
   hadronicDesc.add<bool>("doDisambiguation", true);
   hadronicDesc.add<bool>("doFiltering", true);
+  hadronicDesc.add<bool>("useVertexSmoothing", false);
   desc.add<edm::ParameterSetDescription>("hadronic", hadronicDesc);
 
   descriptions.addDefault(desc);

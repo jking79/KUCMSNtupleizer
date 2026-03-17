@@ -30,6 +30,10 @@ leptonicHYDDRA = cms.PSet(
     doCleaning       = cms.bool(True),
     doDisambiguation = cms.bool(True),
     doFiltering      = cms.bool(True),
+
+    # Refit final vertices with Kalman smoother to store vertex-constrained
+    # track parameters in the output reco::Vertex (analogous to LLPNanoAOD).
+    useVertexSmoothing = cms.bool(False),
 )
 
 hadronicHYDDRA = cms.PSet(
@@ -52,6 +56,10 @@ hadronicHYDDRA = cms.PSet(
     doCleaning       = cms.bool(True),
     doDisambiguation = cms.bool(True),
     doFiltering      = cms.bool(True),
+
+    # Refit final vertices with Kalman smoother to store vertex-constrained
+    # track parameters in the output reco::Vertex (analogous to LLPNanoAOD).
+    useVertexSmoothing = cms.bool(False),
 )
 
 hyddraSVs = cms.EDProducer("HyddraSVsProducer",
