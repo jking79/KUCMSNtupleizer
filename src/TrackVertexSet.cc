@@ -272,7 +272,19 @@ TrackVertexSet::operator reco::Vertex() const {
     TransientVertex smoothed = smoother.vertex(ttracks);
 
     if(smoothed.isValid() && smoothed.hasRefittedTracks()) {
-      reco::Vertex recoVertex(VertexHelper::ConvertFitVertex(smoothed));
+      // Use smoothed position/covariance but unsmoothed chi2/ndof.
+      // The smoothed TransientVertex totalChiSquared() includes track smoothing
+      // residuals which are huge for displaced tracks (far from perigee reference
+      // point), inflating normalizedChi2 by orders of magnitude.
+      const GlobalError smoothedErr = smoothed.positionError();
+      const math::XYZPoint smoothedPos(smoothed.position().x(), smoothed.position().y(), smoothed.position().z());
+      const math::Error<3>::type smoothedCov(ROOT::Math::SVector<double, 6>(
+        smoothedErr.cxx(), smoothedErr.cyx(), smoothedErr.cyy(),
+        smoothedErr.czx(), smoothedErr.czy(), smoothedErr.czz()));
+      reco::Vertex recoVertex(smoothedPos, smoothedCov,
+                              vertex_.totalChiSquared(), vertex_.degreesOfFreedom(),
+                              orderedRefs.size());
+      recoVertex.reserve(orderedRefs.size());
 
       int ifail(0);
       GlobalError err(recoVertex.covariance());
