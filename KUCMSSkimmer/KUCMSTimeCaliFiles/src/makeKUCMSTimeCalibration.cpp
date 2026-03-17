@@ -101,6 +101,7 @@ int main ( int argc, char *argv[] ){
 	theCali.setXIov( r3TagX );
     theCali.setIsCC(true);
 	//theCali.setIsCC(false);
+	theCali.setDoUnCC(true);
 
     //-----//////////  making trigtower cali :
 	// makeCaliMapsEGR( std::string inputFileName, bool doTT, int GID,  bool small, bool doCali )

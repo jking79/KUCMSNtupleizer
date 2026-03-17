@@ -921,7 +921,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
     std::string str;
     if( not DEBUG ) std::cout << "--  adding files";
     int nfiles = 0;
-	int skipCnt = 0;
+	int skipCnt = 2;
     if( skipCnt != 0 ) std::cout << "-- !! Skipping every " << skipCnt << std::endl;
     if( dataSetKey !=  "Single" ){
         std::ifstream infile(listDirPath+inFileName);
@@ -1141,6 +1141,7 @@ void KUCMSAodSkimmer::endJobs(){
   hist1d[12]->Divide(hist1d[10]);
   hist1d[13]->Divide(hist1d[10]);
   hist1d[14]->Divide(hist1d[10]);
+  normTH1D(hist1d[21]); 
 
 }//void KUCMSAodSkimmer::endJobs()
 
@@ -1235,6 +1236,7 @@ void KUCMSAodSkimmer::initHists(){
     hist1d[14] = new TH1D("elept_m","Medium;Electron Pt [GeV];Eff",100,0,1000);
 
     hist1d[20] = new TH1D("erhnamps","Pho SC Nomilized RH Ampsig;Norm Ampsig",100,0,1);
+    hist1d[21] = new TH1D("nlwts","Norm leadPho WTimeSig (data ms< 1000);WTimeSig",500,-25,25);
 
     ////hist1d[100] = new TH1D("genPhoPt", "genPhoPt;Pt [GeV]",500,0,1000);
 

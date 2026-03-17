@@ -72,6 +72,7 @@ void KUCMSAodSkimmer::processPhotons(){
   float EBIsoCutVal = 0.003383696;
   float EEVeryVeryLooseIsoCutVal = 0.0060335;//loosest isolation selection on baseline/selected photons
 
+  float lphotsig = -9999;
   allphoBaseline.clear();
   allphowtime.clear();
   //Time sigma window cut values
@@ -573,6 +574,8 @@ void KUCMSAodSkimmer::processPhotons(){
 
 	for( auto as : erhamps ){ hist1d[20]->Fill(as/sumerha); }
 
+    if( lphotsig < -9000 ) lphotsig = phoWTimeSig;
+
     selPhotons.fillBranch( "baseLinePhoton_RawTime", rawTime );
     selPhotons.fillBranch( "baseLinePhoton_WTimeSig", phoWTimeSig );
     selPhotons.fillBranch( "baseLinePhoton_LTimeSig", leadtimesig );
@@ -1046,6 +1049,8 @@ void KUCMSAodSkimmer::processPhotons(){
   //std::cout << " -- lead : " << lRJRPhoIndx << " sub " << slRJRPhoIndx << " --------------------- " << std::endl;
   geVars.set( "lSigPhoIndx", lRJRPhoIndx );
   geVars.set( "slSigPhoIndx", slRJRPhoIndx );
+  geVars.set( "lphotsig", lphotsig );
+ 
   //std::cout << " -- is sig pho done --------------------- " << std::endl;
 
 }//<<>>void KUCMSAodSkimmer::processPhoton(){
@@ -1331,38 +1336,36 @@ bool KUCMSAodSkimmer::GetGJetsCR(int phoidx){
     int nJets = Jet_energy->size();
     if(nJets < 1) return false;
     //ht > 50
-    double ht = 0;
-    double j_px = 0;
-    double j_py = 0;
-    double j_pz = 0;
-	float minda = 100;
-	int thejet = -1;
+    float ht = 0;
+    float j_px = 0;
+    float j_py = 0;
+    float j_pz = 0;
+	bool phoIso = true;
     for(int j = 0; j < nJets; j++){
         ht += (*Jet_pt)[j];
-        double pt = (*Jet_pt)[j];
-        double phi = (*Jet_phi)[j];
-        double eta = (*Jet_eta)[j];
+        float pt = (*Jet_pt)[j];
+        float phi = (*Jet_phi)[j];
+        float eta = (*Jet_eta)[j];
         j_px += pt*cos(phi);
         j_py += pt*sin(phi);
         j_pz += pt*sinh(eta);
     	//dphi_jets_photon > pi-0.3
-    	double dphi_phojet = pho_phi - phi;
-    	dphi_phojet = acos(cos(dphi_phojet));
-		float da = std::abs(M_PI - dphi_phojet);
-    	if( da < minda ){ minda = da; thejet = j; };
+    	float pho_jet = dR1(pho_eta, pho_phi, eta, phi);
+		if( pho_jet < 0.5 && pt > 20 ) phoIso = false;
     }//<<>>for(int j = 0; j < nJets; j++)
-    double jet_sys_phi = atan2(j_py, j_px);
+    float jet_sys_phi = atan2(j_py, j_px);
     if(ht < 50) return false;
     //met < 100
     if(Met_pt > 150) return false; //pass ntuple selection of SVIPM100, originally using MET < 100
     //dphi_jets_photon > pi-0.3
-    double dphi_objjet = pho_phi - jet_sys_phi;
+    float dphi_objjet = pho_phi - jet_sys_phi;
     dphi_objjet = acos(cos(dphi_objjet));
     if(dphi_objjet < 4*atan(1) - 0.3) return false;
     float jet_sys_pt = sqrt(j_px*j_px + j_py*j_py);
     float ptasym = std::min(pho_pt, jet_sys_pt) / std::max(pho_pt, jet_sys_pt);
     if(ptasym < 0.6) return false;
-	if( gammaJetIndex[0] < 0 ){ gammaJetIndex[0] = phoidx; gammaJetIndex[1] = thejet; }
+	if( not phoIso ) phoidx = -1;
+	if( gammaJetIndex[0] < 0 ){ gammaJetIndex[0] = phoidx; gammaJetIndex[1] = nJets; }
     return true;
 
 }//<<>>bool KUCMSAodSkimmer::GetGJetsCR(int phoidx)
@@ -1379,9 +1382,9 @@ bool KUCMSAodSkimmer::GetDiJetsCR(int phoidx){
     if(nJets < 2) return false;
     //ht > 50
     double ht = 0;
-    double j_px = 0;
-    double j_py = 0;
-    double j_pz = 0;
+    //double j_px = 0;
+    //double j_py = 0;
+    //double j_pz = 0;
     //assuming jets are pt sorted in ntuple - take phi of leading jets
     float j_phi1 = (*Jet_phi)[0];
     float j_phi2 = (*Jet_phi)[1];
@@ -1389,12 +1392,12 @@ bool KUCMSAodSkimmer::GetDiJetsCR(int phoidx){
     float j_eta2 = (*Jet_eta)[1];
     for(int j = 0; j < nJets; j++){
         ht += (*Jet_pt)[j];
-        double pt = (*Jet_pt)[j];
-        double phi = (*Jet_phi)[j];
-        double eta = (*Jet_eta)[j];
-        j_px += pt*cos(phi);
-        j_py += pt*sin(phi);
-        j_pz += pt*sinh(eta);
+        //double pt = (*Jet_pt)[j];
+        //double phi = (*Jet_phi)[j];
+        //double eta = (*Jet_eta)[j];
+        //j_px += pt*cos(phi);
+        //j_py += pt*sin(phi);
+        //j_pz += pt*sinh(eta);
     }//<<>>for(int j = 0; j < nJets; j++)
     if(ht < 50) return false;
     //met < 100
