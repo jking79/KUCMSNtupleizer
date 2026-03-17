@@ -13,7 +13,7 @@ options.register('eventFilter','MET100',VarParsing.multiplicity.singleton,VarPar
 options.register('doSV',True,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to run displaced SVs');
 options.register('doDisEle',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag ro run displaced electrons');
 options.register('doECALTrackOnly',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to run ECAL Tracks only');
-options.register('runera','Run3',VarParsing.multiplicity.singleton,VarParsing.varType.string,'filter to use in event processing');
+options.register('runera','Run2',VarParsing.multiplicity.singleton,VarParsing.varType.string,'filter to use in event processing');
 options.register('runMETFilters',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to run Met Filters');
 
 ## object prep cuts
@@ -44,9 +44,9 @@ options.register('runMETFilters',False,VarParsing.multiplicity.singleton,VarPars
 #options.register('globalTag','140X_dataRun3_v17',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for R3 22,23');
 
 ##------------------ data gt  
-#options.register('globalTag','106X_dataRun2_v36',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
+options.register('globalTag','106X_dataRun2_v36',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 ##options.register('globalTag','106X_dataRun2_v28',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
-options.register('globalTag','124X_dataRun3_v15',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2022');
+#options.register('globalTag','124X_dataRun3_v15',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2022');
 #options.register('globalTag','140X_dataRun3_v17',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 ##options.register('globalTag','106X_dataRun2_v24',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2018UL');
 #112X_mcRun3_2021_realistic_v16
@@ -156,6 +156,8 @@ process.source = cms.Source("PoolSource",
         #'file:root_files/R23C_JetMet_mini_4a8e9a72-a9af-4448-acbd-bafa6cd684b4.root',
         #######'file:root_files/Met_UL18B_AOD_973EEF0C-44AB-E94A-8591-04DCD00D8B4B.root',
         ##'file:root_files/R22D_JetMet_mini_1f4a97f7-de76-4ee1-a380-0d9d7a5914d2.root',
+        # MiniAOD 2018UL MET
+        'file:root_files/UL18_mini_MET_76190182-C845-2B40-A3F1-FA9FDAB9F7EC.root',
         ######'file:root_files/WJets_72B9C618-FE23-1E41-872E-57314D7CB454.root',
         #'root://cmsxrootd.fnal.gov//store/data/Run2018B/JetHT/MINIAOD/15Feb2022_UL2018-v1/2820000/84DEEA91-CF7B-C24B-831D-7D993EB56D8D.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2018D/MET/MINIAOD/15Feb2022_UL2018-v1/510000/F5E0C00B-109F-5C4D-92F9-6D9F57EBE8C5.root',
@@ -188,8 +190,8 @@ process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500000))#LG
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
 
-genInfo = True
-#genInfo = False
+#genInfo = True
+genInfo = False
 if options.multicrab == True : genInfo = options.hasGenInfo		   
 
 ecalIsoInputsF17 = 'RecoEgamma/ElectronIdentification/data/Fall17/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_94X.txt'
@@ -208,8 +210,8 @@ filterselect = 'SVHPMet100'
 #####filterselect = 'AL1SelEle'
 if options.multicrab == True : filterselect = options.eventFilter
 
-runera = "Run3"  # current siganl model   !!!!!!!!  Run3 must be in CMSSW 14 or 15
-#runera = "Run2" # BG models
+#runera = "Run3"  # current siganl model   !!!!!!!!  Run3 must be in CMSSW 14 or 15
+runera = "Run2" # BG models
 if options.multicrab == True : runera = options.runera
 
 dosv = True
