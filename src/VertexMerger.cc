@@ -505,18 +505,14 @@ void VertexMerger::arbitrateTracks(CachingVertex<5> &vertex1, CachingVertex<5> &
     std::cout << "The two vertices share " << VertexHelper::CountSharedTracks(vertex1, vertex2) << " tracks" << std::endl;
     std::cout << "The original vertices: vertex1 has " << vertex1Copy.tracks().size() << " and vertex 2 has " << vertex2Copy.tracks().size() << " tracks" << std::endl;
     std::cout << "\tvertex1: " << std::endl;
-    for(const auto &track : TransientVertex(vertex1Copy).originalTracks())
-      std::cout << "\t\ttrack pt = " << track.track().pt() << ", eta = " << track.track().eta() << std::endl;
+    { const TransientVertex tv(vertex1Copy); for(const auto &track : tv.originalTracks()) std::cout << "\t\ttrack pt = " << track.track().pt() << ", eta = " << track.track().eta() << std::endl; }
     std::cout << "\tvertex2: " << std::endl;
-    for(const auto &track : TransientVertex(vertex2Copy).originalTracks())
-      std::cout << "\t\ttrack pt = " << track.track().pt() << ", eta = " << track.track().eta() << std::endl;
+    { const TransientVertex tv(vertex2Copy); for(const auto &track : tv.originalTracks()) std::cout << "\t\ttrack pt = " << track.track().pt() << ", eta = " << track.track().eta() << std::endl; }
     std::cout << "\nThe arbitrated vertices: vertex1 has " << vertex1.tracks().size() << " and vertex 2 has " << vertex2.tracks().size() << " tracks" << std::endl;
     std::cout << "\tvertex1: " << std::endl;
-    for(const auto &track : TransientVertex(vertex1).originalTracks())
-      std::cout << "\t\ttrack pt = " << track.track().pt() << ", eta = " << track.track().eta() << std::endl;
+    { const TransientVertex tv(vertex1); for(const auto &track : tv.originalTracks()) std::cout << "\t\ttrack pt = " << track.track().pt() << ", eta = " << track.track().eta() << std::endl; }
     std::cout << "\tvertex2: " << std::endl;
-    for(const auto &track : TransientVertex(vertex2).originalTracks())
-      std::cout << "\t\ttrack pt = " << track.track().pt() << ", eta = " << track.track().eta() << std::endl;
+    { const TransientVertex tv(vertex2); for(const auto &track : tv.originalTracks()) std::cout << "\t\ttrack pt = " << track.track().pt() << ", eta = " << track.track().eta() << std::endl; }
      std::cout << "---------------------------------------------------------------------------------------------------------" << std::endl;
   }
 }

@@ -162,6 +162,8 @@ KUCMSNtupilizerMini::KUCMSNtupilizerMini(const edm::ParameterSet& iConfig):
 	    // Displaced Vertices
 	    auto combinedMuonTracks = consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("combinedMuonTracks"));
 	    auto muonEnhancedTracks = consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("sip2DMuonEnhancedTracks"));
+	    auto leptonicSVsToken = consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("leptonicSVs"));
+	    auto hadronicSVsToken = consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("hadronicSVs"));
 
 	    displacedVertexObj = new KUCMSDisplacedVertexMini(iConfig);
 	    displacedVertexObj->LoadMuonTracks(combinedMuonTracks);
@@ -171,6 +173,8 @@ KUCMSNtupilizerMini::KUCMSNtupilizerMini(const edm::ParameterSet& iConfig):
 	    displacedVertexObj->LoadMagneticField(magneticFieldToken);
 	    displacedVertexObj->LoadAssociationParameters(trackAssocParameters);
 	    displacedVertexObj->LoadMergedSCs(mergedSCToken);
+	    displacedVertexObj->LoadLeptonicSVsToken(leptonicSVsToken);
+	    displacedVertexObj->LoadHadronicSVsToken(hadronicSVsToken);
   	
 		ObjMan.Load( "DisplacedVertex", displacedVertexObj );
 
@@ -234,7 +238,10 @@ KUCMSNtupilizerMini::KUCMSNtupilizerMini(const edm::ParameterSet& iConfig):
 		muonObj->LoadGenObject( genObjs );
         photonsObj->LoadGenObject( genObjs );
         ak4jetObj->LoadGenObject( genObjs );
-		if( cfFlag("doSVModule") ){ displacedVertexObj->LoadGenParticlesToken(genPartToken); }
+		if( cfFlag("doSVModule") ){
+			displacedVertexObj->LoadGenParticlesToken(genPartToken);
+			displacedVertexObj->LoadPrunedGenParticlesToken(genPrunToken);
+		}
 
         // Load gen object into objman last, should be no dependence with other objects
         ObjMan.Load( "GenObjects", genObjs );

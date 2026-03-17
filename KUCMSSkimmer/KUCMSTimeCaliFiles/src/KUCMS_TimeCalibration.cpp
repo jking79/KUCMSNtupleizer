@@ -52,6 +52,9 @@ KUCMS_TimeCalibration::KUCMS_TimeCalibration( bool stayOpen, bool makeNew ){
     caliHistFileNames["r3_p25unc"] = "cali_p25_UnCor_HistsTFile.root";
     caliHistFileNames["r3_p26"] = "cali_p26_HistsTFile.root";
 
+    useEosRootCali = false;
+    eosCaliPath = "/store/user/lpcsusylep/jaking/caliconfig/";
+
 	for( auto name : caliHistFileNames ){ caliTFile[name.first] = NULL; }
 
     curTag = "EG_EOY_MINI";
@@ -735,7 +738,8 @@ void KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
 
 	std::string califilepath;
 	for( auto filename : caliHistFileNames ){
-		califilepath = caliFileDir + filename.second; 
+		if( useEosRootCali && not stayOpen ) califilepath = eosDir + eosCaliPath + filename.second;
+	 	else califilepath = caliFileDir + filename.second; 
         //if( not std::filesystem::exists(califilepath) ) continue; 
 		if( makeNew ) caliTFile[filename.first] = TFile::Open( califilepath.c_str(), "RECREATE" );
 		if( stayOpen && not makeNew ) caliTFile[filename.first] = TFile::Open( califilepath.c_str(), "UPDATE" );
@@ -1480,25 +1484,25 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
 
     if( amplitude == 0 ) return 100.f;
     bool isEB( DetIDMap[rechitID].ecal == ECAL::EB );
-    float res = ( dataSetKey == "None" ) ? -1 : -99;
+    float var = ( dataSetKey == "None" ) ? -1 : -99;
     if( mctype < 100 ){ // data
 		if( ResTagSet.find(dataSetKey) != ResTagSet.end() ){
 			float noise = isEB ? ResTagSet[dataSetKey].ebnoise : ResTagSet[dataSetKey].eenoise;
             float stoch = isEB ? ResTagSet[dataSetKey].ebstoch : ResTagSet[dataSetKey].eestoch;
             float stant = isEB ? ResTagSet[dataSetKey].ebstant : ResTagSet[dataSetKey].eestant;
-			res = sq2(noise/amplitude) + sq2(stoch)/amplitude + 2*sq2(stant);
+			var = sq2(noise/amplitude) + sq2(stoch)/amplitude + 2*sq2(stant);
 		}//<<>>if( ResTagSet.find(tag) != ResTagSet.end() )
     }//<<>>if( mctype == 0 )
-    if( res < -10 ) std::cout << " -- Resolution for ResTag : " << dataSetKey << " -- not found !!!!!!" << std::endl;
-    if( res < 0 ){
+    if( var < -10 ) std::cout << " -- Resolution for ResTag : " << dataSetKey << " -- not found !!!!!!" << std::endl;
+    if( var < 0 ){
 		std::string tag = "default";
         float noise = isEB ? ResTagSet[tag].ebnoise : ResTagSet[tag].eenoise;
         float stoch = isEB ? ResTagSet[tag].ebstoch : ResTagSet[tag].eestoch;
         float stant = isEB ? ResTagSet[tag].ebstant : ResTagSet[tag].eestant;
-        res = sq2(noise/amplitude) + sq2(stoch)/amplitude + 2*sq2(stant);
-		//res = isEB ? sq2(26.0/amplitude) + sq2(0.6)/amplitude + 2*sq2(0.094) : sq2(42.2/amplitude) + sq2(1.2)/amplitude + 2*sq2(0.298); 
-	}//<<>>if( res == -1 )
-    return res/2;
+        var = sq2(noise/amplitude) + sq2(stoch)/amplitude + 2*sq2(stant);
+		//var = isEB ? sq2(26.0/amplitude) + sq2(0.6)/amplitude + 2*sq2(0.094) : sq2(42.2/amplitude) + sq2(1.2)/amplitude + 2*sq2(0.298); 
+	}//<<>>if( var == -1 )
+    return var;
 
 }//<<>>float getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey )
 

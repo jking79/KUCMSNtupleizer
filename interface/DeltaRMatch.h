@@ -315,59 +315,56 @@ template <typename A, typename B>
 //                              class: DeltaRGenMatchHungarian                                   //
 //-----------------------------------------------------------------------------------------------//
 // Specialized version of DeltaRMatchHungarian for gen matching. Makes sure that only status one //
-// charged gen particles are used, while preserving the original indexing of the gen collection. //  
+// charged gen particles are used, while preserving the original indexing of the gen collection. //
+// GenType defaults to reco::GenParticle; use const pat::PackedGenParticle* for miniAOD.        //
 //===============================================================================================//
-template <class A>
-class DeltaRGenMatchHungarian : public DeltaRMatchHungarian<A, reco::GenParticle> {
+template <class A, class GenType = reco::GenParticle>
+class DeltaRGenMatchHungarian : public DeltaRMatchHungarian<A, GenType> {
 
  public:
 
- DeltaRGenMatchHungarian() : DeltaRMatchHungarian<A, reco::GenParticle>() {}
-   
-  DeltaRGenMatchHungarian(const std::vector<A>& objectsA, const std::vector<reco::GenParticle>& objectsB) {
+  DeltaRGenMatchHungarian() : DeltaRMatchHungarian<A, GenType>() {}
+
+  DeltaRGenMatchHungarian(const std::vector<A> &objectsA, const std::vector<GenType> &objectsB) {
     if(objectsA.size() == 0 || objectsB.size() == 0)
       *this = DeltaRGenMatchHungarian();
-
     else Solve(objectsA, objectsB);
   }
 
  private:
-  
-  void Solve(const std::vector<A> &objectsA, const reco::GenParticleCollection &objectsB);
 
-  virtual Matrix<double> CalculateCostMatrix(const std::vector<A> &objectsA, 
-					     const reco::GenParticleCollection &objectsB) const override {
-    return DeltaRMatchHungarian<A, reco::GenParticle>::CalculateCostMatrix(objectsA, objectsB);
-  }
-    
+  void Solve(const std::vector<A> &objectsA, const std::vector<GenType> &objectsB);
+
+  virtual Matrix<double> CalculateCostMatrix(const std::vector<A> &objectsA,
+					     const std::vector<GenType> &objectsB) const override;
 };
 
-template <class A>
-void DeltaRGenMatchHungarian<A>::Solve(const std::vector<A> &objectsA, const reco::GenParticleCollection &objectsB) {
+template <class A, class GenType>
+void DeltaRGenMatchHungarian<A, GenType>::Solve(const std::vector<A> &objectsA, const std::vector<GenType> &objectsB) {
   std::map<int, int> indexMap;
-  reco::GenParticleCollection statusOne = CleanGenParticles(objectsB, indexMap);
-  
-  Matrix<double> costMatrix = this->CalculateCostMatrix(objectsA, statusOne);
+  auto cleaned = CleanGen(objectsB, indexMap);
+
+  Matrix<double> costMatrix = this->CalculateCostMatrix(objectsA, cleaned);
   HungarianAlgorithm assigner;
   this->cost_ = assigner.Solve(costMatrix, this->matchedIndexes_);
-  
+
   for(auto &idx : this->matchedIndexes_)
     if(idx >= 0) idx = indexMap[idx];
-  
+
   this->matchedPairs_ = this->ConstructMatchedPairs(costMatrix, objectsA, objectsB);
 }
 
-template <>
-inline Matrix<double> DeltaRGenMatchHungarian<reco::TransientTrack>::CalculateCostMatrix(const std::vector<reco::TransientTrack> &objectsA,
-											 const reco::GenParticleCollection &objectsB) const {
+template <class A, class GenType>
+Matrix<double> DeltaRGenMatchHungarian<A, GenType>::CalculateCostMatrix(
+    const std::vector<A> &objectsA, const std::vector<GenType> &objectsB) const {
 
   const int dimensionA = objectsA.size();
   const int dimensionB = objectsB.size();
-  Matrix<double> costMatrix(dimensionA, std::vector<double>(dimensionB) );
+  Matrix<double> costMatrix(dimensionA, std::vector<double>(dimensionB));
 
   for(int ai = 0; ai < dimensionA; ai++)
     for(int bi = 0; bi < dimensionB; bi++)
-      costMatrix[ai][bi] = sqrt(GenDeltaR2(objectsA[ai], objectsB[bi]) );
+      costMatrix[ai][bi] = ComputeGenCost(objectsA[ai], objectsB[bi]);
 
   return costMatrix;
 }

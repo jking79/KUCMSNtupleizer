@@ -692,6 +692,10 @@ void KUCMSAodSkimmer::processRJR( int type, bool newEvent ){
     selRjrVars.fillBranch( "rjrN2Py", n2py );
     selRjrVars.fillBranch( "rjrN2Pz", n2pz );
 
+	
+    float lpwtsw = ( mctype == 1 && phs41 > 1000 ) ? 0 : 1; 
+	hist1d[21]->Fill( geVars("lphotsig"), lpwtsw );
+
 }//<<>>void KUCMSAodSkimmer::processRJR( int type, bool newEvent )
 
 //------------------------------------------------------------------------------------------------------------

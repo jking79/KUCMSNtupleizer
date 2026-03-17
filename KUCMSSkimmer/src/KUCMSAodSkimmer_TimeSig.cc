@@ -109,7 +109,7 @@ float KUCMSAodSkimmer::getTimeSig( int scIndex, float& num, float& denom, const 
 
                 double cor_cms000 = hypo(erx,ery,erz)/SOL;
                 double cor_tofPVtoRH = hypo(erx-PV_x,ery-PV_y,erz-PV_z)/SOL;
-                double ertoftime = erhct - cor_cms000 + cor_tofPVtoRH;
+                double ertoftime = erhct + cor_cms000 - cor_tofPVtoRH;
 
 				bool isEE = fabs((*ECALRecHit_eta)[erhiter]) > 1.479;
 				bool isValid = true;
@@ -139,14 +139,87 @@ float KUCMSAodSkimmer::getTimeSig( int scIndex, float& num, float& denom, const 
             }//<<>>if( ecalrhiter != -1 )
         }//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
 
-        if( sumw == 0 ){ sumw = 1; sumtw = -70.711; }
+        if( sumw == 0 ){ sumw = 1; sumtw = -25; sumrh = 0; }
         float phoWTime = sumtw/sumw;
-        float phoWVar = sumrh/sumw;
+        float phoWVar = 1/sumw;
+    	float phoWHVar = sumrh/sumw;
 		float sqrtPhoWVar = std::sqrt(phoWVar);
         float wttimesig = phoWTime/sqrtPhoWVar;
 	    num = phoWTime;
 	    denom = sqrtPhoWVar;
 		return wttimesig;
+
+}//<<>>void KUCMSAodSkimmer::getTimeSig
+
+float KUCMSAodSkimmer::getTimeSig( std::vector<int> scIndexs, float& num, float& denom ){
+
+    double sumtw = 0;
+    double sumw = 0;
+    double sumrh = 0;
+	std::vector<int> usedrechits;
+	int nSCs = scIndexs.size();
+	if( nSCs == 0 ){ num = -41; denom = -2; return -41; }
+	for( int scIndex = 0; scIndex < nSCs; scIndex++  ){
+
+        auto rhids = (*SuperCluster_rhIds)[scIndex];
+        int nSCRecHits = rhids.size();
+		if( nSCRecHits < 5 ) continue;
+        for( int sciter = 0; sciter < nSCRecHits; sciter++  ){
+            auto scrhid = rhids[sciter];
+            int erhiter = ( rhIDtoIterMap.find(scrhid) != rhIDtoIterMap.end() ) ? rhIDtoIterMap[scrhid] : -1;
+            if( erhiter != -1 ){
+
+				// check if rechit is exclusive ?
+				if( std::count( usedrechits.begin(), usedrechits.end(), erhiter ) > 0 ) continue;
+				usedrechits.push_back( erhiter );
+
+                double erhct = erh_corTime[erhiter];
+                float erx = (*ECALRecHit_rhx)[erhiter];
+                float ery = (*ECALRecHit_rhy)[erhiter];
+                float erz = (*ECALRecHit_rhz)[erhiter];
+                double ertres = erh_timeRes[erhiter];
+                float terror = (*ECALRecHit_timeError)[erhiter];
+                float eta = (*ECALRecHit_eta)[erhiter];
+                bool hasGainSwitch = (*ECALRecHit_hasGS1)[erhiter] || (*ECALRecHit_hasGS6)[erhiter];
+
+                double cor_cms000 = hypo(erx,ery,erz)/SOL;
+                double cor_tofPVtoRH = hypo(erx-PV_x,ery-PV_y,erz-PV_z)/SOL;
+                double ertoftime = erhct + cor_cms000 - cor_tofPVtoRH;
+
+                bool isEE = fabs((*ECALRecHit_eta)[erhiter]) > 1.479;
+                bool isValid = true;
+                if( terror > 900 ) isValid = false;
+                if( hasGainSwitch ){
+                    if( isEE ){ if( terror < 1.0 ) isValid = false; }
+                    else { if( terror < 0.6 ) isValid = false; }
+                } else {
+                    if( isEE ){ if( terror < 1.05 ) isValid = false; }
+                    else { if( terror < 0.65 ) isValid = false; }
+                }//<<>>if( hasGainSwitch )
+
+                float gainwt = 0;
+                if( isValid ) gainwt = 1;
+
+                double invertres = ( ertres > 0 ) ? 1/ertres : -1;
+                double erhar = ( invertres > 0 ) ? invertres*gainwt : 0;
+                sumtw += erhar*ertoftime;
+                sumrh += gainwt;
+                sumw += erhar;
+
+            }//<<>>if( ecalrhiter != -1 )
+        }//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
+
+	}//<<>>for( int scIndex = 0; scIndex < nSCs; scIndex++  )
+
+    if( sumw == 0 ){ num = -42; denom = -3; return -42; }
+    float phoWTime = sumtw/sumw;
+    float phoWHVar = sumrh/sumw;
+    float phoWVar = 1/sumw;
+    float sqrtPhoWVar = std::sqrt(phoWVar);
+    float wttimesig = phoWTime/sqrtPhoWVar;
+    num = phoWTime;
+    denom = sqrtPhoWVar;
+    return wttimesig;
 
 }//<<>>void KUCMSAodSkimmer::getTimeSig
 
