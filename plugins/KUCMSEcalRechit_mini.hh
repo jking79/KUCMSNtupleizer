@@ -151,7 +151,7 @@ class KUCMSEcalRecHitObjectMini : public KUCMSObjectBase {
 
     // sc functions
     float getSuperClusterSeedTime( reco::SuperClusterRef supercluster );
-    float getTrackTimeAtSV( const reco::SuperCluster &sc, const reco::TransientTrack &ttrack, const reco::Vertex &sv );
+    float getTrackTimeAtSV( const reco::SuperCluster &sc, const reco::TransientTrack &ttrack, const reco::Vertex &sv, double mass = 0.000511 );
     const reco::SuperCluster& getSuperCluster( int index ) const { return fsupclstrs[index]; }
 	int getSuperClusterIndex( const reco::SuperCluster* supercluster, int objectPdgId, int objectIdx );
     std::vector<int> getSuperClusterIndex( const rhIdGroup crystals, int objectIdx );
@@ -961,7 +961,7 @@ float KUCMSEcalRecHitObjectMini::getSuperClusterSeedTime( reco::SuperClusterRef 
 
 }//<<>>getSuperClusterSeedTime( reco::SuperClusterRef supercluster )
 
-float KUCMSEcalRecHitObjectMini::getTrackTimeAtSV( const reco::SuperCluster &sc, const reco::TransientTrack &ttrack, const reco::Vertex &sv ) {
+float KUCMSEcalRecHitObjectMini::getTrackTimeAtSV( const reco::SuperCluster &sc, const reco::TransientTrack &ttrack, const reco::Vertex &sv, double mass ) {
 
     // Get seed rechit raw time
     const auto seedDetId = sc.seed()->seed();
@@ -975,9 +975,8 @@ float KUCMSEcalRecHitObjectMini::getTrackTimeAtSV( const reco::SuperCluster &sc,
     const GlobalPoint scPos(sc.x(), sc.y(), sc.z());
     const double pathLength = TimingHelper::PathLength(ttrack, svPos, scPos);
 
-    // Back-propagate: t_SV = t_raw - pathLength / (beta * c), using electron mass
-    const double m_e(0.000511);
-    return t_raw - float(TimingHelper::Time(ttrack.track(), m_e, pathLength));
+    // Back-propagate: t_SV = t_raw - pathLength / (beta * c)
+    return t_raw - float(TimingHelper::Time(ttrack.track(), mass, pathLength));
 
 }//<<>>getTrackTimeAtSV( const reco::SuperCluster &sc, const reco::TransientTrack &ttrack, const reco::Vertex &sv )
 

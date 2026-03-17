@@ -211,6 +211,7 @@ void KUCMSDisplacedVertexMini::InitObject( TTree* fOutTree ){
   Branches.makeBranch("VertexTrack_SCDR", "VertexTrack_SCDR", VFLOAT);
   Branches.makeBranch("VertexTrack_energySC", "VertexTrack_energySC", VFLOAT);
   Branches.makeBranch("VertexTrack_ratioPToEnergySC", "VertexTrack_ratioPToEnergySC", VFLOAT);
+  Branches.makeBranch("VertexTrack_pathLength", "VertexTrack_pathLength", VFLOAT);
 
   // Gen Vertices
   if(cfFlag("hasGenInfo")) {
@@ -430,6 +431,23 @@ void KUCMSDisplacedVertexMini::ProcessEvent( ItemManager<float>& geVar ){
           }
         }
         if(nMatched > 0) svTime = timeSum / float(nMatched);
+      } else if(hadsv) {
+        const double m_pi(0.13957018);
+        float timeSum = 0.f;
+        int nMatched = 0;
+        for(const auto &trackRef : vertex.tracks()) {
+          const reco::TrackRef ref(trackRef.castTo<reco::TrackRef>());
+          if(ref.isNull()) continue;
+          const reco::Track track(*ref);
+          reco::SuperCluster sc;
+          double deltaR(-1.);
+          if(getSCMatch(track, sc, deltaR)) {
+            const reco::TransientTrack ttrack = ttBuilder_.build(track);
+            const float t = rhObj_->getTrackTimeAtSV(sc, ttrack, vertex, m_pi);
+            if(t > -9000.f) { timeSum += t; nMatched++; }
+          }
+        }
+        if(nMatched > 0) svTime = timeSum / float(nMatched);
       }
       Branches.fillBranch("Vertex_time", svTime);
 
@@ -454,6 +472,15 @@ void KUCMSDisplacedVertexMini::ProcessEvent( ItemManager<float>& geVar ){
 	double deltaR(-1.);
 	reco::SuperCluster sc;
 	const bool isSCMatched(getSCMatch(track, sc, deltaR));
+
+	float trackPathLength = -1.f;
+	if(isSCMatched) {
+	  const reco::TransientTrack ttrack = ttBuilder_.build(track);
+	  const GlobalPoint svPos(vertex.x(), vertex.y(), vertex.z());
+	  const GlobalPoint scPos(sc.x(), sc.y(), sc.z());
+	  trackPathLength = float(TimingHelper::PathLength(ttrack, svPos, scPos));
+	}
+
 	Branches.fillBranch("VertexTrack_vertexIndex", unsigned(vtxIndex) );
 	Branches.fillBranch("VertexTrack_trackIndex", unsigned(ref.key()) );
 	Branches.fillBranch("VertexTrack_trackCosTheta", float(TrackHelper::CalculateCosTheta(primaryVertex_, vertex, track)));
@@ -464,6 +491,7 @@ void KUCMSDisplacedVertexMini::ProcessEvent( ItemManager<float>& geVar ){
 	Branches.fillBranch("VertexTrack_SCDR", float(deltaR));
 	Branches.fillBranch("VertexTrack_energySC", float(isSCMatched? sc.correctedEnergy() : -1.));
 	Branches.fillBranch("VertexTrack_ratioPToEnergySC", float(isSCMatched? track.p()/sc.correctedEnergy() : -1.));
+	Branches.fillBranch("VertexTrack_pathLength", trackPathLength);
 
 	if(cfFlag("hasGenInfo")) {
 	  const bool isSignal(TrackHelper::FindTrackIndex(track, signalTracks_) >= 0);
