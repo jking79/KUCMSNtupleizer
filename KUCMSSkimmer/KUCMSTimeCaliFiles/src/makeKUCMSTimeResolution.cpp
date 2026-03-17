@@ -144,6 +144,9 @@ int main ( int argc, char *argv[] ){
     ////theCali.setUseEffEnergy( true );
     theCali.useGainSwitch( true, true ); // use gainid ? --  do all gians ? : all Gains (HG)
     //theCali.useGainSwitch( true, false ); // use gainid ? --  do all gians ? : only gainID1 (LG)
+    theCali.setIsCC(true);
+    //theCali.setIsCC(false);
+    theCali.setDoUnCC(true);
 	////theCali.setDoEE( false ); depreciated - now do EB & EE at the same time
     ////theCali.setDoEE( true ); depreciated - now do EB & EE at the same time
 	////theCali.setUseGainID( 1 ); depreciated - now set by useGainSwitch
@@ -207,6 +210,8 @@ int main ( int argc, char *argv[] ){
     //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_24p_xa_pm24b1200_v0119" );
 
     //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_25p_xa_pm24b1200_v0210" );
+	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_25p_xa_pm24b1200_v0305" );
+    theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_25p_uncor_xa_pm24b1200_v0316" );
 
 	//theCali.setMCResTag("r2_ul16");
 	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18MC_xa_pm24b1200_v0204" );

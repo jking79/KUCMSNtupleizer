@@ -31,8 +31,8 @@ KUCMS_TimeCalibration::KUCMS_TimeCalibration( bool stayOpen, bool makeNew ){
     epmtt_ranges = {23,-11,12,34,1,35};
 
     //std::cout << " - opening caliHistsTFile " << std::endl;
-    caliTFileName = caliFileDir + "caliHistsTFile.root";// name configurable ?
-	caliR3TFileName = caliFileDir + "caliR3HistsTFile.root";// name configurable ?
+    //caliTFileName = caliFileDir + "caliHistsTFile.root";// name configurable ?
+	//caliR3TFileName = caliFileDir + "caliR3HistsTFile.root";// name configurable ?
 	cali2DResPlotsTFileName = caliFileDir + "res2dPlotsTFile.root";
 	//caliTFile = NULL;
     caliR3TFile = NULL;
@@ -49,6 +49,7 @@ KUCMS_TimeCalibration::KUCMS_TimeCalibration( bool stayOpen, bool makeNew ){
     caliHistFileNames["r3_p23"] = "cali_p23_HistsTFile.root";
     caliHistFileNames["r3_p24"] = "cali_p24_HistsTFile.root";
     caliHistFileNames["r3_p25"] = "cali_p25_HistsTFile.root";
+    caliHistFileNames["r3_p25unc"] = "cali_p25_UnCor_HistsTFile.root";
     caliHistFileNames["r3_p26"] = "cali_p26_HistsTFile.root";
 
 	for( auto name : caliHistFileNames ){ caliTFile[name.first] = NULL; }
@@ -729,7 +730,7 @@ void KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
     std::cout << " - Loading CaliHists " << std::endl;
 	//caliHistFileNames  caliFileDir
 
-    std::cout << " - opening caliHistsTFile " << std::endl;
+    std::cout << " - opening caliHist Files " << std::endl;
     //caliTFileName = caliFileDir + "caliHistsTFile.root";// name configurable ?
 
 	std::string califilepath;
@@ -738,7 +739,7 @@ void KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
         //if( not std::filesystem::exists(califilepath) ) continue; 
 		if( makeNew ) caliTFile[filename.first] = TFile::Open( califilepath.c_str(), "RECREATE" );
 		if( stayOpen && not makeNew ) caliTFile[filename.first] = TFile::Open( califilepath.c_str(), "UPDATE" );
-		if( not stayOpen && not makeNew ) caliTFile[filename.first] = TFile::Open( caliTFileName.c_str(), "READ" );
+		if( not stayOpen && not makeNew ) caliTFile[filename.first] = TFile::Open( califilepath.c_str(), "READ" );
 	}//<<>>for( auto filename : caliHistFileNames )
 
 /*
@@ -748,7 +749,7 @@ void KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
     //caliTFile->cd();
 */
 
-    std::cout << " - loading TT hists from caliHistsTFile " << std::endl;
+    std::cout << " - loading TT hists from caliHist Files " << std::endl;
 	for( auto& calirunmap : TTCaliRunMapSet ){
 		//std::string prefix = oldstyle ? calirunmap.first.substr(0,2) : getPrefix(calirunmap.first);
         std::string prefix = getPrefix(calirunmap.first);
@@ -771,7 +772,7 @@ void KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
 		}//<<>>for( auto& calirunsct : calirunmap )
     }//<<>>for( auto& calirunmap : CaliRunMapSet )
 
-    std::cout << " - loading X hists from caliHistsTFile " << std::endl;
+    std::cout << " - loading X hists from caliHists Files " << std::endl;
     for( auto& calirunmap : CaliRunMapSet ){
 		//std::string prefix = oldstyle ? calirunmap.first.substr(0,2) : getPrefix(calirunmap.first);
         std::string prefix = getPrefix(calirunmap.first);
@@ -1698,6 +1699,7 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
         //else if( GID == 3 ) tag = tag + "_gs3";
         //else if( GID == 4 ) tag = tag + "_gs4";
 
+		if( isCC and doUnCC ) tag += "unc";
         std::cout << "open input file : " << infilename << std::endl;
         std::cout << "For Run " << srun << " to Run " << erun << std::endl;
         std::cout << "Producing maps for " << tag << " in " << wichtype << std::endl;
