@@ -133,8 +133,8 @@ def docrab( dataset ):
             dataset        = inDO[0].split('/')[3]
             print( dataset )
 
-            print( 'current KUCMSNtuple version : 31' ) 
-            version = '_v31'
+            print( 'current KUCMSNtuple version : 32' ) 
+            version = '_v32'
             # 25 Adds ECAL TimeError and GS info + Adds SV processing           
             # 26 Adds Muon Object and loose Muon/electron counting
             # 27 Updated SV object
@@ -143,7 +143,7 @@ def docrab( dataset ):
             # 30 consoladated Track objects in single Tracks object w/ SC matching
             # 31 reduced track pt min to 5 unless SC match, ? fixed SC rechit ID bug ?
 
-            trial          = "kucmsntuple_JetMET_noSV_Mini_R23_SVHPMet100" + version # 
+            trial          = "kucmsntuple_JetMET_Mini_R23_SVHPMet100" + version # 
             #trial          = "kucmsntuple_JetMET_R23_Met150" + version # 
             #trial          = "kucmsntuple_JetMET_R23_SVIPM100" + version # 
             #trial          = "kucmsntuple_JetMET_R24_SVIPM100" + version # 
@@ -258,9 +258,9 @@ def run_multi():
         #['/JetMET/Run2022F-19Dec2023-v2/AOD',1],
         #['/JetMET/Run2022G-19Dec2023-v1/AOD',1],
 
-        #["/JetMET/Run2022C-19Dec2023-v1/MINIAOD",1],
-        #["/JetMET/Run2022D-19Dec2023-v1/MINIAOD",2],
-        #["/JetMET/Run2022E-19Dec2023-v1/MINIAOD",2],
+        ["/JetMET/Run2022C-19Dec2023-v1/MINIAOD",1],
+        ["/JetMET/Run2022D-19Dec2023-v1/MINIAOD",2],
+        ["/JetMET/Run2022E-19Dec2023-v1/MINIAOD",2],
         #["/JetMET/Run2022F-19Dec2023-v2/MINIAOD",2],
         #["/JetMET/Run2022G-19Dec2023-v1/MINIAOD",2],
 
@@ -268,7 +268,7 @@ def run_multi():
         #["/JetMET0/Run2023C-19Dec2023-v1/MINIAOD",1],
         #["/JetMET0/Run2023D-19Dec2023-v1/MINIAOD",1],
         #["/JetMET1/Run2023B-19Dec2023-v1/MINIAOD",1],
-        ["/JetMET1/Run2023C-19Dec2023-v1/MINIAOD",1],
+        #["/JetMET1/Run2023C-19Dec2023-v1/MINIAOD",1],
         #["/JetMET1/Run2023D-19Dec2023-v1/MINIAOD",1],
 
         #['/JetMET0/Run2023B-19Dec2023-v1/AOD',1],
