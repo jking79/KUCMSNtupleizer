@@ -85,6 +85,7 @@ int main ( int argc, char *argv[] ){
 
 	////KUCMS_TimeCalibration theCali; // open tfile in read only then close after setup
 	KUCMS_TimeCalibration theCali( true );
+    theCali.setUseLocalCali();
 	theCali.SetEosDir(eosdir);
 	theCali.SetInDir(indir);
 	//

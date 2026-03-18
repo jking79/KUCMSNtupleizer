@@ -52,8 +52,8 @@ KUCMS_TimeCalibration::KUCMS_TimeCalibration( bool stayOpen, bool makeNew ){
     caliHistFileNames["r3_p25unc"] = "cali_p25_UnCor_HistsTFile.root";
     caliHistFileNames["r3_p26"] = "cali_p26_HistsTFile.root";
 
-    useEosRootCali = false;
-    eosCaliPath = "/store/user/lpcsusylep/jaking/caliconfig/";
+    useEosRootCali = true;
+    eosCaliPath = "root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/caliconfig/";
 
 	for( auto name : caliHistFileNames ){ caliTFile[name.first] = NULL; }
 
@@ -738,7 +738,7 @@ void KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
 
 	std::string califilepath;
 	for( auto filename : caliHistFileNames ){
-		if( useEosRootCali && not stayOpen ) califilepath = eosDir + eosCaliPath + filename.second;
+		if( useEosRootCali && not stayOpen ) califilepath = eosCaliPath + filename.second;
 	 	else califilepath = caliFileDir + filename.second; 
         //if( not std::filesystem::exists(califilepath) ) continue; 
 		if( makeNew ) caliTFile[filename.first] = TFile::Open( califilepath.c_str(), "RECREATE" );

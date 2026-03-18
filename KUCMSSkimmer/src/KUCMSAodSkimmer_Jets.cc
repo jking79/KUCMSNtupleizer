@@ -132,38 +132,47 @@ void KUCMSAodSkimmer::processJets(){
     float sumpixwte = 0;
 	std::vector<int> scIndexs;
     std::vector<int> scPixIndexs;
-    uInt nPhotons = Photon_excluded->size();
-    //uInt nPhotons = SuperCluster_excluded->size();
+    //uInt nPhotons = Photon_excluded->size();
+    uInt nPhotons = SuperCluster_excluded->size();
 	int nPhoInJet = ( nPhotons > 0 ) ? 0 : -1;
     int nPhoInPixJet = ( nPhotons > 0 ) ? 0 : -1;
-    for( uInt pit = 0; pit < nPhotons; pit++ ){
+    for( uInt pit = 0; pit < nPhotons; pit++ ){ 
 
-        if( (*Photon_isOot)[it] ) continue;
-        //if( (*SuperCluster_isOot)[it] ) continue;
-		if( (*Photon_excluded)[it] ) continue;
-        //if( (*SuperCluster_excluded)[it] ) continue;
-		if( isBaseLinePho[it] ) continue;
-		//int phoindx = (*SuperCluster_PhotonIndx)[it];
-		//if( phoindx > -1 && isBaseLinePho[phoindx] ) continue;
+        //if( (*Photon_isOot)[it] ) continue;
+        if( (*SuperCluster_isOot)[it] ) continue;
+		//if( (*Photon_excluded)[it] ) continue;
+        if( (*SuperCluster_excluded)[it] ) continue;
+		//if( isBaseLinePho[it] ) continue;
+		int phoindx = (*SuperCluster_PhotonIndx)[it];
+		if( phoindx > -1 && isBaseLinePho[phoindx] ) continue;
 
-    	float peta = (*Photon_eta)[pit];
-    	float pphi = (*Photon_phi)[pit];
-        float peng = (*Photon_energy)[pit];
-        //float peta = (*SuperCluster_eta)[pit];
-        //float pphi = (*SuperCluster_phi)[pit];
-        //float peng = (*SuperCluster_energy)[pit];
+    	//float peta = (*Photon_eta)[pit];
+    	//float pphi = (*Photon_phi)[pit];
+        //float peng = (*Photon_energy)[pit];
+        float peta = (*SuperCluster_eta)[pit];
+        float pphi = (*SuperCluster_phi)[pit];
+        float peng = (*SuperCluster_energy)[pit];
 
-		float dr = dR1(peta, pphi, eta, phi); 
+	    bool overlap = false;	
+		for( uInt pitt = pit+1; pitt < nPhotons; pitt++ ){
+			float ppeta = (*SuperCluster_eta)[pit];
+			float ppphi = (*SuperCluster_phi)[pit];
+			float pdr = dR1(peta, pphi, ppeta, ppphi);
+			if( pdr < 0.4 ){ overlap = true; std::cout << " -- !!!!!!!  SC Overlap !!!!!!! " << std::endl; }
+		}//<<>>for( uInt pitt = 0; pitt < nPhotons; pitt++ )
+		if( overlap ) continue;
+
+		float dr = dR1(peta, pphi, eta, phi);
       	if( dr < 0.5 ){ 
 
-            scPixIndexs.push_back( (*Photon_scIndex)[pit] );  
-            //scPixIndexs.push_back( pit );
+            //scPixIndexs.push_back( (*Photon_scIndex)[pit] );  
+            scPixIndexs.push_back( pit );
             nPhoInPixJet++; 
             sumpixwte += peng; 
-			if( not (*Photon_pixelSeed)[it] ){
-            //if( (*SuperCluster_ObjectPdgId)[it] == 22 ){
-				scIndexs.push_back( (*Photon_scIndex)[pit] ); 
-				//scIndexs.push_back( pit );
+			//if( not (*Photon_pixelSeed)[it] ){
+            if( (*SuperCluster_ObjectPdgId)[it] == 22 ){
+				//scIndexs.push_back( (*Photon_scIndex)[pit] ); 
+				scIndexs.push_back( pit );
 				nPhoInJet++; 
 				sumwte += peng; 
 			}//<<>>if( (*Photon_pixelSeed)[it] )
@@ -183,7 +192,7 @@ void KUCMSAodSkimmer::processJets(){
     int nPixSCIndexs = scPixIndexs.size();
     float jetPixTime = -40;
     float jetPixTimeRes = -1;
-    float jetPixTimeSig = ( nSCIndexs > 0 ) ? getTimeSig( scPixIndexs, jetPixTime, jetPixTimeRes ) : -40;
+    float jetPixTimeSig = ( nPixSCIndexs > 0 ) ? getTimeSig( scPixIndexs, jetPixTime, jetPixTimeRes ) : -40;
     alljetpixwtime.push_back( jetPixTime );
     alljetpixwtimevar.push_back( jetPixTimeRes*jetPixTimeRes );
     alljetpixwtenergy.push_back( sumpixwte );

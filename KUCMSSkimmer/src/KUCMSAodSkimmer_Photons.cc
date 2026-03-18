@@ -86,7 +86,8 @@ void KUCMSAodSkimmer::processPhotons(){
 
   // count of # of photons that pass very loose base selection
   int nBaseRJRPhos = 0; 
-  //---  main photon loop 
+  //---  main photon loop
+  std::vector<int> dups; 
   for( uInt it = 0; it < nPhotons; it++ ){
 
     //---------------------------------------------------
@@ -123,6 +124,8 @@ void KUCMSAodSkimmer::processPhotons(){
     //---------------------------------------------------
 
     if( DEBUG ) std::cout << " -- pho pull SC info" << std::endl;
+    if( std::count(dups.begin(), dups.end(), scIndx ) > 0 ) std::cout << " --- !!!!!!!  Duplicate SC ref in Photons !!!! " << std::endl;
+    else dups.push_back( scIndx );
     auto scSize = SuperCluster_seedIsEB->size();
     auto rhids = (*SuperCluster_rhIds)[scIndx];
     uInt nrh = rhids.size();
@@ -179,24 +182,25 @@ void KUCMSAodSkimmer::processPhotons(){
             float ertres = erh_timeRes[erhiter];
 
             bool hasGainSwitch = (*ECALRecHit_hasGS1)[erhiter] || (*ECALRecHit_hasGS6)[erhiter];
-            if( hasGainSwitch ) gainwt = 0;
+            //if( hasGainSwitch ) gainwt = 0;
 			if( (*ECALRecHit_hasGS1)[erhiter] ) gainwt1 = 0;
-            if( not isValid ){ gainwt = 0; gainwt1 = 0; }
+            //if( not isValid ){ gainwt = 0; gainwt1 = 0; }
 
-            //float terror = (*ECALRecHit_timeError)[erhiter];
-            //bool isEE = fabs((*ECALRecHit_eta)[erhiter]) > 1.479;
-            //bool isValidT = true;
-            //if( terror > 900 ) isValidT = false;
-            //if( hasGainSwitch ){
-            //    if( isEE ){ if( terror < 1.0 ) isValidT = false; }
-            //    else { if( terror < 0.6 ) isValidT = false; }
-            //} else {
-            //    if( isEE ){ if( terror < 1.05 ) isValidT = false; }
-            //    else { if( terror < 0.65 ) isValidT = false; }
-            //}//<<>>if( hasGainSwitch )
-            //if( not isValidT ){ gainwt = 0; gainwt1 = 0; }
+            float terror = (*ECALRecHit_timeError)[erhiter];
+            bool isEE = fabs((*ECALRecHit_eta)[erhiter]) > 1.479;
+            bool isValidT = true;
+            if( terror > 900 ) isValidT = false;
+            if( hasGainSwitch ){
+                if( isEE ){ if( terror < 1.0 ) isValidT = false; }
+                else { if( terror < 0.6 ) isValidT = false; }
+            } else {
+                if( isEE ){ if( terror < 1.05 ) isValidT = false; }
+                else { if( terror < 0.65 ) isValidT = false; }
+            }//<<>>if( hasGainSwitch )
+            if( not isValidT ){ gainwt = 0; gainwt1 = 0; }
 
-            float invertres = 1/ertres;
+
+            float invertres = 2/ertres;
             erhamps.push_back(invertres);
             sumerha += invertres;
             float erhar = invertres*gainwt;
@@ -233,7 +237,7 @@ void KUCMSAodSkimmer::processPhotons(){
     float phoWTime1 = sumtw1/sumw1;
     float phoWHVar1 = sumtrw1/sumw1;
     float phoWVar1 = 1/sumw1;
-    float phoWResOld = std::sqrt(phoWVarOld);
+    float phoWResOld = std::sqrt(phoWHVarOld);
 	float phoWRes1 = std::sqrt(phoWVar1);
 	float leadTres = std::sqrt(leadTvar);
 	float seedTres = std::sqrt(seedTvar);
@@ -1351,7 +1355,7 @@ bool KUCMSAodSkimmer::GetGJetsCR(int phoidx){
         j_pz += pt*sinh(eta);
     	//dphi_jets_photon > pi-0.3
     	float pho_jet = dR1(pho_eta, pho_phi, eta, phi);
-		if( pho_jet < 0.5 && pt > 20 ) phoIso = false;
+		if( pho_jet < 0.4 && j < 2 ) phoIso = false;
     }//<<>>for(int j = 0; j < nJets; j++)
     float jet_sys_phi = atan2(j_py, j_px);
     if(ht < 50) return false;
@@ -1364,7 +1368,7 @@ bool KUCMSAodSkimmer::GetGJetsCR(int phoidx){
     float jet_sys_pt = sqrt(j_px*j_px + j_py*j_py);
     float ptasym = std::min(pho_pt, jet_sys_pt) / std::max(pho_pt, jet_sys_pt);
     if(ptasym < 0.6) return false;
-	if( not phoIso ) phoidx = -1;
+	if( not isBaseLinePho[phoidx] ) phoidx = -1;
 	if( gammaJetIndex[0] < 0 ){ gammaJetIndex[0] = phoidx; gammaJetIndex[1] = nJets; }
     return true;
 

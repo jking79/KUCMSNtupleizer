@@ -123,6 +123,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 
     std::string eosCaliPath;
 	bool useEosRootCali;
+	void setUseLocalCali(){ useEosRootCali = false; };
 
     TRandom* getRandom;
 
