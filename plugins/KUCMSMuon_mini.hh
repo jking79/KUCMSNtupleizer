@@ -303,6 +303,7 @@ void KUCMSMuonObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 
 		if( MuonDEBUG ) std::cout << " -- Muon getting sc : " << std::endl;
         const auto btptr = muon.bestTrack();
+        if( !btptr ) continue;
         auto ttrack = ttBuilder.build( *btptr );
 
 

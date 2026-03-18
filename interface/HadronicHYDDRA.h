@@ -157,6 +157,7 @@ class HadronicHYDDRA : public HYDDRABase<HadronicHYDDRA> {
   // Returns true if the vertex fails hadronic selection.
   // Cuts are ordered cheapest-first.
   bool failsHadronicCuts(const TrackVertexSet& v) const {
+    if (!isValidVertex(v)) return true;
     if (static_cast<int>(v.size()) < minSize_) return true;
     if (v.vertex().normalizedChi2() > maxNormChi2_) return true;
     if (v.cosTheta(*primaryVertex_) < minCosTheta_) return true;

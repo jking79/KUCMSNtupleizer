@@ -1,23 +1,26 @@
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/TrackVertexSet.h"
 
-TrackVertexSet::TrackVertexSet(const std::vector<reco::TrackRef> &init, const TransientTrackBuilder* ttBuilder) :
+TrackVertexSet::TrackVertexSet(const std::vector<reco::TrackRef> &init, const TransientTrackBuilder* ttBuilder, bool useSmoothing) :
   std::set<reco::TrackRef>(init.begin(), init.end()),
   ttBuilder_(ttBuilder),
-  fitter_(std::make_unique<KalmanVertexFitter>()) {
+  fitter_(std::make_unique<KalmanVertexFitter>()),
+  useSmoothing_(useSmoothing) {
   fit();
 }
 
-TrackVertexSet::TrackVertexSet(std::initializer_list<reco::TrackRef> init, const TransientTrackBuilder* ttBuilder) :
+TrackVertexSet::TrackVertexSet(std::initializer_list<reco::TrackRef> init, const TransientTrackBuilder* ttBuilder, bool useSmoothing) :
   std::set<reco::TrackRef>(init),
   ttBuilder_(ttBuilder),
-  fitter_(std::make_unique<KalmanVertexFitter>()) {
+  fitter_(std::make_unique<KalmanVertexFitter>()),
+  useSmoothing_(useSmoothing) {
   fit();
 }
 
 TrackVertexSet::TrackVertexSet(const TrackVertexSet& other) :
   std::set<reco::TrackRef>(other),
   ttBuilder_(other.ttBuilder_),
-  fitter_(std::make_unique<KalmanVertexFitter>())
+  fitter_(std::make_unique<KalmanVertexFitter>()),
+  useSmoothing_(other.useSmoothing_)
 {fit();}
 
 // Transverse distance between two vertices
@@ -162,6 +165,7 @@ TrackVertexSet& TrackVertexSet::operator=(const TrackVertexSet& other) {
     std::set<reco::TrackRef>::operator=(other);
     ttBuilder_ = other.ttBuilder_;
     fitter_ = std::make_unique<KalmanVertexFitter>(*other.fitter_);
+    useSmoothing_ = other.useSmoothing_;
     fit();
   }
   return *this;
@@ -254,11 +258,53 @@ TrackVertexSet::operator reco::Vertex() const {
 
   if(!vertex_.isValid())
     return reco::Vertex();
-  
+
+  // If smoothing is requested, refit with KalmanVertexFitter(true) and store
+  // vertex-constrained refitted track parameters alongside the original TrackBaseRefs.
+  if(useSmoothing_) {
+    std::vector<reco::TrackRef> orderedRefs(this->begin(), this->end());
+    std::vector<reco::TransientTrack> ttracks;
+    ttracks.reserve(orderedRefs.size());
+    for(const auto& ref : orderedRefs)
+      ttracks.emplace_back(ttBuilder_->build(*ref));
+
+    KalmanVertexFitter smoother(true);
+    TransientVertex smoothed = smoother.vertex(ttracks);
+
+    if(smoothed.isValid() && smoothed.hasRefittedTracks()) {
+      // Use smoothed position/covariance but unsmoothed chi2/ndof.
+      // The smoothed TransientVertex totalChiSquared() includes track smoothing
+      // residuals which are huge for displaced tracks (far from perigee reference
+      // point), inflating normalizedChi2 by orders of magnitude.
+      const GlobalError smoothedErr = smoothed.positionError();
+      const math::XYZPoint smoothedPos(smoothed.position().x(), smoothed.position().y(), smoothed.position().z());
+      const math::Error<3>::type smoothedCov(ROOT::Math::SVector<double, 6>(
+        smoothedErr.cxx(), smoothedErr.cyx(), smoothedErr.cyy(),
+        smoothedErr.czx(), smoothedErr.czy(), smoothedErr.czz()));
+      reco::Vertex recoVertex(smoothedPos, smoothedCov,
+                              vertex_.totalChiSquared(), vertex_.degreesOfFreedom(),
+                              orderedRefs.size());
+      recoVertex.reserve(orderedRefs.size());
+
+      int ifail(0);
+      GlobalError err(recoVertex.covariance());
+      err.matrix().Inverse(ifail);
+      if(!recoVertex.isValid() || ifail != 0)
+        return reco::Vertex();
+
+      for(size_t i = 0; i < ttracks.size(); ++i) {
+        reco::TransientTrack refitted = smoothed.refittedTrack(ttracks[i]);
+        recoVertex.add(reco::TrackBaseRef(orderedRefs[i]), refitted.track(), 1.0);
+      }
+      return recoVertex;
+    }
+    // Fall through to unsmoothed path if smoothed fit fails.
+  }
+
   reco::Vertex recoVertex(VertexHelper::ConvertFitVertex(vertex_));
 
   // Check for rare edge case where reco::Vertex can fail matrix inversion
-  //leading to an exception when checking track compatibility
+  // leading to an exception when checking track compatibility.
   int ifail(0);
   if(this->isValid()) {
     GlobalError err(recoVertex.covariance());

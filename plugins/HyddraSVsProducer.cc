@@ -110,21 +110,21 @@ void HyddraSVsProducer::fillDescriptions(edm::ConfigurationDescriptions& descrip
   edm::ParameterSetDescription desc;
 
   // Input collections
-  desc.add<edm::InputTag>("tracks", edm::InputTag("miniAODMuonEnhancedTracks", "sip2DMuonEnhancedTracks"));
+  desc.add<edm::InputTag>("tracks", edm::InputTag("miniAODTrackProducer", "mergedMuonSip2D"));
   desc.add<edm::InputTag>("pvCollection", edm::InputTag("offlineSlimmedPrimaryVertices"));
 
   // Leptonic PSet
   edm::ParameterSetDescription leptonicDesc;
-  leptonicDesc.add<double>("seedCosThetaCut",              0.75);
+  leptonicDesc.add<double>("seedCosThetaCut",              -1.0);
   leptonicDesc.add<double>("minMass",                      2.0);
-  leptonicDesc.add<double>("minPOverE",                    0.6);
+  leptonicDesc.add<double>("minPOverE",                    0.0);
   leptonicDesc.add<double>("maxNormChi2",                  5.0);
   leptonicDesc.add<double>("minDxySignificance",           25.0);
-  leptonicDesc.add<double>("maxCompatibility",             1.5);
+  leptonicDesc.add<double>("maxCompatibility",             2.5);
   leptonicDesc.add<double>("minCleanCosTheta",             0.5);
   leptonicDesc.add<bool>  ("useDiagonalCut",               false);
   leptonicDesc.add<double>("cleanCutSlope",                0.0);
-  leptonicDesc.add<double>("minTrackCosTheta",             0.5);
+  leptonicDesc.add<double>("minTrackCosTheta",             -1.0);
   leptonicDesc.add<double>("maxTrackCosThetaCM_Limit",     0.95);
   leptonicDesc.add<double>("maxTrackCosThetaCM_Intercept", 1.8);
   leptonicDesc.add<double>("trackCosThetaCM_Slope",        -1.0);
@@ -135,22 +135,24 @@ void HyddraSVsProducer::fillDescriptions(edm::ConfigurationDescriptions& descrip
   leptonicDesc.add<bool>  ("doCleaning",                   true);
   leptonicDesc.add<bool>  ("doDisambiguation",             true);
   leptonicDesc.add<bool>  ("doFiltering",                  true);
+  leptonicDesc.add<bool>  ("useVertexSmoothing",           true);
   desc.add<edm::ParameterSetDescription>("leptonic", leptonicDesc);
 
   // Hadronic PSet
   edm::ParameterSetDescription hadronicDesc;
-  hadronicDesc.add<double>("seedCosThetaCut", 0.0);
+  hadronicDesc.add<double>("seedCosThetaCut", -1.0);
   hadronicDesc.add<double>("minMass", 2.0);
-  hadronicDesc.add<double>("minPOverE", 0.6);
+  hadronicDesc.add<double>("minPOverE", 0.0);
   hadronicDesc.add<double>("maxNormChi2", 5.0);
   hadronicDesc.add<double>("minDxySignificance", 40.0);
-  hadronicDesc.add<int>("minSize", 5);
-  hadronicDesc.add<double>("minCosTheta", 0.0);
+  hadronicDesc.add<int>("minSize", 3);
+  hadronicDesc.add<double>("minCosTheta", -1.0);
   hadronicDesc.add<double>("maxDecayAngle", 0.9);
   hadronicDesc.add<bool>("doMerging", true);
   hadronicDesc.add<bool>("doCleaning", true);
   hadronicDesc.add<bool>("doDisambiguation", true);
   hadronicDesc.add<bool>("doFiltering", true);
+  hadronicDesc.add<bool>("useVertexSmoothing", true);
   desc.add<edm::ParameterSetDescription>("hadronic", hadronicDesc);
 
   descriptions.addDefault(desc);

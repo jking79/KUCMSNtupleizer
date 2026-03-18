@@ -278,6 +278,7 @@ class LeptonicHYDDRA : public HYDDRABase<LeptonicHYDDRA> {
   // Returns true if the vertex fails kinematic selection.
   // Checked after cleaning and before disambiguation.
   bool failsKinematics(const TrackVertexSet& v) const {
+    if (!isValidVertex(v)) return true;
     if (v.vertex().normalizedChi2() > maxNormChi2_) return true;
     if (v.cosTheta(*primaryVertex_) < seedCosThetaCut_) return true;
 

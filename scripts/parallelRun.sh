@@ -38,6 +38,7 @@ CONFIG=""           # auto-detected from CMSSW_BASE if not given
 DO_MERGE=false
 DO_XRDCP=true
 DO_CONTINUE=false
+PREV_EOS_DIR=""     # explicit previous EOS run dir for --continue (auto-detected if empty)
 
 # ---------------------------------------------------------------------------
 # Colours
@@ -71,7 +72,8 @@ print_usage() {
     echo "  -l, --localDir DIR    Local working directory (default: /tmp/parallelRun_PID)"
     echo "      --merge           Run hadd to merge all per-job outputs"
     echo "      --no-xrdcp        Keep outputs local only, skip EOS transfer"
-    echo "      --continue        Skip files that succeeded in a previous run"
+    echo "      --continue        Skip files already uploaded in the most recent EOS run"
+    echo "      --prev-eos-dir D  Explicit previous EOS run dir for --continue"
     echo "  -h, --help            Show this message"
     echo ""
     echo "Output structure on EOS:"
@@ -200,6 +202,7 @@ while [[ $# -gt 0 ]]; do
         --merge)         DO_MERGE=true;    shift   ;;
         --no-xrdcp)      DO_XRDCP=false;   shift   ;;
         --continue)      DO_CONTINUE=true; shift   ;;
+        --prev-eos-dir)  PREV_EOS_DIR="$2"; DO_CONTINUE=true; shift 2 ;;
         -h|--help)       print_usage; exit 0 ;;
         *)
             echo -e "${RED}Unknown option: $1${NC}"
@@ -263,25 +266,85 @@ EOS_RUN_DIR="${EOS_BASE}/${RUN_NAME}/${TIMESTAMP}"
 mkdir -p "$LOCAL_DIR" "$LOG_DIR"
 
 # ---------------------------------------------------------------------------
-# --continue: filter files that already completed successfully
+# --continue: filter files that already completed successfully.
+# When xrdcp is enabled, check EOS for existing output files (persistent).
+# Falls back to local log check when --no-xrdcp is used.
+# Each remaining file is written as "GLOBAL_IDX INPUT_FILE" so the chunk
+# builder can assign the correct original output index regardless of which
+# files were skipped (avoids the N_SKIPPED+file_pos offset bug for
+# non-consecutive skips).
 # ---------------------------------------------------------------------------
 N_SKIPPED=0
+INDEXED_LIST=$(mktemp)   # "GLOBAL_IDX INPUT_FILE" for every file to process
+
 if [[ "$DO_CONTINUE" == true ]]; then
     FILTERED=$(mktemp)
-    JOB_IDX=0
-    while IFS= read -r f; do
-        LOG="${LOG_DIR}/job_${JOB_IDX}.log"
-        if grep -q "CMSRUN_EXIT_SUCCESS" "$LOG" 2>/dev/null; then
-            N_SKIPPED=$((N_SKIPPED + 1))
-        else
-            echo "$f" >> "$FILTERED"
+
+    if [[ "$DO_XRDCP" == true ]]; then
+        # Auto-detect the most recent previous EOS run directory if not given.
+        if [[ -z "$PREV_EOS_DIR" ]]; then
+            _prev_ts=$(xrdfs "$EOS_SERVER" ls "${EOS_BASE}/${RUN_NAME}/" 2>/dev/null \
+                | awk -F'/' '{print $NF}' | sort | tail -1)
+            [[ -n "$_prev_ts" ]] && PREV_EOS_DIR="${EOS_BASE}/${RUN_NAME}/${_prev_ts}"
         fi
-        JOB_IDX=$((JOB_IDX + 1))
+
+        if [[ -n "$PREV_EOS_DIR" ]]; then
+            echo -e "${CYAN}--continue: checking EOS ${EOS_SERVER}/${PREV_EOS_DIR}${NC}"
+            # Build set of already-completed global indices from the EOS listing.
+            declare -A _DONE_SET
+            while IFS= read -r _eos_path; do
+                _idx=$(basename "$_eos_path" .root | grep -oP "_\K[0-9]+$" || true)
+                [[ -n "$_idx" ]] && _DONE_SET[$_idx]=1
+            done < <(xrdfs "$EOS_SERVER" ls "$PREV_EOS_DIR" 2>/dev/null \
+                     | grep -v "_merged" || true)
+
+            # Reuse the same EOS directory so continued outputs land there too.
+            TIMESTAMP="${PREV_EOS_DIR##*/}"
+            EOS_RUN_DIR="$PREV_EOS_DIR"
+
+            _gidx=0
+            while IFS= read -r f; do
+                if [[ -n "${_DONE_SET[$_gidx]:-}" ]]; then
+                    N_SKIPPED=$(( N_SKIPPED + 1 ))
+                else
+                    echo "$_gidx $f" >> "$FILTERED"
+                fi
+                _gidx=$(( _gidx + 1 ))
+            done < "$FILES_LIST"
+        else
+            echo -e "${YELLOW}--continue: no previous EOS run found for '${RUN_NAME}'. Starting fresh.${NC}"
+            _gidx=0
+            while IFS= read -r f; do
+                echo "$_gidx $f" >> "$FILTERED"
+                _gidx=$(( _gidx + 1 ))
+            done < "$FILES_LIST"
+        fi
+
+    else
+        # No xrdcp: fall back to local log sentinel.
+        _gidx=0
+        while IFS= read -r f; do
+            LOG="${LOG_DIR}/job_${_gidx}.log"
+            if grep -q "CMSRUN_EXIT_SUCCESS" "$LOG" 2>/dev/null; then
+                N_SKIPPED=$(( N_SKIPPED + 1 ))
+            else
+                echo "$_gidx $f" >> "$FILTERED"
+            fi
+            _gidx=$(( _gidx + 1 ))
+        done < "$FILES_LIST"
+    fi
+
+    mv "$FILTERED" "$INDEXED_LIST"
+else
+    # No --continue: assign indices 0..N-1 in order.
+    _gidx=0
+    while IFS= read -r f; do
+        echo "$_gidx $f" >> "$INDEXED_LIST"
+        _gidx=$(( _gidx + 1 ))
     done < "$FILES_LIST"
-    mv "$FILTERED" "$FILES_LIST"
 fi
 
-N_TO_RUN=$(wc -l < "$FILES_LIST" | tr -d ' ')
+N_TO_RUN=$(wc -l < "$INDEXED_LIST" | tr -d ' ')
 
 # ---------------------------------------------------------------------------
 # Print summary
@@ -342,20 +405,18 @@ export _KP_DO_XRDCP="$DO_XRDCP"
 
 cat > "$TEMP_JOB" << 'JOB_EOF'
 #!/bin/bash
-# Called by GNU parallel as:  bash TEMP_JOB START_IDX CHUNK_FILE
-START_IDX="$1"
-CHUNK_FILE="$2"
+# Called by GNU parallel as:  bash TEMP_JOB CHUNK_FILE
+# Each line of CHUNK_FILE is: GLOBAL_IDX INPUT_FILE
+CHUNK_FILE="$1"
 
 mkdir -p "${_KP_LOCAL_DIR}/logs"
 
 _FILTER_ARG=()
 [[ -n "$_KP_FILTER" ]] && _FILTER_ARG=( "eventFilter=${_KP_FILTER}" )
 
-LOCAL_IDX=0
-while IFS= read -r INPUT_FILE; do
+while IFS=' ' read -r GLOBAL_IDX INPUT_FILE; do
     [[ -z "$INPUT_FILE" ]] && continue
 
-    GLOBAL_IDX=$((START_IDX + LOCAL_IDX))
     OUTFILE="${_KP_TAG}_${_KP_IDENTIFIER}_${GLOBAL_IDX}.root"
     LOCAL_OUT="${_KP_LOCAL_DIR}/${OUTFILE}"
     LOG="${_KP_LOCAL_DIR}/logs/job_${GLOBAL_IDX}.log"
@@ -395,7 +456,6 @@ while IFS= read -r INPUT_FILE; do
         fi
     fi
 
-    LOCAL_IDX=$((LOCAL_IDX + 1))
 done < "$CHUNK_FILE"
 JOB_EOF
 chmod +x "$TEMP_JOB"
@@ -406,24 +466,24 @@ chmod +x "$TEMP_JOB"
 # Global index starts at N_SKIPPED so output filenames stay consistent when
 # --continue is used across multiple invocations.
 # ---------------------------------------------------------------------------
+# Chunk files now contain "GLOBAL_IDX INPUT_FILE" lines so the job script
+# uses the correct original output index even when files were skipped.
 CHUNK_DIR=$(mktemp -d)
 JOB_LIST=$(mktemp)
 chunk_idx=0
-file_pos=0
+local_idx=0
 current_chunk=""
 
-while IFS= read -r f; do
-    local_idx=$((file_pos % FILES_PER_JOB))
+while IFS=' ' read -r global_idx f; do
     if [[ $local_idx -eq 0 ]]; then
         current_chunk="${CHUNK_DIR}/chunk_$(printf '%04d' $chunk_idx)"
-        start_global=$((N_SKIPPED + file_pos))
-        echo "$start_global $current_chunk" >> "$JOB_LIST"
-        chunk_idx=$((chunk_idx + 1))
+        echo "$current_chunk" >> "$JOB_LIST"
+        chunk_idx=$(( chunk_idx + 1 ))
     fi
-    echo "$f" >> "$current_chunk"
-    file_pos=$((file_pos + 1))
-done < "$FILES_LIST"
-rm -f "$FILES_LIST"
+    echo "$global_idx $f" >> "$current_chunk"
+    local_idx=$(( (local_idx + 1) % FILES_PER_JOB ))
+done < "$INDEXED_LIST"
+rm -f "$FILES_LIST" "$INDEXED_LIST"
 
 # ---------------------------------------------------------------------------
 # Run with GNU parallel
@@ -434,15 +494,15 @@ echo ""
 
 START_TIME=$(date +%s)
 
-parallel --bar -j "$N_JOBS" --colsep ' ' \
-    bash "$TEMP_JOB" {1} {2} \
+parallel --bar -j "$N_JOBS" \
+    bash "$TEMP_JOB" {} \
     :::: "$JOB_LIST"
 
 PARALLEL_EXIT=$?
 END_TIME=$(date +%s)
 ELAPSED=$((END_TIME - START_TIME))
 
-rm -f "$TEMP_JOB" "$JOB_LIST"
+rm -f "$TEMP_JOB" "$JOB_LIST" "$INDEXED_LIST" 2>/dev/null || true
 rm -rf "$CHUNK_DIR"
 
 # ---------------------------------------------------------------------------

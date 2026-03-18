@@ -38,6 +38,10 @@ class HYDDRABase : public TrackVertexSetCollection {
   bool doDisambiguation_;
   bool doFiltering_;
 
+  // Output option: refit final vertices with Kalman smoother to obtain
+  // vertex-constrained track parameters stored in the output reco::Vertex.
+  bool useVertexSmoothing_;
+
   // Event context (set per-event in run_reconstruction)
   const TransientTrackBuilder* ttBuilder_ = nullptr;
   const reco::Vertex* primaryVertex_ = nullptr;
@@ -67,10 +71,11 @@ class HYDDRABase : public TrackVertexSetCollection {
     minPOverE_          = pset.getParameter<double>("minPOverE");
     maxNormChi2_        = pset.getParameter<double>("maxNormChi2");
     minDxySignificance_ = pset.getParameter<double>("minDxySignificance");
-    doMerging_          = pset.getParameter<bool>("doMerging");
-    doCleaning_         = pset.getParameter<bool>("doCleaning");
-    doDisambiguation_   = pset.getParameter<bool>("doDisambiguation");
-    doFiltering_        = pset.getParameter<bool>("doFiltering");
+    doMerging_            = pset.getParameter<bool>("doMerging");
+    doCleaning_           = pset.getParameter<bool>("doCleaning");
+    doDisambiguation_     = pset.getParameter<bool>("doDisambiguation");
+    doFiltering_          = pset.getParameter<bool>("doFiltering");
+    useVertexSmoothing_   = pset.getParameter<bool>("useVertexSmoothing");
   }
 
   // Access diagnostics
@@ -187,7 +192,7 @@ class HYDDRABase : public TrackVertexSetCollection {
 	  continue;
 	}
 
-	TrackVertexSet seed({*x, *y}, ttBuilder_);
+	TrackVertexSet seed({*x, *y}, ttBuilder_, useVertexSmoothing_);
 
 	if (!isValidVertex(seed)) {
 	  nInvalid++;
@@ -295,8 +300,9 @@ class HYDDRABase : public TrackVertexSetCollection {
 	       << iteration << " iterations\n");
   }
 
-  // A vertex is valid if the fit converged and normChi2 < 5.
+  // A vertex is valid if the fit converged and normChi2 is physical (0 <= normChi2 < 5).
+  // Negative normChi2 (e.g. ~-1e6) indicates a degenerate KVF fit with ndof <= 0.
   bool isValidVertex(const TrackVertexSet& set) const {
-    return set.isValid() && set.normChi2() < 5;
+    return set.isValid() && set.normChi2() >= 0.0 && set.normChi2() < 5;
   }
 };

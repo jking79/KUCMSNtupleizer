@@ -24,8 +24,8 @@ class TrackVertexSet : public std::set<reco::TrackRef> {
 
   // Constructor with initializer list
   TrackVertexSet() = default;
-  TrackVertexSet(const std::vector<reco::TrackRef> &init, const TransientTrackBuilder* ttBuilder);
-  TrackVertexSet(std::initializer_list<reco::TrackRef> init, const TransientTrackBuilder* ttBuilder);
+  TrackVertexSet(const std::vector<reco::TrackRef> &init, const TransientTrackBuilder* ttBuilder, bool useSmoothing = false);
+  TrackVertexSet(std::initializer_list<reco::TrackRef> init, const TransientTrackBuilder* ttBuilder, bool useSmoothing = false);
   
   // Copy constructor - explicitly inherit from base class
   TrackVertexSet(const TrackVertexSet& other);
@@ -88,8 +88,9 @@ class TrackVertexSet : public std::set<reco::TrackRef> {
   
  private:
   const TransientTrackBuilder* ttBuilder_;
-  std::unique_ptr<KalmanVertexFitter> fitter_; 
+  std::unique_ptr<KalmanVertexFitter> fitter_;
   TransientVertex vertex_;
+  bool useSmoothing_ = false;
   
   void fit();
   std::vector<reco::TransientTrack> convertTracks() const;
