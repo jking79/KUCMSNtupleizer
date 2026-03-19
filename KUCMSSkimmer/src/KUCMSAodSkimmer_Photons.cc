@@ -117,6 +117,7 @@ void KUCMSAodSkimmer::processPhotons(){
     /////////// skip all excluded photons ///////////////////////////////////
     //---------------------------------------------------
 
+    //if( isExcluded ){ isBaseLinePho.push_back(false); continue; }
     if( isExcluded ) continue;
 
     //---------------------------------------------------
@@ -198,7 +199,6 @@ void KUCMSAodSkimmer::processPhotons(){
                 else { if( terror < 0.65 ) isValidT = false; }
             }//<<>>if( hasGainSwitch )
             if( not isValidT ){ gainwt = 0; gainwt1 = 0; }
-
 
             float invertres = 2/ertres;
             erhamps.push_back(invertres);
@@ -1368,7 +1368,7 @@ bool KUCMSAodSkimmer::GetGJetsCR(int phoidx){
     float jet_sys_pt = sqrt(j_px*j_px + j_py*j_py);
     float ptasym = std::min(pho_pt, jet_sys_pt) / std::max(pho_pt, jet_sys_pt);
     if(ptasym < 0.6) return false;
-	if( not isBaseLinePho[phoidx] ) phoidx = -1;
+	if( isBaseLinePho[phoidx] ) phoidx = -1;
 	if( gammaJetIndex[0] < 0 ){ gammaJetIndex[0] = phoidx; gammaJetIndex[1] = nJets; }
     return true;
 

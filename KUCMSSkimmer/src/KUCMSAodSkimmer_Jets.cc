@@ -120,7 +120,8 @@ void KUCMSAodSkimmer::processJets(){
     }//if( doGenInfo )
 
     // get cacluated values-------------------------------------------
-    if( DEBUG ) std::cout << " - Finding Jet Time." << std::endl;
+    //if( DEBUG ) 
+	//std::cout << " - Finding Jet Time." << std::endl;
 
 
     auto rhenergies = getRhGrpEnergies( rhids );
@@ -132,19 +133,30 @@ void KUCMSAodSkimmer::processJets(){
     float sumpixwte = 0;
 	std::vector<int> scIndexs;
     std::vector<int> scPixIndexs;
-    //uInt nPhotons = Photon_excluded->size();
-    uInt nPhotons = SuperCluster_excluded->size();
-	int nPhoInJet = ( nPhotons > 0 ) ? 0 : -1;
-    int nPhoInPixJet = ( nPhotons > 0 ) ? 0 : -1;
-    for( uInt pit = 0; pit < nPhotons; pit++ ){ 
+	std::vector<float> eledelay;
+    //uInt nSCBase = Photon_excluded->size();
+    uInt nSCBase = SuperCluster_excluded->size();
+	std::vector<bool> scskip;
+	for( uInt pit = 0; pit < nSCBase; pit++ ){ scskip.push_back(false); }
+	int nPhoInJet = ( nSCBase > 0 ) ? 0 : -1;
+    int nPhoInPixJet = ( nSCBase > 0 ) ? 0 : -1;
+    for( uInt pit = 0; pit < nSCBase; pit++ ){ 
 
-        //if( (*Photon_isOot)[it] ) continue;
-        if( (*SuperCluster_isOot)[it] ) continue;
-		//if( (*Photon_excluded)[it] ) continue;
-        if( (*SuperCluster_excluded)[it] ) continue;
-		//if( isBaseLinePho[it] ) continue;
-		int phoindx = (*SuperCluster_PhotonIndx)[it];
+		if( scskip[pit] ) continue;
+        //if( (*Photon_isOot)[pit] ) continue;
+        //if( (*SuperCluster_isOot)[pit]  ) std::cout << " -- OOT Skip " << std::endl;
+        if( (*SuperCluster_isOot)[pit] ) continue;
+		//if( (*Photon_excluded)[pit] ) continue;
+        //if( (*SuperCluster_excluded)[pit] ) std::cout << " -- EXC Skip " << std::endl;
+        if( (*SuperCluster_excluded)[pit] ) continue;
+		//if( isBaseLinePho[pit] ) continue;
+		int phoindx = (*SuperCluster_PhotonIndx)[pit];
+		float pid = (*SuperCluster_ObjectPdgId)[pit];
+		//if( phoindx < 0 && (pid == 22 || pid == 33) ) std::cout << " -- Bad Pho Index " << std::endl; 
+		//if( phoindx > -1 && isBaseLinePho[phoindx] ) std::cout << " -- BaseLine Skip " << std::endl;
 		if( phoindx > -1 && isBaseLinePho[phoindx] ) continue;
+
+		//if( (*SuperCluster_ObjectPdgId)[it] < 5 || (*SuperCluster_ObjectPdgId)[it] > 30 ) continue;
 
     	//float peta = (*Photon_eta)[pit];
     	//float pphi = (*Photon_phi)[pit];
@@ -152,39 +164,67 @@ void KUCMSAodSkimmer::processJets(){
         float peta = (*SuperCluster_eta)[pit];
         float pphi = (*SuperCluster_phi)[pit];
         float peng = (*SuperCluster_energy)[pit];
+        //float pid = (*SuperCluster_ObjectPdgId)[pit];
+        if( pid == 0 && peng < 20*std::cosh(peta) ) continue;
+		//std::cout << " -- Scanning : e " << peng << " eta " << peta << " phi " << pphi << " : " << pit << std::endl; 
 
-	    bool overlap = false;	
-		for( uInt pitt = pit+1; pitt < nPhotons; pitt++ ){
-			float ppeta = (*SuperCluster_eta)[pit];
-			float ppphi = (*SuperCluster_phi)[pit];
-			float pdr = dR1(peta, pphi, ppeta, ppphi);
-			if( pdr < 0.4 ){ overlap = true; std::cout << " -- !!!!!!!  SC Overlap !!!!!!! " << std::endl; }
+	    for( uInt olit = nSCBase-1; olit > pit; olit-- ){
+		//for( uInt olit = pit+1; olit < nSCBase; olit++ ){
+			//float olpeta = (*SuperCluster_eta)[olit];
+			//float olpphi = (*SuperCluster_phi)[olit];
+			float oeng = (*SuperCluster_energy)[olit];
+			int oid = (*SuperCluster_ObjectPdgId)[olit];
+			//float oldr = dR1(peta, pphi, olpeta, olpphi);
+			//if( oldr < 0.4 ){ overlap = true; std::cout << " -- !!!!!!!  SC Overlap : " << oldr << " : " << oid << std::endl; }
+			int nol = getOverLapCnt( (*SuperCluster_rhIds)[pit], (*SuperCluster_rhIds)[olit] );
+			//if( nol > 0 ){ std::cout << " -- ! SC Overlap w/ " << olit << " of " << nol << " e " << oeng << " t " << oid << std::endl; }
+			if( nol > 0 ){ if(  peng > oeng ) scskip[olit] = true; else scskip[pit] = true; }
 		}//<<>>for( uInt pitt = 0; pitt < nPhotons; pitt++ )
-		if( overlap ) continue;
+
+		if( scskip[pit] ) continue;
 
 		float dr = dR1(peta, pphi, eta, phi);
       	if( dr < 0.5 ){ 
 
+			//std::cout << " -- In Jet !!! t " << pid << std::endl;
             //scPixIndexs.push_back( (*Photon_scIndex)[pit] );  
             scPixIndexs.push_back( pit );
             nPhoInPixJet++; 
             sumpixwte += peng; 
-			//if( not (*Photon_pixelSeed)[it] ){
-            if( (*SuperCluster_ObjectPdgId)[it] == 22 ){
+			//if( not (*Photon_pixelSeed)[pit] ){
+			//if( pid == 22 ){
+            //if( pid > 0 && pid < 33 ){
+            if( pid > -1 ){ peng < 50; 
+				if( pid == 11 ){
+					float dx = (*SuperCluster_clcx)[pit] - PV_x;
+					float dy = (*SuperCluster_clcy)[pit] - PV_y;
+					float dz = (*SuperCluster_clcz)[pit] - PV_z;
+					int eleindx = (*SuperCluster_ElectronIndx)[pit]; 
+					float rad = (*Electron_pt)[eleindx]/1.14;
+					float dtan = hypo( dx, dy );
+					float arg = dtan/(2.0*rad);
+				    arg = std::max(-1.0f, std::min(1.0f, arg));
+					float dP = 2.0*std::asin(arg);
+					float length = hypo( rad*dP, dz );
+					float beta = (*Electron_pt)[eleindx]/(*Electron_energy)[eleindx];
+					float delay = ( hypo( dx, dy, dz ) - length )/(beta*SOL);
+					delay = std::min( 0.0f, delay );
+					eledelay.push_back( delay );
+				} else { eledelay.push_back( 0 ); }//<<>>if( pid == 11 ) 
 				//scIndexs.push_back( (*Photon_scIndex)[pit] ); 
 				scIndexs.push_back( pit );
 				nPhoInJet++; 
 				sumwte += peng; 
-			}//<<>>if( (*Photon_pixelSeed)[it] )
+			}//<<>>if( (*Photon_pixelSeed)[pit] )
 
 		}//<<>>if( minDr )
 
-	}//<<>>for( uInt it = 0; it < nPhotons; it++ )
+	}//<<>>for( uInt pit = 0; pit < nPhotons; pit++ )
 
 	int nSCIndexs = scIndexs.size();
 	float jetTime = -40;
 	float jetTimeRes = -1;
-	float jetTimeSig = ( nSCIndexs > 0 ) ? getTimeSig( scIndexs, jetTime, jetTimeRes ) : -40; 
+	float jetTimeSig = ( nSCIndexs > 0 ) ? getTimeSig( scIndexs, jetTime, jetTimeRes, eledelay ) : -40; 
 	alljetwtime.push_back( jetTime );
     alljetwtimevar.push_back( jetTimeRes*jetTimeRes );
     alljetwtenergy.push_back( sumwte );
