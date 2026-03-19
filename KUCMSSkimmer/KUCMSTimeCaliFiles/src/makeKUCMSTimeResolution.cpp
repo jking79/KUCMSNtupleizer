@@ -75,6 +75,7 @@ int main ( int argc, char *argv[] ){
     std::string indir("KUCMSNtuple/gammares_prmt25/");
 
     KUCMS_TimeCalibration theCali;
+    theCali.setUseLocalCali();
     theCali.SetEosDir(eosdir);
     theCali.SetInDir(indir);
 

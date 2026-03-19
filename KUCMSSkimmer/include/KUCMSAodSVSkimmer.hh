@@ -150,9 +150,10 @@ class KUCMSAodSkimmer : public llpgtree {
 
 	// TSig functions
 	//float getTimeSig( int scIndex );
-	float getTimeSig( std::vector<int> scIndexs, float& num, float& denom );
+	//float getTimeSig( const std::vector<int>& scIndexs, float& num, float& denom );
+    float getTimeSig( const std::vector<int>& scIndexs, float& num, float& denom, const std::vector<float>& eledelay = {} );
 	float getTimeSig( int scIndex, float& num, float& denom, const map<unsigned int, float>& rhIdToBHCw  = {});
-	float getTimeSig( vector<vector<unsigned int>> rhids );
+	float getTimeSig( const vector<vector<unsigned int>>& rhids );
 
 	void MakePhotonIsoMap(int phoidx, map<string, double>& isomap);
 	// object quality functions
@@ -366,6 +367,9 @@ class KUCMSAodSkimmer : public llpgtree {
    TBranch        *b_OSuperCluster_nXtalOverlap;   //!
 */
 
+    typedef std::vector<uInt> rhIdGroup;
+    const int getOverLapCnt(const rhIdGroup x, const rhIdGroup y){ int c=0; int sx=x.size(); int sy=y.size();
+               for( int a=0;a<sx;a++){for( int b=0;b<sy;b++){if(x[a]==y[b]){c++;break;}}} return c;}
 
     //photon CR definitions
     int GetDetBkgCR(int phoidx);

@@ -9,11 +9,11 @@ options = VarParsing('python')
 
 options.register('multicrab',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'swtich to use muticrab paramters');
 options.register('hasGenInfo',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to get pcalo in mc');
-options.register('eventFilter','MET100',VarParsing.multiplicity.singleton,VarParsing.varType.string,'filter to use in event processing');
+options.register('eventFilter','SVHPMet100',VarParsing.multiplicity.singleton,VarParsing.varType.string,'filter to use in processing');
 options.register('doSV',True,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to run displaced SVs');
 options.register('doDisEle',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag ro run displaced electrons');
 options.register('doECALTrackOnly',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to run ECAL Tracks only');
-options.register('runera','Run2',VarParsing.multiplicity.singleton,VarParsing.varType.string,'filter to use in event processing');
+options.register('runera','Run2_2018',VarParsing.multiplicity.singleton,VarParsing.varType.string,'filter to use in event processing');
 options.register('runMETFilters',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to run Met Filters');
 
 ## object prep cuts
@@ -36,7 +36,7 @@ options.register('runMETFilters',False,VarParsing.multiplicity.singleton,VarPars
 #options.register('globalTag','106X_upgrade2018_realistic_v11_L1v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','94X_mc2017_realistic_v11',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for sig22 MC');
-options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
+#options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','130X_mcRun3_2023_realistic_v14',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','133X_mcRun3_2024_realistic_v10',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','94X_mc2017_realistic_v14',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for GMSB MC');
@@ -64,6 +64,10 @@ options.register('outputFileName',outfilename,VarParsing.multiplicity.singleton,
 options.parseArguments()
 
 ## Define the CMSSW process
+#runera = "Run3"  # current siganl model   !!!!!!!!  Run3 must be in CMSSW 14 or 15
+runera = "Run2_2018" # BG models
+if options.multicrab == True : runera = options.runera
+
 from Configuration.StandardSequences.Eras import eras
 era_map = {
     "Run2_2016": eras.Run2_2016,
@@ -85,12 +89,6 @@ process.load('Configuration.StandardSequences.Services_cff')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')
 
-#process.load("Geometry.CaloEventSetup.CaloTowerConstituents_cfi")
-#process.load('Configuration.StandardSequences.RawToDigi_Data_cff')
-#process.load('Configuration.StandardSequences.L1Reco_cff')
-#process.load('Configuration.StandardSequences.Reconstruction_Data_cff')
-
-#process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.load('TrackingTools.TransientTrack.TransientTrackBuilder_cfi')
 process.load("TrackingTools.TrackAssociator.DetIdAssociatorESProducer_cff")
@@ -112,9 +110,6 @@ from KUCMSNtupleizer.KUCMSNtupleizer.TrackAssociator_mini_cfi import tkAssocPara
 
 process.load('KUCMSNtupleizer.KUCMSNtupleizer.ECALTracks_mini_cfi')
 from KUCMSNtupleizer.KUCMSNtupleizer.ECALTracks_mini_cfi import *
-
-#process.load('KUCMSNtupleizer.KUCMSNtupleizer.DisplacedElectrons_cfi')
-#from KUCMSNtupleizer.KUCMSNtupleizer.DisplacedElectrons_cfi import *
 
 process.load('KUCMSNtupleizer.KUCMSNtupleizer.MuonEnhancedTracks_cfi')
 from KUCMSNtupleizer.KUCMSNtupleizer.MuonEnhancedTracks_cfi import *
@@ -165,7 +160,7 @@ process.source = cms.Source("PoolSource",
         #'root://cms-xrd-global.cern.ch//store/data/Run2018D/EGamma/MINIAOD/UL2018_MiniAODv2-v2/2810000/D5E0889C-D687-6242-8105-A147939E99C4.root',
         #'root://cmsxrootd.fnal.gov//store/data/Run2018B/JetHT/MINIAOD/15Feb2022_UL2018-v1/2820000/84DEEA91-CF7B-C24B-831D-7D993EB56D8D.root',
         # MC - Sig
-        'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_MINI/260203_235322/0000/SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_MiniAODv4_99.root',
+        #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_MINI/260203_235322/0000/SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_MiniAODv4_99.root',
 
         ),##<<>>fileNames = cms.untracked.vstring
         secondaryFileNames=cms.untracked.vstring()
@@ -174,21 +169,12 @@ process.source = cms.Source("PoolSource",
 
 ## How many events to process
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))#ONE
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500))#QT
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(5000))#BT
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10000))#LT
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(12500))#VS
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(25000))#SM
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100000))#MS
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250000))#MD
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(2500000))#LG
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
 
 #genInfo = True
 genInfo = False
@@ -210,24 +196,14 @@ filterselect = 'SVHPMet100'
 #####filterselect = 'AL1SelEle'
 if options.multicrab == True : filterselect = options.eventFilter
 
-#runera = "Run3"  # current siganl model   !!!!!!!!  Run3 must be in CMSSW 14 or 15
-runera = "Run2" # BG models
-if options.multicrab == True : runera = options.runera
-
 dosv = True
 #dosv = False # with v30 this is the only SV flag that matters, doDisEle and doECALTrackOnly are depreciated
 if options.multicrab == True : dosv = options.doSV
-
 ############dode = True
 dode = False # removed - only false with v30
 #if options.multicrab == True : dode = options.doDisEle
-
 doet = True ## with v30 no longer optional when using ( "ecalTracks", "displacedElectronSCs" ) for SCs collection
 #####doet = False  ## leave true always for now
-#if options.multicrab == True : doet = options.doECALTrackOnly
-#if doet : 
-#    dosv = False
-#    dode = False
 
 #runMETFilters = True
 runMETFilters = False
@@ -240,15 +216,12 @@ if options.multicrab == True : probeout = False
 triggerSet = "RECO"
 convSet = "RECO"
 ecalIsoInputs = ecalIsoInputsF17
-
-#runera = "Run3_2022"
 if "Run3" in runera :
     triggerSet = "PAT"
     convSet = "PAT"
     ecalIsoInputs = ecalruneraIsoInputsW22
     if 'CASTOR' in process.CaloGeometryBuilder.SelectedCalos : 
         process.CaloGeometryBuilder.SelectedCalos.remove('CASTOR') 
-
 if runMETFilters == True : triggerSet = ""  # ?  "SIM" for MC
 
 #genMomChase = True
@@ -475,7 +448,6 @@ metFilterPaths += [
 # SVs & ecaltracks aka merged SC collection
 process.kuEcalTracks = cms.Sequence( ecalTracks )
 process.kuSV = cms.Sequence( miniAODTrackProducer + hyddraSVs )
-#process.kuDisEle = cms.Sequence( displacedElectrons )
 
 #process.kuDisplaced_path = cms.Path()
 process.kuDisplaced_path = cms.Path( process.kuEcalTracks )
@@ -487,10 +459,6 @@ if ( dosv ) : process.kuDisplaced_path = cms.Path( process.kuEcalTracks + proces
 process.eventcount_path = cms.Path(process.eventCounter)
 process.tree_step = cms.EndPath(process.tree)
 process.endjob_step = cms.EndPath(process.endOfProcess)
-
-#done above now
-#if 'CASTOR' in process.CaloGeometryBuilder.SelectedCalos :
-#    process.CaloGeometryBuilder.SelectedCalos.remove('CASTOR')
 
 #########process.schedule = cms.Schedule( process.kuDisplaced_path, process.setFlags_path, process.tree_step, process.endjob_step )
 # Flags must be run as a path in the Schedule in order to appear in the trigger results for KUCMSEventInfo 
@@ -504,7 +472,6 @@ process.schedule = cms.Schedule(
 
 if runMETFilters:
     process.schedule.extend(metFilterPaths)
-
 
 #process.options = cms.untracked.PSet()
 #do not add changes to your config after this point (unless you know what you are doing)

@@ -151,7 +151,7 @@ float KUCMSAodSkimmer::getTimeSig( int scIndex, float& num, float& denom, const 
 
 }//<<>>void KUCMSAodSkimmer::getTimeSig
 
-float KUCMSAodSkimmer::getTimeSig( std::vector<int> scIndexs, float& num, float& denom ){
+float KUCMSAodSkimmer::getTimeSig( const std::vector<int>& scIndexs, float& num, float& denom, const std::vector<float>& eledelay ){
 
     double sumtw = 0;
     double sumw = 0;
@@ -163,6 +163,7 @@ float KUCMSAodSkimmer::getTimeSig( std::vector<int> scIndexs, float& num, float&
 
         auto rhids = (*SuperCluster_rhIds)[scIndex];
         int nSCRecHits = rhids.size();
+		float adjust = ( eledelay.size() > 0 ) ? eledelay[scIndex] : 0;
 		if( nSCRecHits < 5 ) continue;
         for( int sciter = 0; sciter < nSCRecHits; sciter++  ){
             auto scrhid = rhids[sciter];
@@ -184,7 +185,7 @@ float KUCMSAodSkimmer::getTimeSig( std::vector<int> scIndexs, float& num, float&
 
                 double cor_cms000 = hypo(erx,ery,erz)/SOL;
                 double cor_tofPVtoRH = hypo(erx-PV_x,ery-PV_y,erz-PV_z)/SOL;
-                double ertoftime = erhct + cor_cms000 - cor_tofPVtoRH;
+                double ertoftime = erhct + cor_cms000 - cor_tofPVtoRH - adjust;
 
                 bool isEE = fabs((*ECALRecHit_eta)[erhiter]) > 1.479;
                 bool isValid = true;
