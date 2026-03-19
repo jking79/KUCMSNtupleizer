@@ -60,7 +60,7 @@ def generateSubmission(args):
     elif(MCbkg):
         inputMainList = cmsswpath+"ntuple_master_lists/KUCMS_Ntuple_Master_BG_SVIPM100_Files_List.txt"
     elif(MCsig):
-        inputMainList = cmsswpath+"ntuple_master_lists/KUCMS_Ntuple_Master_SMS_Sig_Files_List_v33.txt"
+        inputMainList = cmsswpath+"ntuple_master_lists/KUCMS_Ntuple_Master_SMS_Sig_Files_List_v34.txt"
     else:
     	print("Input list for samplei "+args.inputSample+" not found")
     	exit()
@@ -128,7 +128,7 @@ def generateSubmission(args):
                 n2mass = file[file.find("mN2-")+4 : file.find("_mN1")]
                 n1mass = file[file.find("mN1-")+4 : file.find("_ct")]
             mc_wt = data[6]
-            print("data[-1]",data[-1],"data",data)
+            #print("data[-1]",data[-1],"data",data)
             timeCaliTag = data[-1][:-1] #remove new line symbol
            
             #set dirname
