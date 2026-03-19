@@ -165,7 +165,9 @@ void KUCMSAodSkimmer::processJets(){
         float pphi = (*SuperCluster_phi)[pit];
         float peng = (*SuperCluster_energy)[pit];
         //float pid = (*SuperCluster_ObjectPdgId)[pit];
-        if( pid == 0 && peng < 20*std::cosh(peta) ) continue;
+		auto trkindxs = (*SuperCluster_TrackIndx)[pit];
+		int trkindx = ( trkindxs.size() > 0 ) ? trkindxs[0] : -1;
+        if( pid == 0 && trkindx > -1 && peng < 20*std::cosh(peta) ) continue;
 		//std::cout << " -- Scanning : e " << peng << " eta " << peta << " phi " << pphi << " : " << pit << std::endl; 
 
 	    for( uInt olit = nSCBase-1; olit > pit; olit-- ){
@@ -194,7 +196,7 @@ void KUCMSAodSkimmer::processJets(){
 			//if( not (*Photon_pixelSeed)[pit] ){
 			//if( pid == 22 ){
             //if( pid > 0 && pid < 33 ){
-            if( pid > -1 ){ peng < 50; 
+            if( pid > -1 ){
 				if( pid == 11 ){
 					float dx = (*SuperCluster_clcx)[pit] - PV_x;
 					float dy = (*SuperCluster_clcy)[pit] - PV_y;

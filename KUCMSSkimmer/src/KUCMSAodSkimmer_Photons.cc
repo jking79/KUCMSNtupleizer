@@ -125,8 +125,8 @@ void KUCMSAodSkimmer::processPhotons(){
     /////////// skip all excluded photons ///////////////////////////////////
     //---------------------------------------------------
 
-    //if( isExcluded ){ isBaseLinePho.push_back(false); continue; }
-    if( isExcluded ) continue;
+    if( isExcluded ){ isBaseLinePho.push_back(false); continue; }
+    //if( isExcluded ) continue;
 
     //---------------------------------------------------
     ///////////  processing SC rechit info for  time/res/sig ////////////////////////////////////////////////////////////
