@@ -296,10 +296,11 @@ class ItemManager {
 
     T operator()( std::string key );
 
+    bool valid( std::string key );
+
     private:
 
     std::map< std::string, C<T> > items;
-    bool valid( std::string key );
 
 };//<<>>class ItemManager 
 

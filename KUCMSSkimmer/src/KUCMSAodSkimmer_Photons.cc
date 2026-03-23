@@ -83,6 +83,7 @@ void KUCMSAodSkimmer::processPhotons(){
   uInt nNonPromptphotons = 0;
   allphoBaseline.clear();
   allphowtime.clear();
+  allphominjetdr.clear();
   //Time sigma window cut values
   float earlyTimeCut = -2.5;
   float lateTimeCut = 2.5;
@@ -369,12 +370,7 @@ void KUCMSAodSkimmer::processPhotons(){
 
       auto jeta = (*Jet_eta)[jit];
       auto jphi = (*Jet_phi)[jit];
-
-      float dpjeta = jeta - eta;
-      float dpjphi = dPhi( jphi, phi );
-      float dr = hypo( dpjeta, dpjphi );
-      bool minDr = dr < 0.4;
-      if( minDr ){ minJetDr = 0; break; }
+	  float dr = dR1( eta, phi, jeta, jphi );
       if( dr < minJetDr ) minJetDr = dr;
 
     } // for( int jit = 0; jit < nSelJets; jit++ )
@@ -541,6 +537,7 @@ void KUCMSAodSkimmer::processPhotons(){
     //---------------------------------------------------
 
 	allphoBaseline.push_back( in_base_selection );
+    allphominjetdr.push_back( minJetDr );
     selPhotons.fillBranch( "photon_baseline", in_base_selection );   //!
     selPhotons.fillBranch( "photon_WTimeSig", phoWTimeSig );
     selPhotons.fillBranch( "photon_WTime", phoWTime );
@@ -894,12 +891,13 @@ void KUCMSAodSkimmer::processPhotons(){
       auto overMaxJEta = std::abs(jeta) > 2.4;
       if( underMinJPt || underMinJQual || overMaxJEta ) continue;
 
-      float dpjeta = jeta - eta;
-      float dpjphi = dPhi( jphi, phi );
-      float dr = hypo( dpjeta, dpjphi );
-      bool minDr = dr < 0.4;
+      //float dpjeta = jeta - eta;
+      //float dpjphi = dPhi( jphi, phi );
+      //float dr = hypo( dpjeta, dpjphi );
+      float dr = dR1( eta, phi, jeta, jphi );
+      //bool minDr = dr < 0.4;
       //if( minDr ) isJetPhoton = true;
-      if( minDr ) phoJetVeto[jit] = true;
+      if( dr < 0.4 ) phoJetVeto[jit] = true;
 
     } // for( int jit = 0; jit < nSelJets; jit++ )
 
