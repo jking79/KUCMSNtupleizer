@@ -203,15 +203,9 @@ void KUCMSAodSkimmer::processSV(){
   selSV.fillBranch( "passNLepGe2SelectionCRLoose", bool(nHadPassCR<1 && nLepPassCR>1 && !anyInSR));
   selSV.fillBranch( "passGe1HadAndLepSelectionCRLoose", bool(nHadPassCR>0 && nLepPassCR>0 && !anyInSR));
   //Flags final	state CR Tight
-<<<<<<< HEAD
   selSV.fillBranch( "passNHad1SelectionCRTight", bool(nHadPassCRTight==1 && nHadPassCR==1 && nLepPassCR<1 && !anyInSR));
   selSV.fillBranch( "passNHadGe2SelectionCRTight", bool(nHadPassCRTight>1 && nLepPassCR<1 && !anyInSR));
   selSV.fillBranch( "passNLep1SelectionCRTight", bool(nHadPassCR<1 && nLepPassCRTight==1 && nLepPassCR==1 && !anyInSR));
-=======
-  selSV.fillBranch( "passNHad1SelectionCRTight", bool(nHadPassCRTight==1 && nLepPassCR<1 && !anyInSR));
-  selSV.fillBranch( "passNHadGe2SelectionCRTight", bool(nHadPassCRTight>1 && nLepPassCR<1 && !anyInSR));
-  selSV.fillBranch( "passNLep1SelectionCRTight", bool(nHadPassCR<1 && nLepPassCRTight==1 && !anyInSR));
->>>>>>> 4a91bc7 (Pre Merge Master with new SV module)
   selSV.fillBranch( "passNLepGe2SelectionCRTight", bool(nHadPassCR<1 && nLepPassCRTight>1 && !anyInSR));
   selSV.fillBranch( "passGe1HadAndLepSelectionCRTight", bool(nHadPassCRTight>0 && nLepPassCRTight>0 && !anyInSR));
   //Flags final	state SR Loose
@@ -221,15 +215,9 @@ void KUCMSAodSkimmer::processSV(){
   selSV.fillBranch( "passNLepGe2SelectionSRLoose", bool(nHadPassSR<1 && nLepPassSR>1));
   selSV.fillBranch( "passGe1HadAndLepSelectionSRLoose", bool(nHadPassSR>0 && nLepPassSR>0));
   //Flags final state SR Tight
-<<<<<<< HEAD
   selSV.fillBranch( "passNHad1SelectionSRTight", bool(nHadPassSRTight==1 && nHadPassSR==1 && nLepPassSR<1));
   selSV.fillBranch( "passNHadGe2SelectionSRTight", bool(nHadPassSRTight>1 && nLepPassSR<1));
   selSV.fillBranch( "passNLep1SelectionSRTight", bool(nHadPassSR<1 && nLepPassSRTight==1 && nLepPassSR==1));
-=======
-  selSV.fillBranch( "passNHad1SelectionSRTight", bool(nHadPassSRTight==1 && nLepPassSR<1));
-  selSV.fillBranch( "passNHadGe2SelectionSRTight", bool(nHadPassSRTight>1 && nLepPassSR<1));
-  selSV.fillBranch( "passNLep1SelectionSRTight", bool(nHadPassSR<1 && nLepPassSRTight==1));
->>>>>>> 4a91bc7 (Pre Merge Master with new SV module)
   selSV.fillBranch( "passNLepGe2SelectionSRTight", bool(nHadPassSR<1 && nLepPassSRTight>1));
   selSV.fillBranch( "passGe1HadAndLepSelectionSRTight", bool(nHadPassSRTight>0 && nLepPassSRTight>0));
 
