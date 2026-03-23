@@ -361,6 +361,25 @@ void KUCMSAodSkimmer::processPhotons(){
     }//if( doGenInfo )
 
     //---------------------------------------------------
+    ///////////  find nearest jet  ////////////////////////////////////////////////////////////////////
+    //---------------------------------------------------
+
+	float minJetDr = 99;
+    for( int jit = 0; jit < Jet_energy->size(); jit++ ){
+
+      auto jeta = (*Jet_eta)[jit];
+      auto jphi = (*Jet_phi)[jit];
+
+      float dpjeta = jeta - eta;
+      float dpjphi = dPhi( jphi, phi );
+      float dr = hypo( dpjeta, dpjphi );
+      bool minDr = dr < 0.4;
+      if( minDr ){ minJetDr = 0; break; }
+      if( dr < minJetDr ) minJetDr = dr;
+
+    } // for( int jit = 0; jit < nSelJets; jit++ )
+
+    //---------------------------------------------------
     ///////////  saving hem region info  ////////////////////////////////////////////////////////////////////
     //---------------------------------------------------
 
@@ -534,6 +553,7 @@ void KUCMSAodSkimmer::processPhotons(){
     selPhotons.fillBranch( "photon_PixSeed", hasPixSeed );
     selPhotons.fillBranch( "photon_isoANNScore", isobkg_score );
     selPhotons.fillBranch( "photon_beamHaloCNNScore", bh_score );
+    selPhotons.fillBranch( "photon_minJetDr", minJetDr );
 
     ///////////  Very Loose Base Photon selection ////////////////////////////////////////////////////////////////////
     //---------------------------------------------------
@@ -660,6 +680,7 @@ void KUCMSAodSkimmer::processPhotons(){
     selPhotons.fillBranch("baseLinePhoton_spikeCR",spikecr);
     selPhotons.fillBranch("baseLinePhoton_GJetsCR",gjetscr);
     selPhotons.fillBranch("baseLinePhoton_DiJetsCR",dijetscr);
+    selPhotons.fillBranch("baseLinePhoton_minJetDr",minJetDr);
 
     //---------------------------------------------------------------------------
     //  get Photon isolation information
@@ -965,9 +986,6 @@ void KUCMSAodSkimmer::processPhotons(){
   selPhotons.fillBranch("passNPhoEq1SelectionPromptTightIsoSR", bool(nBHphotons == 0 && eq0nonprompt && nTightIsophotons == 1));
   selPhotons.fillBranch("passNPhoEq2SelectionPromptTightIsoSR", bool(nBHphotons == 0 && eq0nonprompt && nTightIsophotons == 2));
 
-
-
-
   //---------------------------------------------------------------------------
   //  saving photon information for rjr
   //---------------------------------------------------------------------------
@@ -1131,6 +1149,7 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch("baseLinePhoton_spikeCR",VBOOL);
   selPhotons.makeBranch("baseLinePhoton_GJetsCR",VBOOL);
   selPhotons.makeBranch("baseLinePhoton_DiJetsCR",VBOOL);
+  selPhotons.makeBranch("baseLinePhoton_minJetDr",VFLOAT);
 
   selPhotons.makeBranch("passNPhoGe1SelectionBeamHaloCR", BOOL);
   selPhotons.makeBranch("passNPhoEq1SelectionBeamHaloCR", BOOL);
@@ -1223,6 +1242,7 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch( "photon_PixSeed", VBOOL );
   selPhotons.makeBranch( "photon_isoANNScore", VFLOAT );
   selPhotons.makeBranch( "photon_beamHaloCNNScore", VFLOAT );
+  selPhotons.makeBranch( "photon_minJetDr", VFLOAT );
 
   // add new photon branches above
   selPhotons.attachBranches( fOutTree );
@@ -1364,7 +1384,6 @@ bool KUCMSAodSkimmer::GetGJetsCR(int phoidx){
     float jet_sys_pt = sqrt(j_px*j_px + j_py*j_py);
     float ptasym = std::min(pho_pt, jet_sys_pt) / std::max(pho_pt, jet_sys_pt);
     if(ptasym < 0.6) return false;
-	if( isBaseLinePho[phoidx] ) phoidx = -1;
 	if( gammaJetIndex[0] < 0 ){ gammaJetIndex[0] = phoidx; gammaJetIndex[1] = nJets; }
     return true;
 

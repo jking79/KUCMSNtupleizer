@@ -58,12 +58,34 @@ void KUCMSAodSkimmer::processJets(){
   std::vector<float> alljetpixwtenergy;
 
   uInt nSCBase = SuperCluster_excluded->size();
-  std::vector<bool> usedsc;
-  std::vector<bool> scskip;
-  for( uInt pit = 0; pit < nSCBase; pit++ ){ scskip.push_back(false); usedsc.push_back(false);}
+  std::vector<bool> usedsc( nSCBase, false );
+  //std::vector<bool> scskip( nSCBase, false );
+  std::vector<bool> sckeep(nSCBase, false);
+  std::vector<uInt> kept;
+  kept.reserve(nSCBase);
+  std::vector<uInt> order(nSCBase);
+  std::iota(order.begin(), order.end(), 0);
+  std::sort(order.begin(), order.end(), [&](uInt a, uInt b){ float ea = (*SuperCluster_energy)[a]; float eb = (*SuperCluster_energy)[b];
+        	if( ea != eb ) return ea > eb; return a < b; } );
+
+  //for( uInt pit = 0; pit < nSCBase; pit++ ){ scskip.push_back(false); usedsc.push_back(false);}
+  for( uInt idx : order ){
+	bool overlaps_kept = false;
+    for( uInt jdx : kept ){
+        if( getOverLapCnt((*SuperCluster_rhIds)[idx], (*SuperCluster_rhIds)[jdx]) > 0 ){
+            overlaps_kept = true;
+            break;
+        }//<<>>if( getOverLapCnt((*SuperCluster_rhIds)[idx], (*SuperCluster_rhIds)[jdx]) > 0 )
+    }//<<>>for( uInt jdx : kept )
+    if( !overlaps_kept ){ sckeep[idx] = true; kept.push_back(idx);}
+  }//<<>>for( uInt idx : order )
+
+/*
   for( uInt pit = 0; pit < nSCBase; pit++ ){
+	if( scskip[pit] ) continue;
     float peng = (*SuperCluster_energy)[pit];
-    for( uInt olit = nSCBase-1; olit > pit; olit-- ){
+	for( uInt olit = pit + 1; olit < nSCBase; ++olit ){
+		if( scskip[olit] ) continue;
         float oeng = (*SuperCluster_energy)[olit];
         int nol = getOverLapCnt( (*SuperCluster_rhIds)[pit], (*SuperCluster_rhIds)[olit] );
 		//int oid = (*SuperCluster_ObjectPdgId)[olit];
@@ -71,6 +93,7 @@ void KUCMSAodSkimmer::processJets(){
         if( nol > 0 ){ if(  peng > oeng ) scskip[olit] = true; else scskip[pit] = true; }
     }//<<>>for( uInt pitt = 0; pitt < nPhotons; pitt++ )
   }//<<>>for( uInt pit = 0; pit < nSCBase; pit++ )
+*/
 
   alljetwtime.clear();
   if( DEBUG ) std::cout << " - Looping over for " << nJets << " jets" << std::endl;
@@ -152,13 +175,14 @@ void KUCMSAodSkimmer::processJets(){
 	std::vector<float> eledelay;
     //uInt nSCBase = Photon_excluded->size();
     //uInt nSCBase = SuperCluster_excluded->size();
-	std::vector<bool> scskip;
-	for( uInt pit = 0; pit < nSCBase; pit++ ){ scskip.push_back(false); }
+	//std::vector<bool> scskip;
+	//for( uInt pit = 0; pit < nSCBase; pit++ ){ scskip.push_back(false); }
 	int nPhoInJet = ( nSCBase > 0 ) ? 0 : -1;
     int nPhoInPixJet = ( nSCBase > 0 ) ? 0 : -1;
     for( uInt pit = 0; pit < nSCBase; pit++ ){ 
 
-		if( scskip[pit] ) continue;
+		//if( scskip[pit] ) continue;
+        if( not sckeep[pit] ) continue;
         if( usedsc[pit] ) continue;
 
         if( (*SuperCluster_isOot)[pit] ) continue;
@@ -169,7 +193,7 @@ void KUCMSAodSkimmer::processJets(){
         float peta = (*SuperCluster_eta)[pit];
         float pphi = (*SuperCluster_phi)[pit];
         float peng = (*SuperCluster_energy)[pit];
-        float pid = (*SuperCluster_ObjectPdgId)[pit];
+        int pid = (*SuperCluster_ObjectPdgId)[pit];
         auto trkindxs = (*SuperCluster_TrackIndx)[pit];
         int trkindx = ( trkindxs.size() > 0 ) ? trkindxs[0] : -1;
 
