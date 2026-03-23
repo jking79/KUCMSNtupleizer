@@ -36,7 +36,7 @@ options.register('runMETFilters',False,VarParsing.multiplicity.singleton,VarPars
 #options.register('globalTag','106X_upgrade2018_realistic_v11_L1v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','94X_mc2017_realistic_v11',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for sig22 MC');
-#options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
+options.register('globalTag','124X_mcRun3_2022_realistic_v12',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for sig22 MC');
 #options.register('globalTag','130X_mcRun3_2023_realistic_v14',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','133X_mcRun3_2024_realistic_v10',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','94X_mc2017_realistic_v14',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for GMSB MC');
@@ -44,7 +44,7 @@ options.register('runMETFilters',False,VarParsing.multiplicity.singleton,VarPars
 #options.register('globalTag','140X_dataRun3_v17',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for R3 22,23');
 
 ##------------------ data gt  
-options.register('globalTag','106X_dataRun2_v36',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
+#options.register('globalTag','106X_dataRun2_v36',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 ##options.register('globalTag','106X_dataRun2_v28',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 #options.register('globalTag','124X_dataRun3_v15',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2022');
 #options.register('globalTag','140X_dataRun3_v17',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
@@ -65,7 +65,8 @@ options.parseArguments()
 
 ## Define the CMSSW process
 #runera = "Run3"  # current siganl model   !!!!!!!!  Run3 must be in CMSSW 14 or 15
-runera = "Run2_2018" # BG models
+runera = "Run3_2022"
+#runera = "Run2_2018" # BG models
 if options.multicrab == True : runera = options.runera
 
 from Configuration.StandardSequences.Eras import eras
@@ -152,7 +153,7 @@ process.source = cms.Source("PoolSource",
         #######'file:root_files/Met_UL18B_AOD_973EEF0C-44AB-E94A-8591-04DCD00D8B4B.root',
         ##'file:root_files/R22D_JetMet_mini_1f4a97f7-de76-4ee1-a380-0d9d7a5914d2.root',
         # MiniAOD 2018UL MET
-        'file:root_files/UL18_mini_MET_76190182-C845-2B40-A3F1-FA9FDAB9F7EC.root',
+        #'file:root_files/UL18_mini_MET_76190182-C845-2B40-A3F1-FA9FDAB9F7EC.root',
         ######'file:root_files/WJets_72B9C618-FE23-1E41-872E-57314D7CB454.root',
         #'root://cmsxrootd.fnal.gov//store/data/Run2018B/JetHT/MINIAOD/15Feb2022_UL2018-v1/2820000/84DEEA91-CF7B-C24B-831D-7D993EB56D8D.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2018D/MET/MINIAOD/15Feb2022_UL2018-v1/510000/F5E0C00B-109F-5C4D-92F9-6D9F57EBE8C5.root',
@@ -161,7 +162,12 @@ process.source = cms.Source("PoolSource",
         #'root://cmsxrootd.fnal.gov//store/data/Run2018B/JetHT/MINIAOD/15Feb2022_UL2018-v1/2820000/84DEEA91-CF7B-C24B-831D-7D993EB56D8D.root',
         # MC - Sig
         #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_MINI/260203_235322/0000/SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_MiniAODv4_99.root',
-
+        #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p5_MINI/260317_213825/0000/SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p5_MiniAODv4_18.root',
+        #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2500_mN2-1200_mN1-500_GZ_N2ctau-0p5_MINI/260317_214117/0000/SMS-GlGl_mGl-2500_mN2-1200_mN1-500_GZ_N2ctau-0p5_MiniAODv4_22.root',
+        #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2500_mN2-2450_mN1-2350_GZ_N2ctau-0p5_MINI/260317_214430/0000/SMS-GlGl_mGl-2500_mN2-2450_mN1-2350_GZ_N2ctau-0p5_MiniAODv4_54.root',
+        #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2300_mN2-2250_mN1-2200_GZ_N2ctau-0p5_MINI/260203_235206/0000/SMS-GlGl_mGl-2300_mN2-2250_mN1-2200_GZ_N2ctau-0p5_MiniAODv4_82.root',
+        #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2300_mN2-2200_mN1-2150_GZ_N2ctau-0p5_MINI/260317_213954/0000/SMS-GlGl_mGl-2300_mN2-2200_mN1-2150_GZ_N2ctau-0p5_MiniAODv4_108.root',
+        'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2500_mN2-2450_mN1-2350_GZ_N2ctau-0p5_MINI/260317_214430/0000/SMS-GlGl_mGl-2500_mN2-2450_mN1-2350_GZ_N2ctau-0p5_MiniAODv4_54.root',
         ),##<<>>fileNames = cms.untracked.vstring
         secondaryFileNames=cms.untracked.vstring()
         #skipEvents=cms.untracked.uint32(300),
@@ -170,14 +176,14 @@ process.source = cms.Source("PoolSource",
 ## How many events to process
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
 
-#genInfo = True
-genInfo = False
+genInfo = True
+#genInfo = False
 if options.multicrab == True : genInfo = options.hasGenInfo		   
 
 ecalIsoInputsF17 = 'RecoEgamma/ElectronIdentification/data/Fall17/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_94X.txt'
@@ -344,7 +350,7 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizerMini",
                               pileups = cms.InputTag("slimmedAddPileupInfo", ""),
                               #Phoronpileups = cms.InputTag("mixData", ""),
                               genParticles = cms.InputTag("packedGenParticles",""),
-                              genPartPruned = cms.InputTag("prunedGenParticles",""),
+                              genPartPruned = cms.InputTag("prunedGenParticles","","PAT"),
                               genjets = cms.InputTag("slimmedGenJets","")
                               
 )##<<>>process.tree = cms.EDAnalyzer("LLPgammaAnalyzer_aod"
