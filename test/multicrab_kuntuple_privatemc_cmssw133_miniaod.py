@@ -159,7 +159,7 @@ def docrab( dataset ):
             geninfo = 'hasGenInfo=True'
             mcrab = 'multicrab=True'
 
-            runinfo = 'runera=Run3'
+            runinfo = 'runera=Run3_2022'
             doMetFilters = 'runMETFilters=True'
 
             mNoSV = 'doSV=False'            
@@ -203,7 +203,7 @@ def docrab( dataset ):
 #>>>>>      #MC Justin
             gt = 'globalTag=124X_mcRun3_2022_realistic_v12'
             #gt = 'globalTag=124X_mcRun3_2022_realistic_postEE_v1'
-            config.JobType.pyCfgParams   = [gt,mcrab,geninfo,efilter,runinfo,mNoSV]
+            config.JobType.pyCfgParams   = [gt,mcrab,geninfo,efilter,runinfo]
 #-----------------------------------------------------------------------------------------------------------------------------
 
             # Submit.
