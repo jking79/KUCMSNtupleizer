@@ -84,7 +84,7 @@ def generateSubmission(args):
             #    continue
             if args.inputSample not in data[1]:
                 continue
-            if args.mini:
+            if not args.aod: #if default false
                 if "MINI" not in data[1]:
                     continue
             else:
@@ -216,7 +216,7 @@ def main():
     parser.add_argument('--mN2',help='neutralino2 mass for signal',default='')
     parser.add_argument('--mN1',help='neutralino1 mass for signal',default='')
     parser.add_argument('--ctau',help='ctau (only for gogoZ and gogoGZ samples)',default='')
-    parser.add_argument('--filter',help='filter that was used for ntuple creation',default='SVIPM100')
+    parser.add_argument('--filter',help='filter that was used for ntuple creation',default='SVHPM100')
     parser.add_argument('--output','-o',help='output label',default=None)
     #parser.add_argument('--split','-s',help="condor job split",default=0,type=int)
     parser.add_argument('--maxnevts',help="maximum number of events per job",default=-999,type=int)
@@ -228,7 +228,7 @@ def main():
     parser.add_argument('--noSV',help='do not run SV collection',default=False,action="store_true")
     #parser.add_argument('--noSVorPho',help='set noSVorPho flag',default=False,action="store_true")
     parser.add_argument('--fast',help='run over fastsim aod ntuples',default=False,action='store_true')
-    parser.add_argument('--mini',help='run over miniaod ntuples',default=False,action='store_true')
+    parser.add_argument('--aod',help='run over aod ntuples',default=False,action='store_true')
     parser.add_argument('--noSmear',help='run master list with null calib/smear tag',default=False,action='store_true')
     parser.add_argument('--HLTPathsOff',help='turn off HLT paths',default=False,action='store_true')
     args = parser.parse_args()
