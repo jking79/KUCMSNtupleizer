@@ -100,7 +100,7 @@ def generateSubmission(args):
                 continue
             if year != "" and year not in data[1]:
                 continue
-            if args.era != "" and args.era not in data[1]:
+            if args.era != "" and "Run"+args.year+args.era not in data[1]:
                 continue
             if args.slice != "" and args.slice != "" not in data[1]:
                 continue
