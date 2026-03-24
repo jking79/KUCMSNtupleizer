@@ -59,8 +59,8 @@ def docrab( dataset ):
 
         # External files needed by CRAB
         #inputJSON    = 'certifications/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt'
-        #inputJSON    = 'certifications/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt'
-        inputJSON    = 'certifications/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt'
+        inputJSON    = 'certifications/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt'
+        #inputJSON    = 'certifications/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt'
         #inputJSON    = 'certifications/Cert_Collisions2022_355100_362760_Golden.json'	
         #inputJSON    = 'certifications/Cert_Collisions2023_366442_370790_Golden.json'
 
@@ -152,7 +152,8 @@ def docrab( dataset ):
             ##trial          = "kucmsntuple_EGamma_R18_AL1SelEle_DEOnly" + version #
 
             #trial          = "kucmsntuple_JetMET_R22_SVHPM100_MiniAOD" + version #  
-            trial          = "kucmsntuple_MET_R18_SVHPM100_MiniAOD" + version #  
+            #trial          = "kucmsntuple_MET_R18_SVHPM100_MiniAOD" + version #  
+            trial          = "kucmsntuple_MET_R17_SVHPM100_MiniAOD" + version #  
             #trial          = "kucmsntuple_MET_R17_SVIPM100_p8" + version #  
             #####trial          = "kucmsntuple_JETMET_R24_SVIPM100" + version # 
 
@@ -219,8 +220,8 @@ def docrab( dataset ):
 #>>>>>>>>>>>>>>>>>>>     #2017UL 
 #>>>>>>>>>>>>>>>>>>>     #2018UL #globalTag=106X_dataRun2_v37 # https://twiki.cern.ch/twiki/bin/view/CMS/PdmVRun2LegacyAnalysis
             gt = 'globalTag=106X_dataRun2_v37'
-            runinfo = 'runera=Run2_2018'
-            #runinfo = 'runera=Run2_2017'
+            #runinfo = 'runera=Run2_2018'
+            runinfo = 'runera=Run2_2017'
             #runinfo = 'runera=Run2_2016'
             config.JobType.pyCfgParams   = [gt,mcrab,efilter,runinfo]
             ###config.JobType.pyCfgParams   = [gt,mcrab,efilter,mDoETOnly]
@@ -289,19 +290,25 @@ def run_multi():
 
     runDataset = [
 
-        ['/MET/Run2018A-15Feb2022_UL2018-v1/MINIAOD',1],
-        ['/MET/Run2018B-15Feb2022_UL2018-v1/MINIAOD',1],
-        ['/MET/Run2018C-15Feb2022_UL2018-v1/MINIAOD',1],
-        ['/MET/Run2018D-15Feb2022_UL2018-v1/MINIAOD',1],
-        #['/MET/Run2017A-09Aug2019_UL2017_rsb-v1/MINIAOD',1],
-        #['/MET/Run2017B-09Aug2019_UL2017_rsb-v1/MINIAOD',1],
-        #['/MET/Run2017C-09Aug2019_UL2017_rsb-v1/MINIAOD',1],
-        #['/MET/Run2017D-09Aug2019_UL2017_rsb-v1/MINIAOD',1],
-        #['/MET/Run2017E-09Aug2019_UL2017_rsb-v1/MINIAOD',1],
-        #['/MET/Run2017F-09Aug2019_UL2017_rsb-v1/MINIAOD',1],
+        #['/MET/Run2018A-15Feb2022_UL2018-v1/MINIAOD',1],
+        #['/MET/Run2018B-15Feb2022_UL2018-v1/MINIAOD',1],
+        #['/MET/Run2018C-15Feb2022_UL2018-v1/MINIAOD',1],
+        #['/MET/Run2018D-15Feb2022_UL2018-v1/MINIAOD',1],
+
+        ['/MET/Run2017B-09Aug2019_UL2017_rsb-v1/MINIAOD',1],
+        ['/MET/Run2017C-09Aug2019_UL2017_rsb-v1/MINIAOD',1],
+        ['/MET/Run2017D-09Aug2019_UL2017_rsb-v1/MINIAOD',1],
+        ['/MET/Run2017E-09Aug2019_UL2017_rsb-v1/MINIAOD',1],
+        ['/MET/Run2017F-09Aug2019_UL2017_rsb-v1/MINIAOD',1],
+
+        # check this list
+        #['/MET/Run2016B-21Feb2020_ver1_UL2016_HIPM-v1/MINIAOD',1],
         #['/MET/Run2016B-21Feb2020_ver2_UL2016_HIPM-v1/MINIAOD',1],
         #['/MET/Run2016C-21Feb2020_UL2016_HIPM-v1/MINIAOD',1],
         #['/MET/Run2016D-21Feb2020_UL2016_HIPM-v1/MINIAOD',1],
+        #['/MET/Run2016E-21Feb2020_UL2016_HIPM-v1/MINIAOD',1],
+        #['/MET/Run2016F-21Feb2020_UL2016_HIPM-v1/MINIAOD',1],
+        #['/MET/Run2016F-21Feb2020_UL2016-v1/MINIAOD',1],
         #['/MET/Run2016G-21Feb2020_UL2016-v1/MINIAOD',1],
         #['/MET/Run2016H-21Feb2020_UL2016-v2/MINIAOD',1],
 

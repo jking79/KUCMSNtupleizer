@@ -351,6 +351,8 @@ void KUCMSMuonObjectMini::ProcessEvent( ItemManager<float>& geVar ){
     }//<<>>if( cfFlag("hasGenInfo") )
 	Branches.fillBranch("nGenMatch",nGenMatched);
 
+    if( MuonDEBUG ) std::cout << " -- Muon Finished : " << std::endl;
+
 }//<<>>void KUCMSMuon::ProcessEvent()
 
 void KUCMSMuonObjectMini::EndJobs(){}
