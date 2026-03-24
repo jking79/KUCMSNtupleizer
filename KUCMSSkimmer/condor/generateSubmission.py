@@ -117,6 +117,7 @@ def generateSubmission(args):
                     continue
             inputlist = listpath+data[1]
             key = data[2]
+            #print("key",key)
             xsec = data[3]
             gluinomass = 0
             n2mass = 0
