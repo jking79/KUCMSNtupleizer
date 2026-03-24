@@ -346,7 +346,7 @@ void KUCMSAodSkimmer::processPhotons(){
 
 		float cor_gtofPVtoSCSOL = cor_gtofPVtoSC/SOL;
 		labtime = ( distPho + distMom/betamom )/SOL;
-		gentime = timeCali->getSmearedTime( labtime, phoWRes/3.0);
+		gentime = timeCali->getSmearedTime( labtime, phoWRes );
 		labtime -= cor_gtofPVtoSCSOL;
 		gentime -= cor_gtofPVtoSCSOL;
 		labtimesig = labtime/phoWRes;
@@ -374,6 +374,7 @@ void KUCMSAodSkimmer::processPhotons(){
       if( dr < minJetDr ) minJetDr = dr;
 
     } // for( int jit = 0; jit < nSelJets; jit++ )
+	allphominjetdr.push_back( minJetDr );
 
     //---------------------------------------------------
     ///////////  saving hem region info  ////////////////////////////////////////////////////////////////////
@@ -498,6 +499,7 @@ void KUCMSAodSkimmer::processPhotons(){
 	bool standard_selction = not badNRechits and not hasPixSeed and not isExcluded;
     bool underNMaxBasePhos = nBaseRJRPhos < 2;// checks how many RJR photons already found - need to have found less then 2 already
     bool in_base_selection = standard_selction and pass_very_loose_id and underNMaxBasePhos;
+    allphoBaseline.push_back( in_base_selection );
 
     //---------------------------------------------------
     ///////////  saving info on EB/EE photon information ///////////////////////////////////////////////////////
@@ -536,8 +538,6 @@ void KUCMSAodSkimmer::processPhotons(){
     ///////////  saving info for all non excluded photons  ////////////////////////////////////////////////////////////////////
     //---------------------------------------------------
 
-	allphoBaseline.push_back( in_base_selection );
-    allphominjetdr.push_back( minJetDr );
     selPhotons.fillBranch( "photon_baseline", in_base_selection );   //!
     selPhotons.fillBranch( "photon_WTimeSig", phoWTimeSig );
     selPhotons.fillBranch( "photon_WTime", phoWTime );
@@ -1382,6 +1382,7 @@ bool KUCMSAodSkimmer::GetGJetsCR(int phoidx){
     float jet_sys_pt = sqrt(j_px*j_px + j_py*j_py);
     float ptasym = std::min(pho_pt, jet_sys_pt) / std::max(pho_pt, jet_sys_pt);
     if(ptasym < 0.6) return false;
+	if( allphominjetdr[phoidx] < 0.4 ) phoidx = -1;
 	if( gammaJetIndex[0] < 0 ){ gammaJetIndex[0] = phoidx; gammaJetIndex[1] = nJets; }
     return true;
 

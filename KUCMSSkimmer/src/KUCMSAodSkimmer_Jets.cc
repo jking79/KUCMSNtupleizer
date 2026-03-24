@@ -268,6 +268,9 @@ void KUCMSAodSkimmer::processJets(){
     hemBits.set( "jet2hvm", isInHemRegion && hemEligible2 );
     //if( hemEligible && inHEMRegion( eta, phi ) ) hasHemObj = true;
 
+    std::vector<uInt> allJetSCIndexs;
+	for( auto index : scIndexs ){ uInt idx = index;  allJetSCIndexs.push_back( idx ); }
+
 	if( isMinQuality ){
 
     	selJets.fillBranch( "allJetPt", pt);
@@ -280,6 +283,7 @@ void KUCMSAodSkimmer::processJets(){
         selJets.fillBranch( "allJetWTimeSig", jetTimeSig );
         selJets.fillBranch( "allJetWTimeRes", jetTimeRes );
         selJets.fillBranch( "allJetPixNPho", nPhoInPixJet );
+        selJets.fillBranch( "allJetSCIndexs", allJetSCIndexs );
         selJets.fillBranch( "allJetPixWTime", jetPixTime );
         selJets.fillBranch( "allJetPixWTimeSig", jetPixTimeSig );
         selJets.fillBranch( "allJetPixWTimeRes", jetPixTimeRes );
@@ -404,7 +408,7 @@ void KUCMSAodSkimmer::processJets(){
   float gammatime = ( gammaJetIndex[0] > -1 ) ? allphowtime[gammaJetIndex[0]] : -50; 
   bool gammabaseline = ( gammaJetIndex[0] > -1 ) ? allphoBaseline[gammaJetIndex[0]] : false;
   float gammaminjetdr = ( gammaJetIndex[0] > -1 ) ? allphominjetdr[gammaJetIndex[0]] : -1;
-  if( gammabaseline ) gammatime = -40;
+  if( gammaminjetdr < 0.4 ) gammatime = -40;
   float dijet0time = ( diJetIndex[0] > -1 ) ? alljetwtime[diJetIndex[0]] : -50;
   float dijet1time = ( diJetIndex[1] > -1 ) ? alljetwtime[diJetIndex[1]] : -50;
 
@@ -414,6 +418,7 @@ void KUCMSAodSkimmer::processJets(){
   selJets.fillBranch( "pv_dGJTime", digjettime );
   selJets.fillBranch( "pv_dGJPEnergy", pvPEnergy );
   selJets.fillBranch( "pv_dGJMinDr", gammaminjetdr );
+  selJets.fillBranch( "pv_gjPhoIndex", gammaJetIndex[0] );
 
   float totenergy = ( diJetIndex[0] > -1 && diJetIndex[1] > -1 ) ? alljetwtenergy[diJetIndex[0]] + alljetwtenergy[diJetIndex[1]] : -1;
   selJets.fillBranch( "pv_diJet1Time", dijet0time );
@@ -479,6 +484,7 @@ void KUCMSAodSkimmer::setJetsBranches( TTree* fOutTree ){
     selJets.makeBranch( "allJetEta", VFLOAT);
     selJets.makeBranch( "allJetPhi", VFLOAT);
     selJets.makeBranch( "allJetNPho", VINT );
+    selJets.makeBranch( "allJetSCIndexs", VVUINT );
     selJets.makeBranch( "allJetWTime", VFLOAT );
     selJets.makeBranch( "allJetWTimeSig", VFLOAT );
     selJets.makeBranch( "allJetWTimeRes", VFLOAT );
@@ -492,6 +498,7 @@ void KUCMSAodSkimmer::setJetsBranches( TTree* fOutTree ){
   	selJets.makeBranch( "pv_gjGammaTime", VFLOAT );
   	selJets.makeBranch( "pv_gjJetTime", VFLOAT );
  	selJets.makeBranch( "pv_dGJTime", VFLOAT );
+    selJets.makeBranch( "pv_gjPhoIndex", VINT );
     selJets.makeBranch( "pv_dGJMinDr", VFLOAT );
   	selJets.makeBranch( "pv_diJet1Time", VFLOAT );
   	selJets.makeBranch( "pv_diJet2Time", VFLOAT );
