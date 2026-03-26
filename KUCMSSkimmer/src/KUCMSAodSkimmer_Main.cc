@@ -264,7 +264,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 
   doGenInfoBase = false;
   doSVsBase = true;
-  doNewSigBase = false;
+  doNewSigBase = true; // for internal setting of flag - does not change in general;
   doHTLPathsBase = true;
 
   // -----------  Time Calibration -----------------
@@ -336,7 +336,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
     sumEvtGenWgt = 0;
 	setGenInfoBase(hasGenInfoFlag); 
 	setDoSVsBase(doSVs);
-	setNewSigBase(false);
+	setNewSigBase(true);
 	setHTLPathsBase(false);
 
   	diJetIndex = {-1,-1};
@@ -1237,6 +1237,13 @@ void KUCMSAodSkimmer::initHists(){
 
     hist1d[20] = new TH1D("erhnamps","Pho SC Nomilized RH Ampsig;Norm Ampsig",100,0,1);
     hist1d[21] = new TH1D("nlwts","Norm leadPho WTimeSig (data ms< 1000);WTimeSig",500,-25,25);
+
+    hist1d[30] = new TH1D("phowtime","Photon Wt Time;Time [ns];a.u.",400,-20,20);
+    hist1d[31] = new TH1D("phogeotime","Photon Geo Time;Time [ns];a.u.",400,-20,20);
+    hist1d[32] = new TH1D("phogentime","Photon Gen Time;;Time [ns];a.u.",400,-20,20);
+    hist1d[33] = new TH1D("blphowtime","BL Photon Wt Time;Time [ns];a.u.",400,-20,20);
+    hist1d[34] = new TH1D("blphogeotime","BL Photon Geo Time;Time [ns];a.u.",400,-20,20);
+    hist1d[35] = new TH1D("blphogentime","BL Photon Gen Time;;Time [ns];a.u.",400,-20,20);
 
     ////hist1d[100] = new TH1D("genPhoPt", "genPhoPt;Pt [GeV]",500,0,1000);
 
