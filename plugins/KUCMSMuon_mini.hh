@@ -218,6 +218,7 @@ void KUCMSMuonObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventS
         if( passEnergyCut && passEtaCut ) fmuons.push_back(muon);
     }//<<>>for( const auto muon : *muons_ )
 
+    if( MuonDEBUG ) std::cout << "Finished Collecting Muons" << std::endl;
 
 }//<<>>void KUCMSMuon::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
@@ -329,6 +330,7 @@ void KUCMSMuonObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 
 	if( MuonDEBUG ) std::cout << " -- Muon filling event geninfo : " << std::endl;
     int nGenMatched = 0;
+/* -----  Issues with gen matching in mini with track info, to be fixed ----------------
     if( cfFlag("hasGenInfo") ){
         auto genInfo = genObjs->getGenMuonMatch( scvertex, scptres, sctrks );
         for( auto genidx : genInfo ){
@@ -349,7 +351,9 @@ void KUCMSMuonObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 			Branches.fillBranch("isLWZP", isLWZP );
         }//<<>>for( auto genidx : genInfo )
     }//<<>>if( cfFlag("hasGenInfo") )
+*/
 	Branches.fillBranch("nGenMatch",nGenMatched);
+
 
     if( MuonDEBUG ) std::cout << " -- Muon Finished : " << std::endl;
 

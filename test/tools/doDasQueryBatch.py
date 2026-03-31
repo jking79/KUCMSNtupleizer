@@ -79,7 +79,7 @@ dl2016mc = [
 
 ]
 
-dl2016data = [ 
+dl2016dataOld = [ 
 
     '/MET/Run2016B-21Feb2020_ver2_UL2016_HIPM-v1/AOD', 
     '/MET/Run2016C-21Feb2020_UL2016_HIPM-v1/AOD', 
@@ -613,9 +613,34 @@ dl2023Mini = [
 
 ]
 
+dl2018MCmini = [
+
+    '/GJets_HT-100To200_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-4cores5k_106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',
+    '/GJets_HT-200To400_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',
+    '/GJets_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',
+    '/GJets_HT-40To100_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',
+    '/GJets_HT-600ToInf_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',
+
+]
+
+dl2016data = [
+
+    '/MET/Run2016B-ver1_HIPM_UL2016_MiniAODv2-v2/MINIAOD',
+    '/MET/Run2016B-ver2_HIPM_UL2016_MiniAODv2-v2/MINIAOD',
+    '/MET/Run2016C-HIPM_UL2016_MiniAODv2-v2/MINIAOD',
+    '/MET/Run2016D-HIPM_UL2016_MiniAODv2-v2/MINIAOD',
+    '/MET/Run2016E-HIPM_UL2016_MiniAODv2-v2/MINIAOD',
+    '/MET/Run2016F-HIPM_UL2016_MiniAODv2-v2/MINIAOD',
+    '/MET/Run2016F-UL2016_MiniAODv2-v2/MINIAOD',
+    '/MET/Run2016G-UL2016_MiniAODv2-v2/MINIAOD',
+    '/MET/Run2016H-UL2016_MiniAODv2-v2/MINIAOD',
+
+]
+
+
 query = 'dasgoclient --json -query=\'dataset='
 
-datalist = dl2023Mini
+datalist = dl2016data
 
 for data in datalist :
     
@@ -623,8 +648,8 @@ for data in datalist :
     #output = bashout( command ).splitlines()
     #output = bashout( command ).split('size":')
     #output = bashout( command ).split('num_lumi":')
-    output = bashout( command ).split('files":')
-    #output = bashout( command ).split('events":')
+    #output = bashout( command ).split('files":')
+    output = bashout( command ).split('events":')
     #fir = output[1].split('size":')[0]
     #sec = output[1].split('size":')[1] 
     #.split('}],')[0]

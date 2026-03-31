@@ -164,7 +164,7 @@ float KUCMSAodSkimmer::getTimeSig( const std::vector<int>& scIndexs, float& num,
         auto rhids = (*SuperCluster_rhIds)[scIndex];
         int nSCRecHits = rhids.size();
 		float adjust = ( eledelay.size() > 0 ) ? eledelay[scIndex] : 0;
-		if( nSCRecHits < 5 ) continue;
+		if( nSCRecHits < 3 ) continue;
         for( int sciter = 0; sciter < nSCRecHits; sciter++  ){
             auto scrhid = rhids[sciter];
             int erhiter = ( rhIDtoIterMap.find(scrhid) != rhIDtoIterMap.end() ) ? rhIDtoIterMap[scrhid] : -1;
