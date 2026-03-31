@@ -53,9 +53,18 @@ void KUCMSAodSkimmer::processSV(){
   int nHadPassZWindow(0);
   int nElePassZWindow(0);
   int nMuPassZWindow(0);
-  //Final State Counters
+  //Final State Counters -- Standard region (hadronic: ntracks>=5, mass/ntracks>1)
   int nLepPassCR(0), nLepPassSR(0), nLepPassCRTight(0), nLepPassSRTight(0);
   int nHadPassCR(0), nHadPassSR(0), nHadPassCRTight(0), nHadPassSRTight(0);
+  //Final State Counters -- Compressed region (hadronic: ntracks>=4, mass>=10; leptonic: cosTheta>=-0.5)
+  int nHadCmpPassCR(0), nHadCmpPassSR(0);
+  int nLepCmpPassCR(0), nLepCmpPassSR(0);
+  //dxySig tightening counters (>= previous threshold of 1000)
+  int nHadStdDxySigGeq1000(0), nLepStdDxySigGeq1000(0);
+  int nHadCmpDxySigGeq1000(0), nLepCmpDxySigGeq1000(0);
+  //dxy tightening counters (>= previous baseline of 2 cm)
+  int nHadStdDxyGeq2(0), nLepStdDxyGeq2(0);
+  int nHadCmpDxyGeq2(0), nLepCmpDxyGeq2(0);
   
   if( doEVSVs ){
     for( int svit = 0; svit < nSVs; svit++ ){
@@ -69,16 +78,17 @@ void KUCMSAodSkimmer::processSV(){
       const uInt ntracks((*Vertex_nTracks)[svit]);
       const bool peleid((*Vertex_passLooseElectronID)[svit]);
       const bool pmuonid((*Vertex_passLooseMuonID)[svit]);
-
+      const bool hadronicId(mass/ntracks > 1 && ntracks>3);
+      
       ROOT::Math::XYZVectorF vec3D(x, y, z);
       const float etaOrigin(vec3D.eta());
 
       // Apply baseline selection
-      if(dxy < 2 || (dxy < 15 && fabs(z) > 15) || (dxy > 15 && fabs(etaOrigin) > 1.) || cosTheta > 0.995)
+      if(dxy < 1 || (dxy < 15 && fabs(z) > 15) || (dxy > 15 && fabs(etaOrigin) > 1.) || cosTheta > 0.995 || cosTheta <= -0.8)
 	continue;
       
       MaterialVeto vetoTool("fullMask60cm_Data.root");
-      const bool tightOnZSelection((peleid && mass > 60) || (pmuonid && mass > 70) || (ntracks >= 5 && mass > 20 && mass/ntracks > 1));
+      const bool tightOnZSelection((peleid && mass > 60) || (pmuonid && mass > 70) || (ntracks >= 5 && mass > 20 && hadronicId));
 
       string svType;
       
@@ -87,7 +97,7 @@ void KUCMSAodSkimmer::processSV(){
 	if( peleid || pmuonid ) {
 	  nLsv++;
 
-	  if(dxySig < 1000) {
+	  if(dxySig < 500) {
 	    nLepPassCR++;
 	    if(tightOnZSelection)
 	      nLepPassCRTight++;
@@ -96,6 +106,15 @@ void KUCMSAodSkimmer::processSV(){
 	    nLepPassSR++;
 	    if(tightOnZSelection)
               nLepPassSRTight++;
+	  }
+	  if(dxySig >= 1000) nLepStdDxySigGeq1000++;
+	  if(dxy >= 2)       nLepStdDxyGeq2++;
+	  // Compressed leptonic: additional cosTheta >= -0.5 cut
+	  if(cosTheta >= -0.5) {
+	    if(dxySig < 500) nLepCmpPassCR++;
+	    else              nLepCmpPassSR++;
+	    if(dxySig >= 1000) nLepCmpDxySigGeq1000++;
+	    if(dxy >= 2)       nLepCmpDxyGeq2++;
 	  }
 	}
 	if(peleid) {
@@ -116,19 +135,28 @@ void KUCMSAodSkimmer::processSV(){
 	if(hasGenInfoFlag) 
 	  selSV.fillBranch( "LeptonicSV_isGold", (*Vertex_isGold)[svit]);
       }
-      else if( ( ntracks >= 5 ) && ( mass/ntracks > 1 ) ) {
+      else if(hadronicId) {
 	svType = "Hadronic"; 
 	nHsv++;
 
-	if(dxySig < 1000) {
-	  nHadPassCR++;
-	  if(tightOnZSelection)
-	    nHadPassCRTight++;
+	// Standard hadronic (ntracks >= 5, mass/ntracks > 1 from hadronicId)
+	if(ntracks >= 5) {
+	  if(dxySig < 500) {
+	    nHadPassCR++;
+	    if(tightOnZSelection) nHadPassCRTight++;
+	  } else {
+	    nHadPassSR++;
+	    if(tightOnZSelection) nHadPassSRTight++;
+	  }
+	  if(dxySig >= 1000) nHadStdDxySigGeq1000++;
+	  if(dxy >= 2)        nHadStdDxyGeq2++;
 	}
-	else {
-	  nHadPassSR++;
-	  if(tightOnZSelection)
-	    nHadPassSRTight++;
+	// Compressed hadronic (ntracks >= 4, mass >= 10, mass/ntracks > 1 from hadronicId)
+	if(mass >= 10) {
+	  if(dxySig < 500) nHadCmpPassCR++;
+	  else              nHadCmpPassSR++;
+	  if(dxySig >= 1000) nHadCmpDxySigGeq1000++;
+	  if(dxy >= 2)       nHadCmpDxyGeq2++;
 	}
 
 	selSV.fillBranch( "HadronicSV_massOverNtracks", mass/ntracks);
@@ -175,10 +203,10 @@ void KUCMSAodSkimmer::processSV(){
   selSV.fillBranch( "passNLepGe2SelectionCRLoose", bool(nHadPassCR<1 && nLepPassCR>1 && !anyInSR));
   selSV.fillBranch( "passGe1HadAndLepSelectionCRLoose", bool(nHadPassCR>0 && nLepPassCR>0 && !anyInSR));
   //Flags final	state CR Tight
-  selSV.fillBranch( "passNHad1SelectionCRTight", bool(nHadPassCRTight==1 && nLepPassCRTight<1 && !anyInSR));
+  selSV.fillBranch( "passNHad1SelectionCRTight", bool(nHadPassCRTight==1 && nLepPassCR<1 && !anyInSR));
   selSV.fillBranch( "passNHadGe2SelectionCRTight", bool(nHadPassCRTight>1 && nLepPassCR<1 && !anyInSR));
-  selSV.fillBranch( "passNLep1SelectionCRTight", bool(nHadPassCRTight<1 && nLepPassCRTight==1 && !anyInSR));
-  selSV.fillBranch( "passNLepGe2SelectionCRTight", bool(nHadPassCRTight<1 && nLepPassCRTight>1 && !anyInSR));
+  selSV.fillBranch( "passNLep1SelectionCRTight", bool(nHadPassCR<1 && nLepPassCRTight==1 && !anyInSR));
+  selSV.fillBranch( "passNLepGe2SelectionCRTight", bool(nHadPassCR<1 && nLepPassCRTight>1 && !anyInSR));
   selSV.fillBranch( "passGe1HadAndLepSelectionCRTight", bool(nHadPassCRTight>0 && nLepPassCRTight>0 && !anyInSR));
   //Flags final	state SR Loose
   selSV.fillBranch( "passNHad1SelectionSRLoose", bool(nHadPassSR==1 && nLepPassSR<1));
@@ -187,12 +215,37 @@ void KUCMSAodSkimmer::processSV(){
   selSV.fillBranch( "passNLepGe2SelectionSRLoose", bool(nHadPassSR<1 && nLepPassSR>1));
   selSV.fillBranch( "passGe1HadAndLepSelectionSRLoose", bool(nHadPassSR>0 && nLepPassSR>0));
   //Flags final state SR Tight
-  selSV.fillBranch( "passNHad1SelectionSRTight", bool(nHadPassSRTight==1 && nLepPassSRTight<1));
+  selSV.fillBranch( "passNHad1SelectionSRTight", bool(nHadPassSRTight==1 && nLepPassSR<1));
   selSV.fillBranch( "passNHadGe2SelectionSRTight", bool(nHadPassSRTight>1 && nLepPassSR<1));
-  selSV.fillBranch( "passNLep1SelectionSRTight", bool(nHadPassSRTight<1 && nLepPassSRTight==1));
-  selSV.fillBranch( "passNLepGe2SelectionSRTight", bool(nHadPassSRTight<1 && nLepPassSRTight>1));
+  selSV.fillBranch( "passNLep1SelectionSRTight", bool(nHadPassSR<1 && nLepPassSRTight==1));
+  selSV.fillBranch( "passNLepGe2SelectionSRTight", bool(nHadPassSR<1 && nLepPassSRTight>1));
   selSV.fillBranch( "passGe1HadAndLepSelectionSRTight", bool(nHadPassSRTight>0 && nLepPassSRTight>0));
-  
+
+  //dxySig tightening counters (AND these with region flags to recover dxySig>=1000 selection)
+  selSV.fillBranch( "SV_nHadStdDxySigGeq1000", nHadStdDxySigGeq1000 );
+  selSV.fillBranch( "SV_nLepStdDxySigGeq1000", nLepStdDxySigGeq1000 );
+  selSV.fillBranch( "SV_nHadCmpDxySigGeq1000", nHadCmpDxySigGeq1000 );
+  selSV.fillBranch( "SV_nLepCmpDxySigGeq1000", nLepCmpDxySigGeq1000 );
+  //dxy tightening counters (AND these with region flags to recover dxy>=2 selection)
+  selSV.fillBranch( "SV_nHadStdDxyGeq2", nHadStdDxyGeq2 );
+  selSV.fillBranch( "SV_nLepStdDxyGeq2", nLepStdDxyGeq2 );
+  selSV.fillBranch( "SV_nHadCmpDxyGeq2", nHadCmpDxyGeq2 );
+  selSV.fillBranch( "SV_nLepCmpDxyGeq2", nLepCmpDxyGeq2 );
+
+  //Flags compressed region CR
+  const bool anyCmpInSR(nHadCmpPassSR>0 || nLepCmpPassSR>0);
+  selSV.fillBranch( "passNHad1SelectionCRCmp", bool(nHadCmpPassCR==1 && nLepCmpPassCR==0 && !anyCmpInSR));
+  selSV.fillBranch( "passNHadGe2SelectionCRCmp", bool(nHadCmpPassCR>1 && nLepCmpPassCR==0 && !anyCmpInSR));
+  selSV.fillBranch( "passNLep1SelectionCRCmp", bool(nHadCmpPassCR<1 && nLepCmpPassCR==1 && !anyCmpInSR));
+  selSV.fillBranch( "passNLepGe2SelectionCRCmp", bool(nHadCmpPassCR<1 && nLepCmpPassCR>1 && !anyCmpInSR));
+  selSV.fillBranch( "passGe1HadAndLepSelectionCRCmp", bool(nHadCmpPassCR>0 && nLepCmpPassCR>0 && !anyCmpInSR));
+  //Flags compressed region SR
+  selSV.fillBranch( "passNHad1SelectionSRCmp", bool(nHadCmpPassSR==1 && nLepCmpPassSR<1));
+  selSV.fillBranch( "passNHadGe2SelectionSRCmp", bool(nHadCmpPassSR>1 && nLepCmpPassSR<1));
+  selSV.fillBranch( "passNLep1SelectionSRCmp", bool(nHadCmpPassSR<1 && nLepCmpPassSR==1));
+  selSV.fillBranch( "passNLepGe2SelectionSRCmp", bool(nHadCmpPassSR<1 && nLepCmpPassSR>1));
+  selSV.fillBranch( "passGe1HadAndLepSelectionSRCmp", bool(nHadCmpPassSR>0 && nLepCmpPassSR>0));
+
   geVars.set("nSVLep", nLsv );
   geVars.set("nSVHad", nHsv );
   
@@ -246,6 +299,26 @@ void KUCMSAodSkimmer::setSVBranches( TTree* fOutTree ){
       selSV.makeBranch( "passNLepGe2Selection"+binType+stringency, BOOL );
       selSV.makeBranch( "passGe1HadAndLepSelection"+binType+stringency, BOOL );
     }
+  }
+
+  //dxySig tightening counters (AND with region flags to recover dxySig>=1000 selection)
+  selSV.makeBranch( "SV_nHadStdDxySigGeq1000", INT );
+  selSV.makeBranch( "SV_nLepStdDxySigGeq1000", INT );
+  selSV.makeBranch( "SV_nHadCmpDxySigGeq1000", INT );
+  selSV.makeBranch( "SV_nLepCmpDxySigGeq1000", INT );
+  //dxy tightening counters (AND with region flags to recover dxy>=2 selection)
+  selSV.makeBranch( "SV_nHadStdDxyGeq2", INT );
+  selSV.makeBranch( "SV_nLepStdDxyGeq2", INT );
+  selSV.makeBranch( "SV_nHadCmpDxyGeq2", INT );
+  selSV.makeBranch( "SV_nLepCmpDxyGeq2", INT );
+
+  //Compressed region flags
+  for(const string binType : {"SR", "CR"}) {
+    selSV.makeBranch( "passNHad1Selection"+binType+"Cmp", BOOL );
+    selSV.makeBranch( "passNHadGe2Selection"+binType+"Cmp", BOOL );
+    selSV.makeBranch( "passNLep1Selection"+binType+"Cmp", BOOL );
+    selSV.makeBranch( "passNLepGe2Selection"+binType+"Cmp", BOOL );
+    selSV.makeBranch( "passGe1HadAndLepSelection"+binType+"Cmp", BOOL );
   }
     
   if( hasGenInfoFlag ){

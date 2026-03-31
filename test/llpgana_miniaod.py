@@ -173,10 +173,21 @@ process.source = cms.Source("PoolSource",
         #skipEvents=cms.untracked.uint32(300),
 )##<<>>process.source = cms.Source("PoolSource",
 
+# Override hardcoded source file(s) when inputFiles is passed on the command line
+# (e.g. cmsRun llpgana_miniaod.py inputFiles=root://... maxEvents=100)
+# Read sys.argv directly to avoid VarParsing list-default quirks.
+import sys as _sys
+_cmdInputFiles = [a.split('=', 1)[1] for a in _sys.argv if a.startswith('inputFiles=')]
+if _cmdInputFiles:
+    process.source.fileNames = cms.untracked.vstring(_cmdInputFiles)
+
 ## How many events to process
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
+_cmdMaxEvents = [a.split('=', 1)[1] for a in _sys.argv if a.startswith('maxEvents=')]
+if _cmdMaxEvents:
+    process.maxEvents.input = cms.untracked.int32(int(_cmdMaxEvents[-1]))
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
