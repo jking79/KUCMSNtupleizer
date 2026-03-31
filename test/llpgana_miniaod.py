@@ -33,7 +33,7 @@ options.register('runMETFilters',False,VarParsing.multiplicity.singleton,VarPars
 ## GT to be used
 ##------------------ mc gt
 #options.register('globalTag','106X_mc2017_realistic_v6',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
-#options.register('globalTag','106X_upgrade2018_realistic_v11_L1v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
+#options.register('globalTag','106X_upgrade2018_realistic_v15_L1v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','94X_mc2017_realistic_v11',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for sig22 MC');
 options.register('globalTag','124X_mcRun3_2022_realistic_v12',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for sig22 MC');
@@ -66,7 +66,7 @@ options.parseArguments()
 ## Define the CMSSW process
 #runera = "Run3"  # current siganl model   !!!!!!!!  Run3 must be in CMSSW 14 or 15
 runera = "Run3_2022"
-#runera = "Run2_2018" # BG models
+#runera = "Run2_2016" # BG models
 if options.multicrab == True : runera = options.runera
 
 from Configuration.StandardSequences.Eras import eras
@@ -155,19 +155,22 @@ process.source = cms.Source("PoolSource",
         # MiniAOD 2018UL MET
         #'file:root_files/UL18_mini_MET_76190182-C845-2B40-A3F1-FA9FDAB9F7EC.root',
         ######'file:root_files/WJets_72B9C618-FE23-1E41-872E-57314D7CB454.root',
+        #'root://cmsxrootd.fnal.gov//store/data/Run2016G/MET/MINIAOD/UL2016_MiniAODv2-v2/120000/020ADD62-87D5-4B43-BAAD-C77C83D5FF8F.root',
         #'root://cmsxrootd.fnal.gov//store/data/Run2018B/JetHT/MINIAOD/15Feb2022_UL2018-v1/2820000/84DEEA91-CF7B-C24B-831D-7D993EB56D8D.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2018D/MET/MINIAOD/15Feb2022_UL2018-v1/510000/F5E0C00B-109F-5C4D-92F9-6D9F57EBE8C5.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2017D/DoubleEG/MINIAOD/09Aug2019_UL2017-v1/260000/3879D624-EAFF-C34B-8C0E-D4D7E23EB25C.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2018D/EGamma/MINIAOD/UL2018_MiniAODv2-v2/2810000/D5E0889C-D687-6242-8105-A147939E99C4.root',
         #'root://cmsxrootd.fnal.gov//store/data/Run2018B/JetHT/MINIAOD/15Feb2022_UL2018-v1/2820000/84DEEA91-CF7B-C24B-831D-7D993EB56D8D.root',
         # MC - Sig
-        #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_MINI/260203_235322/0000/SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_MiniAODv4_99.root',
+        
+        #'file:gjets_100to200_mini_18UL.root',
+        'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_MINI/260203_235322/0000/SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_MiniAODv4_99.root',
         #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p5_MINI/260317_213825/0000/SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p5_MiniAODv4_18.root',
         #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2500_mN2-1200_mN1-500_GZ_N2ctau-0p5_MINI/260317_214117/0000/SMS-GlGl_mGl-2500_mN2-1200_mN1-500_GZ_N2ctau-0p5_MiniAODv4_22.root',
         #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2500_mN2-2450_mN1-2350_GZ_N2ctau-0p5_MINI/260317_214430/0000/SMS-GlGl_mGl-2500_mN2-2450_mN1-2350_GZ_N2ctau-0p5_MiniAODv4_54.root',
         #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2300_mN2-2250_mN1-2200_GZ_N2ctau-0p5_MINI/260203_235206/0000/SMS-GlGl_mGl-2300_mN2-2250_mN1-2200_GZ_N2ctau-0p5_MiniAODv4_82.root',
         #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2300_mN2-2200_mN1-2150_GZ_N2ctau-0p5_MINI/260317_213954/0000/SMS-GlGl_mGl-2300_mN2-2200_mN1-2150_GZ_N2ctau-0p5_MiniAODv4_108.root',
-        'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2500_mN2-2450_mN1-2350_GZ_N2ctau-0p5_MINI/260317_214430/0000/SMS-GlGl_mGl-2500_mN2-2450_mN1-2350_GZ_N2ctau-0p5_MiniAODv4_54.root',
+        #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2500_mN2-2450_mN1-2350_GZ_N2ctau-0p5_MINI/260317_214430/0000/SMS-GlGl_mGl-2500_mN2-2450_mN1-2350_GZ_N2ctau-0p5_MiniAODv4_54.root',
         ),##<<>>fileNames = cms.untracked.vstring
         secondaryFileNames=cms.untracked.vstring()
         #skipEvents=cms.untracked.uint32(300),
@@ -176,8 +179,8 @@ process.source = cms.Source("PoolSource",
 ## How many events to process
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250))#KT
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
@@ -219,16 +222,26 @@ if options.multicrab == True : runMETFilters = options.runMETFilters
 probeout = False
 if options.multicrab == True : probeout = False
 
-triggerSet = "RECO"
+flagSet = "RECO"
+triggerSet = "HLT"
 convSet = "RECO"
 ecalIsoInputs = ecalIsoInputsF17
+
+if "Run2" in runera and genInfo is True :
+    convSet = "PAT"
+    flagSet = "PAT"
+
+if "Run2_2016" in runera :
+    convSet = "PAT"
+
 if "Run3" in runera :
-    triggerSet = "PAT"
+    flagSet = "PAT"
     convSet = "PAT"
     ecalIsoInputs = ecalruneraIsoInputsW22
     if 'CASTOR' in process.CaloGeometryBuilder.SelectedCalos : 
         process.CaloGeometryBuilder.SelectedCalos.remove('CASTOR') 
-if runMETFilters == True : triggerSet = ""  # ?  "SIM" for MC
+
+if runMETFilters == True : flagSet = ""  # ?  "SIM" for MC
 
 #genMomChase = True
 genMomChase = False
@@ -240,7 +253,7 @@ if options.multicrab == True : makeTrigList = False
 print( "Using options : mutlicrab = ",options.multicrab," geninfo = ",genInfo," filter = ",filterselect )
 print( "Using options : momChase = ",genMomChase," trgiList = ",makeTrigList," probeout = ",probeout ) 
 print( "Using options : doDisEle = (NU) ",dode," doSVs = ",dosv," doECALTrackOnly = (NU) ",doet )
-print( "Using options : globalTag = ",options.globalTag," trigger set = ",triggerSet )
+print( "Using options : globalTag = ",options.globalTag," trigger set = ",triggerSet, " and ", flagSet )
 print( "With output file name : ",options.outputFileName )
 
 #test = cms.vstring( "hltPFMET100", "hltMETClean100", "hltHIPhoton20Eta3p1" )
@@ -310,9 +323,9 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizerMini",
                               beamSpot = cms.InputTag("offlineBeamSpot"),
                               ## trigger
                               #triggerFlagResults = cms.InputTag("TriggerResults","","RECO"),
-                              triggerFlagResults = cms.InputTag("TriggerResults","",triggerSet),
+                              triggerFlagResults = cms.InputTag("TriggerResults","",flagSet),
                               #triggerFlagResults = cms.InputTag("TriggerResults"),
-                              triggerHLTResults = cms.InputTag("TriggerResults","","HLT"),
+                              triggerHLTResults = cms.InputTag("TriggerResults","",triggerSet),
                               triggerEvent = cms.InputTag(""),
                               ## METs
                               mets = cms.InputTag("slimmedMETs"),
@@ -358,6 +371,7 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizerMini",
 ## Trigger path list
 process.tree.triggerList = cms.vstring(  #"hltPFMET100", "hltMETClean100", "hltHIPhoton20Eta3p1" ),   
 
+    "HLT_Photon20_v",
     "HLT_PFMET90_PFMHT90_IDTight_v",
     "HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_v",
     "HLT_PFMET100_PFMHT100_IDTight_v",
@@ -367,7 +381,7 @@ process.tree.triggerList = cms.vstring(  #"hltPFMET100", "hltMETClean100", "hltH
     "HLT_PFMET120_PFMHT120_IDTight_PFHT60_v",
     "HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60_v",
     "HLT_PFMET130_PFMHT130_IDTight_v",
-    "HLT_PFMETNoMu130_PFMHTNoMu130_IDTighti_v",
+    "HLT_PFMETNoMu130_PFMHTNoMu130_IDTight_v",
     "HLT_PFMET140_PFMHT140_IDTight_v",
     "HLT_PFMETNoMu140_PFMHTNoMu140_IDTight_v",
 
