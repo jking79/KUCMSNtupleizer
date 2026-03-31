@@ -275,7 +275,7 @@ void KUCMSPhotonObjectMini::LoadEvent( const edm::Event& iEvent, const edm::Even
 	phoIds.clear();
 
     if( PhotonDEBUG ) std::cout << "Collecting Photons/OOTPhotons" << std::endl;
-    std::vector<reco::Photon> fphotons_temp;
+    std::vector<pat::Photon> fphotons_temp;
     std::vector<bool> phoExcluded_temp;
     std::vector<bool> phoIsOotPho_temp;
     //std::vector<int> phoIds_temp;// indexed by pho index ( 0,1,2 ) * number of ids ( 1 current, 6? possible ) + index of ID wanted
@@ -395,6 +395,7 @@ void KUCMSPhotonObjectMini::LoadEvent( const edm::Event& iEvent, const edm::Even
 
 	}//<<>>for( auto phoptit = phoOrderIndx.crbegin(); phoptit != phoOrderIndx.crend(); phoptit++ )
 
+    if( PhotonDEBUG ) std::cout << "Finished collecting Photons/OOTPhotons" << std::endl;
 
 }//<<>>void KUCMSPhoton::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
@@ -415,8 +416,8 @@ void KUCMSPhotonObjectMini::ProcessEvent( ItemManager<float>& geVar ){
     std::vector<v3fPoint> scvertex;
 	std::vector<float> scptres;
 	//std::vector<int> scmatched;
-    std::vector<uInt> locRHCands;
-    std::vector<reco::Photon> gloPhotons;
+    //std::vector<uInt> locRHCands;
+    //std::vector<reco::Photon> gloPhotons;
     //std::vector<reco::Photon> locPhotons;
     //std::vector<reco::Photon> selPhotons;
     //std::vector<int> selPhoType;
@@ -681,8 +682,9 @@ void KUCMSPhotonObjectMini::ProcessEvent( ItemManager<float>& geVar ){
     }//<<>>for( const auto &photon : fPhotons 
 	Branches.fillBranch("nPho",phoIdx);
 
+/*
 	if( cfFlag("hasGenInfo") ){
-		auto genInfo = genObj->getGenPhoMatch( scvertex, scptres );
+		auto genInfo = genObj->getGenPhoMatch( scvertex, scptres );// input is photon sc's in photon order
 		//std::cout << " - genmatched - scmatched comp : " << std::endl;
 		//std::cout << " Photon Gen Match ------------------------- " << std::endl;
 		//for( uInt i = 0; i < genInfo.size(); i++ ){ std::cout << " -- gen: " << genInfo[i] << " sc: " << scmatched[i] << std::endl; }
@@ -707,6 +709,8 @@ void KUCMSPhotonObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 		}//<<>>for( auto genidx : genInfo )
 		//std::cout << " Photon Gen Match Finished ------------------------- " << std::endl;
 	}//<<>>if( cfFlag("hasGenInfo") )
+*/
+
 
 /*
     // Process time resolution rechits/photons

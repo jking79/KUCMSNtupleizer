@@ -58,8 +58,9 @@ def docrab( dataset ):
     if options.crabCmd == 'submit':
 
         # External files needed by CRAB
-        #inputJSON    = 'certifications/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt'
-        inputJSON    = 'certifications/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt'
+        #inputJSON    = '' # MC
+        inputJSON    = 'certifications/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt'
+        #inputJSON    = 'certifications/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt'
         #inputJSON    = 'certifications/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt'
         #inputJSON    = 'certifications/Cert_Collisions2022_355100_362760_Golden.json'	
         #inputJSON    = 'certifications/Cert_Collisions2023_366442_370790_Golden.json'
@@ -85,28 +86,17 @@ def docrab( dataset ):
 
         #config.Data.partialDataset = True
         config.Data.inputDataset   = None
-        config.Data.lumiMask       = inputJSON    # Comment out for MC only set for data !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        config.Data.lumiMask       = inputJSON    # !!!!!!!!!!!!  Comment out for MC only set for data !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         #config.Data.splitting     = 'Automatic' # data
         config.Data.splitting = 'FileBased' # Justin
         config.Data.unitsPerJob  =  filespjob
-        #config.Data.unitsPerJob  =  10
-        #config.Data.unitsPerJob  =  4 # File based : Wjets 70,100,200
-        #config.Data.unitsPerJob  =  3 # File based : QCD 4 - EGamma 3
-        #config.Data.unitsPerJob  =  2 # File based : Wjets 400+
-        #config.Data.unitsPerJob  =  1
-        #config.Data.splitting    = 'EventAwareLumiBased' # MC&Data Set unitsperjob correctly for dataset !!!!!!!!!!!!!!!!!!!!!!!!!!
-        #config.Data.unitsPerJob   = 72500 # data  !!!!!! lumimask ?
-        #config.Data.splitting    = 'LumiBased'
-        #config.Data.unitsPerJob   = 14 # 14 for eg c 18ul ~ 2 files & 19 hours too much disk space -> 1 file worth & break up to keep under 2000 jobs
-        #config.Data.unitsPerJob   =  24 # MET C 
-        #config.Data.unitsPerJob   =  48 # MET D
         #config.Data.runRange = '306458-306460' #
             
     
         #config.JobType.allowUndistributedCMSSW = True
-        config.JobType.maxJobRuntimeMin = 2500
-        #config.JobType.maxJobRuntimeMin = 2280
-        #config.JobType.maxMemoryMB = 3000
+        #config.JobType.maxJobRuntimeMin = 2500
+        config.JobType.maxJobRuntimeMin = 2280
+        config.JobType.maxMemoryMB = 2250
         config.Data.publication    = False
         config.Site.storageSite    = 'T3_US_FNALLPC'
         #--------------------------------------------------------
@@ -121,15 +111,15 @@ def docrab( dataset ):
 
             print( '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>' )
             print( 'Input dataset for Crab Job : ' )
-            #print( inDO )
+            print( inDO )
             # inDO[0] is of the form /A/B/C. Since A+B is unique for each inDS, use this in the CRAB request name.
             primaryDataset = (inDO[0].split('/')[1])
             #primaryDataset = (inDO[0].split('/')[1]).split('_13T')[0]
             #primaryDataset = (inDO[0].split('/')[1]).split('_Tune')[0]
             #primaryDataset = (inDO[0].split('/')[1]).split('-sherpa')[0]
             print( primaryDataset )
-            #runEra         = (inDO[0].split('/')[2]) # justin
-            runEra         = (inDO[0].split('/')[2]).split('-')[0]
+            runEra         = (inDO[0].split('/')[2]) # justin
+            runEra         = (inDO[0].split('/')[2]).split('_MiniAOD')[0]
             #runEra         = (inDO[0].split('/')[2]).split('RECO')[0]
             print( runEra )
             dataset        = inDO[0].split('/')[3]
@@ -151,9 +141,12 @@ def docrab( dataset ):
             ##trial          = "kucmsntuple_MET_R18_AL1SelEle_DEOnly" + version #
             ##trial          = "kucmsntuple_EGamma_R18_AL1SelEle_DEOnly" + version #
 
-            #trial          = "kucmsntuple_JetMET_R22_SVHPM100_MiniAOD" + version #  
+            #trial          = "kucmsntuple_JetMET_R22_SVHPM100_MiniAOD" + version # 
+ 
             #trial          = "kucmsntuple_MET_R18_SVHPM100_MiniAOD" + version #  
-            trial          = "kucmsntuple_MET_R17_SVHPM100_MiniAOD" + version #  
+            #trial          = "kucmsntuple_MET_R17_SVHPM100_MiniAOD" + version #  
+            trial          = "kucmsntuple_MET_R16_SVHPM100_MiniAOD" + version # 
+
             #trial          = "kucmsntuple_MET_R17_SVIPM100_p8" + version #  
             #####trial          = "kucmsntuple_JETMET_R24_SVIPM100" + version # 
 
@@ -165,7 +158,7 @@ def docrab( dataset ):
             #trial          = "kucmsntuple_DisJet_R18_SVIPM100_nolumimask" + version #
 
             #trial          = "kucmsntuple_TTXJets_R18_SVIPM100" + version #
-            #trial          = "kucmsntuple_GJets_R18_SVIPM100" + version
+            #trial          = "kucmsntuple_GJets_R18_SVHPM100_MiniAOD" + version
             #trial          = "kucmsntuple_QCD_R18_SVIPM100" + version
             #trial          = "kucmsntuple_ZJets_R18_SVIPM100" + version
             #trial          = "kucmsntuple_WJets_R18_SVIPM100" + version
@@ -176,8 +169,8 @@ def docrab( dataset ):
 
             # !!!!!!!!!!!!!!!!!    Set output paths !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1!1
             config.Data.outLFNDirBase  = "/store/group/lpcsusylep/jaking/KUCMSNtuple/"+trial+"/"
-            config.General.requestName   = trial+"_"+primaryDataset+"_"+dataset+"_"+runEra+"_request"
-            config.Data.outputDatasetTag = trial+"_"+primaryDataset+"_"+dataset+"_"+runEra
+            config.General.requestName   = trial+"_"+primaryDataset+"_"+runEra+"_request"
+            config.Data.outputDatasetTag = trial+"_"+primaryDataset+"_"+runEra
 
             fSVHPM100 = 'eventFilter=SVHPMet100'
             fSVHPM150 = 'eventFilter=SVHPMet150'
@@ -221,8 +214,8 @@ def docrab( dataset ):
 #>>>>>>>>>>>>>>>>>>>     #2018UL #globalTag=106X_dataRun2_v37 # https://twiki.cern.ch/twiki/bin/view/CMS/PdmVRun2LegacyAnalysis
             gt = 'globalTag=106X_dataRun2_v37'
             #runinfo = 'runera=Run2_2018'
-            runinfo = 'runera=Run2_2017'
-            #runinfo = 'runera=Run2_2016'
+            #runinfo = 'runera=Run2_2017'
+            runinfo = 'runera=Run2_2016'
             config.JobType.pyCfgParams   = [gt,mcrab,efilter,runinfo]
             ###config.JobType.pyCfgParams   = [gt,mcrab,efilter,mDoETOnly]
             ##config.JobType.pyCfgParams   = [gt,mcrab,fInvMetALP,mNoSV]
@@ -236,10 +229,9 @@ def docrab( dataset ):
 
 #---MC--------------------------------------------------------------------------------------------------------------------------
 #>>>>>      #MC RunIISummer20UL18RECO
-            #gt = 'globalTag=106X_upgrade2018_realistic_v11_L6v1'
-            ##config.JobType.pyCfgParams   = ['globalTag=106X_upgrade2018_realistic_v11_L1v1','multicrab=True','hasGenInfo=True']
-            #config.JobType.pyCfgParams   = [gt,mcrab,geninfo,efilter]
-            ##config.JobType.pyCfgParams   = ['globalTag=106X_upgrade2018_realistic_v11_L1v1','multicrab=True','hasGenInfo=True','eventSkim=AL1IsoPho']
+            #gt = 'globalTag=106X_upgrade2018_realistic_v15_L1v1'
+            #runinfo = 'runera=Run2_2018'
+            #config.JobType.pyCfgParams   = [gt,mcrab,geninfo,efilter,runinfo]
 #>>>>>      #MC GMSB RunIIFall17DRPremix  #globalTag=94X_mc2017_realistic_v14  #  <<< comment/uncomment lumi mask when using/!using MC
             ##config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v14','multicrab=True','hasGenInfo=True']
             ##config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v14','multicrab=True','hasGenInfo=True','eventSkim=AL1IsoPho']
@@ -286,7 +278,7 @@ def docrab( dataset ):
 def run_multi():
 
     TuneCP5MP = 'TuneCP5_13TeV-madgraphMLM-pythia8'
-    RunIISummer20UL18RECO = '/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1'
+    RunIIS = 'RunIISummer20UL18MiniAODv2'
 
     runDataset = [
 
@@ -295,39 +287,31 @@ def run_multi():
         #['/MET/Run2018C-15Feb2022_UL2018-v1/MINIAOD',1],
         #['/MET/Run2018D-15Feb2022_UL2018-v1/MINIAOD',1],
 
-        ['/MET/Run2017B-09Aug2019_UL2017_rsb-v1/MINIAOD',1],
-        ['/MET/Run2017C-09Aug2019_UL2017_rsb-v1/MINIAOD',1],
-        ['/MET/Run2017D-09Aug2019_UL2017_rsb-v1/MINIAOD',1],
-        ['/MET/Run2017E-09Aug2019_UL2017_rsb-v1/MINIAOD',1],
-        ['/MET/Run2017F-09Aug2019_UL2017_rsb-v1/MINIAOD',1],
+        #['/MET/Run2017B-09Aug2019_UL2017_rsb-v1/MINIAOD',1],
+        #['/MET/Run2017C-09Aug2019_UL2017_rsb-v1/MINIAOD',1],
+        #['/MET/Run2017D-09Aug2019_UL2017_rsb-v1/MINIAOD',1],
+        #['/MET/Run2017E-09Aug2019_UL2017_rsb-v1/MINIAOD',1],
+        #['/MET/Run2017F-09Aug2019_UL2017_rsb-v1/MINIAOD',1],
 
-        # check this list
-        #['/MET/Run2016B-21Feb2020_ver1_UL2016_HIPM-v1/MINIAOD',1],
-        #['/MET/Run2016B-21Feb2020_ver2_UL2016_HIPM-v1/MINIAOD',1],
-        #['/MET/Run2016C-21Feb2020_UL2016_HIPM-v1/MINIAOD',1],
-        #['/MET/Run2016D-21Feb2020_UL2016_HIPM-v1/MINIAOD',1],
-        #['/MET/Run2016E-21Feb2020_UL2016_HIPM-v1/MINIAOD',1],
-        #['/MET/Run2016F-21Feb2020_UL2016_HIPM-v1/MINIAOD',1],
-        #['/MET/Run2016F-21Feb2020_UL2016-v1/MINIAOD',1],
-        #['/MET/Run2016G-21Feb2020_UL2016-v1/MINIAOD',1],
-        #['/MET/Run2016H-21Feb2020_UL2016-v2/MINIAOD',1],
+        ##['/MET/Run2016B-21Feb2020_ver1_UL2016_HIPM-v1/MINIAOD',1],
+        ##['/MET/Run2016B-21Feb2020_ver2_UL2016_HIPM-v1/MINIAOD',1],
+        ##['/MET/Run2016C-21Feb2020_UL2016_HIPM-v1/MINIAOD',1],
+        ##['/MET/Run2016D-21Feb2020_UL2016_HIPM-v1/MINIAOD',1],
+        ##['/MET/Run2016E-21Feb2020_UL2016_HIPM-v1/MINIAOD',1],
+        ##['/MET/Run2016F-21Feb2020_UL2016_HIPM-v1/MINIAOD',1],
+        ##['/MET/Run2016F-21Feb2020_UL2016-v1/MINIAOD',1],
+        ##['/MET/Run2016G-21Feb2020_UL2016-v1/MINIAOD',1],
+        ##['/MET/Run2016H-21Feb2020_UL2016-v2/MINIAOD',1],
 
-
-        #['/MET/Run2018A-15Feb2022_UL2018-v1/AOD',1],
-        #['/MET/Run2018B-15Feb2022_UL2018-v1/AOD',1],
-        #['/MET/Run2018C-15Feb2022_UL2018-v1/AOD',1],
-        #['/MET/Run2018D-15Feb2022_UL2018-v1/AOD',1],
-
-        #['/MET/Run2017A-09Aug2019_UL2017_rsb-v1/AOD',1],
-        #['/MET/Run2017B-09Aug2019_UL2017_rsb-v1/AOD',1],
-        #['/MET/Run2017C-09Aug2019_UL2017_rsb-v1/AOD',1],
-        #['/MET/Run2017D-09Aug2019_UL2017_rsb-v1/AOD',1],
-        #['/MET/Run2017E-09Aug2019_UL2017_rsb-v1/AOD',1],
-        #['/MET/Run2017F-09Aug2019_UL2017_rsb-v1/AOD',1],
-
-        #['/MET/Run2022A-27Jun2023-v1/AOD',1],
-        #['/MET/Run2022B-27Jun2023-v2/AOD',1],
-        #['/MET/Run2022C-27Jun2023-v2/AOD',1],
+        ['/MET/Run2016B-ver1_HIPM_UL2016_MiniAODv2-v2/MINIAOD',1],
+        ['/MET/Run2016B-ver2_HIPM_UL2016_MiniAODv2-v2/MINIAOD',1],
+        ['/MET/Run2016C-HIPM_UL2016_MiniAODv2-v2/MINIAOD',1],
+        ['/MET/Run2016D-HIPM_UL2016_MiniAODv2-v2/MINIAOD',1],
+        ['/MET/Run2016E-HIPM_UL2016_MiniAODv2-v2/MINIAOD',1],
+        ['/MET/Run2016F-HIPM_UL2016_MiniAODv2-v2/MINIAOD',1],
+        ['/MET/Run2016F-UL2016_MiniAODv2-v2/MINIAOD',1],
+        ['/MET/Run2016G-UL2016_MiniAODv2-v2/MINIAOD',1],
+        ['/MET/Run2016H-UL2016_MiniAODv2-v2/MINIAOD',1],
 
         #["/JetMET/Run2022C-19Dec2023-v1/MINIAOD",1],
         #["/JetMET/Run2022D-19Dec2023-v1/MINIAOD",1],
@@ -335,67 +319,11 @@ def run_multi():
         #["/JetMET/Run2022F-19Dec2023-v2/MINIAOD",1],
         #["/JetMET/Run2022G-19Dec2023-v1/MINIAOD",1],
 
-        #['/EGamma/Run2018B-15Feb2022_UL2018-v1/AOD',1],#72500 eventsperlumi ( 36.5K per file - 4268 files )
-        #['/EGamma/Run2018C-15Feb2022_UL2018-v1/AOD',1],#72500 eventsperlumi   ( 36.1K per file - 4051 files )
-        #['/EGamma/Run2018D-15Feb2022_UL2018-v1/AOD',1],#72500 eventsperlumi
-
-        #['/DisplacedJet/Run2018A-15Feb2022_UL2018-v1/AOD',1],
-        #['/DisplacedJet/Run2018B-15Feb2022_UL2018-v1/AOD',1],
-        #['/DisplacedJet/Run2018C-15Feb2022_UL2018-v1/AOD',1],
-        #['/DisplacedJet/Run2018D-15Feb2022_UL2018-v1/AOD',1],
-
-        #['/WJetsToLNu_HT-70To100_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext1-v3/AODSIM',4],
-        #['/WJetsToLNu_HT-100To200_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext1-v3/AODSIM',4],
-        #['/WJetsToLNu_HT-200To400_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext1-v3/AODSIM',4],
-        #['/WJetsToLNu_HT-400To600_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext2-v3/AODSIM',1],
-        #['/WJetsToLNu_HT-600To800_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext2-v3/AODSIM',2],
-        #['/WJetsToLNu_HT-800To1200_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext2-v3/AODSIM',1],
-        #['/WJetsToLNu_HT-1200To2500_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext2-v3/AODSIM',2],
-        #['/WJetsToLNu_HT-2500ToInf_'+TuneCP5MP+RunIISummer20UL18RECO+'_ext2-v3/AODSIM',2],
-
-        #['/ZJetsToNuNu_HT-100To200_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM',1],
-        #['/ZJetsToNuNu_HT-200To400_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM',1],
-        #['/ZJetsToNuNu_HT-400To600_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM',1],
-        #['/ZJetsToNuNu_HT-600To800_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM',1],
-        #['/ZJetsToNuNu_HT-800To1200_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM',1],
-        #['/ZJetsToNuNu_HT-1200To2500_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM',1],
-        #['/ZJetsToNuNu_HT-2500ToInf_'+TuneCP5MP+RunIISummer20UL18RECO+'-v1/AODSIM',1],
-
-        #['/TTJets_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',1],
-        #['/TGJets_TuneCP5_13TeV-amcatnlo-madspin-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v1/AODSIM',1],
-        #['/TTGJets_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v1/AODSIM',1],
-        #['/ttWJets_TuneCP5_13TeV_madgraphMLM_pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v1/AODSIM',2],
-        #['/ttZJets_TuneCP5_13TeV_madgraphMLM_pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v1/AODSIM',1],
-
-        #['/GJets_HT-40To100_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM',2],
-        #['/GJets_HT-100To200_'+TuneCP5MP+'/RunIISummer20UL18RECO-4cores5k_106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',2],
-        #['/GJets_HT-200To400_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM',4],
-        #['/GJets_HT-400To600_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM',2],
-        #['/GJets_HT-600ToInf_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM',2],
-
-        #['/QCD_HT2000toInf_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
-        #['/QCD_HT1500to2000_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
-        #['/QCD_HT1000to1500_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
-        #['/QCD_HT50to100_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
-        #['/QCD_HT100to200_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
-        #['/QCD_HT700to1000_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
-        #['/QCD_HT200to300_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
-        #['/QCD_HT300to500_'+TuneCP5MP+RunIISummer20UL18RECO+'-v2/AODSIM'],
-
-        #['/DiPhotonJetsBox_MGG-80toInf_13TeV-sherpa/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',2],
-        #['/DiPhotonJetsBox_MGG-0to40_13TeV-sherpa/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v1/AODSIM',1],
-        #['/DiPhotonJetsBox_M40_80-sherpa/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',1],
-
-        #['/WW_TuneCP5_13TeV-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',1],
-        #['/WWG_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',1],
-        #['/WWW_4F_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v2/AODSIM',1],
-        #['/WWZ_4F_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v2/AODSIM',1],
-        #['/WZ_TuneCP5_13TeV-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',1],
-        #['/WZG_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',1],
-        #?#['/WZZ_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v2/AODSIM',1],
-        #['/WGG_5f_TuneCP5_13TeV_amcatnlo-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',1],
-        #['/ZZ_TuneCP5_13TeV-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1-v2/AODSIM',1],
-        #['/ZZZ_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18RECO-106X_upgrade2018_realistic_v11_L1v1_ext1-v2/AODSIM',1],
+        #['/GJets_HT-100To200_'+TuneCP5MP+'/'+RunIIS+'-4cores5k_106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',1],
+        #['/GJets_HT-200To400_'+TuneCP5MP+'/'+RunIIS+'-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',1],
+        #['/GJets_HT-400To600_'+TuneCP5MP+'/'+RunIIS+'-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',1],
+        #['/GJets_HT-40To100_'+TuneCP5MP+'/'+RunIIS+'-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',1],
+        #['/GJets_HT-600ToInf_'+TuneCP5MP+'/'+RunIIS+'-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',1],
 
     ] 
 

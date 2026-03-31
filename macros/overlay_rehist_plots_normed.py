@@ -30,6 +30,7 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
     sqrt12 = sqrt(12)
 
     setTDRStyle()
+    gROOT.SetBatch(True)
     gStyle.SetPadTickY(1)
     gStyle.SetPadTickX(1)
     if layout['logx'] : gStyle.SetOptLogx(1)
@@ -79,7 +80,7 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
 
     mg = TMultiGraph();
 
-    for histname, tree, infile, lego  in hist_list :
+    for histname, tree, infile, lego, wgt in hist_list :
     
         f1.append(TFile.Open(infile))
         if tree == '' : hist = histname
@@ -89,10 +90,10 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
         htitle = 'hist' + str(n)
         lenmybins = int(orighist.GetNbinsX())
         h1.append(TGraphErrors(lenmybins))
-
-        for bn in range( 1,lenmybins):
-            binval = float(orighist.GetBinContent(bn))
-            binerr = float(orighist.GetBinError(bn))
+        norm = orighist.Integral(1,lenmybins)
+        for bn in range( 1, lenmybins, 3 ):
+            binval = float(orighist.GetBinContent(bn))/norm
+            binerr = float(orighist.GetBinError(bn))/norm
             binmid = float(orighist.GetBinCenter(bn))
             binwidth = float(orighist.GetBinWidth(bn))
             binstart = float(orighist.GetBinLowEdge(bn))
@@ -170,17 +171,17 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
     gPad.Modified()
 
     #lat_cms = '#bf{CMS} #it{Preliminary}' + ptitle[0]
-    lat_cms = '#bf{CMS} #it{Work in Progress}' + ptitle[0]
+    lat_cms = '#bf{CMS} #it{WkInPgrs}' + ptitle[0]
     #lat_title = ptitle[1]+' (13 TeV)'
     lat_title = ptitle[1]
     #lat_form = '#sigma^{2}_{i} = (#frac{N}{A_{eff}/#sigma_{n}})^{2} + 2C^{2}'
     lat_form = '#sigma^{2}_{i} = (#frac{N}{A_{eff}/#sigma_{n}})^{2} + #frac{S^{2}}{A_{eff}/#sigma_{n}} + 2C^{2}'
     #lat_form = '#sigma^{2}_{i} = (N/Eeff)^{2} + 2C^{2}'
-    lat.SetTextSize(0.05);
+    lat.SetTextSize(0.035);
     lat.SetTextFont(42);
-    lat.DrawLatex(0.15,0.9325,lat_cms);
+    lat.DrawLatex(0.15,0.965,lat_cms);
     lat.DrawLatex((0.82-t[2]),0.9325,lat_title);
-    lat.SetTextSize(0.04);
+    lat.SetTextSize(0.035);
     lat.DrawLatex(t[0],t[1],ptitle[2]);
     if dofit : 
         lat.SetTextSize(0.03);
@@ -209,11 +210,11 @@ from overlay_hist_defs_v3 import *
 
 date = time.strftime('%d%m%Y') +  time.strftime('%H%M%S')
 
-legtitle = ''
+legtitle = '2500/2400/2300'
 #legtitle = 'KuStc'
 #legtitle = 'KuNotStc'
 
-rtitle = 'Run2 AODSIM'
+rtitle = 'Run2 Simulation'
 #Ic_legtitle = ''
 xtitle = ''
 #xtitle = '#Delta_{Run}'
@@ -230,7 +231,7 @@ htitle = ''
 islogx = False
 islogy = True
 #islogy = False
-Ic_legtitle = legtitle+' '+Ic_legtitle
+Ic_legtitle = legtitle
 
 #---------------------------------------------------------------
 #hl_mc_fms_loc = [
@@ -240,20 +241,53 @@ Ic_legtitle = legtitle+' '+Ic_legtitle
 #     #["Data_sigma","",mc_single_loc+pcal+lstfr,"Single"],
 #]
 
+#inhistlist = [
+#    ["selPhoHcalTowerSumEtBcConeDR04","","KUCMS_GMSB_L100t400_Skim_BaseHists.root","SUS+NotSUS"],
+#    ["selPhoHcalTowerSumEtBcConeDR04","","KUCMS_GMSB_L100t400_Skim_BaseHists.root","SUS"],
+#    ["selPhoHcalTowerSumEtBcConeDR04","","KUCMS_GMSB_L100t400_Skim_BaseHists.root","NotSUS"],
+#]
+
+eospath = 'root://cmseos.fnal.gov//store/user/lpcsusylep/malazaro/KUCMSSkims//skims_v49/'
+bgpath = 'MET_R18_SVHPM100_MiniAOD_v34_MET_MINIAOD_Run2018B_rjrskim.root'
+sms1 = 'SMS_SVHPM100_v34_gogoGZ_FULLMINI_mGl-2300_mN2-1600_mN1-500_ct0p1_rjrskim.root'
+sms2 = 'SMS_SVHPM100_v34_gogoGZ_FULLMINI_mGl-2300_mN2-1600_mN1-500_ct0p5_rjrskim.root'
+sms3 = 'SMS_SVHPM100_v34_gogoGZ_FULLMINI_mGl-2500_mN2-2400_mN1-2300_ct0p1_rjrskim.root'
+sms4 = 'SMS_SVHPM100_v34_gogoGZ_FULLMINI_mGl-2500_mN2-2400_mN1-2300_ct0p5_rjrskim.root'
+
+smsob = "../KUCMSSkimmer/EGamma_R18_InvMetPho30_noSV_EGamma_MINI_Run2018C_Small_rjrskim.root"
+sms01 = "../KUCMSSkimmer/SMS_SVIPM100_v34_SMS-GlGl-GZ_FULLMINI_mGl-2300_mN2-1300_mN1-1000_ct0p1_rjrskim_test.root"
+sms05 = "../KUCMSSkimmer/SMS_SVIPM100_v34_SMS-GlGl-GZ_FULLMINI_mGl-2300_mN2-1300_mN1-1000_ct0p5_rjrskim_test.root"
+sms11 = "../KUCMSSkimmer/SMS_SVIPM100_v34_SMS-GlGl-GZ_FULLMINI_mGl-2500_mN2-2400_mN1-2300_ct0p1_rjrskim_test.root"
+sms15 = "../KUCMSSkimmer/SMS_SVIPM100_v34_SMS-GlGl-GZ_FULLMINI_mGl-2500_mN2-2400_mN1-2300_ct0p5_rjrskim_test.root"
+
 inhistlist = [
-    ["selPhoHcalTowerSumEtBcConeDR04","","KUCMS_GMSB_L100t400_Skim_BaseHists.root","SUS+NotSUS"],
-    ["selPhoHcalTowerSumEtBcConeDR04","","KUCMS_GMSB_L100t400_Skim_BaseHists.root","SUS"],
-    ["selPhoHcalTowerSumEtBcConeDR04","","KUCMS_GMSB_L100t400_Skim_BaseHists.root","NotSUS"],
+
+    ["blphowtime","",sms01,"Wgt TimeSig",1],
+    ["blphogeotime","",sms01,"Geo TimeSig",1],
+    ["blphogentime","",sms01,"Sm Geo TimeSig",1],
+
+    #["phowtime","",sms11,"Wgt TimeSig",1],
+    #["phogeotime","",sms11,"Geo TimeSig",1],
+    #["phogentime","",sms11,"Sm Geo TimeSig",1],
+
+    #["nlwts","",eospath+bgpath,"Background",1],
+    #["nlwts","",eospath+sms1,"SMS ct 0.1",165.2],
+    #["nlwts","",eospath+sms2,"SMS ct 0.5",165.2],
+    #["nlwts","",eospath+sms3,"SMS ct 0.1",67.48],
+    #["nlwts","",eospath+sms4,"SMS ct 0.5",67.48],
+    #["nlwts","","../KUCMSSkimmer/",""],
 ]
 
-xtitle = 'HcalTowerSumEtBcConeDR04 [GeV]'
+xtitle = 'Time Significance [ns]'
 layout = { 'xtitle' : xtitle, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'legtitle' : Ic_legtitle }
-ptitle=[' 2022 GMSB L100t400','',''] 
-y = [ 0.01, 1e7 ]
-x = [ 0.0, 5.0 ]
+ptitle=[' Photon Time Significance','','SMS 2300-1300-1000 ct 0.1']
+#y = [ 0.1, 1000 ]
+y = [ 0.00001, 0.5 ]
+x = [ -8, 8 ]
+#x = [ 0, 5 ]
 l = [ 0.7,0.65,0.925,0.9 ] # legend position
-t = [0.2,0.825,0.0,0.175,0.225] # titles position
-outname = 'llpa_gmsb_l1t4_HcalTowSumEtBcConeDR04'
+t = [0.2,0.875,0.0,0.175,0.225] # titles position
+outname = 'llpa_sms_wtsig_gen_geo'
 dostack(inhistlist, outname, date, layout, ptitle,  y, x, l, t)
 
 
