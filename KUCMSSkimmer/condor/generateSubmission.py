@@ -58,11 +58,11 @@ def generateSubmission(args):
     if(data):
         inputMainList = cmsswpath+"ntuple_master_lists/KUCMS_Ntuple_Master_DataPD_Files_List.txt"
     elif(MCbkg):
-        inputMainList = cmsswpath+"ntuple_master_lists/KUCMS_Ntuple_Master_BG_SVIPM100_Files_List.txt"
+        inputMainList = cmsswpath+"ntuple_master_lists/KUCMS_Ntuple_Master_BG_SVHPM100_Files_List.txt"
     elif(MCsig):
         inputMainList = cmsswpath+"ntuple_master_lists/KUCMS_Ntuple_Master_SMS_Sig_Files_List_v34.txt"
     else:
-    	print("Input list for samplei "+args.inputSample+" not found")
+    	print("Input list for sample "+args.inputSample+" not found")
     	exit()
     print("Using main file list",inputMainList)
     listpath = inputMainList[:inputMainList.rfind("/")]+"/"
@@ -85,10 +85,10 @@ def generateSubmission(args):
             if args.inputSample not in data[1]:
                 continue
             if not args.aod: #if default false
-                if "MINI" not in data[1]:
+                if "MINI" not in data[1] and "Mini" not in data[1]:
                     continue
             else:
-                if "MINI" in data[1]:
+                if "MINI" in data[1] or "Mini" in data[1]:
                     continue
             if args.fast:
                 if "FAST" not in data[1]:
@@ -102,7 +102,7 @@ def generateSubmission(args):
                 continue
             if args.era != "" and "Run"+args.year+args.era not in data[1]:
                 continue
-            if args.slice != "" and args.slice != "" not in data[1]:
+            if args.slice != "" and args.slice not in data[1]:
                 continue
             if args.mGl != "" and "mGl-"+args.mGl not in data[1]:
                 continue
