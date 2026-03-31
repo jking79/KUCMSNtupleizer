@@ -83,6 +83,7 @@ void KUCMSAodSkimmer::processPhotons(){
   uInt nNonPromptphotons = 0;
   allphoBaseline.clear();
   allphowtime.clear();
+  allphominjetdr.clear();
   //Time sigma window cut values
   float earlyTimeCut = -2.5;
   float lateTimeCut = 2.5;
@@ -298,6 +299,7 @@ void KUCMSAodSkimmer::processPhotons(){
 
 	float distPho = 0;
 	float distMom = 0;
+    float distMomPv = 0;
 	float betamom = 1;
 
 	float cor_gtofPVtoSC = 0;
@@ -321,9 +323,6 @@ void KUCMSAodSkimmer::processPhotons(){
         genVy = (*Gen_vy)[genIdx];   //!
         genVz = (*Gen_vz)[genIdx];   //!
 
-		distPho = hypo( scx - genVx, scy - genVy, scz - genVz );
-        cor_gtofPVtoSC = hypo(scx-PV_x,scy-PV_y,scz-PV_z);
-
         if( momIdx > -1.0 ){
 
             momEnergy = (*Gen_energy)[momIdx];   //!
@@ -339,15 +338,22 @@ void KUCMSAodSkimmer::processPhotons(){
             momVz = (*Gen_vz)[momIdx];   //!
 
 			distMom = hypo( genVx - momVx, genVy - momVy, genVz - momVz );
+			distMomPv = hypo( momVx - PV_x, momVy - PV_y, momVz - PV_z );
 			betamom = hypo( momPx, momPy, momPz )/momEnergy;
 
         }//<<>>if( momIdx > -1.0 )
 
+		float disGenMom = (*Gen_momDisplacment)[genIdx];
+        distPho = hypo( scx - genVx, scy - genVy, scz - genVz );
+        cor_gtofPVtoSC = hypo(scx-PV_x,scy-PV_y,scz-PV_z);
+        //distMom = hypo( genVx - PV_x, genVy - PV_y, genVz - PV_z );
+
 		float cor_gtofPVtoSCSOL = cor_gtofPVtoSC/SOL;
-		labtime = ( distPho + distMom/betamom )/SOL;
-		gentime = timeCali->getSmearedTime( labtime, phoWRes/3.0);
-		labtime -= cor_gtofPVtoSCSOL;
-		gentime -= cor_gtofPVtoSCSOL;
+        //labtime = ( distPho + distMom/betamom + distMomPv )/SOL;
+		labtime = ( distPho + disGenMom )/SOL;
+		gentime = timeCali->getSmearedTime( labtime, phoWRes );
+		labtime = labtime - cor_gtofPVtoSCSOL;
+		gentime = gentime - cor_gtofPVtoSCSOL;
 		labtimesig = labtime/phoWRes;
 		gentimesig = gentime/phoWRes;		
 
@@ -357,6 +363,10 @@ void KUCMSAodSkimmer::processPhotons(){
 			phoWTimeSig = gentimesig;
 
 		}//<<>>if( susId == 22 )
+
+		hist1d[30]->Fill(distPho/SOL); 
+		hist1d[31]->Fill(distMom/(betamom*SOL));
+		hist1d[32]->Fill(cor_gtofPVtoSCSOL);
 
     }//if( doGenInfo )
 
@@ -369,15 +379,11 @@ void KUCMSAodSkimmer::processPhotons(){
 
       auto jeta = (*Jet_eta)[jit];
       auto jphi = (*Jet_phi)[jit];
-
-      float dpjeta = jeta - eta;
-      float dpjphi = dPhi( jphi, phi );
-      float dr = hypo( dpjeta, dpjphi );
-      bool minDr = dr < 0.4;
-      if( minDr ){ minJetDr = 0; break; }
+	  float dr = dR1( eta, phi, jeta, jphi );
       if( dr < minJetDr ) minJetDr = dr;
 
     } // for( int jit = 0; jit < nSelJets; jit++ )
+	allphominjetdr.push_back( minJetDr );
 
     //---------------------------------------------------
     ///////////  saving hem region info  ////////////////////////////////////////////////////////////////////
@@ -502,6 +508,16 @@ void KUCMSAodSkimmer::processPhotons(){
 	bool standard_selction = not badNRechits and not hasPixSeed and not isExcluded;
     bool underNMaxBasePhos = nBaseRJRPhos < 2;// checks how many RJR photons already found - need to have found less then 2 already
     bool in_base_selection = standard_selction and pass_very_loose_id and underNMaxBasePhos;
+    allphoBaseline.push_back( in_base_selection );
+
+
+	if( in_base_selection ){
+
+        hist1d[33]->Fill(phoWTimeSig);
+        hist1d[34]->Fill(labtimesig);
+        hist1d[35]->Fill(gentimesig);
+
+	}//<<>>if( in_base_selection )
 
     //---------------------------------------------------
     ///////////  saving info on EB/EE photon information ///////////////////////////////////////////////////////
@@ -540,7 +556,6 @@ void KUCMSAodSkimmer::processPhotons(){
     ///////////  saving info for all non excluded photons  ////////////////////////////////////////////////////////////////////
     //---------------------------------------------------
 
-	allphoBaseline.push_back( in_base_selection );
     selPhotons.fillBranch( "photon_baseline", in_base_selection );   //!
     selPhotons.fillBranch( "photon_WTimeSig", phoWTimeSig );
     selPhotons.fillBranch( "photon_WTime", phoWTime );
@@ -894,12 +909,13 @@ void KUCMSAodSkimmer::processPhotons(){
       auto overMaxJEta = std::abs(jeta) > 2.4;
       if( underMinJPt || underMinJQual || overMaxJEta ) continue;
 
-      float dpjeta = jeta - eta;
-      float dpjphi = dPhi( jphi, phi );
-      float dr = hypo( dpjeta, dpjphi );
-      bool minDr = dr < 0.4;
+      //float dpjeta = jeta - eta;
+      //float dpjphi = dPhi( jphi, phi );
+      //float dr = hypo( dpjeta, dpjphi );
+      float dr = dR1( eta, phi, jeta, jphi );
+      //bool minDr = dr < 0.4;
       //if( minDr ) isJetPhoton = true;
-      if( minDr ) phoJetVeto[jit] = true;
+      if( dr < 0.4 ) phoJetVeto[jit] = true;
 
     } // for( int jit = 0; jit < nSelJets; jit++ )
 
@@ -1384,6 +1400,7 @@ bool KUCMSAodSkimmer::GetGJetsCR(int phoidx){
     float jet_sys_pt = sqrt(j_px*j_px + j_py*j_py);
     float ptasym = std::min(pho_pt, jet_sys_pt) / std::max(pho_pt, jet_sys_pt);
     if(ptasym < 0.6) return false;
+	if( allphominjetdr[phoidx] < 0.4 ) phoidx = -1;
 	if( gammaJetIndex[0] < 0 ){ gammaJetIndex[0] = phoidx; gammaJetIndex[1] = nJets; }
     return true;
 

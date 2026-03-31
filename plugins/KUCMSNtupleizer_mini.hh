@@ -332,7 +332,7 @@ void KUCMSNtupilizerMini::analyze(const edm::Event& iEvent, const edm::EventSetu
     // -- Consume Tokens --------------------------------------------
     // gets pointer to the collections from cmssw using the "token" for that collection
 
-    if( NTHDEBUG ) std::cout << "Consume Tokens -------------------------------------------- " << std::endl;
+    //if( NTHDEBUG ) std::cout << "Consume Tokens -------------------------------------------- " << std::endl;
 
     // TRIGGER
     //iEvent.getByToken(triggerResultsToken_,triggerResults_);

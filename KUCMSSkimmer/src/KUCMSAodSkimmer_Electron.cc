@@ -113,6 +113,8 @@ void KUCMSAodSkimmer::processElectrons(){
   }//<<>>for( int itr = 0; itr < nElectrons; itr++ )
   if( DEBUG ) std::cout << " -- Finishd looping electrons " << std::endl;
   if( nElectrons == 0 ){ hemBits.set( "el1hvl", false ); hemBits.set( "el2hvm", false ); }
+  if( not hemBits.valid("el1hvl") ) hemBits.set("el1hvl",false);
+  if( not hemBits.valid("el2hvm") ) hemBits.set("el2hvm",false);
 
   geCnts.set("nSelEle",nSelIsoElectrons);// passes min pt, isolated from photons, && good time criteria
 

@@ -81,11 +81,15 @@ dl2016mc = [
 
 dl2016data = [ 
 
-    '/MET/Run2016B-21Feb2020_ver2_UL2016_HIPM-v1/AOD', 
-    '/MET/Run2016C-21Feb2020_UL2016_HIPM-v1/AOD', 
-    '/MET/Run2016D-21Feb2020_UL2016_HIPM-v1/AOD', 
-    '/MET/Run2016G-21Feb2020_UL2016-v1/AOD', 
-    '/MET/Run2016H-21Feb2020_UL2016-v2/AOD', 
+    '/MET/Run2016B-ver1_HIPM_UL2016_MiniAODv2-v2/MINIAOD', 
+    '/MET/Run2016B-ver2_HIPM_UL2016_MiniAODv2-v2/MINIAOD', 
+    '/MET/Run2016C-HIPM_UL2016_MiniAODv2-v2/MINIAOD', 
+    '/MET/Run2016D-HIPM_UL2016_MiniAODv2-v2/MINIAOD', 
+    '/MET/Run2016E-HIPM_UL2016_MiniAODv2-v2/MINIAOD', 
+    '/MET/Run2016F-HIPM_UL2016_MiniAODv2-v2/MINIAOD', 
+    '/MET/Run2016F-UL2016_MiniAODv2-v2/MINIAOD', 
+    '/MET/Run2016G-UL2016_MiniAODv2-v2/MINIAOD', 
+    '/MET/Run2016H-UL2016_MiniAODv2-v2/MINIAOD', 
 
 ]
 
@@ -612,10 +616,21 @@ dl2018MetMini = [
 
 ]
 
+dl2018MCmini = [
+
+    '/GJets_HT-100To200_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-4cores5k_106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',
+    '/GJets_HT-200To400_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',
+    '/GJets_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',
+    '/GJets_HT-40To100_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',
+    '/GJets_HT-600ToInf_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',
+
+]
+
+
 #query = 'dasgoclient --json -query=\'dataset='
 query = 'dasgoclient --json -query=\'site dataset=' 
 
-datalist = dlEGMAOD17
+datalist = dl2016data
 
 for data in datalist :
     
