@@ -50,6 +50,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 
     KUCMS_TimeCalibration( bool stayOpen = false, bool makeNew = false  );
 	~KUCMS_TimeCalibration();
+	void setUseLocalCali(){ useEosRootCali = false; };
 
 
 	private:
@@ -123,7 +124,6 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 
     std::string eosCaliPath;
 	bool useEosRootCali;
-	void setUseLocalCali(){ useEosRootCali = false; };
 
     TRandom* getRandom;
 
