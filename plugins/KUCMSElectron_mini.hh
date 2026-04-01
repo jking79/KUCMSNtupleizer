@@ -526,9 +526,10 @@ void KUCMSElectronObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 	geVar.set("nSelEle",nSelEle);
 
     int nGenMatched = 0;
-/* ----------  Issues with gen matching and track information in mini -- to be fixed -------------
+
     if( cfFlag("hasGenInfo") ){
         auto genInfo = genObjs->getGenEleMatch( scvertex, scptres, sctrks );
+
         for( auto genidx : genInfo ){
             Branches.fillBranch("GenIdx",genidx);
             bool hasGenMatch = ( genidx > -1 );
@@ -546,8 +547,10 @@ void KUCMSElectronObjectMini::ProcessEvent( ItemManager<float>& geVar ){
             bool isLWZP = isLWZ && ( ( genGMomPdgId > 0 && genGMomPdgId < 10 ) || ( genGMomPdgId == 1000023 ) );
             Branches.fillBranch("isLWZP", isLWZP );
         }//<<>>for( auto genidx : genInfo )
+
     }//<<>>if( cfFlag("hasGenInfo") )
-*/
+
+
     Branches.fillBranch("nGenMatch",nGenMatched);
 
 }//<<>>void KUCMSElectron::ProcessEvent()

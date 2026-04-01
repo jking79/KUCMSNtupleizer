@@ -330,7 +330,7 @@ void KUCMSMuonObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 
 	if( MuonDEBUG ) std::cout << " -- Muon filling event geninfo : " << std::endl;
     int nGenMatched = 0;
-/* -----  Issues with gen matching in mini with track info, to be fixed ----------------
+// -----  Issues with gen matching in mini with track info, to be fixed ----------------
     if( cfFlag("hasGenInfo") ){
         auto genInfo = genObjs->getGenMuonMatch( scvertex, scptres, sctrks );
         for( auto genidx : genInfo ){
@@ -351,7 +351,7 @@ void KUCMSMuonObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 			Branches.fillBranch("isLWZP", isLWZP );
         }//<<>>for( auto genidx : genInfo )
     }//<<>>if( cfFlag("hasGenInfo") )
-*/
+
 	Branches.fillBranch("nGenMatch",nGenMatched);
 
 

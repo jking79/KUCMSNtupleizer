@@ -682,7 +682,7 @@ void KUCMSPhotonObjectMini::ProcessEvent( ItemManager<float>& geVar ){
     }//<<>>for( const auto &photon : fPhotons 
 	Branches.fillBranch("nPho",phoIdx);
 
-/*
+
 	if( cfFlag("hasGenInfo") ){
 		auto genInfo = genObj->getGenPhoMatch( scvertex, scptres );// input is photon sc's in photon order
 		//std::cout << " - genmatched - scmatched comp : " << std::endl;
@@ -693,9 +693,10 @@ void KUCMSPhotonObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 			//std::cout << " -- Filling genindex : " << genidx << std::endl;  
 			Branches.fillBranch("GenIdx",genidx);
 			if( genidx > -1 ){ 
-			 	int genXMomIndx = genObj->getGenSigPhoXMother( genidx );
-                Branches.fillBranch("GenXMomIdx",genXMomIndx);
-
+			 	//int genXMomIndx = genObj->getGenSigPhoXMother( genidx );
+                //Branches.fillBranch("GenXMomIdx",genXMomIndx);
+				Branches.fillBranch("GenXMomIdx",-5);//temp till fixed this issue	
+		
 				//int genLlpId = genObj->getGenLlpId( genidx );
 				//int genMotherIndx = genObj->getGenMomIdx( genidx );
                 //int momPdgId = genObj->getGenPdgId( genMotherIndx );
@@ -709,7 +710,6 @@ void KUCMSPhotonObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 		}//<<>>for( auto genidx : genInfo )
 		//std::cout << " Photon Gen Match Finished ------------------------- " << std::endl;
 	}//<<>>if( cfFlag("hasGenInfo") )
-*/
 
 
 /*

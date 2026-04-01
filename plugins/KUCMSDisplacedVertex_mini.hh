@@ -451,6 +451,7 @@ void KUCMSDisplacedVertexMini::ProcessEvent( ItemManager<float>& geVar ){
       }
       Branches.fillBranch("Vertex_time", svTime);
 
+
       if(cfFlag("hasGenInfo")) {
 	double minDistance;
 	int nearestGenVertexIndex(FindNearestGenVertexIndex(vertex, minDistance));
@@ -463,6 +464,7 @@ void KUCMSDisplacedVertexMini::ProcessEvent( ItemManager<float>& geVar ){
 	Branches.fillBranch("Vertex_matchRatio", float(nearestGenVertexIndex >= 0
 	    ? signalZs_[nearestGenVertexIndex].matchRatio(vertex) : -1));
       }//<<>>if(cfFlag("hasGenInfo"))
+
 
       for(const auto &trackRef : vertex.tracks()) {
 	const reco::TrackRef ref(trackRef.castTo<reco::TrackRef>());
@@ -493,6 +495,7 @@ void KUCMSDisplacedVertexMini::ProcessEvent( ItemManager<float>& geVar ){
 	Branches.fillBranch("VertexTrack_ratioPToEnergySC", float(isSCMatched? track.p()/sc.correctedEnergy() : -1.));
 	Branches.fillBranch("VertexTrack_pathLength", trackPathLength);
 
+
 	if(cfFlag("hasGenInfo")) {
 	  const bool isSignal(TrackHelper::FindTrackIndex(track, signalTracks_) >= 0);
 	  Branches.fillBranch("VertexTrack_isSignalTrack", isSignal);
@@ -500,10 +503,13 @@ void KUCMSDisplacedVertexMini::ProcessEvent( ItemManager<float>& geVar ){
 	  Branches.fillBranch("VertexTrack_isSignalElectron", zMode == ZDecayMode::Electron);
 	  Branches.fillBranch("VertexTrack_isSignalMuon", zMode == ZDecayMode::Muon);
 	}//<<>>if(cfFlag("hasGenInfo"))
+
+
       }//<<>>for(const auto &trackRef : vertex.tracks())
       vtxIndex++;
     }//<<>>for(const auto &tvertex : generalVertices_)
     geVar.set("nDisSVs",nDisSV);
+
 
     if(cfFlag("hasGenInfo")) {
 
@@ -556,6 +562,7 @@ void KUCMSDisplacedVertexMini::ProcessEvent( ItemManager<float>& geVar ){
       if(cfFlag("verboseEventTable")) printEventSummaryTable();
 
     }//<<>>if(cfFlag("hasGenInfo"))
+
 
 }//<<>>void KUCMSDisplacedVertexMini::ProcessEvent()
 
