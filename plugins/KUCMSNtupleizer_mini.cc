@@ -215,6 +215,7 @@ KUCMSNtupilizerMini::KUCMSNtupilizerMini(const edm::ParameterSet& iConfig):
 
     if( cfFlag("hasGenInfo") ){
 
+
         if( NTDEBUG ) std::cout << "Create & Load Gen Information" << std::endl;
 
         auto genObjs = new KUCMSGenObjectMini( iConfig );
@@ -234,10 +235,12 @@ KUCMSNtupilizerMini::KUCMSNtupilizerMini(const edm::ParameterSet& iConfig):
         genObjs->LoadgpTokens( genPrunToken );
 
         // Load gen object into other collections
+
 	    electronsObj->LoadGenObject( genObjs );
 		muonObj->LoadGenObject( genObjs );
         photonsObj->LoadGenObject( genObjs );
         ak4jetObj->LoadGenObject( genObjs );
+
 		if( cfFlag("doSVModule") ){
 			displacedVertexObj->LoadGenParticlesToken(genPartToken);
 			displacedVertexObj->LoadPrunedGenParticlesToken(genPrunToken);

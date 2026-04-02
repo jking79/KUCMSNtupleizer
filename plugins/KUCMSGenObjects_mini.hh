@@ -681,9 +681,9 @@ void KUCMSGenObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventSe
 		bool done = false;
 		while( not done ){
     		bool notLastInChain( ( gpm->numberOfMothers() == 1 ) && ( gp.pdgId() == gpm->pdgId() ) );
-    		bool validStatus( gpm->status() < 40 );
-			bool hasnextmother = not( gpm->numberOfMothers() < 1 );
-    		if( hasnextmother && ( notLastInChain || not validStatus ) ){ gpm = gpm->mother(0); }
+    		//bool validStatus( gpm->status() < 40 );
+			//bool hasnextmother = not( gpm->numberOfMothers() < 1 );
+    		if( notLastInChain ){ gpm = gpm->mother(0); }
 			else done = true;
 		}//<<>>while( not done )
 
@@ -722,7 +722,7 @@ void KUCMSGenObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventSe
 		if( gp.pdgId() != fgenpacks[gpit].pdgId() ) std::cout << " gen pack index bad 1 !!!!" << std::endl;
 	}//<<>>for (const auto & gp : tgenpacks )
 
-    if( GenDEBUG ) std::cout << "Getting GenPack grand mom indexes -------------------------------------------------------------" << std::endl;
+    if( GenDEBUG ) std::cout << "Getting GenPack grand mom indexes ------------------------------------------------------" << std::endl;
 
     for( int gpit = 0; gpit < nFgenpacks; gpit++ ){
 
@@ -782,17 +782,25 @@ void KUCMSGenObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventSe
     for( int gpit = 0; gpit < nFpgenparts; gpit++ ){
 
         auto gp = fpgenparts[gpit];
-        if( gp.numberOfMothers() < 1 ) continue;;
+        if( GenDEBUG ) std::cout << " -- Getting GenPart mom indexes 0.1 -------------------------------------------" << std::endl;
+        if( gp.numberOfMothers() < 1 ) continue;
 
+        if( GenDEBUG ) std::cout << " -- Getting GenPart mom indexes 1 -------------------------------------------" << std::endl;
         auto gpm = gp.mother(0);
         bool done = false;
+		int nLoop = 0;
+        if( GenDEBUG ) std::cout << " -- Getting GenPart mom indexes 1A ------------------------------------------" << std::endl;
         while( not done ){
             bool notLastInChain( ( gpm->numberOfMothers() == 1 ) && ( gp.pdgId() == gpm->pdgId() ) );
-            bool validStatus( gpm->status() < 40 );
-            bool hasnextmother = not( gpm->numberOfMothers() < 1 );
-            if( hasnextmother && ( notLastInChain || not validStatus ) ){ gpm = gpm->mother(0); }
+            bool notValidStatus( gpm->status() > 40 );
+			bool hasnextmother = not( gpm->numberOfMothers() < 1 );
+            if( hasnextmother && ( notLastInChain || notValidStatus ) ){ gpm = gpm->mother(0); }
             else done = true;
+			nLoop += 1;
+			if( nLoop > 100 ){ std::cout << " -- runaway loop !!!!!!! " << std::endl; done = true; break; }
         }//<<>>while( not done )
+
+        if( GenDEBUG ) std::cout << " -- Getting GenPart mom indexes 2 -------------------------------------------" << std::endl;
 
         //float mr = hypo(gpm->eta(),gpm->phi());
         int mpdg = gpm->pdgId();
@@ -810,6 +818,9 @@ void KUCMSGenObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventSe
                 break;
             }//<<>>if( canpt == mpt && canpdg == mpdg )
         }//<<>>for( auto cangp : fpgenparts )
+
+        if( GenDEBUG ) std::cout << " -- Getting GenPart mom indexes 3 -------------------------------------------" << std::endl;
+
         if( not matched ){
         for( int cangpit = 0; cangpit < nFpgenparts; cangpit++ ){
             if( gpit == cangpit ) continue;
@@ -825,11 +836,17 @@ void KUCMSGenObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventSe
             }//<<>>if( canpt == mpt && canpdg == mpdg )
         }//<<>>for( auto cangp : fgenpacks )
         }//<<>>if( not matched )
+
+        if( GenDEBUG ) std::cout << " -- Getting GenPart mom indexes 4 -------------------------------------------" << std::endl;
+
         if( fpgpMomIdx[gpit] == 0 && matched ) std::cout << " gen part mom index bad !!!!" << std::endl;
         if( gp.pdgId() != fpgenparts[gpit].pdgId() ) std::cout << " gen part index bad 1 !!!!" << std::endl;
+
+        if( GenDEBUG ) std::cout << " -- Fin Getting GenPart mom indexes -------------------------------------------" << std::endl;
+
     }//<<>>for (const auto & gp : tgenpacks )
 
-    if( GenDEBUG ) std::cout << "Getting GenPart grand mom indexes -------------------------------------------------------------" << std::endl;
+    if( GenDEBUG ) std::cout << "Getting GenPart grand mom indexes ----------------------------------------------------" << std::endl;
     for( int gpit = 0; gpit < nFpgenparts; gpit++ ){
 
         auto mgpit = fpgpMomIdx[gpit];
@@ -948,6 +965,7 @@ void KUCMSGenObjectMini::ProcessEvent( ItemManager<float>& geVar ){
     int nGenParts = 0;
     int nFgenParts = fpgenparts.size();
     int nFgenPacks = fgenpacks.size();
+
     for (const auto & genpart : fpgenparts ){
 
         const float genPt = genpart.pt();
@@ -1020,12 +1038,12 @@ void KUCMSGenObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 		//std::cout << " 4v e " << genEnergy << " eta " << genEta << " phi " << genPhi << " pt " << genPt << " mass " << genMass;
         //std::cout << " mom " << genMomIdx << " gmom "  << genGMomIdx << " kid " << genKidIdx << std::endl;
 
-		//bool isX2 = ( genPdgId == 1000023 );
-        bool isX = ( genPdgId > 1000021 ) and ( genPdgId < 1000038 );
-        bool fsGZ = ( kidPdgId > 0 ) ? ( ( kidPdgId == 22 ) or ( kidPdgId == 23 ) ) : false;
-        bool fsLSP = ( kidPdgId > 0 ) ? ( kidPdgId == 1000022 ) : false;
-        if( isX and ( fsGZ or fsLSP ) ){
-        //if( isX2 ){
+		bool isX2 = ( genPdgId == 1000023 );
+        //bool isX = ( genPdgId > 1000021 ) and ( genPdgId < 1000038 );
+        //bool fsGZ = ( kidPdgId > 0 ) ? ( ( kidPdgId == 22 ) or ( kidPdgId == 23 ) ) : false;
+        //bool fsLSP = ( kidPdgId > 0 ) ? ( kidPdgId == 1000022 ) : false;
+        //if( isX and ( fsGZ or fsLSP ) ){
+        if( isX2 ){
             nXs++;
             float kVx = -999; float kVy = -999; float kVz = -999;
             if( partKidIdx > -1 ){
@@ -1115,7 +1133,9 @@ void KUCMSGenObjectMini::ProcessEvent( ItemManager<float>& geVar ){
         nGenParts++;
     }//<<>> for (const auto genpart : fgenpacks )
 
+
     if( GenDEBUG ) std::cout << " - enetering Gen loop fgenpacks" << std::endl;
+
 
     for (const auto & genpart : fgenpacks ){
 
@@ -1189,6 +1209,7 @@ void KUCMSGenObjectMini::ProcessEvent( ItemManager<float>& geVar ){
         //std::cout << " 4v e " << genEnergy << " eta " << genEta << " phi " << genPhi << " pt " << genPt << " mass " << genMass;
         //std::cout << " mom " << genMomIdx << " gmom "  << genGMomIdx << " kid " << genKidIdx << std::endl;
 
+
 /*
         bool isX2 = ( genPdgId > 1000023 );
         bool isX = ( genPdgId > 1000022 ) and ( genPdgId < 1000038 );
@@ -1244,6 +1265,7 @@ void KUCMSGenObjectMini::ProcessEvent( ItemManager<float>& geVar ){
             }//<<>>if( nXs == 2 )
         }//<<>>if( genPdgId > 1000021 and genPdgId < 1000038 )
 */
+
         //if( GenDEBUG ) std::cout << "GenPart : genSusId = " << genSusId << std::endl;
         Branches.fillBranch("genPt",genPt);
         Branches.fillBranch("genEnergy",genEnergy);
@@ -1324,6 +1346,7 @@ void KUCMSGenObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 	geVar.fill("genWgt",wgt);
     if( GenDEBUG ) std::cout << "GenPart : Done " << std::endl;
 
+
 }//<<>>void KUCMSGen::ProcessEvent()
 
 ///////  -----------------------------   End of ProcessEvent post and main ------------------------------------------
@@ -1380,7 +1403,7 @@ std::vector<int> KUCMSGenObjectMini::getGenMatch( const std::vector<v3fPoint> sc
 	std::vector<int> genRecoIndx;
 	float drthres = 0.4;
 	float demax = 1.0;
-	int nGenPack = fgenpacks.size();
+	//int nGenPack = fgenpacks.size();
 	//std::vector<bool> isInGenPacked;
 /*
     for( int idx = 0; idx < nGenPack; idx++ ){

@@ -528,6 +528,7 @@ void KUCMSElectronObjectMini::ProcessEvent( ItemManager<float>& geVar ){
     int nGenMatched = 0;
 
     if( cfFlag("hasGenInfo") ){
+
         auto genInfo = genObjs->getGenEleMatch( scvertex, scptres, sctrks );
 
         for( auto genidx : genInfo ){
@@ -535,17 +536,18 @@ void KUCMSElectronObjectMini::ProcessEvent( ItemManager<float>& geVar ){
             bool hasGenMatch = ( genidx > -1 );
             Branches.fillBranch("hasGenIdx", hasGenMatch );
             if( hasGenMatch ) nGenMatched++;
-            int genWZMomIndx = hasGenMatch ? genObjs->getGenSigEleXMother( genidx ) : -5;
-            Branches.fillBranch("GenWZIdx",genWZMomIndx);
-            int genGMomIndx = ( genWZMomIndx > -1 ) ? genObjs->getGenSigEleXMother( genWZMomIndx ) : -5;
-            Branches.fillBranch("GenXMomIdx",genGMomIndx);
-            int momIdx = genObjs->getGenMomIdx( genidx );
-            int genMomPdgId = genObjs->getGenPdgId( momIdx );
-            int gmomIdx = genObjs->getGenMomIdx( momIdx );
-            int genGMomPdgId = genObjs->getGenPdgId( gmomIdx );
-            bool isLWZ =  ( genMomPdgId == 23 || genMomPdgId == 24 );
-            bool isLWZP = isLWZ && ( ( genGMomPdgId > 0 && genGMomPdgId < 10 ) || ( genGMomPdgId == 1000023 ) );
-            Branches.fillBranch("isLWZP", isLWZP );
+			//  ---  !!!!!  getGenSigEleXMother && getGenSigEleXMother && getGenMomIdx/getGenMomIdx/getGenPdgId broken in mini !!!!!!!
+            //int genWZMomIndx = hasGenMatch ? genObjs->getGenSigEleXMother( genidx ) : -5;
+            //Branches.fillBranch("GenWZIdx",genWZMomIndx);
+            //int genGMomIndx = ( genWZMomIndx > -1 ) ? genObjs->getGenSigEleXMother( genWZMomIndx ) : -5;
+            //Branches.fillBranch("GenXMomIdx",genGMomIndx);
+            //int momIdx = genObjs->getGenMomIdx( genidx );
+            //int genMomPdgId = genObjs->getGenPdgId( momIdx );
+            //int gmomIdx = genObjs->getGenMomIdx( momIdx );
+            //int genGMomPdgId = genObjs->getGenPdgId( gmomIdx );
+            //bool isLWZ =  ( genMomPdgId == 23 || genMomPdgId == 24 );
+            //bool isLWZP = isLWZ && ( ( genGMomPdgId > 0 && genGMomPdgId < 10 ) || ( genGMomPdgId == 1000023 ) );
+            //Branches.fillBranch("isLWZP", isLWZP );
         }//<<>>for( auto genidx : genInfo )
 
     }//<<>>if( cfFlag("hasGenInfo") )
