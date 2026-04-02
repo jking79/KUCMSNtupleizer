@@ -684,6 +684,7 @@ void KUCMSPhotonObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 
 
 	if( cfFlag("hasGenInfo") ){
+
 		auto genInfo = genObj->getGenPhoMatch( scvertex, scptres );// input is photon sc's in photon order
 		//std::cout << " - genmatched - scmatched comp : " << std::endl;
 		//std::cout << " Photon Gen Match ------------------------- " << std::endl;
@@ -709,6 +710,7 @@ void KUCMSPhotonObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 			//std::cout << " --- next photon -------------------------- " << std::endl;
 		}//<<>>for( auto genidx : genInfo )
 		//std::cout << " Photon Gen Match Finished ------------------------- " << std::endl;
+
 	}//<<>>if( cfFlag("hasGenInfo") )
 
 
