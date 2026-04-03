@@ -299,6 +299,7 @@ void KUCMSAodSkimmer::processPhotons(){
 
 	float distPho = 0;
 	float distMom = 0;
+    float distMomPv = 0;
 	float betamom = 1;
 
 	float cor_gtofPVtoSC = 0;
@@ -322,9 +323,6 @@ void KUCMSAodSkimmer::processPhotons(){
         genVy = (*Gen_vy)[genIdx];   //!
         genVz = (*Gen_vz)[genIdx];   //!
 
-		distPho = hypo( scx - genVx, scy - genVy, scz - genVz );
-        cor_gtofPVtoSC = hypo(scx-PV_x,scy-PV_y,scz-PV_z);
-
         if( momIdx > -1.0 ){
 
             momEnergy = (*Gen_energy)[momIdx];   //!
@@ -340,15 +338,22 @@ void KUCMSAodSkimmer::processPhotons(){
             momVz = (*Gen_vz)[momIdx];   //!
 
 			distMom = hypo( genVx - momVx, genVy - momVy, genVz - momVz );
+			distMomPv = hypo( momVx - PV_x, momVy - PV_y, momVz - PV_z );
 			betamom = hypo( momPx, momPy, momPz )/momEnergy;
 
         }//<<>>if( momIdx > -1.0 )
 
+		float disGenMom = (*Gen_momDisplacment)[genIdx];
+        distPho = hypo( scx - genVx, scy - genVy, scz - genVz );
+        cor_gtofPVtoSC = hypo(scx-PV_x,scy-PV_y,scz-PV_z);
+        //distMom = hypo( genVx - PV_x, genVy - PV_y, genVz - PV_z );
+
 		float cor_gtofPVtoSCSOL = cor_gtofPVtoSC/SOL;
-		labtime = ( distPho + distMom/betamom )/SOL;
+        //labtime = ( distPho + distMom/betamom + distMomPv )/SOL;
+		labtime = ( distPho + disGenMom )/SOL;
 		gentime = timeCali->getSmearedTime( labtime, phoWRes );
-		labtime -= cor_gtofPVtoSCSOL;
-		gentime -= cor_gtofPVtoSCSOL;
+		labtime = labtime - cor_gtofPVtoSCSOL;
+		gentime = gentime - cor_gtofPVtoSCSOL;
 		labtimesig = labtime/phoWRes;
 		gentimesig = gentime/phoWRes;		
 
@@ -358,6 +363,10 @@ void KUCMSAodSkimmer::processPhotons(){
 			phoWTimeSig = gentimesig;
 
 		}//<<>>if( susId == 22 )
+
+		hist1d[30]->Fill(distPho/SOL); 
+		hist1d[31]->Fill(distMom/(betamom*SOL));
+		hist1d[32]->Fill(cor_gtofPVtoSCSOL);
 
     }//if( doGenInfo )
 
@@ -500,6 +509,15 @@ void KUCMSAodSkimmer::processPhotons(){
     bool underNMaxBasePhos = nBaseRJRPhos < 2;// checks how many RJR photons already found - need to have found less then 2 already
     bool in_base_selection = standard_selction and pass_very_loose_id and underNMaxBasePhos;
     allphoBaseline.push_back( in_base_selection );
+
+
+	if( in_base_selection ){
+
+        hist1d[33]->Fill(phoWTimeSig);
+        hist1d[34]->Fill(labtimesig);
+        hist1d[35]->Fill(gentimesig);
+
+	}//<<>>if( in_base_selection )
 
     //---------------------------------------------------
     ///////////  saving info on EB/EE photon information ///////////////////////////////////////////////////////

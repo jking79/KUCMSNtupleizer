@@ -1,6 +1,6 @@
 import os
 import argparse
-
+from tools import uniformize_sig_name
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dir","-d",help="top directory that has directories of root files to hadd i.e. Output/GMSB/GMSB_AOD_v13_GMSB_L-150TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix/jets/",required=True)
@@ -48,6 +48,8 @@ def main():
             big_oname = d.path
             big_oname = big_oname[:big_oname.find("/"+d.name)]
             big_oname = scratch_path+"/"+big_oname[big_oname.rfind("/")+1:]+"_rjrskim.root"
+            if "SMS" in big_oname:
+                big_oname = uniformize_sig_name(big_oname)
             #check if file exists
             if os.path.exists(oname):
             	if(args.force):
@@ -66,7 +68,9 @@ def main():
             oname = d.path
             oname = oname[:oname.find("/"+d.name)]
             oname = d.path+"/"+oname[oname.rfind("/")+1:]+"_rjrskim.root"
-            print("oname",oname,"d.name",d.name,"proc",proc,"d.path",d.path)
+            if "SMS" in oname:
+                oname = uniformize_sig_name(oname)
+            #print("oname",oname,"d.name",d.name,"proc",proc,"d.path",d.path)
             cmd = cmdHadd
             #check if file exists
             if os.path.exists(oname):

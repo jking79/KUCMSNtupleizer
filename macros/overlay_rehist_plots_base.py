@@ -27,6 +27,7 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
     f1 = []
     h1 = []
     n = 0
+    sqrt12 = sqrt(12)
 
     setTDRStyle()
     gStyle.SetPadTickY(1)
@@ -96,7 +97,7 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
             binwidth = float(orighist.GetBinWidth(bn))
             binstart = float(orighist.GetBinLowEdge(bn))
             h1[n].SetPoint(bn,binmid,binval)
-            widtherr = binwidth/6.0
+            widtherr = binwidth/sqrt12
             h1[n].SetPointError(bn,widtherr,binerr)
             #print('Fill bin',bn,'at',binmid,'with',binval,'err',widtherr,'by',binerr,'for:',binstart,'to',binstart+binwidth,'width',binwidth) 
         h1[n].UseCurrentStyle()

@@ -138,7 +138,7 @@ def docrab( dataset ):
             #trial          = "kucmsntuple_MET_R17_SVIPM100_p9_v31"# 
             #trial          = "kucmsntuple_SMS_test_SVHPM100_Mini_v33" #
             #trial          = "kucmsntuple_SMS_GZ_SVHPM100_FullMini_v34" #
-            trial          = "kucmsntuple_SMS_GZ_SVHPM100_SPR_v34" #
+            trial          = "kucmsntuple_SMS_GZ_SVHPM100_Full_Take2_v34" #
 
             # set trial name - used in output path ?
 
@@ -255,36 +255,36 @@ def run_multi():
         #['/SMS-GlGl-GZ/2300_N2-2250_N1-2200_ct1/FULLMINI',inlist2+'full_mini_SMS-GlGl_mGl-2300_mN2-2250_mN1-2200_GZ_N2ctau-0p1_MINI.txt'],
         #['/SMS-GlGl-GZ/2300_N2-2250_N1-2200_ct5/FULLMINI',inlist2+'full_mini_SMS-GlGl_mGl-2300_mN2-2250_mN1-2200_GZ_N2ctau-0p5_MINI.txt'],
 
-        #['/SMS-GlGl-GZ/mGl-2300_mN2-1300_mN1-1000_ct1/FULLMINI',inlist2+'SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p1_MINI.txt'],
-        #['/SMS-GlGl-GZ/mGl-2300_mN2-1300_mN1-1000_ct5/FULLMINI',inlist2+'SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p5_MINI.txt'],
-        #['/SMS-GlGl-GZ/mGl-2300_mN2-1600_mN1-1000_ct1/FULLMINI',inlist2+'SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p1_MINI.txt'],
-        #['/SMS-GlGl-GZ/mGl-2300_mN2-1600_mN1-1000_ct5/FULLMINI',inlist2+'SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_MINI.txt'],
-        #['/SMS-GlGl-GZ/mGl-2300_mN2-1600_mN1-500_ct1/FULLMINI',inlist2+'SMS-GlGl_mGl-2300_mN2-1600_mN1-500_GZ_N2ctau-0p1_MINI.txt'],
-        #['/SMS-GlGl-GZ/mGl-2300_mN2-1600_mN1-500_ct5/FULLMINI',inlist2+'SMS-GlGl_mGl-2300_mN2-1600_mN1-500_GZ_N2ctau-0p5_MINI.txt'],
-        #['/SMS-GlGl-GZ/mGl-2300_mN2-2200_mN1-2100_ct1/FULLMINI',inlist2+'SMS-GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p1_MINI.txt'],
-        #['/SMS-GlGl-GZ/mGl-2300_mN2-2200_mN1-2100_ct5/FULLMINI',inlist2+'SMS-GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p5_MINI.txt'],
-        #['/SMS-GlGl-GZ/mGl-2300_mN2-2200_mN1-2150_ct1/FULLMINI',inlist2+'SMS-GlGl_mGl-2300_mN2-2200_mN1-2150_GZ_N2ctau-0p1_MINI.txt'],
-        #['/SMS-GlGl-GZ/mGl-2300_mN2-2200_mN1-2150_ct5/FULLMINI',inlist2+'SMS-GlGl_mGl-2300_mN2-2200_mN1-2150_GZ_N2ctau-0p5_MINI.txt'],
-        #['/SMS-GlGl-GZ/mGl-2300_mN2-2250_mN1-2150_ct1/FULLMINI',inlist2+'SMS-GlGl_mGl-2300_mN2-2250_mN1-2150_GZ_N2ctau-0p1_MINI.txt'],
-        #['/SMS-GlGl-GZ/mGl-2300_mN2-2250_mN1-2150_ct5/FULLMINI',inlist2+'SMS-GlGl_mGl-2300_mN2-2250_mN1-2150_GZ_N2ctau-0p5_MINI.txt'],
-        #['/SMS-GlGl-GZ/mGl-2300_mN2-2250_mN1-2200_ct1/FULLMINI',inlist2+'SMS-GlGl_mGl-2300_mN2-2250_mN1-2200_GZ_N2ctau-0p1_MINI.txt'],
-        #['/SMS-GlGl-GZ/mGl-2300_mN2-2250_mN1-2200_ct5/FULLMINI',inlist2+'SMS-GlGl_mGl-2300_mN2-2250_mN1-2200_GZ_N2ctau-0p5_MINI.txt'],
-        #['/SMS-GlGl-GZ/mGl-2500_mN2-1200_mN1-500_ct1/FULLMINI',inlist2+'SMS-GlGl_mGl-2500_mN2-1200_mN1-500_GZ_N2ctau-0p1_MINI.txt'],
-        #['/SMS-GlGl-GZ/mGl-2500_mN2-1200_mN1-500_ct5/FULLMINI',inlist2+'SMS-GlGl_mGl-2500_mN2-1200_mN1-500_GZ_N2ctau-0p5_MINI.txt'],
-        #['/SMS-GlGl-GZ/mGl-2500_mN2-2000_mN1-1000_ct1/FULLMINI',inlist2+'SMS-GlGl_mGl-2500_mN2-2000_mN1-1000_GZ_N2ctau-0p1_MINI.txt'],
-        #['/SMS-GlGl-GZ/mGl-2500_mN2-2000_mN1-1000_ct5/FULLMINI',inlist2+'SMS-GlGl_mGl-2500_mN2-2000_mN1-1000_GZ_N2ctau-0p5_MINI.txt'],
-        #['/SMS-GlGl-GZ/mGl-2500_mN2-2000_mN1-1500_ct1/FULLMINI',inlist2+'SMS-GlGl_mGl-2500_mN2-2000_mN1-1500_GZ_N2ctau-0p1_MINI.txt'],
-        #['/SMS-GlGl-GZ/mGl-2500_mN2-2000_mN1-1500_ct5/FULLMINI',inlist2+'SMS-GlGl_mGl-2500_mN2-2000_mN1-1500_GZ_N2ctau-0p5_MINI.txt'],
-        #['/SMS-GlGl-GZ/mGl-2500_mN2-2400_mN1-2300_ct1/FULLMINI',inlist2+'SMS-GlGl_mGl-2500_mN2-2400_mN1-2300_GZ_N2ctau-0p1_MINI.txt'],
-        #['/SMS-GlGl-GZ/mGl-2500_mN2-2400_mN1-2300_ct5/FULLMINI',inlist2+'SMS-GlGl_mGl-2500_mN2-2400_mN1-2300_GZ_N2ctau-0p5_MINI.txt'],
-        #['/SMS-GlGl-GZ/mGl-2500_mN2-2400_mN1-2350_ct1/FULLMINI',inlist2+'SMS-GlGl_mGl-2500_mN2-2400_mN1-2350_GZ_N2ctau-0p1_MINI.txt'],
-        #['/SMS-GlGl-GZ/mGl-2500_mN2-2400_mN1-2350_ct5/FULLMINI',inlist2+'SMS-GlGl_mGl-2500_mN2-2400_mN1-2350_GZ_N2ctau-0p5_MINI.txt'],
-        #['/SMS-GlGl-GZ/mGl-2500_mN2-2450_mN1-2350_ct1/FULLMINI',inlist2+'SMS-GlGl_mGl-2500_mN2-2450_mN1-2350_GZ_N2ctau-0p1_MINI.txt'],
-        #['/SMS-GlGl-GZ/mGl-2500_mN2-2450_mN1-2350_ct5/FULLMINI',inlist2+'SMS-GlGl_mGl-2500_mN2-2450_mN1-2350_GZ_N2ctau-0p5_MINI.txt'],
-        #['/SMS-GlGl-GZ/mGl-2500_mN2-2450_mN1-2400_ct1/FULLMINI',inlist2+'SMS-GlGl_mGl-2500_mN2-2450_mN1-2400_GZ_N2ctau-0p1_MINI.txt'],
-        #['/SMS-GlGl-GZ/mGl-2500_mN2-2450_mN1-2400_ct5/FULLMINI',inlist2+'SMS-GlGl_mGl-2500_mN2-2450_mN1-2400_GZ_N2ctau-0p5_MINI.txt'],
+        ['/SMS-GlGl-GZ/mGl-2300_mN2-1300_mN1-1000_ct1/MINI',inlist2+'SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p1_MINI.txt'],
+        ['/SMS-GlGl-GZ/mGl-2300_mN2-1300_mN1-1000_ct5/MINI',inlist2+'SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p5_MINI.txt'],
+        ['/SMS-GlGl-GZ/mGl-2300_mN2-1600_mN1-1000_ct1/MINI',inlist2+'SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p1_MINI.txt'],
+        ['/SMS-GlGl-GZ/mGl-2300_mN2-1600_mN1-1000_ct5/MINI',inlist2+'SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_MINI.txt'],
+        ['/SMS-GlGl-GZ/mGl-2300_mN2-1600_mN1-500_ct1/MINI',inlist2+'SMS-GlGl_mGl-2300_mN2-1600_mN1-500_GZ_N2ctau-0p1_MINI.txt'],
+        ['/SMS-GlGl-GZ/mGl-2300_mN2-1600_mN1-500_ct5/MINI',inlist2+'SMS-GlGl_mGl-2300_mN2-1600_mN1-500_GZ_N2ctau-0p5_MINI.txt'],
+        ['/SMS-GlGl-GZ/mGl-2300_mN2-2200_mN1-2100_ct1/MINI',inlist2+'SMS-GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p1_MINI.txt'],
+        ['/SMS-GlGl-GZ/mGl-2300_mN2-2200_mN1-2100_ct5/MINI',inlist2+'SMS-GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p5_MINI.txt'],
+        ['/SMS-GlGl-GZ/mGl-2300_mN2-2200_mN1-2150_ct1/MINI',inlist2+'SMS-GlGl_mGl-2300_mN2-2200_mN1-2150_GZ_N2ctau-0p1_MINI.txt'],
+        ['/SMS-GlGl-GZ/mGl-2300_mN2-2200_mN1-2150_ct5/MINI',inlist2+'SMS-GlGl_mGl-2300_mN2-2200_mN1-2150_GZ_N2ctau-0p5_MINI.txt'],
+        ['/SMS-GlGl-GZ/mGl-2300_mN2-2250_mN1-2150_ct1/MINI',inlist2+'SMS-GlGl_mGl-2300_mN2-2250_mN1-2150_GZ_N2ctau-0p1_MINI.txt'],
+        ['/SMS-GlGl-GZ/mGl-2300_mN2-2250_mN1-2150_ct5/MINI',inlist2+'SMS-GlGl_mGl-2300_mN2-2250_mN1-2150_GZ_N2ctau-0p5_MINI.txt'],
+        ['/SMS-GlGl-GZ/mGl-2300_mN2-2250_mN1-2200_ct1/MINI',inlist2+'SMS-GlGl_mGl-2300_mN2-2250_mN1-2200_GZ_N2ctau-0p1_MINI.txt'],
+        ['/SMS-GlGl-GZ/mGl-2300_mN2-2250_mN1-2200_ct5/MINI',inlist2+'SMS-GlGl_mGl-2300_mN2-2250_mN1-2200_GZ_N2ctau-0p5_MINI.txt'],
+        ['/SMS-GlGl-GZ/mGl-2500_mN2-1200_mN1-500_ct1/MINI',inlist2+'SMS-GlGl_mGl-2500_mN2-1200_mN1-500_GZ_N2ctau-0p1_MINI.txt'],
+        ['/SMS-GlGl-GZ/mGl-2500_mN2-1200_mN1-500_ct5/MINI',inlist2+'SMS-GlGl_mGl-2500_mN2-1200_mN1-500_GZ_N2ctau-0p5_MINI.txt'],
+        ['/SMS-GlGl-GZ/mGl-2500_mN2-2000_mN1-1000_ct1/MINI',inlist2+'SMS-GlGl_mGl-2500_mN2-2000_mN1-1000_GZ_N2ctau-0p1_MINI.txt'],
+        ['/SMS-GlGl-GZ/mGl-2500_mN2-2000_mN1-1000_ct5/MINI',inlist2+'SMS-GlGl_mGl-2500_mN2-2000_mN1-1000_GZ_N2ctau-0p5_MINI.txt'],
+        ['/SMS-GlGl-GZ/mGl-2500_mN2-2000_mN1-1500_ct1/MINI',inlist2+'SMS-GlGl_mGl-2500_mN2-2000_mN1-1500_GZ_N2ctau-0p1_MINI.txt'],
+        ['/SMS-GlGl-GZ/mGl-2500_mN2-2000_mN1-1500_ct5/MINI',inlist2+'SMS-GlGl_mGl-2500_mN2-2000_mN1-1500_GZ_N2ctau-0p5_MINI.txt'],
+        ['/SMS-GlGl-GZ/mGl-2500_mN2-2400_mN1-2300_ct1/MINI',inlist2+'SMS-GlGl_mGl-2500_mN2-2400_mN1-2300_GZ_N2ctau-0p1_MINI.txt'],
+        ['/SMS-GlGl-GZ/mGl-2500_mN2-2400_mN1-2300_ct5/MINI',inlist2+'SMS-GlGl_mGl-2500_mN2-2400_mN1-2300_GZ_N2ctau-0p5_MINI.txt'],
+        ['/SMS-GlGl-GZ/mGl-2500_mN2-2400_mN1-2350_ct1/MINI',inlist2+'SMS-GlGl_mGl-2500_mN2-2400_mN1-2350_GZ_N2ctau-0p1_MINI.txt'],
+        ['/SMS-GlGl-GZ/mGl-2500_mN2-2400_mN1-2350_ct5/MINI',inlist2+'SMS-GlGl_mGl-2500_mN2-2400_mN1-2350_GZ_N2ctau-0p5_MINI.txt'],
+        ['/SMS-GlGl-GZ/mGl-2500_mN2-2450_mN1-2350_ct1/MINI',inlist2+'SMS-GlGl_mGl-2500_mN2-2450_mN1-2350_GZ_N2ctau-0p1_MINI.txt'],
+        ['/SMS-GlGl-GZ/mGl-2500_mN2-2450_mN1-2350_ct5/MINI',inlist2+'SMS-GlGl_mGl-2500_mN2-2450_mN1-2350_GZ_N2ctau-0p5_MINI.txt'],
+        ['/SMS-GlGl-GZ/mGl-2500_mN2-2450_mN1-2400_ct1/MINI',inlist2+'SMS-GlGl_mGl-2500_mN2-2450_mN1-2400_GZ_N2ctau-0p1_MINI.txt'],
+        ['/SMS-GlGl-GZ/mGl-2500_mN2-2450_mN1-2400_ct5/MINI',inlist2+'SMS-GlGl_mGl-2500_mN2-2450_mN1-2400_GZ_N2ctau-0p5_MINI.txt'],
 
-        ['/SMS-GlGl-GZ/mGl-2500_mN2-2450_mN1-2400_ct1/FULLMINI','specail_resubmit.txt'],
+        #['/SMS-GlGl-GZ/mGl-2500_mN2-2450_mN1-2400_ct1/FULLMINI','specail_resubmit.txt'],
 
     ] 
 
