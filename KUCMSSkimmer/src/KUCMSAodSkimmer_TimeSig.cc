@@ -159,11 +159,12 @@ float KUCMSAodSkimmer::getTimeSig( const std::vector<int>& scIndexs, float& num,
 	std::vector<int> usedrechits;
 	int nSCs = scIndexs.size();
 	if( nSCs == 0 ){ num = -41; denom = -2; return -41; }
-	for( int scIndex = 0; scIndex < nSCs; scIndex++  ){
+	for( int it = 0; it < nSCs; it++  ){
 
+		int scIndex = scIndexs[it]; 
         auto rhids = (*SuperCluster_rhIds)[scIndex];
         int nSCRecHits = rhids.size();
-		float adjust = ( eledelay.size() > 0 ) ? eledelay[scIndex] : 0;
+		float adjust = ( eledelay.size() > 0 ) ? eledelay[it] : 0;
 		if( nSCRecHits < 3 ) continue;
         for( int sciter = 0; sciter < nSCRecHits; sciter++  ){
             auto scrhid = rhids[sciter];

@@ -406,10 +406,12 @@ void KUCMSAodSkimmer::processJets(){
   selJets.fillBranch( "pv_wphartres", pvHTVar );
   selJets.fillBranch( "pv_haspvtime", hasPVTime );
 
+  GetDiJetsSel();
+
   float gammatime = ( gammaJetIndex[0] > -1 ) ? allphowtime[gammaJetIndex[0]] : -50; 
   bool gammabaseline = ( gammaJetIndex[0] > -1 ) ? allphoBaseline[gammaJetIndex[0]] : false;
   float gammaminjetdr = ( gammaJetIndex[0] > -1 ) ? allphominjetdr[gammaJetIndex[0]] : -1;
-  if( gammaminjetdr < 0.4 ) gammatime = -40;
+  if( gammaJetIndex[0] > -1 && gammaminjetdr < 0.4 ) gammatime = -40;
   float dijet0time = ( diJetIndex[0] > -1 ) ? alljetwtime[diJetIndex[0]] : -50;
   float dijet1time = ( diJetIndex[1] > -1 ) ? alljetwtime[diJetIndex[1]] : -50;
 
