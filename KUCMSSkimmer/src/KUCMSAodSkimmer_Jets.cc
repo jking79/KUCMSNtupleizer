@@ -197,6 +197,7 @@ void KUCMSAodSkimmer::processJets(){
         auto trkindxs = (*SuperCluster_TrackIndx)[pit];
         int trkindx = ( trkindxs.size() > 0 ) ? trkindxs[0] : -1;
 
+		// skip "soft" leptons with tracks
         if( pid == 0 && trkindx > -1 && peng < 20*std::cosh(peta) ) continue;
 		//std::cout << " -- Scanning : e " << peng << " eta " << peta << " phi " << pphi << " : " << pit << std::endl; 
 		float dr = dR1(peta, pphi, eta, phi);
@@ -208,7 +209,7 @@ void KUCMSAodSkimmer::processJets(){
             nPhoInPixJet++; 
             sumpixwte += peng; 
             if( pid > -1 ){
-				if( pid == 11 ){
+				if( pid == 11 ){ // correction for curved path w/ pt estimation
 					float dx = (*SuperCluster_clcx)[pit] - PV_x;
 					float dy = (*SuperCluster_clcy)[pit] - PV_y;
 					float dz = (*SuperCluster_clcz)[pit] - PV_z;
@@ -232,11 +233,11 @@ void KUCMSAodSkimmer::processJets(){
 	
 		}//<<>>if( minDr )
 
-	}//<<>>for( uInt pit = 0; pit < nPhotons; pit++ )
+	}//<<>>for(  uInt pit = 0; pit < nSCBase; pit++  )
 
 	int nSCIndexs = scIndexs.size();
 	float jetTime = -40;
-	float jetTimeRes = -1;
+	float jetTimeRes = 10;
 	float jetTimeSig = ( nSCIndexs > 0 ) ? getTimeSig( scIndexs, jetTime, jetTimeRes, eledelay ) : -40; 
 	alljetwtime.push_back( jetTime );
     alljetwtimevar.push_back( jetTimeRes*jetTimeRes );
@@ -244,7 +245,7 @@ void KUCMSAodSkimmer::processJets(){
 
     int nPixSCIndexs = scPixIndexs.size();
     float jetPixTime = -40;
-    float jetPixTimeRes = -1;
+    float jetPixTimeRes = 10;
     float jetPixTimeSig = ( nPixSCIndexs > 0 ) ? getTimeSig( scPixIndexs, jetPixTime, jetPixTimeRes ) : -40;
     alljetpixwtime.push_back( jetPixTime );
     alljetpixwtimevar.push_back( jetPixTimeRes*jetPixTimeRes );

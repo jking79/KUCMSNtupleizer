@@ -123,14 +123,14 @@ class KUCMSGenObjectMini : public KUCMSObjectBase {
   	//std::map<std::string, float> getGenPartMatch( const reco::SuperCluster &scptr, float pt ) const; 
   	//std::map<std::string, bool> MotherID(const int genIndex) const;
     std::vector<float> getGenJetInfo( float jetEta, float jetPhi, float jetPt );
-    GlobalPoint GenVertex() {return GlobalPoint(genxyz0_->x(), genxyz0_->y(), genxyz0_->z()); };
+    //GlobalPoint GenVertex() {return GlobalPoint(genxyz0_->x(), genxyz0_->y(), genxyz0_->z()); };
 
     // new exclusive gen matching  v3fPoint
-    std::vector<int> getGenMatch( const std::vector<v3fPoint> sc, std::vector<float> energies );
-    std::vector<int> getGenPhoMatch( const std::vector<v3fPoint> sc, std::vector<float> energies );
-    std::vector<int> getGenEleMatch( const std::vector<v3fPoint> sc, std::vector<float> energies, std::vector<reco::TransientTrack> trakcs );
-    std::vector<int> getGenMatch( const std::vector<v3fPoint> sc, std::vector<float> energies, int select, std::vector<reco::TransientTrack> trakcs );
-	std::vector<int> getGenMuonMatch( const std::vector<v3fPoint> sc, std::vector<float> reco_e, std::vector<reco::TransientTrack> trakcs );
+    std::vector<int> getGenMatch( const std::vector<v3fPoint>& sc, std::vector<float>& energies );
+    std::vector<int> getGenPhoMatch( const std::vector<v3fPoint>& sc, std::vector<float>& energies );
+    std::vector<int> getGenEleMatch( const std::vector<v3fPoint>& sc, std::vector<float>& energies, std::vector<reco::TransientTrack>& trakcs );
+    std::vector<int> getGenMatch( const std::vector<v3fPoint>& sc, std::vector<float>& energies, int select, std::vector<reco::TransientTrack>& trakcs );
+	std::vector<int> getGenMuonMatch( const std::vector<v3fPoint>& sc, std::vector<float>& reco_e, std::vector<reco::TransientTrack>& trakcs );
     int getGenSigPhoXMother( uInt genIndex );
     int getGenSigEleXMother( uInt genIndex );
 	int getGenSigPhoXMother( uInt genIndex, int loopcnt );
@@ -374,16 +374,16 @@ void KUCMSGenObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventSe
 	//std::cout << "Getting gen tokens" << std::endl;
 
     iEvent.getByToken(genEvtInfoToken_, genEvtInfo_);
-    iEvent.getByToken(gent0Token_, gent0_);
-    iEvent.getByToken(genxyz0Token_, genxyz0_);
-    iEvent.getByToken(pileupInfosToken_, pileupInfos_);
-    iEvent.getByToken(genPackedParticlesToken_, genPackedParticles_);
+    //iEvent.getByToken(gent0Token_, gent0_);
+    //iEvent.getByToken(genxyz0Token_, genxyz0_);
+    //iEvent.getByToken(pileupInfosToken_, pileupInfos_);
+    //iEvent.getByToken(genPackedParticlesToken_, genPackedParticles_);
     iEvent.getByToken(genParticlesPToken_, genParticlesP_);
     iEvent.getByToken(genJetsToken_, genJets_);
 
-    pvx = geVar("vtxX"); 
-	pvy = geVar("vtxY"); 
-	pvz = geVar("vtxZ");
+    //pvx = geVar("vtxX"); 
+	//pvy = geVar("vtxY"); 
+	//pvz = geVar("vtxZ");
 
 	fgenpacks.clear();
     fgpkLlp.clear();
@@ -519,7 +519,7 @@ void KUCMSGenObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventSe
         }//<<>>if( genPart.status() > 1 ){
         oIndx++;
     }//<<>>for(const auto& genPart : *genPackedParticles_ )
-
+/*
     oIndx = 0;
     for( const auto &genPart : *genPackedParticles_ ){
 
@@ -621,15 +621,17 @@ void KUCMSGenObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventSe
         }//<<>>if( genPart.status() > 1 ){
         oIndx++;
     }//<<>>for(const auto& genPart : *genPackedParticles_ )
+*/
 
 	if( GenDEBUG ) std::cout << "Flagging Moms -------------------------------------------------------------" << std::endl;
+/*
     int nTgenpacks = tgenpacks.size();
     for( int gpit = 0; gpit < nTgenpacks; gpit++ ){
 		if( tgpkGetMom[gpit] ){
 			keepMothers( tgenpacks[gpit] );
 		}//<<>>if( tgpkGetMom[gpidx] ) 
 	}//<<>>for (const auto & gp : tgenpacks )
-
+*/
     int nTgenparts = tpgenparts.size();
     for( int gpit = 0; gpit < nTgenparts; gpit++ ){
         if( tpgpGetMom[gpit] ){
@@ -652,7 +654,7 @@ void KUCMSGenObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventSe
             genMap.push_back( gpit );
         }//<<>>if( tgpkKeep[gpidx] )
     }//<<>>for (const auto & gp : tgenpacks )
-
+/*
     for( int gpit = 0; gpit < nTgenpacks; gpit++ ){
 		if( tgpkKeep[gpit] ){
 		    fgenpacks.push_back( tgenpacks[gpit] );
@@ -666,12 +668,13 @@ void KUCMSGenObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventSe
 			genMap.push_back( gpit );
 		}//<<>>if( tgpkKeep[gpidx] )
 	}//<<>>for (const auto & gp : tgenpacks )
-
+*/
     if( GenDEBUG ) std::cout << "Getting GenPacked mom indexes -------------------------------------------------------------" << std::endl;
 
 	// moms for packs
-	int nFgenpacks = fgenpacks.size();
+	//int nFgenpacks = fgenpacks.size();
 	int nFpgenparts = fpgenparts.size();
+/*
 	for( int gpit = 0; gpit < nFgenpacks; gpit++ ){
 
 		auto gp = fgenpacks[gpit];
@@ -776,7 +779,7 @@ void KUCMSGenObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventSe
         //if( gp.pdgId() != fpgenparts[mgpit-nfPacked].pdgId() ) std::cout << " gen packed index bad 2 !!!!" << std::endl;
 
     }//<<>>for (const auto & gp : tgenpacks )
-
+*/
     if( GenDEBUG ) std::cout << "Getting GenPart mom indexes -------------------------------------------------------------" << std::endl;
 	// moms for parts
     for( int gpit = 0; gpit < nFpgenparts; gpit++ ){
@@ -805,6 +808,7 @@ void KUCMSGenObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventSe
         //float mr = hypo(gpm->eta(),gpm->phi());
         int mpdg = gpm->pdgId();
         bool matched( false );
+/*
         for( int cangpit = 0; cangpit < nFgenpacks; cangpit++ ){
             //if( gpit == cangpit ) continue;
             auto cangp = fgenpacks[cangpit];
@@ -818,7 +822,7 @@ void KUCMSGenObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventSe
                 break;
             }//<<>>if( canpt == mpt && canpdg == mpdg )
         }//<<>>for( auto cangp : fpgenparts )
-
+*/
         if( GenDEBUG ) std::cout << " -- Getting GenPart mom indexes 3 -------------------------------------------" << std::endl;
 
         if( not matched ){
@@ -870,6 +874,7 @@ void KUCMSGenObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventSe
         //float mr = hypo(gpm->eta(),gpm->phi());
         int mpdg = gpm->pdgId();
         bool matched( false );
+/*
         for( int cangpit = 0; cangpit < nFgenpacks; cangpit++ ){
             //if( mgpit == cangpit ) continue;
             auto cangp = fpgenparts[cangpit];
@@ -882,6 +887,7 @@ void KUCMSGenObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventSe
                 break;
             }//<<>>if( canpt == mpt && canpdg == mpdg )
         }//<<>>for( auto cangp : fgenpacks )
+*/
         if( not matched ){
         for( int cangpit = 0; cangpit < nFpgenparts; cangpit++ ){
             //if( gpit == cangpit ) continue;
@@ -959,7 +965,7 @@ void KUCMSGenObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 	bool hasLWZX = false;
     bool hasLWZQ = false;
 	int nLWZX = 0;
-	int nGenPacks = 0;
+	//int nGenPacks = 0;
 	int nXs = 0;
 
     int nGenParts = 0;
@@ -1136,7 +1142,7 @@ void KUCMSGenObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 
     if( GenDEBUG ) std::cout << " - enetering Gen loop fgenpacks" << std::endl;
 
-
+/*
     for (const auto & genpart : fgenpacks ){
 
         const float genPt = genpart.pt();
@@ -1208,7 +1214,7 @@ void KUCMSGenObjectMini::ProcessEvent( ItemManager<float>& geVar ){
         //std::cout << " v " << genVx << ", " << genVy << ", " << genVz;
         //std::cout << " 4v e " << genEnergy << " eta " << genEta << " phi " << genPhi << " pt " << genPt << " mass " << genMass;
         //std::cout << " mom " << genMomIdx << " gmom "  << genGMomIdx << " kid " << genKidIdx << std::endl;
-
+*/
 
 /*
         bool isX2 = ( genPdgId > 1000023 );
@@ -1265,7 +1271,7 @@ void KUCMSGenObjectMini::ProcessEvent( ItemManager<float>& geVar ){
             }//<<>>if( nXs == 2 )
         }//<<>>if( genPdgId > 1000021 and genPdgId < 1000038 )
 */
-
+/*
         //if( GenDEBUG ) std::cout << "GenPart : genSusId = " << genSusId << std::endl;
         Branches.fillBranch("genPt",genPt);
         Branches.fillBranch("genEnergy",genEnergy);
@@ -1298,6 +1304,7 @@ void KUCMSGenObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 
         nGenPacks++;
     }//<<>> for (const auto genpart : fgenpacks )
+*/
 
     if( GenDEBUG ) std::cout << " - Gen Event type Endjobs " << nXs << std::endl;
 	// nfPacked  --------------------------------------------------------------------
@@ -1346,7 +1353,6 @@ void KUCMSGenObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 	geVar.fill("genWgt",wgt);
     if( GenDEBUG ) std::cout << "GenPart : Done " << std::endl;
 
-
 }//<<>>void KUCMSGen::ProcessEvent()
 
 ///////  -----------------------------   End of ProcessEvent post and main ------------------------------------------
@@ -1355,7 +1361,7 @@ void KUCMSGenObjectMini::EndJobs(){}
 
 ///////  -----------------------------   helper functions --------------------------------------------------------------
 
-std::vector<int> KUCMSGenObjectMini::getGenPhoMatch( const std::vector<v3fPoint> sc, std::vector<float> reco_e ){
+std::vector<int> KUCMSGenObjectMini::getGenPhoMatch( const std::vector<v3fPoint>& sc, std::vector<float>& reco_e ){
 
 	// gen matching to supcer clusters froom reeco phtons to gen photons
 	std::vector<reco::TransientTrack> null;
@@ -1363,21 +1369,21 @@ std::vector<int> KUCMSGenObjectMini::getGenPhoMatch( const std::vector<v3fPoint>
 
 }//<<>>std::vector<int> KUCMSGenObjectMini::getGenPhoMatch( const std::vector<reco::SuperCluster*> sc, std::vectro<float> reco_e )
 
-std::vector<int> KUCMSGenObjectMini::getGenEleMatch( const std::vector<v3fPoint> sc, std::vector<float> reco_e, std::vector<reco::TransientTrack> trakcs ){
+std::vector<int> KUCMSGenObjectMini::getGenEleMatch( const std::vector<v3fPoint>& sc, std::vector<float>& reco_e, std::vector<reco::TransientTrack>& trakcs ){
 
     // gen matching to supcer clusters froom reco electrons to gen electrons
     return getGenMatch( sc, reco_e, 11, trakcs );
 
 }//<<>>std::vector<int> KUCMSGenObjectMini::getGenPhoMatch( const std::vector<reco::SuperCluster*> sc, std::vectro<float> reco_e )
 
-std::vector<int> KUCMSGenObjectMini::getGenMuonMatch( const std::vector<v3fPoint> sc, std::vector<float> reco_e, std::vector<reco::TransientTrack> trakcs ){
+std::vector<int> KUCMSGenObjectMini::getGenMuonMatch( const std::vector<v3fPoint>& sc, std::vector<float>& reco_e, std::vector<reco::TransientTrack>& trakcs ){
 
     // gen matching to supcer clusters froom reco electrons to gen electrons
     return getGenMatch( sc, reco_e, 13, trakcs );
 
 }//<<>>std::vector<int> KUCMSGenObjectMini::getGenPhoMatch( const std::vector<reco::SuperCluster*> sc, std::vectro<float> reco_e )
 
-std::vector<int> KUCMSGenObjectMini::getGenMatch( const std::vector<v3fPoint> sc, std::vector<float> reco_e ){
+std::vector<int> KUCMSGenObjectMini::getGenMatch( const std::vector<v3fPoint>& sc, std::vector<float>& reco_e ){
 
 	// matchoing any particle :: matching valid for nutral particles only
 	std::vector<reco::TransientTrack> null;
@@ -1385,7 +1391,7 @@ std::vector<int> KUCMSGenObjectMini::getGenMatch( const std::vector<v3fPoint> sc
 
 }//<<>>std::vector<int> KUCMSGenObjectMini::getGenMatch( const std::vector<reco::SuperCluster*> sc, std::vectro<float> reco_e )
 
-std::vector<int> KUCMSGenObjectMini::getGenMatch( const std::vector<v3fPoint> sc, std::vector<float> en, int select, std::vector<reco::TransientTrack> tracks ){
+std::vector<int> KUCMSGenObjectMini::getGenMatch( const std::vector<v3fPoint>& sc, std::vector<float>& en, int select, std::vector<reco::TransientTrack>& tracks ){
 
     bool thisDEBUG = GenDEBUG;
 	//bool thisDEBUG = true;
@@ -1458,7 +1464,7 @@ std::vector<int> KUCMSGenObjectMini::getGenMatch( const std::vector<v3fPoint> sc
                 auto gnY = fpgenparts[partidx].vy() ;
                 auto gnZ = fpgenparts[partidx].vz();
 
-				if( gnX == 0 ){ gnX = pvx; gnY = pvy; gnZ = pvz; }
+				//if( gnX == 0 ){ gnX = pvx; gnY = pvy; gnZ = pvz; }
         		//const auto ge = fgenpacks[partidx].energy();
                 //if( thisDEBUG ) std::cout << " -- calc dr match " << std::endl;
                 //float cmEta = std::asinh((rhZ-gnZ)/hypo(rhX-gnX,rhY-gnY));
@@ -1556,7 +1562,7 @@ std::vector<float> KUCMSGenObjectMini::getGenPartMatch( const reco::SuperCluster
         auto gnY = genPart.vy();
         auto gnZ = genPart.vz();
         const auto ge = genPart.energy();
-		if( gnX == 0 ){ gnX = pvx; gnY = pvy; gnZ = pvz; }
+		//if( gnX == 0 ){ gnX = pvx; gnY = pvy; gnZ = pvz; }
 		//if( GenDEBUG ) std::cout << " GenPart: " << gnX << " " << gnY << " " << gnZ << std::endl;
 		//if( ge < 1.0 ) continue;
         auto cphoEta = std::asinh((rhZ-gnZ)/hypo(rhX-gnX,rhY-gnY));
