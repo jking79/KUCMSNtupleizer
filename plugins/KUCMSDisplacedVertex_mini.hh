@@ -298,6 +298,7 @@ void KUCMSDisplacedVertexMini::LoadEvent( const edm::Event& iEvent, const edm::E
       electronTracks_.emplace_back(pair.GetTrack());
   }
 
+
   if(cfFlag("hasGenInfo")) {
     iEvent.getByToken(prunedGenToken_, prunedGenHandle_);
 
@@ -347,6 +348,7 @@ void KUCMSDisplacedVertexMini::LoadEvent( const edm::Event& iEvent, const edm::E
       for(const auto& track : genZ.getTracks())
         signalTracks_.emplace_back(track);
   }
+
 
 }//<<>>void KUCMSDisplacedVertexMini::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
@@ -494,6 +496,7 @@ void KUCMSDisplacedVertexMini::ProcessEvent( ItemManager<float>& geVar ){
 	Branches.fillBranch("VertexTrack_energySC", float(isSCMatched? sc.correctedEnergy() : -1.));
 	Branches.fillBranch("VertexTrack_ratioPToEnergySC", float(isSCMatched? track.p()/sc.correctedEnergy() : -1.));
 	Branches.fillBranch("VertexTrack_pathLength", trackPathLength);
+
 
 
 	if(cfFlag("hasGenInfo")) {

@@ -518,6 +518,7 @@ void KUCMSElectronObjectMini::ProcessEvent( ItemManager<float>& geVar ){
             scptres.push_back(eleEnergy);
         }//<<>>if( hasGenInfo )
 
+
     }//<<>>for( const auto electron : *electrons_ )
 	Branches.fillBranch("nEle",eleIndx);
     Branches.fillBranch("nSele",nSelEle);
@@ -526,6 +527,7 @@ void KUCMSElectronObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 	geVar.set("nSelEle",nSelEle);
 
     int nGenMatched = 0;
+
 
     if( cfFlag("hasGenInfo") ){
 

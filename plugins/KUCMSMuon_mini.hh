@@ -328,8 +328,10 @@ void KUCMSMuonObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 	Branches.fillBranch("nPrompt",nPromptMuon);
 	geVar.set("nSelMu",nSelMu);
 
+
 	if( MuonDEBUG ) std::cout << " -- Muon filling event geninfo : " << std::endl;
     int nGenMatched = 0;
+
 // -----  Issues with gen matching in mini with track info, to be fixed ----------------
     if( cfFlag("hasGenInfo") ){
 

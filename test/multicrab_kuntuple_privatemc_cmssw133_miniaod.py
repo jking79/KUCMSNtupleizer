@@ -138,7 +138,9 @@ def docrab( dataset ):
             #trial          = "kucmsntuple_MET_R17_SVIPM100_p9_v31"# 
             #trial          = "kucmsntuple_SMS_test_SVHPM100_Mini_v33" #
             #trial          = "kucmsntuple_SMS_GZ_SVHPM100_FullMini_v34" #
-            trial          = "kucmsntuple_SMS_GZ_SVHPM100_Full_Take2_v34" #
+            trial          = "kucmsntuple_SMS_GZ_SVHPM100_Full_v34p1" #
+
+            ######trial          = "kucmsntuple_SMS_GZ_SVHPM100_Full_noGPK" #
 
             # set trial name - used in output path ?
 
