@@ -230,7 +230,34 @@ bool TrackVertexSet::operator|=(const TrackVertexSet& other) const {
 
 // private methods
 void TrackVertexSet::fit() {
-  vertex_ = this->size() < 2? TransientVertex() : fitter_->vertex(convertTracks());
+  if (this->size() < 2) {
+    vertex_ = TransientVertex();
+    return;
+  }
+
+  auto ttracks = convertTracks();
+
+  // Guard against near-identical track pairs before calling the fitter.
+  // KalmanVertexFitter internally calls TwoTrackMinimumDistance::pointsHelixHelix(),
+  // which prints "comparing track with itself" and then fails with
+  // "Computation HelixHelix::CAIR failed" for tracks that pass the identity check
+  // below. Two tracks with the same parameters but different collection indices can
+  // reach fit() together via mergeVertices(), bypassing the seeding-stage
+  // OverlappingTrack filter. Use the same condition as pointsHelixHelix().
+  for (size_t i = 0; i < ttracks.size(); ++i) {
+    for (size_t j = i + 1; j < ttracks.size(); ++j) {
+      const auto& p1 = ttracks[i].initialFreeState().parameters();
+      const auto& p2 = ttracks[j].initialFreeState().parameters();
+      if ((p1.position() - p2.position()).mag2() < 1e-7f &&
+          (p1.momentum() - p2.momentum()).mag2() < 1e-7f &&
+          p1.charge() == p2.charge()) {
+        vertex_ = TransientVertex();
+        return;
+      }
+    }
+  }
+
+  vertex_ = fitter_->vertex(ttracks);
 }
 
 std::vector<reco::TransientTrack> TrackVertexSet::convertTracks() const {
