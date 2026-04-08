@@ -7,6 +7,7 @@
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrack.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
+#include "MagneticField/Engine/interface/MagneticField.h"
 
 class TrackHelper {
 
@@ -123,7 +124,31 @@ inline bool TrackHelper::OverlappingTrack(const reco::Track &track1, const reco:
   const reco::TransientTrack ttrack1(ttBuilder->build(track1)), ttrack2(ttBuilder->build(track2));
   GlobalTrajectoryParameters par1(ttrack1.initialFreeState().parameters()), par2(ttrack2.initialFreeState().parameters());
 
-  return (par1.position() - par2.position()).mag2() < 1e-7f && (par1.momentum() - par2.momentum()).mag2() < 1e-7f && par1.charge() == par2.charge();
+  // 3D identity: same track in all coordinates.
+  if ((par1.position() - par2.position()).mag2() < 1e-7f &&
+      (par1.momentum() - par2.momentum()).mag2() < 1e-7f &&
+      par1.charge() == par2.charge())
+    return true;
+
+  // Concentric-circle check: ClosestApproachInRPhi (CAIR) computes transverse helix
+  // centers as xc = x + (q/bz)*py, yc = y - (q/bz)*px, then checks d_ab == 0 exactly.
+  // Two tracks that share (x,y,px,py,charge) but differ in (z,pz) produce bitwise-
+  // identical centers -- the 3D check above misses them because dz != 0.
+  // Mirror the exact CAIR formula here and reject pairs whose centers nearly coincide.
+  const double bz = par1.magneticField().inTesla(par1.position()).z() * 2.99792458e-3;
+  if (std::fabs(bz) > 1e-6) {
+    const double qob1 = par1.charge() / bz;
+    const double xca  = par1.position().x() + qob1 * par1.momentum().y();
+    const double yca  = par1.position().y() - qob1 * par1.momentum().x();
+    const double qob2 = par2.charge() / bz;
+    const double xcb  = par2.position().x() + qob2 * par2.momentum().y();
+    const double ycb  = par2.position().y() - qob2 * par2.momentum().x();
+    const double d2   = (xca - xcb) * (xca - xcb) + (yca - ycb) * (yca - ycb);
+    if (d2 < 1e-7)  // d_ab < ~0.3 mm -- circles are effectively concentric
+      return true;
+  }
+
+  return false;
 }
 
 inline reco::TrackRef TrackHelper::GetTrackRef(const reco::Track &track, const edm::Handle<reco::TrackCollection> &trackHandle) {
