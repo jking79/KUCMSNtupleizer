@@ -122,6 +122,7 @@ public :
    UInt_t          nSelElectrons;
    UInt_t          nSelIsoElectrons;
 
+/*
    std::vector<float>   *allPhoE;
    std::vector<float>   *allPhoEta;
    std::vector<float>   *allPhoPhi;
@@ -219,6 +220,9 @@ public :
    std::vector<float>   *selPhoSTimeRes;
    std::vector<float>   *selPhoLTimeRes;
    std::vector<float>   *selPhoWTimeRes;
+*/
+
+   std::vector<float>   *baseLinePhoton_WTimeSig;
 
    std::vector<bool>    *muonIsLoose;
    std::vector<bool>    *muonIsMedium;
@@ -452,6 +456,8 @@ public :
    TBranch        *b_nSelElectrons;   //!
    TBranch        *b_nSelIsoElectrons;   //!
 
+/*
+
    TBranch        *b_allPhoE;   //!
    TBranch        *b_allPhoEta;   //!
    TBranch        *b_allPhoPhi;   //!
@@ -548,6 +554,8 @@ public :
    TBranch        *b_selPhoLWeird;
    TBranch        *b_selPhoLSCross;
    TBranch        *b_selPhoShasGS;
+*/
+
 
    TBranch        *b_muonIsLoose;   //!
    TBranch        *b_muonIsMedium;   //!
@@ -585,6 +593,9 @@ public :
    TBranch        *b_selJetQuality;   //!
    TBranch        *b_selJetTime;   //!
    TBranch        *b_selJetchHEF;   //!
+
+
+   TBranch        *b_baseLinePhoton_WTimeSig;   //!
 
    TBranch        *b_rjrABSide;   //!
    TBranch        *b_rjr_Rdiff;   //!
@@ -795,6 +806,8 @@ void skimtuple_v36::Init( TChain *tree, bool doGenInfo ){
    epDrMatch = 0;
    epSeedIdMatch = 0;
    epSeedIdUnique = 0;
+
+/*
    selPhoClstrRn = 0;
    selPhoCorEnergy = 0;
    selPhoCorPt = 0;
@@ -889,6 +902,10 @@ void skimtuple_v36::Init( TChain *tree, bool doGenInfo ){
    selPhoTrkSumPtHollowConeDR03 = 0;
    selPhoTrkSumPtHollowConeDR04 = 0;
    selPhoTrkSumPtSolidConeDR04 = 0;
+*/
+
+   baseLinePhoton_WTimeSig = 0;
+
    muonIsLoose = 0;
    muonIsMedium = 0;
    selGenJetDpt = 0;
@@ -1067,7 +1084,7 @@ void skimtuple_v36::Init( TChain *tree, bool doGenInfo ){
    fChain->SetBranchAddress("SV_pOverE", &SV_pOverE, &b_SV_pOverE);
 */
 
-   fChain->SetBranchAddress("selPhoObjId", &selPhoObjId, &b_selPhoObjId);
+   //fChain->SetBranchAddress("selPhoObjId", &selPhoObjId, &b_selPhoObjId);
    fChain->SetBranchAddress("rjrCleaningVeto0", &rjrCleaningVeto0, &b_rjrCleaningVeto0);
 
    fChain->SetBranchAddress("DataSetKey", &DataSetKey, &b_DataSetKey);
@@ -1124,6 +1141,8 @@ void skimtuple_v36::Init( TChain *tree, bool doGenInfo ){
    fChain->SetBranchAddress("nElectrons", &nElectrons, &b_nElectrons);
    fChain->SetBranchAddress("nSelElectrons", &nSelElectrons, &b_nSelElectrons);
    fChain->SetBranchAddress("nSelIsoElectrons", &nSelIsoElectrons, &b_nSelIsoElectrons);
+
+/*
 
    fChain->SetBranchAddress("allPhoE", &allPhoE, &b_allPhoE);
    fChain->SetBranchAddress("allPhoEta", &allPhoEta, &b_allPhoEta);
@@ -1220,6 +1239,10 @@ void skimtuple_v36::Init( TChain *tree, bool doGenInfo ){
    fChain->SetBranchAddress("selPhoLWeird", &selPhoLWeird, &b_selPhoLWeird);
    fChain->SetBranchAddress("selPhoLSCross", &selPhoLSCross, &b_selPhoLSCross);
    fChain->SetBranchAddress("selPhoShasGS", &selPhoShasGS, &b_selPhoShasGS);
+*/
+
+   fChain->SetBranchAddress("baseLinePhoton_WTimeSig", &baseLinePhoton_WTimeSig, &b_baseLinePhoton_WTimeSig);
+
 
    fChain->SetBranchAddress("muonIsLoose", &muonIsLoose, &b_muonIsLoose);
    fChain->SetBranchAddress("muonIsMedium", &muonIsMedium, &b_muonIsMedium);
@@ -1458,6 +1481,8 @@ void skimtuple_v36::getBranches( Long64_t entry, bool doGenInfo ){
    b_nSelElectrons->GetEntry(entry);  //   nSelElectrons, &b_nSelElectrons);
    b_nSelIsoElectrons->GetEntry(entry);  //   nSelIsoElectrons, &b_nSelIsoElectrons);
 
+/*
+
    b_allPhoE->GetEntry(entry);   //!
    b_allPhoEta->GetEntry(entry);   //!
    b_allPhoPhi->GetEntry(entry);   //!
@@ -1554,7 +1579,11 @@ void skimtuple_v36::getBranches( Long64_t entry, bool doGenInfo ){
    b_selPhoLSCross->GetEntry(entry);
    b_selPhoShasGS->GetEntry(entry);
 
-   b_selPhoObjId->GetEntry(entry);
+*/
+
+   b_baseLinePhoton_WTimeSig->GetEntry(entry);   //!
+
+   //b_selPhoObjId->GetEntry(entry);
    b_rjrCleaningVeto0->GetEntry(entry);
 
    b_muonIsLoose->GetEntry(entry);  //   muonIsLoose, &b_muonIsLoose);

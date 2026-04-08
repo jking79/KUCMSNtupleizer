@@ -158,8 +158,8 @@ def docrab( dataset ):
             #trial          = "kucmsntuple_DisJet_R18_SVIPM100_nolumimask" + version #
 
             #trial          = "kucmsntuple_TTXJets_R18_SVIPM100" + version #
-            #trial          = "kucmsntuple_GJets_R18_SVHPM100_MiniAOD" + version
-            trial          = "kucmsntuple_QCD_R18_SVIPM100_MiniAOD" + version
+            trial          = "kucmsntuple_GJets_R18_SVHPM100_MiniAOD_v2" + version
+            #trial          = "kucmsntuple_QCD_R18_SVIPM100_MiniAOD" + version
             #trial          = "kucmsntuple_ZJets_R18_SVIPM100" + version
             #trial          = "kucmsntuple_WJets_R18_SVIPM100" + version
             #trial          = "kucmsntuple_DTBoson_R18_SVIPM100"  + version
@@ -319,11 +319,22 @@ def run_multi():
         #["/JetMET/Run2022F-19Dec2023-v2/MINIAOD",1],
         #["/JetMET/Run2022G-19Dec2023-v1/MINIAOD",1],
 
-        #['/GJets_HT-100To200_'+TuneCP5MP+'/'+RunIIS+'-4cores5k_106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',1],
-        #['/GJets_HT-200To400_'+TuneCP5MP+'/'+RunIIS+'-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',1],
-        #['/GJets_HT-400To600_'+TuneCP5MP+'/'+RunIIS+'-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',1],
-        #['/GJets_HT-40To100_'+TuneCP5MP+'/'+RunIIS+'-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',1],
-        #['/GJets_HT-600ToInf_'+TuneCP5MP+'/'+RunIIS+'-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',1],
+        ['/GJets_HT-100To200_'+TuneCP5MP+'/'+RunIIS+'-4cores5k_106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',1],
+        ['/GJets_HT-200To400_'+TuneCP5MP+'/'+RunIIS+'-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',1],
+        ['/GJets_HT-400To600_'+TuneCP5MP+'/'+RunIIS+'-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',1],
+        ['/GJets_HT-40To100_'+TuneCP5MP+'/'+RunIIS+'-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',1],
+        ['/GJets_HT-600ToInf_'+TuneCP5MP+'/'+RunIIS+'-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',1],
+
+        #['/QCD_HT50to100_'+TuneCP5MP+'/'+RunIIS+'-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',1],
+        #['/QCD_HT100to200_'+TuneCP5MP+'/'+RunIIS+'-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',1],
+        #['/QCD_HT200to300_'+TuneCP5MP+'/'+RunIIS+'-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',1],
+        #['/QCD_HT300to500_'+TuneCP5MP+'/'+RunIIS+'-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',1],
+        #['/QCD_HT500to700_'+TuneCP5MP+'/'+RunIIS+'-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',1],
+        #['/QCD_HT700to1000_'+TuneCP5MP+'/'+RunIIS+'-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',1],
+        #['/QCD_HT1000to1500_'+TuneCP5MP+'/'+RunIIS+'-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',1],
+        #['/QCD_HT1500to2000_'+TuneCP5MP+'/'+RunIIS+'-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',1],
+        #['/QCD_HT2000toInf_'+TuneCP5MP+'/'+RunIIS+'-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',1],
+
 
 
         ['/QCD_HT50to100_'+TuneCP5MP+'/'+RunIIS+'-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',1],

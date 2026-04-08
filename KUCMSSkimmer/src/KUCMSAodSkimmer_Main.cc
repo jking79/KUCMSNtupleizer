@@ -414,7 +414,7 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
 
 	setGenInfoBase( hasGenInfoFlag );
 	setDoSVsBase( doSVs );
-	setNewSigBase( doNewSigBase );
+	setNewSigBase( true );
 	setHTLPathsBase( doHTLPathsBase );
 	Init( fInTree );
 	
@@ -921,7 +921,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
     std::string str;
     if( not DEBUG ) std::cout << "--  adding files";
     int nfiles = 0;
-	int skipCnt = 10;
+	int skipCnt = 100;
     if( skipCnt != 0 ) std::cout << "-- !! Skipping every " << skipCnt << std::endl;
     if( dataSetKey !=  "Single" ){
         std::ifstream infile(listDirPath+inFileName);

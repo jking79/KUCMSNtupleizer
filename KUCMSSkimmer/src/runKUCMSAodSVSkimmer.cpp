@@ -116,7 +116,7 @@ int main ( int argc, char *argv[] ){
     	llpgana.SetMCType(mctype);
     	llpgana.SetTimeCalibrationTag(ttag);
 	llpgana.SetMCWeight(mcw);
-	bool sigbase = false;
+	bool sigbase = true;
 	if(in_file.find("_v33_") != string::npos && in_file.find("SMS") != string::npos)
 		sigbase = true;
 	llpgana.setNewSigBase(sigbase);
