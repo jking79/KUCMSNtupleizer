@@ -2812,7 +2812,7 @@ kucms_SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D ){
 	//bool doSterm = false;
 	
   	std::vector<float> fXBins;
-	//std::cout << " -- " << xBinStr << std::endl;
+	std::cout << " -- " << xBinStr << std::endl;
  	setBins( xBinStr, fXBins );
   	int fNBinsX = fXBins.size();
 	const auto xbins = &fXBins[0];
@@ -2821,6 +2821,7 @@ kucms_SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D ){
 	//std::string outfilename = caliFileDir + f2DHistName + fittypename  + "_resfit.root";
     std::string outfilename = f2DHistName + fittypename  + "_resfit.root";
     TFile* resTFile = TFile::Open( outfilename.c_str(), "UPDATE" );
+	if( resTFile == NULL ) std::cout << " -- Failed to open : " << f2DHistName << std::endl;
     resTFile->cd();
 
 	int nXbins = fNBinsX - 1;
@@ -3105,6 +3106,21 @@ void KUCMS_TimeCalibration::doResTimeFits( bool doLocal ){
 	if( cali2DResTFile != NULL ) cali2DResTFile->Close();
 
 }//<<>>void KUCMS_TimeCalibration::doResTimeFits()
+
+void KUCMS_TimeCalibration::doResTimeFitExt( std::string histName, std::string fileName ){
+
+    std::cout << "Making Resolution Time Fits" << std::endl;
+	std::cout << " -- With : " << fileName << std::endl;
+	auto tFile = TFile::Open( fileName.c_str(), "READ" );
+	if (!tFile || tFile->IsZombie()){ std::cout << " -- Failed to Open : " << fileName << std::endl; return; }
+	std::cout << " -- For : " << histName << std::endl;
+	TH2F* lhist = (TH2F*)tFile->Get(histName.c_str());
+    if( lhist == nullptr ){ std::cout << " -- Failed to Open : " << histName << std::endl; return; }
+	kucms_SigmaFitResult results = runTimeFitter( lhist );
+	tFile->Close();
+	delete tFile;
+
+}//<<>>void KUCMS_TimeCalibration::doResTimeFit( std::string histName )
 
 void KUCMS_TimeCalibration::load2DResHist( std::string histName ){
 

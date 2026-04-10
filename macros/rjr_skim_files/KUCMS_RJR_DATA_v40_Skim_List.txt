@@ -1,4 +1,5 @@
 ###############################################################
 #rjr_skim_files/KUCMS_RJR_MET18_v41_Skim_List.txt MET18 yes -1
 ###############################################################
-rjr_skim_files/KUCMS_RJR_MET18_v41_Skim_List.txt MET18D yes -1
+#rjr_skim_files/KUCMS_RJR_MET18_v41_Skim_List.txt MET18D yes -1
+rjr_skim_files/KUCMS_RJR_EG18_v41_Skim_List.txt EG18D yes -1
