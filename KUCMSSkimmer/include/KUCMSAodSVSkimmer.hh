@@ -372,6 +372,10 @@ class KUCMSAodSkimmer : public llpgtree {
     const int getOverLapCnt(const rhIdGroup x, const rhIdGroup y){ int c=0; int sx=x.size(); int sy=y.size();
                for( int a=0;a<sx;a++){for( int b=0;b<sy;b++){if(x[a]==y[b]){c++;break;}}} return c;}
 
+	bool GetGJetsSel(int phoidx);
+	bool GetDiJetsSel();
+
+
     //photon CR definitions
     int GetDetBkgCR(int phoidx);
     void TrackMatched(int scidx, double& best_dr);

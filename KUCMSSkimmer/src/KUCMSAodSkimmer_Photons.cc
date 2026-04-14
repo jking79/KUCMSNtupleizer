@@ -569,6 +569,7 @@ void KUCMSAodSkimmer::processPhotons(){
     selPhotons.fillBranch( "photon_isoANNScore", isobkg_score );
     selPhotons.fillBranch( "photon_beamHaloCNNScore", bh_score );
     selPhotons.fillBranch( "photon_minJetDr", minJetDr );
+	GetGJetsSel(it);
 
     ///////////  Very Loose Base Photon selection ////////////////////////////////////////////////////////////////////
     //---------------------------------------------------
@@ -1376,7 +1377,6 @@ bool KUCMSAodSkimmer::GetGJetsCR(int phoidx){
     float j_px = 0;
     float j_py = 0;
     float j_pz = 0;
-	bool phoIso = true;
     for(int j = 0; j < nJets; j++){
         ht += (*Jet_pt)[j];
         float pt = (*Jet_pt)[j];
@@ -1386,8 +1386,6 @@ bool KUCMSAodSkimmer::GetGJetsCR(int phoidx){
         j_py += pt*sin(phi);
         j_pz += pt*sinh(eta);
     	//dphi_jets_photon > pi-0.3
-    	float pho_jet = dR1(pho_eta, pho_phi, eta, phi);
-		if( pho_jet < 0.4 && j < 2 ) phoIso = false;
     }//<<>>for(int j = 0; j < nJets; j++)
     float jet_sys_phi = atan2(j_py, j_px);
     if(ht < 50) return false;
@@ -1400,8 +1398,6 @@ bool KUCMSAodSkimmer::GetGJetsCR(int phoidx){
     float jet_sys_pt = sqrt(j_px*j_px + j_py*j_py);
     float ptasym = std::min(pho_pt, jet_sys_pt) / std::max(pho_pt, jet_sys_pt);
     if(ptasym < 0.6) return false;
-	if( allphominjetdr[phoidx] < 0.4 ) phoidx = -1;
-	if( gammaJetIndex[0] < 0 ){ gammaJetIndex[0] = phoidx; gammaJetIndex[1] = nJets; }
     return true;
 
 }//<<>>bool KUCMSAodSkimmer::GetGJetsCR(int phoidx)
@@ -1447,14 +1443,68 @@ bool KUCMSAodSkimmer::GetDiJetsCR(int phoidx){
     if(ptasym < 0.6) return false;
     //min(pho_pt, jet_sys_pt) / max(pho_pt, jet_sys_pt) > 0.6
     //dr_pho_jet > 0.5 for all photons in event
-    double pho_jet1 = dR1(pho_eta, pho_phi, j_eta1, j_phi1);
-    double pho_jet2 = dR1(pho_eta, pho_phi, j_eta2, j_phi2);
     //double maxdR = 0.5;
-    if(pho_jet1 < 0.5 || pho_jet2 < 0.5) return false;
-    if( diJetIndex[0] < 0 ){ diJetIndex[0] = 0; diJetIndex[1] = 1; }
     return true;
 
 }//<<>>bool KUCMSAodSkimmer::GetDiJetsCR(int phoidx)
+
+bool KUCMSAodSkimmer::GetGJetsSel(int phoidx){
+
+    //event filters applied
+    //not in BH sideband (equivalent of BH filter from noise filters)
+
+    //if( allphominjetdr[phoidx] < 0.4 ) return false;
+    int nJets = Jet_energy->size();
+    if(nJets < 1) return false;
+    float pho_pt = (*Photon_pt)[phoidx];
+    float pho_phi = (*Photon_phi)[phoidx];
+    float pho_eta = (*Photon_eta)[phoidx];
+    float ht = 0;
+    float j_px = 0;
+    float j_py = 0;
+    //float j_pz = 0;
+    bool phoIso = true;
+    for(int j = 0; j < nJets; j++){
+        ht += (*Jet_pt)[j];
+        float pt = (*Jet_pt)[j];
+        float phi = (*Jet_phi)[j];
+        //float eta = (*Jet_eta)[j];
+        j_px += pt*cos(phi);
+        j_py += pt*sin(phi);
+        //j_pz += pt*sinh(eta);
+    }//<<>>for(int j = 0; j < nJets; j++)
+    float jet_sys_phi = atan2(j_py, j_px);
+    if(ht < 50) return false;
+    if(Met_pt > 150) return false; //pass ntuple selection of SVIPM100, originally using MET < 100
+    float dphi_objjet = std::abs(dPhi(pho_phi,jet_sys_phi));
+    if( dphi_objjet < PI - 0.3 ) return false;
+    float jet_sys_pt = sqrt(j_px*j_px + j_py*j_py);
+    float ptasym = std::min(pho_pt, jet_sys_pt) / std::max(pho_pt, jet_sys_pt);
+    if(ptasym < 0.6) return false;
+    if( gammaJetIndex[0] < 0 ){ gammaJetIndex[0] = phoidx; gammaJetIndex[1] = nJets; }
+    return true;
+
+}//<<>>bool KUCMSAodSkimmer::GetGJetsSel(int phoidx)
+
+bool KUCMSAodSkimmer::GetDiJetsSel(){
+
+    int nJets = Jet_energy->size();
+    if(nJets < 2) return false;
+    double ht = 0;
+    for(int j = 0; j < nJets; j++){
+        ht += (*Jet_pt)[j];
+    }//<<>>for(int j = 0; j < nJets; j++)
+    if(ht < 50) return false;
+    if(Met_pt > 150) return false; //pass ntuple selection of SVIPM100, originally using MET < 100
+    double dphi_jets = std::abs(dPhi((*Jet_phi)[0],(*Jet_phi)[1]));
+    if( dphi_jets < PI - 0.3 ) return false;
+    double ptasym = (*Jet_pt)[1] / (*Jet_pt)[0];
+    if(ptasym < 0.6) return false;
+    if( diJetIndex[0] < 0 ){ diJetIndex[0] = 0; diJetIndex[1] = 1; }
+    return true;
+
+}//<<>>bool KUCMSAodSkimmer::GetDiJetsSel(int phoidx)
+
 
 //------------------------------------------------------------------------------------------------------------
 // object quality ids
