@@ -143,17 +143,21 @@ int main ( int argc, char *argv[] ){
 	// extended range 2D
     //theCali.setLowEnergy( false ); // true is default
     ////theCali.setUseEffEnergy( true );
-    theCali.useGainSwitch( true, true ); // use gainid ? --  do all gians ? : all Gains (HG)
+
+    //theCali.useGainSwitch( true, true ); // use gainid ? --  do all gians ? : all Gains (HG)
     //theCali.useGainSwitch( true, false ); // use gainid ? --  do all gians ? : only gainID1 (LG)
-    theCali.setIsCC(true);
+
+    //theCali.setIsCC(true);
     //theCali.setIsCC(false);
-    theCali.setDoUnCC(true);
+
+    //theCali.setDoUnCC(true);
 	////theCali.setDoEE( false ); depreciated - now do EB & EE at the same time
     ////theCali.setDoEE( true ); depreciated - now do EB & EE at the same time
 	////theCali.setUseGainID( 1 ); depreciated - now set by useGainSwitch
 	////theCali.SetXBinStr( "VARIABLE 10 15 20 25 30 40 50 60 80 100 125 150 175 200 225 250 300 400 600" ); // : xr
     ////theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600" ); // : xlg  llpana LG resfit ( old xa )
-    theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600 3200" ); // : xa  llpana HG resfit default
+
+    //theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600 3200" ); // : xa  llpana HG resfit default
     ////theCali.SetXBinStr( "VARIABLE 1.0 2.0 3.0 4.0 5.0 7.5 10.0 12.5 15.0 17.5 20.0 25.0 30.0 40.0 50.0 70.0 90.0" ); // xer
     ////theCali.SetXBinStr( "VARIABLE 1.0 2.0 3.0 4.0 5.0 7.5 10.0 12.5 15.0 17.5 20.0 22.5 25.0 30.0 40.0 60.0 120.0" ); // xea
     ////theCali.SetXBinStr( "VARIABLE 10 15 20 25 30 40 50 60 80 100 125 150 175 200 225 250 300 400 600" ); // : ecal real
@@ -169,8 +173,9 @@ int main ( int argc, char *argv[] ){
     ////theCali.SetYBinStr( "CONSTANT 360 -9 9" ); // ( 50 ps  )
     ////theCali.SetYBinStr( "CONSTANT 240 -12 12" ); ( 100 ps )
     //--------------------------------------------------------
+
 	// justin profile y bins
-	theCali.SetYBinStr( "CONSTANT 1200 -24 24" ); // full range ( 40 ps ) -- llpana default
+	//theCali.SetYBinStr( "CONSTANT 1200 -24 24" ); // full range ( 40 ps ) -- llpana default
     ////theCali.SetYBinStr( "CONSTANT 240 -12 12" ); // justin ( 100 ps )
     ////theCali.SetYBinStr( "CONSTANT 360 -12 12" ); // justin ( 67 ps )
     ////theCali.SetYBinStr( "CONSTANT 180 -6 6" ); // justin ( 67 ps )
@@ -212,7 +217,7 @@ int main ( int argc, char *argv[] ){
 
     //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_25p_xa_pm24b1200_v0210" );
 	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_25p_xa_pm24b1200_v0305" );
-    theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_25p_uncor_xa_pm24b1200_v0316" );
+    //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_25p_uncor_xa_pm24b1200_v0316" );
 
 	//theCali.setMCResTag("r2_ul16");
 	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18MC_xa_pm24b1200_v0204" );
@@ -361,7 +366,8 @@ int main ( int argc, char *argv[] ){
 
 	////theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600" ); // : xa 2018UL DRO
     ////theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600" ); // : xa llpana LG resfit
-	theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600 3200" ); // : xa llpana HG resfit
+	//theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600 3200" ); // : xa llpana HG resfit
+
 
     //theCali.load2DResHist( histName );
 	//theCali.doResTimeFit( histName );
@@ -376,6 +382,11 @@ int main ( int argc, char *argv[] ){
     theCali.load2DResHist( histName4 );
     theCali.doResTimeFit( histName4 );
 */	
+
+
+    theCali.SetXBinStr( "CONSTANT 48 0 1200" );
+    theCali.doResTimeFitExt( "PVTimeResNorm", "/uscms/home/jaking/nobackup/el9/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/macros/KUCMS_Data_llpana_v49_PVtime_Res_cv5_EG18D_RjrSkim_Hists.root");
+
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

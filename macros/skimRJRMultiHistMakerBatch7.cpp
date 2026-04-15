@@ -31,7 +31,8 @@ void HistMaker::histMaker( std::string indir, std::string infilelist, std::strin
 
     const std::string disphotreename("kuSkimTree");
     const std::string configtreename("kuSkimConfigTree");
-    const std::string eosdir("root://cmseos.fnal.gov//store/user/lpcsusylep/malazaro/KUCMSSkims/skims_v49/");
+    //const std::string eosdir("root://cmseos.fnal.gov//store/user/lpcsusylep/malazaro/KUCMSSkims/skims_v49/");
+    const std::string eosdir("");
     const std::string listdir("");
 	const std::string ofnending = "_RjrSkim_Hists.root";
 
@@ -464,7 +465,8 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 	//!!!!! MET Cut
     auto metCPt = hypo(selCMetPx,selCMetPy);
     auto metPt = hypo(selMetPx,selMetPy);
-	if( metPt < 150 ) continue;
+	//if( metPt < 150 ) continue;
+    if( metPt < 0 ) continue;
     //hist1d[2]->Fill(12,fillwt);
 
 	//if( DEBUG ) std::cout << "RJR jet cut " << std::endl;
@@ -557,6 +559,9 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     float gsmn = 99;
     float gsieie = 99;
 	bool ggs = false;
+	bool gjetsCR = false;
+	float pvtime = -99;
+	float pvenergy = 0;
 
 	float sr2 = std::sqrt(1);
     float sgtime = 99;
@@ -565,6 +570,10 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 	//if( selPhoTime->size() > 0 ){
 
 		gwtsig = (*baseLinePhoton_WTimeSig)[0];
+        gwtime = (*baseLinePhoton_WTime)[0];
+		gjetsCR = (*baseLinePhoton_GJetsCR)[0];
+		pvtime = (*pv_wtime)[0];
+		pvenergy = (*pv_wpenergy)[0];	
 /*
 		gtime = (*selPhoTime)[0];
 		gpt = (*selPhoPt)[0];
@@ -598,6 +607,9 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 //		sgtime = (*selPhoTime)[1];
 //		sgpt = (*selPhoPt)[1];
 //	}//<<>>if( selPhoTime->size() > 1 )
+
+    if( gjetsCR ) hist2d[221]->Fill( gwtime - pvtime, pvenergy ); 
+    if( gjetsCR ) hist2d[220]->Fill( pvenergy, gwtime - pvtime ); 
 
 	int nPho = 0; //(*rjrNPhotons)[cs];
     int nAJets = (*rjrNJetsJa)[cs];
@@ -662,6 +674,8 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     //float NormMBetaEql = (*selPhoMBetaEql)[0]/mr;
     //float NormMBetaPmt = (*selPhoMBetaPmt)[0]/mr;
 
+	
+
 	//(*rjrASMass)[cs] -- M
 	//(*rjrAX2NQSum)[cs] -- R
 	//rjrNVSum -- Rv
@@ -691,17 +705,18 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 	//if( nphocust ) continue;
 	//if( timecust )  continue;
 
-	if( not metFlag ) continue;
-    if( not haloFilter ) continue;
-	if( not trigger ) continue;
+    //if( metPt < 150 ) continue;
+	//if( not metFlag ) continue;
+    //if( not haloFilter ) continue;
+	//if( not trigger ) continue;
     //if( hemVeto ) continue;
 
 	// GGG cut sets
 	//if( nRjrPhos < 20 && nphocust ) continue;  
-    if( nRjrPhos == 0 ){
-        if( ms < 0 ) continue;
+    //if( nRjrPhos == 0 ){
+        //if( ms < 0 ) continue;
         //if( rs < 0.25 ) continue;
-	}//<<>>if( nRjrPhos == 0 )
+	//}//<<>>if( nRjrPhos == 0 )
 	if( nRjrPhos == 1 ){
 		//if( pho1PtsH21 < 0.1  ) continue;
 		if( ms > 2000 ) continue;
@@ -912,6 +927,7 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 void HistMaker::endJobs(){
 
     for( int it = 10; it < 30; it++ ){ if(hist1d[it]) smoothTH1D_v2(hist1d[it]);}
+	//normTH2D(hist2d[220]);
 
 }//<<>>void HistMaker::endJobs()
 
@@ -1117,6 +1133,9 @@ void HistMaker::initHists( std::string ht ){
     hist2d[209] = new TH2D("STime_v_Sieie", addstr(ht," STime_v_Sieie;selPhoSTime;selPhoSigmaIEtaIEta").c_str(), 400, -20, 20, 100, 0, 0.025);
     hist2d[210] = new TH2D("STime_v_SSCross", addstr(ht," STime_v_SSCross;selPhoSTime;selPhoSSCross").c_str(), 400, -20, 20, 200, -1, 1);
 
+	hist2d[220] = new TH2D("PVTimeResNorm",addstr(ht," PVEnergy_v_dPVTime;PVEnergy;dPVTime").c_str(),12,0,1200,160,-4,4);
+    hist2d[221] = new TH2D("PVTimeRes",addstr(ht," dPVTime_v_PVEnergy;dPVTime;PVEnergy").c_str(),125,-5,5,48,0,1200);
+
 	//------- jets ( time ) 0-49 ------------------------------
 
 	//---jet id stuff 50 - 99 ---------------------------------------------------
@@ -1154,8 +1173,10 @@ int main ( int argc, char *argv[] ){
 
     //if( argc != 4 ) { std::cout << "Insufficent arguments." << std::endl; }
     //else {
-                //std::string listdir = "/uscms/home/jaking/nobackup/llpana_skims/";
-				std::string listdir = "";
+                
+				std::string listdir = "../KUCMSSkimmer/condor/";
+				//std::string listdir = "/uscms/home/jaking/nobackup/llpana_skims/";
+				//std::string listdir = "";
 				//std::string listdir = "/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/tsig_skims/"; 
                 //std::string listdir = "/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/";
 
@@ -1168,7 +1189,7 @@ int main ( int argc, char *argv[] ){
                 std::string infilenameBG = "rjr_skim_files/KUCMS_RJR_BG_v39_Skim_List.txt";
                 std::string infilenameD = "rjr_skim_files/KUCMS_RJR_DATA_v40_Skim_List.txt";
 
-				std::string version = "v43_";
+				std::string version = "v49_";
 				std::string sigtype = "llpana_";
 				std::string ofnstart = "KUCMS_";
 
@@ -1191,20 +1212,22 @@ int main ( int argc, char *argv[] ){
 
                 std::vector<float> r_vec{1.0}; // BG scaling
 				std::vector<float> rv_vec{31.69*500000}; // Sig scaling
+                //std::vector<float> rv_vec{31.69};
                 std::string outdir = "";
 
-                std::string isoline = "P1TrMfHeHa_RJR0_"; // Tv = time valid, Mf = metfilters, Ha = halofilters, Tr = trigger, He = hemfilter;
+                std::string isoline = "PVtime_Res_";
+                //std::string isoline = "P1TrMfHeHa_RJR0_"; // Tv = time valid, Mf = metfilters, Ha = halofilters, Tr = trigger, He = hemfilter;
 				//std::string isoline = "P1TrMfHeHa_TSig_GS1_"; // Tv = time valid, Mf = metfilters, Ha = halofilters, Tr = trigger, He = hemfilter;
 				isoline += "cv" + std::to_string( np ) + "_";
                 std::string outfilenameJ = outdir + ofnstart + htitleJ + isoline;
 				std::string htitlefullJ =  htitleJ + isoline;
-				base.histMaker( listdir, infilenameJ, outfilenameJ, htitlefullJ, 0, nj, rv_vec, r_vec, rv_vec );
+				//base.histMaker( listdir, infilenameJ, outfilenameJ, htitlefullJ, 0, nj, rv_vec, r_vec, rv_vec );
                 std::string outfilenameBG = outdir + ofnstart + htitleBG + isoline;
                 std::string htitlefullBG =  htitleBG + isoline;
                 //base.histMaker( listdir, infilenameBG, outfilenameBG, htitlefullBG, 0, nj, r_vec, r_vec, rv_vec );
                 std::string outfilenameD = outdir + ofnstart + htitleD + isoline;
                 std::string htitlefullD =  htitleD + isoline;
-                //base.histMaker( listdir, infilenameD, outfilenameD, htitlefullD, 1, nj, r_vec, r_vec, rv_vec );
+                base.histMaker( listdir, infilenameD, outfilenameD, htitlefullD, 1, nj, r_vec, r_vec, rv_vec );
 
 				}}
 

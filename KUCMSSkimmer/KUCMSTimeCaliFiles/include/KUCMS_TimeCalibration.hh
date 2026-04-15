@@ -240,6 +240,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 	void doResTimeFits( bool doLocal = false );
     void doResTimeFit( std::string histName );
 	void load2DResHist( std::string histName );
+	void doResTimeFitExt( std::string histName, std::string fileName );
 
 	TH1F* gprProfileHist( TH1F* hist );
 

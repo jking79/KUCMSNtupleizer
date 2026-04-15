@@ -110,9 +110,11 @@ void KUCMSAodSkimmer::processPhotons(){
     auto hasEleVeto = (*Photon_electronVeto)[it];
     bool hasPixSeed = (*Photon_pixelSeed)[it];
 
+	if( DEBUG ) std::cout << " -- pho pull GenSig info" << std::endl;
     //if( geVars("genSigPerfect") == 1 ) std::cout << " -- pho sel susid " << (*Gen_susId)[(*Photon_genIdx)[it]] << std::endl;
-    bool isGenSig = hasGenInfoFlag ? ( (*Gen_susId)[(*Photon_genIdx)[it]] == 22 )  : 0;
+    bool isGenSig = hasGenInfoFlag ? (*Photon_genIdx)[it] > -1 ? ( (*Gen_susId)[(*Photon_genIdx)[it]] == 22 )  : 0 : 0;
 
+    if( DEBUG ) std::cout << " -- getting pho e, pt, eta, phi info" << std::endl;
     auto energy = (*Photon_energy)[it];
     auto pt = (*Photon_pt)[it];
     bool underMinPtEB = pt < 30;
@@ -133,7 +135,7 @@ void KUCMSAodSkimmer::processPhotons(){
     ///////////  processing SC rechit info for  time/res/sig ////////////////////////////////////////////////////////////
     //---------------------------------------------------
 
-    if( DEBUG ) std::cout << " -- pho pull SC info" << std::endl;
+    if( DEBUG ) std::cout << " -- pho pull SC info for " << scIndx << std::endl;
     if( std::count(dups.begin(), dups.end(), scIndx ) > 0 ) std::cout << " --- !!!!!!!  Duplicate SC ref in Photons !!!! " << std::endl;
     else dups.push_back( scIndx );
     auto scSize = SuperCluster_seedIsEB->size();
@@ -311,6 +313,8 @@ void KUCMSAodSkimmer::processPhotons(){
     if( hasGenInfoFlag ){
 
         genIdx = (*Photon_genIdx)[it];
+		if( genIdx > -1 ){
+
         momIdx = (*Gen_motherIdx)[genIdx];
         susId = (*Gen_susId)[genIdx];
 
@@ -368,6 +372,7 @@ void KUCMSAodSkimmer::processPhotons(){
 		hist1d[31]->Fill(distMom/(betamom*SOL));
 		hist1d[32]->Fill(cor_gtofPVtoSCSOL);
 
+		}//<<>>if( genIdx > -1 )
     }//if( doGenInfo )
 
     //---------------------------------------------------
