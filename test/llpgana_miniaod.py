@@ -41,7 +41,8 @@ options.register('runMETFilters',False,VarParsing.multiplicity.singleton,VarPars
 #options.register('globalTag','133X_mcRun3_2024_realistic_v10',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','94X_mc2017_realistic_v14',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for GMSB MC');
 ##options.register('globalTag','112X_mcRun3_2021_realistic_v16',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
-options.register('globalTag','140X_dataRun3_v17',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for R3 22,23');
+#options.register('globalTag','140X_dataRun3_v17',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for R3 22');
+#options.register('globalTag','130X_mcRun3_2023_realistic_postBPix_v2',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for R3 23');
 
 ##------------------ data gt  
 #options.register('globalTag','106X_dataRun2_v36',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
@@ -50,6 +51,8 @@ options.register('globalTag','140X_dataRun3_v17',VarParsing.multiplicity.singlet
 #options.register('globalTag','140X_dataRun3_v17',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 ##options.register('globalTag','106X_dataRun2_v24',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2018UL');
 #112X_mcRun3_2021_realistic_v16
+# DATA 2025
+options.register('globalTag','150X_dataRun3_Prompt_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag for 2025');
 
 ## processName
 options.register('processName','TREE',VarParsing.multiplicity.singleton,VarParsing.varType.string,'process name to be considered');
@@ -65,7 +68,7 @@ options.parseArguments()
 
 ## Define the CMSSW process
 #runera = "Run3"  # current siganl model   !!!!!!!!  Run3 must be in CMSSW 14 or 15
-runera = "Run3_2024"
+runera = "Run3_2025"
 #runera = "Run2_2018" # BG models
 ##runera = "Run2_2016"
 if options.multicrab == True : runera = options.runera
@@ -103,8 +106,8 @@ process.load("FWCore.MessageService.MessageLogger_cfi")
 #process.MessageLogger.destinations = ['cout', 'cerr']
 #process.MessageLogger.cerr.FwkReport.reportEvery = 1
 #process.MessageLogger.cerr.FwkReport.reportEvery = 2
-process.MessageLogger.cerr.FwkReport.reportEvery = 10
-#process.MessageLogger.cerr.FwkReport.reportEvery = 100
+#process.MessageLogger.cerr.FwkReport.reportEvery = 10
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
 #process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 if options.multicrab == True : process.MessageLogger.cerr.FwkReport.reportEvery = 100000
 
@@ -150,7 +153,7 @@ process.source = cms.Source("PoolSource",
 
         #### AOD Run3   MUST BE IN CMSSW  14 or 15 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         # Data
-        'root://cmsxrootd.fnal.gov//store/data/Run2024C/JetMET0/MINIAOD/PromptReco-v1/000/379/415/00000/f41372ad-bc84-47c3-9c74-49f96cf26866.root',
+        #'root://cmsxrootd.fnal.gov//store/data/Run2024C/JetMET0/MINIAOD/PromptReco-v1/000/379/415/00000/f41372ad-bc84-47c3-9c74-49f96cf26866.root',
         #'file:root_files/R23C_JetMet_mini_4a8e9a72-a9af-4448-acbd-bafa6cd684b4.root',
         #######'file:root_files/Met_UL18B_AOD_973EEF0C-44AB-E94A-8591-04DCD00D8B4B.root',
         ##'file:root_files/R22D_JetMet_mini_1f4a97f7-de76-4ee1-a380-0d9d7a5914d2.root',
@@ -163,11 +166,13 @@ process.source = cms.Source("PoolSource",
         #'root://cms-xrd-global.cern.ch//store/data/Run2017D/DoubleEG/MINIAOD/09Aug2019_UL2017-v1/260000/3879D624-EAFF-C34B-8C0E-D4D7E23EB25C.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2018D/EGamma/MINIAOD/UL2018_MiniAODv2-v2/2810000/D5E0889C-D687-6242-8105-A147939E99C4.root',
         #'root://cmsxrootd.fnal.gov//store/data/Run2018B/JetHT/MINIAOD/15Feb2022_UL2018-v1/2820000/84DEEA91-CF7B-C24B-831D-7D993EB56D8D.root',
+        'root://cmsxrootd.fnal.gov//store/data/Run2025F/JetMET0/MINIAOD/PromptReco-v1/000/396/733/00000/40cf55f8-5609-44a7-b73b-c74f4ae04076.root',
+
         # MC - Sig
         
         #'file:gjets_100to200_mini_18UL.root',
         #'root://cmsxrootd.fnal.gov//store/mc/RunIISummer20UL18MiniAODv2/GJets_HT-200To400_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/2550000/02DB3B2A-F2FE-4041-AA6F-45D8732CB5A8.root',    
-
+        #'root://cmsxrootd.fnal.gov//store/mc/Run3Summer23BPixMiniAODv4/QCD-4Jets_HT-1000to1200_TuneCP5_13p6TeV_madgraphMLM-pythia8/MINIAODSIM/130X_mcRun3_2023_realistic_postBPix_v2-v4/2550000/095a8ffe-1d09-4d04-bb7e-56903d510c3e.root',
         #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_MINI/260203_235322/0000/SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_MiniAODv4_99.root',
         #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p5_MINI/260317_213825/0000/SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p5_MiniAODv4_18.root',
         #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2500_mN2-1200_mN1-500_GZ_N2ctau-0p5_MINI/260317_214117/0000/SMS-GlGl_mGl-2500_mN2-1200_mN1-500_GZ_N2ctau-0p5_MiniAODv4_22.root',
@@ -193,9 +198,9 @@ if _cmdInputFiles:
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250))#KT
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
 
 # Override hardcoded source file(s) when inputFiles is passed on the command line
 _cmdMaxEvents = [a.split('=', 1)[1] for a in _sys.argv if a.startswith('maxEvents=')]
@@ -222,8 +227,8 @@ filterselect = 'SVHPMet100'
 #####filterselect = 'AL1SelEle'
 if options.multicrab == True : filterselect = options.eventFilter
 
-#dosv = True
-dosv = False # with v30 this is the only SV flag that matters, doDisEle and doECALTrackOnly are depreciated
+dosv = True
+#dosv = False # with v30 this is the only SV flag that matters, doDisEle and doECALTrackOnly are depreciated
 if options.multicrab == True : dosv = options.doSV
 ############dode = True
 dode = False # removed - only false with v30
@@ -240,7 +245,7 @@ probeout = False
 if options.multicrab == True : probeout = False
 
 flagSet = "RECO"
-triggerSet = "HLT"
+triggerSet = "HLT" # ? SIM, HLT, RECO, PAT
 convSet = "RECO"
 ecalIsoInputs = ecalIsoInputsF17
 
@@ -258,7 +263,7 @@ if "Run3" in runera :
     if 'CASTOR' in process.CaloGeometryBuilder.SelectedCalos : 
         process.CaloGeometryBuilder.SelectedCalos.remove('CASTOR') 
 
-if "Run3_2024" in runera :
+if "Run3_2024" or "Run3_2025" in runera :
     convSet = "RECO"
     flagSet = "RECO"
 
