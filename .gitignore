@@ -20,6 +20,7 @@ test/oldWorkingSpace/
 test/myOldWorkSpaces/
 test/myGMSBWorkingSpace/
 test/myFinishedWork/
+test/*WorkingSpace
 macros/*.obj
 KUCMSSkimmer/condor/Output/
 KUCMSSkimmer/condor/testOutput/

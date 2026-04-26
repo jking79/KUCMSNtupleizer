@@ -319,6 +319,7 @@ KUCMSEcalRecHitObjectMini::KUCMSEcalRecHitObjectMini( const edm::ParameterSet& i
     cfFlag.set( "onlyEB", iConfig.existsAs<bool>("onlyEB") ? iConfig.getParameter<bool>("onlyEB") : false );
     cfPrm.set( "ebMaxEta",iConfig.existsAs<double>("ebMaxEta")? iConfig.getParameter<double>("ebMaxEta") : 1.479 );
 	cfFlag.set( "doProbeOut", iConfig.existsAs<bool>("doProbeOut") ? iConfig.getParameter<bool>("doProbeOut") : false );
+    cfFlag.set( "doUnCC", iConfig.existsAs<bool>("doUnCC") ? iConfig.getParameter<bool>("doUnCC") : false );
 
 }//<<>>KUCMSEcalRecHit::KUCMSEcalRecHit( const edm::ParameterSet& iConfig, const ItemManager<bool>& cfFlag )
 
@@ -353,6 +354,7 @@ void KUCMSEcalRecHitObjectMini::InitObject( TTree* fOutTree ){
     Branches.makeBranch("Energy","ECALRecHit_energy",VFLOAT);
     Branches.makeBranch("Time","ECALRecHit_time",VFLOAT);
     Branches.makeBranch("TimeError","ECALRecHit_timeError",VFLOAT);
+    Branches.makeBranch("UnTime","ECALRecHit_UnCorrTime",VFLOAT);
     Branches.makeBranch("isTimeValid","ECALRecHit_isTimeValid",VBOOL);
     Branches.makeBranch("TOFpv","ECALRecHit_pvTOF",VFLOAT);
     Branches.makeBranch("TOF0","ECALRecHit_0TOF",VFLOAT);
@@ -831,6 +833,7 @@ void KUCMSEcalRecHitObjectMini::PostProcessEvent( ItemManager<float>& geVar ){
 		const bool hasGS1 = recHit.checkFlag(EcalRecHit::kHasSwitchToGain1);
         const bool hasGS6 = recHit.checkFlag(EcalRecHit::kHasSwitchToGain6);
         const float rhTime = recHit.time();
+        const float rhUnTime = cfFlag("doUnCC") ? recHit.nonCorrectedTime() : recHit.time();
         const bool rhIsOOT = recHit.checkFlag(EcalRecHit::kOutOfTime);
         const bool rhIsWrd = recHit.checkFlag(EcalRecHit::kWeird);
         const bool rhIsDiWrd = recHit.checkFlag(EcalRecHit::kDiWeird);
@@ -868,6 +871,7 @@ void KUCMSEcalRecHitObjectMini::PostProcessEvent( ItemManager<float>& geVar ){
         Branches.fillBranch("TOFpv",d_pv);
         Branches.fillBranch("TOF0",d_rh);
         Branches.fillBranch("Time",rhTime);
+        Branches.fillBranch("UnTime",rhUnTime);
         Branches.fillBranch("TimeError",rhJErr);
         Branches.fillBranch("isTimeValid",isTimeValid);
         Branches.fillBranch("isOOT",rhIsOOT);
