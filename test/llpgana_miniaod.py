@@ -244,6 +244,7 @@ if options.multicrab == True : runMETFilters = options.runMETFilters
 probeout = False
 if options.multicrab == True : probeout = False
 
+isCC = False
 flagSet = "RECO"
 triggerSet = "HLT" # ? SIM, HLT, RECO, PAT
 convSet = "RECO"
@@ -266,6 +267,9 @@ if "Run3" in runera :
 if "Run3_2024" or "Run3_2025" in runera :
     convSet = "RECO"
     flagSet = "RECO"
+
+if "Run3_2025" in runera :
+    isCC = True
 
 if runMETFilters == True : flagSet = ""  # ?  "SIM" for MC
 
@@ -301,6 +305,8 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizerMini",
                               doDisEleModule = cms.bool(dode),
                               doECALTrackOnly = cms.bool(doet),
                               RunEra = cms.string(runera),
+
+                              doUnCC = cms.bool(isCC),
 
                               ##skim type selectuon 
                               fltrSelection = cms.string(filterselect),
