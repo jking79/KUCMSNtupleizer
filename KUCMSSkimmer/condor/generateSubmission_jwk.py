@@ -66,7 +66,7 @@ def generateSubmission(args):
 #    	print("Input list for sample "+args.inputSample+" not found")
 #    	exit()
 
-    inputMainList = cmsswpath+"ntuple_master_lists/KUCMS_Ntuple_Master_SMS_Sig_Files_List_v34p1.txt"
+    inputMainList = cmsswpath+"ntuple_master_lists/KUCMS_Ntuple_Small_DataPD_Files_List.txt"
     MCbkg = False
     MCsig = True
 

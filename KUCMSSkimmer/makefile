@@ -100,7 +100,7 @@ TRES_OBJ  := $(MAINOBJDIR)/makeKUCMSTimeResolution.o
 remote: $(EXE_MAIN)
 local: $(EXE_LOCAL)
 time: $(EXE_CALI) $(EXE_RES)
-cali: $(EXE_CALI)
+cali: $(EXE_CALI) 
 res: $(EXE_RES)
 rjr_plotting: $(EXE_RJR)
 
@@ -136,6 +136,18 @@ configtar: remote
 	cp ecal_config/fullinfo* config/ecal_config/
 	cp ecal_config/reducedinfo* config/ecal_config/
 	tar -czf condor/config.tgz config 
+
+# Condor tarball for time resolution jobs
+
+configrestar: res
+	@echo -e "$(COLOR_GREEN)Creating resolution condor tarball$(COLOR_RESET)"
+	cp $(EXE_RES) config/
+	cp -r ntuple_master_lists/* config/ntuple_master_lists/
+	cp ecal_config/brilcalc* config/ecal_config/
+	cp ecal_config/cali_config/cali* config/ecal_config/
+	cp ecal_config/fullinfo* config/ecal_config/
+	cp ecal_config/reducedinfo* config/ecal_config/
+	tar -czf condor/configres.tgz config
 
 all: remote configtar
 

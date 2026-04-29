@@ -1,0 +1,29 @@
+universe = vanilla
+executable = run_time_res_job.sh
+
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+
+transfer_input_files = configres.tgz
+transfer_output_files = $(OutputFile)
+
+output = Output/timeRes_$(Tag).out
+error  = Output/timeRes_$(Tag).err
+log    = Output/timeRes_$(Tag).log
+
+request_cpus = 1
+request_memory = 6000MB
+request_disk = 8000MB
+
++JobFlavour = "tomorrow"
+
+arguments = true false false $(NameExt)
+OutputFile = res2dPlots$(NameExt).root
+
+queue Tag, NameExt from (
+25Cp _eg_25Cp_xa_pm24b1200_v0422
+25Dp _eg_25Dp_xa_pm24b1200_v0422
+25Ep _eg_25Ep_xa_pm24b1200_v0422
+25Fp _eg_25Fp_xa_pm24b1200_v0422
+25Gp _eg_25Gp_xa_pm24b1200_v0422
+)
