@@ -225,8 +225,11 @@ public :
    std::vector<float>   *baseLinePhoton_WTimeSig;
    std::vector<float>   *baseLinePhoton_WTime;
    std::vector<bool> *baseLinePhoton_GJetsCR;
+   std::vector<float>   *baseLinePhoton_WTRes;
+   std::vector<float>   *baseLinePhoton_Energy;
    std::vector<float>  *pv_wtime;
    std::vector<float>  *pv_wpenergy;
+   std::vector<float>  *pv_wtimeres;
 
    std::vector<bool>    *muonIsLoose;
    std::vector<bool>    *muonIsMedium;
@@ -602,8 +605,11 @@ public :
    TBranch        *b_baseLinePhoton_WTimeSig;   //!
    TBranch        *b_baseLinePhoton_WTime;   //!
    TBranch        *b_baseLinePhoton_GJetsCR;
+   TBranch        *b_baseLinePhoton_WTRes;
+   TBranch        *b_baseLinePhoton_Energy;
    TBranch        *b_pv_wtime;
    TBranch        *b_pv_wpenergy;
+   TBranch        *b_pv_wtimeres;
 
    TBranch        *b_rjrABSide;   //!
    TBranch        *b_rjr_Rdiff;   //!
@@ -915,8 +921,11 @@ void skimtuple_v36::Init( TChain *tree, bool doGenInfo ){
    baseLinePhoton_WTimeSig = 0;
    baseLinePhoton_GJetsCR = 0;
    baseLinePhoton_WTime = 0;
+   baseLinePhoton_WTRes = 0;
+   baseLinePhoton_Energy = 0;
    pv_wtime = 0;
    pv_wpenergy = 0;
+   pv_wtimeres = 0;
 
    muonIsLoose = 0;
    muonIsMedium = 0;
@@ -1256,8 +1265,11 @@ void skimtuple_v36::Init( TChain *tree, bool doGenInfo ){
    fChain->SetBranchAddress("baseLinePhoton_WTimeSig", &baseLinePhoton_WTimeSig, &b_baseLinePhoton_WTimeSig);
    fChain->SetBranchAddress("baseLinePhoton_WTime", &baseLinePhoton_WTime, &b_baseLinePhoton_WTime);
    fChain->SetBranchAddress("baseLinePhoton_GJetsCR", &baseLinePhoton_GJetsCR, &b_baseLinePhoton_GJetsCR);
+   fChain->SetBranchAddress("baseLinePhoton_WTRes", &baseLinePhoton_WTRes, &b_baseLinePhoton_WTRes);
+   fChain->SetBranchAddress("baseLinePhoton_Energy", &baseLinePhoton_Energy, &b_baseLinePhoton_Energy);
    fChain->SetBranchAddress("pv_wtime", &pv_wtime, &b_pv_wtime);
    fChain->SetBranchAddress("pv_wpenergy", &pv_wpenergy, &b_pv_wpenergy);
+   fChain->SetBranchAddress("pv_wtimeres", &pv_wtimeres, &b_pv_wtimeres);
 
    fChain->SetBranchAddress("muonIsLoose", &muonIsLoose, &b_muonIsLoose);
    fChain->SetBranchAddress("muonIsMedium", &muonIsMedium, &b_muonIsMedium);
@@ -1599,8 +1611,11 @@ void skimtuple_v36::getBranches( Long64_t entry, bool doGenInfo ){
    b_baseLinePhoton_WTimeSig->GetEntry(entry);   //!
    b_baseLinePhoton_WTime->GetEntry(entry);   //!
    b_baseLinePhoton_GJetsCR->GetEntry(entry);
+   b_baseLinePhoton_WTRes->GetEntry(entry);
+   b_baseLinePhoton_Energy->GetEntry(entry);
    b_pv_wtime->GetEntry(entry);
    b_pv_wpenergy->GetEntry(entry);
+   b_pv_wtimeres->GetEntry(entry);
 
    //b_selPhoObjId->GetEntry(entry);
    b_rjrCleaningVeto0->GetEntry(entry);

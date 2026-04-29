@@ -20,6 +20,8 @@ KUCMS_TimeCalibration::KUCMS_TimeCalibration( bool stayOpen, bool makeNew ){
     caliTTConfig = caliFileDir + "caliTTConfig.txt";
     caliResConfig = caliFileDir + "caliResConfig.txt";
 
+	isCondorJob = false;
+
     xtalHistMapName = "_X_";
     ttHistMapName = "_TT_";
     lochist = "_SRO_Data_Hist";
@@ -2349,8 +2351,8 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
     bool useAmp = not useEffEnergy;
 
     float lB = 10; // lower and upper limits of energies for rechits used
-    float uB = 120; // lower and upper limits of energies for rechits used
-    if( lowEnergy ){ lB = 2; uB = 120; }
+    float uB = 240; // lower and upper limits of energies for rechits used
+    if( lowEnergy ){ lB = 2; uB = 240; }
 
     std::cout << " -- use low energy : " << lowEnergy << std::endl;
     std::cout << " -- xbins : " << xBinStr << std::endl;
@@ -2785,7 +2787,13 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
     // ----   scale and set isNew to false
 
     std::cout << " - Scale & Save 2D Hist" << std::endl;
-    cali2DResTFile = TFile::Open( cali2DResPlotsTFileName.c_str(), "UPDATE" );
+	std::string cali2dfile_condor = "res2dPlotsTFileCondor.root";
+	if( isCondorJob ) cali2DResTFile = TFile::Open( cali2dfile_condor.c_str(), "RECREATE" );
+    else cali2DResTFile = TFile::Open( cali2DResPlotsTFileName.c_str(), "UPDATE" );
+	if( !cali2DResTFile || cali2DResTFile->IsZombie() ){
+    	std::cerr << "ERROR: could not open output ROOT file" << std::endl;
+    	return;
+	}//<<>>if( !cali2DResTFile || cali2DResTFile->IsZombie() )
     cali2DResTFile->cd();
     for( auto& hists : CaliHists ){
 
@@ -2793,7 +2801,7 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 
             if( scale ) scaleHist(hists.second.h2f,false,true,false);// hist, scale up?, varible x bins?, varible y bin?
             hists.second.isNew = false;
-            if( not small ) hists.second.h2f->Write( hists.second.h2f->GetName(), TObject::kOverwrite );
+            if( not small && hists.second.h2f ) hists.second.h2f->Write( hists.second.h2f->GetName(), TObject::kOverwrite );
 
         }//<<>>if( hists.second.isResHist && hists.second.isNew )
 
@@ -2820,7 +2828,7 @@ kucms_SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D ){
 	std::string fittypename = ( doSterm ) ? "_NSC" : "_NC";
 	//std::string outfilename = caliFileDir + f2DHistName + fittypename  + "_resfit.root";
     std::string outfilename = f2DHistName + fittypename  + "_resfit.root";
-    TFile* resTFile = TFile::Open( outfilename.c_str(), "UPDATE" );
+    TFile* resTFile = TFile::Open( outfilename.c_str(), "RECREATE" );
 	if( resTFile == NULL ) std::cout << " -- Failed to open : " << f2DHistName << std::endl;
     resTFile->cd();
 

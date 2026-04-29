@@ -276,6 +276,39 @@ template <typename T> std::string toString(T value){
 
 }//<<>>template <typename T> std::string to_string(T value)
 
+void setBins(std::string & str, std::vector<float> & bins ){
+
+    if(str.find("CONSTANT") != std::string::npos){
+
+        str = RemoveDelim(str,"CONSTANT");
+        int nbins = 0; float low = 0.f, high = 0.f;
+        std::stringstream ss(str);
+        ss >> nbins >> low >> high;
+        float bin_width = (high-low)/nbins;
+        for (int ibin = 0; ibin <= nbins; ibin++){ bins.push_back(low+ibin*bin_width); }
+
+    } else if(str.find("VARIABLE") != std::string::npos) {
+
+        str = RemoveDelim(str,"VARIABLE");
+        float bin_edge;
+        std::stringstream ss(str);
+        std::cout << "Setting Var bins : ";
+        while(ss >> bin_edge){
+            std::cout << bin_edge << " ";
+            bins.push_back(bin_edge);
+        }//<<>>while (ss >> bin_edge)
+        std::cout << std::endl;
+
+    } else {
+
+        std::cerr << "Aye... bins are either VARIABLE or CONSTANT! Exiting..." << std::endl;
+        exit(1);
+
+    }//<<>>if      (str.find("CONSTANT") != std::string::npos)
+
+}//<<>>void setBins(std::string & str, std::vector<Double_t> & bins, Bool_t & var_bins)
+
+
 void setBins(std::string & str, std::vector<double> & bins, bool & var_bins){
 
     if(str.find("CONSTANT") != std::string::npos){

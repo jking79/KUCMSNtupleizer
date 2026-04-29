@@ -426,8 +426,8 @@ ytitle = '#sigma(t_{1}-t_{2}) [ns]'
 htitle = ''
 islogx = True
 #islogx = False
-#islogy = True
-islogy = False
+islogy = True
+#islogy = False
 
 gll_layout = { 'xtitle' : xtitle, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'legtitle' : legtitle }
 loc_layout = { 'xtitle' : xtitle, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'legtitle' : legtitle + li_legtitle }
@@ -633,10 +633,19 @@ dro24ee = 'ResMap_378971_387721_DRO_Data_Hist_eg_24p_xa_pm24b1200_v0119_EE'
 sro24eb = 'ResMap_378971_387721_SRO_Data_Hist_eg_24p_xa_pm24b1200_v0119_EB'
 sro24ee = 'ResMap_378971_387721_SRO_Data_Hist_eg_24p_xa_pm24b1200_v0119_EE'
 
-dro25eb = 'ResMap_387900_400000_DRO_Data_Hist_NoCali_eg_25p_xa_pm24b1200_v0210_EB'
-dro25ee = 'ResMap_387900_400000_DRO_Data_Hist_NoCali_eg_25p_xa_pm24b1200_v0210_EE'
-sro25eb = 'ResMap_387900_400000_SRO_Data_Hist_NoCali_eg_25p_xa_pm24b1200_v0210_EB'
-sro25ee = 'ResMap_387900_400000_SRO_Data_Hist_NoCali_eg_25p_xa_pm24b1200_v0210_EE'
+dro25ebnc = 'ResMap_387900_400000_DRO_Data_Hist_NoCali_eg_25p_xa_pm24b1200_v0210_EB'
+dro25eenc = 'ResMap_387900_400000_DRO_Data_Hist_NoCali_eg_25p_xa_pm24b1200_v0210_EE'
+sro25ebnc = 'ResMap_387900_400000_SRO_Data_Hist_NoCali_eg_25p_xa_pm24b1200_v0210_EB'
+sro25eenc = 'ResMap_387900_400000_SRO_Data_Hist_NoCali_eg_25p_xa_pm24b1200_v0210_EE'
+
+dro25Ueb = 'ResMap_387742_398903_DRO_Data_Hist_eg_25p_uncor_xa_pm24b1200_v0316_EB'
+dro25Uee = 'ResMap_387742_398903_DRO_Data_Hist_eg_25p_uncor_xa_pm24b1200_v0316_EE'
+dro25eb = 'ResMap_387742_398903_DRO_Data_Hist_eg_25p_xa_pm24b1200_v0305_EB'
+dro25ee = 'ResMap_387742_398903_DRO_Data_Hist_eg_25p_xa_pm24b1200_v0305_EE'
+sro25Ueb = 'ResMap_387742_398903_SRO_Data_Hist_eg_25p_uncor_xa_pm24b1200_v0316_EB'
+sro25Uee = 'ResMap_387742_398903_SRO_Data_Hist_eg_25p_uncor_xa_pm24b1200_v0316_EE'
+sro25eb = 'ResMap_387742_398903_SRO_Data_Hist_eg_25p_xa_pm24b1200_v0305_EB'
+sro25ee = 'ResMap_387742_398903_SRO_Data_Hist_eg_25p_xa_pm24b1200_v0305_EE'
 
 
 dro16eb_v2 = 'ResMap_275600_283900_DRO_Data_Hist_eg_16UL_xa_pm24b1200_v0127_EB'
@@ -654,33 +663,62 @@ dro18mccaliee = 'ResMap_0_999999_DRO_Data_Hist_eg_18MC_xa_pm24b1200_v0204_EE'
 
 rfend = '_NSC_resfit.root'
 shend = '_sigma'
+indir = 'res_files/'
+
+
+hl_r3_25_ebee_dro = [
+
+    [dro25Ueb+shend,"",indir+dro25Ueb+rfend,"EB UnCor"],
+    [dro25Uee+shend,"",indir+dro25Uee+rfend,"EE UnCor"],
+    [dro25eb+shend,"",indir+dro25eb+rfend,"EB"],
+    [dro25ee+shend,"",indir+dro25ee+rfend,"EE"],
+    #[dro25eb+shend,"",indir+dro25eb+rfend,"EB Chronus"],
+    #[dro25ee+shend,"",indir+dro25ee+rfend,"EE Chronus"],
+    #[dro25ebnc+shend,"",indir+dro25ebnc+rfend,"EB"],
+    #[dro25eenc+shend,"",indir+dro25eenc+rfend,"EE"],
+]
+
+
+hl_r3_25U_ebee = [
+    [sro25Ueb+shend,"",indir+sro25Ueb+rfend,"SRO EB"],
+    [sro25Uee+shend,"",indir+sro25Uee+rfend,"SRO EE"],
+    [dro25Ueb+shend,"",indir+dro25Ueb+rfend,"DRO EB"],
+    [dro25Uee+shend,"",indir+dro25Uee+rfend,"DRO EE"],
+]
 
 hl_r3_25_ebee = [
-    [sro25eb+shend,"",sro25eb+rfend,"SRO EB"],
-    [sro25ee+shend,"",sro25ee+rfend,"SRO EE"],
-    [dro25eb+shend,"",dro25eb+rfend,"DRO EB"],
-    [dro25ee+shend,"",dro25ee+rfend,"DRO EE"],
+    [sro25eb+shend,"",indir+sro25eb+rfend,"SRO EB"],
+    [sro25ee+shend,"",indir+sro25ee+rfend,"SRO EE"],
+    [dro25eb+shend,"",indir+dro25eb+rfend,"DRO EB"],
+    [dro25ee+shend,"",indir+dro25ee+rfend,"DRO EE"],
+]
+
+hl_r3_25_ebeenc = [
+    [sro25ebnc+shend,"",indir+sro25ebnc+rfend,"SRO EB"],
+    [sro25eenc+shend,"",indir+sro25eenc+rfend,"SRO EE"],
+    [dro25ebnc+shend,"",indir+dro25ebnc+rfend,"DRO EB"],
+    [dro25eenc+shend,"",indir+dro25eenc+rfend,"DRO EE"],
 ]
 
 hl_r3_24_ebee = [
-    [sro24eb+shend,"",sro24eb+rfend,"SRO EB"],
-    [sro24ee+shend,"",sro24ee+rfend,"SRO EE"],
-    [dro24eb+shend,"",dro24eb+rfend,"DRO EB"],
-    [dro24ee+shend,"",dro24ee+rfend,"DRO EE"],
+    [sro24eb+shend,"",indir+sro24eb+rfend,"SRO EB"],
+    [sro24ee+shend,"",indir+sro24ee+rfend,"SRO EE"],
+    [dro24eb+shend,"",indir+dro24eb+rfend,"DRO EB"],
+    [dro24ee+shend,"",indir+dro24ee+rfend,"DRO EE"],
 ]
 
 hl_r3_24_ebeenc = [
-    [sro24ebnc+shend,"",sro24ebnc+rfend,"SRO EB"],
-    [sro24eenc+shend,"",sro24eenc+rfend,"SRO EE"],
-    [dro24ebnc+shend,"",dro24ebnc+rfend,"DRO EB"],
-    [dro24eenc+shend,"",dro24eenc+rfend,"DRO EE"],
+    [sro24ebnc+shend,"",indir+sro24ebnc+rfend,"SRO EB"],
+    [sro24eenc+shend,"",indir+sro24eenc+rfend,"SRO EE"],
+    [dro24ebnc+shend,"",indir+dro24ebnc+rfend,"DRO EB"],
+    [dro24eenc+shend,"",indir+dro24eenc+rfend,"DRO EE"],
 ]
 
 hl_r3_24_ebeedro = [
-    [dro24eb+shend,"",dro24eb+rfend,"EB Chronus"],
-    [dro24ee+shend,"",dro24ee+rfend,"EE Chronus"],
-    [dro24ebnc+shend,"",dro24ebnc+rfend,"EB"],
-    [dro24eenc+shend,"",dro24eenc+rfend,"EE"],
+    [dro24eb+shend,"",indir+dro24eb+rfend,"EB Chronus"],
+    [dro24ee+shend,"",indir+dro24ee+rfend,"EE Chronus"],
+    [dro24ebnc+shend,"",indir+dro24ebnc+rfend,"EB"],
+    [dro24eenc+shend,"",indir+dro24eenc+rfend,"EE"],
 ]
 
 hl_r2_18mc_ebeenc = [
@@ -704,45 +742,45 @@ hl_r2_18mc_ebeenc = [
 ]
 
 hl_r3_23_ebeenc = [
-    [sro23ebnc+shend,"",sro23ebnc+rfend,"SRO EB"],
-    [sro23eenc+shend,"",sro23eenc+rfend,"SRO EE"],
-    [dro23ebnc+shend,"",dro23ebnc+rfend,"DRO EB"],
-    [dro23eenc+shend,"",dro23eenc+rfend,"DRO EE"],
+    [sro23ebnc+shend,"",indir+sro23ebnc+rfend,"SRO EB"],
+    [sro23eenc+shend,"",indir+sro23eenc+rfend,"SRO EE"],
+    [dro23ebnc+shend,"",indir+dro23ebnc+rfend,"DRO EB"],
+    [dro23eenc+shend,"",indir+dro23eenc+rfend,"DRO EE"],
 ]
 
 hl_r3_23_ebee = [
-    [sro23eb+shend,"",sro23eb+rfend,"SRO EB"],
-    [sro23ee+shend,"",sro23ee+rfend,"SRO EE"],
-    [dro23eb+shend,"",dro23eb+rfend,"DRO EB"],
-    [dro23ee+shend,"",dro23ee+rfend,"DRO EE"],
+    [sro23eb+shend,"",indir+sro23eb+rfend,"SRO EB"],
+    [sro23ee+shend,"",indir+sro23ee+rfend,"SRO EE"],
+    [dro23eb+shend,"",indir+dro23eb+rfend,"DRO EB"],
+    [dro23ee+shend,"",indir+dro23ee+rfend,"DRO EE"],
 ]
 
 hl_r3_23_ebeedro = [
-    [dro23eb+shend,"",dro23eb+rfend,"EB Chronus"],
-    [dro23ee+shend,"",dro23ee+rfend,"EE Chronus"],
-    [dro23ebnc+shend,"",dro23ebnc+rfend,"EB"],
-    [dro23eenc+shend,"",dro23eenc+rfend,"EE"],
+    [dro23eb+shend,"",indir+dro23eb+rfend,"EB Chronus"],
+    [dro23ee+shend,"",indir+dro23ee+rfend,"EE Chronus"],
+    [dro23ebnc+shend,"",indir+dro23ebnc+rfend,"EB"],
+    [dro23eenc+shend,"",indir+dro23eenc+rfend,"EE"],
 ]
 
 hl_r3_22_ebee = [
-    [sro22eb+shend,"",sro22eb+rfend,"SRO EB"],
-    [sro22ee+shend,"",sro22ee+rfend,"SRO EE"],
-    [dro22eb+shend,"",dro22eb+rfend,"DRO EB"],
-    [dro22ee+shend,"",dro22ee+rfend,"DRO EE"],
+    [sro22eb+shend,"",indir+sro22eb+rfend,"SRO EB"],
+    [sro22ee+shend,"",indir+sro22ee+rfend,"SRO EE"],
+    [dro22eb+shend,"",indir+dro22eb+rfend,"DRO EB"],
+    [dro22ee+shend,"",indir+dro22ee+rfend,"DRO EE"],
 ]
 
 hl_r3_22_ebeenc = [
-    [sro22ebnc+shend,"",sro22ebnc+rfend,"SRO EB"],
-    [sro22eenc+shend,"",sro22eenc+rfend,"SRO EE"],
-    [dro22ebnc+shend,"",dro22ebnc+rfend,"DRO EB"],
-    [dro22eenc+shend,"",dro22eenc+rfend,"DRO EE"],
+    [sro22ebnc+shend,"",indir+sro22ebnc+rfend,"SRO EB"],
+    [sro22eenc+shend,"",indir+sro22eenc+rfend,"SRO EE"],
+    [dro22ebnc+shend,"",indir+dro22ebnc+rfend,"DRO EB"],
+    [dro22eenc+shend,"",indir+dro22eenc+rfend,"DRO EE"],
 ]
 
 hl_r3_22_ebeedro = [
-    [dro22eb+shend,"",dro22eb+rfend,"EB Chronus"],
-    [dro22ee+shend,"",dro22ee+rfend,"EE Chronus"],
-    [dro22ebnc+shend,"",dro22ebnc+rfend,"EB"],
-    [dro22eenc+shend,"",dro22eenc+rfend,"EE"],
+    [dro22eb+shend,"",indir+dro22eb+rfend,"EB Chronus"],
+    [dro22ee+shend,"",indir+dro22ee+rfend,"EE Chronus"],
+    [dro22ebnc+shend,"",indir+dro22ebnc+rfend,"EB"],
+    [dro22eenc+shend,"",indir+dro22eenc+rfend,"EE"],
 ]
 
 hl_r2_18_ebeenc = [
@@ -913,19 +951,29 @@ hl_r3_25b = [
 #ptitle=['','Run 2 (13 TeV)','#splitline{Chronus Calibration}{2016 UL}'] #{}'
 #ptitle=['','Run 2 (13 TeV)','#splitline{Online Calibration}{2016 UL}'] #{}'
 
-ptitle=['','Run 3 (13.6 TeV)','#splitline{Online Calibration}{2025 Prompt}'] #{}'
-#ptitle=['','Run 3 (13.6 TeV)','#splitline{DRU Resolution}{2024 Prompt}'] #{}'
-#ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2022 Prompt}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{Online Calibration}{2025 Prompt}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2025 Prompt}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{Online Calibration}{2024 Prompt}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2024 Prompt}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{Online Calibration}{2023 Prompt}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2023 Prompt}'] #{}'
 #ptitle=['','Run 3 (13.6 TeV)','#splitline{Online Calibration}{2022 Prompt}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2022 Prompt}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2025 Prompt UnCorrected}'] #{}'
+ptitle=['','Run 3 (13.6 TeV)','#splitline{DRU Resolution}{2024 Prompt}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{DRU Resolution}{2025 Prompt}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{DRU Resolution}{2025 Prompt Chronus}'] #{}'
 
 #y = [ 0.4, 0.04 ]
 #y = [ 0.7, -0.05 ]
-y = [ 2.5, -0.5 ]
+#y = [ 2.5, -0.5 ]
+#y = [ 1.5, -0.5 ]
 #y = [ 5.0, 0.05 ]
-#y = [ 3.0, 0.06 ]
+y = [ 3.0, 0.06 ]
+#y = [ 2.0, 0.04 ]
 #y = [ 5, 0.01 ]
-x = [ 5.0, 1600.0 ]
-#x = [ 5.0, 800.0 ]
+x = [ 5.0, 800.0 ]
+#x = [ 5.0, 400.0 ]
 l = [ 0.7,0.65,0.925,0.9 ]
 #t = [0.175,0.44,0.15,0.175,0.28]
 #t = [0.175,0.38,0.05,0.175,0.22]
@@ -938,7 +986,7 @@ t = [0.325,0.85,0.1,0.175,0.285]#adjsuting lumi-sqrt(s) in title bar
 #outname = 'downloads/tr_hl_r3_24d_part_trvcc_ccgt_v7'
 #outname = 'downloads/tr_hl_r3_25c2'
 #outname = 'downloads/tr_hl_r3_25bc_xa'
-outname = 'tr_hl_r3_25'
-dostack(hl_r3_25_ebee, outname, date, Ic_layout, ptitle,  y, x, l, t)
+outname = 'hl_r3_24_ebeedro'
+dostack(hl_r3_24_ebeedro, outname, date, Ic_layout, ptitle,  y, x, l, t)
 #outname = 'tr_hl_r2_16v2'
 #dostack(hl_r2_16_ebee, outname, date, Ic_layout, ptitle,  y, x, l, t)
