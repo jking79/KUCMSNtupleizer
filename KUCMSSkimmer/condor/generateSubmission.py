@@ -20,6 +20,12 @@ def generateSubmission(args):
     if odir[-1] != "/":
     	odir += "/"
     
+    data = False
+    MCbkg = False
+    MCsig = False
+    data_samples = ["MET","JetMET","JetHT","EGamma","JetMET0","JetMET1"]
+    MCbkg_samples = ["GJets","QCD","DiPJBox","TTXJets","WJets","ZJets"]
+    MCsig_samples = ["gogoG","gogoZ","gogoGZ","sqsqG"]
     print("Directory for condor submission: {0}".format(odir))
     print("------------------------------------------------------------")
     # Create output directory for condor results if it does not exist.
@@ -28,17 +34,11 @@ def generateSubmission(args):
     ofilename = ""
     dirname = odir
     cmsswpath = os.environ["CMSSW_BASE"]+"/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/"
-    if(len(args.year) != 4):
+    if(len(args.year) != 4 and args.inputSample not in MCsig_samples):
         print("Please provide a valid year ie 2016, 2024. Year provided:",args.year)
         exit()
     year = "R"+args.year[-2:]
 
-    data = False
-    MCbkg = False
-    MCsig = False
-    data_samples = ["MET","JetMET","JetHT","EGamma","JetMET0","JetMET1"]
-    MCbkg_samples = ["GJets","QCD","DiPJBox","TTXJets","WJets","ZJets"]
-    MCsig_samples = ["gogoG","gogoZ","gogoGZ","sqsqG"]
     data = (args.inputSample in data_samples)
     MCbkg = (args.inputSample in MCbkg_samples)
     MCsig = (args.inputSample in MCsig_samples)
@@ -47,7 +47,8 @@ def generateSubmission(args):
     elif(MCbkg):
         inputMainList = cmsswpath+"ntuple_master_lists/KUCMS_Ntuple_Master_BG_SVHPM100_Files_List.txt"
     elif(MCsig):
-        inputMainList = cmsswpath+"ntuple_master_lists/KUCMS_Ntuple_Master_SMS_Sig_Files_List_v34.txt"
+        inputMainList = cmsswpath+"ntuple_master_lists/KUCMS_Ntuple_Master_SMS_Sig_Files_List_v34p1.txt"
+        year = ""
     else:
     	print("Input list for sample "+args.inputSample+" not found")
     	exit()
@@ -196,7 +197,7 @@ def main():
     parser.add_argument("--max_idle",help='max_idle condor option (default: off)',default=-1)
     parser.add_argument("--request_memory",help='memory to request from condor scheduler in bits (default = 2048)',default=-1)
     #parser.add_argument("--inputList",help="list of sample lists to run over (default is SVIPM100 selection)",choices=['data','mcBkg','mcSig'])
-    parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',choices=['DiPJBox', 'DTBoson','GJets','TTXJets','QCD','WJets','ZJets','gogoG','gogoZ','gogoGZ', 'sqsqG','MET','EGamma','JetHT','MET_AL1NpSC','JetMET1','JetMET0'])
+    parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',choices=['DiPJBox', 'DTBoson','GJets','TTXJets','QCD','WJets','ZJets','gogoG','gogoZ','gogoGZ', 'sqsqG','MET','EGamma','JetHT','MET_AL1NpSC','JetMET1','JetMET0'],required=True)
     parser.add_argument("--year",help="run year",default="")
     parser.add_argument('--slice',help='HT slice (ie for GJets or QCD), mass range (ie for DiPJBox), or subprocess (ie for TTXJets)',default='')
     parser.add_argument('--era',help='run era (data only)',default='')
