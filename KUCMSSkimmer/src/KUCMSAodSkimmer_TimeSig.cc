@@ -159,13 +159,14 @@ float KUCMSAodSkimmer::getTimeSig( const std::vector<int>& scIndexs, float& num,
 	std::vector<int> usedrechits;
 	int nSCs = scIndexs.size();
 	if( nSCs == 0 ){ num = -41; denom = -2; return -41; }
+	int nRHUsed = 0;
 	for( int it = 0; it < nSCs; it++  ){
 
 		int scIndex = scIndexs[it]; 
         auto rhids = (*SuperCluster_rhIds)[scIndex];
         int nSCRecHits = rhids.size();
 		float adjust = ( eledelay.size() > 0 ) ? eledelay[it] : 0;
-		if( nSCRecHits < 3 ) continue;
+		if( nSCRecHits < 5 ) continue;
         for( int sciter = 0; sciter < nSCRecHits; sciter++  ){
             auto scrhid = rhids[sciter];
             int erhiter = ( rhIDtoIterMap.find(scrhid) != rhIDtoIterMap.end() ) ? rhIDtoIterMap[scrhid] : -1;
@@ -176,6 +177,7 @@ float KUCMSAodSkimmer::getTimeSig( const std::vector<int>& scIndexs, float& num,
 				usedrechits.push_back( erhiter );
 
                 double erhct = erh_corTime[erhiter];
+				if( std::abs(erhct) > 7.5 ) continue; // aviod spike region w/o over weighted delayed tail 
                 float erx = (*ECALRecHit_rhx)[erhiter];
                 float ery = (*ECALRecHit_rhy)[erhiter];
                 float erz = (*ECALRecHit_rhz)[erhiter];
@@ -201,6 +203,7 @@ float KUCMSAodSkimmer::getTimeSig( const std::vector<int>& scIndexs, float& num,
 
                 float gainwt = 0;
                 if( isValid ) gainwt = 1;
+				nRHUsed += gainwt;
 
                 double invertres = ( ertres > 0 ) ? 1/ertres : -1;
                 double erhar = ( invertres > 0 ) ? invertres*gainwt : 0;
@@ -213,7 +216,8 @@ float KUCMSAodSkimmer::getTimeSig( const std::vector<int>& scIndexs, float& num,
 
 	}//<<>>for( int scIndex = 0; scIndex < nSCs; scIndex++  )
 
-    if( sumw == 0 ){ num = -42; denom = -3; return -42; }
+	if( nRHUsed < 5 ){ num = -43; denom = -1; return -43; }
+    if( sumw == 0 ){ num = -42; denom = -1; return -42; }
     float phoWTime = sumtw/sumw;
     float phoWHVar = sumrh/sumw;
     float phoWVar = 1/sumw;

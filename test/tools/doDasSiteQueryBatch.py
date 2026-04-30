@@ -641,10 +641,47 @@ dl2018QCDmini = [
 
 ]
 
+tune = '_TuneCP5_13TeV-madgraphMLM-pythia8' 
+camp = 'RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1' 
+
+dl2018WJetsmini = [  
+  
+    '/WJetsToLNu_HT-100To200'+tune+'/'+camp+'-v2/MINIAODSIM',  
+    '/WJetsToLNu_HT-1200To2500'+tune+'/'+camp+'-v2/MINIAODSIM',  
+    '/WJetsToLNu_HT-200To400'+tune+'/'+camp+'-v1/MINIAODSIM',  
+    '/WJetsToLNu_HT-2500ToInf'+tune+'/'+camp+'-v2/MINIAODSIM',  
+    '/WJetsToLNu_HT-400To600'+tune+'/'+camp+'-v1/MINIAODSIM',  
+    '/WJetsToLNu_HT-600To800'+tune+'/'+camp+'-v1/MINIAODSIM',  
+    '/WJetsToLNu_HT-70To100'+tune+'/'+camp+'-v1/MINIAODSIM',  
+    '/WJetsToLNu_HT-800To1200'+tune+'/'+camp+'-v1/MINIAODSIM',  
+  
+]  
+
+dl2018TTmini = [
+
+    '/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',
+    '/TTJets_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',
+
+]
+
+dl2023QCDmini = [
+    '/QCD-4Jets_HT-1000to1200_TuneCP5_13p6TeV_madgraphMLM-pythia8/Run3Summer23BPixMiniAODv4-130X_mcRun3_2023_realistic_postBPix_v2-v4/MINIAODSIM',
+    '/QCD-4Jets_HT-100to200_TuneCP5_13p6TeV_madgraphMLM-pythia8/Run3Summer23BPixMiniAODv4-130X_mcRun3_2023_realistic_postBPix_v2-v4/MINIAODSIM',
+    '/QCD-4Jets_HT-1200to1500_TuneCP5_13p6TeV_madgraphMLM-pythia8/Run3Summer23BPixMiniAODv4-130X_mcRun3_2023_realistic_postBPix_v2-v4/MINIAODSIM',
+    '/QCD-4Jets_HT-1500to2000_TuneCP5_13p6TeV_madgraphMLM-pythia8/Run3Summer23BPixMiniAODv4-130X_mcRun3_2023_realistic_postBPix_v2-v3/MINIAODSIM',
+    '/QCD-4Jets_HT-2000_TuneCP5_13p6TeV_madgraphMLM-pythia8/Run3Summer23BPixMiniAODv4-130X_mcRun3_2023_realistic_postBPix_v2-v4/MINIAODSIM',
+    '/QCD-4Jets_HT-200to400_TuneCP5_13p6TeV_madgraphMLM-pythia8/Run3Summer23BPixMiniAODv4-130X_mcRun3_2023_realistic_postBPix_v2-v3/MINIAODSIM',
+    '/QCD-4Jets_HT-400to600_TuneCP5_13p6TeV_madgraphMLM-pythia8/Run3Summer23BPixMiniAODv4-130X_mcRun3_2023_realistic_postBPix_v2-v4/MINIAODSIM',
+    '/QCD-4Jets_HT-40to70_TuneCP5_13p6TeV_madgraphMLM-pythia8/Run3Summer23BPixMiniAODv4-130X_mcRun3_2023_realistic_postBPix_v2-v3/MINIAODSIM',
+    '/QCD-4Jets_HT-600to800_TuneCP5_13p6TeV_madgraphMLM-pythia8/Run3Summer23BPixMiniAODv4-130X_mcRun3_2023_realistic_postBPix_v2-v3/MINIAODSIM',
+    '/QCD-4Jets_HT-70to100_TuneCP5_13p6TeV_madgraphMLM-pythia8/Run3Summer23BPixMiniAODv4-130X_mcRun3_2023_realistic_postBPix_v2-v3/MINIAODSIM',
+    '/QCD-4Jets_HT-800to1000_TuneCP5_13p6TeV_madgraphMLM-pythia8/Run3Summer23BPixMiniAODv4-130X_mcRun3_2023_realistic_postBPix_v2-v4/MINIAODSIM',
+]
+
 #query = 'dasgoclient --json -query=\'dataset='
 query = 'dasgoclient --json -query=\'site dataset=' 
 
-datalist = dl2018QCDmini
+datalist = dl2023QCDmini
 
 for data in datalist :
     

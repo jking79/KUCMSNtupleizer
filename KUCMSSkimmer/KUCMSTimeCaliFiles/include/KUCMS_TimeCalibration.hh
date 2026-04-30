@@ -80,6 +80,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 
 	std::string eosDir;
 	std::string inDir;
+	bool isCondorJob;
 
     std::string curTTIov;
     std::string curXIov;
@@ -258,6 +259,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
     void setUseGainID( int id ){ useGain = id; }
     void setIsCC( bool iscc ){ isCC = iscc; }
 	void setDoUnCC( bool douncc ){ doUnCC = douncc; }
+	void setCondorJob( bool docondor ){ isCondorJob = docondor; }
 
 	std::string getPrefix( const std::string& s ){
 

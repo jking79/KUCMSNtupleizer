@@ -66,8 +66,8 @@ void KUCMSAodSkimmer::processRechits(){
         if( true ){
 
 			hist1d[0]->Fill( rhe, 1 );
-            hist1d[1]->Fill( rhe, 1 );
-            hist1d[2]->Fill( rhe, 1 );
+            hist1d[1]->Fill( rhtres, 1 );
+            hist1d[2]->Fill( corrht, 1 );
             hist1d[5]->Fill( rht, 1 );
 			//auto radius = hypo( (*rhPosX)[it], (*rhPosY)[it] );
 

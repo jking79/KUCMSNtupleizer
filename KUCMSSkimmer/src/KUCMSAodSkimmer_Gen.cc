@@ -131,7 +131,8 @@ void KUCMSAodSkimmer::processGenParticles(){
     if( quark && fromSg ) nQfSg++;
     if( quark && fromSqk ) nQfSqk++;
     if( photon && fromX ) nPHOfX++;
-    if( zee && fromX ) nZfX++;
+    //if( zee && fromX ) nZfX++;
+    if( zee ) nZfX++;
     if( hasX234 ) nX234++;
     if( lept && fromZ && momFromX ) nLZX++;
     if( quark && fromSqk ) nQfSqk++;
@@ -202,6 +203,9 @@ void KUCMSAodSkimmer::processGenParticles(){
   //  std::cout << std::endl;
   //}//<<>>if(
 
+  bool evtIsZZ = ( nZfX == 2 ) ? true : false;
+  bool evtIsZG = ( nZfX == 1 ) ? true : false;
+  bool evtIsGG = ( nZfX == 0 ) ? true : false;
 	
   selGenPart.fillBranch( "genSTFlagQQP", isSTqqp );
   selGenPart.fillBranch( "genSTFlagQQZLL", isSTqqzll );
@@ -243,6 +247,9 @@ void KUCMSAodSkimmer::processGenParticles(){
     float xbctau = Xb_Displacment/xbgbeta;
     selGenPart.fillBranch( "Xb_ctau", xbctau );
 
+    //selGenPart.fillBranch( "Evt_isGG", evtIsZZ );
+    //selGenPart.fillBranch( "Evt_isGZ", evtIsZG );
+    //selGenPart.fillBranch( "Evt_isZZ", evtIsGG );
     selGenPart.fillBranch( "Evt_isGG", Evt_isGG );
     selGenPart.fillBranch( "Evt_isGZ", Evt_isGZ );
     selGenPart.fillBranch( "Evt_isZZ", Evt_isZZ );
