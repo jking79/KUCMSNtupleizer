@@ -319,6 +319,7 @@ KUCMSEcalRecHitObjectMini::KUCMSEcalRecHitObjectMini( const edm::ParameterSet& i
     cfFlag.set( "onlyEB", iConfig.existsAs<bool>("onlyEB") ? iConfig.getParameter<bool>("onlyEB") : false );
     cfPrm.set( "ebMaxEta",iConfig.existsAs<double>("ebMaxEta")? iConfig.getParameter<double>("ebMaxEta") : 1.479 );
 	cfFlag.set( "doProbeOut", iConfig.existsAs<bool>("doProbeOut") ? iConfig.getParameter<bool>("doProbeOut") : false );
+    cfFlag.set( "doUnCC", iConfig.existsAs<bool>("doUnCC") ? iConfig.getParameter<bool>("doUnCC") : false );
 
 }//<<>>KUCMSEcalRecHit::KUCMSEcalRecHit( const edm::ParameterSet& iConfig, const ItemManager<bool>& cfFlag )
 
@@ -353,6 +354,7 @@ void KUCMSEcalRecHitObjectMini::InitObject( TTree* fOutTree ){
     Branches.makeBranch("Energy","ECALRecHit_energy",VFLOAT);
     Branches.makeBranch("Time","ECALRecHit_time",VFLOAT);
     Branches.makeBranch("TimeError","ECALRecHit_timeError",VFLOAT);
+    Branches.makeBranch("UnTime","ECALRecHit_UnCorrTime",VFLOAT);
     Branches.makeBranch("isTimeValid","ECALRecHit_isTimeValid",VBOOL);
     Branches.makeBranch("TOFpv","ECALRecHit_pvTOF",VFLOAT);
     Branches.makeBranch("TOF0","ECALRecHit_0TOF",VFLOAT);
@@ -605,7 +607,7 @@ void KUCMSEcalRecHitObjectMini::LoadEvent( const edm::Event& iEvent, const edm::
         if( not skip ){
             fsupclstrs.push_back(supclstr);
             fscIsOOT.push_back(false);
-        	fscOriginal.push_back(false);
+			fscOriginal.push_back(false);
         }//<<>>if( not skip )
     }//<<>>for( const auto &supclstr : *superCluster_ )
 
@@ -694,7 +696,7 @@ void KUCMSEcalRecHitObjectMini::PostProcessEvent( ItemManager<float>& geVar ){
 
         const scGroup scSCGroup{supclstr};
         const rhGroup scRhGroup = getRHGroup( scSCGroup );
-        const rhIdGroup scRhIdsGroup = getRhGrpIDs( scRhGroup );
+        rhIdGroup scRhIdsGroup = getRhGrpIDs( scRhGroup );
 		std::vector<float> fracList = getFractionList( scSCGroup, scRhGroup );
         //std::vector<float> missFracList = getMissFractionList( scSCGroup );
         Branches.fillBranch("zscrhids",scRhIdsGroup);
@@ -711,7 +713,7 @@ void KUCMSEcalRecHitObjectMini::PostProcessEvent( ItemManager<float>& geVar ){
         //Branches.fillBranch("zscsizedif",sc_dups_size);
         Branches.fillBranch("zscbcsize",bcsize);
 
- 		Branches.fillBranch("zsctrackindx",fscTrackIndx[it]);
+		Branches.fillBranch("zsctrackindx",fscTrackIndx[it]);
 
 		if( ERHODEBUG ){
 		//if( true ){
@@ -831,6 +833,7 @@ void KUCMSEcalRecHitObjectMini::PostProcessEvent( ItemManager<float>& geVar ){
 		const bool hasGS1 = recHit.checkFlag(EcalRecHit::kHasSwitchToGain1);
         const bool hasGS6 = recHit.checkFlag(EcalRecHit::kHasSwitchToGain6);
         const float rhTime = recHit.time();
+        const float rhUnTime = cfFlag("doUnCC") ? recHit.nonCorrectedTime() : recHit.time();
         const bool rhIsOOT = recHit.checkFlag(EcalRecHit::kOutOfTime);
         const bool rhIsWrd = recHit.checkFlag(EcalRecHit::kWeird);
         const bool rhIsDiWrd = recHit.checkFlag(EcalRecHit::kDiWeird);
@@ -849,8 +852,8 @@ void KUCMSEcalRecHitObjectMini::PostProcessEvent( ItemManager<float>& geVar ){
 			//bool flagged = rhIsRecov || rhIsPoor || rhIsDead || rhIsOther;
 			if( rhIsRecov ) 
 			std::cout << "Recovered " << " time " << rhTime << " err " << rhJErr << " chi2 " << rhChi2 << " e " << rhEnergy << std::endl;
-        	//if( rhIsPoor ) 
-        	//std::cout << "RecHitIsPoorCali : " << " time " << rhTime << " err " << rhJErr << " chi2 " << rhChi2 << std::endl;
+			//if( rhIsPoor ) 
+			//std::cout << "RecHitIsPoorCali : " << " time " << rhTime << " err " << rhJErr << " chi2 " << rhChi2 << std::endl;
 			//if( flagged ) 
 			//std::cout << "Rec " << rhIsRecov << " Poor " << rhIsPoor << " Dead " << rhIsDead << " Other " << rhIsOther;
 			//if( rhIsNotGood ) 
@@ -868,6 +871,7 @@ void KUCMSEcalRecHitObjectMini::PostProcessEvent( ItemManager<float>& geVar ){
         Branches.fillBranch("TOFpv",d_pv);
         Branches.fillBranch("TOF0",d_rh);
         Branches.fillBranch("Time",rhTime);
+        Branches.fillBranch("UnTime",rhUnTime);
         Branches.fillBranch("TimeError",rhJErr);
         Branches.fillBranch("isTimeValid",isTimeValid);
         Branches.fillBranch("isOOT",rhIsOOT);
@@ -1292,13 +1296,13 @@ std::vector<float> KUCMSEcalRecHitObjectMini::getFractionList( const scGroup sup
 	for (const auto &recHit : recHits ){
 		const auto recHitId = recHit.detid();
 		const uInt rhRawId = recHitId.rawId();
-    	for ( const auto &superCluster : superClusterGroup ){
-        	auto & hitsAndFractions = superCluster.hitsAndFractions();
-        	const uInt nHAF = hitsAndFractions.size();
-        	for( uInt iHAF = 0; iHAF < nHAF; iHAF++ ){
-            	const auto scDetId = hitsAndFractions[iHAF].first;
+		for ( const auto &superCluster : superClusterGroup ){
+			auto & hitsAndFractions = superCluster.hitsAndFractions();
+			const uInt nHAF = hitsAndFractions.size();
+			for( uInt iHAF = 0; iHAF < nHAF; iHAF++ ){
+				const auto scDetId = hitsAndFractions[iHAF].first;
 				const float frac = hitsAndFractions[iHAF].second;	
-            	const uInt scRawId = scDetId.rawId();
+				const uInt scRawId = scDetId.rawId();
 				if( rhRawId == scRawId ){ fracs.push_back(frac); break; }
 			}//<<>>for( uInt iHAF = 0; iHAF < nHAF; iHAF++ ) 
 		}//<<>>for ( const auto &superCluster : superClusterGroup )
@@ -1347,8 +1351,8 @@ std::vector<float> KUCMSEcalRecHitObjectMini::getMissFractionList( const scGroup
 					float cnt = 0;
 					for (const auto &recHit : frechits ){
 
-                		const auto recHitId = recHit.detid();
-                		const uInt rhRawId = recHitId.rawId();
+						const auto recHitId = recHit.detid();
+						const uInt rhRawId = recHitId.rawId();
 						if( rhRawId == rawId ){
 							dupcnt.push_back(recHit.energy());
 							cnt += 1;
@@ -1388,7 +1392,7 @@ float KUCMSEcalRecHitObjectMini::getRecHitEnergy( const uInt id ){
     if ( id != 0 ){
 		for( auto rh : frechits ){
 			if( getRawID(rh) == id ) return rh.energy();
-    	}//<<>> for( auto rh : frechits )
+		}//<<>> for( auto rh : frechits )
 	}//if ( id != 0 )
     return -999.f;
 

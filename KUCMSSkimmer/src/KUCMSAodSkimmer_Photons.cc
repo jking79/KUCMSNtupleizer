@@ -110,9 +110,11 @@ void KUCMSAodSkimmer::processPhotons(){
     auto hasEleVeto = (*Photon_electronVeto)[it];
     bool hasPixSeed = (*Photon_pixelSeed)[it];
 
+	if( DEBUG ) std::cout << " -- pho pull GenSig info" << std::endl;
     //if( geVars("genSigPerfect") == 1 ) std::cout << " -- pho sel susid " << (*Gen_susId)[(*Photon_genIdx)[it]] << std::endl;
-    bool isGenSig = hasGenInfoFlag ? ( (*Gen_susId)[(*Photon_genIdx)[it]] == 22 )  : 0;
+    bool isGenSig = hasGenInfoFlag ? (*Photon_genIdx)[it] > -1 ? ( (*Gen_susId)[(*Photon_genIdx)[it]] == 22 )  : 0 : 0;
 
+    if( DEBUG ) std::cout << " -- getting pho e, pt, eta, phi info" << std::endl;
     auto energy = (*Photon_energy)[it];
     auto pt = (*Photon_pt)[it];
     bool underMinPtEB = pt < 30;
@@ -126,14 +128,20 @@ void KUCMSAodSkimmer::processPhotons(){
     /////////// skip all excluded photons ///////////////////////////////////
     //---------------------------------------------------
 
-    if( isExcluded ){ isBaseLinePho.push_back(false); continue; }
+    if( isExcluded ){ 
+		isBaseLinePho.push_back(false); 
+		allphoBaseline.push_back(false);
+		allphowtime.push_back(-50.f); 
+		allphominjetdr.push_back(99.f); 
+		continue; 
+	}//<<>>if( isExcluded )
     //if( isExcluded ) continue;
 
     //---------------------------------------------------
     ///////////  processing SC rechit info for  time/res/sig ////////////////////////////////////////////////////////////
     //---------------------------------------------------
 
-    if( DEBUG ) std::cout << " -- pho pull SC info" << std::endl;
+    if( DEBUG ) std::cout << " -- pho pull SC info for " << scIndx << std::endl;
     if( std::count(dups.begin(), dups.end(), scIndx ) > 0 ) std::cout << " --- !!!!!!!  Duplicate SC ref in Photons !!!! " << std::endl;
     else dups.push_back( scIndx );
     auto scSize = SuperCluster_seedIsEB->size();
@@ -311,6 +319,8 @@ void KUCMSAodSkimmer::processPhotons(){
     if( hasGenInfoFlag ){
 
         genIdx = (*Photon_genIdx)[it];
+		if( genIdx > -1 ){
+
         momIdx = (*Gen_motherIdx)[genIdx];
         susId = (*Gen_susId)[genIdx];
 
@@ -368,6 +378,7 @@ void KUCMSAodSkimmer::processPhotons(){
 		hist1d[31]->Fill(distMom/(betamom*SOL));
 		hist1d[32]->Fill(cor_gtofPVtoSCSOL);
 
+		}//<<>>if( genIdx > -1 )
     }//if( doGenInfo )
 
     //---------------------------------------------------
@@ -414,11 +425,11 @@ void KUCMSAodSkimmer::processPhotons(){
 	bool dijetscr = false;
 	bool spikecr = false;
 	bool bhcr = false;
-    	ClusterObj phoobj;
-    	_ca.NoClusterRhs(phoobj, true);
-    	vector<float> photonIDscores;
-     	map<string, double> isomap;
-        MakePhotonIsoMap(it, isomap);
+    ClusterObj phoobj;
+    _ca.NoClusterRhs(phoobj, true);
+    vector<float> photonIDscores;
+    map<string, double> isomap;
+    MakePhotonIsoMap(it, isomap);
 	if(overMaxEta){ //endcap
 		phoobj.CalculateEndcapPhotonIDScores(pt, isomap);
 	} else { //barrel
@@ -569,7 +580,7 @@ void KUCMSAodSkimmer::processPhotons(){
     selPhotons.fillBranch( "photon_isoANNScore", isobkg_score );
     selPhotons.fillBranch( "photon_beamHaloCNNScore", bh_score );
     selPhotons.fillBranch( "photon_minJetDr", minJetDr );
-	GetGJetsSel(it);
+	//GetGJetsSel(it);
 
     ///////////  Very Loose Base Photon selection ////////////////////////////////////////////////////////////////////
     //---------------------------------------------------
@@ -759,7 +770,7 @@ void KUCMSAodSkimmer::processPhotons(){
     //---------------------------------------------------------------------------
     //  fill photon region defintion information 
     //---------------------------------------------------------------------------
-
+    GetGJetsSel(it);
 
     //if( DEBUG ) std::cout << " -- setting pho index : " << it << " for pt : " << ordpt << std::endl;
     phoOrderIndx.push_back(it);
@@ -882,7 +893,8 @@ void KUCMSAodSkimmer::processPhotons(){
 
   }//<<>>for( int it = 0; it < nPhotons; it++ )
   // --------------    End of Photon Loop ----------------------------------------------------------------------
-
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
 
   if( nPhotons == 0 ){ hemBits.set( "pho1hvl", false ); hemBits.set( "pho2hvm", false ); }
   if( DEBUG ) std::cout << " -- pho loop finished" << std::endl;
@@ -1438,7 +1450,6 @@ bool KUCMSAodSkimmer::GetDiJetsCR(int phoidx){
     double dphi_jets = j_phi1 - j_phi2;
     dphi_jets = acos(cos(dphi_jets));
     if(dphi_jets < 4*atan(1) - 0.3) return false;
-
     double ptasym = (*Jet_pt)[1] / (*Jet_pt)[0];
     if(ptasym < 0.6) return false;
     //min(pho_pt, jet_sys_pt) / max(pho_pt, jet_sys_pt) > 0.6
@@ -1453,33 +1464,32 @@ bool KUCMSAodSkimmer::GetGJetsSel(int phoidx){
     //event filters applied
     //not in BH sideband (equivalent of BH filter from noise filters)
 
-    //if( allphominjetdr[phoidx] < 0.4 ) return false;
     int nJets = Jet_energy->size();
     if(nJets < 1) return false;
     float pho_pt = (*Photon_pt)[phoidx];
     float pho_phi = (*Photon_phi)[phoidx];
-    float pho_eta = (*Photon_eta)[phoidx];
+    //float pho_eta = (*Photon_eta)[phoidx];
+	float pho_energy = (*Photon_energy)[phoidx];
+	if( pho_energy < 40 ) return false;
+	if( std::abs(allphowtime[phoidx]) > 24.f ) return false; 
     float ht = 0;
-    float j_px = 0;
-    float j_py = 0;
-    //float j_pz = 0;
-    bool phoIso = true;
+	bool notiso = false;
     for(int j = 0; j < nJets; j++){
         ht += (*Jet_pt)[j];
-        float pt = (*Jet_pt)[j];
-        float phi = (*Jet_phi)[j];
-        //float eta = (*Jet_eta)[j];
-        j_px += pt*cos(phi);
-        j_py += pt*sin(phi);
-        //j_pz += pt*sinh(eta);
+        //float jphi = (*Jet_phi)[j];
+        //float jeta = (*Jet_eta)[j];
+		//float je = (*Jet_energy)[j];
+		//float pjDr = dR1( pho_eta, jeta, pho_phi, jphi );		
+		//float pje = pho_energy/je;
+		//if( pjDr < 0.4 && pje > 0.1 && pje < 1.0 ) notiso == true;//MBS
     }//<<>>for(int j = 0; j < nJets; j++)
-    float jet_sys_phi = atan2(j_py, j_px);
+    //float jet_sys_phi = atan2(j_py, j_px);
+    if( notiso ) return false;
     if(ht < 50) return false;
     if(Met_pt > 150) return false; //pass ntuple selection of SVIPM100, originally using MET < 100
-    float dphi_objjet = std::abs(dPhi(pho_phi,jet_sys_phi));
+    float dphi_objjet = std::abs(dPhi(pho_phi,(*Jet_phi)[0]));
     if( dphi_objjet < PI - 0.3 ) return false;
-    float jet_sys_pt = sqrt(j_px*j_px + j_py*j_py);
-    float ptasym = std::min(pho_pt, jet_sys_pt) / std::max(pho_pt, jet_sys_pt);
+    float ptasym = std::min(pho_pt,(*Jet_pt)[0]) / std::max(pho_pt,(*Jet_pt)[0]);
     if(ptasym < 0.6) return false;
     if( gammaJetIndex[0] < 0 ){ gammaJetIndex[0] = phoidx; gammaJetIndex[1] = nJets; }
     return true;

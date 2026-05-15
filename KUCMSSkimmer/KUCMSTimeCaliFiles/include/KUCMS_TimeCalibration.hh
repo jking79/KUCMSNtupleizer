@@ -80,6 +80,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 
 	std::string eosDir;
 	std::string inDir;
+	bool isCondorJob;
 
     std::string curTTIov;
     std::string curXIov;
@@ -240,6 +241,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 	void doResTimeFits( bool doLocal = false );
     void doResTimeFit( std::string histName );
 	void load2DResHist( std::string histName );
+	void doResTimeFitExt( std::string histName, std::string fileName );
 
 	TH1F* gprProfileHist( TH1F* hist );
 
@@ -257,6 +259,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
     void setUseGainID( int id ){ useGain = id; }
     void setIsCC( bool iscc ){ isCC = iscc; }
 	void setDoUnCC( bool douncc ){ doUnCC = douncc; }
+	void setCondorJob( bool docondor ){ isCondorJob = docondor; }
 
 	std::string getPrefix( const std::string& s ){
 

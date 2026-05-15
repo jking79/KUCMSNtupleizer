@@ -282,7 +282,7 @@ void KUCMSAK4JetObjectMini::ProcessEvent( ItemManager<float>& geVar ){
         auto deltaRmin = 0.8;
         auto minRhE = 0.5;
         const auto jetDrRhGroup = rhObj->getRHGroup( jetEta, jetPhi, deltaRmin, minRhE );
-        const auto jetDrRhIdsGroup = rhObj->getRhGrpIDs( jetDrRhGroup );
+        auto jetDrRhIdsGroup = rhObj->getRhGrpIDs( jetDrRhGroup );
         Branches.fillBranch("DrRhIds",jetDrRhIdsGroup);
         rhObj->setRecHitUsed( jetDrRhIdsGroup );
 
