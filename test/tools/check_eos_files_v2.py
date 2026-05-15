@@ -6,7 +6,8 @@ import os
 # -----------------------------------------------------------------------------
 # Configuration
 # -----------------------------------------------------------------------------
-EOS_BASE = "/store/user/lpcsusylep/jaking/KUCMSNtuple"
+#EOS_BASE = "/store/user/lpcsusylep/jaking/KUCMSNtuple"
+EOS_BASE = "/store/user/lpcsusylep/jaking/"
 EXPECTED_TTREE = "tree/llpgtree"
 REQUIRED_BRANCHES = ["Vertex_px", "Evt_run", "Met_sumEt", "Photon_nPhoton"]  # customize as needed
 
