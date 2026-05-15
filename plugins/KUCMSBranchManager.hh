@@ -55,13 +55,13 @@ class KUCMSBranch {
     void initBranch( TTree* fOutTree );
     void clearBranch();
 
-    void fillBranch( std::vector<float> val );
-    void fillBranch( std::vector<uInt> val );
-    void fillBranch( std::vector<int> val );
+    void fillBranch( std::vector<float>& val );
+    void fillBranch( std::vector<uInt>& val );
+    void fillBranch( std::vector<int>& val );
     void fillBranch( uInt val );
     void fillBranch( int val );
     void fillBranch( float val );
-    void fillBranch( std::string val );
+    void fillBranch( std::string& val );
     void fillBranch( bool val );
 
     void getValue( std::vector<float>& val, uInt index );
@@ -86,9 +86,9 @@ class KUCMSBranch {
     uInt getLeadIndex();
     uInt getSubLeadIndex();
 
-    float max( std::vector<float> x );
-    uInt leadIdx( std::vector<float> x );
-    uInt subldIdx( std::vector<float> x, uInt ldx );
+    float max( std::vector<float>& x );
+    uInt leadIdx( std::vector<float>& x );
+    uInt subldIdx( std::vector<float>& x, uInt ldx );
 
     private:
 
@@ -168,7 +168,7 @@ void KUCMSBranch::clearBranch(){
 
 }//<<>>void KUCMSBranch::clearBranch()
 
-void KUCMSBranch::fillBranch( std::vector<float> val ){
+void KUCMSBranch::fillBranch( std::vector<float>& val ){
 
     switch( BranchType ){
 
@@ -179,7 +179,7 @@ void KUCMSBranch::fillBranch( std::vector<float> val ){
 
 }//<<>>void KUCMSBranch::fillBranch( std::vector<uInt> val )
 
-void KUCMSBranch::fillBranch( std::vector<uInt> val ){
+void KUCMSBranch::fillBranch( std::vector<uInt>& val ){
 
     switch( BranchType ){
 
@@ -190,7 +190,7 @@ void KUCMSBranch::fillBranch( std::vector<uInt> val ){
 
 }//<<>>void KUCMSBranch::fillBranch( std::vector<uInt> val )
 
-void KUCMSBranch::fillBranch( std::vector<int> val ){
+void KUCMSBranch::fillBranch( std::vector<int>& val ){
 
     switch( BranchType ){
 
@@ -237,7 +237,7 @@ void KUCMSBranch::fillBranch( float val ){
 
 }//<<>>void KUCMSBranch::fillBranch( float val )
 
-void KUCMSBranch::fillBranch( std::string val ){
+void KUCMSBranch::fillBranch( std::string& val ){
 
     switch( BranchType ){
 
@@ -363,9 +363,9 @@ float KUCMSBranch::getFLOATValue( uInt index = 0 ){ float val; getValue( val, in
 std::string KUCMSBranch::getSTRValue( uInt index = 0 ){ std::string val; getValue( val, index ); return val; }
 bool KUCMSBranch::getBOOLValue( uInt index = 0 ){ bool val; getValue( val, index ); return val; }
 
-float KUCMSBranch::max( std::vector<float> x ){float m(x[0]); for(auto ix : x ){ if( ix > m ) m = ix; } return m;}
+float KUCMSBranch::max( std::vector<float>& x ){float m(x[0]); for(auto ix : x ){ if( ix > m ) m = ix; } return m;}
 
-uInt KUCMSBranch::leadIdx( std::vector<float> x ){
+uInt KUCMSBranch::leadIdx( std::vector<float>& x ){
 
     float m(x[0]); uInt idx(0), it(0); 
     if( x.size() == 0 ) return -9; 
@@ -375,7 +375,7 @@ uInt KUCMSBranch::leadIdx( std::vector<float> x ){
 
 }//<<>>uInt KUCMSBranch::leadIdx( std::vector<float> x )
 
-uInt KUCMSBranch::subldIdx( std::vector<float> x, uInt ldx ){
+uInt KUCMSBranch::subldIdx( std::vector<float>& x, uInt ldx ){
 
     float m(x[0]); uInt idx(0), it(0); 
     if( x.size() <= 1 ) return -9; 
@@ -439,9 +439,9 @@ class KUCMSBranchManager {
     void attachBranches( TTree* fOutTree );
     void clearBranches();
 
-    void fillBranch( std::string key, std::vector<float> val );
-    void fillBranch( std::string key, std::vector<uInt> val );
-    void fillBranch( std::string key, std::vector<int> val );
+    void fillBranch( std::string key, std::vector<float>& val );
+    void fillBranch( std::string key, std::vector<uInt>& val );
+    void fillBranch( std::string key, std::vector<int>& val );
     void fillBranch( std::string key, uInt val );
     void fillBranch( std::string key, int val );
     void fillBranch( std::string key, float val );
@@ -497,9 +497,9 @@ bool KUCMSBranchManager::valid( std::string key ){ if( theBranches.find(key) == 
 void KUCMSBranchManager::clearBranches(){ for( auto & branch : theBranches ){ (branch.second).clearBranch();}}
 void KUCMSBranchManager::attachBranches( TTree* fOutTree ){ for( auto & branch : theBranches ){ branch.second.initBranch( fOutTree );}}
 
-void KUCMSBranchManager::fillBranch( std::string key, std::vector<float> val ){ if(valid(key)) theBranches[key].fillBranch( val );}
-void KUCMSBranchManager::fillBranch( std::string key, std::vector<uInt> val ){ if(valid(key)) theBranches[key].fillBranch( val );}
-void KUCMSBranchManager::fillBranch( std::string key, std::vector<int> val ){ if(valid(key)) theBranches[key].fillBranch( val );}
+void KUCMSBranchManager::fillBranch( std::string key, std::vector<float>& val ){ if(valid(key)) theBranches[key].fillBranch( val );}
+void KUCMSBranchManager::fillBranch( std::string key, std::vector<uInt>& val ){ if(valid(key)) theBranches[key].fillBranch( val );}
+void KUCMSBranchManager::fillBranch( std::string key, std::vector<int>& val ){ if(valid(key)) theBranches[key].fillBranch( val );}
 void KUCMSBranchManager::fillBranch( std::string key, uInt val ){ if(valid(key)) theBranches[key].fillBranch( val );}
 void KUCMSBranchManager::fillBranch( std::string key, int val ){ if(valid(key)) theBranches[key].fillBranch( val );}
 void KUCMSBranchManager::fillBranch( std::string key, float val ){ if(valid(key)) theBranches[key].fillBranch( val );}

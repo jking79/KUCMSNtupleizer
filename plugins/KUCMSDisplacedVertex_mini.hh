@@ -822,10 +822,10 @@ bool KUCMSDisplacedVertexMini::IsPromptLepton(const T &lepton) const {
     double deltaRCut = 0.02;
     double relPtDiffCut = 0.01;
 
-    if constexpr (std::is_same_v<T, reco::Electron>) {
+    if constexpr (std::is_same_v<T, pat::Electron>) {
         deltaRCut = 0.01;
         relPtDiffCut = 0.05;
-    } else if constexpr (std::is_same_v<T, reco::Muon>) {
+    } else if constexpr (std::is_same_v<T, pat::Muon>) {
         deltaRCut = 0.001;
         relPtDiffCut = 0.005;
     }

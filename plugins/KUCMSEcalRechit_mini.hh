@@ -607,7 +607,7 @@ void KUCMSEcalRecHitObjectMini::LoadEvent( const edm::Event& iEvent, const edm::
         if( not skip ){
             fsupclstrs.push_back(supclstr);
             fscIsOOT.push_back(false);
-        	fscOriginal.push_back(false);
+			fscOriginal.push_back(false);
         }//<<>>if( not skip )
     }//<<>>for( const auto &supclstr : *superCluster_ )
 
@@ -696,7 +696,7 @@ void KUCMSEcalRecHitObjectMini::PostProcessEvent( ItemManager<float>& geVar ){
 
         const scGroup scSCGroup{supclstr};
         const rhGroup scRhGroup = getRHGroup( scSCGroup );
-        const rhIdGroup scRhIdsGroup = getRhGrpIDs( scRhGroup );
+        rhIdGroup scRhIdsGroup = getRhGrpIDs( scRhGroup );
 		std::vector<float> fracList = getFractionList( scSCGroup, scRhGroup );
         //std::vector<float> missFracList = getMissFractionList( scSCGroup );
         Branches.fillBranch("zscrhids",scRhIdsGroup);
@@ -713,7 +713,7 @@ void KUCMSEcalRecHitObjectMini::PostProcessEvent( ItemManager<float>& geVar ){
         //Branches.fillBranch("zscsizedif",sc_dups_size);
         Branches.fillBranch("zscbcsize",bcsize);
 
- 		Branches.fillBranch("zsctrackindx",fscTrackIndx[it]);
+		Branches.fillBranch("zsctrackindx",fscTrackIndx[it]);
 
 		if( ERHODEBUG ){
 		//if( true ){
@@ -852,8 +852,8 @@ void KUCMSEcalRecHitObjectMini::PostProcessEvent( ItemManager<float>& geVar ){
 			//bool flagged = rhIsRecov || rhIsPoor || rhIsDead || rhIsOther;
 			if( rhIsRecov ) 
 			std::cout << "Recovered " << " time " << rhTime << " err " << rhJErr << " chi2 " << rhChi2 << " e " << rhEnergy << std::endl;
-        	//if( rhIsPoor ) 
-        	//std::cout << "RecHitIsPoorCali : " << " time " << rhTime << " err " << rhJErr << " chi2 " << rhChi2 << std::endl;
+			//if( rhIsPoor ) 
+			//std::cout << "RecHitIsPoorCali : " << " time " << rhTime << " err " << rhJErr << " chi2 " << rhChi2 << std::endl;
 			//if( flagged ) 
 			//std::cout << "Rec " << rhIsRecov << " Poor " << rhIsPoor << " Dead " << rhIsDead << " Other " << rhIsOther;
 			//if( rhIsNotGood ) 
@@ -1296,13 +1296,13 @@ std::vector<float> KUCMSEcalRecHitObjectMini::getFractionList( const scGroup sup
 	for (const auto &recHit : recHits ){
 		const auto recHitId = recHit.detid();
 		const uInt rhRawId = recHitId.rawId();
-    	for ( const auto &superCluster : superClusterGroup ){
-        	auto & hitsAndFractions = superCluster.hitsAndFractions();
-        	const uInt nHAF = hitsAndFractions.size();
-        	for( uInt iHAF = 0; iHAF < nHAF; iHAF++ ){
-            	const auto scDetId = hitsAndFractions[iHAF].first;
+		for ( const auto &superCluster : superClusterGroup ){
+			auto & hitsAndFractions = superCluster.hitsAndFractions();
+			const uInt nHAF = hitsAndFractions.size();
+			for( uInt iHAF = 0; iHAF < nHAF; iHAF++ ){
+				const auto scDetId = hitsAndFractions[iHAF].first;
 				const float frac = hitsAndFractions[iHAF].second;	
-            	const uInt scRawId = scDetId.rawId();
+				const uInt scRawId = scDetId.rawId();
 				if( rhRawId == scRawId ){ fracs.push_back(frac); break; }
 			}//<<>>for( uInt iHAF = 0; iHAF < nHAF; iHAF++ ) 
 		}//<<>>for ( const auto &superCluster : superClusterGroup )
@@ -1351,8 +1351,8 @@ std::vector<float> KUCMSEcalRecHitObjectMini::getMissFractionList( const scGroup
 					float cnt = 0;
 					for (const auto &recHit : frechits ){
 
-                		const auto recHitId = recHit.detid();
-                		const uInt rhRawId = recHitId.rawId();
+						const auto recHitId = recHit.detid();
+						const uInt rhRawId = recHitId.rawId();
 						if( rhRawId == rawId ){
 							dupcnt.push_back(recHit.energy());
 							cnt += 1;
@@ -1392,7 +1392,7 @@ float KUCMSEcalRecHitObjectMini::getRecHitEnergy( const uInt id ){
     if ( id != 0 ){
 		for( auto rh : frechits ){
 			if( getRawID(rh) == id ) return rh.energy();
-    	}//<<>> for( auto rh : frechits )
+		}//<<>> for( auto rh : frechits )
 	}//if ( id != 0 )
     return -999.f;
 
