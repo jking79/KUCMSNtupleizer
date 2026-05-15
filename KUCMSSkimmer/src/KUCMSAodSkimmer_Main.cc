@@ -270,20 +270,24 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
   // -----------  Time Calibration -----------------
 
   // Cali Tags : Tags for calibrations to use 
-  std::string r2EOY( "EG_EOY_MINI" ); 
-  std::string r2Fall17AOD( "RunIIFall17DRPremix" ); 
-  std::string r2Fall17MINIAOD( "RunIIFall17MiniAODv2" ); 
-  std::string r2UL( "UL_R2_MINI" ); 
+  //std::string r2EOY( "None" ); 
+  std::string r2Fall17AOD( "RunIIFall17DRPremix" );
+  std::string r2Fall17MINIAOD( "RunIIFall17MiniAODv2" );
+  std::string r2UL( "r2_ul18" );
 
   timeCali = new KUCMS_TimeCalibration();
   timeCali->setTag(r2UL);
+  // --- resTag is the target resolution for smearing
+  timeCali->setMCResTag("r2_ul18");
+  //timeCali->setMCResTag("None");
+
   std::map<UInt_t,kucms_DetIDStruct> detidmap = timeCali->getDetIDMapRef();
   for(auto it = detidmap.begin(); it != detidmap.end(); it++){
 	  kucms_DetIDStruct detidstruct = it->second;
 	  int ieta = detidstruct.i2;
 	  int iphi = detidstruct.i1;
 	  _detidmap[it->first] = std::make_pair(ieta, iphi);
-   }
+   }//<<>>for(auto it = detidmap.begin(); it != detidmap.end(); it++)
 
   // ------------------------------------------------------------------------------------------
 
@@ -901,7 +905,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
     if( DEBUG ) std::cout << "XM: " << gmsbxm << std::endl;
     if( DEBUG ) std::cout << "MCw: " << mcw << std::endl;
     if( DEBUG ) std::cout << "MCt: " << mct << std::endl;
-    if( DEBUG ) std::cout << "tcTag: " << tctag << std::endl;
+    if( DEBUG ) std::cout << "tcTag: " << tct << std::endl;
 
     dataSetKey = key;
     xsctn = crossSection;
@@ -921,7 +925,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
     std::string str;
     if( not DEBUG ) std::cout << "--  adding files";
     int nfiles = 0;
-	int skipCnt = 10;
+	int skipCnt = 4;
     if( skipCnt != 0 ) std::cout << "-- !! Skipping every " << skipCnt << std::endl;
     if( dataSetKey !=  "Single" ){
         std::ifstream infile(listDirPath+inFileName);
