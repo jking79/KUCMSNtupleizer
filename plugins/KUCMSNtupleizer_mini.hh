@@ -200,8 +200,8 @@ class KUCMSNtupilizerMini : public edm::one::EDAnalyzer<edm::one::SharedResource
 
 		// config - event count and wgt info
 		KUCMSBranchManager ConfigBranches;
-    	int nTotEvts, nFltrdEvts, metFltrdEvts, phoFltrdEvts;
-    	float sumEvtWgt, sumFltrdEvtWgt;
+		int nTotEvts, nFltrdEvts, metFltrdEvts, phoFltrdEvts;
+		float sumEvtWgt, sumFltrdEvtWgt;
 
         // oputput tree
         TTree *outTree;

@@ -441,7 +441,7 @@ void KUCMSPhotonObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 
 		if( phoPt > leadPhoPt ) leadPhoPt = phoPt;
 
-        const float phoEnergyErr = photon.getCorrectedEnergyError(reco::Photon::regression2);
+        const float phoEnergyErr = photon.getCorrectedEnergyError(reco::Photon::P4type::regression2);
         //const float haloTaggerMVAVal = photon.haloTaggerMVAVal();
         const bool phoHasPixelSeed = photon.hasPixelSeed();
         const bool hasConversionTracks = photon.hasConversionTracks();
@@ -457,10 +457,10 @@ void KUCMSPhotonObjectMini::ProcessEvent( ItemManager<float>& geVar ){
         const float sieip = photon.showerShapeVariables().sigmaIetaIphi;
         const float sipip = photon.showerShapeVariables().sigmaIphiIphi;
         const float s4 = photon.full5x5_showerShapeVariables().e2x2/photon.full5x5_showerShapeVariables().e5x5;
-    	//const float smaj = photon.showerShapeVariables().smMajor;
+		//const float smaj = photon.showerShapeVariables().smMajor;
         //const float smin = photon.showerShapeVariables().smMinor;
         //const float salpha = photon.showerShapeVariables().smAlpha;
-    	//const float esEffSigmaRR = photon.showerShapeVariables().effSigmaRR;
+		//const float esEffSigmaRR = photon.showerShapeVariables().effSigmaRR;
 
         //const float phoR1x5 = photon.r1x5();
         //const float phoR2x5 = photon.r2x5();
@@ -556,8 +556,8 @@ void KUCMSPhotonObjectMini::ProcessEvent( ItemManager<float>& geVar ){
         const float phiWidth = scptr->phiWidth();
 
         if( PhotonDEBUG ) std::cout << " --- Finding Moments & Covariences : " << scptr << std::endl;
-    	const auto &seedDetId = scptr->seed()->seed();// seed detid
-    	const auto isEB = (seedDetId.subdetId() == EcalBarrel);// which subdet
+		const auto &seedDetId = scptr->seed()->seed();// seed detid
+		const auto isEB = (seedDetId.subdetId() == EcalBarrel);// which subdet
         const auto ph2ndMoments = rhObj->getCluster2ndMoments( scptr );
         const auto lCov = rhObj->getCovariances( scptr );
 
@@ -694,7 +694,7 @@ void KUCMSPhotonObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 			//std::cout << " -- Filling genindex : " << genidx << std::endl;  
 			Branches.fillBranch("GenIdx",genidx);
 			if( genidx > -1 ){ 
-			 	//int genXMomIndx = genObj->getGenSigPhoXMother( genidx );
+				//int genXMomIndx = genObj->getGenSigPhoXMother( genidx );
                 //Branches.fillBranch("GenXMomIdx",genXMomIndx);
 				Branches.fillBranch("GenXMomIdx",-5);//temp till fixed this issue	
 		
@@ -763,26 +763,26 @@ void KUCMSPhotonObjectMini::ProcessEvent( ItemManager<float>& geVar ){
         }//<<>>for( int first(0); first < nGloPhos; first++ )
 		int nMassMatches = zMassDiff.size();
 		for( int idx = 0; idx < nMassMatches; idx++ ){
-        	if( zMassDiff[idx] < zMassMatch ){
+			if( zMassDiff[idx] < zMassMatch ){
 
-            	//selPhoIndx[1] = phoIndx[0];
-            	auto pho0 = gloPhotons[phoIndx1[idx]];
-            	//selPhotons.push_back(pho0);
-            	//selPhoType.push_back(1);
-            	//selPhoIndx[2] = phoIndx[1];
-            	auto pho1 = gloPhotons[phoIndx2[idx]];
-            	//selPhotons.push_back(pho1);
-            	//selPhoType.push_back(2);
-            	const auto &phosc0 = pho0.superCluster().isNonnull() ? pho0.superCluster() : pho0.parentSuperCluster();
-            	const auto &phosc1 = pho1.superCluster().isNonnull() ? pho1.superCluster() : pho1.parentSuperCluster();
-            	const uInt id1 = ((phosc0.get())->seed()->seed()).rawId();
-            	gloAllSeedRHs.push_back(id1);
-            	const uInt id2 = ((phosc1.get())->seed()->seed()).rawId();
-            	gloAllSeedRHs.push_back(id2);
-            	//if( PhotonDEBUG ) std::cout << " Selecting matching glo photon pair with : " << id1  << " & " << id2;
-            	//if( PhotonDEBUG ) std::cout << " and dZmass : " << zMassDiff[idx] << std::endl;
+				//selPhoIndx[1] = phoIndx[0];
+				auto pho0 = gloPhotons[phoIndx1[idx]];
+				//selPhotons.push_back(pho0);
+				//selPhoType.push_back(1);
+				//selPhoIndx[2] = phoIndx[1];
+				auto pho1 = gloPhotons[phoIndx2[idx]];
+				//selPhotons.push_back(pho1);
+				//selPhoType.push_back(2);
+				const auto &phosc0 = pho0.superCluster().isNonnull() ? pho0.superCluster() : pho0.parentSuperCluster();
+				const auto &phosc1 = pho1.superCluster().isNonnull() ? pho1.superCluster() : pho1.parentSuperCluster();
+				const uInt id1 = ((phosc0.get())->seed()->seed()).rawId();
+				gloAllSeedRHs.push_back(id1);
+				const uInt id2 = ((phosc1.get())->seed()->seed()).rawId();
+				gloAllSeedRHs.push_back(id2);
+				//if( PhotonDEBUG ) std::cout << " Selecting matching glo photon pair with : " << id1  << " & " << id2;
+				//if( PhotonDEBUG ) std::cout << " and dZmass : " << zMassDiff[idx] << std::endl;
 
-        	}//<<>>if( zMassMatch < 35.00 )
+			}//<<>>if( zMassMatch < 35.00 )
 		}//<<>>for( int idx = 0; idx < nMassMatches; idx++ )
     }//<<>>if( gloPhotons.size() > 1 )
 */

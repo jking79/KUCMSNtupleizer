@@ -109,9 +109,9 @@ class KUCMSElectronObjectMini : public KUCMSObjectBase {
     std::vector<pat::Electron> felectrons;
     std::vector<int> eleIds;
 
-  	// General Tracks
-  	edm::EDGetTokenT<edm::View<reco::Track>> generalTracksToken_;
-  	edm::Handle<edm::View<reco::Track> > generalTracksHandle_;
+	// General Tracks
+	edm::EDGetTokenT<edm::View<reco::Track>> generalTracksToken_;
+	edm::Handle<edm::View<reco::Track> > generalTracksHandle_;
 
     // GsfTracks
     edm::EDGetTokenT<edm::View<reco::GsfTrack>> gsfTracksToken_;
@@ -331,7 +331,7 @@ void KUCMSElectronObjectMini::LoadEvent( const edm::Event& iEvent, const edm::Ev
     iEvent.getByToken( beamLineToken_, beamSpot_ );
     iEvent.getByToken( RhoToken_, rho_ );
     //iEvent.getByToken( pfcandToken_, pfcands_ );
-  	//iEvent.getByToken( generalTracksToken_, generalTracksHandle_ );
+	//iEvent.getByToken( generalTracksToken_, generalTracksHandle_ );
     //iEvent.getByToken( gsfTracksToken_, gsfTracksHandle_ );
     //iEvent.getByToken( verticesToken, vertices_ );
 
@@ -414,6 +414,8 @@ void KUCMSElectronObjectMini::ProcessEvent( ItemManager<float>& geVar ){
         const float seedTOFTime = rhObj->getSeedTofTime( *scptr, geVar("vtxX"), geVar("vtxY"), geVar("vtxZ") );
 
 		std::string re = prmStr("RunEra");
+		if( re.find("Run2") != std::string::npos ) re = "Run2";
+        if( re.find("Run3") != std::string::npos ) re = "Run3";
 		std::map<std::string,std::map<std::string,bool>> id;
 
 		float dEtaSeed = std::abs( electron.deltaEtaSuperClusterTrackAtVtx() - scptr->eta() + scptr->seed()->eta() );
@@ -445,12 +447,12 @@ void KUCMSElectronObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 		for( auto idl : idLev ){
 
 			id["sigmaIeta"][idl] = electron.full5x5_sigmaIetaIeta() < cutValMap[re]["sigmaIeta"][idl][ebee];
-        	id["dEtaSeed"][idl] = dEtaSeed < cutValMap[re]["dEtaSeed"][idl][ebee];
-        	id["deltaPhi"][idl] = electron.deltaPhiSuperClusterTrackAtVtx() < cutValMap[re]["deltaPhi"][idl][ebee];
+			id["dEtaSeed"][idl] = dEtaSeed < cutValMap[re]["dEtaSeed"][idl][ebee];
+			id["deltaPhi"][idl] = electron.deltaPhiSuperClusterTrackAtVtx() < cutValMap[re]["deltaPhi"][idl][ebee];
 			float hoev =  cutValMap[re]["HOE1"][idl][ebee] + cutValMap[re]["HOE2"][idl][ebee]/sce + cutValMap[re]["HOE3"][idl][ebee]*rho/sce;
 			id["HOE"][idl] = electron.hadronicOverEm() < hoev;
-        	id["EA"][idl] = relIsoWithEA < ( cutValMap[re]["EA1"][idl][ebee] + cutValMap[re]["EA2"][idl][ebee]/elePt );
-        	id["ooemoop"][idl] = epinv < cutValMap[re]["ooemoop"][idl][ebee];
+			id["EA"][idl] = relIsoWithEA < ( cutValMap[re]["EA1"][idl][ebee] + cutValMap[re]["EA2"][idl][ebee]/elePt );
+			id["ooemoop"][idl] = epinv < cutValMap[re]["ooemoop"][idl][ebee];
 
 		}//<<>>for( auto idl : idLev )
 
@@ -483,10 +485,10 @@ void KUCMSElectronObjectMini::ProcessEvent( ItemManager<float>& geVar ){
         Branches.fillBranch("IsMedium",idBool["M"]);
 
         Branches.fillBranch("SeedTOFTime",seedTOFTime);
-    	Branches.fillBranch("Sieie",electron.full5x5_sigmaIetaIeta());
-    	Branches.fillBranch("DetaSCTV",electron.deltaEtaSuperClusterTrackAtVtx());
-    	Branches.fillBranch("DphiSCTV",electron.deltaPhiSuperClusterTrackAtVtx());
-    	Branches.fillBranch("HOE",electron.hadronicOverEm());
+		Branches.fillBranch("Sieie",electron.full5x5_sigmaIetaIeta());
+		Branches.fillBranch("DetaSCTV",electron.deltaEtaSuperClusterTrackAtVtx());
+		Branches.fillBranch("DphiSCTV",electron.deltaPhiSuperClusterTrackAtVtx());
+		Branches.fillBranch("HOE",electron.hadronicOverEm());
 		
 		bool hasSVMatch = false;
 		if( cfFlag("doSVModule") ) hasSVMatch = svObj->FoundLeptonMatch( electron );
@@ -502,7 +504,7 @@ void KUCMSElectronObjectMini::ProcessEvent( ItemManager<float>& geVar ){
         if( veptc && isLVeto ){ isPromptEle = true; nPromptEle++; }
         Branches.fillBranch("IsPromptEle",isPromptEle);
 
-	    eleIndx++;
+		eleIndx++;
 
         //std::cout << " -- Muon getting sc : " << std::endl;
         const auto btptr =electron.gsfTrack();
