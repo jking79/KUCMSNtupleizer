@@ -21,7 +21,26 @@ mv config/fullMask60cm_Data.root .
 ####don't need lhapdf library - but may need to do this for cgal, etc.
 ####export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/lhapdf/6.2.1-pafccj3/lib/
 ls
-./config/runKUCMSAodSVSkimmer.obj "$@"
+
+# Strip --eos-out from arguments before passing to skimmer
+eos_out=""
+skimmer_args=()
+while [[ $# -gt 0 ]]; do
+    if [[ "$1" == "--eos-out" ]]; then
+        shift; eos_out="$1"
+    else
+        skimmer_args+=("$1")
+    fi
+    shift
+done
+
+./config/runKUCMSAodSVSkimmer.obj "${skimmer_args[@]}"
+
+if [[ -n "$eos_out" ]]; then
+    for f in condor_*.root; do
+        xrdcp "$f" "root://cmseos.fnal.gov/${eos_out}/${f}" && rm -f "$f"
+    done
+fi
 #pwd
 #echo "--done run"
 #ls
