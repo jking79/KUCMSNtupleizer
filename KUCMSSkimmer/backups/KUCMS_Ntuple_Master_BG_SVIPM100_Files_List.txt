@@ -5,13 +5,13 @@
 #KUCMSNtuple/kucmsntuple_QCD_R18_SVIPM100_MiniAOD_v34/ QCD_R18_SVHPM100_v34_QCD_HT200to300_test.txt QCD_200t300_UL18 1122 0 0 1 0 r2_ul18_mc
 
 #KUCMSNtuple/kucmsntuple_GJets_R18_SVIPM100_v31/ GJets_R18_SVIPM100_v31_GJets_HT-100To200.txt GJets_100t200_UL18 8639 0 0 1 0 r2_ul18_mc 
-#KUCMSNtuple/ filelist_kucmsntuple_GJets_200_R18_SVHPM100_MiniAOD_v2_v34.txt GJets_200t400_UL18 2173 0 0 1 0 r2_ul18_mc
-#KUCMSNtuple/ filelist_kucmsntuple_GJets_200_R18_SVHPM100_MiniAOD_v2_v34.txt GJets_200t400_UL18 2173 0 0 1 0 None
+#KUCMSNtuple/ GJets_R18_SVIPM100_v34_HT-200To400.txt GJets_200t400_UL18 2173 0 0 1 0 r2_ul18_mc
+#KUCMSNtuple/ GJets_R18_SVIPM100_v34_HT-200To400.txt GJets_200t400_UL18 2173 0 0 1 0 None
 #KUCMSNtuple/kucmsntuple_GJets_R18_SVIPM100_v31/ GJets_R18_SVIPM100_v31_GJets_HT-400To600.txt GJets_400t600_UL18 260.7 0 0 1 0 r2_ul18_mc 
-#KUCMSNtuple/ filelist_kucmsntuple_GJets_400_R18_SVHPM100_MiniAOD_v2_v34.txt GJets_400t600_UL18 260.7 0 0 1 0 r2_ul18_mc
+#KUCMSNtuple/ GJets_R18_SVIPM100_v34_HT-400To600.txt GJets_400t600_UL18 260.7 0 0 1 0 r2_ul18_mc
 #KUCMSNtuple/kucmsntuple_GJets_R18_SVIPM100_v31/ GJets_R18_SVIPM100_v31_GJets_HT-40To100.txt GJets_40t100_UL18 18650 0 0 1 0 r2_ul18_mc 
 #KUCMSNtuple/kucmsntuple_GJets_R18_SVIPM100_v31/ GJets_R18_SVIPM100_v31_GJets_HT-600ToInf.txt GJets_600up_UL18 86.55 0 0 1 0 r2_ul18_mc
-KUCMSNtuple/ filelist_kucmsntuple_GJets_600_R18_SVHPM100_MiniAOD_v2_v34.txt GJets_400t600_UL18 86.55 0 0 1 0 r2_ul18_mc
+KUCMSNtuple/ GJets_R18_SVIPM100_v34_HT-600ToInf.txt GJets_HT-600ToInf_UL18 86.55 0 0 1 0 r2_ul18_qcdmc
 #
 #KUCMSNtuple/kucmsntuple_WJets_R18_SVIPM100_v31/ WJets_R18_SVIPM100_v31_WJetsToLNu_HT-100To200.txt WJets_100t200_UL18 1244 0 0 1 0 r2_ul18_mc
 #KUCMSNtuple/kucmsntuple_WJets_R18_SVIPM100_v31/ WJets_R18_SVIPM100_v31_WJetsToLNu_HT-200To400.txt WJets_200t400_UL18 337.8 0 0 1 0 r2_ul18_mc

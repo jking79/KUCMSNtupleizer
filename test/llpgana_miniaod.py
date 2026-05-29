@@ -45,19 +45,19 @@ options.register('runMETFilters',False,VarParsing.multiplicity.singleton,VarPars
 #options.register('globalTag','130X_mcRun3_2023_realistic_postBPix_v2',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for R3 23');
 
 ##------------------ data gt  
-#options.register('globalTag','106X_dataRun2_v36',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
+options.register('globalTag','106X_dataRun2_v36',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 ##options.register('globalTag','106X_dataRun2_v28',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 #options.register('globalTag','124X_dataRun3_v15',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2022');
 #options.register('globalTag','140X_dataRun3_v17',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 ##options.register('globalTag','106X_dataRun2_v24',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2018UL');
 #112X_mcRun3_2021_realistic_v16
 # DATA 2025
-options.register('globalTag','150X_dataRun3_Prompt_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag for 2025');
+#options.register('globalTag','150X_dataRun3_Prompt_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag for 2025');
 
 ## processName
 options.register('processName','TREE',VarParsing.multiplicity.singleton,VarParsing.varType.string,'process name to be considered');
 
-outfilename = 'kucmsntuple.root'
+outfilename = 'kucmsntuple_localtest.root'
 if options.multicrab == True : 
     outfilename = 'kucmsntuple.root'
 
@@ -68,8 +68,8 @@ options.parseArguments()
 
 ## Define the CMSSW process
 #runera = "Run3"  # current siganl model   !!!!!!!!  Run3 must be in CMSSW 14 or 15
-runera = "Run3_2025"
-#runera = "Run2_2018" # BG models
+#runera = "Run3_2025"
+runera = "Run2_2018" # BG models
 ##runera = "Run2_2016"
 if options.multicrab == True : runera = options.runera
 
@@ -158,7 +158,7 @@ process.source = cms.Source("PoolSource",
         #######'file:root_files/Met_UL18B_AOD_973EEF0C-44AB-E94A-8591-04DCD00D8B4B.root',
         ##'file:root_files/R22D_JetMet_mini_1f4a97f7-de76-4ee1-a380-0d9d7a5914d2.root',
         # MiniAOD 2018UL MET
-        #'file:root_files/UL18_mini_MET_76190182-C845-2B40-A3F1-FA9FDAB9F7EC.root',
+        'file:root_files/UL18_mini_MET_76190182-C845-2B40-A3F1-FA9FDAB9F7EC.root',
         ######'file:root_files/WJets_72B9C618-FE23-1E41-872E-57314D7CB454.root',
         #'root://cmsxrootd.fnal.gov//store/data/Run2016G/MET/MINIAOD/UL2016_MiniAODv2-v2/120000/020ADD62-87D5-4B43-BAAD-C77C83D5FF8F.root',
         #'root://cmsxrootd.fnal.gov//store/data/Run2018B/JetHT/MINIAOD/15Feb2022_UL2018-v1/2820000/84DEEA91-CF7B-C24B-831D-7D993EB56D8D.root',
@@ -166,7 +166,7 @@ process.source = cms.Source("PoolSource",
         #'root://cms-xrd-global.cern.ch//store/data/Run2017D/DoubleEG/MINIAOD/09Aug2019_UL2017-v1/260000/3879D624-EAFF-C34B-8C0E-D4D7E23EB25C.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2018D/EGamma/MINIAOD/UL2018_MiniAODv2-v2/2810000/D5E0889C-D687-6242-8105-A147939E99C4.root',
         #'root://cmsxrootd.fnal.gov//store/data/Run2018B/JetHT/MINIAOD/15Feb2022_UL2018-v1/2820000/84DEEA91-CF7B-C24B-831D-7D993EB56D8D.root',
-        'root://cmsxrootd.fnal.gov//store/data/Run2025F/JetMET0/MINIAOD/PromptReco-v1/000/396/733/00000/40cf55f8-5609-44a7-b73b-c74f4ae04076.root',
+        #'root://cmsxrootd.fnal.gov//store/data/Run2025F/JetMET0/MINIAOD/PromptReco-v1/000/396/733/00000/40cf55f8-5609-44a7-b73b-c74f4ae04076.root',
 
         # MC - Sig
         

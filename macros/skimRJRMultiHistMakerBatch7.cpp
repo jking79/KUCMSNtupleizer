@@ -31,8 +31,9 @@ void HistMaker::histMaker( std::string indir, std::string infilelist, std::strin
 
     const std::string disphotreename("kuSkimTree");
     const std::string configtreename("kuSkimConfigTree");
-    //const std::string eosdir("root://cmseos.fnal.gov//store/user/lpcsusylep/malazaro/KUCMSSkims/skims_v49/");
-    const std::string eosdir("");
+    const std::string eosdir("root://cmseos.fnal.gov//store/user/lpcsusylep/malazaro/KUCMSSkims/skims_v49/");
+    //const std::string eosdir("root://cmseos.fnal.gov//store/user/lpcsusylep/malazaro/KUCMSSkims/skims_v50/");
+    //const std::string eosdir("");
     const std::string listdir("");
 	const std::string ofnending = "_RjrSkim_Hists.root";
 
@@ -445,6 +446,7 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     //float fillwt = scale * ( xsec * 1000 ) * ( evtgwt / segwt );
 	float fillwt = evtFillWgt;
 	if( scale == 0 ) fillwt = 1;
+	fillwt = 1;
     if( DEBUG ) std::cout << " evtfillwt :( " << xsec << " * 1000 ) * ( " << evtgwt << " / " << segwt << " ) = " << fillwt << std::endl;
 	batchVars[bfillwgt] += fillwt;
 
@@ -466,7 +468,7 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     auto metCPt = hypo(selCMetPx,selCMetPy);
     auto metPt = hypo(selMetPx,selMetPy);
 	//if( metPt < 150 ) continue;
-    if( metPt < 0 ) continue;
+    //if( metPt < 0 ) continue;
     //hist1d[2]->Fill(12,fillwt);
 
 	//if( DEBUG ) std::cout << "RJR jet cut " << std::endl;
@@ -571,18 +573,19 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 	float sr2 = std::sqrt(1);
     float sgtime = 99;
     float sgpt = -99;
-    for( int ip = 0; ip < baseLinePhoton_WTimeSig->size(); ip++ ){
-
-		if( (*baseLinePhoton_GJetsCR)[ip] ){
+	int ip = 0;
+    //for( int ip = 0; ip < baseLinePhoton_WTimeSig->size(); ip++ ){
+	if( baseLinePhoton_WTimeSig->size() > 0 ){
+		//if( (*baseLinePhoton_GJetsCR)[ip] ){
 
 			gwtsig = (*baseLinePhoton_WTimeSig)[ip];
         	gwtime = (*baseLinePhoton_WTime)[ip];
         	gwtimeres = (*baseLinePhoton_WTRes)[ip];
 			gwenergy = (*baseLinePhoton_Energy)[ip];
 			gjetsCR = (*baseLinePhoton_GJetsCR)[ip];
-			break;
+			//break;
 
-		}//<<>>if( (*baseLinePhoton_GJetsCR)[ip] )
+		//}//<<>>if( (*baseLinePhoton_GJetsCR)[ip] )
 		
 	}//<<>>if( selPhoTime->size() > 0 )
 
@@ -592,7 +595,7 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     dPVPull = (pvtime-gwtime)/std::sqrt( pvres*pvres + gwtimeres*gwtimeres );
     dPVenergy = 1/std::sqrt( 1/(pvenergy*pvenergy) + 1/(gwenergy*gwenergy) );
 
-	if( gjetsCR && gwtimeres < 1.0 && pvres < 1.0 ){
+	//if( gjetsCR && gwtimeres < 1.0 && pvres < 1.0 ){
 
 		hist1d[60]->Fill( dPVPull );
         hist1d[61]->Fill( pvenergy );
@@ -602,7 +605,7 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 		hist1d[62]->Fill( gwenergy );
         hist1d[63]->Fill( dPVenergy );
 
-	}//<<>>if( gjetsCR && gwtimeres < 1.0 && pvres < 1.0 )
+	//}//<<>>if( gjetsCR && gwtimeres < 1.0 && pvres < 1.0 )
 
 
 /*
@@ -746,6 +749,9 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 	//if( not trigger ) continue;
     //if( hemVeto ) continue;
 
+    if( ms > 2000 ) continue;
+
+/*
 	// GGG cut sets
 	//if( nRjrPhos < 20 && nphocust ) continue;  
     if( nRjrPhos == 0 ){
@@ -815,7 +821,7 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     }//<<>>if( nRjrPhos == 12 )
     if( nRjrPhos == 33 ){
     }//<<>>if( nRjrPhos == 13 )
-
+*/
 
 	hist1d[0]->Fill(mr,fillwt);
     hist1d[1]->Fill(ms,fillwt);
@@ -1226,9 +1232,9 @@ int main ( int argc, char *argv[] ){
     //if( argc != 4 ) { std::cout << "Insufficent arguments." << std::endl; }
     //else {
                 
-				std::string listdir = "../KUCMSSkimmer/condor/";
+				//std::string listdir = "../KUCMSSkimmer/condor/";
 				//std::string listdir = "/uscms/home/jaking/nobackup/llpana_skims/";
-				//std::string listdir = "";
+				std::string listdir = "";
 				//std::string listdir = "/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/tsig_skims/"; 
                 //std::string listdir = "/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/";
 
@@ -1239,16 +1245,18 @@ int main ( int argc, char *argv[] ){
 
                 std::string infilenameJ = "rjr_skim_files/KUCMS_RJR_SMS_v39_Skim_List.txt";
                 std::string infilenameBG = "rjr_skim_files/KUCMS_RJR_BG_v39_Skim_List.txt";
-                std::string infilenameD = "rjr_skim_files/KUCMS_RJR_DATA_v40_Skim_List.txt";
+                //std::string infilenameD = "rjr_skim_files/KUCMS_RJR_DATA_v40_Skim_List.txt";
+                std::string infilenameD = "rjr_skim_files/KUCMS_RJR_Test_v50_Skim_List.txt";
 
-				std::string version = "v49_";
+				std::string version = "v50_";
 				std::string sigtype = "llpana_";
 				std::string ofnstart = "KUCMS_";
 
                 std::string htitleBG = "BG_"+sigtype+version;
                 //std::string htitleBG = "BG_sv_"+sigtype+version;
 				std::string htitleJ = sigtype+version;
-                std::string htitleD = "Data_"+sigtype+version;
+                //std::string htitleD = "Data_"+sigtype+version;
+                std::string htitleD = "Test_"+sigtype+version; 
 
                 HistMaker base;
 
@@ -1267,7 +1275,7 @@ int main ( int argc, char *argv[] ){
                 //std::vector<float> rv_vec{31.69};
                 std::string outdir = "";
 
-                std::string isoline = "PVtime_Res_NueSCOnly_";
+                std::string isoline = "PVtime_Res_SkV50_";
                 //std::string isoline = "P1TrMfHeHa_RJR0_"; // Tv = time valid, Mf = metfilters, Ha = halofilters, Tr = trigger, He = hemfilter;
 				//std::string isoline = "P1TrMfHeHa_TSig_GS1_"; // Tv = time valid, Mf = metfilters, Ha = halofilters, Tr = trigger, He = hemfilter;
 				isoline += "cv" + std::to_string( np ) + "_";
