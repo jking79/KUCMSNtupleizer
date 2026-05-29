@@ -55,6 +55,7 @@ void KUCMSAodSkimmer::processRechits(){
 		float rht = (*ECALRecHit_time)[it];
 		float rhe = (*ECALRecHit_energy)[it];
 		float rha = (*ECALRecHit_ampres)[it]; // instead of energy ? ( this is the ADC amplitude in units of the pedistal rms for this rechit )
+		timeCali->setMCResTag(mctrtag);
 		float corrht = timeCali->getCorrectedTime( rht, rha, rhid, Evt_run, tctag, mctype );
 		float rhtres = timeCali->getTimeResoltuion( rha, rhid, Evt_run, tctag, mctype );
 		//if( rhid < 840000000 ){

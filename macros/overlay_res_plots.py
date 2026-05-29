@@ -81,7 +81,8 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
         #hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] )+( ([2]*[2])/(x) ) )',100,750,0,3)
         #hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] )+( ([2]*[2])/(x) ) )',5,800,3)
         #if dostoch : hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] )+( ([2]*[2])/(x) ) )',5,3200,3) 
-        if dostoch : hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] )+( ([2]*[2])/(x) ) )',15,1600,3)
+        #if dostoch : hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] )+( ([2]*[2])/(x) ) )',15,1600,3)
+        if dostoch : hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] )+( ([2]*[2])/(x) ) )',15,3200,3)
         #hfit = TF1('hfits','sqrt((([0]*[0])/(x*x))+(2*[1]*[1]))',6,100,2)
         hfit.SetParName(0,'N')
         hfit.SetParameter(0,40.0)
@@ -661,9 +662,20 @@ dro18mcees = 'ResMap_0_999999_DRO_Data_Hist_NoCali_Smeared_eg_18MC_xa_pm24b1200_
 dro18mccalieb = 'ResMap_0_999999_DRO_Data_Hist_eg_18MC_xa_pm24b1200_v0204_EB'
 dro18mccaliee = 'ResMap_0_999999_DRO_Data_Hist_eg_18MC_xa_pm24b1200_v0204_EE'
 
+dro18qcdmceb = 'ResMap_0_999999_DRO_Data_Hist_eg_18ULQCDMC_HG_xa_pm24b1200_v0527_EB'
+dro18qcdmcee = 'ResMap_0_999999_DRO_Data_Hist_eg_18ULQCDMC_HG_xa_pm24b1200_v0527_EE'
+#dro18qcdmceb = 'ResMap_0_999999_DRO_Data_Hist_eg_18ULQCDMC_LG_xa_pm24b1200_v0527_EB'
+#dro18qcdmcee = 'ResMap_0_999999_DRO_Data_Hist_eg_18ULQCDMC_LG_xa_pm24b1200_v0527_EE'
+
+
 rfend = '_NSC_resfit.root'
 shend = '_sigma'
 indir = 'res_files/'
+
+hl_r2_18qcdmc_ebee = [
+    [dro18qcdmceb+shend,"",indir+dro18qcdmceb+rfend,"DRO EB"],
+    [dro18qcdmcee+shend,"",indir+dro18qcdmcee+rfend,"DRO EE"],
+]
 
 
 hl_r3_25_ebee_dro = [
@@ -950,6 +962,7 @@ hl_r3_25b = [
 #ptitle=['','Run 2 (13 TeV)','#splitline{DRU Resolution}{2018 UL}'] #{}'
 #ptitle=['','Run 2 (13 TeV)','#splitline{Chronus Calibration}{2016 UL}'] #{}'
 #ptitle=['','Run 2 (13 TeV)','#splitline{Online Calibration}{2016 UL}'] #{}'
+ptitle=['','Run 2 (13 TeV)','#splitline{Chronus Calibration}{2018 UL QCD}'] #{}'
 
 #ptitle=['','Run 3 (13.6 TeV)','#splitline{Online Calibration}{2025 Prompt}'] #{}'
 #ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2025 Prompt}'] #{}'
@@ -960,7 +973,7 @@ hl_r3_25b = [
 #ptitle=['','Run 3 (13.6 TeV)','#splitline{Online Calibration}{2022 Prompt}'] #{}'
 #ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2022 Prompt}'] #{}'
 #ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2025 Prompt UnCorrected}'] #{}'
-ptitle=['','Run 3 (13.6 TeV)','#splitline{DRU Resolution}{2024 Prompt}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{DRU Resolution}{2024 Prompt}'] #{}'
 #ptitle=['','Run 3 (13.6 TeV)','#splitline{DRU Resolution}{2025 Prompt}'] #{}'
 #ptitle=['','Run 3 (13.6 TeV)','#splitline{DRU Resolution}{2025 Prompt Chronus}'] #{}'
 
@@ -972,7 +985,8 @@ ptitle=['','Run 3 (13.6 TeV)','#splitline{DRU Resolution}{2024 Prompt}'] #{}'
 y = [ 3.0, 0.06 ]
 #y = [ 2.0, 0.04 ]
 #y = [ 5, 0.01 ]
-x = [ 5.0, 800.0 ]
+x = [ 5.0, 3200.0 ]
+#x = [ 5.0, 800.0 ]
 #x = [ 5.0, 400.0 ]
 l = [ 0.7,0.65,0.925,0.9 ]
 #t = [0.175,0.44,0.15,0.175,0.28]
@@ -986,7 +1000,7 @@ t = [0.325,0.85,0.1,0.175,0.285]#adjsuting lumi-sqrt(s) in title bar
 #outname = 'downloads/tr_hl_r3_24d_part_trvcc_ccgt_v7'
 #outname = 'downloads/tr_hl_r3_25c2'
 #outname = 'downloads/tr_hl_r3_25bc_xa'
-outname = 'hl_r3_24_ebeedro'
-dostack(hl_r3_24_ebeedro, outname, date, Ic_layout, ptitle,  y, x, l, t)
+outname = 'hl_r2_18ulqcdmc_ebeedro'
+dostack(hl_r2_18qcdmc_ebee, outname, date, Ic_layout, ptitle,  y, x, l, t)
 #outname = 'tr_hl_r2_16v2'
 #dostack(hl_r2_16_ebee, outname, date, Ic_layout, ptitle,  y, x, l, t)

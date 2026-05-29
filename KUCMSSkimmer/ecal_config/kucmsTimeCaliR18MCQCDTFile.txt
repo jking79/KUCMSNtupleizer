@@ -1,0 +1,9 @@
+ecal_config/gammares_ul18MC_QCD_HT1000to1500_TuneCP5_13TeV-madgraphMLM-pythia8.txt 000000 999999 r2_ul18_qcdmc 0 0.0000737
+ecal_config/gammares_ul18MC_QCD_HT100to200_TuneCP5_13TeV-madgraphMLM-pythia8.txt 000000 999999 r2_ul18_qcdmc 0 0.2873143
+ecal_config/gammares_ul18MC_QCD_HT1500to2000_TuneCP5_13TeV-madgraphMLM-pythia8.txt 000000 999999 r2_ul18_qcdmc 0 0.0000530
+ecal_config/gammares_ul18MC_QCD_HT2000toInf_TuneCP5_13TeV-madgraphMLM-pythia8.txt 000000 999999 r2_ul18_qcdmc 0 0.0000038
+ecal_config/gammares_ul18MC_QCD_HT200to300_TuneCP5_13TeV-madgraphMLM-pythia8.txt 000000 999999 r2_ul18_qcdmc 0 0.0252089
+ecal_config/gammares_ul18MC_QCD_HT300to500_TuneCP5_13TeV-madgraphMLM-pythia8.txt 000000 999999 r2_ul18_qcdmc 0 0.0056123
+ecal_config/gammares_ul18MC_QCD_HT500to700_TuneCP5_13TeV-madgraphMLM-pythia8.txt 000000 999999 r2_ul18_qcdmc 0 0.0004907
+ecal_config/gammares_ul18MC_QCD_HT50to100_TuneCP5_13TeV-madgraphMLM-pythia8.txt 000000 999999 r2_ul18_qcdmc 0 4.8725898
+ecal_config/gammares_ul18MC_QCD_HT700to1000_TuneCP5_13TeV-madgraphMLM-pythia8.txt 000000 999999 r2_ul18_qcdmc 1 0.0001341

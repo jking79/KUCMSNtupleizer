@@ -278,7 +278,8 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
   timeCali = new KUCMS_TimeCalibration();
   timeCali->setTag(r2UL);
   // --- resTag is the target resolution for smearing
-  timeCali->setMCResTag("r2_ul18");
+  mctrtag = "r2_ul18";
+  timeCali->setMCResTag(mctrtag);
   //timeCali->setMCResTag("None");
 
   std::map<UInt_t,kucms_DetIDStruct> detidmap = timeCali->getDetIDMapRef();
@@ -299,10 +300,12 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
   loadLumiJson("config/json/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.json");
   loadLumiJson("config/json/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt");
   loadLumiJson("config/json/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt");
+  loadLumiJson("config/json/Cert_Collisions2025_391658_398903_Golden.json");
   
   // condor event segmenting varibles : used to run over subset of events for condor jobs
 
   isLocal = false;
+  localSkip = 0;
 
   _evti = -1;
   _evtj = -1;
@@ -429,10 +432,14 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
     if( _evti < 0 || _evti == _evtj){ _evti = 0; _evtj = nEntries; }
 	else {
 		if( _evtj > nEntries ){ _evtj = nEntries; } //cap at max number of entries
-		if( _evti > nEntries ){ cout << "Starting event " << _evti << " above # of entries in tree " << nEntries << " returning." << endl; return; }
+		if( _evti > nEntries ){ 
+			cout << "Starting event " << _evti << " above # of entries in tree " << nEntries << " returning." << endl;
+ 			return; 
+		}//<<>>if( _evti > nEntries )
 	}//<<>> if( _evti < 0 ) else
 	//if( not doSVs ){ _evtj = 2500000; _evti = 1500000; }
 	int nEventsProcessed = _evtj - _evti;
+
     initHists();
     setOutputBranches(fOutTree);
 
@@ -925,7 +932,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
     std::string str;
     if( not DEBUG ) std::cout << "--  adding files";
     int nfiles = 0;
-	int skipCnt = 4;
+	int skipCnt = localSkip;
     if( skipCnt != 0 ) std::cout << "-- !! Skipping every " << skipCnt << std::endl;
     if( dataSetKey !=  "Single" ){
         std::ifstream infile(listDirPath+inFileName);

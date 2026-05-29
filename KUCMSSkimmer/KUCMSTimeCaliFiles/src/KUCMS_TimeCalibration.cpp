@@ -1160,7 +1160,7 @@ void KUCMS_TimeCalibration::makeCaliMaps(){
 						uInt detid = InvDetIDMap[iphi][i1][ec];
 						float sum = CaliHists[sfilename].h2f->GetBinContent(ieta,iphi);
 						float sum2 = CaliHists[s2filename].h2f->GetBinContent(ieta,iphi);
-                		int occ = CaliHists[ofilename].h2f->GetBinContent(ieta,iphi);
+                		float occ = CaliHists[ofilename].h2f->GetBinContent(ieta,iphi);
 						if( occ == 0 ) continue;
 						//std::cout << " " << detid << " " << sum << " " << sum2;
 						calirunsct.second.sumCntMap[detid] = { sum, sum2, occ };
@@ -1205,7 +1205,7 @@ void KUCMS_TimeCalibration::makeCaliMaps(){
 						uInt detid = getInvTTId( iphi, i1, isEB );
                         float sum = CaliHists[sfilename].h2f->GetBinContent(ieta,iphi);
                         float sum2 = CaliHists[s2filename].h2f->GetBinContent(ieta,iphi);
-                        int occ = CaliHists[ofilename].h2f->GetBinContent(ieta,iphi);
+                        float occ = CaliHists[ofilename].h2f->GetBinContent(ieta,iphi);
                         if( occ == 0 ) continue;
                         //std::cout << " " << detid << " " << sum << " " << sum2;
                         calirunsct.second.sumCntMap[detid] = { sum, sum2, occ };
@@ -1255,7 +1255,7 @@ void KUCMS_TimeCalibration::LoadExtCali( std::string calihist, std::string mapna
             int i1 = ieta - 86;
             if( i1 == 0 ) continue;
             uInt detid = InvDetIDMap[iphi][i1][ECAL::EB];
-            int occ = ohist->GetBinContent(ieta,iphi);
+         	float occ = ohist->GetBinContent(ieta,iphi);
             if( occ == 0 ) continue;
             //std::cout << " " << detid << " " << sum << " " << sum2;
             CaliRunMapSet[tag][startr].sumCntMap[detid] = { 0, 0, occ };
@@ -1582,7 +1582,8 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
 		if( ResTagSet.find(dataSetKey) != ResTagSet.end() ){ // SOURCE RESOLTUION
 
 			std::string tag = dataSetKey;
-			if( dataSetKey == "r2_ul18_mc" ) tag = "RunIISummer20UL18RECO";
+			//if( dataSetKey == "r2_ul18_mc" ) tag = "RunIISummer20UL18RECO";
+            if( dataSetKey == "r2_ul18_qcdmc" ) tag = "RunIISummer20UL18RECO";
             if( dataSetKey == "r3_mc" ) tag = "theRun3MC_campain";
 
 			mcebnoise = ResTagSet[tag].ebnoise;
@@ -1650,6 +1651,9 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 	bool debug = false;
     //bool debug = true;
 
+	//bool doMC = true;
+    bool doMC = false;
+
 	// make generic fill with specialized calling functions for input and TT v X
 	// assume bool doTT to inicate TT of X Cali set
 
@@ -1699,6 +1703,7 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 	// basicly a bool (0,1) switch to indicate if we should close processing with this file or more input is coming ( false = not done ) 
 	int doLastRun = 0;
 
+	float fillwgt = 1;
     std::ifstream infilelist(inputFileName);
     std::string infilestr;
 	int finalRun = 0;
@@ -1709,14 +1714,16 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 		std::cout << std::endl;
         std::stringstream ss(infilestr);
         std::string infilename, tag;
-        int srun, erun, dolast;
+        int srun, erun, dolast, wgt;
 
         //if( !( ss >> infilename >> srun >> erun >> tag )) std::cout << "[WARN] Parse error in : " << infilestr << std::endl; continue;
-		ss >> infilename >> srun >> erun >> tag >> dolast;
+		if( doMC ) ss >> infilename >> srun >> erun >> tag >> dolast >> wgt;
+		else ss >> infilename >> srun >> erun >> tag >> dolast;
 		if( infilename.empty() || infilename[0] == '#' ){ std::cout << " -- skipping: " << infilename << std::endl; continue; }
 		std::string wichtype = doTT ? "TT" : "X";
 
 		doLastRun = dolast;
+		if( doMC ) fillwgt = wgt;
 	
 		// SET GS TAG !!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		//if( GID == 1 ){ if( debug ) std::cout << "GainID 1 tag" << std::endl; }
@@ -1887,7 +1894,9 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 								//float crstime = time;
                                 //if( crstime == 0 ) std::cout << " -- " << crsid << " = " << id;
                                 //if( crstime == 0 ) std::cout << " = e " << DetIDMap[id].i2 << " p " << DetIDMap[id].i1 << std::endl;
-								range.fillSumCnt( crsid, crstime ); // lastrun valid?????
+								//if( doMC && GID == 2 ){ 
+								//std::cout << " -- " << crstime << " <- " << bcrstime << " for " << crsid << " from " << id << std::endl;}
+								range.fillSumCnt( crsid, crstime, fillwgt ); // lastrun valid?????
 							}//<<>>for( int idx = 0; idx < nRecHits; idx++ )
 
 						}//<<>>if( run > range.lastRun )
@@ -1950,7 +1959,7 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
                         uInt crsid = doTT ? getTTId( id, GID ) : id;
                         float bcrstime = ( not doTT && doCali ) ? time - getTTCali( id, run, tag ) : time;
 						float crstime = ( doTT && doCali && gainid != 1  ) ? bcrstime - getCalibration( id, run, tag ) : bcrstime;
-						calirunset[tag][tstart].fillSumCnt( crsid, crstime );
+						calirunset[tag][tstart].fillSumCnt( crsid, crstime, fillwgt );
                     }//<<>>for( int idx = 0; idx < nRecHits; idx++ )
 				} // else { std::cout << "No IOV for this run/tag " << run << " - " << tag << " ? !!!!!!! " << std::endl; }
 

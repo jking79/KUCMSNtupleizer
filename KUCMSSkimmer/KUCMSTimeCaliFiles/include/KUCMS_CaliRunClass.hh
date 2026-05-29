@@ -22,11 +22,11 @@
 struct kucms_sumCnt { 
 
     kucms_sumCnt(){} 
-    kucms_sumCnt( float s, float s2, int c ) : sum(s), sumsqr(s2), cnt(c) {}  
+    kucms_sumCnt( float s, float s2, float c ) : sum(s), sumsqr(s2), cnt(c) {}  
  
     float sum; 
     float sumsqr; 
-    int cnt; 
+    float cnt; 
  
 };//<<>>struct sumCnt 
 
@@ -104,7 +104,7 @@ class kucms_CaliRunClass : public KUCMS_RootHelperBaseClass {
     }//<<>>void CaliRunClass::makeMeanMap() 
      
     //inline void kucms_CaliRunClass::fillSumCnt( uInt detid, float val, int cnt ){ 
-	void fillSumCnt( uInt detid, float val, int cnt = 1 ){
+	void fillSumCnt( uInt detid, float val, float cnt = 1 ){
     
 		//std::cout << "Cecking " << detid << " with " << endRun << " " << lastRun <<  " " << hasGID2 << " " << doGID2  << std::endl; 
         if( endRun == lastRun ){ 
@@ -113,22 +113,23 @@ class kucms_CaliRunClass : public KUCMS_RootHelperBaseClass {
 		}//<<>>if( ( endRun == lastRun )
         //std::cout << "Filling " << detid << " with " << val << " " << cnt << std::endl; 
         updated = true; 
-        if( sumCntMap.find(detid) != sumCntMap.end() ){  
-            sumCntMap[detid].sum += val; 
-            sumCntMap[detid].sumsqr += val*val;  
+        float wval = val*cnt;
+        if( sumCntMap.find(detid) != sumCntMap.end() ){ 
+            sumCntMap[detid].sum += wval; 
+            sumCntMap[detid].sumsqr += wval*wval;  
             sumCntMap[detid].cnt += cnt;  
         } else { 
-            sumCntMap[detid] = { val, val*val, cnt };  
+            sumCntMap[detid] = { wval, wval*wval, cnt };  
         }//<<>>if( sumCntMap.find(detid) != sumCntMap.end() ) 
     
     	//std::cout << " -- hist Fill " << detid << " with " << val << std::endl; } 
-        if( detIdHists.find(detid) != detIdHists.end() ){ detIdHists[detid]->Fill(val); } 
+        if( detIdHists.find(detid) != detIdHists.end() ){ detIdHists[detid]->Fill(val,cnt); } 
         else { 
             //std::cout << " -- hist Make " << detid << " with " << val << std::endl; 
             std::string histname = histMapName + "_SumCntHist_" + std::to_string( startRun ) + "_" + std::to_string(detid) ; 
             detIdHists[detid] = new TH1F(histname.c_str(),"AveXtalTimeDist;XtalTime [ns]",200,-5,5); 
             detIdHists[detid]->Sumw2(); 
-            detIdHists[detid]->Fill(val); 
+            detIdHists[detid]->Fill(val,cnt); 
         }//<<>>if( detIdHists.find(detid) != detIdHists.end() ) 
     
     }//<<>>void CaliRunClass::fillSumCnt( uInt detID, float sum, int cnt ) 
