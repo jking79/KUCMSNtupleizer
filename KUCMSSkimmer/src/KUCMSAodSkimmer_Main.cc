@@ -306,6 +306,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 
   isLocal = false;
   localSkip = 0;
+  useUnCC = false;
 
   _evti = -1;
   _evtj = -1;
@@ -345,6 +346,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 	setDoSVsBase(doSVs);
 	setNewSigBase(true);
 	setHTLPathsBase(false);
+	setDoUnCCBase(false);
 
   	diJetIndex = {-1,-1};
 	gammaJetIndex = {-1,-1};
@@ -424,6 +426,9 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
 	setNewSigBase( true );
 	setHTLPathsBase( doHTLPathsBase );
 	Init( fInTree );
+
+	if( tctag == "r3_p25unc" or tctag == "r3_p26unc" ) useUnCC = true;
+	setDoUnCCBase( useUnCC );
 	
     ////Init( fInTree, hasGenInfoFlag, doSVs );
     auto nEntries = fInTree->GetEntries();

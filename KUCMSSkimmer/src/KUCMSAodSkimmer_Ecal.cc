@@ -53,8 +53,9 @@ void KUCMSAodSkimmer::processRechits(){
 		auto idinfo = timeCali->getDetIdInfo(rhid);
     	if( DEBUGECAL ) std::cout << " -- TimeCali DetIDInfo : " << idinfo.i2 << " " << idinfo.i1 << " " << idinfo.ecal << std::endl;
 		float rht = (*ECALRecHit_time)[it];
+		if( tctag == "r3_p25unc" or tctag == "r3_p26unc" ) rht = (*ECALRecHit_UnCorrTime)[it];
 		float rhe = (*ECALRecHit_energy)[it];
-		float rha = (*ECALRecHit_ampres)[it]; // instead of energy ? ( this is the ADC amplitude in units of the pedistal rms for this rechit )
+		float rha = (*ECALRecHit_ampres)[it]; //( this is the ADC amplitude in units of the pedistal rms for this rechit )
 		timeCali->setMCResTag(mctrtag);
 		float corrht = timeCali->getCorrectedTime( rht, rha, rhid, Evt_run, tctag, mctype );
 		float rhtres = timeCali->getTimeResoltuion( rha, rhid, Evt_run, tctag, mctype );

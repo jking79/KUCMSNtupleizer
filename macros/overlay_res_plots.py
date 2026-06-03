@@ -74,7 +74,7 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
         #hfit = TF1('hfits','sqrt((([0]*[0])/(x*x))+(2*[1]*[1]))',75,500,2)
         #hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] ) )',100,2250,2)
         #hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] ) )',25,300,2)
-        if not dostoch : hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] ) )',5,3200,2)
+        if not dostoch : hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] ) )',17.5,3200,2)
         #hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] ) )',5,800,2)
         #hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] )+( ([2]*[2])/(x) ) )',25,250,3)
         #hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] )+( ([2]*[2])/(x) ) )',75,375,3)
@@ -82,7 +82,9 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
         #hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] )+( ([2]*[2])/(x) ) )',5,800,3)
         #if dostoch : hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] )+( ([2]*[2])/(x) ) )',5,3200,3) 
         #if dostoch : hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] )+( ([2]*[2])/(x) ) )',15,1600,3)
-        if dostoch : hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] )+( ([2]*[2])/(x) ) )',15,3200,3)
+        #if dostoch : hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] )+( ([2]*[2])/(x) ) )',17.5,3200,3)
+        #if dostoch : hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] )+( ([2]*[2])/(x) ) )',15,1600,3)
+        if dostoch : hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] )+( ([2]*[2])/(x) ) )',10.0,250,3)
         #hfit = TF1('hfits','sqrt((([0]*[0])/(x*x))+(2*[1]*[1]))',6,100,2)
         hfit.SetParName(0,'N')
         hfit.SetParameter(0,40.0)
@@ -160,11 +162,12 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
         #lenmybins = 16
         #myhist = TH1D(htitle,"",150,low,high)
         #h1.append(TGraphErrors(lenmybins))
-        h1.append(TGraphErrors(lenmybins))
+        h1.append(TGraphErrors(22))
         #h1.append(TH2D(htitle,"",(10*nbins),low,high,240,0,2.4))
         #h1.append(TH1F(htitle,"",len(mybins)-1,mybins))
 
-        for bn in range( 0,lenmybins+1):
+        mgbn = 1
+        for bn in range( 1,lenmybins):
             #binval = float(orighist.GetBinContent(bn))*binwidths[bn-1]*2
             binval = float(orighist.GetBinContent(bn))
             binerr = float(orighist.GetBinError(bn))
@@ -172,20 +175,21 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
             binwidth = float(orighist.GetBinWidth(bn))
             binstart = float(orighist.GetBinLowEdge(bn))
             #binmid = thebinmid[n][bn-1]  #float(orighist.GetBinCenter(bn))
-            if binval > 0.0 and binerr < binval :     
+            if binval > 0.0 and binerr < binval and binmid > 15 :     
             #goodpoint = binerr < (binval/5.0) and binerr != 0
-            #if goodpoint :
+            #if binmid > 15 :
+                mgbn = mgbn + 1
                 if( sxtal ):  
                     print( '--- adjusting bin value' )
                     binval = binval/sqrt(2)
-                h1[n].SetPoint(bn,binmid,binval)
+                h1[n].SetPoint(mgbn,binmid,binval)
                 #ebin = int(binmid/bscale)+1
                 widtherr = (binwidth/2)/sqrt(3)
                 #widtherr = 0.0004
                 #widtherr = (0.25)/sqrt(3)
                 #widtherr = thebinerror[n][bn-1] #binwidths[bn-1]/sqrt(3)
                 fiterror = sqrt( (binval*binval)*(0.03*0.03) + binerr*binerr )
-                h1[n].SetPointError(bn,widtherr,fiterror)
+                h1[n].SetPointError(mgbn,widtherr,fiterror)
                 print('Fill bin',bn,'at',binmid,'with',binval,'err width',widtherr,' err bin',binerr,'for:',binstart,'to',binstart+binwidth,'width',binwidth) 
                 #print('Fill bin',bn,'at',binmid,'with',binval,'for',ebin,'with',binerr)  
         #h1[n].SetPoint(lenmybins,10000,0.001)
@@ -302,7 +306,8 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
     mg.SetMinimum(y[1])
     mg.SetMaximum(y[0])
 #   mg.GetXaxis().SetRangeUser(200.0,1100.0)
-    mg.GetXaxis().SetRangeUser(x[0],x[1])
+    #mg.GetXaxis().SetRangeUser(x[0],x[1])
+    mg.GetXaxis().SetLimits(x[0], x[1])
     if layout['logx'] : mg.GetXaxis().SetMoreLogLabels()
     if layout['logy'] : mg.GetYaxis().SetMoreLogLabels()
 
@@ -634,20 +639,20 @@ dro24ee = 'ResMap_378971_387721_DRO_Data_Hist_eg_24p_xa_pm24b1200_v0119_EE'
 sro24eb = 'ResMap_378971_387721_SRO_Data_Hist_eg_24p_xa_pm24b1200_v0119_EB'
 sro24ee = 'ResMap_378971_387721_SRO_Data_Hist_eg_24p_xa_pm24b1200_v0119_EE'
 
-dro25ebnc = 'ResMap_387900_400000_DRO_Data_Hist_NoCali_eg_25p_xa_pm24b1200_v0210_EB'
-dro25eenc = 'ResMap_387900_400000_DRO_Data_Hist_NoCali_eg_25p_xa_pm24b1200_v0210_EE'
-sro25ebnc = 'ResMap_387900_400000_SRO_Data_Hist_NoCali_eg_25p_xa_pm24b1200_v0210_EB'
-sro25eenc = 'ResMap_387900_400000_SRO_Data_Hist_NoCali_eg_25p_xa_pm24b1200_v0210_EE'
+sro25eb = ''
+sro25ee = ''
+dro25eb = ''
+dro25ee = ''
 
-dro25Ueb = 'ResMap_387742_398903_DRO_Data_Hist_eg_25p_uncor_xa_pm24b1200_v0316_EB'
-dro25Uee = 'ResMap_387742_398903_DRO_Data_Hist_eg_25p_uncor_xa_pm24b1200_v0316_EE'
-dro25eb = 'ResMap_387742_398903_DRO_Data_Hist_eg_25p_xa_pm24b1200_v0305_EB'
-dro25ee = 'ResMap_387742_398903_DRO_Data_Hist_eg_25p_xa_pm24b1200_v0305_EE'
-sro25Ueb = 'ResMap_387742_398903_SRO_Data_Hist_eg_25p_uncor_xa_pm24b1200_v0316_EB'
-sro25Uee = 'ResMap_387742_398903_SRO_Data_Hist_eg_25p_uncor_xa_pm24b1200_v0316_EE'
-sro25eb = 'ResMap_387742_398903_SRO_Data_Hist_eg_25p_xa_pm24b1200_v0305_EB'
-sro25ee = 'ResMap_387742_398903_SRO_Data_Hist_eg_25p_xa_pm24b1200_v0305_EE'
+dro25ebuc = 'ResMap_387742_398903_DRO_Data_Hist_UnCorr_eg_25p_xa_pm24b1200_v0422_EB'
+dro25eeuc = 'ResMap_387742_398903_DRO_Data_Hist_UnCorr_eg_25p_xa_pm24b1200_v0422_EE'
+sro25ebuc = 'ResMap_387742_398903_SRO_Data_Hist_UnCorr_eg_25p_xa_pm24b1200_v0422_EB'
+sro25eeuc = 'ResMap_387742_398903_SRO_Data_Hist_UnCorr_eg_25p_xa_pm24b1200_v0422_EE'
 
+dro25ebnc = 'ResMap_387742_398903_DRO_Data_Hist_NoCali_eg_25p_xa_pm24b1200_v0422_EB'
+dro25eenc = 'ResMap_387742_398903_DRO_Data_Hist_NoCali_eg_25p_xa_pm24b1200_v0422_EE'
+sro25ebnc = 'ResMap_387742_398903_SRO_Data_Hist_NoCali_eg_25p_xa_pm24b1200_v0422_EB'
+sro25eenc = 'ResMap_387742_398903_SRO_Data_Hist_NoCali_eg_25p_xa_pm24b1200_v0422_EE'
 
 dro16eb_v2 = 'ResMap_275600_283900_DRO_Data_Hist_eg_16UL_xa_pm24b1200_v0127_EB'
 
@@ -667,6 +672,45 @@ dro18qcdmcee = 'ResMap_0_999999_DRO_Data_Hist_eg_18ULQCDMC_HG_xa_pm24b1200_v0527
 #dro18qcdmceb = 'ResMap_0_999999_DRO_Data_Hist_eg_18ULQCDMC_LG_xa_pm24b1200_v0527_EB'
 #dro18qcdmcee = 'ResMap_0_999999_DRO_Data_Hist_eg_18ULQCDMC_LG_xa_pm24b1200_v0527_EE'
 
+dro25phneb = 'ResMap_387742_398903_DRO_Data_Hist_NoCali_hg_nocali_cc_eg_25p_xa_pm24b1200_v0501_EB'
+dro25phnebh = 'ResMap_387742_398903_DRO_Data_Hist_NoCali_eg_25p_xa_pm24b1200_v0501_EB'
+dro25phnee = 'ResMap_387742_398903_DRO_Data_Hist_NoCali_hg_nocali_cc_eg_25p_xa_pm24b1200_v0501_EE'
+dro25phneeh = 'ResMap_387742_398903_DRO_Data_Hist_NoCali_eg_25p_xa_pm24b1200_v0501_EE'
+dro25plneb = 'ResMap_387742_398903_DRO_Data_Hist_NoCali_lg_nocali_cc_eg_25p_xa_pm24b1200_v0501_EB'
+dro25plnee = 'ResMap_387742_398903_DRO_Data_Hist_NoCali_lg_nocali_cc_eg_25p_xa_pm24b1200_v0501_EE'
+
+dro25phueb = 'ResMap_387742_398903_DRO_Data_Hist_UnCorr_hg_unc_eg_25p_xa_pm24b1200_v0501_EB'
+dro25phuee = 'ResMap_387742_398903_DRO_Data_Hist_UnCorr_hg_unc_eg_25p_xa_pm24b1200_v0501_EE'
+dro25plueb = 'ResMap_387742_398903_DRO_Data_Hist_UnCorr_lg_unc_eg_25p_xa_pm24b1200_v0501_EB'
+dro25pluee = 'ResMap_387742_398903_DRO_Data_Hist_UnCorr_lg_unc_eg_25p_xa_pm24b1200_v0501_EE'
+
+dro25pheb = 'ResMap_387742_398903_DRO_Data_Hist_hg_cc_eg_25p_xa_pm24b1200_v0501_EB'
+dro25phebh = 'ResMap_387742_398903_DRO_Data_Hist_eg_25p_xa_pm24b1200_v0501_EB'
+dro25phee = 'ResMap_387742_398903_DRO_Data_Hist_hg_cc_eg_25p_xa_pm24b1200_v0501_EE'
+dro25pheeh = 'ResMap_387742_398903_DRO_Data_Hist_eg_25p_xa_pm24b1200_v0501_EE'
+dro25pleb = 'ResMap_387742_398903_DRO_Data_Hist_lg_cc_eg_25p_xa_pm24b1200_v0501_EB'
+dro25plee = 'ResMap_387742_398903_DRO_Data_Hist_lg_cc_eg_25p_xa_pm24b1200_v0501_EE'
+
+sro25phneb = 'ResMap_387742_398903_SRO_Data_Hist_NoCali_hg_nocali_cc_eg_25p_xa_pm24b1200_v0501_EB'
+sro25phnebh = 'ResMap_387742_398903_SRO_Data_Hist_NoCali_eg_25p_xa_pm24b1200_v0501_EB'
+sro25phnee = 'ResMap_387742_398903_SRO_Data_Hist_NoCali_hg_nocali_cc_eg_25p_xa_pm24b1200_v0501_EE'
+sro25phneeh = 'ResMap_387742_398903_SRO_Data_Hist_NoCali_eg_25p_xa_pm24b1200_v0501_EE'
+sro25plneb = 'ResMap_387742_398903_SRO_Data_Hist_NoCali_lg_nocali_cc_eg_25p_xa_pm24b1200_v0501_EB'
+sro25plnee = 'ResMap_387742_398903_SRO_Data_Hist_NoCali_lg_nocali_cc_eg_25p_xa_pm24b1200_v0501_EE'
+
+sro25phueb = 'ResMap_387742_398903_SRO_Data_Hist_UnCorr_hg_unc_eg_25p_xa_pm24b1200_v0501_EB'
+sro25phuee = 'ResMap_387742_398903_SRO_Data_Hist_UnCorr_hg_unc_eg_25p_xa_pm24b1200_v0501_EE'
+sro25plueb = 'ResMap_387742_398903_SRO_Data_Hist_UnCorr_lg_unc_eg_25p_xa_pm24b1200_v0501_EB'
+sro25pluee = 'ResMap_387742_398903_SRO_Data_Hist_UnCorr_lg_unc_eg_25p_xa_pm24b1200_v0501_EE'
+
+sro25pheb = 'ResMap_387742_398903_SRO_Data_Hist_hg_cc_eg_25p_xa_pm24b1200_v0501_EB'
+sro25phebh = 'ResMap_387742_398903_SRO_Data_Hist_eg_25p_xa_pm24b1200_v0501_EB'
+sro25phee = 'ResMap_387742_398903_SRO_Data_Hist_hg_cc_eg_25p_xa_pm24b1200_v0501_EE'
+sro25pheeh = 'ResMap_387742_398903_SRO_Data_Hist_eg_25p_xa_pm24b1200_v0501_EE'
+sro25pleb = 'ResMap_387742_398903_SRO_Data_Hist_lg_cc_eg_25p_xa_pm24b1200_v0501_EB'
+sro25plee = 'ResMap_387742_398903_SRO_Data_Hist_lg_cc_eg_25p_xa_pm24b1200_v0501_EE'
+
+
 
 rfend = '_NSC_resfit.root'
 shend = '_sigma'
@@ -678,38 +722,90 @@ hl_r2_18qcdmc_ebee = [
 ]
 
 
-hl_r3_25_ebee_dro = [
+hl_r3_25p_h_ebee_dro = [
 
-    [dro25Ueb+shend,"",indir+dro25Ueb+rfend,"EB UnCor"],
-    [dro25Uee+shend,"",indir+dro25Uee+rfend,"EE UnCor"],
-    [dro25eb+shend,"",indir+dro25eb+rfend,"EB"],
-    [dro25ee+shend,"",indir+dro25ee+rfend,"EE"],
-    #[dro25eb+shend,"",indir+dro25eb+rfend,"EB Chronus"],
-    #[dro25ee+shend,"",indir+dro25ee+rfend,"EE Chronus"],
-    #[dro25ebnc+shend,"",indir+dro25ebnc+rfend,"EB"],
-    #[dro25eenc+shend,"",indir+dro25eenc+rfend,"EE"],
+
+    [dro25phueb+shend,"",indir+dro25phueb+rfend,"EB UnCor"],
+    [dro25phuee+shend,"",indir+dro25phuee+rfend,"EE UnCor"],
+    [dro25phebh+shend,"",indir+dro25pheb+rfend,"EB"],#chronus
+    [dro25pheeh+shend,"",indir+dro25phee+rfend,"EE"],#chronus
+
+    #[dro25phebh+shend,"",indir+dro25pheb+rfend,"EB Chronus"],
+    #[dro25pheeh+shend,"",indir+dro25phee+rfend,"EE Chronus"],
+    #[dro25phnebh+shend,"",indir+dro25phneb+rfend,"EB"],
+    #[dro25phneeh+shend,"",indir+dro25phnee+rfend,"EE"],
 ]
 
+hl_r3_25p_l_ebee_dro = [
 
-hl_r3_25U_ebee = [
-    [sro25Ueb+shend,"",indir+sro25Ueb+rfend,"SRO EB"],
-    [sro25Uee+shend,"",indir+sro25Uee+rfend,"SRO EE"],
-    [dro25Ueb+shend,"",indir+dro25Ueb+rfend,"DRO EB"],
-    [dro25Uee+shend,"",indir+dro25Uee+rfend,"DRO EE"],
+    [dro25plueb+shend,"",indir+dro25plueb+rfend,"EB UnCor"],
+    [dro25pluee+shend,"",indir+dro25pluee+rfend,"EE UnCor"],
+    [dro25pleb+shend,"",indir+dro25pleb+rfend,"EB"],#chronsu
+    [dro25plee+shend,"",indir+dro25plee+rfend,"EE"],#chronus
+    #[dro25pleb+shend,"",indir+dro25pleb+rfend,"EB Chronus"],
+    #[dro25plee+shend,"",indir+dro25plee+rfend,"EE Chronus"],
+    #[dro25plneb+shend,"",indir+dro25plneb+rfend,"EB"],
+    #[dro25plnee+shend,"",indir+dro25plnee+rfend,"EE"],
 ]
 
-hl_r3_25_ebee = [
-    [sro25eb+shend,"",indir+sro25eb+rfend,"SRO EB"],
-    [sro25ee+shend,"",indir+sro25ee+rfend,"SRO EE"],
-    [dro25eb+shend,"",indir+dro25eb+rfend,"DRO EB"],
-    [dro25ee+shend,"",indir+dro25ee+rfend,"DRO EE"],
+hl_r3_25p_l_ebee_sro = [
+
+    [sro25plueb+shend,"",indir+sro25plueb+rfend,"EB UnCor"],
+    [sro25pluee+shend,"",indir+sro25pluee+rfend,"EE UnCor"],
+    [sro25pleb+shend,"",indir+sro25pleb+rfend,"EB"],#chronsu
+    [sro25plee+shend,"",indir+sro25plee+rfend,"EE"],#chronus
+    #[sro25pleb+shend,"",indir+sro25pleb+rfend,"EB Chronus"],
+    #[sro25plee+shend,"",indir+sro25plee+rfend,"EE Chronus"],
+    #[sro25plneb+shend,"",indir+sro25plneb+rfend,"EB"],
+    #[sro25plnee+shend,"",indir+sro25plnee+rfend,"EE"],
 ]
 
-hl_r3_25_ebeenc = [
-    [sro25ebnc+shend,"",indir+sro25ebnc+rfend,"SRO EB"],
-    [sro25eenc+shend,"",indir+sro25eenc+rfend,"SRO EE"],
-    [dro25ebnc+shend,"",indir+dro25ebnc+rfend,"DRO EB"],
-    [dro25eenc+shend,"",indir+dro25eenc+rfend,"DRO EE"],
+hl_r3_25_ebeeuc = [ # un corrected
+
+    [sro25phueb+shend,"",indir+sro25phueb+rfend,"SRO EB"],
+    [sro25phuee+shend,"",indir+sro25phuee+rfend,"SRO EE"],
+    [dro25phueb+shend,"",indir+dro25phueb+rfend,"DRO EB"],
+    [dro25phuee+shend,"",indir+dro25phuee+rfend,"DRO EE"],
+]
+
+hl_r3_25_l_ebeeuc = [ # un corrected
+
+    [sro25plueb+shend,"",indir+sro25plueb+rfend,"SRO EB"],
+    [sro25pluee+shend,"",indir+sro25pluee+rfend,"SRO EE"],
+    [dro25plueb+shend,"",indir+dro25plueb+rfend,"DRO EB"],
+    [dro25pluee+shend,"",indir+dro25pluee+rfend,"DRO EE"],
+]
+
+hl_r3_25_ebee = [ # chronus
+
+    [sro25phebh+shend,"",indir+sro25pheb+rfend,"SRO EB"],#chronus
+    [sro25pheeh+shend,"",indir+sro25phee+rfend,"SRO EE"],#chronus
+    [dro25phebh+shend,"",indir+dro25pheb+rfend,"DRO EB"],#chronus
+    [dro25pheeh+shend,"",indir+dro25phee+rfend,"DRO EE"],#chronus
+]
+
+hl_r3_25_l_ebee = [ # chronus
+
+    [sro25pleb+shend,"",indir+sro25pleb+rfend,"SRO EB"],#chronus
+    [sro25plee+shend,"",indir+sro25plee+rfend,"SRO EE"],#chronus
+    [dro25pleb+shend,"",indir+dro25pleb+rfend,"DRO EB"],#chronus
+    [dro25plee+shend,"",indir+dro25plee+rfend,"DRO EE"],#chronus
+]
+
+hl_r3_25_ebeenc = [ # online
+
+    [sro25phnebh+shend,"",indir+sro25phneb+rfend,"SRO EB"],
+    [sro25phneeh+shend,"",indir+sro25phnee+rfend,"SRO EE"],
+    [dro25phnebh+shend,"",indir+dro25phneb+rfend,"DRO EB"],
+    [dro25phneeh+shend,"",indir+dro25phnee+rfend,"DRO EE"],
+]
+
+hl_r3_25_l_ebeenc = [ # online
+
+    [sro25plneb+shend,"",indir+sro25plneb+rfend,"SRO EB"],
+    [sro25plnee+shend,"",indir+sro25plnee+rfend,"SRO EE"],
+    [dro25plneb+shend,"",indir+dro25plneb+rfend,"DRO EB"],
+    [dro25plnee+shend,"",indir+dro25plnee+rfend,"DRO EE"],
 ]
 
 hl_r3_24_ebee = [
@@ -731,6 +827,13 @@ hl_r3_24_ebeedro = [
     [dro24ee+shend,"",indir+dro24ee+rfend,"EE Chronus"],
     [dro24ebnc+shend,"",indir+dro24ebnc+rfend,"EB"],
     [dro24eenc+shend,"",indir+dro24eenc+rfend,"EE"],
+]
+
+hl_r3_24_ebeesro = [
+    [sro24eb+shend,"",indir+sro24eb+rfend,"EB Chronus"],
+    [sro24ee+shend,"",indir+sro24ee+rfend,"EE Chronus"],
+    [sro24ebnc+shend,"",indir+sro24ebnc+rfend,"EB"],
+    [sro24eenc+shend,"",indir+sro24eenc+rfend,"EE"],
 ]
 
 hl_r2_18mc_ebeenc = [
@@ -962,7 +1065,7 @@ hl_r3_25b = [
 #ptitle=['','Run 2 (13 TeV)','#splitline{DRU Resolution}{2018 UL}'] #{}'
 #ptitle=['','Run 2 (13 TeV)','#splitline{Chronus Calibration}{2016 UL}'] #{}'
 #ptitle=['','Run 2 (13 TeV)','#splitline{Online Calibration}{2016 UL}'] #{}'
-ptitle=['','Run 2 (13 TeV)','#splitline{Chronus Calibration}{2018 UL QCD}'] #{}'
+#ptitle=['','Run 2 (13 TeV)','#splitline{Chronus Calibration}{2018 UL QCD}'] #{}'
 
 #ptitle=['','Run 3 (13.6 TeV)','#splitline{Online Calibration}{2025 Prompt}'] #{}'
 #ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2025 Prompt}'] #{}'
@@ -974,21 +1077,28 @@ ptitle=['','Run 2 (13 TeV)','#splitline{Chronus Calibration}{2018 UL QCD}'] #{}'
 #ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2022 Prompt}'] #{}'
 #ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2025 Prompt UnCorrected}'] #{}'
 #ptitle=['','Run 3 (13.6 TeV)','#splitline{DRU Resolution}{2024 Prompt}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{SRU Resolution}{2025 Prompt}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{SRU Resolution}{2025 Prompt Chronus}'] #{}'
 #ptitle=['','Run 3 (13.6 TeV)','#splitline{DRU Resolution}{2025 Prompt}'] #{}'
-#ptitle=['','Run 3 (13.6 TeV)','#splitline{DRU Resolution}{2025 Prompt Chronus}'] #{}'
+ptitle=['','Run 3 (13.6 TeV)','#splitline{DRU Resolution}{2025 Prompt Chronus}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{SRU Resolution}{2024 Prompt}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{SRU Resolution}{2025 Prompt}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{SRU Resolution}{2025 Prompt Chronus}'] #{}'
 
 #y = [ 0.4, 0.04 ]
 #y = [ 0.7, -0.05 ]
 #y = [ 2.5, -0.5 ]
 #y = [ 1.5, -0.5 ]
+#y = [ 4.0, 0.025 ]
 #y = [ 5.0, 0.05 ]
-y = [ 3.0, 0.06 ]
-#y = [ 2.0, 0.04 ]
+y = [ 2.0, 0.04 ]
 #y = [ 5, 0.01 ]
-x = [ 5.0, 3200.0 ]
-#x = [ 5.0, 800.0 ]
+x = [ 15, 1600.0 ]
+#x = [ 15, 3200.0 ]
+#x = [ 10.0, 800.0 ]
 #x = [ 5.0, 400.0 ]
 l = [ 0.7,0.65,0.925,0.9 ]
+#l = [ 0.6,0.65,0.85,0.9 ]
 #t = [0.175,0.44,0.15,0.175,0.28]
 #t = [0.175,0.38,0.05,0.175,0.22]
 #t = [0.175,0.38,0.15,0.175,0.22]#adjsuting lumi-sqrt(s) in title bar
@@ -1000,7 +1110,7 @@ t = [0.325,0.85,0.1,0.175,0.285]#adjsuting lumi-sqrt(s) in title bar
 #outname = 'downloads/tr_hl_r3_24d_part_trvcc_ccgt_v7'
 #outname = 'downloads/tr_hl_r3_25c2'
 #outname = 'downloads/tr_hl_r3_25bc_xa'
-outname = 'hl_r2_18ulqcdmc_ebeedro'
-dostack(hl_r2_18qcdmc_ebee, outname, date, Ic_layout, ptitle,  y, x, l, t)
+outname = 'hl_r3_25p_h_ebee_dro'
+dostack(hl_r3_25p_h_ebee_dro, outname, date, Ic_layout, ptitle,  y, x, l, t)
 #outname = 'tr_hl_r2_16v2'
 #dostack(hl_r2_16_ebee, outname, date, Ic_layout, ptitle,  y, x, l, t)
