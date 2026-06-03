@@ -36,6 +36,8 @@ public :
    void setNewSigBase( bool flag ){ doNewSigBase = flag; };
    bool doHTLPathsBase;
    void setHTLPathsBase( bool flag ){ doHTLPathsBase = flag; };
+   bool doUnCCBase;
+   void setDoUnCCBase( bool flag ){ doUnCCBase = flag; };
 
 // Fixed size dimensions of array or collections stored in the TTree if any.
 
@@ -120,6 +122,7 @@ public :
    vector<float>   *ECALRecHit_0TOF;
    vector<float>   *ECALRecHit_pvTOF;
    vector<float>   *ECALRecHit_time;
+   vector<float>   *ECALRecHit_UnCorrTime;
    vector<float>   *ECALRecHit_timeError;
    vector<float>   *ECALRecHit_amplitude;
    vector<float>   *ECALRecHit_ampres;
@@ -557,6 +560,7 @@ public :
    TBranch        *b_ECALRecHit_0TOF;   //!
    TBranch        *b_ECALRecHit_pvTOF;   //!
    TBranch        *b_ECALRecHit_time;   //!
+   TBranch        *b_ECALRecHit_UnCorrTime;
    TBranch        *b_ECALRecHit_timeError;   //!
    TBranch        *b_ECALRecHit_amplitude;   //!
    TBranch        *b_ECALRecHit_ampres;   //!
@@ -1006,6 +1010,7 @@ void Init(TTree *tree ){
    ECALRecHit_0TOF = 0;
    ECALRecHit_pvTOF = 0;
    ECALRecHit_time = 0;
+   ECALRecHit_UnCorrTime = 0;
    ECALRecHit_timeError = 0;
    ECALRecHit_amplitude = 0;
    ECALRecHit_ampres = 0;
@@ -1359,6 +1364,7 @@ void Init(TTree *tree ){
    fChain->SetBranchAddress("ECALRecHit_0TOF", &ECALRecHit_0TOF, &b_ECALRecHit_0TOF);
    fChain->SetBranchAddress("ECALRecHit_pvTOF", &ECALRecHit_pvTOF, &b_ECALRecHit_pvTOF);
    fChain->SetBranchAddress("ECALRecHit_time", &ECALRecHit_time, &b_ECALRecHit_time);
+   if( doUnCCBase ) fChain->SetBranchAddress("ECALRecHit_UnCorrTime", &ECALRecHit_UnCorrTime, &b_ECALRecHit_UnCorrTime);
    fChain->SetBranchAddress("ECALRecHit_timeError", &ECALRecHit_timeError, &b_ECALRecHit_timeError);
    fChain->SetBranchAddress("ECALRecHit_amplitude", &ECALRecHit_amplitude, &b_ECALRecHit_amplitude);
    fChain->SetBranchAddress("ECALRecHit_ampres", &ECALRecHit_ampres, &b_ECALRecHit_ampres);
@@ -1879,6 +1885,7 @@ void getBranches( Long64_t entry ){
    b_ECALRecHit_0TOF->GetEntry(entry);
    b_ECALRecHit_pvTOF->GetEntry(entry);
    b_ECALRecHit_time->GetEntry(entry);
+   if( doUnCCBase ) b_ECALRecHit_UnCorrTime->GetEntry(entry);
    b_ECALRecHit_timeError->GetEntry(entry);
    b_ECALRecHit_amplitude->GetEntry(entry);
    b_ECALRecHit_ampres->GetEntry(entry);

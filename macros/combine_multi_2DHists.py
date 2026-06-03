@@ -45,38 +45,55 @@ def combine_hists_from_files(
         # Loop over all keys in file
         # ----------------------------------------
         for key in infile.GetListOfKeys():
-
+        
             obj = key.ReadObj()
-
+        
             if not obj.InheritsFrom("TH2"):
                 continue
-
+        
             input_hist_name = obj.GetName()
             output_hist_name = input_hist_name
-
+        
+            # Default scale, in case no tag matches
+            hist_scale = 1.0
+            matched_tag = None
+        
             # Replace sample-specific tag with combined tag
-            for tag in input_tags:
-                output_hist_name = output_hist_name.replace(tag, output_tag)
-
-            print(f"[INFO]  {input_hist_name}  -->  {output_hist_name}")
-
+            # and get the scale associated with that tag
+            for tag, scale in input_tags:
+                if tag in input_hist_name:
+                    output_hist_name = output_hist_name.replace(tag, output_tag)
+                    hist_scale = scale
+                    matched_tag = tag
+                    break
+        
+            if matched_tag is None:
+                print(f"[WARN] No input tag matched histogram: {input_hist_name}")
+                continue
+        
+            print(
+                f"[INFO]  {input_hist_name}  -->  {output_hist_name}"
+                f"   scale = {hist_scale}"
+            )
+        
             # ----------------------------------------
-            # First instance: clone histogram
+            # First instance: clone and scale histogram
             # ----------------------------------------
             if output_hist_name not in combined_hists:
-
+        
                 hout = obj.Clone(output_hist_name)
                 hout.SetDirectory(0)
                 hout.Sumw2()
-
+                hout.Scale(hist_scale)
+        
                 combined_hists[output_hist_name] = hout
-
+        
             # ----------------------------------------
-            # Later instances: add histogram
+            # Later instances: add scaled histogram
             # ----------------------------------------
             else:
-
-                combined_hists[output_hist_name].Add(obj)
+        
+                combined_hists[output_hist_name].Add(obj, hist_scale)
 
         infile.Close()
 
@@ -158,16 +175,36 @@ def main():
     if use_manual_inputs:
 
         #input_dir = "res2droot_eg_25p_cc_g1g2_nocali_xa_pm24b1200_v0422"
-        input_dir = "res2droot_eg_25p_cc_g1g2_uncorr_xa_pm24b1200_v0422"
+        #input_dir = "res2droot_eg_25p_cc_g1g2_uncorr_xa_pm24b1200_v0422"
 
-        input_file_glob = "res2dPlots_eg_25*p_xa_pm24b1200_v0422.root"
+        #input_dir = "res2droot_eg_25p_cc_hg_nocali_xa_pm24b1200_v0501"
+        #input_dir = "res2droot_eg_25p_cc_lg_nocali_xa_pm24b1200_v0501"
+        #input_dir = "res2droot_eg_25p_cc_hg_xa_pm24b1200_v0501"
+        #input_dir = "res2droot_eg_25p_cc_lg_xa_pm24b1200_v0501"
+        #input_dir = "res2droot_eg_25p_unc_hg_xa_pm24b1200_v0501"
+        input_dir = "res2droot_eg_25p_unc_lg_xa_pm24b1200_v0501"
+
+        #input_file_glob = "res2dPlots_eg_25*p_xa_pm24b1200_v0422.root"
+
+        #input_file_glob = "res2dPlots_hg_nocali_eg_25*p_xa_pm24b1200_v0501.root"
+        #input_file_glob = "res2dPlots_lg_nocali_cc_eg_25*p_xa_pm24b1200_v0501.root"
+        #input_file_glob = "res2dPlots_hg_eg_25*p_xa_pm24b1200_v0501.root"
+        #input_file_glob = "res2dPlots_lg_cc_eg_25*p_xa_pm24b1200_v0501.root"
+        #input_file_glob = "res2dPlots_hg_unc_eg_25*p_xa_pm24b1200_v0501.root"
+        input_file_glob = "res2dPlots_lg_unc_eg_25*p_xa_pm24b1200_v0501.root"
+
+# For era-split data histograms, use scale = 1.0.
+# The per-era TH2s preserve their observed event occupancy, so the correct
+# relative era contribution is already present. Non-unit scales are kept for
+# future use, e.g. MC normalization or explicitly shape-normalized inputs.
+
 
         input_tags = [
-            "eg_25Cp",
-            "eg_25Dp",
-            "eg_25Ep",
-            "eg_25Fp",
-            "eg_25Gp",
+            ("eg_25Cp",1.0), #21.63),
+            ("eg_25Dp",1.0), #25.52),
+            ("eg_25Ep",1.0), #14.15),
+            ("eg_25Fp",1.0), #26.89),
+            ("eg_25Gp",1.0), #22.40),
         ]
 
         output_tag = "eg_25p"

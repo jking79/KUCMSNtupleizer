@@ -45,7 +45,8 @@ request_disk = 8000MB
 # 4. Apply smearing (true/false)
 # 5. Name extension (used in output file naming)
 # ============================================
-arguments = $(InputFile) true true false $(NameExt)
+#arguments = $(InputFile) true true false $(NameExt)
+arguments = $(InputFile) true false false $(NameExt)
 
 # Output file expected from job
 # MUST match what bash script produces
@@ -57,11 +58,11 @@ OutputFile = res2dPlots$(NameExt).root
 # Tag | InputFile | NameExt
 # ============================================
 queue Tag, InputFile, NameExt from (
-25Cp ecal_config/kucmsTimeCaliR25CPrmptTFile.txt _eg_25Cp_xa_pm24b1200_v0422
-25Dp ecal_config/kucmsTimeCaliR25DPrmptTFile.txt _eg_25Dp_xa_pm24b1200_v0422
-25Ep ecal_config/kucmsTimeCaliR25EPrmptTFile.txt _eg_25Ep_xa_pm24b1200_v0422
-25Fp ecal_config/kucmsTimeCaliR25FPrmptTFile.txt _eg_25Fp_xa_pm24b1200_v0422
-25Gp ecal_config/kucmsTimeCaliR25GPrmptTFile.txt _eg_25Gp_xa_pm24b1200_v0422
+lg_nocali_cc_25Cp ecal_config/kucmsTimeCaliR25CPrmptTFile.txt _lg_nocali_cc_eg_25Cp_xa_pm24b1200_v0422
+lg_nocali_cc_25Dp ecal_config/kucmsTimeCaliR25DPrmptTFile.txt _lg_nocali_cc_eg_25Dp_xa_pm24b1200_v0422
+lg_nocali_cc_25Ep ecal_config/kucmsTimeCaliR25EPrmptTFile.txt _lg_nocali_cc_eg_25Ep_xa_pm24b1200_v0422
+lg_nocali_cc_25Fp ecal_config/kucmsTimeCaliR25FPrmptTFile.txt _lg_nocali_cc_eg_25Fp_xa_pm24b1200_v0422
+lg_nocali_cc_25Gp ecal_config/kucmsTimeCaliR25GPrmptTFile.txt _lg_nocali_cc_eg_25Gp_xa_pm24b1200_v0422
 )
 
 # NOTE:

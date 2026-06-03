@@ -106,6 +106,7 @@ class KUCMSAodSkimmer : public llpgtree {
     void SetOutFileName( std::string  ofn ){ outFileName = ofn; }
     void SetDoSV( bool f ){ doSVs = f; }
 	void SetLocalSkip( int skip ){ localSkip = skip; }
+	void SetUseUnCC( bool f ){ useUnCC = f; }
 
 	// set branches
 
@@ -274,6 +275,8 @@ class KUCMSAodSkimmer : public llpgtree {
 	bool hasGenInfoFlag;
     bool doBHC;
 	bool doSVs;
+
+	bool useUnCC;
 
 	// input tree, paths, and file names
 
