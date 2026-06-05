@@ -115,7 +115,6 @@ int main ( int argc, char *argv[] ){
     //std::string indir("KUCMSNtuple/");// 23 & 24
     std::string indir("KUCMSNtuple/gammares_prmt25/");
 
-	std::string inputCfilename( "ecal_config/kucmsTimeCaliR25PrmptTFile.txt" );
     bool doScale = true;
     bool useCali = true;
     bool doSmear = false;
@@ -135,7 +134,7 @@ int main ( int argc, char *argv[] ){
         return 2;
     }
 
-	if( argc > 1 ) inputCfilename = argv[1];
+	if( argc > 1 ) inputfilename = argv[1];
     if( argc > 2 ) doScale = parseBoolArg( argv[2] );
     if( argc > 3 ) useCali = parseBoolArg( argv[3] );
     if( argc > 4 ) doSmear = parseBoolArg( argv[4] );
@@ -259,7 +258,7 @@ int main ( int argc, char *argv[] ){
 	// CONDOR / Commandline  Inputs
     //-------------------------------------------------------
     //theCali.setCondorJob( true );
-	//theCali.plot2dResolutionEGR( inputCfilename, doScale, useCali, doSmear, nameExt );
+	//theCali.plot2dResolutionEGR( inputfilename, doScale, useCali, doSmear, nameExt );
 
 
 	// ------------------------------------------------------
@@ -526,7 +525,7 @@ int main ( int argc, char *argv[] ){
     //theCali.load2DResHist( histName );
 	//theCali.doResTimeFit( histName );
 
-
+/*
     theCali.load2DResHist( histName1 );
     theCali.doResTimeFit( histName1 );
     theCali.load2DResHist( histName2 );
@@ -535,13 +534,14 @@ int main ( int argc, char *argv[] ){
     theCali.doResTimeFit( histName3 );
     theCali.load2DResHist( histName4 );
     theCali.doResTimeFit( histName4 );	
-
+*/
 
 	////////////////////  use external file for fit ///////////////////////////////////////////////////////////////////////////
 
-    //theCali.SetXBinStr( "VARIABLE 80.0 100.0 120.0 140.0 160.0 180.0 200.0 250.0 300.0 400.0 800.0" );
-	//theCali.SetYBinStr( "CONSTANT 160 -4 4" );
-    //theCali.doResTimeFitExt( "PVTimeResNorm", "/uscms/home/jaking/nobackup/el9/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/macros/KUCMS_Data_llpana_v49_PVtime_Res_NueSCOnly_cv5_EG18D_RjrSkim_Hists_v3d.root");
+    ////theCali.SetXBinStr( "VARIABLE 80.0 100.0 120.0 140.0 160.0 180.0 200.0 250.0 300.0 400.0 800.0" );
+	////theCali.SetYBinStr( "CONSTANT 160 -4 4" );
+    //sheCali.doResTimeFitExt( "PVTimeResNorm", "/uscms/home/jaking/nobackup/el9/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/macros/KUCMS_Data_llpana_v49_PVtime_Res_NueSCOnly_cv5_EG18D_RjrSkim_Hists_v3d.root");
+    theCali.doResTimeFitExt("ResMap_387742_398903_DRO_Data_Hist_eg_25Ep_xa_pm24b1200_v0501_EB","../macros/res2droot_eg_25p_cc_hg_xa_pm24b1200_v0501/res2dPlots_hg_eg_25Ep_xa_pm24b1200_v0501.root");	
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

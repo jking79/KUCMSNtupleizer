@@ -2490,13 +2490,27 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
     std::string infilestr;
     while( std::getline( infilelist, infilestr ) ) {
 
-        std::stringstream ss(infilestr);
-        std::string infilename, tag;
-        int srun, erun;
+		if( infilestr.empty() || infilestr[0] == '#' ) continue;
 
-        ss >> infilename >> srun >> erun >> tag;
-        if( infilename[0] == '#' ) continue;
-        std::cout << "open input file : " << infilename << std::endl;
+        std::stringstream ss(infilestr);
+        std::string subdir, matchstr, tag;
+        int srun(0), erun(0);
+
+        ss >> subdir >> matchstr >> srun >> erun >> tag;
+
+        if( subdir == "None" ) subdir = "";
+        if( matchstr == "None" ) matchstr = "";
+
+        if( !subdir.empty() && subdir.back() != '/' ){ subdir += "/"; }
+
+        //std::cout << "open input file : " << infilename << std::endl;
+        std::cout << "open input entry : "
+                  << " subdir=" << subdir
+                  << " matchstr=" << matchstr
+                  << " srun=" << srun
+                  << " erun=" << erun
+                  << " tag=" << tag
+                  << std::endl;
 
 		if( isCC && doUnCC ){ 
 			if( tag == "r3_p25" ) tag = "r3_p25unc";
@@ -2524,23 +2538,42 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
         int nAdded = 0;
         int nLines = 0;
 		int nBadFiles = 0;
-        std::ifstream infile(infilename);
-		if( !infile.is_open() ){
-    		std::cerr << "ERROR: could not open input file list: " << infilename << std::endl;
-    		continue;
-		}//<<>>if( !f || f->IsZombie() )
 
-        std::string instr;
+        //std::ifstream infile(infilename);
+		//if( !infile.is_open() ){
+    	//	std::cerr << "ERROR: could not open input file list: " << infilename << std::endl;
+    	//	continue;
+		//}//<<>>if( !f || f->IsZombie() )
+        //std::string instr;
+
         auto fInTree = new TChain( treename.c_str() );
-        std::cout << "Adding files to TChain." << std::endl;
-        while (std::getline(infile,instr)){
 
-			if( instr.empty() || instr[0] == '#' ) continue;
+		//std::string indir("KUCMSNtuple/gammares_prmt25/");
+		//std::string eosdir("root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/");
+		//  = '/store/user/lpcsusylep/jaking/'
+    	// eosh example: "cmseos.fnal.gov"
+    	// scanDir example: "/store/user/lpcsusylep/jaking/KUCMSNtuple/someDir"
+		// std::string scanDir = "/store/user/lpcsusylep/jaking/KUCMSNtuple/some/final/directory";
+    	// matchStr example: "somename.root"
+    	// std::vector<std::string> files = findEOSRootFiles(eosHost, scanDir, matchString);
+		
+		std::string eosdir = "/store/user/lpcsusylep/jaking/";
+		std::string eosHost = "cmseos.fnal.gov";
+        //auto tfilename = eosDir + inDir + instr;
+        std::string scanDir = eosdir + inDir + subdir;
+		std::cout << "Finding ROOT files under EOS directory: " << scanDir << std::endl;
+		std::vector<std::string> files = findEOSRootFiles(eosHost, scanDir, matchstr);
+		std::cout << "Found " << files.size() << " candidate ROOT files." << std::endl;
+
+        std::cout << "Adding files to TChain." << std::endl;
+        //while (std::getline(infile,instr)){
+		for (const auto& tfilename : files) {
+
+			//if( instr.empty() || instr[0] == '#' ) continue;
             nLines++;
             //fileskipcnt++;
             //if( fileskipcnt%10 != 0 ) continue;
-            auto tfilename = eosDir + inDir + instr;
-
+            //auto tfilename = eosDir + inDir + instr;
 
     		TFile* testFile = TFile::Open(tfilename.c_str(), "READ");
 

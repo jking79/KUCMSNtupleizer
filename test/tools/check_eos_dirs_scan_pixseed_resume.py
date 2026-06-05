@@ -1,0 +1,730 @@
+#!/usr/bin/env python3
+
+import argparse
+import os
+import subprocess
+import time
+from collections import defaultdict
+import ROOT
+
+EOS_HOST = "cmseos.fnal.gov"
+EOS_BASE = "/store/user/lpcsusylep/jaking/KUCMSNtuple"
+TREE_NAME = "tree/llpgtree"
+BRANCH_NAME = "Photon_pixelSeed"
+DEFAULT_VERSION_SUFFIX = "_v34"
+
+
+def make_empty_summary():
+    return {
+        "files_found": 0,
+        "ok": 0,
+        "bad": 0,
+        "unreadable": 0,
+        "missing_tree": 0,
+        "missing_branch": 0,
+        "no_photons": 0,
+        "all_false": 0,
+        "entries": 0,
+        "photons": 0,
+        "pixel_seed_true": 0,
+    }
+
+
+def add_result_to_summary(summary, res):
+    summary["files_found"] += 1
+    summary["entries"] += res["nentries"]
+    summary["photons"] += res["nphotons"]
+    summary["pixel_seed_true"] += res["n_pixel_seed_true"]
+
+    if res["ok"]:
+        summary["ok"] += 1
+    else:
+        summary["bad"] += 1
+
+        if res["issue"] == "file unreadable or zombie":
+            summary["unreadable"] += 1
+        elif res["issue"].startswith("missing tree"):
+            summary["missing_tree"] += 1
+        elif res["issue"].startswith("missing branch"):
+            summary["missing_branch"] += 1
+        elif res["issue"] == "no photons found":
+            summary["no_photons"] += 1
+        elif res["issue"] == "all Photon_pixelSeed values are false":
+            summary["all_false"] += 1
+
+
+def run_xrdfs_ls(eos_dir, recursive=False):
+    cmd = ["xrdfs", EOS_HOST, "ls"]
+    if recursive:
+        cmd.append("-R")
+    cmd.append(eos_dir)
+    return subprocess.check_output(cmd, text=True)
+
+
+def eos_find_matching_version_dirs(version_suffix=DEFAULT_VERSION_SUFFIX):
+    """Return immediate children of EOS_BASE whose directory names end with version_suffix."""
+    out = run_xrdfs_ls(EOS_BASE, recursive=False)
+
+    eos_dirs = []
+    for line in out.splitlines():
+        path = line.strip().rstrip("/")
+        if not path:
+            continue
+        if os.path.basename(path).endswith(version_suffix):
+            eos_dirs.append(path)
+
+    return sorted(eos_dirs)
+
+
+def eos_find_root_files_in_dir(eos_dir):
+    """Return all ROOT files recursively under one fully qualified EOS directory."""
+    out = run_xrdfs_ls(eos_dir, recursive=True)
+
+    root_files = [
+        f"root://{EOS_HOST}/{line.strip()}"
+        for line in out.splitlines()
+        if line.strip().endswith(".root")
+    ]
+
+    return root_files
+
+
+def eos_dir_from_subdir(eos_subdir):
+    return f"{EOS_BASE.rstrip('/')}/{eos_subdir.strip('/')}"
+
+
+def get_first_subdir_under_input(root_path, eos_dir):
+    """
+    Example:
+      eos_dir:
+        /store/.../KUCMSNtuple/kucmsntuple_GJets_R18_SVHPM100_MiniAOD_v34
+
+      root_path:
+        root://cmseos.fnal.gov//store/.../KUCMSNtuple/kucmsntuple_GJets_R18_SVHPM100_MiniAOD_v34/GJets_HT-100To200.../.../kucmsntuple_512.root
+
+      returns:
+        GJets_HT-100To200_TuneCP5_13TeV-madgraphMLM-pythia8
+    """
+
+    prefix = f"root://{EOS_HOST}/"
+    path = root_path
+
+    if path.startswith(prefix):
+        path = path[len(prefix):]
+
+    # normalize leading double slash cases
+    path = "/" + path.lstrip("/")
+    eos_dir = "/" + eos_dir.strip("/")
+
+    rel = path[len(eos_dir):].strip("/") if path.startswith(eos_dir) else ""
+
+    if not rel:
+        return "__NO_SUBDIR__"
+
+    return rel.split("/", 1)[0]
+
+
+def get_scan_section(root_path, eos_dir):
+    """Label results as top-level v34 directory plus the first child section/dataset."""
+    top_dir = os.path.basename(eos_dir.rstrip("/"))
+    child = get_first_subdir_under_input(root_path, eos_dir)
+
+    if child == "__NO_SUBDIR__":
+        return top_dir
+
+    return f"{top_dir}/{child}"
+
+
+def check_photon_pixel_seed(root_path, max_entries=-1):
+    result = {
+        "path": root_path,
+        "ok": False,
+        "nentries": 0,
+        "nphotons": 0,
+        "n_pixel_seed_true": 0,
+        "issue": "",
+    }
+
+    f = ROOT.TFile.Open(root_path, "READ")
+    if not f or f.IsZombie():
+        result["issue"] = "file unreadable or zombie"
+        return result
+
+    tree = f.Get(TREE_NAME)
+    if not tree:
+        result["issue"] = f"missing tree {TREE_NAME}"
+        f.Close()
+        return result
+
+    if not tree.GetBranch(BRANCH_NAME):
+        result["issue"] = f"missing branch {BRANCH_NAME}"
+        f.Close()
+        return result
+
+    nentries = tree.GetEntries()
+    result["nentries"] = nentries
+
+    n_to_check = nentries if max_entries < 0 else min(nentries, max_entries)
+
+    for i in range(n_to_check):
+        tree.GetEntry(i)
+        pixel_seed_vec = getattr(tree, BRANCH_NAME)
+
+        for val in pixel_seed_vec:
+            result["nphotons"] += 1
+            if bool(val):
+                result["n_pixel_seed_true"] += 1
+
+    f.Close()
+
+    if result["nphotons"] == 0:
+        result["issue"] = "no photons found"
+        return result
+
+    if result["n_pixel_seed_true"] == 0:
+        result["issue"] = "all Photon_pixelSeed values are false"
+        return result
+
+    result["ok"] = True
+    return result
+
+
+def print_summary_block(title, summary):
+    print(title)
+    print("-" * len(title))
+    print(f"  files found:                    {summary['files_found']}")
+    print(f"  files OK:                       {summary['ok']}")
+    print(f"  files BAD:                      {summary['bad']}")
+    print()
+    print("  BAD breakdown:")
+    print(f"    unreadable/zombie:            {summary['unreadable']}")
+    print(f"    missing tree:                 {summary['missing_tree']}")
+    print(f"    missing Photon_pixelSeed:     {summary['missing_branch']}")
+    print(f"    no photons:                   {summary['no_photons']}")
+    print(f"    all Photon_pixelSeed false:   {summary['all_false']}")
+    print()
+    print("  counts scanned:")
+    print(f"    entries:                      {summary['entries']}")
+    print(f"    photons:                      {summary['photons']}")
+    print(f"    Photon_pixelSeed true:        {summary['pixel_seed_true']}")
+    print()
+
+
+def format_elapsed(seconds):
+    """Return a compact human-readable elapsed-time string."""
+    seconds = int(max(0, seconds))
+    hours, rem = divmod(seconds, 3600)
+    minutes, secs = divmod(rem, 60)
+
+    if hours:
+        return f"{hours:d}h {minutes:02d}m {secs:02d}s"
+    if minutes:
+        return f"{minutes:d}m {secs:02d}s"
+    return f"{secs:d}s"
+
+
+def print_status(message):
+    """Print status messages immediately, useful for long EOS scans."""
+    print(message, flush=True)
+
+
+def should_print_progress(done, total_files, last_progress_time, args):
+    """
+    Decide whether to print an in-directory progress update.
+
+    Progress is printed when either enough files have been scanned since the
+    last file-count boundary, enough wall time has passed, or the directory is
+    finished. Setting both progress intervals to <= 0 disables periodic updates,
+    except for the final directory-complete message.
+    """
+    if total_files <= 0:
+        return False
+    if done >= total_files:
+        return True
+
+    by_files = (
+        args.progress_every_files > 0
+        and done > 0
+        and done % args.progress_every_files == 0
+    )
+    by_time = (
+        args.progress_every_seconds > 0
+        and time.monotonic() - last_progress_time >= args.progress_every_seconds
+    )
+
+    return by_files or by_time
+
+
+def should_checkpoint(done, total_files, last_checkpoint_time, args):
+    """Decide whether to rewrite the per-directory .live.txt checkpoint."""
+    if total_files <= 0:
+        return False
+    if done >= total_files:
+        return True
+
+    by_files = (
+        args.checkpoint_every_files > 0
+        and done > 0
+        and done % args.checkpoint_every_files == 0
+    )
+    by_time = (
+        args.checkpoint_every_seconds > 0
+        and time.monotonic() - last_checkpoint_time >= args.checkpoint_every_seconds
+    )
+
+    return by_files or by_time
+
+
+def safe_file_component(name):
+    """Make a directory name safe to use as a local report filename."""
+    return name.replace("/", "__").replace(" ", "_")
+
+
+def report_paths(report_dir, top_dir_name):
+    base = safe_file_component(top_dir_name)
+    return {
+        "live": os.path.join(report_dir, f"{base}.live.txt"),
+        "done": os.path.join(report_dir, f"{base}.done.txt"),
+    }
+
+
+def report_is_completed(done_path):
+    """Return True only if a per-directory report explicitly says it completed."""
+    if not os.path.exists(done_path):
+        return False
+
+    try:
+        with open(done_path, "r") as f:
+            for line in f:
+                line = line.strip()
+                if line in ("STATUS: DONE", "STATUS: DONE_NO_ROOT_FILES"):
+                    return True
+                if line.startswith("STATUS:"):
+                    return False
+    except OSError:
+        return False
+
+    return False
+
+
+def write_topdir_report(
+    path,
+    status,
+    top_dir_name,
+    eos_dir,
+    summary,
+    bad_results,
+    files_scanned,
+    files_total,
+    elapsed_seconds,
+):
+    """Write one per-top-directory report. Uses atomic rename to avoid truncated files."""
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    tmp_path = f"{path}.tmp"
+
+    pct = 0.0 if files_total <= 0 else 100.0 * files_scanned / files_total
+
+    with open(tmp_path, "w") as f:
+        f.write(f"STATUS: {status}\n")
+        f.write(f"DIRECTORY: {top_dir_name}\n")
+        f.write(f"EOS_PATH: {eos_dir}\n")
+        f.write(f"TREE: {TREE_NAME}\n")
+        f.write(f"BRANCH: {BRANCH_NAME}\n")
+        f.write(f"FILES_SCANNED: {files_scanned}\n")
+        f.write(f"FILES_TOTAL_DISCOVERED: {files_total}\n")
+        f.write(f"PERCENT_SCANNED: {pct:.1f}\n")
+        f.write(f"ELAPSED: {format_elapsed(elapsed_seconds)}\n")
+        f.write("\n")
+
+        f.write("SUMMARY\n")
+        f.write("-------\n")
+        f.write(f"files_found: {summary['files_found']}\n")
+        f.write(f"ok: {summary['ok']}\n")
+        f.write(f"bad: {summary['bad']}\n")
+        f.write(f"unreadable: {summary['unreadable']}\n")
+        f.write(f"missing_tree: {summary['missing_tree']}\n")
+        f.write(f"missing_branch: {summary['missing_branch']}\n")
+        f.write(f"no_photons: {summary['no_photons']}\n")
+        f.write(f"all_false: {summary['all_false']}\n")
+        f.write(f"entries: {summary['entries']}\n")
+        f.write(f"photons: {summary['photons']}\n")
+        f.write(f"pixelSeedTrue: {summary['pixel_seed_true']}\n")
+        f.write("\n")
+
+        f.write("BAD FILES\n")
+        f.write("---------\n")
+        if not bad_results:
+            f.write("None\n")
+        else:
+            for res in bad_results:
+                f.write(f"SECTION: {res['section']}\n")
+                f.write(f"PATH: {res['path']}\n")
+                f.write(f"ISSUE: {res['issue']}\n")
+                f.write(f"ENTRIES: {res['nentries']}\n")
+                f.write(f"PHOTONS: {res['nphotons']}\n")
+                f.write(f"PIXELSEED_TRUE: {res['n_pixel_seed_true']}\n")
+                f.write("\n")
+
+    os.replace(tmp_path, path)
+
+
+def write_global_reports(bad_out, section_out, topdir_out, bad, sections, top_dirs):
+    """Write global accumulated reports. Safe to call after each completed directory."""
+    with open(bad_out, "w") as f:
+        for res in bad:
+            f.write(f"SECTION: {res['section']}\n")
+            f.write(f"PATH: {res['path']}\n")
+            f.write(f"ISSUE: {res['issue']}\n")
+            f.write(f"ENTRIES: {res['nentries']}\n")
+            f.write(f"PHOTONS: {res['nphotons']}\n")
+            f.write(f"PIXELSEED_TRUE: {res['n_pixel_seed_true']}\n")
+            f.write("\n")
+
+    with open(section_out, "w") as f:
+        f.write("section files_found ok bad unreadable missing_tree missing_branch no_photons all_false entries photons pixelSeedTrue\n")
+        for section in sorted(sections):
+            s = sections[section]
+            f.write(
+                f"{section} "
+                f"{s['files_found']} {s['ok']} {s['bad']} "
+                f"{s['unreadable']} {s['missing_tree']} {s['missing_branch']} "
+                f"{s['no_photons']} {s['all_false']} "
+                f"{s['entries']} {s['photons']} {s['pixel_seed_true']}\n"
+            )
+
+    with open(topdir_out, "w") as f:
+        f.write("top_dir files_found ok bad unreadable missing_tree missing_branch no_photons all_false entries photons pixelSeedTrue\n")
+        for top_dir in sorted(top_dirs):
+            s = top_dirs[top_dir]
+            f.write(
+                f"{top_dir} "
+                f"{s['files_found']} {s['ok']} {s['bad']} "
+                f"{s['unreadable']} {s['missing_tree']} {s['missing_branch']} "
+                f"{s['no_photons']} {s['all_false']} "
+                f"{s['entries']} {s['photons']} {s['pixel_seed_true']}\n"
+            )
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description=(
+            "Scan EOS ntuple ROOT files and check Photon_pixelSeed is not always false. "
+            "By default, scans only immediate EOS_BASE child directories ending in _v34."
+        )
+    )
+
+    parser.add_argument(
+        "eos_subdir",
+        nargs="?",
+        default=None,
+        help=(
+            "Optional single subdirectory under /store/user/lpcsusylep/jaking/KUCMSNtuple/. "
+            "If omitted, all immediate children ending in --version-suffix are scanned."
+        ),
+    )
+    parser.add_argument(
+        "--version-suffix",
+        default=DEFAULT_VERSION_SUFFIX,
+        help="Only scan top-level EOS directories whose names end with this suffix. Default: _v34.",
+    )
+    parser.add_argument(
+        "--max-entries",
+        type=int,
+        default=-1,
+        help="Maximum entries to scan per file. Default: all.",
+    )
+    parser.add_argument(
+        "--bad-out",
+        default="bad_pixelSeed_files.txt",
+        help="Output file listing bad ROOT files accumulated during this run.",
+    )
+    parser.add_argument(
+        "--section-out",
+        default="pixelSeed_section_summary.txt",
+        help="Output file containing compact per-section summary accumulated during this run.",
+    )
+    parser.add_argument(
+        "--topdir-out",
+        default="pixelSeed_topdir_summary.txt",
+        help="Output file containing compact per-top-directory summary accumulated during this run.",
+    )
+    parser.add_argument(
+        "--report-dir",
+        default="pixelSeed_scan_reports",
+        help="Directory for per-top-directory .live.txt and .done.txt reports. Default: pixelSeed_scan_reports.",
+    )
+    parser.add_argument(
+        "--skip-completed",
+        action="store_true",
+        help=(
+            "Skip a top-level directory if --report-dir already contains a matching .done.txt "
+            "with STATUS: DONE or STATUS: DONE_NO_ROOT_FILES."
+        ),
+    )
+    parser.add_argument(
+        "--checkpoint-every-files",
+        type=int,
+        default=500,
+        help=(
+            "Rewrite the current directory .live.txt every N ROOT files scanned. "
+            "Use 0 or a negative value to disable file-count checkpointing. Default: 25."
+        ),
+    )
+    parser.add_argument(
+        "--checkpoint-every-seconds",
+        type=int,
+        default=900,
+        help=(
+            "Rewrite the current directory .live.txt at least every N seconds. "
+            "Use 0 or a negative value to disable time-based checkpointing. Default: 300."
+        ),
+    )
+    parser.add_argument(
+        "--progress-every-files",
+        type=int,
+        default=500,
+        help=(
+            "Print an in-directory progress update every N ROOT files scanned. "
+            "Use 0 or a negative value to disable file-count progress. Default: 25."
+        ),
+    )
+    parser.add_argument(
+        "--progress-every-seconds",
+        type=int,
+        default=900,
+        help=(
+            "Print an in-directory progress update at least every N seconds, even if "
+            "the file-count interval has not been reached. Use 0 or a negative value "
+            "to disable time-based progress. Default: 60."
+        ),
+    )
+
+    args = parser.parse_args()
+    os.makedirs(args.report_dir, exist_ok=True)
+
+    if args.eos_subdir:
+        eos_dir = eos_dir_from_subdir(args.eos_subdir)
+        if not os.path.basename(eos_dir.rstrip("/")).endswith(args.version_suffix):
+            raise SystemExit(
+                f"Refusing to scan non-matching directory: {eos_dir}\n"
+                f"Directory basename must end with {args.version_suffix!r}."
+            )
+        scan_dirs = [eos_dir]
+    else:
+        scan_dirs = eos_find_matching_version_dirs(args.version_suffix)
+
+    if not scan_dirs:
+        raise SystemExit(
+            f"No directories ending in {args.version_suffix!r} found under {EOS_BASE}"
+        )
+
+    print_status("======================================================")
+    print_status("Starting Photon_pixelSeed EOS scan")
+    print_status("======================================================")
+    print_status(f"EOS base:          {EOS_BASE}")
+    print_status(f"Version suffix:    {args.version_suffix}")
+    print_status(f"Report directory:  {args.report_dir}")
+    print_status(f"Skip completed:    {args.skip_completed}")
+    print_status(f"Directories found: {len(scan_dirs)}")
+    for idx, d in enumerate(scan_dirs, start=1):
+        print_status(f"  [{idx}/{len(scan_dirs)}] {d}")
+    print_status("")
+
+    total = make_empty_summary()
+    sections = defaultdict(make_empty_summary)
+    top_dirs = defaultdict(make_empty_summary)
+    bad = []
+    scan_start_time = time.monotonic()
+    skipped = []
+
+    for idir, eos_dir in enumerate(scan_dirs, start=1):
+        top_dir_name = os.path.basename(eos_dir.rstrip("/"))
+        paths = report_paths(args.report_dir, top_dir_name)
+
+        if args.skip_completed and report_is_completed(paths["done"]):
+            skipped.append(top_dir_name)
+            print_status(f"[{idir}/{len(scan_dirs)}] Skipping completed directory: {top_dir_name}")
+            continue
+
+        dir_start_time = time.monotonic()
+        dir_bad = []
+
+        print_status("------------------------------------------------------")
+        print_status(f"[{idir}/{len(scan_dirs)}] Starting directory: {top_dir_name}")
+        print_status(f"EOS path: {eos_dir}")
+        print_status("Finding ROOT files recursively with xrdfs ls -R ...")
+
+        root_files = eos_find_root_files_in_dir(eos_dir)
+        n_root_files = len(root_files)
+
+        write_topdir_report(
+            paths["live"],
+            "RUNNING_DISCOVERY_DONE",
+            top_dir_name,
+            eos_dir,
+            top_dirs[top_dir_name],
+            dir_bad,
+            0,
+            n_root_files,
+            time.monotonic() - dir_start_time,
+        )
+
+        print_status(f"Found {n_root_files} ROOT files in {top_dir_name}")
+        if n_root_files == 0:
+            elapsed = time.monotonic() - dir_start_time
+            write_topdir_report(
+                paths["done"],
+                "DONE_NO_ROOT_FILES",
+                top_dir_name,
+                eos_dir,
+                top_dirs[top_dir_name],
+                dir_bad,
+                0,
+                0,
+                elapsed,
+            )
+            try:
+                os.remove(paths["live"])
+            except FileNotFoundError:
+                pass
+            write_global_reports(args.bad_out, args.section_out, args.topdir_out, bad, sections, top_dirs)
+            print_status(f"[{idir}/{len(scan_dirs)}] Finished directory: {top_dir_name} -- no ROOT files found")
+            continue
+
+        last_progress_time = time.monotonic()
+        last_checkpoint_time = time.monotonic()
+
+        for ifile, root_path in enumerate(root_files, start=1):
+            section = get_scan_section(root_path, eos_dir)
+            res = check_photon_pixel_seed(root_path, args.max_entries)
+
+            add_result_to_summary(total, res)
+            add_result_to_summary(sections[section], res)
+            add_result_to_summary(top_dirs[top_dir_name], res)
+
+            if not res["ok"]:
+                bad_res = {
+                    "section": section,
+                    **res,
+                }
+                bad.append(bad_res)
+                dir_bad.append(bad_res)
+
+            if should_checkpoint(ifile, n_root_files, last_checkpoint_time, args):
+                write_topdir_report(
+                    paths["live"],
+                    "RUNNING",
+                    top_dir_name,
+                    eos_dir,
+                    top_dirs[top_dir_name],
+                    dir_bad,
+                    ifile,
+                    n_root_files,
+                    time.monotonic() - dir_start_time,
+                )
+                last_checkpoint_time = time.monotonic()
+
+            if should_print_progress(ifile, n_root_files, last_progress_time, args):
+                s = top_dirs[top_dir_name]
+                elapsed = time.monotonic() - dir_start_time
+                rate = ifile / elapsed if elapsed > 0 else 0.0
+                print_status(
+                    f"[{idir}/{len(scan_dirs)}] {top_dir_name}: "
+                    f"scanned {ifile}/{n_root_files} files "
+                    f"({100.0 * ifile / n_root_files:.1f}%), "
+                    f"OK={s['ok']}, BAD={s['bad']}, "
+                    f"elapsed={format_elapsed(elapsed)}, rate={rate:.2f} files/s"
+                )
+                last_progress_time = time.monotonic()
+
+        s = top_dirs[top_dir_name]
+        dir_elapsed = time.monotonic() - dir_start_time
+        write_topdir_report(
+            paths["done"],
+            "DONE",
+            top_dir_name,
+            eos_dir,
+            s,
+            dir_bad,
+            n_root_files,
+            n_root_files,
+            dir_elapsed,
+        )
+        try:
+            os.remove(paths["live"])
+        except FileNotFoundError:
+            pass
+
+        write_global_reports(args.bad_out, args.section_out, args.topdir_out, bad, sections, top_dirs)
+
+        print_status(
+            f"[{idir}/{len(scan_dirs)}] Finished directory: {top_dir_name} -- "
+            f"files={s['files_found']}, OK={s['ok']}, BAD={s['bad']}, "
+            f"elapsed={format_elapsed(dir_elapsed)}"
+        )
+        print_status(f"Wrote: {paths['done']}")
+        print_status("")
+
+    scan_elapsed = time.monotonic() - scan_start_time
+    write_global_reports(args.bad_out, args.section_out, args.topdir_out, bad, sections, top_dirs)
+    print_status(f"Finished this run in {format_elapsed(scan_elapsed)}")
+    if skipped:
+        print_status(f"Skipped completed directories: {len(skipped)}")
+
+    print()
+    print("======================================================")
+    print("Photon_pixelSeed EOS scan summary for this run")
+    print("======================================================")
+    print(f"EOS base:          {EOS_BASE}")
+    print(f"Version suffix:    {args.version_suffix}")
+    print(f"Directories found: {len(scan_dirs)}")
+    print(f"Directories skipped as completed: {len(skipped)}")
+    print(f"Report directory:  {args.report_dir}")
+    print()
+
+    print_summary_block("TOTAL SCANNED IN THIS RUN", total)
+
+    print("Top-level directory summaries scanned in this run")
+    print("=================================================")
+    for top_dir in sorted(top_dirs):
+        s = top_dirs[top_dir]
+        print(
+            f"{top_dir}: "
+            f"files={s['files_found']} "
+            f"OK={s['ok']} "
+            f"BAD={s['bad']} "
+            f"allFalse={s['all_false']} "
+            f"missingBranch={s['missing_branch']} "
+            f"photons={s['photons']} "
+            f"pixelSeedTrue={s['pixel_seed_true']}"
+        )
+
+    print()
+    print("Section summaries scanned in this run")
+    print("=====================================")
+    for section in sorted(sections):
+        s = sections[section]
+        print(
+            f"{section}: "
+            f"files={s['files_found']} "
+            f"OK={s['ok']} "
+            f"BAD={s['bad']} "
+            f"allFalse={s['all_false']} "
+            f"missingBranch={s['missing_branch']} "
+            f"photons={s['photons']} "
+            f"pixelSeedTrue={s['pixel_seed_true']}"
+        )
+
+    print()
+    print(f"Per-directory reports: {args.report_dir}/*.done.txt")
+    print(f"Bad-file report for this run:       {args.bad_out}")
+    print(f"Section summary table for this run: {args.section_out}")
+    print(f"Top-dir summary table for this run: {args.topdir_out}")
+    print("======================================================")
+    print()
+
+
+if __name__ == "__main__":
+    ROOT.gErrorIgnoreLevel = ROOT.kWarning
+    main()
+
