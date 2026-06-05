@@ -87,8 +87,10 @@ def docrab( dataset ):
         #config.Data.partialDataset = True
         config.Data.inputDataset   = None
         #config.Data.lumiMask       = inputJSON    # !!!!!!!!!!!!  Comment out for MC only set for data !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        config.Data.lumiMask       = 'lumis_in_failed_files_17D.json'
         #config.Data.splitting     = 'Automatic' # data
-        config.Data.splitting = 'FileBased' # Justin
+        #config.Data.splitting = 'FileBased' # Justin
+        config.Data.splitting    = 'LumiBased'
         config.Data.unitsPerJob  =  filespjob
         #config.Data.runRange = '306458-306460' #
             
@@ -144,7 +146,7 @@ def docrab( dataset ):
             #trial          = "kucmsntuple_JetMET_R22_SVHPM100_MiniAOD" + version # 
  
             #trial          = "kucmsntuple_MET_R18_SVHPM100_MiniAOD" + version #  
-            #trial          = "kucmsntuple_MET_R17_SVHPM100_MiniAOD" + version #  
+            trial          = "kucmsntuple_MET_R17_SVHPM100_MiniAOD" + version #  
             #trial          = "kucmsntuple_MET_R16_SVHPM100_MiniAOD" + version # 
 
             #trial          = "kucmsntuple_MET_R17_SVIPM100_p8" + version #  
@@ -157,7 +159,7 @@ def docrab( dataset ):
             #trial          = "kucmsntuple_DisJet_R18_SVIPM100" + version #
             #trial          = "kucmsntuple_DisJet_R18_SVIPM100_nolumimask" + version #
 
-            trial          = "kucmsntuple_TTJets_R18_SVHPM100_MiniAOD" + version #
+            #trial          = "kucmsntuple_TTJets_R18_SVHPM100_MiniAOD" + version #
             #trial          = "kucmsntuple_GJets_R18_SVHPM100_MiniAOD" + version
             #trial          = "kucmsntuple_QCD_R18_SVHPM100_MiniAOD" + version
             #trial          = "kucmsntuple_ZJets_R18_SVHPM100_MiniAOD" + version
@@ -212,11 +214,11 @@ def docrab( dataset ):
 #>>>>>>>>>>>>>>>>>>>     #2016UL 
 #>>>>>>>>>>>>>>>>>>>     #2017UL 
 #>>>>>>>>>>>>>>>>>>>     #2018UL #globalTag=106X_dataRun2_v37 # https://twiki.cern.ch/twiki/bin/view/CMS/PdmVRun2LegacyAnalysis
-            #gt = 'globalTag=106X_dataRun2_v37'
-            #runinfo = 'runera=Run2_2018'
+            gt = 'globalTag=106X_dataRun2_v37'
+            runinfo = 'runera=Run2_2018'
             #runinfo = 'runera=Run2_2017'
             #runinfo = 'runera=Run2_2016'
-            #config.JobType.pyCfgParams   = [gt,mcrab,efilter,runinfo]
+            config.JobType.pyCfgParams   = [gt,mcrab,efilter,runinfo]
             ###config.JobType.pyCfgParams   = [gt,mcrab,efilter,mDoETOnly]
             ##config.JobType.pyCfgParams   = [gt,mcrab,fInvMetALP,mNoSV]
             ##config.JobType.pyCfgParams   = [gt,mcrab,fInvMetPho30,mNoSV]
@@ -229,9 +231,9 @@ def docrab( dataset ):
 
 #---MC--------------------------------------------------------------------------------------------------------------------------
 #>>>>>      #MC RunIISummer20UL18RECO
-            gt = 'globalTag=106X_upgrade2018_realistic_v15_L1v1'
-            runinfo = 'runera=Run2_2018'
-            config.JobType.pyCfgParams   = [gt,mcrab,geninfo,efilter,runinfo]
+            #gt = 'globalTag=106X_upgrade2018_realistic_v15_L1v1'
+            #runinfo = 'runera=Run2_2018'
+            #config.JobType.pyCfgParams   = [gt,mcrab,geninfo,efilter,runinfo]
 #>>>>>      #MC GMSB RunIIFall17DRPremix  #globalTag=94X_mc2017_realistic_v14  #  <<< comment/uncomment lumi mask when using/!using MC
             ##config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v14','multicrab=True','hasGenInfo=True']
             ##config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v14','multicrab=True','hasGenInfo=True','eventSkim=AL1IsoPho']
@@ -289,7 +291,7 @@ def run_multi():
 
         #['/MET/Run2017B-09Aug2019_UL2017_rsb-v1/MINIAOD',1],
         #['/MET/Run2017C-09Aug2019_UL2017_rsb-v1/MINIAOD',1],
-        #['/MET/Run2017D-09Aug2019_UL2017_rsb-v1/MINIAOD',1],
+        ['/MET/Run2017D-09Aug2019_UL2017_rsb-v1/MINIAOD',1],
         #['/MET/Run2017E-09Aug2019_UL2017_rsb-v1/MINIAOD',1],
         #['/MET/Run2017F-09Aug2019_UL2017_rsb-v1/MINIAOD',1],
 
@@ -352,7 +354,7 @@ def run_multi():
         #['/WJetsToLNu_HT-1200To2500_'+TuneCP5MP+'/'+RunIIS+'-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',1],
         #['/WJetsToLNu_HT-2500ToInf_'+TuneCP5MP+'/'+RunIIS+'-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',1],
 
-        ['/TTJets_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',1],
+        #['/TTJets_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM',1],
 
     ] 
 

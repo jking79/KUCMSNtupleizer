@@ -1,3 +1,3 @@
-ecal_config/gammares_prmt25_EGamma0_Run2025G.txt 387742 398903 r3_p25 0
-ecal_config/gammares_prmt25_EGamma1_Run2025G.txt 387742 398903 r3_p25 0
-ecal_config/gammares_prmt25_EGamma2_Run2025G.txt 387742 398903 r3_p25 1
+EGamma0 Run2025G 387742 398903 r3_p25 0
+EGamma1 Run2025G 387742 398903 r3_p25 0
+EGamma2 Run2025G 387742 398903 r3_p25 1

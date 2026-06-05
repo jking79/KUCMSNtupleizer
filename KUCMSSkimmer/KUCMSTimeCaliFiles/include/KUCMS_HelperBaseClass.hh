@@ -25,6 +25,7 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <cstdio>
 
 #include <cmath>
 #include <limits>
