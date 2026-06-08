@@ -72,7 +72,7 @@ def relative_to_start(full_path: str, start_dir: str) -> str:
     return full_n
 
 
-def extract_run_era_by_string(path_str: str, year: str = "2024") -> str:
+def extract_run_era_by_string(path_str: str, year: str = "2025") -> str:
     """
     String-only era finding:
       finds 'Run2024B', 'Run2024C', etc as substrings.
@@ -99,8 +99,8 @@ def uniq_preserve_order(items):
 def main():
     # Inputs
     start_dir = sys.argv[1] if len(sys.argv) > 1 else "/store/user/lpcsusylep/jaking/KUCMSNtuple/"
-    dir_pattern = sys.argv[2] if len(sys.argv) > 2 else ""
-    year = sys.argv[3] if len(sys.argv) > 3 else "2024"  # optional year override
+    dir_pattern = sys.argv[2] if len(sys.argv) > 2 else "kucmsntuple_JetMET_R25_SVHPM100_v34/JetMet0/"
+    year = sys.argv[3] if len(sys.argv) > 3 else "2025"  # optional year override
 
     start_dir = start_dir.rstrip("/")
 

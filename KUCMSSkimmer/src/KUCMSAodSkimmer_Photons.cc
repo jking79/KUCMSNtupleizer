@@ -425,11 +425,11 @@ void KUCMSAodSkimmer::processPhotons(){
 	bool dijetscr = false;
 	bool spikecr = false;
 	bool bhcr = false;
-    	ClusterObj phoobj;
-    	_ca.NoClusterRhs(phoobj, true);
-    	vector<float> photonIDscores;
-     	map<string, double> isomap;
-        MakePhotonIsoMap(it, isomap);
+    ClusterObj phoobj;
+    _ca.NoClusterRhs(phoobj, true);
+    vector<float> photonIDscores;
+    map<string, double> isomap;
+    MakePhotonIsoMap(it, isomap);
 	if(overMaxEta){ //endcap
 		phoobj.CalculateEndcapPhotonIDScores(pt, isomap);
 	} else { //barrel

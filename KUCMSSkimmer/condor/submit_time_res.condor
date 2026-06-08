@@ -1,29 +1,72 @@
+# ================================
+# HTCondOR SUBMIT FILE
+# Time Resolution Jobs
+# ================================
+
 universe = vanilla
+
+# Main execution script (runs inside job sandbox)
 executable = run_time_res_job.sh
 
+# Main execution script (runs inside job sandbox)
+use_x509userproxy = true
+
+# Use user proxy for grid / EOS access
 should_transfer_files = YES
 when_to_transfer_output = ON_EXIT
 
-transfer_input_files = configres.tgz
+# Input files shipped with each job
+# - CMSSW sandbox
+# - config bundle (contains executable + configs)
+transfer_input_files = /uscms/home/mlazarov/nobackup/sandboxes/sandbox-CMSSW_13_3_3.tar.bz2, configres.tgz
+
+# Expected output file (must match what script produces)
 transfer_output_files = $(OutputFile)
 
+# Log files (per job)
 output = Output/timeRes_$(Tag).out
 error  = Output/timeRes_$(Tag).err
 log    = Output/timeRes_$(Tag).log
 
+# Log files (per job)
 request_cpus = 1
 request_memory = 6000MB
 request_disk = 8000MB
 
+# Job runtime class (~1 day max)
 +JobFlavour = "tomorrow"
 
-arguments = true false false $(NameExt)
+# ============================================
+# ARGUMENTS
+# Order:
+# 1. Input calibration file
+# 2. Apply scale (true/false)
+# 3. Use calibration (true/false)
+# 4. Apply smearing (true/false)
+# 5. Name extension (used in output file naming)
+# ============================================
+#arguments = $(InputFile) true true false $(NameExt)
+arguments = $(InputFile) true false false $(NameExt)
+
+# Output file expected from job
+# MUST match what bash script produces
 OutputFile = res2dPlots$(NameExt).root
 
-queue Tag, NameExt from (
-25Cp _eg_25Cp_xa_pm24b1200_v0422
-25Dp _eg_25Dp_xa_pm24b1200_v0422
-25Ep _eg_25Ep_xa_pm24b1200_v0422
-25Fp _eg_25Fp_xa_pm24b1200_v0422
-25Gp _eg_25Gp_xa_pm24b1200_v0422
+# ============================================
+# JOB QUEUE
+# Format:
+# Tag | InputFile | NameExt
+# ============================================
+queue Tag, InputFile, NameExt from (
+lg_nocali_cc_25Cp ecal_config/kucmsTimeCaliR25CPrmptTFile.txt _lg_nocali_cc_eg_25Cp_xa_pm24b1200_v0422
+lg_nocali_cc_25Dp ecal_config/kucmsTimeCaliR25DPrmptTFile.txt _lg_nocali_cc_eg_25Dp_xa_pm24b1200_v0422
+lg_nocali_cc_25Ep ecal_config/kucmsTimeCaliR25EPrmptTFile.txt _lg_nocali_cc_eg_25Ep_xa_pm24b1200_v0422
+lg_nocali_cc_25Fp ecal_config/kucmsTimeCaliR25FPrmptTFile.txt _lg_nocali_cc_eg_25Fp_xa_pm24b1200_v0422
+lg_nocali_cc_25Gp ecal_config/kucmsTimeCaliR25GPrmptTFile.txt _lg_nocali_cc_eg_25Gp_xa_pm24b1200_v0422
 )
+
+# NOTE:
+# If job fails to transfer output:
+# - Check executable return code (must be 0)
+# - Check output filename matches $(OutputFile)
+# - Check file is created in top-level directory

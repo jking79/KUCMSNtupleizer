@@ -105,6 +105,8 @@ class KUCMSAodSkimmer : public llpgtree {
     void SetDoBHC( bool f ){ doBHC = f; }
     void SetOutFileName( std::string  ofn ){ outFileName = ofn; }
     void SetDoSV( bool f ){ doSVs = f; }
+	void SetLocalSkip( int skip ){ localSkip = skip; }
+	void SetUseUnCC( bool f ){ useUnCC = f; }
 
 	// set branches
 
@@ -154,6 +156,7 @@ class KUCMSAodSkimmer : public llpgtree {
     float getTimeSig( const std::vector<int>& scIndexs, float& num, float& denom, const std::vector<float>& eledelay = {} );
 	float getTimeSig( int scIndex, float& num, float& denom, const map<unsigned int, float>& rhIdToBHCw  = {});
 	float getTimeSig( const vector<vector<unsigned int>>& rhids );
+	void setMCTargetResTag( std::string tag ){ mctrtag = tag; };
 
 	void MakePhotonIsoMap(int phoidx, map<string, double>& isomap);
 	// object quality functions
@@ -264,6 +267,7 @@ class KUCMSAodSkimmer : public llpgtree {
 	float mcwgt;
 	int mctype;
 	std::string tctag;
+	std::string mctrtag;
 
 	bool genSigPerfectFlag;
 	bool noSVorPhoFlag;
@@ -271,6 +275,8 @@ class KUCMSAodSkimmer : public llpgtree {
 	bool hasGenInfoFlag;
     bool doBHC;
 	bool doSVs;
+
+	bool useUnCC;
 
 	// input tree, paths, and file names
 
@@ -304,6 +310,7 @@ class KUCMSAodSkimmer : public llpgtree {
 
 	//condor v local varibles
 	bool isLocal;
+	int localSkip;
 	
 	// hem veto 
     bool hasHemObj;

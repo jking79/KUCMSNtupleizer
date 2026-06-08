@@ -176,7 +176,11 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 	float getCorrectedTime( float time, float amplitude, unsigned int rechitID, 
 			unsigned int Evt_run, std::string dataSetKey, int mctype, bool gs6, bool gs1 )
 			{ int gid = ( gs6 || gs1 ) ? 2 : 1; return getCorrectedTime( time, amplitude, rechitID, Evt_run, dataSetKey, mctype, gid ); };
-    float getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey, int mctype );
+    float getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, 
+			std::string dataSetKey, int mctype, int gainID = 1 );
+    float getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, 
+			std::string dataSetKey, int mctype, bool gs6, bool gs1 )
+			{ int gid = ( gs6 || gs1 ) ? 2 : 1; return getTimeResoltuion( amplitude, rechitID, Evt_run, dataSetKey, mctype, gid ); };
 
 	float getCalibration( uInt rhid, int run, std::string tag, int gainID = 1 ); // tag indicates which calibration set to use
     float getCalibration( uInt rhid, int run, int gainID = 1 )

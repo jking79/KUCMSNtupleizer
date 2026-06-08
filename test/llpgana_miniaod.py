@@ -35,7 +35,7 @@ options.register('runMETFilters',False,VarParsing.multiplicity.singleton,VarPars
 #options.register('globalTag','106X_mc2017_realistic_v6',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','106X_upgrade2018_realistic_v15_L1v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 ###options.register('globalTag','94X_mc2017_realistic_v11',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
-#options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for sig22 MC');
+options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for sig22 MC');
 #options.register('globalTag','124X_mcRun3_2022_realistic_v12',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for sig22 MC');
 #options.register('globalTag','130X_mcRun3_2023_realistic_v14',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','133X_mcRun3_2024_realistic_v10',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
@@ -43,6 +43,8 @@ options.register('runMETFilters',False,VarParsing.multiplicity.singleton,VarPars
 ##options.register('globalTag','112X_mcRun3_2021_realistic_v16',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 #options.register('globalTag','140X_dataRun3_v17',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for R3 22');
 #options.register('globalTag','130X_mcRun3_2023_realistic_postBPix_v2',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for R3 23');
+
+#124X_mcRun3_2022_realistic_postEE_v1
 
 ##------------------ data gt  
 #options.register('globalTag','106X_dataRun2_v36',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
@@ -52,12 +54,12 @@ options.register('runMETFilters',False,VarParsing.multiplicity.singleton,VarPars
 ##options.register('globalTag','106X_dataRun2_v24',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2018UL');
 #112X_mcRun3_2021_realistic_v16
 # DATA 2025
-options.register('globalTag','150X_dataRun3_Prompt_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag for 2025');
+#options.register('globalTag','150X_dataRun3_Prompt_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag for 2025');
 
 ## processName
 options.register('processName','TREE',VarParsing.multiplicity.singleton,VarParsing.varType.string,'process name to be considered');
 
-outfilename = 'kucmsntuple.root'
+outfilename = 'kucmsntuple_localtest.root'
 if options.multicrab == True : 
     outfilename = 'kucmsntuple.root'
 
@@ -68,7 +70,8 @@ options.parseArguments()
 
 ## Define the CMSSW process
 #runera = "Run3"  # current siganl model   !!!!!!!!  Run3 must be in CMSSW 14 or 15
-runera = "Run3_2025"
+#runera = "Run3_2025"
+runera = "Run3_2022"
 #runera = "Run2_2018" # BG models
 ##runera = "Run2_2016"
 if options.multicrab == True : runera = options.runera
@@ -166,10 +169,10 @@ process.source = cms.Source("PoolSource",
         #'root://cms-xrd-global.cern.ch//store/data/Run2017D/DoubleEG/MINIAOD/09Aug2019_UL2017-v1/260000/3879D624-EAFF-C34B-8C0E-D4D7E23EB25C.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2018D/EGamma/MINIAOD/UL2018_MiniAODv2-v2/2810000/D5E0889C-D687-6242-8105-A147939E99C4.root',
         #'root://cmsxrootd.fnal.gov//store/data/Run2018B/JetHT/MINIAOD/15Feb2022_UL2018-v1/2820000/84DEEA91-CF7B-C24B-831D-7D993EB56D8D.root',
-        'root://cmsxrootd.fnal.gov//store/data/Run2025F/JetMET0/MINIAOD/PromptReco-v1/000/396/733/00000/40cf55f8-5609-44a7-b73b-c74f4ae04076.root',
+        #'root://cmsxrootd.fnal.gov//store/data/Run2025F/JetMET0/MINIAOD/PromptReco-v1/000/396/733/00000/40cf55f8-5609-44a7-b73b-c74f4ae04076.root',
 
         # MC - Sig
-        
+        'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-3p0_MINI/260510_002204/0000/SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-3p0_MiniAODv4_17.root'
         #'file:gjets_100to200_mini_18UL.root',
         #'root://cmsxrootd.fnal.gov//store/mc/RunIISummer20UL18MiniAODv2/GJets_HT-200To400_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/2550000/02DB3B2A-F2FE-4041-AA6F-45D8732CB5A8.root',    
         #'root://cmsxrootd.fnal.gov//store/mc/Run3Summer23BPixMiniAODv4/QCD-4Jets_HT-1000to1200_TuneCP5_13p6TeV_madgraphMLM-pythia8/MINIAODSIM/130X_mcRun3_2023_realistic_postBPix_v2-v4/2550000/095a8ffe-1d09-4d04-bb7e-56903d510c3e.root',
@@ -188,27 +191,27 @@ process.source = cms.Source("PoolSource",
 # Override hardcoded source file(s) when inputFiles is passed on the command line
 # (e.g. cmsRun llpgana_miniaod.py inputFiles=root://... maxEvents=100)
 # Read sys.argv directly to avoid VarParsing list-default quirks.
-import sys as _sys
-_cmdInputFiles = [a.split('=', 1)[1] for a in _sys.argv if a.startswith('inputFiles=')]
-if _cmdInputFiles:
-    process.source.fileNames = cms.untracked.vstring(_cmdInputFiles)
+#import sys as _sys
+#_cmdInputFiles = [a.split('=', 1)[1] for a in _sys.argv if a.startswith('inputFiles=')]
+#if _cmdInputFiles:
+#    process.source.fileNames = cms.untracked.vstring(_cmdInputFiles)
 
 ## How many events to process
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250))#KT
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
 
 # Override hardcoded source file(s) when inputFiles is passed on the command line
-_cmdMaxEvents = [a.split('=', 1)[1] for a in _sys.argv if a.startswith('maxEvents=')]
-if _cmdMaxEvents:
-    process.maxEvents.input = cms.untracked.int32(int(_cmdMaxEvents[-1]))
+#_cmdMaxEvents = [a.split('=', 1)[1] for a in _sys.argv if a.startswith('maxEvents=')]
+#if _cmdMaxEvents:
+#    process.maxEvents.input = cms.untracked.int32(int(_cmdMaxEvents[-1]))
 
-#genInfo = True
-genInfo = False
+genInfo = True
+#genInfo = False
 if options.multicrab == True : genInfo = options.hasGenInfo		   
 
 ecalIsoInputsF17 = 'RecoEgamma/ElectronIdentification/data/Fall17/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_94X.txt'
@@ -247,7 +250,7 @@ if options.multicrab == True : probeout = False
 isCC = False
 flagSet = "RECO"
 triggerSet = "HLT" # ? SIM, HLT, RECO, PAT
-convSet = "RECO"
+convSet = "PAT"
 ecalIsoInputs = ecalIsoInputsF17
 
 if "Run2" in runera and genInfo is True :
@@ -264,11 +267,17 @@ if "Run3" in runera :
     if 'CASTOR' in process.CaloGeometryBuilder.SelectedCalos : 
         process.CaloGeometryBuilder.SelectedCalos.remove('CASTOR') 
 
-if "Run3_2024" or "Run3_2025" in runera :
+#if "Run3_2022" in runera :
+#    convSet = "PAT"
+#    flagSet = "PAT"
+
+if "Run3_2024" in runera :
     convSet = "RECO"
     flagSet = "RECO"
 
 if "Run3_2025" in runera :
+    convSet = "RECO"
+    flagSet = "RECO"
     isCC = True
 
 if runMETFilters == True : flagSet = ""  # ?  "SIM" for MC
@@ -282,7 +291,7 @@ if options.multicrab == True : makeTrigList = False
 
 print( "Using options : mutlicrab = ",options.multicrab," geninfo = ",genInfo," filter = ",filterselect )
 print( "Using options : momChase = ",genMomChase," trgiList = ",makeTrigList," probeout = ",probeout ) 
-print( "Using options : doDisEle = (NU) ",dode," doSVs = ",dosv," doECALTrackOnly = (NU) ",doet )
+print( "Using options : conv/flag = ",convSet,"/",flagSet," doSVs = ",dosv," runEra = ",runera )
 print( "Using options : globalTag = ",options.globalTag," trigger set = ",triggerSet, " and ", flagSet )
 print( "With output file name : ",options.outputFileName )
 

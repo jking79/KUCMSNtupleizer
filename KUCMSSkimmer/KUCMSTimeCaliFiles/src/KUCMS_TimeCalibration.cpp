@@ -65,7 +65,8 @@ KUCMS_TimeCalibration::KUCMS_TimeCalibration( bool stayOpen, bool makeNew ){
     curXIov = "prompt";
 	curLumiTag = "r2ul";
 
-	resTag = "default";  // NOTE: resolution used for PDs in set in master file lists, this is resoltion of MC for smearing
+	//resTag = "default";  // NOTE: resolution used for PDs in set in master file lists, this is targ resoltion of MC for smearing
+    resTag = "r2_ul18";
 
 	eosDir = "root://cmseos.fnal.gov//store/user/jaking/";
 	inDir = "";
@@ -679,6 +680,8 @@ void KUCMS_TimeCalibration::ReadResFile(){
     float ebnoise, ebstoch, ebstant, eenoise, eestoch, eestant;
     while( infile >> tag >> ebnoise >> ebstoch >> ebstant >> eenoise >> eestoch >> eestant ){
         ResTagSet[tag] = { ebnoise, ebstoch, ebstant, eenoise, eestoch, eestant };
+		std::cout << " -- restag : " << tag << " " << ebnoise << " " << ebstoch << " " << ebstant << " " << eenoise;
+        std::cout << " " << eestoch << " " << eestant << std::endl;
     }//<<>>while (infile >>
     infile.close();
 
@@ -1157,7 +1160,7 @@ void KUCMS_TimeCalibration::makeCaliMaps(){
 						uInt detid = InvDetIDMap[iphi][i1][ec];
 						float sum = CaliHists[sfilename].h2f->GetBinContent(ieta,iphi);
 						float sum2 = CaliHists[s2filename].h2f->GetBinContent(ieta,iphi);
-                		int occ = CaliHists[ofilename].h2f->GetBinContent(ieta,iphi);
+                		float occ = CaliHists[ofilename].h2f->GetBinContent(ieta,iphi);
 						if( occ == 0 ) continue;
 						//std::cout << " " << detid << " " << sum << " " << sum2;
 						calirunsct.second.sumCntMap[detid] = { sum, sum2, occ };
@@ -1202,7 +1205,7 @@ void KUCMS_TimeCalibration::makeCaliMaps(){
 						uInt detid = getInvTTId( iphi, i1, isEB );
                         float sum = CaliHists[sfilename].h2f->GetBinContent(ieta,iphi);
                         float sum2 = CaliHists[s2filename].h2f->GetBinContent(ieta,iphi);
-                        int occ = CaliHists[ofilename].h2f->GetBinContent(ieta,iphi);
+                        float occ = CaliHists[ofilename].h2f->GetBinContent(ieta,iphi);
                         if( occ == 0 ) continue;
                         //std::cout << " " << detid << " " << sum << " " << sum2;
                         calirunsct.second.sumCntMap[detid] = { sum, sum2, occ };
@@ -1252,7 +1255,7 @@ void KUCMS_TimeCalibration::LoadExtCali( std::string calihist, std::string mapna
             int i1 = ieta - 86;
             if( i1 == 0 ) continue;
             uInt detid = InvDetIDMap[iphi][i1][ECAL::EB];
-            int occ = ohist->GetBinContent(ieta,iphi);
+         	float occ = ohist->GetBinContent(ieta,iphi);
             if( occ == 0 ) continue;
             //std::cout << " " << detid << " " << sum << " " << sum2;
             CaliRunMapSet[tag][startr].sumCntMap[detid] = { 0, 0, occ };
@@ -1368,7 +1371,7 @@ float KUCMS_TimeCalibration::getCalibration( uInt rhid, int run, std::string tag
     //if( not validCurrentTag ){ std::cout << "No current tag set." << std::endl; return 0.f; }
     //if( DetIDMap[rhid].ecal != ECAL::EB ) return 0.f;
     float xtaltime = -1000.f;
-	float hgcali = ( externalCali ) ? 0.f : ( gainID > 1 ) ? getTTCali( rhid, run, tag, 2 ) : 0.f;
+	float hgcali = ( externalCali ) ? 0.f : ( gainID != 1 ) ? getTTCali( rhid, run, tag, 2 ) : 0.f;
 	float ttcali = ( externalCali ) ? 0.f : getTTCali( rhid, run, tag, 1 );
     for( auto& calirunmap : CaliRunMapSet[tag] ){
 		int endrun = calirunmap.second.endRun;
@@ -1482,21 +1485,59 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
 }//<<>>float getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey )
 */
 
-float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey, int mctype ){
+float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey, int mctype, int gianID ){
 
     if( amplitude == 0 ) return 100.f;
     bool isEB( DetIDMap[rechitID].ecal == ECAL::EB );
     float var = ( dataSetKey == "None" ) ? -1 : -99;
-    if( mctype < 100 ){ // data
+    if( mctype == 1 ){ // data or MC
 		if( ResTagSet.find(dataSetKey) != ResTagSet.end() ){
 			float noise = isEB ? ResTagSet[dataSetKey].ebnoise : ResTagSet[dataSetKey].eenoise;
             float stoch = isEB ? ResTagSet[dataSetKey].ebstoch : ResTagSet[dataSetKey].eestoch;
             float stant = isEB ? ResTagSet[dataSetKey].ebstant : ResTagSet[dataSetKey].eestant;
 			var = sq2(noise/amplitude) + sq2(stoch)/amplitude + 2*sq2(stant);
+			if( dataSetKey == "r3_p25" and gianID != 1 and amplitude > 250 ){
+				if( isEB ) var = ( amplitude > 800 ) ? 0.621 : ( amplitude > 600 ) ? 0.207 : ( amplitude > 400 ) ? 0.178 : 
+									( amplitude > 300 ) ? 0.182 : 0.192;
+                else var = ( amplitude > 800 ) ? 0.217 : ( amplitude > 600 ) ? 0.205 : ( amplitude > 400 ) ? 0.178 : 
+									( amplitude > 300 ) ? 0.158 : 0.159;
+			}//<<>>if( dataSetKey == "r3_p25" and gianID != 1 and amplitude > 250  )
+            if( dataSetKey == "r3_p25unc" and gianID != 1 and amplitude > 250 ){
+                if( isEB ) var = ( amplitude > 800 ) ? 0.618 : ( amplitude > 600 ) ? 0.173 : ( amplitude > 400 ) ? 0.157 : 
+									( amplitude > 300 ) ? 0.162 : 0.174;
+                else var = ( amplitude > 800 ) ? 0.240 : ( amplitude > 600 ) ? 0.234 : ( amplitude > 400 ) ? 0.214 : 
+									( amplitude > 300 ) ? 0.202 : 0.207;
+            }//<<>>if( dataSetKey == "r3_p25unc" and gianID != 1 and amplitude > 250 )
+            if( dataSetKey == "r3_p25" and gianID == 1 and amplitude > 250 ){
+                if( isEB ) var = ( amplitude > 800 ) ? 0.193 : ( amplitude > 600 ) ? 0.181 : ( amplitude > 400 ) ? 0.174 : 
+									( amplitude > 300 ) ? 0.183 : 0.192;
+                else var = ( amplitude > 800 ) ? 0.207 : ( amplitude > 600 ) ? 0.203 : ( amplitude > 400 ) ? 0.178 : 
+									( amplitude > 300 ) ? 0.159 : 0.159;
+            }//<<>>if( dataSetKey == "r3_p25"  and gianID == 1 and amplitude > 250  )
+            if( dataSetKey == "r3_p25unc" and gianID == 1 and amplitude > 250 ){
+                if( isEB ) var = ( amplitude > 800 ) ? 0.147 : ( amplitude > 600 ) ? 0.158 : ( amplitude > 400 ) ? 0.151 : 
+									( amplitude > 300 ) ? 0.162 : 0.174;
+                else var = ( amplitude > 800 ) ? 0.227 : ( amplitude > 600 ) ? 0.230 : ( amplitude > 400 ) ? 0.214 : 
+									( amplitude > 300 ) ? 0.202 : 0.207;
+            }//<<>>if( dataSetKey == "r3_p25"  and gianID == 1 and amplitude > 250  )
 		}//<<>>if( ResTagSet.find(tag) != ResTagSet.end() )
     }//<<>>if( mctype == 0 )
+    else if( mctype == 0 or mctype == 2 ){ // data or MC   --- resTag is the target resolution for smearing
+		std::string themctag = ( resTag == "None" ) ? dataSetKey : resTag;
+        if( ResTagSet.find(themctag) != ResTagSet.end() ){
+            float noise = isEB ? ResTagSet[themctag].ebnoise : ResTagSet[themctag].eenoise;
+            float stoch = isEB ? ResTagSet[themctag].ebstoch : ResTagSet[themctag].eestoch;
+            float stant = isEB ? ResTagSet[themctag].ebstant : ResTagSet[themctag].eestant;
+            var = sq2(noise/amplitude) + sq2(stoch)/amplitude + 2*sq2(stant);
+			//std::cout << " --- getting MC res for : " << themctag << " " << noise << " " << stoch;
+			//std::cout << " " << stant << " " << var << std::endl;
+        }//<<>>if( ResTagSet.find(tag) != ResTagSet.end() )
+    }//<<>>if( mctype == 0 )
+	else var = -9;
     if( var < -10 ) std::cout << " -- Resolution for ResTag : " << dataSetKey << " -- not found !!!!!!" << std::endl;
+    if( var < -5 ) std::cout << " -- MC Type set to : " << mctype << " -- not a valid type !!!!!!" << std::endl;
     if( var < 0 ){
+		std::cout << " -- Setting resolution to default values !!!!! " << std::endl;
 		std::string tag = "default";
         float noise = isEB ? ResTagSet[tag].ebnoise : ResTagSet[tag].eenoise;
         float stoch = isEB ? ResTagSet[tag].ebstoch : ResTagSet[tag].eestoch;
@@ -1511,100 +1552,114 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
 float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsigned int rechitID, 
 												unsigned int Evt_run, std::string dataSetKey, int mctype, int gainID ){
 
+	//getTimeResoltuion( amplitude, rechitID, Evt_run, dataSetKey, mctype, gianID )
 	// NOTE :: dataSetKey is the tctag in this function!!!!    named wring here - please correct
 	double rtime = 0;
     //if( Evt_run > 388000 || Evt_run < 253984 ) return time; // within calibrated run range check
 
     if( mctype == 1 ){ // data
 		
-        if( CaliRunMapSet.find(dataSetKey) != CaliRunMapSet.end() ) rtime = time - getCalibration( rechitID, Evt_run, dataSetKey, gainID );
+        if( CaliRunMapSet.find(dataSetKey) != CaliRunMapSet.end() ) rtime = time - getCalibration(rechitID,Evt_run,dataSetKey,gainID);
 		else return time;    
 
     } else { // MC
 
+		double ctime = 0;
+		double tarvar = 0;
+		double sorvar = 0;
+		if( CaliRunMapSet.find(dataSetKey) != CaliRunMapSet.end() ) ctime = time - getCalibration(rechitID,Evt_run,dataSetKey,gainID);
+        else ctime = time;
 		//std::cout << " Pre Check amplitude : " << amplitude << std::endl;
-		if( amplitude < 1 ) return time;
-        if( time == 0 ) return time;
-		if( resTag == "None" ) return time;
-		if( dataSetKey == "None" ) return time;
+		if( amplitude < 1 ) return ctime;
+        if( time == 0 ) return ctime;
+		if( resTag == "None" ) return ctime; // --- resTag is the target resolution for smearing
+		if( dataSetKey == "None" ) return ctime; // dataSetKey is the calibration used && source resolution for smearing
 		//std::cout << " Post Check amplitude : " << amplitude << std::endl;
 
-		bool isEB( DetIDMap[rechitID].ecal == ECAL::EB );
-        double ebnoise, ebstoch, ebstant, eenoise, eestoch, eestant;
-		double mcebnoise(0), mcebstoch(0), mcebstant(0), mceenoise(0), mceestoch(0), mceestant(0);
+		//bool isEB( DetIDMap[rechitID].ecal == ECAL::EB );
+        //double ebnoise, ebstoch, ebstant, eenoise, eestoch, eestant;
+		//double mcebnoise(0), mcebstoch(0), mcebstant(0), mceenoise(0), mceestoch(0), mceestant(0);
 		if( resTag != "default" && ResTagSet.find(resTag) != ResTagSet.end() ){  // TARGET RESOLUTION
 
-            ebnoise = ResTagSet[resTag].ebnoise;
-            ebstoch = ResTagSet[resTag].ebstoch;
-            ebstant = ResTagSet[resTag].ebstant;
-            eenoise = ResTagSet[resTag].eenoise;
-            eestoch = ResTagSet[resTag].eestoch;
-            eestant = ResTagSet[resTag].eestant;
+			tarvar = getTimeResoltuion( amplitude, rechitID, Evt_run, resTag, mctype, gainID );
+            //ebnoise = ResTagSet[resTag].ebnoise;
+            //ebstoch = ResTagSet[resTag].ebstoch;
+            //ebstant = ResTagSet[resTag].ebstant;
+            //eenoise = ResTagSet[resTag].eenoise;
+            //eestoch = ResTagSet[resTag].eestoch;
+            //eestant = ResTagSet[resTag].eestant;
 			
 		}//<<>>if( resTag != "default" )
 		else if( resTag == "default" || dataSetKey.substr(1,2) == "r2" ){ // use smear tag?  -- check first for set tag ! 
 
             std::string tag= "r2_ul18";
-            ebnoise = ResTagSet[tag].ebnoise;
-            ebstoch = ResTagSet[tag].ebstoch;
-            ebstant = ResTagSet[tag].ebstant;
-            eenoise = ResTagSet[tag].eenoise;
-            eestoch = ResTagSet[tag].eestoch;
-            eestant = ResTagSet[tag].eestant;
+			tarvar = getTimeResoltuion( amplitude, rechitID, Evt_run, tag, mctype, gainID );
+            //ebnoise = ResTagSet[tag].ebnoise;
+            //ebstoch = ResTagSet[tag].ebstoch;
+            //ebstant = ResTagSet[tag].ebstant;
+            //eenoise = ResTagSet[tag].eenoise;
+            //eestoch = ResTagSet[tag].eestoch;
+            //eestant = ResTagSet[tag].eestant;
 
 		}//<<>>if( dataSetKey.substr(1,2) == "r2" )
         else if( dataSetKey.substr(1,2) == "r3" ){ 
 
-			mcebnoise = 0; mcebstoch = 0; mcebstant = 0; mceenoise = 0; mceestoch = 0; mceestant = 0; 
+			//tarvar = getTimeResoltuion( amplitude, rechitID, Evt_run, tag, mctype, gainID );
+			//mcebnoise = 0; mcebstoch = 0; mcebstant = 0; mceenoise = 0; mceestoch = 0; mceestant = 0; 
 
 		}//<<>>if( dataSetKey.substr(1,2) == "r3" )
 
 		if( ResTagSet.find(dataSetKey) != ResTagSet.end() ){ // SOURCE RESOLTUION
 
 			std::string tag = dataSetKey;
-			if( dataSetKey == "r2_ul18_mc" ) tag = "RunIISummer20UL18RECO";
+			//if( dataSetKey == "r2_ul18_mc" ) tag = "RunIISummer20UL18RECO";
+            if( dataSetKey == "r2_ul18_qcdmc" ) tag = "RunIISummer20UL18RECO";
             if( dataSetKey == "r3_mc" ) tag = "theRun3MC_campain";
+			sorvar = getTimeResoltuion( amplitude, rechitID, Evt_run, tag, mctype, gainID );
 
-			mcebnoise = ResTagSet[tag].ebnoise;
-            mcebstoch = ResTagSet[tag].ebstoch;
-            mcebstant = ResTagSet[tag].ebstant;
-            mceenoise = ResTagSet[tag].eenoise;
-            mceestoch = ResTagSet[tag].eestoch;
-            mceestant = ResTagSet[tag].eestant;
+			//mcebnoise = ResTagSet[tag].ebnoise;
+            //mcebstoch = ResTagSet[tag].ebstoch;
+            //mcebstant = ResTagSet[tag].ebstant;
+            //mceenoise = ResTagSet[tag].eenoise;
+            //mceestoch = ResTagSet[tag].eestoch;
+            //mceestant = ResTagSet[tag].eestant;
 
 		} else { // 2018 MC Resoltion values
 
-            mcebnoise = 26.04; mcebstoch = 1.00; mcebstant = 0.1071; mceenoise = 38.69; mceestoch = 0; mceestant = 0.0843;  
+			std::string tag = "default";
+			sorvar = getTimeResoltuion( amplitude, rechitID, Evt_run, tag, mctype, gainID );
+            //mcebnoise = 26.04; mcebstoch = 1.00; mcebstant = 0.1071; mceenoise = 38.69; mceestoch = 0; mceestant = 0.0843;  
 
 		}//<<>>if( ResTagSet.find(tag) != ResTagSet.end() )
 
 		//0.00691415 1.60666 0.133913  smearing for 2017 MC -> Data ( original smearing values )
-		double tnoise = isEB ? ebnoise : eenoise;
-        double tstoch = isEB ? ebstoch : eestoch;
-        double tstant = isEB ? ebstant : eestant;
-        double snoise = isEB ? mcebnoise : mceenoise;
-        double sstoch = isEB ? mcebstoch : mceestoch;
-        double sstant = isEB ? mcebstant : mceestant;
-		double amp = amplitude;
-		double sqamp = amp*amp;
-		double tresv = ( ((tnoise*tnoise)/(sqamp)) + ((tstoch*tstoch)/amp) + (2*tstant*tstant) )/2;
-        double sresv = ( ((snoise*snoise)/(sqamp)) + ((sstoch*sstoch)/amp) + (2*sstant*sstant) )/2;
-        //double tresv = ( ((tnoise/amp)*(tnoise/amp)) + (2*tstant*tstant) )/2;
-        //double sresv = ( ((snoise/amp)*(snoise/amp)) + (2*sstant*sstant) )/2;
+		//double tnoise = isEB ? ebnoise : eenoise;
+        //double tstoch = isEB ? ebstoch : eestoch;
+        //double tstant = isEB ? ebstant : eestant;
+        //double snoise = isEB ? mcebnoise : mceenoise;
+        //double sstoch = isEB ? mcebstoch : mceestoch;
+        //double sstant = isEB ? mcebstant : mceestant;
+		//double amp = amplitude;
+		//double sqamp = amp*amp;
+		//double tresv = ( ((tnoise*tnoise)/(sqamp)) + ((tstoch*tstoch)/amp) + (2*tstant*tstant) )/2;
+        //double sresv = ( ((snoise*snoise)/(sqamp)) + ((sstoch*sstoch)/amp) + (2*sstant*sstant) )/2;
+        ////double tresv = ( ((tnoise/amp)*(tnoise/amp)) + (2*tstant*tstant) )/2;
+        ////double sresv = ( ((snoise/amp)*(snoise/amp)) + (2*sstant*sstant) )/2;
+		double tresv = tarvar/2;
+		double sresv = sorvar/2;
         double smvar = ( tresv > sresv ) ? tresv - sresv : 0.0;//      std::max( 0.0, tresv - sresv );
         double resolution = ( smvar > 0.0 ) ? std::sqrt(smvar) : 0.0;
+        rtime = getRandom->Gaus( ctime, resolution );
     	//if( tresv - sresv < 0.0 ){ 
         if( false ){
-			std::cout << "No smearing values set for this tag : " << dataSetKey << " time " << time << std::endl;
-        	if( isEB ) std::cout << " stag eb tg smearing : " << ebnoise << " " << ebstoch << " " << ebstant << std::endl;
-            else std::cout << " stag ee tg smearing : " << eenoise << " " << eestoch << " " << eestant << std::endl;
-        	if( isEB ) std::cout << " stag eb mc smearing : " << mcebnoise << " " << mcebstoch << " " << mcebstant << std::endl;
-            else std::cout << " stag ee mc smearing : " << mceenoise << " " << mceestoch << " " << mceestant << std::endl;
-			std::cout << " smearing parameters:  t " << tresv << " s " << sresv << " amp " << amp << std::endl;
-        	std::cout << " getSmeared Res: " << resolution << " time " << time << std::endl;
+			std::cout << "No smearing values set for this tag : " << dataSetKey << " time " << time << " c " << ctime << std::endl;
+        //	if( isEB ) std::cout << " stag eb tg smearing : " << ebnoise << " " << ebstoch << " " << ebstant << std::endl;
+        //    else std::cout << " stag ee tg smearing : " << eenoise << " " << eestoch << " " << eestant << std::endl;
+        //	if( isEB ) std::cout << " stag eb mc smearing : " << mcebnoise << " " << mcebstoch << " " << mcebstant << std::endl;
+        //    else std::cout << " stag ee mc smearing : " << mceenoise << " " << mceestoch << " " << mceestant << std::endl;
+			std::cout << " smearing parameters: t " << tresv << " s " << sresv << " amp " << amplitude << std::endl;
+        	std::cout << " getSmeared Res: " << resolution << " rtime " << rtime << std::endl;
 		}//<<>>if( resolution <= 0 )
-    	rtime = getRandom->Gaus( time, resolution );
-		//std::cout << " getSmeared rtime: " << rtime << std::endl;
 		return rtime;
 
     }//<<>>if( mctype == 0 )
@@ -1630,6 +1685,9 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 
 	bool debug = false;
     //bool debug = true;
+
+	//bool doMC = true;
+    bool doMC = false;
 
 	// make generic fill with specialized calling functions for input and TT v X
 	// assume bool doTT to inicate TT of X Cali set
@@ -1680,6 +1738,7 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 	// basicly a bool (0,1) switch to indicate if we should close processing with this file or more input is coming ( false = not done ) 
 	int doLastRun = 0;
 
+	float fillwgt = 1;
     std::ifstream infilelist(inputFileName);
     std::string infilestr;
 	int finalRun = 0;
@@ -1690,14 +1749,16 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 		std::cout << std::endl;
         std::stringstream ss(infilestr);
         std::string infilename, tag;
-        int srun, erun, dolast;
+        int srun, erun, dolast, wgt;
 
         //if( !( ss >> infilename >> srun >> erun >> tag )) std::cout << "[WARN] Parse error in : " << infilestr << std::endl; continue;
-		ss >> infilename >> srun >> erun >> tag >> dolast;
+		if( doMC ) ss >> infilename >> srun >> erun >> tag >> dolast >> wgt;
+		else ss >> infilename >> srun >> erun >> tag >> dolast;
 		if( infilename.empty() || infilename[0] == '#' ){ std::cout << " -- skipping: " << infilename << std::endl; continue; }
 		std::string wichtype = doTT ? "TT" : "X";
 
 		doLastRun = dolast;
+		if( doMC ) fillwgt = wgt;
 	
 		// SET GS TAG !!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		//if( GID == 1 ){ if( debug ) std::cout << "GainID 1 tag" << std::endl; }
@@ -1868,7 +1929,9 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 								//float crstime = time;
                                 //if( crstime == 0 ) std::cout << " -- " << crsid << " = " << id;
                                 //if( crstime == 0 ) std::cout << " = e " << DetIDMap[id].i2 << " p " << DetIDMap[id].i1 << std::endl;
-								range.fillSumCnt( crsid, crstime ); // lastrun valid?????
+								//if( doMC && GID == 2 ){ 
+								//std::cout << " -- " << crstime << " <- " << bcrstime << " for " << crsid << " from " << id << std::endl;}
+								range.fillSumCnt( crsid, crstime, fillwgt ); // lastrun valid?????
 							}//<<>>for( int idx = 0; idx < nRecHits; idx++ )
 
 						}//<<>>if( run > range.lastRun )
@@ -1931,7 +1994,7 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
                         uInt crsid = doTT ? getTTId( id, GID ) : id;
                         float bcrstime = ( not doTT && doCali ) ? time - getTTCali( id, run, tag ) : time;
 						float crstime = ( doTT && doCali && gainid != 1  ) ? bcrstime - getCalibration( id, run, tag ) : bcrstime;
-						calirunset[tag][tstart].fillSumCnt( crsid, crstime );
+						calirunset[tag][tstart].fillSumCnt( crsid, crstime, fillwgt );
                     }//<<>>for( int idx = 0; idx < nRecHits; idx++ )
 				} // else { std::cout << "No IOV for this run/tag " << run << " - " << tag << " ? !!!!!!! " << std::endl; }
 
@@ -2387,6 +2450,7 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
     TBranch        *b_rhisGS1;   //!
 
     std::string nocalistr("_NoCali");
+    std::string uncorstr("_UnCorr");
     std::string smearstr("_Smeared");
     std::string lochist("_SRO_Data_Hist");
     std::string druhist("_DRO_Data_Hist");
@@ -2419,16 +2483,41 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
     std::cout << "open input files list : " << inputFileName << std::endl;
 
     std::ifstream infilelist(inputFileName);
+	if( !infilelist.is_open() ){
+    	std::cerr << "ERROR: could not open input file list: " << inputFileName << std::endl;
+    	return;
+	}//<<>>if( !infilelist.is_open() )
     std::string infilestr;
     while( std::getline( infilelist, infilestr ) ) {
 
-        std::stringstream ss(infilestr);
-        std::string infilename, tag;
-        int srun, erun;
+		if( infilestr.empty() || infilestr[0] == '#' ) continue;
 
-        ss >> infilename >> srun >> erun >> tag;
-        if( infilename[0] == '#' ) continue;
-        std::cout << "open input file : " << infilename << std::endl;
+        std::stringstream ss(infilestr);
+        std::string subdir, matchstr, tag;
+        int srun(0), erun(0);
+
+        ss >> subdir >> matchstr >> srun >> erun >> tag;
+
+        if( subdir == "None" ) subdir = "";
+        if( matchstr == "None" ) matchstr = "";
+
+        if( !subdir.empty() && subdir.back() != '/' ){ subdir += "/"; }
+
+        //std::cout << "open input file : " << infilename << std::endl;
+        std::cout << "open input entry : "
+                  << " subdir=" << subdir
+                  << " matchstr=" << matchstr
+                  << " srun=" << srun
+                  << " erun=" << erun
+                  << " tag=" << tag
+                  << std::endl;
+
+		if( isCC && doUnCC ){ 
+			if( tag == "r3_p25" ) tag = "r3_p25unc";
+            else if( tag == "r3_p26" ) tag = "r3_p26unc";
+			else { std::cout << "Bad tag found for doCC and use UnCC times " << std::endl; return; }
+		}//<<>>if( isCC && doUnCC )
+
     	if( smear ) std::cout << "with tags : " << tag << " and smearing " << resTag << std::endl;
         else std::cout << "with tags : " << tag << std::endl;
         std::cout << "For Run " << srun << " to Run " << erun << std::endl;
@@ -2448,23 +2537,78 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
         //int fileskipcnt = 0;
         int nAdded = 0;
         int nLines = 0;
-        std::ifstream infile(infilename);
-        std::string instr;
+		int nBadFiles = 0;
+
+        //std::ifstream infile(infilename);
+		//if( !infile.is_open() ){
+    	//	std::cerr << "ERROR: could not open input file list: " << infilename << std::endl;
+    	//	continue;
+		//}//<<>>if( !f || f->IsZombie() )
+        //std::string instr;
+
         auto fInTree = new TChain( treename.c_str() );
+
+		//std::string indir("KUCMSNtuple/gammares_prmt25/");
+		//std::string eosdir("root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/");
+		//  = '/store/user/lpcsusylep/jaking/'
+    	// eosh example: "cmseos.fnal.gov"
+    	// scanDir example: "/store/user/lpcsusylep/jaking/KUCMSNtuple/someDir"
+		// std::string scanDir = "/store/user/lpcsusylep/jaking/KUCMSNtuple/some/final/directory";
+    	// matchStr example: "somename.root"
+    	// std::vector<std::string> files = findEOSRootFiles(eosHost, scanDir, matchString);
+		
+		std::string eosdir = "/store/user/lpcsusylep/jaking/";
+		std::string eosHost = "cmseos.fnal.gov";
+        //auto tfilename = eosDir + inDir + instr;
+        std::string scanDir = eosdir + inDir + subdir;
+		std::cout << "Finding ROOT files under EOS directory: " << scanDir << std::endl;
+		std::vector<std::string> files = findEOSRootFiles(eosHost, scanDir, matchstr);
+		std::cout << "Found " << files.size() << " candidate ROOT files." << std::endl;
+
         std::cout << "Adding files to TChain." << std::endl;
-        while (std::getline(infile,instr)){
+        //while (std::getline(infile,instr)){
+		for (const auto& tfilename : files) {
+
+			//if( instr.empty() || instr[0] == '#' ) continue;
             nLines++;
             //fileskipcnt++;
             //if( fileskipcnt%10 != 0 ) continue;
-            auto tfilename = eosDir + inDir + instr;
+            //auto tfilename = eosDir + inDir + instr;
+
+    		TFile* testFile = TFile::Open(tfilename.c_str(), "READ");
+
+    		if( !testFile || testFile->IsZombie() || !testFile->IsOpen() ){
+        		std::cerr << "\nERROR: bad ROOT file, skipping: " << tfilename << std::endl;
+        		if( testFile ) testFile->Close();
+        		nBadFiles++;
+        		std::cout << "Z";
+        		continue;
+    		}//<<>>if( !testFile || testFile->IsZombie() || !testFile->IsOpen() )
+
+    		TTree* testTree = nullptr;
+    		testFile->GetObject(treename.c_str(), testTree);
+
+    		if( !testTree ){
+        		std::cerr << "\nERROR: missing tree " << treename << ", skipping: " << tfilename << std::endl;
+        		testFile->Close();
+        		nBadFiles++;
+        		std::cout << "T";
+        		continue;
+    		}//<<>>if( !testTree )
+
+		    testFile->Close();
             //std::cout << "opening tfile : " << tfilename << std::endl;
             std::cout << "-";
             int result = fInTree->Add(tfilename.c_str());
+
+
             if( result > 0 ){ std::cout << "-"; nAdded++; }
             else std::cout << "0";
+
+
         }//<<>>while (std::getline(infile,str))
         std::cout << std::endl;
-        std::cout << " -- [INFO] lines=" << nLines << " filesAdded=" << nAdded << std::endl;
+		std::cout << " -- [INFO] lines=" << nLines << " filesAdded=" << nAdded << " badFiles=" << nBadFiles << std::endl;
 
         run = 0;
         resRhID = 0;
@@ -2551,6 +2695,7 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
                         // if end == last : all runs in range completed, if run > last : run in range already filled
                         //if( range.lastRun >= range.endRun ){ // caliRunRange is ready for 2d res plot
                             std::string caliend = usecali ? "" : nocalistr;
+							if( doUnCC ) caliend = caliend + uncorstr;
                             if( smear ) caliend = caliend + smearstr;
                             caliend = caliend + ext;
 							std::string histMapName = "ResMap_" + std::to_string(srun) + "_" + std::to_string(erun);
@@ -2640,7 +2785,7 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
                                     for( int resrhit = 0; resrhit < 4; resrhit++ ){
                                         for( int rhit = 0; rhit < nRecHits; rhit++ ){
                                             if( (*resRhID)[resrhit] == (*rhID)[rhit] ){
-												rhGainId[resrhit] = not ( (*rhisGS1)[rhit] || (*rhisGS6)[rhit] );
+												if( (*rhisGS1)[rhit] || (*rhisGS6)[rhit] ) rhGainId[resrhit] = 2;
                                                 break;
                                             }//<>if( (*resRhID)[rhit] == (*resRhID)[resrhit] )
                                         }//<<>>for( int resrhit = 0; resrhit < nResRecHits; resrhi++ )
@@ -2688,11 +2833,6 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 
                                 if( smear ){
                                     //std::cout << "Times are smeared !!!!!" << std::endl;
-
-                                    //lyf0 = getSmearedTime( lyf0, (*resAmp)[0] );
-                                    //lyf1 = getSmearedTime( lyf1, (*resAmp)[1] );
-                                    //gyf0 = getSmearedTime( gyf0, (*resAmp)[2] );
-                                    //gyf1 = getSmearedTime( gyf1, (*resAmp)[3] );
 
 									float amp0 = ( (*resRhID)[0] > 0 ) ? (*resAmp)[0] : -999;
                                     float amp1 = ( (*resRhID)[1] > 0 ) ? (*resAmp)[1] : -999;
