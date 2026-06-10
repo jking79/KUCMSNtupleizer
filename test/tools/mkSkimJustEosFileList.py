@@ -21,7 +21,7 @@ def doCommand( command ):
 
 #mspc = '/store/user/jaking/'
 #justin = '/store/user/lpcsusylep/jaking/KUCMSNtuple/gogoG/'
-justin = '/store/user/lpcsusylep/jaking/KUCMSNtuple/sqsqG/'
+justin = '/store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/'
 #justin = '/store/user/janguian/gogoG/'
 eosll = 'eos root://cmseos.fnal.gov ls '
 eosopen = 'root://cmseos.fnal.gov/'
@@ -31,9 +31,9 @@ command = eosll+justin
 
 rootfile = '.root'
 
-#dirselect = '2500_mN2-1500_mN1-1000'
+dirselect = 'mGl-2300_mN2-1300_mN1-1000'
 
-dirselect = ''
+#dirselect = ''
 
 debug = True
 #debug = False

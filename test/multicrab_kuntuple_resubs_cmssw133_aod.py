@@ -84,9 +84,9 @@ def docrab( dataset ):
         config.Data.inputDataset   = None
         #config.Data.lumiMask       = inputJSON    # Comment out for MC only set for data !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         #config.Data.splitting     = 'Automatic' # data
-        config.Data.splitting = 'FileBased' # Justin
+        #config.Data.splitting = 'FileBased' # Justin
         config.Data.unitsPerJob  =  1
-        #config.Data.splitting    = 'EventAwareLumiBased' # MC&Data Set unitsperjob correctly for dataset !!!!!!!!!!!!!!!!!!!!!!!!!!
+        config.Data.splitting    = 'EventAwareLumiBased' # MC&Data Set unitsperjob correctly for dataset !!!!!!!!!!!!!!!!!!!!!!!!!!
         #config.Data.unitsPerJob   = 45000 # data  !!!!!! lumimask ?
         #config.Data.unitsPerJob  =  1500 # MC GMSB
         #config.Data.unitsPerJob  =  10000 # MC GJet
@@ -196,8 +196,8 @@ def docrab( dataset ):
             #config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v11','multicrab=True','hasGenInfo=True','eventSkim=AL1IsoPho']
 #>>>>>      #MC 2018
 #>>>>>>>>>>>>>>>>>>>     #2018UL #globalTag=106X_dataRun2_v37 # https://twiki.cern.ch/twiki/bin/view/CMS/PdmVRun2LegacyAnalysis
-            gt = 'globalTag=106X_dataRun2_v37'
-            config.JobType.pyCfgParams   = [gt,mcrab,efilter]
+            #gt = 'globalTag=106X_dataRun2_v37'
+            #config.JobType.pyCfgParams   = [gt,mcrab,efilter]
             #config.JobType.pyCfgParams   = [gt,mcrab,efilter,nosv]
 #-----------------------------------------------------------------------------------------------------------------------------
 

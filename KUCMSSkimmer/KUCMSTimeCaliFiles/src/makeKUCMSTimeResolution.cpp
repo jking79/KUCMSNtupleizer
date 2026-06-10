@@ -562,7 +562,6 @@ int main ( int argc, char *argv[] ){
 	////theCali.SetYBinStr( "CONSTANT 160 -4 4" );
     //sheCali.doResTimeFitExt( "PVTimeResNorm", "/uscms/home/jaking/nobackup/el9/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/macros/KUCMS_Data_llpana_v49_PVtime_Res_NueSCOnly_cv5_EG18D_RjrSkim_Hists_v3d.root");
     //theCali.doResTimeFitExt("ResMap_387742_398903_DRO_Data_Hist_eg_25Ep_xa_pm24b1200_v0501_EB","../macros/res2droot_eg_25p_cc_hg_xa_pm24b1200_v0501/res2dPlots_hg_eg_25Ep_xa_pm24b1200_v0501.root");	
-
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	///////////////   mean time by run   ////////////////////

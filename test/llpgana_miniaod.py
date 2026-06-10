@@ -44,8 +44,6 @@ options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.m
 #options.register('globalTag','140X_dataRun3_v17',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for R3 22');
 #options.register('globalTag','130X_mcRun3_2023_realistic_postBPix_v2',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for R3 23');
 
-#124X_mcRun3_2022_realistic_postEE_v1
-
 ##------------------ data gt  
 #options.register('globalTag','106X_dataRun2_v36',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 ##options.register('globalTag','106X_dataRun2_v28',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
@@ -279,6 +277,8 @@ if "Run3_2025" in runera :
     convSet = "RECO"
     flagSet = "RECO"
     isCC = True
+    convSet = "RECO"
+    flagSet = "RECO"
 
 if runMETFilters == True : flagSet = ""  # ?  "SIM" for MC
 
