@@ -376,13 +376,44 @@ void KUCMSPhotonObjectMini::LoadEvent( const edm::Event& iEvent, const edm::Even
 
     }//<<>>for( int io = 0; io < nOotPhotons; io++ )
 
+	// Build index list
+	std::vector<int> phoOrderIndx;
+	phoOrderIndx.reserve(fphotons_temp.size());
+	for( int it = 0; it < int(fphotons_temp.size()); ++it ){ phoOrderIndx.push_back(it); }
+	// Sort indices by descending photon pT.
+	// stable_sort preserves original order for exactly equal pT photons.
+	std::stable_sort(phoOrderIndx.begin(),phoOrderIndx.end(),[&](int a,int b){return fphotons_temp[a].pt() > fphotons_temp[b].pt();});
+
+	// Fill output vectors in sorted order
+	for( auto indx : phoOrderIndx ){
+
+    	fphotons.push_back(fphotons_temp[indx]);
+    	phoExcluded.push_back(phoExcluded_temp[indx]);
+    	phoIsOotPho.push_back(phoIsOotPho_temp[indx]);
+
+	}//<<>>for( auto indx : phoOrderIndx )
+
+
+/*
 	std::map< float,int > phoOrderIndx;
 	int it = 0;
 	for( auto pho : fphotons_temp ){ 
 		float ordpt = pho.pt();
-		float iordpt = ordpt;
-		float nordpt = ordpt - 0.00002;
-		while( phoOrderIndx.count(ordpt) > 0 ){ nordpt = ( iordpt + nordpt ) / 2.0; ordpt = nordpt; }
+		int nudgeCount = 0;
+		//float iordpt = ordpt;
+		//float nordpt = ordpt - 0.00002;
+		while( phoOrderIndx.count(ordpt) > 0 ){ //nordpt = ( iordpt + nordpt ) / 2.0; ordpt = nordpt; }
+			float next = std::nextafter(ordpt, -std::numeric_limits<float>::infinity());
+			if( next == ordpt ){
+            	// Fallback: force a larger downward shift.
+            	// This should almost never happen for normal positive pt,
+            	// but it guarantees forward progress.
+            	++nudgeCount;
+				float step = std::max<float>(1.0e-4f, 1.0e-6f * pho.pt());
+				ordpt = pho.pt() - nudgeCount * step;
+			}//<<>>if( next == ordpt ) 
+			else ordpt = next;
+		}//<<>>while( phoOrderIndx.count(ordpt) > 0 )
 		phoOrderIndx[ordpt] = it;
 		it++;
 	}//<<>>for( auto pho : fphotons_temp ){
@@ -394,6 +425,7 @@ void KUCMSPhotonObjectMini::LoadEvent( const edm::Event& iEvent, const edm::Even
         phoIsOotPho.push_back(phoIsOotPho_temp[phoptit->second]);
 
 	}//<<>>for( auto phoptit = phoOrderIndx.crbegin(); phoptit != phoOrderIndx.crend(); phoptit++ )
+*/
 
     if( PhotonDEBUG ) std::cout << "Finished collecting Photons/OOTPhotons" << std::endl;
 
