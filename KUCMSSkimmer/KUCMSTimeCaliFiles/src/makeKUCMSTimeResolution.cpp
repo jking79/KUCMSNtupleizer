@@ -207,16 +207,19 @@ int main ( int argc, char *argv[] ){
     ////theCali.load2DResHist( histName );
 	////theCali.doResTimeFit( histName );
 
+	//--------------------------------------------------------------------------------
 	// extended range 2D /// -----------------    set vars here ---------------------
+	//--------------------------------------------------------------------------------
+	
     //theCali.setLowEnergy( false ); // true is default
     ////theCali.setUseEffEnergy( true );
 
-    //theCali.useGainSwitch( true, true ); // use gainid ? --  do all gians ? : all Gains (HG)
+    theCali.useGainSwitch( true, true ); // use gainid ? --  do all gians ? : all Gains (HG)
     //theCali.useGainSwitch( true, false ); // use gainid ? --  do all gians ? : only gainID1 (LG)
 
-    //theCali.setIsCC(true);
+    theCali.setIsCC(true);
     //theCali.setDoUnCC(true);
-    //theCali.setIsCC(false);
+    ////theCali.setIsCC(false);//default
 
 	////theCali.setDoEE( false ); depreciated - now do EB & EE at the same time
     ////theCali.setDoEE( true ); depreciated - now do EB & EE at the same time
@@ -297,7 +300,7 @@ int main ( int argc, char *argv[] ){
     //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_25p_xa_pm24b1200_v0210" );
 	//theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_25Cp_xa_pm24b1200_v0422" );
     //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_25Dp_xa_pm24b1200_v0422" );
-    //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_25Ep_xa_pm24b1200_v0422" );
+    theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_25Ep_xa_pm24b1200_v0608" );
     //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_25Fp_xa_pm24b1200_v0422" );
     //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_25Gp_xa_pm24b1200_v0422" );
 
@@ -541,7 +544,7 @@ int main ( int argc, char *argv[] ){
     ////theCali.SetXBinStr( "VARIABLE 80.0 100.0 120.0 140.0 160.0 180.0 200.0 250.0 300.0 400.0 800.0" );
 	////theCali.SetYBinStr( "CONSTANT 160 -4 4" );
     //sheCali.doResTimeFitExt( "PVTimeResNorm", "/uscms/home/jaking/nobackup/el9/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/macros/KUCMS_Data_llpana_v49_PVtime_Res_NueSCOnly_cv5_EG18D_RjrSkim_Hists_v3d.root");
-    theCali.doResTimeFitExt("ResMap_387742_398903_DRO_Data_Hist_eg_25Ep_xa_pm24b1200_v0501_EB","../macros/res2droot_eg_25p_cc_hg_xa_pm24b1200_v0501/res2dPlots_hg_eg_25Ep_xa_pm24b1200_v0501.root");	
+    //theCali.doResTimeFitExt("ResMap_387742_398903_DRO_Data_Hist_eg_25Ep_xa_pm24b1200_v0501_EB","../macros/res2droot_eg_25p_cc_hg_xa_pm24b1200_v0501/res2dPlots_hg_eg_25Ep_xa_pm24b1200_v0501.root");	
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

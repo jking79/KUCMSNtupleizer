@@ -122,6 +122,7 @@ public :
    vector<float>   *ECALRecHit_0TOF;
    vector<float>   *ECALRecHit_pvTOF;
    vector<float>   *ECALRecHit_time;
+   //vector<float>   *ECALRecHit_UnCorrTime;
    vector<float>   *ECALRecHit_UnCorrTime;
    vector<float>   *ECALRecHit_timeError;
    vector<float>   *ECALRecHit_amplitude;
@@ -560,7 +561,8 @@ public :
    TBranch        *b_ECALRecHit_0TOF;   //!
    TBranch        *b_ECALRecHit_pvTOF;   //!
    TBranch        *b_ECALRecHit_time;   //!
-   TBranch        *b_ECALRecHit_UnCorrTime;
+   //TBranch        *b_ECALRecHit_UnCorrTime;
+   TBranch        *b_ECALRecHit_UnCorrTime;   //!
    TBranch        *b_ECALRecHit_timeError;   //!
    TBranch        *b_ECALRecHit_amplitude;   //!
    TBranch        *b_ECALRecHit_ampres;   //!
@@ -1010,6 +1012,7 @@ void Init(TTree *tree ){
    ECALRecHit_0TOF = 0;
    ECALRecHit_pvTOF = 0;
    ECALRecHit_time = 0;
+   //ECALRecHit_UnCorrTime = 0;
    ECALRecHit_UnCorrTime = 0;
    ECALRecHit_timeError = 0;
    ECALRecHit_amplitude = 0;
@@ -1268,7 +1271,7 @@ void Init(TTree *tree ){
    fChain = tree;
    fCurrent = -1;
 
-   //std::cout << " --- in Init Branches set" << std::endl;
+   //std::cout << " --- in Set Branches set 1" << std::endl;
 
   if( doSVsBase ){
    if( doGenInfoBase ){
@@ -1356,7 +1359,7 @@ void Init(TTree *tree ){
    fChain->SetBranchAddress("Vertex_z", &Vertex_z, &b_Vertex_z);
   }//<<>> doSVsBase
 
-   //std::cout << " --- in Init Branches set 3" << std::endl;
+   //std::cout << " --- in Init Branches set 3 with doUnCCBase : " << doUnCCBase << std::endl;
 
    fChain->SetBranchAddress("ECALRecHit_energy", &ECALRecHit_energy, &b_ECALRecHit_energy);
    fChain->SetBranchAddress("ECALRecHit_ID", &ECALRecHit_ID, &b_ECALRecHit_ID);
@@ -1364,7 +1367,12 @@ void Init(TTree *tree ){
    fChain->SetBranchAddress("ECALRecHit_0TOF", &ECALRecHit_0TOF, &b_ECALRecHit_0TOF);
    fChain->SetBranchAddress("ECALRecHit_pvTOF", &ECALRecHit_pvTOF, &b_ECALRecHit_pvTOF);
    fChain->SetBranchAddress("ECALRecHit_time", &ECALRecHit_time, &b_ECALRecHit_time);
-   if( doUnCCBase ) fChain->SetBranchAddress("ECALRecHit_UnCorrTime", &ECALRecHit_UnCorrTime, &b_ECALRecHit_UnCorrTime);
+   //if( doUnCCBase ) fChain->SetBranchAddress("ECALRecHit_UnCorrTime", &ECALRecHit_UnCorrTime, &b_ECALRecHit_UnCorrTime);
+   if( doUnCCBase ){ 
+		int status = fChain->SetBranchAddress("ECALRecHit_UnCorrTime", &ECALRecHit_UnCorrTime, &b_ECALRecHit_UnCorrTime);
+		//std::cout << "SetBranchAddress ECALRecHit_UnCorrTime status = "
+        //  << status << " data ptr = " << ECALRecHit_UnCorrTime << " branch ptr = " << b_ECALRecHit_UnCorrTime << std::endl;
+	}//<<>>if( doUnCCBase )
    fChain->SetBranchAddress("ECALRecHit_timeError", &ECALRecHit_timeError, &b_ECALRecHit_timeError);
    fChain->SetBranchAddress("ECALRecHit_amplitude", &ECALRecHit_amplitude, &b_ECALRecHit_amplitude);
    fChain->SetBranchAddress("ECALRecHit_ampres", &ECALRecHit_ampres, &b_ECALRecHit_ampres);
@@ -1791,9 +1799,11 @@ void Init(TTree *tree ){
 
 void getBranches( Long64_t entry ){
 
-   //std::cout << " --- in Init Branches " << std::endl;
+   if( sbDEBUG ) std::cout << " --- in Get Branches " << std::endl;
 
    // List of branches
+
+   if( sbDEBUG ) std::cout << " ----- GetEntry GenVertex " << std::endl;
 
   if( doSVsBase ){
    if( doGenInfoBase ){
@@ -1824,6 +1834,8 @@ void getBranches( Long64_t entry ){
    b_VertexTrack_isSignalTrack->GetEntry(entry);
    }//<<>>if( doGenInfoBase )
 
+   if( sbDEBUG ) std::cout << " ----- GetEntry VertexTrack " << std::endl;
+
    b_VertexTrack_SCDR->GetEntry(entry);
    b_VertexTrack_energySC->GetEntry(entry);
    b_VertexTrack_ratioPToEnergySC->GetEntry(entry);
@@ -1846,6 +1858,8 @@ void getBranches( Long64_t entry ){
    b_Vertex_dxy->GetEntry(entry);
    b_Vertex_dxyError->GetEntry(entry);
    b_Vertex_eta->GetEntry(entry);
+
+   if( sbDEBUG ) std::cout << " ----- GetEntry Vertex " << std::endl;
 
    if( doGenInfoBase ){ 
    b_Vertex_genVertexIndex->GetEntry(entry);
@@ -1879,20 +1893,31 @@ void getBranches( Long64_t entry ){
    b_Vertex_z->GetEntry(entry);
   }//<<>> doSVsBase
 
+   if( sbDEBUG ) std::cout << " ----- GetEntry ECALRecHit " << std::endl;
+
    b_ECALRecHit_energy->GetEntry(entry);
    b_ECALRecHit_ID->GetEntry(entry);
    b_ECALRecHit_swCross->GetEntry(entry);
    b_ECALRecHit_0TOF->GetEntry(entry);
    b_ECALRecHit_pvTOF->GetEntry(entry);
    b_ECALRecHit_time->GetEntry(entry);
+
+   if( sbDEBUG ) std::cout << " ----- GetEntry ECALRecHit Un " << doUnCCBase << std::endl;
+   //if( doUnCCBase ) b_ECALRecHit_UnCorrTime->GetEntry(entry);
    if( doUnCCBase ) b_ECALRecHit_UnCorrTime->GetEntry(entry);
+   if( sbDEBUG ) std::cout << " ----- GetEntry ECALRecHit Err" << std::endl;
    b_ECALRecHit_timeError->GetEntry(entry);
+   if( sbDEBUG ) std::cout << " ----- GetEntry ECALRecHit Amp" << std::endl;
    b_ECALRecHit_amplitude->GetEntry(entry);
    b_ECALRecHit_ampres->GetEntry(entry);
+
+   if( sbDEBUG ) std::cout << " ----- GetEntry BeamSpot " << std::endl;
 
    b_BeamSpot_X->GetEntry(entry);
    b_BeamSpot_Y->GetEntry(entry);
    b_BeamSpot_Z->GetEntry(entry);
+
+   if( sbDEBUG ) std::cout << " ----- GetEntry ECALRecHit 2 " << std::endl;
 
    b_ECALRecHit_bsx->GetEntry(entry);
    b_ECALRecHit_bsy->GetEntry(entry);
@@ -1913,6 +1938,8 @@ void getBranches( Long64_t entry ){
    b_ECALRecHit_rhx->GetEntry(entry);
    b_ECALRecHit_rhy->GetEntry(entry);
    b_ECALRecHit_rhz->GetEntry(entry);
+
+   if( sbDEBUG ) std::cout << " ----- GetEntry SuperCluster " << std::endl;
 
    b_SuperCluster_covEtaEta->GetEntry(entry);
    b_SuperCluster_covEtaPhi->GetEntry(entry);
@@ -1952,6 +1979,8 @@ void getBranches( Long64_t entry ){
    b_SuperCluster_x_calo->GetEntry(entry);
    b_SuperCluster_y_calo->GetEntry(entry);
    b_SuperCluster_z_calo->GetEntry(entry);
+
+   if( sbDEBUG ) std::cout << " ----- GetEntry Electron " << std::endl;
 
    b_Electron_DetaSCTV->GetEntry(entry);
    b_Electron_DphiSCTV->GetEntry(entry);
@@ -1997,6 +2026,8 @@ void getBranches( Long64_t entry ){
    b_Electron_scIndex->GetEntry(entry);
    b_Electron_hasSVMatch->GetEntry(entry);
 
+   if( sbDEBUG ) std::cout << " ----- GetEntry Flag " << std::endl;
+
    b_Flag_BadChargedCandidateFilter->GetEntry(entry);
    //TBranch        *b_Flag_BadChargedCandidateSummer16Filter->GetEntry(entry);
    b_Flag_BadPFMuonDzFilter->GetEntry(entry);
@@ -2026,6 +2057,8 @@ void getBranches( Long64_t entry ){
    //TBranch        *b_Flag_trkPOG_manystripclus53X->GetEntry(entry);
    //TBranch        *b_Flag_trkPOG_toomanystripclus53X->GetEntry(entry);
 
+   if( sbDEBUG ) std::cout << " ----- GetEntry HTL " << std::endl;
+
    if( doHTLPathsBase ){
    //TBranch        *b_HLT_PFMET100_PFMHT100_IDTight_v->GetEntry(entry);
    b_HLT_PFMET120_PFMHT120_IDTight_PFHT60_v->GetEntry(entry);
@@ -2041,6 +2074,8 @@ void getBranches( Long64_t entry ){
    //TBranch        *b_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_v->GetEntry(entry);
    }//<<>>if( doHTLPathsBase )
 
+   if( sbDEBUG ) std::cout << " ----- GetEntry Evt " << std::endl;
+
    b_Evt_luminosityBlock->GetEntry(entry);
    b_Evt_run->GetEntry(entry);
    b_Evt_event->GetEntry(entry);
@@ -2049,6 +2084,8 @@ void getBranches( Long64_t entry ){
    b_PV_x->GetEntry(entry);
    b_PV_y->GetEntry(entry);
    b_PV_z->GetEntry(entry);
+
+   if( sbDEBUG ) std::cout << " ----- GetEntry Gen " << std::endl;
 
    if( doGenInfoBase ){
    if( doNewSigBase ){
@@ -2118,6 +2155,8 @@ void getBranches( Long64_t entry ){
    }//<<>>if( doNewSigBase )
    }//<<>>if( doGenInfoBase )
 
+   if( sbDEBUG ) std::cout << " ----- GetEntry Jet " << std::endl;
+
    b_Jet_area->GetEntry(entry);
    b_Jet_chEmEF->GetEntry(entry);
    b_Jet_chHEF->GetEntry(entry);
@@ -2155,6 +2194,8 @@ void getBranches( Long64_t entry ){
    b_Jet_pt->GetEntry(entry);
    b_Jet_nConstituents->GetEntry(entry);
 
+   if( sbDEBUG ) std::cout << " ----- GetEntry Muon " << std::endl;
+
   if( doSVsBase ){
    b_Muon_energy->GetEntry(entry);
    b_Muon_eta->GetEntry(entry);
@@ -2185,6 +2226,8 @@ void getBranches( Long64_t entry ){
    b_Muon_isTight->GetEntry(entry);
   }//<<>>if( doSVsBase )
 
+   if( sbDEBUG ) std::cout << " ----- GetEntry Met " << std::endl;
+
    b_Met_CPt->GetEntry(entry);
    b_Met_Cpx->GetEntry(entry);
    b_Met_Cpy->GetEntry(entry);
@@ -2195,6 +2238,8 @@ void getBranches( Long64_t entry ){
    b_Met_px->GetEntry(entry);
    b_Met_py->GetEntry(entry);
    b_Met_sumEt->GetEntry(entry);
+
+   if( sbDEBUG ) std::cout << " ----- GetEntry Photon " << std::endl;
 
    b_Photon_ecalRHSumEtConeDR04->GetEntry(entry);
    b_Photon_energy->GetEntry(entry);
@@ -2244,6 +2289,8 @@ void getBranches( Long64_t entry ){
    b_Photon_sieie->GetEntry(entry);
    b_Photon_sieip->GetEntry(entry);
    b_Photon_sipip->GetEntry(entry);
+
+   if( sbDEBUG ) std::cout << " ----- GetEntry Track " << std::endl;
 
   if( doSVsBase ){
    b_Track_absIso->GetEntry(entry);

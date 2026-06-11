@@ -97,9 +97,9 @@ def uniq_preserve_order(items):
 
 
 def main():
-    # Inputs
-    start_dir = sys.argv[1] if len(sys.argv) > 1 else "/store/user/lpcsusylep/jaking/KUCMSNtuple/"
-    dir_pattern = sys.argv[2] if len(sys.argv) > 2 else "kucmsntuple_JetMET_R25_SVHPM100_v34/JetMet0/"
+    # Inputs  /store/user/lpcsusylep/jaking/KUCMSNtuple/kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET1/
+    start_dir = sys.argv[1] if len(sys.argv) > 1 else "/store/user/lpcsusylep/jaking/KUCMSNtuple/kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/"
+    dir_pattern = sys.argv[2] if len(sys.argv) > 2 else "JetMET1/"
     year = sys.argv[3] if len(sys.argv) > 3 else "2025"  # optional year override
 
     start_dir = start_dir.rstrip("/")

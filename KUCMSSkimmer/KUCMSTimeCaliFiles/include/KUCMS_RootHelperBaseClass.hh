@@ -1186,7 +1186,7 @@ class KUCMS_RootHelperBaseClass : public KUCMS_HelperBaseClass {
         }
     
         return rootFiles;
-    }
+    }//<<>>std::vector<std::string> findEOSRootFiles( const std::string& eosh, const std::string& eosDir, const std::string& matchStr = "")
 
 };//<<>> class KUCMSRootHelperBaseClass : KUCMSHelperBaseClass
 

@@ -83,8 +83,8 @@ def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t ):
         #if dostoch : hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] )+( ([2]*[2])/(x) ) )',5,3200,3) 
         #if dostoch : hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] )+( ([2]*[2])/(x) ) )',15,1600,3)
         #if dostoch : hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] )+( ([2]*[2])/(x) ) )',17.5,3200,3)
-        #if dostoch : hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] )+( ([2]*[2])/(x) ) )',15,1600,3)
-        if dostoch : hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] )+( ([2]*[2])/(x) ) )',10.0,250,3)
+        if dostoch : hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] )+( ([2]*[2])/(x) ) )',10,1600,3)
+        #if dostoch : hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] )+( ([2]*[2])/(x) ) )',10.0,250,3)
         #hfit = TF1('hfits','sqrt((([0]*[0])/(x*x))+(2*[1]*[1]))',6,100,2)
         hfit.SetParName(0,'N')
         hfit.SetParameter(0,40.0)
@@ -899,20 +899,20 @@ hl_r3_22_ebeedro = [
 ]
 
 hl_r2_18_ebeenc = [
-    [sro18ebnc+shend,"",sro18ebnc+rfend,"SRO EB"],
-    [sro18eenc+shend,"",sro18eenc+rfend,"SRO EE"],
-    [dro18ebnc+shend,"",dro18ebnc+rfend,"DRO EB"],
-    [dro18eenc+shend,"",dro18eenc+rfend,"DRO EE"], 
+    [sro18ebnc+shend,"",indir+sro18ebnc+rfend,"SRO EB"],
+    [sro18eenc+shend,"",indir+sro18eenc+rfend,"SRO EE"],
+    [dro18ebnc+shend,"",indir+dro18ebnc+rfend,"DRO EB"],
+    [dro18eenc+shend,"",indir+dro18eenc+rfend,"DRO EE"], 
 ]
 
 hl_r2_18_ebee = [
 
     #[sro18eblg+shend,"",sro18eblg+rfend,"18 UL EB"],
     #[sro18eelg+shend,"",sro18eelg+rfend,"18 UL EE"],
-    [sro18eb+shend,"",sro18eb+rfend,"SRO EB"],
-    [sro18ee+shend,"",sro18ee+rfend,"SRO EE"],
-    [dro18eb+shend,"",dro18eb+rfend,"DRO EB"],
-    [dro18ee+shend,"",dro18ee+rfend,"DRO EE"],
+    [sro18eb+shend,"",indir+sro18eb+rfend,"SRO EB"],
+    [sro18ee+shend,"",indir+sro18ee+rfend,"SRO EE"],
+    [dro18eb+shend,"",indir+dro18eb+rfend,"DRO EB"],
+    [dro18ee+shend,"",indir+dro18ee+rfend,"DRO EE"],
 ]
 
 hl_r2_18_ebeedro = [
@@ -923,10 +923,10 @@ hl_r2_18_ebeedro = [
 ]
 
 hl_r2_17_ebeenc = [
-    [sro17ebnc+shend,"",sro17ebnc+rfend,"SRO EB"],
-    [sro17eenc+shend,"",sro17eenc+rfend,"SRO EE"],
-    [dro17ebnc+shend,"",dro17ebnc+rfend,"DRO EB"],
-    [dro17eenc+shend,"",dro17eenc+rfend,"DRO EE"],
+    [sro17ebnc+shend,"",indir+sro17ebnc+rfend,"SRO EB"],
+    [sro17eenc+shend,"",indir+sro17eenc+rfend,"SRO EE"],
+    [dro17ebnc+shend,"",indir+dro17ebnc+rfend,"DRO EB"],
+    [dro17eenc+shend,"",indir+dro17eenc+rfend,"DRO EE"],
 ]
 
 hl_r2_17_ebee = [
@@ -944,10 +944,10 @@ hl_r2_17_ebeedro = [
 ]
 
 hl_r2_16_ebeenc = [
-    [sro16ebnc+shend,"",sro16ebnc+rfend,"SRO EB"],
-    [sro16eenc+shend,"",sro16eenc+rfend,"SRO EE"],
-    [dro16ebnc+shend,"",dro16ebnc+rfend,"DRO EB"],
-    [dro16eenc+shend,"",dro16eenc+rfend,"DRO EE"],
+    [sro16ebnc+shend,"",indir+sro16ebnc+rfend,"SRO EB"],
+    [sro16eenc+shend,"",indir+sro16eenc+rfend,"SRO EE"],
+    [dro16ebnc+shend,"",indir+dro16ebnc+rfend,"DRO EB"],
+    [dro16eenc+shend,"",indir+dro16eenc+rfend,"DRO EE"],
 ]
 
 hl_r2_16_ebee = [
@@ -1064,7 +1064,7 @@ hl_r3_25b = [
 #ptitle=['','Run 2 (13 TeV)','#splitline{DRU Resolution}{2018 UL EE}'] #{}'
 #ptitle=['','Run 2 (13 TeV)','#splitline{DRU Resolution}{2018 UL}'] #{}'
 #ptitle=['','Run 2 (13 TeV)','#splitline{Chronus Calibration}{2016 UL}'] #{}'
-#ptitle=['','Run 2 (13 TeV)','#splitline{Online Calibration}{2016 UL}'] #{}'
+ptitle=['','Run 2 (13 TeV)','#splitline{Online Calibration}{2018 UL}'] #{}'
 #ptitle=['','Run 2 (13 TeV)','#splitline{Chronus Calibration}{2018 UL QCD}'] #{}'
 
 #ptitle=['','Run 3 (13.6 TeV)','#splitline{Online Calibration}{2025 Prompt}'] #{}'
@@ -1080,7 +1080,7 @@ hl_r3_25b = [
 #ptitle=['','Run 3 (13.6 TeV)','#splitline{SRU Resolution}{2025 Prompt}'] #{}'
 #ptitle=['','Run 3 (13.6 TeV)','#splitline{SRU Resolution}{2025 Prompt Chronus}'] #{}'
 #ptitle=['','Run 3 (13.6 TeV)','#splitline{DRU Resolution}{2025 Prompt}'] #{}'
-ptitle=['','Run 3 (13.6 TeV)','#splitline{DRU Resolution}{2025 Prompt Chronus}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{DRU Resolution}{2025 Prompt Chronus}'] #{}'
 #ptitle=['','Run 3 (13.6 TeV)','#splitline{SRU Resolution}{2024 Prompt}'] #{}'
 #ptitle=['','Run 3 (13.6 TeV)','#splitline{SRU Resolution}{2025 Prompt}'] #{}'
 #ptitle=['','Run 3 (13.6 TeV)','#splitline{SRU Resolution}{2025 Prompt Chronus}'] #{}'
@@ -1090,8 +1090,8 @@ ptitle=['','Run 3 (13.6 TeV)','#splitline{DRU Resolution}{2025 Prompt Chronus}']
 #y = [ 2.5, -0.5 ]
 #y = [ 1.5, -0.5 ]
 #y = [ 4.0, 0.025 ]
-#y = [ 5.0, 0.05 ]
-y = [ 2.0, 0.04 ]
+y = [ 5.0, 0.05 ]
+#y = [ 2.0, 0.04 ]
 #y = [ 5, 0.01 ]
 x = [ 15, 1600.0 ]
 #x = [ 15, 3200.0 ]
@@ -1110,7 +1110,7 @@ t = [0.325,0.85,0.1,0.175,0.285]#adjsuting lumi-sqrt(s) in title bar
 #outname = 'downloads/tr_hl_r3_24d_part_trvcc_ccgt_v7'
 #outname = 'downloads/tr_hl_r3_25c2'
 #outname = 'downloads/tr_hl_r3_25bc_xa'
-outname = 'hl_r3_25p_h_ebee_dro'
-dostack(hl_r3_25p_h_ebee_dro, outname, date, Ic_layout, ptitle,  y, x, l, t)
+outname = 'hl_r2_18_ebeenc'
+dostack(hl_r2_18_ebeenc, outname, date, Ic_layout, ptitle,  y, x, l, t)
 #outname = 'tr_hl_r2_16v2'
 #dostack(hl_r2_16_ebee, outname, date, Ic_layout, ptitle,  y, x, l, t)

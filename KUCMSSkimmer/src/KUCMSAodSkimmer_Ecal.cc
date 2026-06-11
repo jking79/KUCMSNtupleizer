@@ -53,15 +53,18 @@ void KUCMSAodSkimmer::processRechits(){
 		auto idinfo = timeCali->getDetIdInfo(rhid);
     	if( DEBUGECAL ) std::cout << " -- TimeCali DetIDInfo : " << idinfo.i2 << " " << idinfo.i1 << " " << idinfo.ecal << std::endl;
 		float rht = (*ECALRecHit_time)[it];
+        bool gs6 = (*ECALRecHit_hasGS6)[it];
+        bool gs1 = (*ECALRecHit_hasGS1)[it];
+		int gainid = ( gs6 || gs1 ) ? 2 : 1;
 		if( tctag == "r3_p25unc" or tctag == "r3_p26unc" ) rht = (*ECALRecHit_UnCorrTime)[it];
 		float rhe = (*ECALRecHit_energy)[it];
 		float rha = (*ECALRecHit_ampres)[it]; //( this is the ADC amplitude in units of the pedistal rms for this rechit )
 		timeCali->setMCResTag(mctrtag);
-		float corrht = timeCali->getCorrectedTime( rht, rha, rhid, Evt_run, tctag, mctype );
-		float rhtres = timeCali->getTimeResoltuion( rha, rhid, Evt_run, tctag, mctype );
+		float corrht = timeCali->getCorrectedTime( rht, rha, rhid, Evt_run, tctag, mctype, gainid );
+		float rhtres = timeCali->getTimeResoltuion( rha, rhid, Evt_run, tctag, mctype, gainid );
 		//if( rhid < 840000000 ){
-		//	std::cout << " TC check : inputs : rhid " << rhid << " run " << Evt_run << " tag "  << tctag << " type " << mctype << std::endl;
-		//	std::cout << " TC check : time : " << rht << " -> " << corrht << " res : " << rha << " -> " << rhtres << std::endl;
+		//std::cout << " TC check : inputs : rhid " << rhid << " run " << Evt_run << " tag "  << tctag << " type " << mctype << std::endl;
+		//std::cout << " TC check : time : " << rht << " -> " << corrht << " res : " << rha << " -> " << rhtres << std::endl;
 		//}//<<>>if( rhid < 840000000 )
 		erh_corTime.push_back( corrht );
         erh_timeRes.push_back( rhtres );
