@@ -417,9 +417,16 @@ KUCMSAodSkimmer::~KUCMSAodSkimmer(){
 
 void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
 
+
+	bool debug = true;
+	if( debug) std::cout << "<<<<<<<< Processing Main Loop <<<<<<<<<<<<<< " << std::endl;
+
     // --- setup for main loop
     TTree* fOutTree = new TTree("kuSkimTree","output root file for kUCMSSkimmer");
     TTree* fConfigTree = new TTree("kuSkimConfigTree","config root file for kUCMSSkimmer");
+
+    if( tctag == "r3_p25unc" or tctag == "r3_p26unc" ) useUnCC = true;
+    setDoUnCCBase( useUnCC );
 
 	setGenInfoBase( hasGenInfoFlag );
 	setDoSVsBase( doSVs );
@@ -427,9 +434,6 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
 	setHTLPathsBase( doHTLPathsBase );
 	Init( fInTree );
 
-	if( tctag == "r3_p25unc" or tctag == "r3_p26unc" ) useUnCC = true;
-	setDoUnCCBase( useUnCC );
-	
     ////Init( fInTree, hasGenInfoFlag, doSVs );
     auto nEntries = fInTree->GetEntries();
 
@@ -445,13 +449,16 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
 	//if( not doSVs ){ _evtj = 2500000; _evti = 1500000; }
 	int nEventsProcessed = _evtj - _evti;
 
+    if( debug) std::cout << "<<<<<<<< initHists <<<<<<<<<<<<<< " << std::endl;
     initHists();
-    setOutputBranches(fOutTree);
+    std::cout << "<<<<<<<< setOutputBranches <<<<<<<<<<<<<< " << std::endl;
+    if( debug) setOutputBranches(fOutTree);
 
     startJobs(); // clear && init count varibles
 
     // ---   do config input
 
+    if( debug) std::cout << "<<<<<<<< ProcessConfigTree <<<<<<<<<<<<<< " << std::endl;
 	ProcessConfigTree( fInConfigTree );
 	if( not isLocal ) ProcessConfigFile();
 
@@ -474,7 +481,19 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
             std::cout << "Proccessed " << centry << " of " << nEntries << " entries at " << curtime << std::endl;
         }//<<>>if( centry%loopCounter == 0 )
  	    auto entry = fInTree->LoadTree(centry);
-        if(DEBUG) std::cout << " -- Getting Branches " << std::endl;
+        if(DEBUG){ 
+			std::cout << " -- Getting Branches " << std::endl;
+			TTree* currentTree = fChain->GetTree();
+			TBranch* brUnCorrTime = currentTree->GetBranch("ECALRecHit_UnCorrTime");
+			std::cout << "DEBUG before ECALRecHit_UnCorrTime GetEntry" << std::endl;
+			std::cout << "  global entry      = " << centry << std::endl;
+			std::cout << "  local entry       = " << entry << std::endl;
+			std::cout << "  tree number       = " << fChain->GetTreeNumber() << std::endl;
+			std::cout << "  stored branch ptr = " << b_ECALRecHit_UnCorrTime << std::endl;
+			std::cout << "  current branch ptr= " << brUnCorrTime << std::endl;
+			if( fChain->GetCurrentFile() ) std::cout << "  file              = " << fChain->GetCurrentFile()->GetName() << std::endl;
+		}//<<>>if(DEBUG)
+
         getBranches( entry );
         ////getBranches( entry, hasGenInfoFlag, doSVs );
 		//std::cout << " -- ? Valid Lumi with mctype " << mctype << " run " << Evt_run << " block " << Evt_luminosityBlock << std::endl;
@@ -499,6 +518,7 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
 
     // -- main end jobs
 
+    if( debug) std::cout << "<<<<<<<< fillConfigTreee <<<<<<<<<<<<<< " << std::endl;
     fillConfigTree( fConfigTree );
 
     endJobs();
@@ -535,6 +555,8 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
     delete fOutTree;
     delete fConfigTree;
     delete fOutFile;
+
+    if( debug) std::cout << "<<<<<<<< Finished Processing Main Loop <<<<<<<<<<<<<< " << std::endl;
 
 }//<<>>void KUCMSAodSkimmer::ProcessMainLoop()
 
@@ -886,14 +908,19 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
   std::string masterstr;
   std::cout << "Processing Input Lists for : " << listdir+infilelist << std::endl;
   std::ifstream masterInfile(listdir+infilelist);
+  if( !masterInfile.is_open() ){
+	std::cerr << "ERROR: could not open input file list: " << listdir+infilelist << std::endl;
+	return;
+  }//<<>>if( !infilelist.is_open() ) 
   //while( masterInfile >> inFilePath >> inFileName >> key >> crossSection >> gmsblam >> gmsbct >> mcwgt >> mctype ){
   while( std::getline( masterInfile, masterstr ) ){
 
     // ---- parse input params
 
-    if( DEBUG ) std:: cout << masterstr << std::endl;
+    //if( DEBUG ) std:: cout << masterstr << std::endl;
     if( masterstr[0] == '#' ) continue;
     if( masterstr == "" ) continue;
+    std:: cout << masterstr << std::endl;
     auto instrs = splitString( masterstr, " " );
     if( DEBUG ) std::cout << instrs.size() << std::endl;
     if( instrs.size() != 9 ) continue;
@@ -933,12 +960,76 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
     TChain* fInTree = new TChain(disphoTreeName.c_str());
     TChain* fInConfigTree = new TChain(configTreeName.c_str());
     std::cout << "Adding files to TChain." << std::endl;
-    std::cout << " - With : " << listDirPath+inFileName << " >> " << fInTree << std::endl;
-    std::string str;
+    std::cout << " - With : " << inFilePath+inFileName << " >> " << fInTree << std::endl;
+    //std::string str;
+
     if( not DEBUG ) std::cout << "--  adding files";
     int nfiles = 0;
 	int skipCnt = localSkip;
     if( skipCnt != 0 ) std::cout << "-- !! Skipping every " << skipCnt << std::endl;
+
+	// -------------  new input -----------------------
+
+    //int fileskipcnt = 0;
+    int nAdded = 0;
+    int nBadFiles = 0;
+
+    std::string eosHost = "cmseos.fnal.gov";
+    std::string scanDir = eosdir + inFilePath;
+    std::cout << "Finding ROOT files under EOS directory: " << scanDir << std::endl;
+    std::vector<std::string> files = findEOSRootFiles(eosHost, scanDir, inFileName);
+    std::cout << "Found " << files.size() << " candidate ROOT files." << std::endl;
+
+    std::cout << "Adding files to TChain." << std::endl;
+    //while (std::getline(infile,instr)){
+    for (const auto& tfilename : files) {
+
+        //if( instr.empty() || instr[0] == '#' ) continue;
+        nfiles++;
+		if( nfiles < 1000 ) continue;
+    	if( skipCnt != 0 && ( nfiles%skipCnt != 0 ) ) continue;
+        //fileskipcnt++;
+        //if( fileskipcnt%10 != 0 ) continue;
+        //auto tfilename = eosDir + inDir + instr;
+
+        TFile* testFile = TFile::Open(tfilename.c_str(), "READ");
+
+        if( !testFile || testFile->IsZombie() || !testFile->IsOpen() ){
+            std::cerr << "\nERROR: bad ROOT file, skipping: " << tfilename << std::endl;
+            if( testFile ) testFile->Close();
+            nBadFiles++;
+            std::cout << "Z";
+            continue;
+        }//<<>>if( !testFile || testFile->IsZombie() || !testFile->IsOpen() )
+
+        TTree* testTree = nullptr;
+        testFile->GetObject(disphoTreeName.c_str(), testTree);
+
+        if( !testTree ){
+            std::cerr << "\nERROR: missing tree " << disphoTreeName << ", skipping: " << tfilename << std::endl;
+            testFile->Close();
+            nBadFiles++;
+            std::cout << "T";
+            continue;
+        }//<<>>if( !testTree )
+
+        testFile->Close();
+        //std::cout << "opening tfile : " << tfilename << std::endl;
+        std::cout << "-";
+        int result = fInTree->Add(tfilename.c_str());
+        int cfresult = fInConfigTree->Add(tfilename.c_str());
+
+        if( result > 0 && cfresult > 0 ){ std::cout << "-"; nAdded++; }
+        else std::cout << "0";
+
+
+    }//<<>>while (std::getline(infile,str))
+    std::cout << std::endl;
+    std::cout << " -- [INFO] lines=" << nfiles << " filesAdded=" << nAdded << " badFiles=" << nBadFiles << std::endl;
+
+    // -------------  new input -----------------------
+
+/*
     if( dataSetKey !=  "Single" ){
         std::ifstream infile(listDirPath+inFileName);
         while( std::getline( infile, str ) ){
@@ -956,6 +1047,8 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
         fInConfigTree->Add(tfilename.c_str());
         nfiles++;
     }//<<>>if( key !=  "test" )
+*/
+
     if( not DEBUG ) std::cout << std::endl;
     if( nfiles == 0 ){ std::cout << " !!!!! no input files !!!!! " << std::endl; return; }
 

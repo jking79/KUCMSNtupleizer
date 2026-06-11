@@ -4,31 +4,18 @@
 
 ## inpath infiles skimkey crossSection gluionmass nutralino2mass mcweight mctype(1 data, 0 MC) timecalitag
 
+
+kucmsntuple_JetMET_R25_SVHPM100_v34/JetMET1/ JetMET1_MINIAOD_Run2025C JetMet1R25C 1 0 0 0 1 r3_p25unc
+#kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET1/ Run2025D-PromptReco-v1 JetMet1R25D2 1 0 0 0 1 r3_p25unc
+
+########################## oldstyle ###########################
+
 #KUCMSNtuple/kucmsntuple_EGamma_R18_InvMetPho30_noSV_v31/ EGamma_R18_InvMetPho30_noSV_EGamma_MINI_Run2018C.txt EGJets 1 0 0 0 1 r2_ul18
 ##KUCMSNtuple/ EGamma_R18_InvMetPho30_noSV_EGamma_MINI_Run2018C.txt EGJets 1 0 0 0 1 r2_ul18
 
-#KUCMSNtuple/kucmsntuple_JetMET_R23_SVIPM100_v31/ Ntuple_list_Run3_2023B_JetMET0.txt JetMET0e23B 1 0 0 0 1 r3_p23
-#KUCMSNtuple/kucmsntuple_JetMET_R23_SVIPM100_v31/ Ntuple_list_Run3_2023B_JetMET0_EXO.txt JetMET0EXOe23B 1 0 0 0 1 r3_p23
-#KUCMSNtuple/kucmsntuple_JetMET_R23_SVIPM100_v31/ Ntuple_list_Run3_2023B_JetMET1.txt JetMET1e23B 1 0 0 0 1 r3_p23
-#KUCMSNtuple/kucmsntuple_JetMET_R23_SVIPM100_v31/ Ntuple_list_Run3_2023B_JetMET1_EXO.txt JetMET1EXOe23B 1 0 0 0 1 r3_p23
+#KUCMSNtuple/kucmsntuple_JetMET_R25_SVHPM100_v34/JetMET0/ filelist_kucmsntuple_JetMET_R25_SVHPM100_v34_JetMET0_v2_MINIAOD_Run2025C.txt JetMet25C 1 0 0 0 1 r3_p25unc
 
-#KUCMSNtuple/kucmsntuple_MET_R18_SVIPM100_v31/ MET_R18_SVIPM100_v31_MET_AOD_Run2018A.txt MET18A 1 0 0 0 1 r2_ul18
-#KUCMSNtuple/kucmsntuple_MET_R18_SVIPM100_v31/ MET_R18_SVIPM100_v31_MET_AOD_Run2018B.txt MET18B 1 0 0 0 1 r2_ul18
-#KUCMSNtuple/kucmsntuple_MET_R18_SVIPM100_v31/ MET_R18_SVIPM100_v31_MET_AOD_Run2018C.txt MET18C 1 0 0 0 1 r2_ul18
-#KUCMSNtuple/kucmsntuple_MET_R18_SVIPM100_v31/ MET_R18_SVIPM100_v31_MET_AOD_Run2018D.txt MET18D 1 0 0 0 1 r2_ul18
-
-#KUCMSNtuple/kucmsntuple_MET_R17_SVIPM100_v31/ MET_R17_SVIPM100_v31_MET_AOD_Run2017A.txt MET17A 1 0 0 0 1 r2_ul17
-#KUCMSNtuple/kucmsntuple_MET_R17_SVIPM100_v31/ MET_R17_SVIPM100_v31_MET_AOD_Run2017B.txt MET17B 1 0 0 0 1 r2_ul17
-#KUCMSNtuple/kucmsntuple_MET_R17_SVIPM100_v31/ MET_R17_SVIPM100_v31_MET_AOD_Run2017C.txt MET17C 1 0 0 0 1 r2_ul17
-#KUCMSNtuple/kucmsntuple_MET_R17_SVIPM100_v31/ MET_R17_SVIPM100_v31_MET_AOD_Run2017D.txt MET17D 1 0 0 0 1 r2_ul17
-#KUCMSNtuple/kucmsntuple_MET_R17_SVIPM100_v31/ MET_R17_SVIPM100_v31_MET_AOD_Run2017E.txt MET17E 1 0 0 0 1 r2_ul17
-
-#KUCMSNtuple/kucmsntuple_EGamma_R18_InvMetPho30_NoSV_v31/ EGamma_R18_InvMetPho30_NoSV_EGamma_AOD_Run2018C.txt EGJets 1 0 0 0 1 r2_ul18
-
-#KUCMSNtuple/kucmsntuple_DisJet_R18_SVIPM100_v31/ kucmsntuple_DisJet_R18_SVIPM100_v31_DisplacedJet_AOD_Run2018A_v29.txt DisJet18 1 0 0 0 1 r2_ul18
-#KUCMSNtuple/kucmsntuple_DisJet_R18_SVIPM100_v31/ kucmsntuple_DisJet_R18_SVIPM100_v31_DisplacedJet_AOD_Run2018B_v29.txt DisJet18 1 0 0 0 1 r2_ul18
-#KUCMSNtuple/kucmsntuple_DisJet_R18_SVIPM100_v31/ kucmsntuple_DisJet_R18_SVIPM100_v31_DisplacedJet_AOD_Run2018C_v29.txt DisJet18 1 0 0 0 1 r2_ul18
-#KUCMSNtuple/kucmsntuple_DisJet_R18_SVIPM100_v31/ kucmsntuple_DisJet_R18_SVIPMet100_v31_DisplacedJet_AOD_Run2018D_v29.txt DisJet18 1 0 0 0 1 r2_ul18
+#KUCMSNtuple/kucmsntuple_EGamma_R18_InvMetPho30_noSV_v31/ EGamma_R18_InvMetPho30_NoSV_EGamma_AOD_Run2018C.txt EGJets 1 0 0 0 1 r2_ul18
 
 #KUCMSNtuple/kucmsntuple_JetMET_R23_SVIPM100_v31/JetMET0/ JetMET_R23_SVIPM100_v31_JetMET0_AOD_Run2023B-19Dec2023-v1.txt JetMet23B  1 0 0 0 1 r3_p23
 #KUCMSNtuple/kucmsntuple_JetMET_R23_SVIPM100_v31/JetMET0/ JetMET_EXO_R23_SVIPM100_v31_JetMET0_AOD_Run2023B-EXODelayedJetMET.txt JetMetExo23B  1 0 0 0 1 r3_p23
@@ -41,11 +28,5 @@
 #KUCMSNtuple/kucmsntuple_JetMET_R23_SVIPM100_v31/JetMET1/ JetMET_EXO_R23_SVIPM100_v31_JetMET1_AOD_Run2023C-EXODelayedJetMET.txt JetMetExo23C 1 0 0 0 1 r3_p23
 #KUCMSNtuple/kucmsntuple_JetMET_R23_SVIPM100_v31/JetMET1/ JetMET_EXO_R23_SVIPM100_v31_JetMET1_AOD_Run2023D-EXODelayedJetMET.txt JetMetExo23D 1 0 0 0 1 r3_p23
 
-#KUCMSNtuple/kucmsntuple_MET_R22_AL1NpSC_v31/ kucmsntuple_MET_R22_AL1NpSC_v31_MET_AOD_Run2022C-27Jun2023-v2_v29.txt METR22C 1 0 0 0 1 r2_ul18
-#KUCMSNtuple/kucmsntuple_MET_R22_AL1NpSC_v31/ kucmsntuple_MET_R22_AL1NpSC_v31_MET_AOD_Run2022C_v29.txt METR22C 1 0 0 0 1 r2_ul18
+#KUCMSNtuple/kucmsntuple_JetMET_R25_SVHPM100_v34/JetMET0/ filelist_kucmsntuple_JetMET_R25_SVHPM100_v34_JetMET0_v2_MINIAOD_Run2025C.txt JetMet25C 1 0 0 0 1 r3_p25unc 
 
-KUCMSNtuple/kucmsntuple_JetMET_R25_SVHPM100_v34/JetMET0/ filelist_kucmsntuple_JetMET_R25_SVHPM100_v34_JetMET0_v2_MINIAOD_Run2025C.txt JetMet25C 1 0 0 0 1 r3_p25unc 
-
-#KUCMSNtuple/kucmsntuple_MET_R18_MRL_MET100_v24/ kucmsntuple_MET_R18_MRL_MET100_v24_filelist.txt METR18 1 0 0 0 1 r2_ul18
-#KUCMSNtuple/kucmsntuple_MET_R17_AL1IsoPho_v22/ kuntuple_MET_AL1IsoPho_R17_v22.txt METR17 1 0 0 0 1 r2_ul18 
-#KUCMSNtuple/kucmsntuple_MET_R17_AL1IsoPho_v22/ kuntuple_MET_AL1IsoPho_R17_v22.txt METR17 1 0 0 0 1 r2_ul18

@@ -1175,7 +1175,7 @@ class KUCMS_RootHelperBaseClass : public KUCMS_HelperBaseClass {
             if (!endsWith(path, ".root")) continue;
     
             if (!matchStr.empty()) {
-                if (path.find(matchString) == std::string::npos) continue;
+                if (path.find(matchStr) == std::string::npos) continue;
             }
     
             std::string fullXrdPath = "root://" + eosh + "/" + path;
@@ -1186,7 +1186,7 @@ class KUCMS_RootHelperBaseClass : public KUCMS_HelperBaseClass {
         }
     
         return rootFiles;
-    }
+    }//<<>>std::vector<std::string> findEOSRootFiles( const std::string& eosh, const std::string& eosDir, const std::string& matchStr = "")
 
 };//<<>> class KUCMSRootHelperBaseClass : KUCMSHelperBaseClass
 

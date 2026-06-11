@@ -503,6 +503,178 @@ inline std::vector<float> getRhGrpEigen( std::vector<float> xs, std::vector<floa
     return results;
 }//<<>>vector<float> getRhGrpEigen3D( std::vector<float> xs, std::vector<float> ys, std::vector<float> zs, std::vector<float> wts )
 
+//----------------------------------------------------------------------
+// Check whether a string ends with a requested suffix.
+//
+// Returns true if the input string ends with the supplied suffix and
+// false otherwise.  This is used for simple filename/path filtering, such
+// as selecting files ending in ".root".
+//
+// If the suffix is longer than the input string, the function returns
+// false.
+//----------------------------------------------------------------------
+
+inline bool endsWith( const std::string& str, const std::string& suffix ){
+
+	if( str.size() < suffix.size() ){
+        return false;
+    }//<<>>if( str.size() < suffix.size() )
+
+    return std::equal( suffix.rbegin(), suffix.rend(), str.rbegin() );
+
+}//<<>>bool endsWith( const std::string& str, const std::string& suffix )
+
+//----------------------------------------------------------------------
+// Run a shell command and collect non-empty stdout lines.
+//
+// The command is executed with popen(), and each non-empty output line is
+// returned as one string in the output vector.  Trailing newline and
+// carriage-return characters are removed from each line.
+//
+// If the command cannot be started, an empty vector is returned and an
+// error is printed.  If the command exits with a nonzero status, the
+// collected output is still returned, but a warning is printed.
+//
+// Important: popen() runs the command through the shell.  Do not pass
+// untrusted or unsanitized user input into this helper.
+//----------------------------------------------------------------------
+
+inline std::vector<std::string> runCommandLines( const std::string& cmd ){
+
+	std::vector<std::string> lines;
+
+    FILE* pipe = popen( cmd.c_str(), "r" );
+
+    if( !pipe ){
+        std::cerr << "ERROR: could not run command: " << cmd << std::endl;
+        return lines;
+    }//<<>>if( !pipe )
+
+    char buffer[4096];
+
+    while( fgets( buffer, sizeof(buffer), pipe ) != nullptr ){
+
+        std::string line(buffer);
+
+        while( !line.empty() && ( line.back() == '\n' || line.back() == '\r' ) ){
+            line.pop_back();
+        }//<<>>while( !line.empty() && ( line.back() == '\n' || line.back() == '\r' ) )
+
+        if( !line.empty() ){
+            lines.push_back(line);
+        }//<<>>if( !line.empty() )
+
+    }//<<>>while( fgets( buffer, sizeof(buffer), pipe ) != nullptr )
+
+    const int status = pclose(pipe);
+
+    if( status != 0 ){
+        std::cerr << "WARNING: command exited nonzero: " << cmd
+                << " status=" << status
+                << std::endl;
+    }//<<>>if( status != 0 )
+
+    //std::cout << "DEBUG: runCommandLines found " << lines.size() << " output lines from command:" << std::endl;
+    //std::cout << "  " << cmd << std::endl;
+    //for( int iline = 0; iline < (int)lines.size(); iline++ ){
+    //    std::cout << "  [" << iline << "] " << lines[iline] << std::endl;
+    //}//<<>>for( int iline = 0; iline < (int)lines.size(); iline++ )
+
+    return lines;
+
+}//<<>>std::vector<std::string> runCommandLines( const std::string& cmd )
+
+// ------------------------------------------------------------
+// Recursively scan EOS using xrdfs.
+// eosh example: "cmseos.fnal.gov"
+// eosDir example: "/store/user/lpcsusylep/jaking/KUCMSNtuple/someDir"
+// matchStr example: "somename.root"
+//   - if matchString is empty, all .root files are accepted
+//   - if matchString is non-empty, filename/path must contain it
+// ------------------------------------------------------------
+
+inline std::vector<std::string> findEOSRootFiles( const std::string& eosHost, const std::string& eosDirPath, const std::string& matchString = "" ){
+
+        std::vector<std::string> rootFiles;
+        std::vector<std::string> dirs;
+
+        dirs.push_back(eosDirPath);
+
+        int nDirs       = 0;
+        int nLines      = 0;
+        int nRoot       = 0;
+        int nMatchFail  = 0;
+        int nAccepted   = 0;
+
+        while( !dirs.empty() ){
+
+            std::string thisDir = dirs.back();
+            dirs.pop_back();
+
+            if( !thisDir.empty() && thisDir.back() != '/' ){ thisDir += "/"; }
+
+            nDirs++;
+
+			const std::string cmd = "eos root://" + eosHost + " ls " + thisDir;
+			//std::cout << " -- cmd checked : " << cmd << std::endl;
+            std::vector<std::string> lines = runCommandLines(cmd);
+
+            for( const std::string& entry : lines ){
+
+                nLines++;
+
+                std::string path = entry;
+
+                // eos ls usually returns bare names, not full /store/... paths.
+                // Build the full EOS path before doing any filtering.
+                if( path.find("/store/") != 0 ){
+                    path = thisDir + entry;
+                }//<<>>if( path.find("/store/") != 0 )
+
+                //std::cout << " -- path checked : " << path << std::endl;
+
+                if( endsWith( path, ".root" ) ){
+
+                    nRoot++;
+
+                    if( !matchString.empty() && path.find(matchString) == std::string::npos ){
+                        nMatchFail++;
+                        continue;
+                    }//<<>>if( !matchString.empty() && path.find(matchString) == std::string::npos )
+
+                    const std::string fullXrdPath = "root://" + eosHost + "/" + path;
+
+                    //std::cout << " -- file accepted : " << fullXrdPath << std::endl;
+
+                    rootFiles.push_back(fullXrdPath);
+                    nAccepted++;
+
+                } else {
+
+                    dirs.push_back(path);
+
+                }//<<>>if( endsWith( path, ".root" ) )
+
+            }//<<>>for( const std::string& entry : lines )
+
+        }//<<>>while( !dirs.empty() )
+
+        std::cout << "DEBUG: findEOSRootFiles summary" << std::endl;
+        std::cout << "  eosHost     = " << eosHost << std::endl;
+        std::cout << "  eosDirPath  = " << eosDirPath << std::endl;
+        std::cout << "  matchString = " << matchString << std::endl;
+        std::cout << "  dirs scanned= " << nDirs << std::endl;
+        std::cout << "  raw lines   = " << nLines << std::endl;
+        std::cout << "  root files  = " << nRoot << std::endl;
+        std::cout << "  match fail  = " << nMatchFail << std::endl;
+        std::cout << "  accepted    = " << nAccepted << std::endl;
+        std::cout << "  returned    = " << rootFiles.size() << std::endl;
+
+        return rootFiles;
+
+}//<<>>std::vector<std::string>findEOSRootFiles(const std::string& eosHost,const std::string& eosDirPath,const std::string& matchString )
+
+
 #endif
 //----------------------------------------------------------------------------------------------------------------------
 

@@ -15,7 +15,8 @@ int main ( int argc, char *argv[] ){
 
     const std::string listdir = "ntuple_master_lists/";
     //const string eosdir = "root://cmseos.fnal.gov//store/user/jaking/";
-    const std::string eosdir = "root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/";
+    //const std::string eosdir = "root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/";
+	const std::string eosdir = "/store/user/lpcsusylep/jaking/KUCMSNtuple/";
     //const std::string eosdir = "root://cmseos.fnal.gov//store/user/lpcsusylep/anazario/";
     //const std::string eosdir = "root://cmseos.fnal.gov//store/user/janguian/";
 	//const std::string eosdir = "/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/";				
@@ -61,11 +62,11 @@ int main ( int argc, char *argv[] ){
     //const std::string outfilename = "_rjrskim_v44.root"; // added jet merging to non copressed, new photon IDs
     //const std::string outfilename = "_rjrskim_pvtime_phoSCv3.root"; //
     //const std::string outfilename = "_rjrskim_qcdmc_Test.root"; //
-    const std::string outfilename = "_rjrskim_uncor_Test.root"; //
+    const std::string outfilename = "_rjrskim_hgm_Test.root"; //
 
 	// !!!!!!!!!!!!!!!!!!!  alternate RJR setup with invis in comb split rule
     KUCMSAodSkimmer llpgana;
-	llpgana.SetLocalSkip( 10 );
+	llpgana.SetLocalSkip( 100 );
     ////llpgana.SetNoSVorPhoFlag(noSVorPho);
     ////llpgana.SetGenSigPerfectFlag(genSigPerfect);
     //llpgana.SetDoSV(false);

@@ -1383,8 +1383,8 @@ float KUCMS_TimeCalibration::getCalibration( uInt rhid, int run, std::string tag
 		}//<<>>if( run >= calirunmap.second.startRun
 	}//<<>>for( auto& calirunmap : CaliRunMapSet )
 	if( xtaltime == -1000.f ){ std::cout << "XCalibration period not found for run " << run << std::endl; return 0.f; }
-    return xtaltime + ttcali;
-    //return xtaltime + ttcali + hgcali;// proper
+    //return xtaltime + ttcali;
+    return xtaltime + ttcali + hgcali;// proper
 
 }//<<>>float KUCMS_TimeCalibration::getCalibration( std::string tag )
 
@@ -1561,7 +1561,7 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
 		
         if( CaliRunMapSet.find(dataSetKey) != CaliRunMapSet.end() ){ 
 			//std::cout << " ----- cali : " << getCalibration(rechitID,Evt_run,dataSetKey,gainID) << std::endl;
-			rtime = time - getCalibration(rechitID,Evt_run,dataSetKey,gainID);
+			rtime = time + getCalibration(rechitID,Evt_run,dataSetKey,gainID);
 			return rtime;
 		} else return time;    
 
@@ -1994,7 +1994,7 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 						if( skiprechit ) continue;
                         if( rhEnergy->at(idx) < minRhEnergy ) continue;
 						float time = ( isCC and doUnCC ) ? rhCCTime->at(idx) : rhRtTime->at(idx);
-                        uInt crsid = doTT ? getTTId( id, GID ) : id;
+                        uInt crsid = doTT ? getTTId( id, gainid ) : id;
                         float bcrstime = ( not doTT && doCali ) ? time - getTTCali( id, run, tag ) : time;
 						float crstime = ( doTT && doCali && gainid != 1  ) ? bcrstime - getCalibration( id, run, tag ) : bcrstime;
 						calirunset[tag][tstart].fillSumCnt( crsid, crstime, fillwgt );
