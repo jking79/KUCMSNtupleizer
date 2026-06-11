@@ -2916,7 +2916,7 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
         } // for (auto entry = 0U; entry < nEntries; entry++)
 
         if(debug) std::cout << " -------- Next Input file " << std::endl;
-        std::cout << "[INFO] Finished batch for " << infilename << " entries=" << nEntries << std::endl;
+        //std::cout << "[INFO] Finished batch for " << infilename << " entries=" << nEntries << std::endl;
         delete fInTree;
         fInTree = nullptr;
 
