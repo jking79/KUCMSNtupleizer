@@ -1365,13 +1365,12 @@ std::map<UInt_t,kucms_DetIDStruct> KUCMS_TimeCalibration::getDetIDMap(){; // map
 float KUCMS_TimeCalibration::getCalibration( uInt rhid, int run, std::string tag, int gainID ){
 
 	if( rhid == 0 ) return -999.f; // valid rechit id check
-	//if( gainID > 1 ) return -999.f;
 	//if( not validCurrentTag ){ std::cout << "No current tag set." << std::endl; return 0.f; }
 	//if( not isEB ){ std::cout << "XCalibration for EE is not supported." << std::endl; return 0.f; }
     //if( not validCurrentTag ){ std::cout << "No current tag set." << std::endl; return 0.f; }
     //if( DetIDMap[rhid].ecal != ECAL::EB ) return 0.f;
     float xtaltime = -1000.f;
-	float hgcali = ( externalCali ) ? 0.f : ( gainID != 1 ) ? getTTCali( rhid, run, tag, 2 ) : 0.f;
+	float hgcali = ( externalCali ) ? 0.f : ( gainID == 1 ) ? 0.f : getTTCali( rhid, run, tag, 2 );
 	float ttcali = ( externalCali ) ? 0.f : getTTCali( rhid, run, tag, 1 );
     for( auto& calirunmap : CaliRunMapSet[tag] ){
 		int endrun = calirunmap.second.endRun;
@@ -1384,7 +1383,8 @@ float KUCMS_TimeCalibration::getCalibration( uInt rhid, int run, std::string tag
 		}//<<>>if( run >= calirunmap.second.startRun
 	}//<<>>for( auto& calirunmap : CaliRunMapSet )
 	if( xtaltime == -1000.f ){ std::cout << "XCalibration period not found for run " << run << std::endl; return 0.f; }
-    return xtaltime + ttcali + hgcali;// proper
+    return xtaltime + ttcali;
+    //return xtaltime + ttcali + hgcali;// proper
 
 }//<<>>float KUCMS_TimeCalibration::getCalibration( std::string tag )
 
@@ -1559,8 +1559,11 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
 
     if( mctype == 1 ){ // data
 		
-        if( CaliRunMapSet.find(dataSetKey) != CaliRunMapSet.end() ) rtime = time - getCalibration(rechitID,Evt_run,dataSetKey,gainID);
-		else return time;    
+        if( CaliRunMapSet.find(dataSetKey) != CaliRunMapSet.end() ){ 
+			//std::cout << " ----- cali : " << getCalibration(rechitID,Evt_run,dataSetKey,gainID) << std::endl;
+			rtime = time - getCalibration(rechitID,Evt_run,dataSetKey,gainID);
+			return rtime;
+		} else return time;    
 
     } else { // MC
 
@@ -1664,7 +1667,7 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
 
     }//<<>>if( mctype == 0 )
 
-	return time;
+	return rtime;
 
 }//<<>>float KUCMS_TimeCalibration::getCorrectedTime
 
@@ -1923,7 +1926,7 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 								//if( debug) std::cout << " - EB check --- " << id << " / " << DetIDMap[id].ecal;
 								//if( debug) std::cout << " - " << ECAL::EB << std::endl;
 								float time = ( isCC and doUnCC ) ? rhCCTime->at(idx) : rhRtTime->at(idx);
-           						uInt crsid = doTT ? getTTId( id, GID ) : id;
+           						uInt crsid = doTT ? getTTId( id, gainid ) : id;
                         		float bcrstime = ( not doTT && doCali ) ? time - getTTCali( id, run, tag ) : time;
                         		float crstime = ( doTT && doCali && gainid != 1  ) ? bcrstime - getCalibration( id, run, tag ) : bcrstime;
 								//float crstime = time;
@@ -2765,6 +2768,7 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 
 								// set gain level in this block ---------------------------------------------------------------
                                 std::vector<bool> isGainId1 = {true,true,true,true};
+                                std::vector<int> rhGainId = {0,0,0,0};
                                 if( useGSwitch ){
                                     for( int resrhit = 0; resrhit < 4; resrhit++ ){
                                         for( int rhit = 0; rhit < nRecHits; rhit++ ){
@@ -2774,24 +2778,14 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
                                                 else if ( useGain == 3 ) isGainId1[resrhit] = (*rhisGS1)[rhit] && not (*rhisGS6)[rhit];
                                                 else if ( useGain == 4 ) isGainId1[resrhit] = (*rhisGS1)[rhit] && (*rhisGS6)[rhit];
 												else isGainId1[resrhit] = false;
+												rhGainId[resrhit] = useGain;
                                                 break;
                                             }//<>if( (*resRhID)[rhit] == (*resRhID)[resrhit] )
                                         }//<<>>for( int resrhit = 0; resrhit < nResRecHits; resrhi++ )
                                     }//<<>>for( int rhit = 0; rhit < 4; rhit++ )
                                 }//<<>>if( useGSwitch )
 
-                                std::vector<int> rhGainId = {1,1,1,1};
-                                if( useGSwitch ){
-                                    for( int resrhit = 0; resrhit < 4; resrhit++ ){
-                                        for( int rhit = 0; rhit < nRecHits; rhit++ ){
-                                            if( (*resRhID)[resrhit] == (*rhID)[rhit] ){
-												if( (*rhisGS1)[rhit] || (*rhisGS6)[rhit] ) rhGainId[resrhit] = 2;
-                                                break;
-                                            }//<>if( (*resRhID)[rhit] == (*resRhID)[resrhit] )
-                                        }//<<>>for( int resrhit = 0; resrhit < nResRecHits; resrhi++ )
-                                    }//<<>>for( int rhit = 0; rhit < 4; rhit++ )
-                                }//<<>>if( useGSwitch )
-
+								//if( rhGainId[0] == 0 or rhGainId[1] == 0 or rhGainId[2] == 0 or rhGainId[3] == 0 ) continue;
                                 float seedTimeIC00 = ( usecali ) ? getCalibration( (*resRhID)[0], run, tag, rhGainId[0] ) : 0;
                                 float seedTimeIC10 = ( usecali ) ? getCalibration( (*resRhID)[1], run, tag, rhGainId[1] ) : 0;
                                 float seedTimeIC01 = ( usecali ) ? getCalibration( (*resRhID)[2], run, tag, rhGainId[2] ) : 0;
@@ -2916,7 +2910,7 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
         } // for (auto entry = 0U; entry < nEntries; entry++)
 
         if(debug) std::cout << " -------- Next Input file " << std::endl;
-        //std::cout << "[INFO] Finished batch for " << infilename << " entries=" << nEntries << std::endl;
+        std::cout << "[INFO] Finished batch for " << scanDir << " entries=" << nEntries << std::endl;
         delete fInTree;
         fInTree = nullptr;
 
