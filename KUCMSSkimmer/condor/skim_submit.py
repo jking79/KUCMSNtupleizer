@@ -102,10 +102,12 @@ TIMECALI = {
     ('R17', 'mc'):   'r2_ul18_mc',
     ('R18', 'data'): 'r2_ul18',
     ('R18', 'mc'):   'r2_ul18_mc',
-    ('R22', 'data'): 'r2_ul22',
-    ('R22', 'mc'):   'r2_ul23_mc',
-    ('R23', 'data'): 'r2_ul23',
-    ('R23', 'mc'):   'r2_ul23_mc',
+    ('R22', 'data'): 'r3_p22',       # TODO: verify r3_p22 exists in caliRunConfig
+    ('R22', 'mc'):   'r2_ul18_mc',   # TODO: confirm R3 MC timecali tag
+    ('R23', 'data'): 'r3_p23',
+    ('R23', 'mc'):   'r2_ul18_mc',   # TODO: confirm R3 MC timecali tag
+    ('R24', 'data'): 'r3_p24',
+    ('R24', 'mc'):   'r2_ul18_mc',   # TODO: confirm R3 MC timecali tag
 }
 
 DATA_KEYWORDS  = {'MET', 'JetMET', 'JetMET0', 'JetMET1', 'JetHT', 'EGamma', 'EGamma0', 'EGamma1', 'EGamma2', 'DisJet'}
@@ -133,7 +135,7 @@ def detect_sample_type(eos_path):
 
 def detect_year(eos_path):
     """Return 'R16', 'R17', 'R18', 'R22', 'R23', or ''."""
-    for yr in ['R16', 'R17', 'R18', 'R22', 'R23']:
+    for yr in ['R16', 'R17', 'R18', 'R22', 'R23', 'R24']:
         if yr in eos_path:
             return yr
     return ''
@@ -142,6 +144,33 @@ def detect_year(eos_path):
 def get_timecali(year, sample_type):
     key = (year, 'data' if sample_type == 'data' else 'mc')
     return TIMECALI.get(key, '')
+
+
+def default_event_count_path():
+    cmssw_base = os.environ.get('CMSSW_BASE', '').strip()
+    if cmssw_base:
+        return os.path.join(
+            cmssw_base,
+            'src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/config/EventCount.txt',
+        )
+    return os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                        'config/EventCount.txt')
+
+
+def read_event_count_keys(path=None):
+    if path is None:
+        path = default_event_count_path()
+    keys = set()
+    try:
+        with open(path) as handle:
+            for line in handle:
+                parts = line.split()
+                if parts:
+                    keys.add(parts[0])
+    except OSError:
+        print('WARNING: could not read', path,
+              '- MC EventCount key checks will be skipped')
+    return keys
 
 
 def lookup_bg_meta(subfolder):
@@ -167,6 +196,52 @@ def lookup_signal_xsec(subfolder):
     n2 = mn2.group(1) if mn2 else '0'
     n1 = mn1.group(1) if mn1 else '0'
     return xsec, mgl, n2, n1
+
+
+def signal_process_key(name):
+    if 'SqSq' in name or 'sqsq' in name:
+        return 'sqsqG'
+    if 'GlGl-GZ' in name or 'GlGlGZ' in name or 'gogoGZ' in name:
+        return 'gogoGZ'
+    if 'GlGl-Z' in name or 'GlGlZ' in name or 'gogoZ' in name:
+        return 'gogoZ'
+    if 'GlGl-G' in name or 'GlGlG' in name or 'gogoG' in name:
+        return 'gogoG'
+    return 'gogoGZ'
+
+
+def normalize_signal_ctau(raw_ctau):
+    if raw_ctau.startswith('-0p') and len(raw_ctau) == 4:
+        return raw_ctau[3:]
+    value = raw_ctau.lstrip('-')
+    if value.startswith('0p') and len(value) == 3:
+        return value
+    return value
+
+
+def signal_event_count_key(name):
+    mgl = re.search(r'mGl-(\d+)', name)
+    mn2 = re.search(r'mN2-(\d+)', name)
+    mn1 = re.search(r'mN1-(\d+)', name)
+    ctau = re.search(r'(?:^|[_-])ct(-?[0-9]+p[0-9]+|-?[0-9]+)', name)
+
+    if not (mgl and mn2 and mn1 and ctau):
+        match = re.search(
+            r'((?:gogoGZ|gogoG|gogoZ|sqsqG)_(?:AODSIM|FULLMINI|MINIAOD|MINI|AOD)_.*)',
+            name,
+        )
+        if match:
+            key = re.sub(r'_(FULLMINI|MINIAOD|MINI|AOD)_',
+                         '_AODSIM_', match.group(1))
+            return re.sub(r'_ct0p([15])$', r'_ct\1', key)
+        raise ValueError('could not derive signal EventCount key from: ' + name)
+
+    process = signal_process_key(name)
+    ct_key = normalize_signal_ctau(ctau.group(1))
+    return (
+        f'{process}_AODSIM_mGl-{mgl.group(1)}'
+        f'_mN2-{mn2.group(1)}_mN1-{mn1.group(1)}_ct{ct_key}'
+    )
 
 
 def make_data_key(subfolder, sample_type_kw):
@@ -232,12 +307,31 @@ def xrdfs_stat(path, verbose=False):
         return False
 
 
+def normalize_eos_path(fpath):
+    """Normalize any EOS path form to a bare /store/... path for comparison.
+    Handles: root://server//store/..., root://server/store/..., /eos/uscms/store/..., /store/...
+    """
+    if fpath.startswith('root://'):
+        m = re.match(r'root://[^/]+/(/.+)', fpath)
+        if m:
+            return m.group(1)
+        m = re.match(r'root://[^/]+/(.+)', fpath)
+        if m:
+            return '/' + m.group(1)
+    if fpath.startswith('/eos/uscms'):
+        return fpath[len('/eos/uscms'):]
+    return '/' + fpath.lstrip('/')
+
+
 def collection_tag_from_url(url):
     """Extract collection tag from an XRootD input URL.
     e.g. root://...//store/.../kucmsntuple_QCD_R18_SVIPM100_MiniAOD_v34/... -> QCD_R18_SVIPM100_MiniAOD_v34
     Returns empty string if not found."""
     m = re.search(r'kucmsntuple_([^/]+)', url)
     return m.group(1) if m else ''
+
+
+_CRAB_TS_RE = re.compile(r'^\d{6}_\d{6}$')
 
 
 def find_root_files(path, max_files=-1, verbose=False):
@@ -255,7 +349,58 @@ def find_root_files(path, max_files=-1, verbose=False):
     return results
 
 
-def write_submit(path, log_dir, out_dir, ofilename, root_files, flags, args, eos_out_dir=None):
+def find_crab_datasets(path, name='', max_files=-1, peek_only=False, verbose=False):
+    """Walk the EOS tree and return [(group_name, [root_files])] per dataset.
+
+    group_name accumulates the basenames of directories traversed below the
+    entry point, so it reflects scope regardless of where --eos-path points:
+      year level   -> 'JetMET0_kucmsntuple_..._Run2024C-PromptReco-v1'
+      stream level -> 'kucmsntuple_..._Run2024C-PromptReco-v1'
+      era level    -> 'kucmsntuple_..._Run2024C-PromptReco-v1'
+
+    Dirs whose children are all CRAB timestamps (YYMMDD_HHMMSS) are treated as
+    dataset dirs; only the latest timestamp is used.  peek_only skips deep
+    recursion for dry-run estimates.
+    """
+    entries    = xrdfs_ls(path, verbose=verbose)
+    root_files = [e for e in entries if e.endswith('.root')]
+    subdirs    = [e for e in entries if not e.endswith('.root')
+                  and '.' not in os.path.basename(e)]
+
+    group = name or os.path.basename(path)
+
+    # Case 1: .root files live directly here
+    if root_files:
+        files = root_files[:max_files] if max_files > 0 else root_files
+        return [(group, files)]
+
+    if not subdirs:
+        return []
+
+    # Case 2: all subdirs are CRAB timestamps -> dataset dir, use only latest
+    if all(_CRAB_TS_RE.match(os.path.basename(e)) for e in subdirs):
+        latest  = max(subdirs, key=os.path.basename)
+        skipped = sorted(os.path.basename(e) for e in subdirs if e != latest)
+        if skipped:
+            print('  [crab] skipping:', ', '.join(skipped),
+                  '-> using:', os.path.basename(latest))
+        if peek_only:
+            files = [e for e in xrdfs_ls(latest, verbose=verbose) if e.endswith('.root')]
+        else:
+            files = find_root_files(latest, max_files=max_files, verbose=verbose)
+        return [(group, files)]
+
+    # Case 3: intermediate dirs -> recurse, accumulating name
+    results = []
+    for sd in subdirs:
+        child_name = (name + '_' + os.path.basename(sd)) if name else os.path.basename(sd)
+        results.extend(find_crab_datasets(sd, name=child_name,
+                                          max_files=max_files, peek_only=peek_only,
+                                          verbose=verbose))
+    return results
+
+
+def write_submit(path, log_dir, out_dir, ofilename, root_files, flags, args, eos_out_dir=None, offset=0):
     outname = ofilename + '.$(Process).root'
 
     if eos_out_dir:
@@ -301,8 +446,12 @@ def write_submit(path, log_dir, out_dir, ofilename, root_files, flags, args, eos
                 bare = bare[len('/eos/uscms'):]
             full = 'root://cmseos.fnal.gov/' + bare
         eos_arg = ' --eos-out ' + bare_eos if eos_out_dir else ''
-        lines.append('###### job' + str(i) + ' ######')
-        lines.append('-i ' + full + ' ' + flags + ' -o ' + ofilename + '.$(Process)' + eos_arg)
+        job_num = offset + i
+        # When offset > 0 (new-inputs submission), use explicit indices so output
+        # filenames don't collide with the original submission's $(Process) range.
+        proc = str(job_num) if offset else '$(Process)'
+        lines.append('###### job' + str(job_num) + ' ######')
+        lines.append('-i ' + full + ' ' + flags + ' -o ' + ofilename + '.' + proc + eos_arg)
     lines.append(')')
 
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -484,6 +633,194 @@ def check_jobs(output_dir, verbose=False, test_job=None):
 
 
 # ---------------------------------------------------------------------------
+# New-inputs: submit only ntuple files that were not in the original submission
+# ---------------------------------------------------------------------------
+
+def new_inputs_mode(args):
+    """Scan EOS for files not present in existing submit.sh files and generate
+    newfiles.sh submit files for each dataset that has new inputs.
+    Job indices are offset past the original submission so output filenames
+    (condor_SAMPLE_tag.N.root) never collide."""
+
+    eos_path    = args.eos_path.rstrip('/')
+    odir        = args.output.rstrip('/') + '/'
+    sample_type = detect_sample_type(eos_path)
+    year        = detect_year(eos_path)
+    timecali    = get_timecali(year, sample_type)
+    if not timecali and sample_type == 'signal':
+        timecali = 'r2_ul18_mc'
+
+    print('EOS path:    ', eos_path)
+    print('Sample type: ', sample_type)
+    print('Year:        ', year)
+    print('Timecali:    ', timecali)
+    print()
+
+    data_kw = next((kw for kw in sorted(DATA_KEYWORDS, key=len, reverse=True)
+                    if kw in eos_path), 'Data')
+
+    print('Scanning EOS tree...')
+    datasets = find_crab_datasets(eos_path, max_files=args.max_files,
+                                  peek_only=args.dry_run, verbose=args.verbose)
+    if not datasets:
+        print('ERROR: nothing found under', eos_path)
+        sys.exit(1)
+
+    print('Datasets found:', len(datasets))
+    event_count_keys = read_event_count_keys() if sample_type != 'data' else set()
+
+    new_submit_files = []
+
+    for subfolder, root_files in datasets:
+        prefix      = subfolder.split('_')[0]
+        work_dir    = odir + prefix + '/' + subfolder + '/' + args.tag
+        src_dir     = work_dir + '/src'
+        log_dir     = work_dir + '/log'
+        out_dir     = work_dir + '/out'
+        submit_path = src_dir  + '/submit.sh'
+
+        print('\nDataset:', subfolder)
+
+        if not os.path.exists(submit_path):
+            print('  No existing submit.sh found — run without --new-inputs first, skipping.')
+            continue
+
+        header_lines, job_entries, eos_out_dir_parsed = parse_submit_file(submit_path)
+
+        # Build set of already-submitted files as normalized bare /store/... paths
+        submitted_bare = set()
+        for _, arg_line in job_entries:
+            m = re.search(r'-i\s+(\S+)', arg_line)
+            if m:
+                submitted_bare.add(normalize_eos_path(m.group(1)))
+
+        new_files = [f for f in root_files
+                     if normalize_eos_path(f) not in submitted_bare]
+
+        print('  EOS files now    :', len(root_files))
+        print('  Already submitted:', len(submitted_bare))
+        print('  New files        :', len(new_files))
+
+        if not new_files:
+            print('  Nothing new, skipping.')
+            continue
+
+        # New job indices start immediately after the original submission
+        offset = len(job_entries)
+
+        # --- metadata lookup (mirrors main loop) ---
+        xsec       = '1'
+        key        = subfolder[:subfolder.index('_')] if '_' in subfolder else subfolder
+        gluinomass = '0'
+        n2mass     = '0'
+        n1mass     = '0'
+        mctype     = 0
+        mc_wt      = '1'
+
+        if sample_type == 'data':
+            mctype = 1
+            key    = make_data_key(subfolder, data_kw)
+        elif sample_type == 'signal':
+            sig_xsec, gluinomass, n2mass, n1mass = lookup_signal_xsec(subfolder)
+            if sig_xsec is not None:
+                xsec = str(sig_xsec)
+            else:
+                print('  WARNING: no xsec found for', subfolder, '- using 0')
+                xsec = '0'
+            key = signal_event_count_key(subfolder)
+        else:
+            meta = lookup_bg_meta(subfolder)
+            if meta:
+                xsec = str(meta['xsec'])
+                key  = meta['key']
+            else:
+                print('  WARNING: no xsec found for', subfolder, '- using 0')
+                xsec = '0'
+
+        flags = (
+            ' --xsec '        + xsec
+            + ' --dataSetKey ' + key
+            + ' --gluinoMass ' + gluinomass
+            + ' --N2Mass '     + n2mass
+            + ' --timeCaliTag ' + timecali
+            + ' --MCweight '   + mc_wt
+            + ' --MCtype '     + str(mctype)
+        )
+        if mctype == 0:
+            flags += ' --hasGenInfo'
+        if not args.psiche:
+            flags += ' --noBHC'
+        if args.no_sv:
+            flags += ' --noSV'
+        if args.hlt_off:
+            flags += ' --HLTPathsOff'
+
+        print('  xsec:', xsec, '| key:', key)
+        if mctype != 1 and event_count_keys and key not in event_count_keys:
+            print('  WARNING: key not found in config/EventCount.txt:', key)
+            print('           This job will likely get inf evtFillWgt.')
+
+        # EOS output dir: prefer --eos-out from CLI, fall back to parsed original
+        eos_out_dir = None
+        if args.eos_out:
+            eos_out_dir = (os.path.expandvars(args.eos_out).rstrip('/')
+                           + '/' + prefix + '/' + subfolder + '/' + args.tag)
+        elif eos_out_dir_parsed:
+            eos_out_dir = eos_out_dir_parsed
+
+        newfiles_path = src_dir + '/newfiles.sh'
+        ofilename     = 'condor_' + subfolder + '_' + args.tag
+
+        print('  Job offset       :', offset, '(indices start at', offset, ')')
+        print('  Newfiles submit  :', newfiles_path)
+        if eos_out_dir:
+            print('  EOS out          :', eos_out_dir)
+
+        if args.dry_run:
+            print('  [DRY RUN]')
+            new_submit_files.append(newfiles_path)
+            continue
+
+        if eos_out_dir:
+            xrdfs_mkdir(eos_out_dir, verbose=args.verbose)
+
+        local_dirs = [src_dir, log_dir] if eos_out_dir else [src_dir, log_dir, out_dir]
+        for d in local_dirs:
+            os.makedirs(d, exist_ok=True)
+
+        write_submit(newfiles_path, log_dir, out_dir, ofilename,
+                     new_files, flags, args, eos_out_dir=eos_out_dir, offset=offset)
+        new_submit_files.append(newfiles_path)
+
+    print()
+    if not new_submit_files:
+        print('No new input files found across all datasets.')
+        return
+
+    print('=' * 60)
+    if len(new_submit_files) == 1:
+        print('To submit:')
+        print('  condor_submit', new_submit_files[0])
+    else:
+        multi = odir + args.tag + '_NewFiles_MultiSub.sh'
+        if not args.dry_run:
+            with open(multi, 'w') as fh:
+                fh.write('#!/bin/bash\n')
+                for sp in new_submit_files:
+                    label = '/'.join(sp.split('/')[-4:-2])
+                    fh.write('echo "Submitting {}..."\n'.format(label))
+                    fh.write('condor_submit ' + sp + '\n')
+                    fh.write('echo ""\n')
+            os.chmod(multi, 0o755)
+            print('Multi-submit script:', multi)
+            print('Run with:  source', multi)
+        else:
+            print('[DRY RUN]', len(new_submit_files),
+                  'newfiles submit file(s) would be generated')
+    print('=' * 60)
+
+
+# ---------------------------------------------------------------------------
 # Transfer: hadd per-job EOS output, xrdcp to final skim destination
 # ---------------------------------------------------------------------------
 
@@ -516,7 +853,15 @@ def transfer_jobs(args):
             sys.exit(1)
 
     if not args.dry_run:
-        xrdfs_mkdir(dest_base, verbose=args.verbose)
+        if not xrdfs_stat(dest_base, verbose=args.verbose):
+            print('Destination folder not found — creating:', dest_base)
+            if not xrdfs_mkdir(dest_base, verbose=args.verbose):
+                print('ERROR: could not create destination folder:', dest_base)
+                sys.exit(1)
+            print('Created:', dest_base)
+        else:
+            print('Destination folder exists:', dest_base)
+        print()
 
     n_ok = 0
     n_skip = 0
@@ -714,6 +1059,9 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )
+    parser.add_argument('--new-inputs', dest='new_inputs', action='store_true',
+        help='Generate newfiles.sh for each dataset containing only EOS files '
+             'not present in the existing submit.sh (requires --eos-path)')
     parser.add_argument('--check', action='store_true',
         help='Check job completeness and generate resub files for missing output')
     parser.add_argument('--test-job', dest='test_job', type=int, nargs='?', const=-1, default=None,
@@ -721,7 +1069,8 @@ def main():
     parser.add_argument('--transfer', action='store_true',
         help='hadd per-job EOS output per sample and xrdcp to final skim destination')
     parser.add_argument('--version', default=None,
-        metavar='N', help='With --transfer: skim version number (e.g. 49 -> skims_v49; default: 49)')
+        metavar='N', help='Skim version number; appends _v{N} to the job tag during submission '
+                          'and sets the skims_v{N} destination during --transfer')
     parser.add_argument('--scratch', default='/uscmst1b_scratch/lpc1/3DayLifetime/$USER',
         metavar='DIR', help='With --transfer: local scratch directory for temporary hadded files')
     parser.add_argument('--force', action='store_true',
@@ -755,15 +1104,35 @@ def main():
     parser.add_argument('--verbose', '-v', action='store_true', help='Print xrdfs commands')
     args = parser.parse_args()
 
+    if args.new_inputs:
+        if not args.eos_path:
+            parser.error('--new-inputs requires --eos-path')
+        if args.version:
+            args.tag = args.tag + '_v' + args.version.lstrip('v')
+        new_inputs_mode(args)
+        return
+
     if args.check:
         check_jobs(args.output, verbose=args.verbose, test_job=args.test_job)
         return
 
     if args.transfer:
-        default_version = 49
         if args.version is None:
-            version_str = 'skims_v{}'.format(default_version)
-            ans = input('No --version specified. Proceed with {} ? [Y/n] '.format(version_str)).strip().lower()
+            detected = None
+            for root, dirs, files in os.walk(args.output):
+                if 'submit.sh' in files:
+                    parts = root.replace('\\', '/').split('/')
+                    tag_part = parts[-2] if len(parts) >= 2 else ''
+                    m = re.search(r'_v(\d+)$', tag_part)
+                    if m:
+                        detected = m.group(1)
+                        break
+            if detected:
+                version_str = 'skims_v' + detected
+                ans = input('Auto-detected version {}. Proceed? [Y/n] '.format(version_str)).strip().lower()
+            else:
+                version_str = 'skims_v49'
+                ans = input('No --version specified. Proceed with {} ? [Y/n] '.format(version_str)).strip().lower()
             if ans not in ('', 'y', 'yes'):
                 print('Aborted.')
                 return
@@ -776,11 +1145,16 @@ def main():
     if not args.eos_path:
         parser.error('--eos-path is required unless --check or --transfer is specified')
 
+    if args.version:
+        args.tag = args.tag + '_v' + args.version.lstrip('v')
+
     eos_path    = args.eos_path.rstrip('/')
     odir        = args.output.rstrip('/') + '/'
     sample_type = detect_sample_type(eos_path)
     year        = detect_year(eos_path)
     timecali    = get_timecali(year, sample_type)
+    if not timecali and sample_type == 'signal':
+        timecali = 'r2_ul18_mc'
 
     print('EOS path:    ', eos_path)
     print('Sample type: ', sample_type)
@@ -789,61 +1163,36 @@ def main():
     print()
 
     # detect the dominant keyword for data key generation
-    data_kw = next((kw for kw in DATA_KEYWORDS if kw in eos_path), 'Data')
+    data_kw = next((kw for kw in sorted(DATA_KEYWORDS, key=len, reverse=True) if kw in eos_path), 'Data')
 
     # -----------------------------------------------------------------------
-    # List immediate subfolders
+    # Discover datasets
     # -----------------------------------------------------------------------
-    top = xrdfs_ls(eos_path, verbose=args.verbose)
-    if not top:
+    print('Scanning EOS tree...')
+    datasets = find_crab_datasets(eos_path, max_files=args.max_files,
+                                  peek_only=args.dry_run, verbose=args.verbose)
+    if not datasets:
         print('ERROR: nothing found under', eos_path)
         print('Check the path and that xrdfs is available on this system.')
         sys.exit(1)
 
-    subdirs  = [e for e in top if not os.path.basename(e).endswith('.root')]
-    topfiles = [e for e in top if     os.path.basename(e).endswith('.root')]
-
-    # If no subdirs, treat the whole folder as one flat slice
-    if not subdirs:
-        subdirs  = [eos_path]
-        topfiles = []
-
-    # Data ntuples have an extra level: collection/JetMET/per-era/...
-    # Expand any subdir that contains only subdirs (no .root files) into its children
-    if sample_type == 'data':
-        expanded = []
-        for sd in subdirs:
-            children = xrdfs_ls(sd, verbose=args.verbose)
-            child_subdirs = [e for e in children if not os.path.basename(e).endswith('.root')]
-            if child_subdirs:
-                expanded.extend(child_subdirs)
-            else:
-                expanded.append(sd)
-        subdirs = expanded
-
-    print('Subfolders found:', len(subdirs))
+    print('Datasets found:', len(datasets))
+    event_count_keys = read_event_count_keys() if sample_type != 'data' else set()
 
     # -----------------------------------------------------------------------
-    # Process each subfolder
+    # Process each dataset
     # -----------------------------------------------------------------------
     weights      = {}
     submit_files = []
 
-    for sd in subdirs:
-        subfolder = os.path.basename(sd)
-        print('\nSlice:', subfolder)
+    for subfolder, root_files in datasets:
+        print('\nDataset:', subfolder)
 
-        # --- file discovery ---
         if args.dry_run:
-            # peek one level only so we have an estimate without full recursion
-            peek = [e for e in xrdfs_ls(sd, verbose=args.verbose) if e.endswith('.root')]
-            root_files = peek
-            print('  .root files (top-level peek):', len(root_files),
+            print('  .root files (peek):', len(root_files),
                   '(dry-run; real count may be higher)')
         else:
-            print('  Scanning for .root files...')
-            root_files = find_root_files(sd, max_files=args.max_files, verbose=args.verbose)
-            print('  Found:', len(root_files))
+            print('  Files:', len(root_files))
 
         if not root_files and not args.dry_run:
             print('  No .root files found, skipping.')
@@ -869,9 +1218,7 @@ def main():
             else:
                 print('  WARNING: no xsec found for', subfolder, '- using 0')
                 xsec = '0'
-            # EventCount.txt uses AODSIM; MiniAOD ntuple subfolders may contain
-            # FULLMINI, MINIAOD, etc. Normalize to match the EventCount.txt key.
-            key = re.sub(r'_(FULLMINI|MINIAOD|MINI|AOD)_', '_AODSIM_', subfolder)
+            key = signal_event_count_key(subfolder)
 
         else:  # bg
             meta = lookup_bg_meta(subfolder)
@@ -902,6 +1249,9 @@ def main():
             flags += ' --HLTPathsOff'
 
         print('  xsec:', xsec, '| key:', key)
+        if mctype != 1 and event_count_keys and key not in event_count_keys:
+            print('  WARNING: key not found in config/EventCount.txt:', key)
+            print('           This job will likely get inf evtFillWgt.')
 
         # --- output paths ---
         prefix      = subfolder.split('_')[0]
