@@ -1383,8 +1383,7 @@ float KUCMS_TimeCalibration::getCalibration( uInt rhid, int run, std::string tag
 		}//<<>>if( run >= calirunmap.second.startRun
 	}//<<>>for( auto& calirunmap : CaliRunMapSet )
 	if( xtaltime == -1000.f ){ std::cout << "XCalibration period not found for run " << run << std::endl; return 0.f; }
-    //return xtaltime + ttcali;
-    return xtaltime + ttcali + hgcali;// proper
+    return xtaltime + ttcali + hgcali;
 
 }//<<>>float KUCMS_TimeCalibration::getCalibration( std::string tag )
 
@@ -1496,6 +1495,8 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
             float stoch = isEB ? ResTagSet[dataSetKey].ebstoch : ResTagSet[dataSetKey].eestoch;
             float stant = isEB ? ResTagSet[dataSetKey].ebstant : ResTagSet[dataSetKey].eestant;
 			var = sq2(noise/amplitude) + sq2(stoch)/amplitude + 2*sq2(stant);
+
+/*
 			if( dataSetKey == "r3_p25" and gianID != 1 and amplitude > 250 ){
 				if( isEB ) var = ( amplitude > 800 ) ? 0.621 : ( amplitude > 600 ) ? 0.207 : ( amplitude > 400 ) ? 0.178 : 
 									( amplitude > 300 ) ? 0.182 : 0.192;
@@ -1520,6 +1521,8 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
                 else var = ( amplitude > 800 ) ? 0.227 : ( amplitude > 600 ) ? 0.230 : ( amplitude > 400 ) ? 0.214 : 
 									( amplitude > 300 ) ? 0.202 : 0.207;
             }//<<>>if( dataSetKey == "r3_p25"  and gianID == 1 and amplitude > 250  )
+*/
+
 		}//<<>>if( ResTagSet.find(tag) != ResTagSet.end() )
     }//<<>>if( mctype == 0 )
     else if( mctype == 0 or mctype == 2 ){ // data or MC   --- resTag is the target resolution for smearing
@@ -1561,17 +1564,19 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
 		
         if( CaliRunMapSet.find(dataSetKey) != CaliRunMapSet.end() ){ 
 			//std::cout << " ----- cali : " << getCalibration(rechitID,Evt_run,dataSetKey,gainID) << std::endl;
-			rtime = time + getCalibration(rechitID,Evt_run,dataSetKey,gainID);
+			rtime = time - getCalibration(rechitID,Evt_run,dataSetKey,gainID);
 			return rtime;
-		} else return time;    
+		} else { std::cout << " IN GetCorrectedTime for Data dataSetKey not found !!!! " << std::endl; return time; }    
 
     } else { // MC
 
 		double ctime = 0;
 		double tarvar = 0;
 		double sorvar = 0;
+
+		if( dataSetKey == "r2_ul18_mc" ) dataSetKey = "r2_ul18_qcdmc";
 		if( CaliRunMapSet.find(dataSetKey) != CaliRunMapSet.end() ) ctime = time - getCalibration(rechitID,Evt_run,dataSetKey,gainID);
-        else ctime = time;
+        else{ ctime = time; }
 		//std::cout << " Pre Check amplitude : " << amplitude << std::endl;
 		if( amplitude < 1 ) return ctime;
         if( time == 0 ) return ctime;
@@ -1579,75 +1584,39 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
 		if( dataSetKey == "None" ) return ctime; // dataSetKey is the calibration used && source resolution for smearing
 		//std::cout << " Post Check amplitude : " << amplitude << std::endl;
 
-		//bool isEB( DetIDMap[rechitID].ecal == ECAL::EB );
-        //double ebnoise, ebstoch, ebstant, eenoise, eestoch, eestant;
-		//double mcebnoise(0), mcebstoch(0), mcebstant(0), mceenoise(0), mceestoch(0), mceestant(0);
 		if( resTag != "default" && ResTagSet.find(resTag) != ResTagSet.end() ){  // TARGET RESOLUTION
 
 			tarvar = getTimeResoltuion( amplitude, rechitID, Evt_run, resTag, mctype, gainID );
-            //ebnoise = ResTagSet[resTag].ebnoise;
-            //ebstoch = ResTagSet[resTag].ebstoch;
-            //ebstant = ResTagSet[resTag].ebstant;
-            //eenoise = ResTagSet[resTag].eenoise;
-            //eestoch = ResTagSet[resTag].eestoch;
-            //eestant = ResTagSet[resTag].eestant;
 			
 		}//<<>>if( resTag != "default" )
 		else if( resTag == "default" || dataSetKey.substr(1,2) == "r2" ){ // use smear tag?  -- check first for set tag ! 
 
             std::string tag= "r2_ul18";
 			tarvar = getTimeResoltuion( amplitude, rechitID, Evt_run, tag, mctype, gainID );
-            //ebnoise = ResTagSet[tag].ebnoise;
-            //ebstoch = ResTagSet[tag].ebstoch;
-            //ebstant = ResTagSet[tag].ebstant;
-            //eenoise = ResTagSet[tag].eenoise;
-            //eestoch = ResTagSet[tag].eestoch;
-            //eestant = ResTagSet[tag].eestant;
 
 		}//<<>>if( dataSetKey.substr(1,2) == "r2" )
         else if( dataSetKey.substr(1,2) == "r3" ){ 
 
-			//tarvar = getTimeResoltuion( amplitude, rechitID, Evt_run, tag, mctype, gainID );
-			//mcebnoise = 0; mcebstoch = 0; mcebstant = 0; mceenoise = 0; mceestoch = 0; mceestant = 0; 
+            std::string tag= "r2_ul18";
+            tarvar = getTimeResoltuion( amplitude, rechitID, Evt_run, tag, mctype, gainID );
 
 		}//<<>>if( dataSetKey.substr(1,2) == "r3" )
 
 		if( ResTagSet.find(dataSetKey) != ResTagSet.end() ){ // SOURCE RESOLTUION
 
 			std::string tag = dataSetKey;
-			//if( dataSetKey == "r2_ul18_mc" ) tag = "RunIISummer20UL18RECO";
             if( dataSetKey == "r2_ul18_qcdmc" ) tag = "RunIISummer20UL18RECO";
             if( dataSetKey == "r3_mc" ) tag = "theRun3MC_campain";
 			sorvar = getTimeResoltuion( amplitude, rechitID, Evt_run, tag, mctype, gainID );
-
-			//mcebnoise = ResTagSet[tag].ebnoise;
-            //mcebstoch = ResTagSet[tag].ebstoch;
-            //mcebstant = ResTagSet[tag].ebstant;
-            //mceenoise = ResTagSet[tag].eenoise;
-            //mceestoch = ResTagSet[tag].eestoch;
-            //mceestant = ResTagSet[tag].eestant;
 
 		} else { // 2018 MC Resoltion values
 
 			std::string tag = "default";
 			sorvar = getTimeResoltuion( amplitude, rechitID, Evt_run, tag, mctype, gainID );
-            //mcebnoise = 26.04; mcebstoch = 1.00; mcebstant = 0.1071; mceenoise = 38.69; mceestoch = 0; mceestant = 0.0843;  
 
 		}//<<>>if( ResTagSet.find(tag) != ResTagSet.end() )
 
 		//0.00691415 1.60666 0.133913  smearing for 2017 MC -> Data ( original smearing values )
-		//double tnoise = isEB ? ebnoise : eenoise;
-        //double tstoch = isEB ? ebstoch : eestoch;
-        //double tstant = isEB ? ebstant : eestant;
-        //double snoise = isEB ? mcebnoise : mceenoise;
-        //double sstoch = isEB ? mcebstoch : mceestoch;
-        //double sstant = isEB ? mcebstant : mceestant;
-		//double amp = amplitude;
-		//double sqamp = amp*amp;
-		//double tresv = ( ((tnoise*tnoise)/(sqamp)) + ((tstoch*tstoch)/amp) + (2*tstant*tstant) )/2;
-        //double sresv = ( ((snoise*snoise)/(sqamp)) + ((sstoch*sstoch)/amp) + (2*sstant*sstant) )/2;
-        ////double tresv = ( ((tnoise/amp)*(tnoise/amp)) + (2*tstant*tstant) )/2;
-        ////double sresv = ( ((snoise/amp)*(snoise/amp)) + (2*sstant*sstant) )/2;
 		double tresv = tarvar/2;
 		double sresv = sorvar/2;
         double smvar = ( tresv > sresv ) ? tresv - sresv : 0.0;//      std::max( 0.0, tresv - sresv );
@@ -1656,10 +1625,6 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
     	//if( tresv - sresv < 0.0 ){ 
         if( false ){
 			std::cout << "No smearing values set for this tag : " << dataSetKey << " time " << time << " c " << ctime << std::endl;
-        //	if( isEB ) std::cout << " stag eb tg smearing : " << ebnoise << " " << ebstoch << " " << ebstant << std::endl;
-        //    else std::cout << " stag ee tg smearing : " << eenoise << " " << eestoch << " " << eestant << std::endl;
-        //	if( isEB ) std::cout << " stag eb mc smearing : " << mcebnoise << " " << mcebstoch << " " << mcebstant << std::endl;
-        //    else std::cout << " stag ee mc smearing : " << mceenoise << " " << mceestoch << " " << mceestant << std::endl;
 			std::cout << " smearing parameters: t " << tresv << " s " << sresv << " amp " << amplitude << std::endl;
         	std::cout << " getSmeared Res: " << resolution << " rtime " << rtime << std::endl;
 		}//<<>>if( resolution <= 0 )
