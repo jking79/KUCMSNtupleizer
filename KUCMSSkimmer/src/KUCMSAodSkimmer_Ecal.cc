@@ -56,7 +56,11 @@ void KUCMSAodSkimmer::processRechits(){
         bool gs6 = (*ECALRecHit_hasGS6)[it];
         bool gs1 = (*ECALRecHit_hasGS1)[it];
 		int gainid = ( gs6 || gs1 ) ? 2 : 1;
-		if( tctag == "r3_p25unc" or tctag == "r3_p26unc" ) rht = (*ECALRecHit_UnCorrTime)[it];
+		/////if( gainid != 1 ) continue; /// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		if( tctag == "r3_p25unc" or tctag == "r3_p26unc" ){ 
+			rht = (*ECALRecHit_UnCorrTime)[it]; 
+			//std::cout << " - Used UnCC for " << tctag << std::endl;
+		}//<<>>if( tctag == "r3_p25unc" or tctag == "r3_p26unc" )
 		float rhe = (*ECALRecHit_energy)[it];
 		float rha = (*ECALRecHit_ampres)[it]; //( this is the ADC amplitude in units of the pedistal rms for this rechit )
 		timeCali->setMCResTag(mctrtag);
@@ -68,15 +72,29 @@ void KUCMSAodSkimmer::processRechits(){
 		//}//<<>>if( rhid < 840000000 )
 		erh_corTime.push_back( corrht );
         erh_timeRes.push_back( rhtres );
-        if( true ){
 
-			hist1d[0]->Fill( rhe, 1 );
-            hist1d[1]->Fill( rhtres, 1 );
-            hist1d[2]->Fill( corrht, 1 );
-            hist1d[5]->Fill( rht, 1 );
-			//auto radius = hypo( (*rhPosX)[it], (*rhPosY)[it] );
-
+        hist1d[0]->Fill( rhe, 1 );
+        hist1d[1]->Fill( rhtres, 1 );
+        hist1d[2]->Fill( corrht, 1 );
+        hist1d[5]->Fill( rht, 1 );
+        if( gainid == 2 ){
+			hist1d[40]->Fill( rhe, 1 );
+            hist1d[41]->Fill( rhtres, 1 );
+            hist1d[42]->Fill( corrht, 1 );
+            hist1d[45]->Fill( rht, 1 );
 		}//<<>>if( (*rhSubdet)[it] == 0 )
+        if( rhid < 840000000 ){
+            hist1d[50]->Fill( rhe, 1 );
+            hist1d[51]->Fill( rhtres, 1 );
+            hist1d[52]->Fill( corrht, 1 );
+            hist1d[55]->Fill( rht, 1 );
+        }//<<>>if( (*rhSubdet)[it] == 0 )
+        if( rhid > 840000000 ){
+            hist1d[60]->Fill( rhe, 1 );
+            hist1d[61]->Fill( rhtres, 1 );
+            hist1d[62]->Fill( corrht, 1 );
+            hist1d[65]->Fill( rht, 1 );
+        }//<<>>if( (*rhSubdet)[it] == 0 )
 
 		/*  ECAL Rechit information --  not saved currenty
  

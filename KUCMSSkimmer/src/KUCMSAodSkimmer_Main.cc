@@ -307,6 +307,8 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
   isLocal = false;
   localSkip = 0;
   useUnCC = false;
+  isCC = false;
+  doSlimmed = false;
 
   _evti = -1;
   _evtj = -1;
@@ -425,7 +427,8 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
     TTree* fOutTree = new TTree("kuSkimTree","output root file for kUCMSSkimmer");
     TTree* fConfigTree = new TTree("kuSkimConfigTree","config root file for kUCMSSkimmer");
 
-    if( tctag == "r3_p25unc" or tctag == "r3_p26unc" ) useUnCC = true;
+    if( tctag == "r3_p25" or tctag == "r3_p26" ){ isCC = true; }
+    if( tctag == "r3_p25unc" or tctag == "r3_p26unc" ){ useUnCC = true; isCC = true; }
     setDoUnCCBase( useUnCC );
 
 	setGenInfoBase( hasGenInfoFlag );
@@ -923,7 +926,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
     std:: cout << masterstr << std::endl;
     auto instrs = splitString( masterstr, " " );
     if( DEBUG ) std::cout << instrs.size() << std::endl;
-    if( instrs.size() != 9 ) continue;
+    if( instrs.size() != 9 ){ std::cout << " -- Too few arguments : " << instrs.size() << std::endl; continue; }
 
     inFilePath = instrs[0];
     inFileName = instrs[1];
@@ -986,7 +989,6 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
 
         //if( instr.empty() || instr[0] == '#' ) continue;
         nfiles++;
-		if( nfiles < 1000 ) continue;
     	if( skipCnt != 0 && ( nfiles%skipCnt != 0 ) ) continue;
         //fileskipcnt++;
         //if( fileskipcnt%10 != 0 ) continue;
@@ -1330,13 +1332,31 @@ void KUCMSAodSkimmer::initHists(){
 	hist1d[0] = new TH1D("ecalrhenergy0", "RecHit Energy;rechit E [GeV]",1000,0,1000);
     hist1d[1] = new TH1D("ecalrhtimevar", "RecHit Time Var;rechit Var",200,0,20);
     hist1d[2] = new TH1D("ecalrhcor", "RecHit Time Core;rechit Time [ns]",200,-10,10);
+    hist1d[5] = new TH1D("ecalrhtime", "RecHit Time;rechit Time [ns]",200,-10,10);
+    hist1d[40] = new TH1D("ecalrhenergy04hg", "RecHit Energy G2;rechit E [GeV]",1000,0,1000);
+    hist1d[41] = new TH1D("ecalrhtimevar4hg", "RecHit Time Var G2;rechit Var",200,0,20);
+    hist1d[42] = new TH1D("ecalrhcor4hg", "RecHit Time Core G2;rechit Time [ns]",200,-10,10);
+    hist1d[45] = new TH1D("ecalrhtime4hg", "RecHit Time G2;rechit Time [ns]",200,-10,10);
+    hist1d[50] = new TH1D("ecalrhenergy05eb", "RecHit Energy EB;rechit E [GeV]",1000,0,1000);
+    hist1d[51] = new TH1D("ecalrhtimevar5eb", "RecHit Time Var EB;rechit Var",200,0,20);
+    hist1d[52] = new TH1D("ecalrhcor5eb", "RecHit Time Core EB;rechit Time [ns]",200,-10,10);
+    hist1d[55] = new TH1D("ecalrhtime5eb", "RecHit Time EB;rechit Time [ns]",200,-10,10);
+    hist1d[60] = new TH1D("ecalrhenergy06ee", "RecHit Energy EE;rechit E [GeV]",1000,0,1000);
+    hist1d[61] = new TH1D("ecalrhtimevar6ee", "RecHit Time Var EE;rechit Var",200,0,20);
+    hist1d[62] = new TH1D("ecalrhcor6ee", "RecHit Time Core EE;rechit Time [ns]",200,-10,10);
+    hist1d[65] = new TH1D("ecalrhtime6ee", "RecHit Time EE;rechit Time [ns]",200,-10,10);
+
+
     hist1d[3] = new TH1D("sctype","SC !Orig, Orig, OOT, Excl",4,0,4);
     hist1d[4] = new TH1D("scorigtype","Orig+OOT, Orig+!OOT, Orig+Exc, !Orig+OOT, !Orig+Exc, !Orig+!OOT",6,0,6);
-    hist1d[5] = new TH1D("ecalrhtime", "RecHit Time;rechit Time [ns]",200,-10,10);
+	// hist1d[5] above
     hist1d[6] = new TH1D("scenergy","SC rawEnergy;energy [GeV]",200,0,1000);
     hist1d[7] = new TH1D("trckpt","Track pt;Track pt [GeV]",500,0,1000);
     hist1d[8] = new TH1D("NRecHitsInSCs","NRecHitsInSCs;NRecHitsInSCs",100,0,100);
     hist1d[9] = new TH1D("sceta","SC Eta;Eta",200,-10,10);
+
+
+
 
 	hist1d[10] = new TH1D("elept","Electron Pt [GeV];Electron Pt [GeV];a.u.",100,0,1000);
     hist1d[11] = new TH1D("elept_lv","LooseVeto;Electron Pt [GeV];Eff",100,0,1000);
