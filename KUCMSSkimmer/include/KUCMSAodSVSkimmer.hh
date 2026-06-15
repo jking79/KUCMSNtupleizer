@@ -106,6 +106,8 @@ class KUCMSAodSkimmer : public llpgtree {
     void SetDoSV( bool f ){ doSVs = f; }
 	void SetLocalSkip( int skip ){ localSkip = skip; }
 	void SetUseUnCC( bool f ){ useUnCC = f; }
+    void SetIsCC( bool f ){ isCC = f; }
+    void SetDoSlimmed( bool f ){ doSlimmed = f; }
 
 	// set branches
 
@@ -276,6 +278,8 @@ class KUCMSAodSkimmer : public llpgtree {
 	bool doSVs;
 
 	bool useUnCC;
+	bool isCC;
+	bool doSlimmed;
 
 	// input tree, paths, and file names
 

@@ -66,7 +66,7 @@ int main ( int argc, char *argv[] ){
 
 	// !!!!!!!!!!!!!!!!!!!  alternate RJR setup with invis in comb split rule
     KUCMSAodSkimmer llpgana;
-	llpgana.SetLocalSkip( 100 );
+	llpgana.SetLocalSkip( 200 );
     ////llpgana.SetNoSVorPhoFlag(noSVorPho);
     ////llpgana.SetGenSigPerfectFlag(genSigPerfect);
     //llpgana.SetDoSV(false);

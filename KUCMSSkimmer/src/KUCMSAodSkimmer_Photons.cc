@@ -207,14 +207,16 @@ void KUCMSAodSkimmer::processPhotons(){
             float terror = (*ECALRecHit_timeError)[erhiter];
             bool isEE = fabs((*ECALRecHit_eta)[erhiter]) > 1.479;
             bool isValidT = true;
-            if( terror > 900 ) isValidT = false;
-            if( hasGainSwitch ){
-                if( isEE ){ if( terror < 1.0 ) isValidT = false; }
-                else { if( terror < 0.6 ) isValidT = false; }
-            } else {
-                if( isEE ){ if( terror < 1.05 ) isValidT = false; }
-                else { if( terror < 0.65 ) isValidT = false; }
-            }//<<>>if( hasGainSwitch )
+			if( not isCC ){
+            	if( terror > 900 ) isValidT = false;
+            	if( hasGainSwitch ){
+                	if( isEE ){ if( terror < 1.0 ) isValidT = false; }
+                	else { if( terror < 0.6 ) isValidT = false; }
+            	} else {
+                	if( isEE ){ if( terror < 1.05 ) isValidT = false; }
+                	else { if( terror < 0.65 ) isValidT = false; }
+            	}//<<>>if( hasGainSwitch )
+			}//<<>>if( not isCC )
             if( not isValidT ){ gainwt = 0; gainwt1 = 0; }
 
             float invertres = 2/ertres;
