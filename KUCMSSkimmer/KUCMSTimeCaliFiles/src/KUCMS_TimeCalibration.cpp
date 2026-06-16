@@ -1383,8 +1383,8 @@ float KUCMS_TimeCalibration::getCalibration( uInt rhid, int run, std::string tag
 		}//<<>>if( run >= calirunmap.second.startRun
 	}//<<>>for( auto& calirunmap : CaliRunMapSet )
 	if( xtaltime == -1000.f ){ std::cout << "XCalibration period not found for run " << run << std::endl; return 0.f; }
-    //return xtaltime + ttcali - hgcali;
-    return xtaltime + ttcali;
+    return xtaltime + ttcali + hgcali;
+    //return xtaltime + ttcali;
 
 }//<<>>float KUCMS_TimeCalibration::getCalibration( std::string tag )
 
