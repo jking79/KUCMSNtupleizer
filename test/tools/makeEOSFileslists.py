@@ -85,6 +85,7 @@ def relative_to_start(full_path: str, start_dir: str) -> str:
 
 
 def main():
+
     if len(sys.argv) > 1:
         start_dir = sys.argv[1]
     else:
@@ -92,7 +93,7 @@ def main():
     if len(sys.argv) > 2:
         dir_pattern = sys.argv[2]
     else:
-        dir_pattern = ""
+        dir_pattern = "gammares_prmt25"
 
     start_dir = start_dir.rstrip("/")
 
