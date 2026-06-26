@@ -1384,6 +1384,7 @@ float KUCMS_TimeCalibration::getCalibration( uInt rhid, int run, std::string tag
 	}//<<>>for( auto& calirunmap : CaliRunMapSet )
 	if( xtaltime == -1000.f ){ std::cout << "XCalibration period not found for run " << run << std::endl; return 0.f; }
     return xtaltime + ttcali + hgcali;
+    //return xtaltime + ttcali;
 
 }//<<>>float KUCMS_TimeCalibration::getCalibration( std::string tag )
 
@@ -1496,7 +1497,6 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
             float stant = isEB ? ResTagSet[dataSetKey].ebstant : ResTagSet[dataSetKey].eestant;
 			var = sq2(noise/amplitude) + sq2(stoch)/amplitude + 2*sq2(stant);
 
-/*
 			if( dataSetKey == "r3_p25" and gianID != 1 and amplitude > 250 ){
 				if( isEB ) var = ( amplitude > 800 ) ? 0.621 : ( amplitude > 600 ) ? 0.207 : ( amplitude > 400 ) ? 0.178 : 
 									( amplitude > 300 ) ? 0.182 : 0.192;
@@ -1521,7 +1521,6 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
                 else var = ( amplitude > 800 ) ? 0.227 : ( amplitude > 600 ) ? 0.230 : ( amplitude > 400 ) ? 0.214 : 
 									( amplitude > 300 ) ? 0.202 : 0.207;
             }//<<>>if( dataSetKey == "r3_p25"  and gianID == 1 and amplitude > 250  )
-*/
 
 		}//<<>>if( ResTagSet.find(tag) != ResTagSet.end() )
     }//<<>>if( mctype == 0 )
@@ -1578,7 +1577,7 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
 		if( CaliRunMapSet.find(dataSetKey) != CaliRunMapSet.end() ) ctime = time - getCalibration(rechitID,Evt_run,dataSetKey,gainID);
         else{ ctime = time; }
 		//std::cout << " Pre Check amplitude : " << amplitude << std::endl;
-		if( amplitude < 1 ) return ctime;
+		//if( amplitude < 1 ) return ctime;
         if( time == 0 ) return ctime;
 		if( resTag == "None" ) return ctime; // --- resTag is the target resolution for smearing
 		if( dataSetKey == "None" ) return ctime; // dataSetKey is the calibration used && source resolution for smearing

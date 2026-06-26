@@ -5,8 +5,56 @@
 ## inpath infiles skimkey crossSection gluionmass nutralino2mass mcweight mctype(1 data, 0 MC) timecalitag
 
 
-kucmsntuple_JetMET_R25_SVHPM100_v34/JetMET1/ JetMET1_MINIAOD_Run2025C JetMet1R25C 1 0 0 0 1 r3_p25unc
-#kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET1/ Run2025D-PromptReco-v1 JetMet1R25D2 1 0 0 0 1 r3_p25unc
+#kucmsntuple_MET_R18_SVHPM100_MiniAOD_v34/MET/ Run2018A MetR18A 1 0 0 0 1 r2_ul18
+
+#kucmsntuple_JetMET_R22_SVHPM100_MiniAOD_v34/JetMET/ Run2022C JetMetR22C 1 0 0 0 1 r3_p22
+#kucmsntuple_JetMET_R22_SVHPM100_MiniAOD_v34/JetMET/ Run2022D JetMetR22D 1 0 0 0 1 r3_p22
+#kucmsntuple_JetMET_R22_SVHPM100_MiniAOD_v34/JetMET/ Run2022E JetMetR22E 1 0 0 0 1 r3_p22
+#kucmsntuple_JetMET_R22_SVHPM100_MiniAOD_v34/JetMET/ Run2022F JetMetR22F 1 0 0 0 1 r3_p22
+#kucmsntuple_JetMET_R22_SVHPM100_MiniAOD_v34/JetMET/ Run2022G JetMetR22G 1 0 0 0 1 r3_p22
+
+#kucmsntuple_JetMET_R23_SVHPM100_MiniAOD_v34/JetMET0/ JetMET0_MINIAOD_Run2023B JetMet0R23B 1 0 0 0 1 r3_p23
+#kucmsntuple_JetMET_R23_SVHPM100_MiniAOD_v34/JetMET0/ JetMET0_MINIAOD_Run2023C JetMet0R23C 1 0 0 0 1 r3_p23
+#kucmsntuple_JetMET_R23_SVHPM100_MiniAOD_v34/JetMET0/ JetMET0_MINIAOD_Run2023D JetMet0R23D 1 0 0 0 1 r3_p23
+#kucmsntuple_JetMET_R23_SVHPM100_MiniAOD_v34/JetMET1/ JetMET1_MINIAOD_Run2023B JetMet1R23B 1 0 0 0 1 r3_p23
+#kucmsntuple_JetMET_R23_SVHPM100_MiniAOD_v34/JetMET1/ JetMET1_MINIAOD_Run2023C JetMet1R23C 1 0 0 0 1 r3_p23
+#kucmsntuple_JetMET_R23_SVHPM100_MiniAOD_v34/JetMET1/ JetMET1_MINIAOD_Run2023D JetMet1R23D 1 0 0 0 1 r3_p23
+
+#kucmsntuple_JetMET_R24_SVHPM100_MiniAOD_v34/JetMET0/ Run2024C JetMet0R24C 1 0 0 0 1 r3_p24
+kucmsntuple_JetMET_R24_SVHPM100_MiniAOD_v34/JetMET0/ Run2024D JetMet0R24D 1 0 0 0 1 r3_p24
+#kucmsntuple_JetMET_R24_SVHPM100_MiniAOD_v34/JetMET0/ Run2024E-PromptReco-v1 JetMet0R24E1 1 0 0 0 1 r3_p24
+#kucmsntuple_JetMET_R24_SVHPM100_MiniAOD_v34/JetMET0/ Run2024E-PromptReco-v2 JetMet0R24E2 1 0 0 0 1 r3_p24
+#kucmsntuple_JetMET_R24_SVHPM100_MiniAOD_v34/JetMET0/ Run2024F JetMet0R24F 1 0 0 0 1 r3_p24
+#kucmsntuple_JetMET_R24_SVHPM100_MiniAOD_v34/JetMET0/ Run2024G JetMet0R24G 1 0 0 0 1 r3_p24
+#kucmsntuple_JetMET_R24_SVHPM100_MiniAOD_v34/JetMET0/ Run2024H JetMet0R24H 1 0 0 0 1 r3_p24
+#kucmsntuple_JetMET_R24_SVHPM100_MiniAOD_v34/JetMET0/ Run2024I-PromptReco-v1 JetMet0R24I1 1 0 0 0 1 r3_p24
+#kucmsntuple_JetMET_R24_SVHPM100_MiniAOD_v34/JetMET0/ Run2024I-PromptReco-v2 JetMet0R24I2 1 0 0 0 1 r3_p24
+
+#kucmsntuple_JetMET_R24_SVHPM100_MiniAOD_v34/JetMET1/ Run2024C JetMet1R24C 1 0 0 0 1 r3_p24
+#kucmsntuple_JetMET_R24_SVHPM100_MiniAOD_v34/JetMET1/ Run2024D JetMet1R24D 1 0 0 0 1 r3_p24
+#kucmsntuple_JetMET_R24_SVHPM100_MiniAOD_v34/JetMET1/ Run2024E-PromptReco-v1 JetMet1R24E1 1 0 0 0 1 r3_p24
+#kucmsntuple_JetMET_R24_SVHPM100_MiniAOD_v34/JetMET1/ Run2024E-PromptReco-v2 JetMet1R24E2 1 0 0 0 1 r3_p24
+#kucmsntuple_JetMET_R24_SVHPM100_MiniAOD_v34/JetMET1/ Run2024F JetMet1R24F 1 0 0 0 1 r3_p24
+#kucmsntuple_JetMET_R24_SVHPM100_MiniAOD_v34/JetMET1/ Run2024G JetMet1R24G 1 0 0 0 1 r3_p24
+#kucmsntuple_JetMET_R24_SVHPM100_MiniAOD_v34/JetMET1/ Run2024H JetMet1R24H 1 0 0 0 1 r3_p24
+#kucmsntuple_JetMET_R24_SVHPM100_MiniAOD_v34/JetMET1/ Run2024I-PromptReco-v1 JetMet1R24I1 1 0 0 0 1 r3_p24
+#kucmsntuple_JetMET_R24_SVHPM100_MiniAOD_v34/JetMET1/ Run2024I-PromptReco-v2 JetMet1R24I2 1 0 0 0 1 r3_p24
+
+#kucmsntuple_JetMET_R25_SVHPM100_v34/JetMET1/ JetMET1_MINIAOD_Run2025C JetMet1R25C1 1 0 0 0 1 r3_p25unc
+#kucmsntuple_JetMET_R25_SVHPM100_v34/JetMET1/ JetMET1_v2_MINIAOD_Run2025C JetMet1R25C2 1 0 0 0 1 r3_p25unc
+#kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET1/ Run2025D JetMet1R25D 1 0 0 0 1 r3_p25unc
+#kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET1/ Run2025E JetMet1R25E 1 0 0 0 1 r3_p25unc
+#kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET1/ Run2025F-PromptReco-v1 JetMet1R25F1 1 0 0 0 1 r3_p25unc
+#kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET1/ Run2025F-PromptReco-v2 JetMet1R25F2 1 0 0 0 1 r3_p25unc
+#kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET1/ Run2025G JetMet1R25G 1 0 0 0 1 r3_p25unc
+
+#kucmsntuple_JetMET_R25_SVHPM100_v34/JetMET0/ JetMET0_MINIAOD_Run2025C JetMet0R25C1 1 0 0 0 1 r3_p25unc
+#kucmsntuple_JetMET_R25_SVHPM100_v34/JetMET0/ JetMET0_v2_MINIAOD_Run2025C JetMet0R25C2 1 0 0 0 1 r3_p25unc
+#kucmsntuple_JetMET_R25_SVHPM100_v34/JetMET0/ JetMET0_MINIAOD_Run2025D JetMet0R25D 1 0 0 0 1 r3_p25unc
+#kucmsntuple_JetMET_R25_SVHPM100_v34/JetMET0/ JetMET0_MINIAOD_Run2025E JetMet0R25E 1 0 0 0 1 r3_p25unc
+#kucmsntuple_JetMET_R25_SVHPM100_v34/JetMET0/ JetMET0_MINIAOD_Run2025F JetMet0R25F1 1 0 0 0 1 r3_p25unc
+#kucmsntuple_JetMET_R25_SVHPM100_v34/JetMET0/ JetMET0_v2_MINIAOD_Run2025F JetMet0R25F2 1 0 0 0 1 r3_p25unc
+#kucmsntuple_JetMET_R25_SVHPM100_v34/JetMET0/ JetMET0_MINIAOD_Run2025G JetMet0R25G 1 0 0 0 1 r3_p25unc
 
 ########################## oldstyle ###########################
 

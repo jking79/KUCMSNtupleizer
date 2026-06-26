@@ -111,16 +111,18 @@ float KUCMSAodSkimmer::getTimeSig( int scIndex, float& num, float& denom, const 
                 double cor_tofPVtoRH = hypo(erx-PV_x,ery-PV_y,erz-PV_z)/SOL;
                 double ertoftime = erhct + cor_cms000 - cor_tofPVtoRH;
 
-				bool isEE = fabs((*ECALRecHit_eta)[erhiter]) > 1.479;
-				bool isValid = true;
-				if( terror > 900 ) isValid = false;
-				if( hasGainSwitch ){
-					if( isEE ){ if( terror < 1.0 ) isValid = false; }
-					else { if( terror < 0.6 ) isValid = false; } 
-				} else {
-                	if( isEE ){ if( terror < 1.05 ) isValid = false; }
-                    else { if( terror < 0.65 ) isValid = false; }
-				}//<<>>if( hasGainSwitch )
+                bool isEE = fabs((*ECALRecHit_eta)[erhiter]) > 1.479;
+                bool isValid = true;
+                if( not isCC ){
+                    if( terror > 900 ) isValid = false;
+                    if( hasGainSwitch ){
+                        if( isEE ){ if( terror < 1.0 ) isValid = false; }
+                        else { if( terror < 0.6 ) isValid = false; }
+                    } else {
+                        if( isEE ){ if( terror < 1.05 ) isValid = false; }
+                        else { if( terror < 0.65 ) isValid = false; }
+                    }//<<>>if( hasGainSwitch )
+                }//<<>>if( not isCC )
 
                 float gainwt = 0;
                 if( isValid ) gainwt = 1;
@@ -192,14 +194,16 @@ float KUCMSAodSkimmer::getTimeSig( const std::vector<int>& scIndexs, float& num,
 
                 bool isEE = fabs((*ECALRecHit_eta)[erhiter]) > 1.479;
                 bool isValid = true;
-                if( terror > 900 ) isValid = false;
-                if( hasGainSwitch ){
-                    if( isEE ){ if( terror < 1.0 ) isValid = false; }
-                    else { if( terror < 0.6 ) isValid = false; }
-                } else {
-                    if( isEE ){ if( terror < 1.05 ) isValid = false; }
-                    else { if( terror < 0.65 ) isValid = false; }
-                }//<<>>if( hasGainSwitch )
+  				if( not isCC ){
+                	if( terror > 900 ) isValid = false;
+                	if( hasGainSwitch ){
+                    	if( isEE ){ if( terror < 1.0 ) isValid = false; }
+                    	else { if( terror < 0.6 ) isValid = false; }
+                	} else {
+                    	if( isEE ){ if( terror < 1.05 ) isValid = false; }
+                    	else { if( terror < 0.65 ) isValid = false; }
+                	}//<<>>if( hasGainSwitch )
+				}//<<>>if( not isCC )
 
                 float gainwt = 0;
                 if( isValid ) gainwt = 1;
