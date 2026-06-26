@@ -125,7 +125,7 @@ float KUCMSAodSkimmer::getTimeSig( int scIndex, float& num, float& denom, const 
                 }//<<>>if( not isCC )
 
                 float gainwt = 0;
-                if( isValid ) gainwt = 1;
+                if( isValid ){ gainwt = 1; hist1d[90]->Fill( erhct ); }
 
                 double invertres = ( ertres > 0 ) ? 1/ertres : -1;
                 double erhar = ( invertres > 0 ) ? invertres*gainwt : 0;
