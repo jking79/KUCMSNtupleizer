@@ -304,6 +304,8 @@ TrackVertexSet::operator reco::Vertex() const {
       // residuals which are huge for displaced tracks (far from perigee reference
       // point), inflating normalizedChi2 by orders of magnitude.
       const GlobalError smoothedErr = smoothed.positionError();
+      if (smoothedErr.cxx() < 0.0 || smoothedErr.cyy() < 0.0 || smoothedErr.czz() < 0.0)
+        return reco::Vertex();
       const math::XYZPoint smoothedPos(smoothed.position().x(), smoothed.position().y(), smoothed.position().z());
       const math::Error<3>::type smoothedCov(ROOT::Math::SVector<double, 6>(
         smoothedErr.cxx(), smoothedErr.cyx(), smoothedErr.cyy(),
