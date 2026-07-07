@@ -62,11 +62,11 @@ int main ( int argc, char *argv[] ){
     //const std::string outfilename = "_rjrskim_v44.root"; // added jet merging to non copressed, new photon IDs
     //const std::string outfilename = "_rjrskim_pvtime_phoSCv3.root"; //
     //const std::string outfilename = "_rjrskim_qcdmc_Test.root"; //
-    const std::string outfilename = "_rjrskim_hgm_Test.root"; //
+    const std::string outfilename = "_rjrskim_pixseed_Test.root"; //
 
 	// !!!!!!!!!!!!!!!!!!!  alternate RJR setup with invis in comb split rule
     KUCMSAodSkimmer llpgana;
-	llpgana.SetLocalSkip( 200 );
+	llpgana.SetLocalSkip( 400 );
     ////llpgana.SetNoSVorPhoFlag(noSVorPho);
     ////llpgana.SetGenSigPerfectFlag(genSigPerfect);
     //llpgana.SetDoSV(false);

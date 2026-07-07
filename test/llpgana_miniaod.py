@@ -35,7 +35,7 @@ options.register('runMETFilters',False,VarParsing.multiplicity.singleton,VarPars
 #options.register('globalTag','106X_mc2017_realistic_v6',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','106X_upgrade2018_realistic_v15_L1v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 ###options.register('globalTag','94X_mc2017_realistic_v11',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
-options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for sig22 MC');
+#options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for sig22 MC');
 #options.register('globalTag','124X_mcRun3_2022_realistic_v12',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for sig22 MC');
 #options.register('globalTag','130X_mcRun3_2023_realistic_v14',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','133X_mcRun3_2024_realistic_v10',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
@@ -44,10 +44,9 @@ options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.m
 #options.register('globalTag','140X_dataRun3_v17',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for R3 22');
 #options.register('globalTag','130X_mcRun3_2023_realistic_postBPix_v2',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for R3 23');
 
-#124X_mcRun3_2022_realistic_postEE_v1
-
 ##------------------ data gt  
 #options.register('globalTag','106X_dataRun2_v36',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
+options.register('globalTag','150X_dataRun3_v2',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 ##options.register('globalTag','106X_dataRun2_v28',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 #options.register('globalTag','124X_dataRun3_v15',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2022');
 #options.register('globalTag','140X_dataRun3_v17',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
@@ -71,7 +70,8 @@ options.parseArguments()
 ## Define the CMSSW process
 #runera = "Run3"  # current siganl model   !!!!!!!!  Run3 must be in CMSSW 14 or 15
 #runera = "Run3_2025"
-runera = "Run3_2022"
+#runera = "Run3_2022"
+runera = "Run3_2024"
 #runera = "Run2_2018" # BG models
 ##runera = "Run2_2016"
 if options.multicrab == True : runera = options.runera
@@ -153,7 +153,8 @@ process.source = cms.Source("PoolSource",
         #root://cmseos.fnal.gov/
         #root://cms-xrd-global.cern.ch/
         #file:
-
+    
+        'root://cmsxrootd.fnal.gov//store/data/Run2024D/JetMET0/MINIAOD/MINIv6NANOv15-v1/2530000/0015790c-a12b-4936-bc66-1abc66dfdbdb.root',
         #### AOD Run3   MUST BE IN CMSSW  14 or 15 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         # Data
         #'root://cmsxrootd.fnal.gov//store/data/Run2024C/JetMET0/MINIAOD/PromptReco-v1/000/379/415/00000/f41372ad-bc84-47c3-9c74-49f96cf26866.root',
@@ -166,13 +167,14 @@ process.source = cms.Source("PoolSource",
         #'root://cmsxrootd.fnal.gov//store/data/Run2016G/MET/MINIAOD/UL2016_MiniAODv2-v2/120000/020ADD62-87D5-4B43-BAAD-C77C83D5FF8F.root',
         #'root://cmsxrootd.fnal.gov//store/data/Run2018B/JetHT/MINIAOD/15Feb2022_UL2018-v1/2820000/84DEEA91-CF7B-C24B-831D-7D993EB56D8D.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2018D/MET/MINIAOD/15Feb2022_UL2018-v1/510000/F5E0C00B-109F-5C4D-92F9-6D9F57EBE8C5.root',
+        #'root://cms-xrd-global.cern.ch//store/data/Run2018A/MET/MINIAOD/UL2018_MiniAODv2_GT36-v1/2430000/008D956B-CE88-0B4F-8432-069471D1AA15.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2017D/DoubleEG/MINIAOD/09Aug2019_UL2017-v1/260000/3879D624-EAFF-C34B-8C0E-D4D7E23EB25C.root',
         #'root://cms-xrd-global.cern.ch//store/data/Run2018D/EGamma/MINIAOD/UL2018_MiniAODv2-v2/2810000/D5E0889C-D687-6242-8105-A147939E99C4.root',
         #'root://cmsxrootd.fnal.gov//store/data/Run2018B/JetHT/MINIAOD/15Feb2022_UL2018-v1/2820000/84DEEA91-CF7B-C24B-831D-7D993EB56D8D.root',
         #'root://cmsxrootd.fnal.gov//store/data/Run2025F/JetMET0/MINIAOD/PromptReco-v1/000/396/733/00000/40cf55f8-5609-44a7-b73b-c74f4ae04076.root',
 
         # MC - Sig
-        'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-3p0_MINI/260510_002204/0000/SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-3p0_MiniAODv4_17.root'
+        #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-3p0_MINI/260510_002204/0000/SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-3p0_MiniAODv4_17.root'
         #'file:gjets_100to200_mini_18UL.root',
         #'root://cmsxrootd.fnal.gov//store/mc/RunIISummer20UL18MiniAODv2/GJets_HT-200To400_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/2550000/02DB3B2A-F2FE-4041-AA6F-45D8732CB5A8.root',    
         #'root://cmsxrootd.fnal.gov//store/mc/Run3Summer23BPixMiniAODv4/QCD-4Jets_HT-1000to1200_TuneCP5_13p6TeV_madgraphMLM-pythia8/MINIAODSIM/130X_mcRun3_2023_realistic_postBPix_v2-v4/2550000/095a8ffe-1d09-4d04-bb7e-56903d510c3e.root',
@@ -210,8 +212,8 @@ process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
 #if _cmdMaxEvents:
 #    process.maxEvents.input = cms.untracked.int32(int(_cmdMaxEvents[-1]))
 
-genInfo = True
-#genInfo = False
+#genInfo = True
+genInfo = False
 if options.multicrab == True : genInfo = options.hasGenInfo		   
 
 ecalIsoInputsF17 = 'RecoEgamma/ElectronIdentification/data/Fall17/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_94X.txt'
@@ -260,11 +262,15 @@ if "Run2" in runera and genInfo is True :
 if "Run2_2016" in runera :
     convSet = "PAT"
 
+#if "Run2_2018" in runera :
+#    convSet = "RECO"
+
 if "Run3" in runera :
     flagSet = "PAT"
     convSet = "PAT"
     ecalIsoInputs = ecalruneraIsoInputsW22
     if 'CASTOR' in process.CaloGeometryBuilder.SelectedCalos : 
+        print(" -- Removing CASTOR from CaloGeometryBuilder SelectedCalos" )
         process.CaloGeometryBuilder.SelectedCalos.remove('CASTOR') 
 
 #if "Run3_2022" in runera :
@@ -272,7 +278,8 @@ if "Run3" in runera :
 #    flagSet = "PAT"
 
 if "Run3_2024" in runera :
-    convSet = "RECO"
+    #convSet = "RECO"
+    convSet = "PAT" 
     flagSet = "RECO"
 
 if "Run3_2025" in runera :
@@ -547,7 +554,7 @@ if runMETFilters:
 process.options = cms.untracked.PSet( 
     #numberOfThreads = cms.untracked.uint32(4), 
     #numberOfStreams = cms.untracked.uint32(4), 
-    TryToContinue = cms.untracked.vstring('ProductNotFound'), 
+    #TryToContinue = cms.untracked.vstring('ProductNotFound'), 
     #wantSummary = cms.untracked.bool(True)
     #SkipEvent = cms.untracked.vstring('ProductNotFound'),
 )#process.options

@@ -61,8 +61,8 @@ def docrab( dataset ):
         #inputJSON    = 'certifications/Cert_Collisions2022_355100_362760_Golden.json'	
         #inputJSON    = 'certifications/Cert_Collisions2023_366442_370790_Golden.json'
         #inputJSON    = 'certifications/Cert_Collisions2024_378981_386951_Golden.json'
-        inputJSON    = 'certifications/Cert_Collisions2025_391658_398903_Golden.json'
-        #inputJSON    = 'None'
+        #inputJSON    = 'certifications/Cert_Collisions2025_391658_398903_Golden.json'
+        inputJSON    = 'None'
 
         filespjob = int(dataset[1])
 
@@ -81,11 +81,12 @@ def docrab( dataset ):
 
         config.section_("Site")
         #config.Site.whitelist = ['T1_*','T2_US_*','T2_IT_*','T2_DE_*','T2_ES_*','T2_FR_*','T2_UK_*']
-        config.Site.blacklist = ['T2_CH_CSCS','T2_ES_CIEMAT']
+        #config.Site.blacklist = ['T2_CH_CSCS','T2_ES_CIEMAT']
 
         #config.Data.partialDataset = True
         config.Data.inputDataset   = None
         #config.Data.lumiMask       = inputJSON    # Comment out for MC only set for data !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        #config.Data.lumiMask       = 'lumis_in_failed_files_25E0.json'
         #config.Data.splitting     = 'Automatic' # data
         config.Data.splitting = 'FileBased' # Justin
         config.Data.unitsPerJob  =  filespjob
@@ -116,7 +117,8 @@ def docrab( dataset ):
 
         for inDO in inputDataAndOpts:
 
-            config.Data.inputDataset     = inDO[0]
+            config.Data.inputDataset = inDO[0]
+            #config.Data.userInputFiles = dataset[1]
             #config.Data.userInputFiles = open("kuntuple_SMS-GlGl_mGl-2000_mN2-1950_mN1-1000_gam_N2ctau-0p1_AOD_v23.txt").readlines()
 
             print( '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>' )
@@ -124,16 +126,16 @@ def docrab( dataset ):
             #print( inDO )
             # inDO[0] is of the form /A/B/C. Since A+B is unique for each inDS, use this in the CRAB request name.
             primaryDataset = (inDO[0].split('/')[1])
-            if '-v2' in inDO[0] :
-                primaryDataset = primaryDataset + '_v2'
-            #primaryDataset = (inDO[0].split('/')[1]).split('00_Tune')[0]
-            #primaryDataset = (inDO[0].split('/')[1]).split('_13T')[0]
+            #if '-v2' in inDO[0] :
+            #    primaryDataset = primaryDataset + '_v2'
+            #primaryDataset = (inDO[0].split('/')[1]).split('_Tune')[0]
+            primaryDataset = (inDO[0].split('/')[1]).split('_13T')[0]
             #primaryDataset = (inDO[0].split('/')[1]).split('-sherpa')[0]
             print( primaryDataset )
             #runEra         = (inDO[0].split('/')[2]) # justin
-            runEra         = (inDO[0].split('/')[2]).split('-P')[0]
+            #runEra         = (inDO[0].split('/')[2]).split('-P')[0]
             #runEra         = (inDO[0].split('/')[2]).split('BPixMiniAOD')[0]
-            #runEra         = (inDO[0].split('/')[2]).split('RECO')[0]
+            runEra         = (inDO[0].split('/')[2]).split('RECO')[0]
             print( runEra )
             dataset        = inDO[0].split('/')[3]
             print( dataset )
@@ -154,14 +156,19 @@ def docrab( dataset ):
             ##trial          = "kucmsntuple_JetMET_R24_SVIPM100" + version # 
             ##trial          = "kucmsntuple_JetMET_R23_NoFilter" + version # 
             ##trial          = "kucmsntuple_JetMET_R23_MET100" + version # 
-            trial          = "kucmsntuple_JetMET_R25_SVHPM100" + version # 
+            #trial          = "kucmsntuple_JetMET_R25_SVHPM100_MiniAOD" + version # 
+            #trial          = "kucmsntuple_JetMET_R25_SVHPM100_resub2" + version # 
+            #trial          = "kucmsntuple_JetMET_R24_ReReco_SVHPM100_MiniAOD" + version # 
+
+            trial          = "kucmsntuple_MET_R18_SVHPM100_MiniAODv2" + version # 
 
             #trial          = "kucmsntuple_TTXJets_R23_SVIPM100" + version #
             #trial          = "kucmsntuple_GJets_R23_SVHPM100_MiniAOD" + version
-            #trial          = "kucmsntuple_QCD_R23_SVIPM100_MiniAOD" + version
-            #trial          = "kucmsntuple_ZJets_R23_SVIPM100_MiniAOD" + version
-            #trial          = "kucmsntuple_ZJets_Ext_R23_SVIPM100" + version
-            #trial          = "kucmsntuple_WJets_R23_SVIPM100" + version
+            #trial          = "kucmsntuple_QCD_R23_SVHPM100_MiniAOD" + version
+            #trial          = "kucmsntuple_GJets_R23_SVHPM100_MiniAOD" + version
+            #trial          = "kucmsntuple_ZJets_R23_SVHPM100_MiniAOD" + version
+            #trial          = "kucmsntuple_ZJets_Ext_R23_SVHPM100_MiniAOD" + version
+            #trial          = "kucmsntuple_WJets_R23_SVHPM100_MiniAOD" + version
             
 
             print( 'processing for : ',trial )
@@ -203,10 +210,19 @@ def docrab( dataset ):
             print( 'using :', efilter )
             print( 'using :', inputJSON )
             #####print( 'using :', geninfo )
-            print( 'with files/job :', filespjob )
+            #print( 'with files/job :', filespjob )
 
 #  -------  selsect PD/MC dependent paramters
 #---DATA--------------------------------------------------------------------------------------------------------------------------
+
+#>>>>>>>>>>>>>>>>>>>     #2017UL #globalTag=106X_dataRun2_v37
+            #gt = 'globalTag=106X_dataRun2_v37' ## for MiniAODv2
+            #isrun2 = 'runera=Run3_2017' 
+            #config.JobType.pyCfgParams   = [gt,mcrab,efilter,isrun2]
+#>>>>>>>>>>>>>>>>>>>     #2018UL #globalTag=106X_dataRun2_v37
+            gt = 'globalTag=106X_dataRun2_v37' ## for MiniAODv2
+            isrun2 = 'runera=Run2_2018'
+            config.JobType.pyCfgParams   = [gt,mcrab,efilter,isrun2]
 
 #>>>>>>>>>>>>>>>>>>> RUN 3
 #>>>>>>>>>>>>>>>>>>> 
@@ -220,13 +236,29 @@ def docrab( dataset ):
             #config.JobType.pyCfgParams   = [gt,mcrab,efilter,isrun3]
             #config.JobType.pyCfgParams   = [gt,mcrab,efilter,isrun3,mNoSV]
 #>>>>>>>>>>>>>>>>>>>        #2024 #globalTag=140X_dataRun3_v20 
-            #gt = 'globalTag=140X_dataRun3_v20' 
+            #gt = 'globalTag=150X_dataRun3_v2' 
             #isrun3 = 'runera=Run3_2024'
             #config.JobType.pyCfgParams   = [gt,mcrab,efilter,isrun3] 
 #>>>>>>>>>>>>>>>>>>>        #2025 #globalTag=150X_dataRun3_Prompt_v1
-            gt = 'globalTag=150X_dataRun3_Prompt_v1' 
-            isrun3 = 'runera=Run3_2025'
-            config.JobType.pyCfgParams   = [gt,mcrab,efilter,isrun3] 
+            #gt = 'globalTag=150X_dataRun3_Prompt_v1' 
+            #isrun3 = 'runera=Run3_2025'
+            #config.JobType.pyCfgParams   = [gt,mcrab,efilter,isrun3] 
+
+#-----------------------------------------------------------------------------------------------------------------------------
+#>>>>>      #MC RunIISummer20UL18RECO
+            #gt = 'globalTag=106X_upgrade2018_realistic_v11_L1v1'
+            #config.JobType.pyCfgParams   = ['globalTag=106X_upgrade2018_realistic_v11_L1v1','multicrab=True','hasGenInfo=True']
+            #config.JobType.pyCfgParams   = [gt,mcrab,geninfo,skimIPM100]
+            #config.JobType.pyCfgParams   = ['globalTag=106X_upgrade2018_realistic_v11_L1v1','multicrab=True','hasGenInfo=True','eventSkim=AL1IsoPho']
+            #gt = 'globalTag=106X_dataRun2_v37'
+            #config.JobType.pyCfgParams   = [gt,mcrab,efilter]
+#>>>>>      #MC GMSB RunIIFall17DRPremix  #globalTag=94X_mc2017_realistic_v14  #  <<< comment/uncomment lumi mask when using/!using MC
+            #config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v14','multicrab=True','hasGenInfo=True']
+            #config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v14','multicrab=True','hasGenInfo=True','eventSkim=AL1IsoPho']
+#>>>>>>>>>>>>>>>>>>>     #MC RunIIAutumn18DRPremix 102X_upgrade2018_realistic_v15  
+            #config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v11','multicrab=True','hasGenInfo=True']
+            #config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v11','multicrab=True','hasGenInfo=True','eventSkim=AL1IsoPho']
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 #---MC--------------------------------------------------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------------------------------------------------
@@ -279,6 +311,27 @@ def run_multi():
 
     runDataset = [
 
+        #["/MET/Run2016B-ver1_HIPM_UL2016_MiniAODv2-v2/MINIAOD",1],
+        #["/MET/Run2016B-ver2_HIPM_UL2016_MiniAODv2-v2/MINIAOD",1],
+        #["/MET/Run2016C-HIPM_UL2016_MiniAODv2-v2/MINIAOD",1],
+        #["/MET/Run2016D-HIPM_UL2016_MiniAODv2-v2/MINIAOD",1],
+        #["/MET/Run2016E-HIPM_UL2016_MiniAODv2-v2/MINIAOD",1],
+        #["/MET/Run2016F-HIPM_UL2016_MiniAODv2-v2/MINIAOD",1],
+        #["/MET/Run2016F-UL2016_MiniAODv2-v2/MINIAOD",1],
+        #["/MET/Run2016G-UL2016_MiniAODv2-v2/MINIAOD",1],
+        #["/MET/Run2016H-UL2016_MiniAODv2-v2/MINIAOD",1],
+
+        #["/MET/Run2017B-UL2017_MiniAODv2-v1/MINIAOD",1],
+        #["/MET/Run2017C-UL2017_MiniAODv2-v1/MINIAOD",1],
+        #["/MET/Run2017D-UL2017_MiniAODv2-v1/MINIAOD",1],
+        #["/MET/Run2017E-UL2017_MiniAODv2-v1/MINIAOD",1],
+        #["/MET/Run2017F-UL2017_MiniAODv2-v1/MINIAOD",1],
+
+        ["/MET/Run2018A-UL2018_MiniAODv2_GT36-v1/MINIAOD",1],
+        ["/MET/Run2018B-UL2018_MiniAODv2_GT36-v1/MINIAOD",1],
+        ["/MET/Run2018C-UL2018_MiniAODv2_GT36-v1/MINIAOD",1],
+        ["/MET/Run2018D-UL2018_MiniAODv2_GT36-v1/MINIAOD",1],
+
         #["/JetMET/Run2022C-19Dec2023-v1/MINIAOD",1],
         #["/JetMET/Run2022D-19Dec2023-v1/MINIAOD",2],
         #["/JetMET/Run2022E-19Dec2023-v1/MINIAOD",2],
@@ -299,9 +352,11 @@ def run_multi():
         #['/JetMET1/Run2023C-19Dec2023-v1/AOD',1],
         #['/JetMET1/Run2023D-19Dec2023-v1/AOD',1],
 
-        ['/JetMET0/Run2025C-PromptReco-v1/MINIAOD',1],
-        ['/JetMET0/Run2025C-PromptReco-v2/MINIAOD',1],
-        ['/JetMET0/Run2025D-PromptReco-v1/MINIAOD',1],
+        ## /JetMET1/Run2024I-MINIv6NANOv15-v1/MINIAOD -- example
+
+        #['/JetMET0/Run2025C-PromptReco-v1/MINIAOD',1],
+        #['/JetMET0/Run2025C-PromptReco-v2/MINIAOD',1],
+        #['/JetMET0/Run2025D-PromptReco-v1/MINIAOD',1],
         #['/JetMET0/Run2025E-PromptReco-v1/MINIAOD',1],
         #['/JetMET0/Run2025F-PromptReco-v1/MINIAOD',1],
         #['/JetMET0/Run2025F-PromptReco-v2/MINIAOD',1],
@@ -314,7 +369,6 @@ def run_multi():
         #['/JetMET1/Run2025F-PromptReco-v1/MINIAOD',1],
         #['/JetMET1/Run2025F-PromptReco-v2/MINIAOD',1],
         #['/JetMET1/Run2025G-PromptReco-v1/MINIAOD',1],
-
 
         #['/QCD-4Jets_HT-1000to1200_'+tunecp5r3+'/'+run3summer+'_v2-v4/MINIAODSIM',1],
         #['/QCD-4Jets_HT-100to200_'+tunecp5r3+'/'+run3summer+'_v2-v4/MINIAODSIM',1],

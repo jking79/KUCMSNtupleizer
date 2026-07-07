@@ -21,7 +21,7 @@ def doCommand( command ):
 
 #mspc = '/store/user/jaking/'
 #justin = '/store/user/lpcsusylep/jaking/KUCMSNtuple/gogoG/'
-justin = '/store/user/lpcsusylep/jaking/KUCMSNtuple/sqsqG/'
+justin = '/store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/'
 #justin = '/store/user/janguian/gogoG/'
 eosll = 'eos root://cmseos.fnal.gov ls '
 eosopen = 'root://cmseos.fnal.gov/'
@@ -31,9 +31,9 @@ command = eosll+justin
 
 rootfile = '.root'
 
-#dirselect = '2500_mN2-1500_mN1-1000'
+dirselect = 'mGl-2300_mN2-1300_mN1-1000'
 
-dirselect = ''
+#dirselect = ''
 
 debug = True
 #debug = False
@@ -95,7 +95,7 @@ for line2 in targdirs :
     		if rootfile in lline : filelist.append(rootdir+subdir2+'/'+lline)
    
     select =  line2.split("_gam")
-    outfile = 'filelist_' + select[0] + '_v24.txt'
+    outfile = 'filelist_' + select[0] + '_v24b.txt'
     #outfile = 'kuntuple_' + select[0] + '_AL1IsoPho_R17_v24.txt'
     #print( outfile )
     outf = open( outfile, 'w' )

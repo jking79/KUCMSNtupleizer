@@ -1383,8 +1383,9 @@ float KUCMS_TimeCalibration::getCalibration( uInt rhid, int run, std::string tag
 		}//<<>>if( run >= calirunmap.second.startRun
 	}//<<>>for( auto& calirunmap : CaliRunMapSet )
 	if( xtaltime == -1000.f ){ std::cout << "XCalibration period not found for run " << run << std::endl; return 0.f; }
-    return xtaltime + ttcali + hgcali;
-    //return xtaltime + ttcali;
+	//return xtaltime + ttcali + hgcali;
+	if( gainID == 1 ) return xtaltime + ttcali + hgcali;
+    else return 0.f;
 
 }//<<>>float KUCMS_TimeCalibration::getCalibration( std::string tag )
 
@@ -1496,6 +1497,18 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
             float stoch = isEB ? ResTagSet[dataSetKey].ebstoch : ResTagSet[dataSetKey].eestoch;
             float stant = isEB ? ResTagSet[dataSetKey].ebstant : ResTagSet[dataSetKey].eestant;
 			var = sq2(noise/amplitude) + sq2(stoch)/amplitude + 2*sq2(stant);
+
+/* 
+ 			// test to see if photon wtsig in 24C-E was impacted by incorrect resolutions -  nope 
+			if( dataSetKey == "r3_p24" and Evt_run > 379411 and Evt_run < 381943 ){
+				std::cout << " -- Resolution swtich to r3_p25 for r3_p24 C-E !!!!!!" << std::endl;
+				std::string key = "r3_p25";
+				float noise = isEB ? ResTagSet[key].ebnoise : ResTagSet[key].eenoise;
+            	float stoch = isEB ? ResTagSet[key].ebstoch : ResTagSet[key].eestoch;
+            	float stant = isEB ? ResTagSet[key].ebstant : ResTagSet[key].eestant;
+            	var = sq2(noise/amplitude) + sq2(stoch)/amplitude + 2*sq2(stant);
+			}//<<>>if( dataSetKey == "run3_24p" and Evt_run > 380253 and Evt_run < 380947 )
+*/
 
 			if( dataSetKey == "r3_p25" and gianID != 1 and amplitude > 250 ){
 				if( isEB ) var = ( amplitude > 800 ) ? 0.621 : ( amplitude > 600 ) ? 0.207 : ( amplitude > 400 ) ? 0.178 : 
@@ -1686,7 +1699,7 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 
 	//Set current IOV tag to corrcet version for this gain
 	if( GID == 1 ){ std::cout << " -------- GainID 1 Processing " << std::endl; }
-	else if( GID == 2 ){ std::cout << " -------- GainID 2 Processing " << std::endl; }
+	else if( GID == 2 ){ std::cout << " -------- GainID 2+ Processing " << std::endl; }
 	//else if( GID == 2 ){ setTTIov( curTTIov + "_gs2" ); setXIov( curXIov + "_gs2" ); }
     //else if( GID == 3 ){ setTTIov( curTTIov + "_gs3" ); setXIov( curXIov + "_gs3" ); }
     //else if( GID == 4 ){ setTTIov( curTTIov + "_gs4" ); setXIov( curXIov + "_gs4" ); }
@@ -1705,8 +1718,14 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 	// basicly a bool (0,1) switch to indicate if we should close processing with this file or more input is coming ( false = not done ) 
 	int doLastRun = 0;
 
+
+    std::cout << "open input files list : " << inputFileName << std::endl;
 	float fillwgt = 1;
     std::ifstream infilelist(inputFileName);
+    if( !infilelist.is_open() ){
+        std::cerr << "ERROR: could not open input file list: " << inputFileName << std::endl;
+        return;
+    }//<<>>if( !infilelist.is_open() )
     std::string infilestr;
 	int finalRun = 0;
     while( std::getline( infilelist, infilestr ) ) {
@@ -1715,26 +1734,26 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 		if( infilestr.empty() || infilestr[0] == '#' ){ std::cout << " -> Aborted" << std::endl;  continue; }
 		std::cout << std::endl;
         std::stringstream ss(infilestr);
-        std::string infilename, tag;
+        std::string subdir, matchstr, tag;
         int srun, erun, dolast, wgt;
 
         //if( !( ss >> infilename >> srun >> erun >> tag )) std::cout << "[WARN] Parse error in : " << infilestr << std::endl; continue;
-		if( doMC ) ss >> infilename >> srun >> erun >> tag >> dolast >> wgt;
-		else ss >> infilename >> srun >> erun >> tag >> dolast;
-		if( infilename.empty() || infilename[0] == '#' ){ std::cout << " -- skipping: " << infilename << std::endl; continue; }
+		if( doMC ) ss >> subdir >> matchstr >> srun >> erun >> tag >> dolast >> wgt;
+		else ss >> subdir >> matchstr >> srun >> erun >> tag >> dolast;
+		if( subdir[0] == '#' ){ std::cout << " -- skipping: " << subdir << " " << matchstr << std::endl; continue; }
 		std::string wichtype = doTT ? "TT" : "X";
 
 		doLastRun = dolast;
 		if( doMC ) fillwgt = wgt;
 	
-		// SET GS TAG !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		// SET GS TAG !!!!!!!!!!!!!!!!!!!!!!!!!!!!   depreciated
 		//if( GID == 1 ){ if( debug ) std::cout << "GainID 1 tag" << std::endl; }
 		//else if( GID == 2 ) tag = tag + "_gs2";
         //else if( GID == 3 ) tag = tag + "_gs3";
         //else if( GID == 4 ) tag = tag + "_gs4";
 
 		if( isCC and doUnCC ) tag += "unc";
-        std::cout << "open input file : " << infilename << std::endl;
+        std::cout << "open input file : " << subdir << " " << matchstr << std::endl;
         std::cout << "For Run " << srun << " to Run " << erun << std::endl;
         std::cout << "Producing maps for " << tag << " in " << wichtype << std::endl;
 
@@ -1758,10 +1777,18 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 		//int fileskipcnt = 0;
 		int nAdded = 0;
         int nLines = 0;
-        std::ifstream infile(infilename);
-        std::string instr;
+        int nBadFiles = 0;
+        //std::ifstream infile(infilename);
+        //std::string instr;
         auto fInTree = new TChain( treename.c_str() );
         std::cout << "Adding files to TChain." << std::endl;
+
+        std::string eosHost = "cmseos.fnal.gov";
+        std::string scanDir = eosDir + inDir + subdir;
+        std::cout << "Finding ROOT files under EOS directory: " << scanDir << std::endl;
+        std::vector<std::string> files = findEOSRootFiles(eosHost, scanDir, matchstr);
+        std::cout << "Found " << files.size() << " candidate ROOT files." << std::endl;
+/*
         while (std::getline(infile,instr)){
 			nLines++;
 			//fileskipcnt++;
@@ -1775,6 +1802,42 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
         }//<<>>while (std::getline(infile,str))
         std::cout << std::endl;
 		std::cout << " -- [INFO] lines=" << nLines << " filesAdded=" << nAdded << std::endl;
+*/
+        for (const auto& tfilename : files) {
+
+            nLines++;
+            TFile* testFile = TFile::Open(tfilename.c_str(), "READ");
+
+            if( !testFile || testFile->IsZombie() || !testFile->IsOpen() ){
+                std::cerr << "\nERROR: bad ROOT file, skipping: " << tfilename << std::endl;
+                if( testFile ) testFile->Close();
+                nBadFiles++;
+                std::cout << "Z";
+                continue;
+            }//<<>>if( !testFile || testFile->IsZombie() || !testFile->IsOpen() )
+
+            TTree* testTree = nullptr;
+            testFile->GetObject(treename.c_str(), testTree);
+
+            if( !testTree ){
+                std::cerr << "\nERROR: missing tree " << treename << ", skipping: " << tfilename << std::endl;
+                testFile->Close();
+                nBadFiles++;
+                std::cout << "T";
+                continue;
+            }//<<>>if( !testTree )
+
+            testFile->Close();
+            //std::cout << "opening tfile : " << tfilename << std::endl;
+            std::cout << "-";
+            int result = fInTree->Add(tfilename.c_str());
+
+            if( result > 0 ){ std::cout << "-"; nAdded++; }
+            else std::cout << "0";
+
+        }//<<>>while (std::getline(infile,str))
+        std::cout << std::endl;
+        std::cout << " -- [INFO] lines=" << nLines << " filesAdded=" << nAdded << " badFiles=" << nBadFiles << std::endl;
 
        	run = 0;
         rhID = 0;
@@ -1970,7 +2033,7 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 		}//<<>>for (Long64_t centry = 0; centry < nEntries; cnentry++)
 
         // Finished processing this batch
-        std::cout << "[INFO] Finished batch for " << infilename << " entries=" << nEntries << std::endl;
+        std::cout << "[INFO] Finished batch for " << subdir << " " << matchstr << " entries=" << nEntries << std::endl;
         delete fInTree;
         fInTree = nullptr;
 
@@ -1999,371 +2062,6 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 	}//<<>>if( dolast == 1 )
 
 }//<<>>void KUCMS_TimeCalibration::makeTTCaliMap( std::string inputFileName )
-
-/*
-void KUCMS_TimeCalibration::plot2dResbyIovForEGR( std::string inputFileName, bool scale, bool usecali, bool smear, std::string ext ){
-
-    std::cout << "Creating 2D Resolution Hist from EgammaRes Ntuples " << std::endl;
-    if( not usecali ) std::cout << " -- NoCali " << std::endl;
-    if( smear ) std::cout << " -- Smeared " << std::endl;
-
-    //bool debug = false;
-    bool debug = true;
-    bool small = false;
-
-    const std::string treename("tree/llpgtree");
-
-    bool useAmp(true);
-
-	float lB = 10; // lower and upper limits of energies for rechits used
-	float uB = 120; // lower and upper limits of energies for rechits used
-	if( lowEnergy ){ lB = 2; }
-
-	std::cout << " -- use low energy : " << lowEnergy << std::endl;
-	std::cout << " -- xbins : " << xBinStr << std::endl;
-    std::cout << " -- ybins : " << yBinStr << std::endl;
-	std::cout << " -- upper energy bound : " << uB << " lower energy bound : " << lB << std::endl;
-
-    // Declaration of leaf types
-    UInt_t          run;
-    std::vector<unsigned int> *resRhID;
-    std::vector<float>   *resAmp;
-    std::vector<float>   *resE;
-    std::vector<float>   *resRtTime;
-    std::vector<float>   *resTOF;
-
-   	std::vector<unsigned int> *rhID;
-   	std::vector<bool>    *rhisGS6;
-   	std::vector<bool>    *rhisGS1;
-
-    // List of branches
-    TBranch        *b_run;   //!
-    TBranch        *b_resRhID;   //!
-    TBranch        *b_resAmp;   //!
-    TBranch        *b_resE;   //!
-    TBranch        *b_resRtTime;   //!
-    TBranch        *b_resTOF;   //!
-
-    TBranch        *b_rhID;   //!
-  	TBranch        *b_rhisGS6;   //!
-   	TBranch        *b_rhisGS1;   //!
-
-	std::string nocalistr("_NoCali");
-    std::string smearstr("_Smeared");
-    std::string lochist("_SRO_Data_Hist");
-    std::string druhist("_DRO_Data_Hist");
-    std::string globhist("_ZEE_Data_Hist");
-    std::string ehist("_Amp_v_E_Hist");
-    std::string fTitle("#Delta(Photon Seed Time) [ns] vs. A_{eff}/#sigma_{n} (EBEB)");
-    std::string fXTitle("A_{eff}/#sigma_{n} (EBEB)");
-    std::string fYTitle("#Delta(Photon Seed Time) [ns] (EBEB)");
-    std::string fZTitle("");
-	std::string fEYTitle("E_{eff} [GeV] (EBEB)");
-
-    std::vector<float> fXBins;
-    std::vector<float> fYBins;
-    setBins(xBinStr,fXBins);
-    setBins(yBinStr,fYBins);
-    const auto xbins = &fXBins[0];
-    const auto ybins = &fYBins[0];
-    int nMyBins = fXBins.size()-1;
-
-    double goodlev(0);
-    double goodlin(0);
-    double goodgev(0);
-    double goodgin(0);
-    double gevents(0);
-
-    std::cout << "open input files list : " << inputFileName << std::endl;
-
-    std::ifstream infilelist(inputFileName);
-    std::string infilestr;
-    while( std::getline( infilelist, infilestr ) ) {
-
-        std::stringstream ss(infilestr);
-        std::string infilename, tag;
-        int srun, erun;
-
-        ss >> infilename >> srun >> erun >> tag;
-		if( infilename[0] == '#' ) continue;
-        std::cout << "open input file : " << infilename << std::endl;
-		std::cout << "with tags : " << tag << " and " << smearTag << std::endl;
-        std::cout << "For Run " << srun << " to Run " << erun << std::endl;
-        std::cout << "Producing 2D Resolution Map " << std::endl;
-
-        // insure we have Calimaps if we are doing Xtal calibration maps
-        if( CaliRunMapSet.find(tag) == CaliRunMapSet.end() ){
-            std::cout << " No Cali maps for this tag !!" << std::endl;
-            return;
-        }//<<>>if( CaliRunMapSet.find(tag) == TTCaliRunMapSet.end() )
-
-		if( smear && ( SmearTagSet.find(smearTag) == SmearTagSet.end() ) ){
-            std::cout << " No Smear tag found !!" << std::endl;
-            return;
-        }//<<>>if( CaliRunMapSet.find(tag) == TTCaliRunMapSet.end() )
-
-        std::ifstream infile(infilename);
-        std::string instr;
-        auto fInTree = new TChain( treename.c_str() );
-        std::cout << "Adding files to TChain." << std::endl;
-        while (std::getline(infile,instr)){
-            auto tfilename = eosDir + inDir + instr;
-            std::cout << "-";
-            fInTree->Add(tfilename.c_str());
-        }//<<>>while (std::getline(infile,str))
-        std::cout << std::endl;
-
-        run = 0;
-        resRhID = 0;
-        resAmp = 0;
-        resE = 0;
-        resRtTime = 0;
-        resTOF = 0;
-
-   		rhID = 0;
-   		rhisGS6 = 0;
-   		rhisGS1 = 0;
-
-        fInTree->SetBranchAddress( "run", &run, &b_run );   //!
-        fInTree->SetBranchAddress( "resRhID", &resRhID, &b_resRhID );   //!
-        fInTree->SetBranchAddress( "resAmp", &resAmp, &b_resAmp);   //!
-        fInTree->SetBranchAddress( "resE", &resE, &b_resE);   //!
-        fInTree->SetBranchAddress( "resRtTime", &resRtTime, &b_resRtTime);   //!
-        fInTree->SetBranchAddress( "resTOF" , &resTOF, &b_resTOF);   //!
-
-        fInTree->SetBranchAddress("rhID", &rhID, &b_rhID);
-        fInTree->SetBranchAddress("rhisGS6", &rhisGS6, &b_rhisGS6);
-        fInTree->SetBranchAddress("rhisGS1", &rhisGS1, &b_rhisGS1);
-
-        std::cout << " Getting calibration values and plotting" << std::endl;
-
-        auto nEntries = fInTree->GetEntries();
-		if( small && nEntries > 1000000 ) nEntries = 1000000;
-        if( debug ) nEntries = ( nEntries < 1000 ) ? nEntries : 1000;
-        if( debug ) std::cout << "Mf2d Proccessing " << nEntries << " entries : " << std::endl;
-		int report = nEntries/20;
-        for (auto centry = 0U; centry < nEntries; centry++){
-
-            if( centry%report == 0 or centry == 0){
-                std::cout << "Proccessed " << centry << " of " << nEntries;
-                std::cout << " " << (1000.0*static_cast<float>(centry)/static_cast<float>(nEntries))/10.0 << "%" << std::endl;
-            }//<<>>if( centry%10000000 == 0 or centry == 0)
-
-            auto entry = fInTree->LoadTree(centry);
-
-            if(debug) std::cout << "Start loop ----------------------------------- " << std::endl;
-
-            gevents++;
-
-            b_run->GetEntry(entry);   //!
-            b_resRhID->GetEntry(entry);   //!
-            b_resAmp->GetEntry(entry);   //!
-            b_resE->GetEntry(entry);   //!
-            b_resRtTime->GetEntry(entry);   //!
-            b_resTOF->GetEntry(entry);   //!
-
-			b_rhisGS6->GetEntry(entry);   //!
-			b_rhisGS1->GetEntry(entry);   //!
-			b_rhID->GetEntry(entry);   //!
-			int nRecHits = rhID->size();
-
-            if( ( ((*resRhID)[0]) == 0 ) && ( ((*resRhID)[3]) == 0 ) ) continue;
-
-            //int didx = 0;
-            for( int didx = debug?0:4; didx < 4; didx++ ){
-                if(debug) std::cout << "Run " << run << " id " << (*resRhID)[didx] << " Amp " << (*resAmp)[didx] << " E " << (*resE)[didx];
-                if(debug) std::cout << " Rt " << (*resRtTime)[didx]  << " TOF " << (*resTOF)[didx] << std::endl;
-            }//<<>>for( int didx = 0; didx < 4; didx++ ){
-            //if( srun != 0 && ( run < srun || run > erun ) ) continue;
-
-            if(debug) std::cout << " - Finshed Get Entry " << std::endl;
-
-            bool tagNotFound( true );
-            bool runNotFound( true );
-            auto& calirunset = CaliRunMapSet;
-            if( calirunset.find(tag) != calirunset.end() ){ // tag exists
-                if( debug) std::cout << " - tag found : " << tag << std::endl;
-                tagNotFound = false;
-                auto& runset = calirunset[tag];
-                if( debug) std::cout << " - In runset : " << tag << " " << runset[run].startRun << std::endl;
-                for( auto& runrange : runset ){
-                    auto& range = runrange.second;
-                    if( debug) std::cout << " - run chk : " << run << " " << range.startRun << " " << range.endRun << std::endl;
-                    if( run >= range.startRun && run <= range.endRun ){ // run range exists 
-                        runNotFound = false;
-                        if( debug) std::cout << " - check lastRun : " << run << " last " << range.lastRun << std::endl;
-                        // if end == last : all runs in range completed, if run > last : run in range already filled
-                        if( range.lastRun >= range.endRun ){ // caliRunRange is ready for 2d res plot
-							std::string caliend = usecali ? "" : nocalistr;
-                            if( smear ) caliend = caliend + smearstr;
-							caliend = caliend + ext;
-							std::string lsfname = range.histMapName+lochist+caliend;
-                            std::string ldfname = range.histMapName+druhist+caliend;
-                            std::string gbfname = range.histMapName+globhist+caliend;
-							std::string efname = range.histMapName+ehist+caliend;
-							if( CaliHists.find(lsfname) == CaliHists.end() ){ // 2D hist already made? 
-    							TH2F* theHistLS = new TH2F(lsfname.c_str(),lsfname.c_str(),fXBins.size()-1,xbins,fYBins.size()-1,ybins);
-    							theHistLS->GetXaxis()->SetTitle(fXTitle.c_str());
-    							theHistLS->GetYaxis()->SetTitle(fYTitle.c_str());
-    							theHistLS->GetZaxis()->SetTitle(fZTitle.c_str());
-                				CaliHists[lsfname] = { theHistLS, lsfname, true, true }; // histfile histname isnew isres
-    							TH2F* theHistGB = new TH2F(gbfname.c_str(),gbfname.c_str(),fXBins.size()-1,xbins,fYBins.size()-1,ybins);
-    							theHistGB->GetXaxis()->SetTitle(fXTitle.c_str());
-    							theHistGB->GetYaxis()->SetTitle(fYTitle.c_str());
-    							theHistGB->GetZaxis()->SetTitle(fZTitle.c_str());
-                                CaliHists[gbfname] = { theHistGB, gbfname, true, true }; // histfile histname isnew isres
-                                TH2F* theHistLD = new TH2F(ldfname.c_str(),ldfname.c_str(),fXBins.size()-1,xbins,fYBins.size()-1,ybins);
-                                theHistLD->GetXaxis()->SetTitle(fXTitle.c_str());
-                                theHistLD->GetYaxis()->SetTitle(fYTitle.c_str());
-                                theHistLD->GetZaxis()->SetTitle(fZTitle.c_str());
-                                CaliHists[ldfname] = { theHistLD, ldfname, true, true }; // histfile histname isnew isres
-								TH2F* theHistAE = new TH2F(efname.c_str(),efname.c_str(),500,0,1000,100,0,200);
-                                theHistAE->GetXaxis()->SetTitle(fXTitle.c_str());
-                                theHistAE->GetYaxis()->SetTitle(fEYTitle.c_str());
-                                theHistAE->GetZaxis()->SetTitle(fZTitle.c_str());
-                                CaliHists[efname] = { theHistAE, efname, true, true }; // histfile histname isnew isres
-								range.has2DResMap = true;
-							}//if( CaliHists.find(lsfname) == CaliHists.end() ){ 
-							if( CaliHists[lsfname].isNew ){
-
-								// ----  fill res hist
-
-                                auto idinfoL0 = DetIDMap[(*resRhID)[0]];
-                                auto idinfoL1 = DetIDMap[(*resRhID)[1]];
-                                auto idinfoG0 = DetIDMap[(*resRhID)[2]];
-                                auto idinfoG1 = DetIDMap[(*resRhID)[3]];
-						
-								std::vector<bool> isGainId1 = {true,true,true,true};
-								if( useGSwitch ){
-									for( int resrhit = 0; resrhit < 4; resrhit++ ){
-										for( int rhit = 0; rhit < nRecHits; rhit++ ){
-											if( (*resRhID)[resrhit] == (*rhID)[rhit] ){
-												isGainId1[resrhit] = not ( (*rhisGS1)[rhit] || (*rhisGS6)[rhit] );
-												break;
-											}//<>if( (*resRhID)[rhit] == (*resRhID)[resrhit] )
-										}//<<>>for( int resrhit = 0; resrhit < nResRecHits; resrhi++ )
-									}//<<>>for( int rhit = 0; rhit < 4; rhit++ )
-								}//<<>>if( useGSwitch )
-
-                                float seedTimeIC00 = ( usecali ) ? getCalibration( (*resRhID)[0], run, tag ) : 0;
-                                float seedTimeIC10 = ( usecali ) ? getCalibration( (*resRhID)[1], run, tag ) : 0;
-                                float seedTimeIC01 = ( usecali ) ? getCalibration( (*resRhID)[2], run, tag ) : 0;
-                                float seedTimeIC11 = ( usecali ) ? getCalibration( (*resRhID)[3], run, tag ) : 0;
-								if(debug) std::cout << " -- IC0l: " << seedTimeIC00 << " IC1l: " << seedTimeIC10;
-                                if(debug) std::cout << " IC0g: " << seedTimeIC01 << " IC1g: " << seedTimeIC11 << std::endl;
-
-								//-------------------set for local, repo calcs for global --------------------------------
-
-                                if(debug) std::cout << " - Calc 2D Hist" << std::endl;
-
-                                double leffa0 = useAmp ? (*resAmp)[0] : (*resE)[0]; //(phoseedE_0/phoseedadcToGeV_0)/phoseedpedrms12_0;
-                                double leffa1 = useAmp ? (*resAmp)[1] : (*resE)[1]; //(phoseedE_1/phoseedadcToGeV_1)/phoseedpedrms12_1;
-                                double geffa0 = useAmp ? (*resAmp)[2] : (*resE)[2]; //(phoseedE_0/phoseedadcToGeV_0)/phoseedpedrms12_0;
-                                double geffa1 = useAmp ? (*resAmp)[3] : (*resE)[3]; //(phoseedE_1/phoseedadcToGeV_1)/phoseedpedrms12_1;
-                                double leffe0 = (*resE)[0]; //(phoseedE_0/phoseedadcToGeV_0)/phoseedpedrms12_0;
-                                double leffe1 = (*resE)[1]; //(phoseedE_1/phoseedadcToGeV_1)/phoseedpedrms12_1;
-                                double geffe0 = (*resE)[2]; //(phoseedE_0/phoseedadcToGeV_0)/phoseedpedrms12_0;
-                                double geffe1 = (*resE)[3]; //(phoseedE_1/phoseedadcToGeV_1)/phoseedpedrms12_1;
-                                double lxfill = (leffa0*leffa1)/sqrt(pow(leffa0,2)+pow(leffa1,2));
-                                double lxfille = (leffe0*leffe1)/sqrt(pow(leffe0,2)+pow(leffe1,2));
-                                double gxfill = (geffa0*geffa1)/sqrt(pow(geffa0,2)+pow(geffa1,2));
-                                double gxfille = (geffe0*geffe1)/sqrt(pow(geffe0,2)+pow(geffe1,2));
-
-                                double ldTOF = (*resTOF)[0]-(*resTOF)[1]; //phoseedTOF_0-phoseedTOF_1;
-                                double gdTOF = (*resTOF)[2]-(*resTOF)[3]; //phoseedTOF_0-phoseedTOF_1;
-                                double lyf0 = (*resRtTime)[0]-seedTimeIC00;
-                                double lyf1 = (*resRtTime)[1]-seedTimeIC10;
-                                double gyf0 = (*resRtTime)[2]-seedTimeIC01;
-                                double gyf1 = (*resRtTime)[3]-seedTimeIC11;
-								if( smear ){
-									std::cout << "Times are smeared !!!!!" << std::endl;
-									lyf0 = getSmearedTime( lyf0, (*resAmp)[0] ); 
-                                    lyf1 = getSmearedTime( lyf1, (*resAmp)[1] );
-                                    gyf0 = getSmearedTime( gyf0, (*resAmp)[2] );
-                                    gyf1 = getSmearedTime( gyf1, (*resAmp)[3] );
-								}//<<>>if( smear )
-                                double lyfill = lyf0-lyf1+ldTOF;
-                                double gyfill = gyf0-gyf1+gdTOF;
-
-                                bool le_cut = ((*resE)[0]>=lB)&&((*resE)[0]<=uB)&&((*resE)[1]>=lB)&&((*resE)[1]<=uB);
-                                bool ge_cut = ((*resE)[2]>=lB)&&((*resE)[2]<=uB)&&((*resE)[3]>=lB)&&((*resE)[3]<=uB);
-								if( useGSwitch ){
-									le_cut = isGainId1[0] && isGainId1[1] && (*resE)[0] >= lB && (*resE)[1] >= lB;
-									ge_cut = isGainId1[2] && isGainId1[3] && (*resE)[2] >= lB && (*resE)[3] >= lB;
-                                	std::cout << "GSL: " << isGainId1[0] << " " << isGainId1[1] << " ";
-                                	std::cout << (*resE)[0] << " " << (*resE)[1] << " " << le_cut << std::endl;
-                                	std::cout << "GSZ: " << isGainId1[2] << " " << isGainId1[3] << " ";
-                                	std::cout << (*resE)[2] << " " << (*resE)[3] << " " << ge_cut << std::endl;
-								}//<<>>if( useGSwitch )
-                                bool leta_cut = (idinfoL0.ecal == ECAL::EB)&&(idinfoL1.ecal == ECAL::EB);
-                                bool geta_cut = (idinfoG0.ecal == ECAL::EB)&&(idinfoG1.ecal == ECAL::EB);
-								if( doEndCaps ){
-                                	leta_cut = (idinfoL0.ecal > ECAL::EB)&&(idinfoL1.ecal > ECAL::EB);
-                                	geta_cut = (idinfoG0.ecal > ECAL::EB)&&(idinfoG1.ecal > ECAL::EB);
-								}//<<>>if( doEndCaps )
-                                //bool goodLocTime = (*resRtTime)[0] != 0 && (*resRtTime)[1] != 0;
-                                //bool goodGloTime = (*resRtTime)[2] != 0 && (*resRtTime)[3] != 0;
-                                bool goodLocTime = (*resRtTime)[0] != 0 && (*resRtTime)[1] != 0 && (*resRtTime)[0] != (*resRtTime)[1];
-                                bool goodGloTime = (*resRtTime)[2] != 0 && (*resRtTime)[3] != 0 && (*resRtTime)[2] != (*resRtTime)[3];
-                                bool goodLocRHs = (*resRhID)[0] != 0 && (*resRhID)[1] != 0;
-                                bool goodGloRHs = (*resRhID)[2] != 0 && (*resRhID)[3] != 0;
-								//if( 
-
-                                bool isd_cut = idinfoL0.TT == idinfoL1.TT; // true = same, fasle = different
-                                bool levent_good = le_cut && leta_cut && goodLocRHs && goodLocTime;
-                                bool gevent_good = ge_cut && geta_cut && goodGloRHs && goodGloTime;
-
-                                if(debug) std::cout << " - Fill 2D Hist" << std::endl;
-                                if( levent_good && isd_cut ){ 
-									CaliHists[lsfname].h2f->Fill(lxfill,lyfill); 
-									CaliHists[efname].h2f->Fill(lxfill,lxfille); 
-								}//<<>>if( levent_good && isd_cut )
-                                if( gevent_good ){ CaliHists[gbfname].h2f->Fill(gxfill,gyfill); }
-                                if( levent_good && not isd_cut ){ CaliHists[ldfname].h2f->Fill(lxfill,lyfill); }
-                                if(debug) std::cout << " - Fill hists done" << std::endl;
-
-							}//if( CaliHists[lsfname].isNew )
-                        }//<<>>if( run > range.lastRun )
-                        //continue;//found the correct run set ( iov range ) no need to look further
-                    }//<<>>if( run > startRun && run <= endRun )
-                }//<<>>for( auto& range : runset )
-            }//<<>>if( calirunset.find(tag) != calirunset.end() )
-        } // for (auto entry = 0U; entry < nEntries; entry++)
-
-        if(debug) std::cout << " -------- Next Input file " << std::endl;
-
-    } // while (std::getline(infilelist,infiles))
-
-	// --------------  process new histos ----------------------------------------------
-
-    // ----   scale and set isNew to false
-
-    std::cout << " - Scale & Save 2D Hist" << std::endl;
-    cali2DResTFile = TFile::Open( cali2DResPlotsTFileName.c_str(), "UPDATE" );
-    cali2DResTFile->cd();
-	for( auto& hists : CaliHists ){	
-
-		if( hists.second.isResHist && hists.second.isNew ){
-
-    		if( scale ) scaleHist(hists.second.h2f,false,true,false);// hist, scale up?, varible x bins?, varible y bin?
-			hists.second.isNew = false;
-			hists.second.h2f->Write( hists.second.h2f->GetName(), TObject::kOverwrite );
-
-		}//<<>>if( hists.second.isResHist && hists.second.isNew )
-
-	}//<<>>for( auto& hists : CaliHists )
-	cali2DResTFile->Close();
-
-    std::cout << "Finished making 2D delta t v eff amp plots" << std::endl;
-
-}//<<>> void plot2dResolution( std::string indir, std::string infilelistname, 
-*/
-
-/*
-
-int KUCMS_TimeCalibration::getGainId( unsigned int rhID ){
-}
-*/
 
 void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool scale, bool usecali, bool smear, std::string ext ){
 
@@ -2457,13 +2155,26 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
     std::string infilestr;
     while( std::getline( infilelist, infilestr ) ) {
 
+    	// remove leading/trailing whitespace
+    	auto first = infilestr.find_first_not_of(" \t\r\n");
+    	if( first == std::string::npos ) continue;  // blank or whitespace-only line
+
+    	auto last = infilestr.find_last_not_of(" \t\r\n");
+    	infilestr = infilestr.substr(first, last - first + 1);
+
+    	// now comments with leading spaces are also skipped
+    	if( infilestr[0] == '#' ) continue;
+
 		if( infilestr.empty() || infilestr[0] == '#' ) continue;
 
         std::stringstream ss(infilestr);
         std::string subdir, matchstr, tag;
         int srun(0), erun(0);
 
-        ss >> subdir >> matchstr >> srun >> erun >> tag;
+    	if( !(ss >> subdir >> matchstr >> srun >> erun >> tag) ){
+        	std::cout << "Bad input-list entry, skipping: [" << infilestr << "]" << std::endl;
+        	continue;
+    	}//<<>>if( !(ss >> subdir >> matchstr >> srun >> erun >> tag) )
 
         if( subdir == "None" ) subdir = "";
         if( matchstr == "None" ) matchstr = "";
@@ -3441,12 +3152,12 @@ void KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
     while( std::getline( infilelist, infilestr ) ) {
 
         std::stringstream ss(infilestr);
-        std::string infilename, tag;
+        std::string subdir, matchstr, tag;
         int srun, erun;
 
-        ss >> infilename >> srun >> erun >> tag;
-        if( infilename[0] == '#' ) continue;
-        std::cout << "open input file : " << infilename << std::endl;
+        ss >> subdir >> matchstr >> srun >> erun >> tag;
+        if( subdir[0] == '#' ) continue;
+        std::cout << "open input file : " << subdir << " " << matchstr << std::endl;
         std::cout << "For Run " << srun << " to Run " << erun << std::endl;
         std::cout << "Producing Mean Run Time Hist " << std::endl;
 
@@ -3456,6 +3167,60 @@ void KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
             return;
         }//<<>>if( CaliRunMapSet.find(tag) == TTCaliRunMapSet.end() )
 
+        int nAdded = 0; 
+        int nLines = 0; 
+        int nBadFiles = 0; 
+        auto fInTree = new TChain( treename.c_str() ); 
+        std::cout << "Adding files to TChain." << std::endl; 
+ 
+        std::string eosHost = "cmseos.fnal.gov"; 
+        std::string scanDir = eosDir + inDir + subdir; 
+        std::cout << "Finding ROOT files under EOS directory: " << scanDir << std::endl; 
+        std::vector<std::string> files = findEOSRootFiles(eosHost, scanDir, matchstr); 
+        std::cout << "Found " << files.size() << " candidate ROOT files." << std::endl; 
+
+        for (const auto& tfilename : files) { 
+ 
+            nLines++; 
+            TFile* testFile = TFile::Open(tfilename.c_str(), "READ"); 
+ 
+            if( !testFile || testFile->IsZombie() || !testFile->IsOpen() ){ 
+                std::cerr << "\nERROR: bad ROOT file, skipping: " << tfilename << std::endl; 
+                if( testFile ) testFile->Close(); 
+                nBadFiles++; 
+                std::cout << "Z"; 
+                continue; 
+            }//<<>>if( !testFile || testFile->IsZombie() || !testFile->IsOpen() ) 
+ 
+            TTree* testTree = nullptr; 
+            testFile->GetObject(treename.c_str(), testTree); 
+ 
+            if( !testTree ){ 
+                std::cerr << "\nERROR: missing tree " << treename << ", skipping: " << tfilename << std::endl; 
+                testFile->Close(); 
+                nBadFiles++; 
+                std::cout << "T"; 
+                continue; 
+            }//<<>>if( !testTree ) 
+ 
+            testFile->Close(); 
+            std::cout << "-"; 
+            int result = fInTree->Add(tfilename.c_str()); 
+ 
+            if( result > 0 ){ std::cout << "-"; nAdded++; } 
+            else std::cout << "0"; 
+ 
+        }//<<>>while (std::getline(infile,str)) 
+        std::cout << std::endl; 
+        std::cout << " -- [INFO] lines=" << nLines << " filesAdded=" << nAdded << " badFiles=" << nBadFiles << std::endl; 
+		if( nAdded == 0 ){ 
+			std::cout << " -- No Files Added to TChian !!!!!!!! "; 
+    		if( hist_eb ) delete hist_eb; 
+    		for ( auto & thismap : ttHistMap ){ if( thismap.second ) delete thismap.second; }//<<>>for ( auto & thismap : ttHistMap )
+			return; 
+		}//<<>>if( nAdded == 0 )
+
+/*
         std::ifstream infile(infilename);
         std::string instr;
         auto fInTree = new TChain( treename.c_str() );
@@ -3466,6 +3231,7 @@ void KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
             fInTree->Add(tfilename.c_str());
         }//<<>>while (std::getline(infile,str))
         std::cout << std::endl;
+*/
 
         run = 0;
     	rhID = 0;
@@ -3569,6 +3335,8 @@ void KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
         }//<<>>for( int ieta = 1; ieta < 172; ieta++ )
 
 	}//<<>>for( auto & runsum : sum )
+
+    mrTFile->cd();
 
 	hist_eb->Write( hist_eb->GetName(), TObject::kOverwrite );
 	delete hist_eb;

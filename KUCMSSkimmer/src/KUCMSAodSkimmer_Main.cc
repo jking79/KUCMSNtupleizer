@@ -1329,22 +1329,34 @@ void KUCMSAodSkimmer::initHists(){
 	//------------------------------------------------------------------------------------------
     //------ 1D Hists --------------------------------------------------------------------------
 
-	hist1d[0] = new TH1D("ecalrhenergy0", "RecHit Energy;rechit E [GeV]",1000,0,1000);
-    hist1d[1] = new TH1D("ecalrhtimevar", "RecHit Time Var;rechit Var",200,0,20);
-    hist1d[2] = new TH1D("ecalrhcor", "RecHit Time Core;rechit Time [ns]",200,-10,10);
-    hist1d[5] = new TH1D("ecalrhtime", "RecHit Time;rechit Time [ns]",200,-10,10);
-    hist1d[40] = new TH1D("ecalrhenergy04hg", "RecHit Energy G2;rechit E [GeV]",1000,0,1000);
-    hist1d[41] = new TH1D("ecalrhtimevar4hg", "RecHit Time Var G2;rechit Var",200,0,20);
-    hist1d[42] = new TH1D("ecalrhcor4hg", "RecHit Time Core G2;rechit Time [ns]",200,-10,10);
-    hist1d[45] = new TH1D("ecalrhtime4hg", "RecHit Time G2;rechit Time [ns]",200,-10,10);
-    hist1d[50] = new TH1D("ecalrhenergy05eb", "RecHit Energy EB;rechit E [GeV]",1000,0,1000);
-    hist1d[51] = new TH1D("ecalrhtimevar5eb", "RecHit Time Var EB;rechit Var",200,0,20);
-    hist1d[52] = new TH1D("ecalrhcor5eb", "RecHit Time Core EB;rechit Time [ns]",200,-10,10);
-    hist1d[55] = new TH1D("ecalrhtime5eb", "RecHit Time EB;rechit Time [ns]",200,-10,10);
-    hist1d[60] = new TH1D("ecalrhenergy06ee", "RecHit Energy EE;rechit E [GeV]",1000,0,1000);
-    hist1d[61] = new TH1D("ecalrhtimevar6ee", "RecHit Time Var EE;rechit Var",200,0,20);
-    hist1d[62] = new TH1D("ecalrhcor6ee", "RecHit Time Core EE;rechit Time [ns]",200,-10,10);
-    hist1d[65] = new TH1D("ecalrhtime6ee", "RecHit Time EE;rechit Time [ns]",200,-10,10);
+	hist1d[0] = new TH1D("ecalrhenergy0all", "RecHit Energy;rechit E [GeV]",1000,0,1000);
+    hist1d[1] = new TH1D("ecalrhtimevarall", "RecHit Time Var;rechit Var",200,0,20);
+    hist1d[2] = new TH1D("ecalrhcorall", "RecHit Time Core;rechit Time [ns]",200,-10,10);
+    hist1d[5] = new TH1D("ecalrhtimeall", "RecHit Time;rechit Time [ns]",200,-10,10);
+    hist1d[70] = new TH1D("ecalrhenergy02", "RecHit Energy;rechit E [GeV]",1000,0,1000);
+    hist1d[71] = new TH1D("ecalrhtimevar2", "RecHit Time Var;rechit Var",200,0,20);
+    hist1d[72] = new TH1D("ecalrhcor2", "RecHit Time Core;rechit Time [ns]",200,-10,10);
+    hist1d[75] = new TH1D("ecalrhtime2", "RecHit Time;rechit Time [ns]",200,-10,10);
+    hist1d[80] = new TH1D("ecalrhenergy03", "RecHit Energy;rechit E [GeV]",1000,0,1000);
+    hist1d[81] = new TH1D("ecalrhtimevar3", "RecHit Time Var;rechit Var",200,0,20);
+    hist1d[82] = new TH1D("ecalrhcor3", "RecHit Time Core;rechit Time [ns]",200,-10,10);
+    hist1d[85] = new TH1D("ecalrhtime3", "RecHit Time;rechit Time [ns]",200,-10,10);
+
+    hist1d[90] = new TH1D("ecalrhtime_pho", "Pho RecHit Time;rechit Time [ns]",200,-10,10);
+
+
+    hist1d[40] = new TH1D("ecalrhenergy01", "RecHit Energy G2;rechit E [GeV]",1000,0,1000);
+    hist1d[41] = new TH1D("ecalrhtimevar1", "RecHit Time Var G2;rechit Var",200,0,20);
+    hist1d[42] = new TH1D("ecalrhcor1", "RecHit Time Core G2;rechit Time [ns]",200,-10,10);
+    hist1d[45] = new TH1D("ecalrhtime1", "RecHit Time G2;rechit Time [ns]",200,-10,10);
+    hist1d[50] = new TH1D("ecalrhenergy01eb", "RecHit Energy EB;rechit E [GeV]",1000,0,1000);
+    hist1d[51] = new TH1D("ecalrhtimevar1eb", "RecHit Time Var EB;rechit Var",200,0,20);
+    hist1d[52] = new TH1D("ecalrhcor1eb", "RecHit Time Core EB;rechit Time [ns]",200,-10,10);
+    hist1d[55] = new TH1D("ecalrhtime1eb", "RecHit Time EB;rechit Time [ns]",200,-10,10);
+    hist1d[60] = new TH1D("ecalrhenergy01ee", "RecHit Energy EE;rechit E [GeV]",1000,0,1000);
+    hist1d[61] = new TH1D("ecalrhtimevar1ee", "RecHit Time Var EE;rechit Var",200,0,20);
+    hist1d[62] = new TH1D("ecalrhcor1ee", "RecHit Time Core EE;rechit Time [ns]",200,-10,10);
+    hist1d[65] = new TH1D("ecalrhtime1ee", "RecHit Time EE;rechit Time [ns]",200,-10,10);
 
 
     hist1d[3] = new TH1D("sctype","SC !Orig, Orig, OOT, Excl",4,0,4);
@@ -1354,9 +1366,6 @@ void KUCMSAodSkimmer::initHists(){
     hist1d[7] = new TH1D("trckpt","Track pt;Track pt [GeV]",500,0,1000);
     hist1d[8] = new TH1D("NRecHitsInSCs","NRecHitsInSCs;NRecHitsInSCs",100,0,100);
     hist1d[9] = new TH1D("sceta","SC Eta;Eta",200,-10,10);
-
-
-
 
 	hist1d[10] = new TH1D("elept","Electron Pt [GeV];Electron Pt [GeV];a.u.",100,0,1000);
     hist1d[11] = new TH1D("elept_lv","LooseVeto;Electron Pt [GeV];Eff",100,0,1000);
@@ -1385,6 +1394,11 @@ void KUCMSAodSkimmer::initHists(){
 	hist2d[1] = new TH2D("scorigcross", "SC Types;Mian-Orig;Std-OOT-Excluded", 2, 0, 2, 3, 0, 3); 
     hist2d[2] = new TH2D("rjrPtS_v_rjrdPhiSI_t0", "rjrDPhiSI_v_rjrPtS Type 0;rjrDphiSI;rjrPtS", 32, 0, 3.2, 60, 0, 3000);
     hist2d[3] = new TH2D("rjrPtS_v_rjrdPhiSI_t1", "rjrDPhiSI_v_rjrPtS Type 1;rjrDphiSI;rjrPtS", 32, 0, 3.2, 60, 0, 3000);
+
+	std::string fHTitle = "KUSkim";
+    hist2d[10] = new TH2D("EnergyVRtTimeG6",addstr(fHTitle,"Energy V RtTime;Energy [GeV] hasGS6;Time [ns]").c_str(),250,0,1000,600,-30,30);
+    hist2d[11] = new TH2D("EnergyVRtTimeG1",addstr(fHTitle,"Energy V RtTime;Energy [GeV] hasGS1;Time [ns]").c_str(),250,0,1000,600,-30,30);
+    hist2d[12] = new TH2D("EnergyVRtTimeG0",addstr(fHTitle,"Energy V RtTime;Energy [GeV] noGS;Time [ns]").c_str(),250,0,1000,600,-30,30);
 
 	//------------------------------------------------------------------------------------------
     //------ 3D Hists --------------------------------------------------------------------------
