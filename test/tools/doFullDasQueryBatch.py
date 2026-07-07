@@ -109,7 +109,7 @@ dlR2Met = [
 
 ]
 
-dl2024Mini = [
+dl2024MiniPrompt = [
 
     "/JetMET0/Run2024A-PromptReco-v1/MINIAOD",
     "/JetMET0/Run2024B-PromptReco-v1/MINIAOD",
@@ -135,6 +135,27 @@ dl2024Mini = [
     "/JetMET1/Run2024I-PromptReco-v1/MINIAOD",
     "/JetMET1/Run2024I-PromptReco-v2/MINIAOD",
     "/JetMET1/Run2024J-PromptReco-v1/MINIAOD",
+
+]
+
+dl2024Mini = [
+
+    "/JetMET0/Run2024C-MINIv6NANOv15-v1/MINIAOD",
+    "/JetMET0/Run2024D-MINIv6NANOv15-v1/MINIAOD",
+    "/JetMET0/Run2024E-MINIv6NANOv15-v1/MINIAOD",
+    "/JetMET0/Run2024F-MINIv6NANOv15-v2/MINIAOD",
+    "/JetMET0/Run2024G-MINIv6NANOv15-v2/MINIAOD",
+    "/JetMET0/Run2024H-MINIv6NANOv15-v2/MINIAOD",
+    "/JetMET0/Run2024I-MINIv6NANOv15-v2/MINIAOD",
+    "/JetMET0/Run2024I-MINIv6NANOv15_v2-v1/MINIAOD",
+    "/JetMET1/Run2024C-MINIv6NANOv15-v1/MINIAOD",
+    "/JetMET1/Run2024D-MINIv6NANOv15-v1/MINIAOD",
+    "/JetMET1/Run2024E-MINIv6NANOv15-v1/MINIAOD",
+    "/JetMET1/Run2024F-MINIv6NANOv15-v2/MINIAOD",
+    "/JetMET1/Run2024G-MINIv6NANOv15-v2/MINIAOD",
+    "/JetMET1/Run2024H-MINIv6NANOv15-v2/MINIAOD",
+    "/JetMET1/Run2024I-MINIv6NANOv15-v1/MINIAOD",
+    "/JetMET1/Run2024I-MINIv6NANOv15_v2-v2/MINIAOD",
 
 ]
 
@@ -211,7 +232,7 @@ dl2023ZJetsmini = [
 
 ]
 
-datalist = dl2023ZJetsmini    # <-- set the list you actually want
+datalist = dl2024Mini    # <-- set the list you actually want
 
 # -------------------------
 # TSV output (paste into Sheets/Excel)

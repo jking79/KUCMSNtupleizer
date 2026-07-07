@@ -62,7 +62,8 @@ int main ( int argc, char *argv[] ){
     std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCQCDTFile.txt");
 
 	//std::string eosdir("root://cmseos.fnal.gov//store/user/jaking/");// input parameter!
-    std::string eosdir("root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/");
+    //std::string eosdir("root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/");
+	std::string eosdir("/store/user/lpcsusylep/jaking/");
 
     //std::string indir("/kuncali/gammares_cali_mc/");
     //std::string indir("/kuncali/gammares_cali/");

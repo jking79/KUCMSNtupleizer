@@ -53,9 +53,9 @@ void KUCMSAodSkimmer::processRechits(){
 		auto idinfo = timeCali->getDetIdInfo(rhid);
     	if( DEBUGECAL ) std::cout << " -- TimeCali DetIDInfo : " << idinfo.i2 << " " << idinfo.i1 << " " << idinfo.ecal << std::endl;
 		float rht = (*ECALRecHit_time)[it];
-        bool gs6 = (*ECALRecHit_hasGS6)[it];
-        bool gs1 = (*ECALRecHit_hasGS1)[it];
-		int gainid = ( gs6 || gs1 ) ? 2 : 1;
+        const bool gs6 = (*ECALRecHit_hasGS6)[it];
+        const bool gs1 = (*ECALRecHit_hasGS1)[it];
+		const int gainid = ( not gs6 and not gs1 ) ? 1 : ( gs6 and not gs1 ) ? 2 : ( not gs6 and gs1 ) ? 3 : 4;
 		/////if( gainid != 1 ) continue; /// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		if( tctag == "r3_p25unc" or tctag == "r3_p26unc" ){ 
 			rht = (*ECALRecHit_UnCorrTime)[it]; 
@@ -77,12 +77,27 @@ void KUCMSAodSkimmer::processRechits(){
         hist1d[1]->Fill( rhtres, 1 );
         hist1d[2]->Fill( corrht, 1 );
         hist1d[5]->Fill( rht, 1 );
-        if( gainid == 2 ){
+		if( gainid == 2 ){ 
+			hist2d[10]->Fill(rhe,rht);
+        	hist1d[70]->Fill( rhe, 1 );
+        	hist1d[71]->Fill( rhtres, 1 );
+        	hist1d[72]->Fill( rht, 1 );
+        	hist1d[75]->Fill( rht, 1 );
+		}//<<>>if( gainid == 2 )
+        if( gainid == 3 ){ 
+			hist2d[11]->Fill(rhe,rht);
+            hist1d[80]->Fill( rhe, 1 );
+            hist1d[81]->Fill( rhtres, 1 );
+            hist1d[82]->Fill( rht, 1 );
+            hist1d[85]->Fill( rht, 1 );
+        }//<<>>if( gainid == 3 )
+        if( gainid == 1 ) hist2d[12]->Fill(rhe,corrht);
+        if( gainid == 1 ){
 			hist1d[40]->Fill( rhe, 1 );
             hist1d[41]->Fill( rhtres, 1 );
             hist1d[42]->Fill( corrht, 1 );
             hist1d[45]->Fill( rht, 1 );
-		}//<<>>if( (*rhSubdet)[it] == 0 )
+		//}//<<>>if( (*rhSubdet)[it] == 0 )
         if( rhid < 840000000 ){
             hist1d[50]->Fill( rhe, 1 );
             hist1d[51]->Fill( rhtres, 1 );
@@ -95,6 +110,7 @@ void KUCMSAodSkimmer::processRechits(){
             hist1d[62]->Fill( corrht, 1 );
             hist1d[65]->Fill( rht, 1 );
         }//<<>>if( (*rhSubdet)[it] == 0 )
+		}//<<>>if( gainid == 1 )
 
 		/*  ECAL Rechit information --  not saved currenty
  

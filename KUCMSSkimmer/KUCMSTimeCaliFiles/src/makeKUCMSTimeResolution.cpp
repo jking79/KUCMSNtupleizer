@@ -98,10 +98,13 @@ int main ( int argc, char *argv[] ){
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR22PrmptTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR23PrmptTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR24PrmptTFile.txt");
-    std::string inputfilename( "ecal_config/kucmsTimeCaliR25PrmptTFile.txt");
+    //std::string inputfilename( "ecal_config/kucmsTimeCaliR25PrmptTFile.txt");
+    //std::string inputfilename( "ecal_config/kucmsTimeCaliR23ReRecoTFile.txt");
+    std::string inputfilename( "ecal_config/kucmsTimeCaliR22ReRecoTFile.txt");
 
 	//std::string eosdir("root://cmseos.fnal.gov//store/user/jaking/");// input parameter!
-    std::string eosdir("root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/");
+    //std::string eosdir("root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/");
+	std::string eosdir("/store/user/lpcsusylep/jaking/");
 
     ////std::string indir("/kuncali/gammares_cali_mc/");
     ////std::string indir("/kuncali/gammares_cali/");
@@ -113,7 +116,8 @@ int main ( int argc, char *argv[] ){
     //std::string indir("KUCMSNtuple/gammares_ul16/DoubleEG/");
     //std::string indir("KUCMSNtuple/gammares_prmt22/EGamma/");
     //std::string indir("KUCMSNtuple/");// 23 & 24
-    std::string indir("KUCMSNtuple/gammares_prmt25/");
+    //std::string indir("KUCMSNtuple/gammares_prmt25/");
+    std::string indir("KUCMSNtuple/gammares_R22_22sept23/");
 
     bool doScale = true;
     bool useCali = true;
@@ -122,17 +126,14 @@ int main ( int argc, char *argv[] ){
 
     if( argc > 1 ){
         std::string firstArg( argv[1] );
-        if( firstArg == "-h" || firstArg == "--help" ){
-            printUsage( argv[0] );
-            return 0;
-        }
-    }
+        if( firstArg == "-h" || firstArg == "--help" ) printUsage( argv[0] );
+    }//<<>>if( argc > 1 )
 
     if( argc > 6 ){
         std::cerr << "Too many arguments.\n";
         printUsage( argv[0] );
         return 2;
-    }
+    }//<<>>if( argc > 6 )
 
 	if( argc > 1 ) inputfilename = argv[1];
     if( argc > 2 ) doScale = parseBoolArg( argv[2] );
@@ -223,7 +224,7 @@ int main ( int argc, char *argv[] ){
     theCali.useGainSwitch( true, true ); // use gainid ? --  do all gians ? : all Gains (HG)
     //theCali.useGainSwitch( true, false ); // use gainid ? --  do all gians ? : only gainID1 (LG)
 
-    theCali.setIsCC(true);
+    //theCali.setIsCC(true);
     //theCali.setDoUnCC(true);
     ////theCali.setIsCC(false);//default
 
@@ -306,7 +307,7 @@ int main ( int argc, char *argv[] ){
     //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_25p_xa_pm24b1200_v0210" );
 	//theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_25Cp_xa_pm24b1200_v0422" );
     //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_25Dp_xa_pm24b1200_v0422" );
-    theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_25Ep_xa_pm24b1200_v0608" );
+    //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_25Ep_xa_pm24b1200_v0608" );
     //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_25Fp_xa_pm24b1200_v0422" );
     //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_25Gp_xa_pm24b1200_v0422" );
 
@@ -317,6 +318,8 @@ int main ( int argc, char *argv[] ){
     //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_25Fp_uncor_xa_pm24b1200_v0422" );
     //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_25Gp_uncor_xa_pm24b1200_v0422" );
 
+    //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_22_22sept23_xa_pm24b1200_v0620" );
+    //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_23_22sept23_xa_pm24b1200_v0618" );
 
 	//theCali.setMCResTag("r2_ul16");
 	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18MC_xa_pm24b1200_v0204" );
@@ -517,12 +520,20 @@ int main ( int argc, char *argv[] ){
     //std::string histName3 = "ResMap_387742_398903_DRO_Data_Hist_UnCorr_lg_unc_eg_25p_xa_pm24b1200_v0501_EB";
     //std::string histName4 = "ResMap_387742_398903_DRO_Data_Hist_UnCorr_lg_unc_eg_25p_xa_pm24b1200_v0501_EE";
 
-    std::string histName1 = "ResMap_387742_398903_SRO_Data_Hist_UnCorr_hg_unc_eg_25p_xa_pm24b1200_v0501_EB";
-    std::string histName2 = "ResMap_387742_398903_SRO_Data_Hist_UnCorr_hg_unc_eg_25p_xa_pm24b1200_v0501_EE";
-    std::string histName3 = "ResMap_387742_398903_SRO_Data_Hist_UnCorr_lg_unc_eg_25p_xa_pm24b1200_v0501_EB";
-    std::string histName4 = "ResMap_387742_398903_SRO_Data_Hist_UnCorr_lg_unc_eg_25p_xa_pm24b1200_v0501_EE";
+    //std::string histName1 = "ResMap_387742_398903_SRO_Data_Hist_UnCorr_hg_unc_eg_25p_xa_pm24b1200_v0501_EB";
+    //std::string histName2 = "ResMap_387742_398903_SRO_Data_Hist_UnCorr_hg_unc_eg_25p_xa_pm24b1200_v0501_EE";
+    //std::string histName3 = "ResMap_387742_398903_SRO_Data_Hist_UnCorr_lg_unc_eg_25p_xa_pm24b1200_v0501_EB";
+    //std::string histName4 = "ResMap_387742_398903_SRO_Data_Hist_UnCorr_lg_unc_eg_25p_xa_pm24b1200_v0501_EE";
 
+    //std::string histName1 = "ResMap_366365_372415_SRO_Data_Hist_NoCali_eg_23_22sept23_xa_pm24b1200_v0618_EB";
+    //std::string histName2 = "ResMap_366365_372415_SRO_Data_Hist_NoCali_eg_23_22sept23_xa_pm24b1200_v0618_EE";
+    //std::string histName3 = "ResMap_366365_372415_DRO_Data_Hist_NoCali_eg_23_22sept23_xa_pm24b1200_v0618_EB";
+    //std::string histName4 = "ResMap_366365_372415_DRO_Data_Hist_NoCali_eg_23_22sept23_xa_pm24b1200_v0618_EE";
 
+    std::string histName1 = "ResMap_352319_362760_SRO_Data_Hist_NoCali_eg_22_22sept23_xa_pm24b1200_v0620_EB";
+    std::string histName2 = "ResMap_352319_362760_SRO_Data_Hist_NoCali_eg_22_22sept23_xa_pm24b1200_v0620_EE";
+    std::string histName3 = "ResMap_352319_362760_DRO_Data_Hist_NoCali_eg_22_22sept23_xa_pm24b1200_v0620_EB";
+    std::string histName4 = "ResMap_352319_362760_DRO_Data_Hist_NoCali_eg_22_22sept23_xa_pm24b1200_v0620_EE";
 
 //    std::string histName1 = "";
 //    std::string histName2 = "";
@@ -551,7 +562,6 @@ int main ( int argc, char *argv[] ){
 	////theCali.SetYBinStr( "CONSTANT 160 -4 4" );
     //sheCali.doResTimeFitExt( "PVTimeResNorm", "/uscms/home/jaking/nobackup/el9/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/macros/KUCMS_Data_llpana_v49_PVtime_Res_NueSCOnly_cv5_EG18D_RjrSkim_Hists_v3d.root");
     //theCali.doResTimeFitExt("ResMap_387742_398903_DRO_Data_Hist_eg_25Ep_xa_pm24b1200_v0501_EB","../macros/res2droot_eg_25p_cc_hg_xa_pm24b1200_v0501/res2dPlots_hg_eg_25Ep_xa_pm24b1200_v0501.root");	
-
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	///////////////   mean time by run   ////////////////////
@@ -559,6 +569,9 @@ int main ( int argc, char *argv[] ){
 	// plotting of mean time by run with calibraton : filename, start run, end run, usecali ( defaults to usecali true )
 	//theCali.plotMeanRunTimeEGR( inputfilename, 315257, 325172 ); // R2 2018 UL 315257_325172 // R2 2017 UL 296399_306460
     //theCali.plotMeanRunTimeEGR( inputfilename, 315257, 325172, false );
+    //352319_362760
+	theCali.plotMeanRunTimeEGR( inputfilename, 355794, 360331, false );
+
     ////theCali.plotMeanRunTimeEGR( inputfilename, 296399, 307554, true );
 	////theCali.makeTTDiffMaps();// make trigger tower diffrence maps
 	

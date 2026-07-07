@@ -116,7 +116,8 @@ DATA_KEYWORDS  = {'MET', 'JetMET', 'JetMET0', 'JetMET1', 'JetHT', 'EGamma', 'EGa
 SIGNAL_KEYWORDS = {'SMS', 'gogoG', 'gogoZ', 'gogoGZ', 'sqsqG', 'GlGl'}
 
 SANDBOX_DEFAULT  = "/uscms/home/mlazarov/nobackup/sandboxes/sandbox-CMSSW_13_3_3.tar.bz2"
-EOS_SKIMS_BASE   = "/store/group/lpcsusylep/malazaro/KUCMSSkims"
+#EOS_SKIMS_BASE   = "/store/group/lpcsusylep/malazaro/KUCMSSkims"
+EOS_SKIMS_BASE   = "/store/user/malazaro/LLPSkims"
 EOS_SERVER       = "root://cmseos.fnal.gov"
 
 # ---------------------------------------------------------------------------
@@ -842,12 +843,11 @@ def transfer_jobs(args):
 
     dest_base = EOS_SKIMS_BASE.rstrip('/') + '/' + args.version.strip('/')
     dest_xrd  = EOS_SERVER + '//' + dest_base.lstrip('/')
-
+    version = args.version.split("_")[1]
     submit_files = []
     for root, dirs, files in os.walk(args.output):
         if 'submit.sh' in files:
             submit_files.append(os.path.join(root, 'submit.sh'))
-
     if not submit_files:
         print('No submit.sh files found under', args.output)
         return
@@ -878,10 +878,10 @@ def transfer_jobs(args):
     n_ok = 0
     n_skip = 0
     n_fail = 0
-
     for submit_path in sorted(submit_files):
+        if f"rjrskim_{version}" not in submit_path:
+            continue
         header_lines, job_entries, eos_out_dir = parse_submit_file(submit_path)
-
         if not eos_out_dir:
             print('SKIP (no --eos-out found):', submit_path)
             n_skip += 1

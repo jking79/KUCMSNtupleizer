@@ -52,7 +52,7 @@ def main():
         task = os.path.join(options.projDir, task)
         if not os.path.isdir(task):
             continue
-        if str(options.crabCmd) != 'resubmit':
+        if ( str(options.crabCmd) != 'resubmit' ) and ( str(options.crabCmd) != 'resubmitmax' ) :
             try :
                 print ("Executing (the equivalent of): crab %s %s %s" % (options.crabCmd, task, options.crabCmdOptions))
                 crabCommand(options.crabCmd, task, *options.crabCmdOptions.split())
@@ -60,11 +60,20 @@ def main():
             except :
                     print ("Command not executed")
         else :
-            print ("Executing: crab %s %s %s" %(options.crabCmd, task, options.crabCmdOptions))
-            #os.system('crab resubmit ' + task )
-            os.system('crab resubmit ' + task + ' --maxjobruntime 2200 --maxmemory 2250' )
-            #os.system('crab resubmit ' + task + ' --maxjobruntime 2800 --maxmemory 3000' )
-            print (">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+            if str(options.crabCmd) == 'resubmit' :
+                try :
+                    print ("Executing: crab %s %s %s" %(options.crabCmd, task, options.crabCmdOptions))
+                    #os.system('crab resubmit ' + task )
+                    os.system('crab resubmit ' + task + ' --maxjobruntime 2200 --maxmemory 2250' )
+                    print (">>>> runtime 2200 memory 2250 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+                except :
+                    print ("Command not executed")
+            if str(options.crabCmd) == 'resubmitmax' :
+                try :
+                    os.system('crab resubmit ' + task + ' --maxjobruntime 2800 --maxmemory 3000' )
+                    print (">>>> runtime 2800 memory 3000 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+                except :
+                    print ("Command not executed")
 
 if __name__ == '__main__':
     main()   
