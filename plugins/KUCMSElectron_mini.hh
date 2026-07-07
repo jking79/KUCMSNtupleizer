@@ -327,7 +327,7 @@ void KUCMSElectronObjectMini::LoadEvent( const edm::Event& iEvent, const edm::Ev
 
 
 	iEvent.getByToken( electronsToken_, electrons_ );
-    iEvent.getByToken( conversionsToken_, conversions_ );
+    //iEvent.getByToken( conversionsToken_, conversions_ );
     iEvent.getByToken( beamLineToken_, beamSpot_ );
     iEvent.getByToken( RhoToken_, rho_ );
     //iEvent.getByToken( pfcandToken_, pfcands_ );
@@ -434,7 +434,8 @@ void KUCMSElectronObjectMini::ProcessEvent( ItemManager<float>& geVar ){
         bool ebee = ( eleEta <= 1.479 );
 
 		//  !!!!!!!!!!!!!!!!!!!  conversions_ ? exist in mini ?
-		bool passConversionVeto = ConversionTools::hasMatchedConversion( electron, *conversions_, beamSpot_->position());
+		//  turned this off for the electron ID due to isues with producer changing -- revist if you need the electron ID
+		bool passConversionVeto = true; //ConversionTools::hasMatchedConversion( electron, *conversions_, beamSpot_->position());
         bool mistrack = ( eleMisTrack <= 1 );
 		bool Vmistrack = ebee ? ( eleMisTrack <= 2 ) : ( eleMisTrack <= 3 );
 		bool CvTr = mistrack && passConversionVeto;
@@ -577,8 +578,10 @@ float KUCMSElectronObjectMini::getEleTrackZMatch( const pat::Photon & photon ){
 
 bool KUCMSElectronObjectMini::getElectronVeto( const edm::Ref<std::vector<reco::SuperCluster>> phosc ){
 
-	return conversions_.isValid() ? true : false;
-            //not ConversionTools::hasMatchedPromptElectron( phosc, felectrons, *conversions_, beamSpot_->position() ) : false;
+	return true;
+	//return conversions_.isValid() ? true : false;
+	// turned off conversions_ due to producer isses
+    //not ConversionTools::hasMatchedPromptElectron( phosc, felectrons, *conversions_, beamSpot_->position() ) : false;
 
 }//<<>> bool KUCMSElectronObject::getElectronVeto( const reco::SuperCluster & phosc )
 

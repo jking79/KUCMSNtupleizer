@@ -135,8 +135,9 @@ KUCMSNtupilizerMini::KUCMSNtupilizerMini(const edm::ParameterSet& iConfig):
     electronsObj->LoadRhoTokens( rhoToken );
     auto electronToken = consumes<edm::View<pat::Electron>>(iConfig.getParameter<edm::InputTag>("electrons"));
     electronsObj->LoadElectronTokens( electronToken );
-    auto conversionsToken = consumes<reco::ConversionCollection>(iConfig.getParameter<edm::InputTag>("conversions"));
-    electronsObj->LoadConversionTokens( conversionsToken );
+	// turned conversion off due to issues with producer
+    //auto conversionsToken = consumes<reco::ConversionCollection>(iConfig.getParameter<edm::InputTag>("conversions"));
+    //electronsObj->LoadConversionTokens( conversionsToken );
     ////electronsObj->LoadPfcandTokens( pfcandToken );
 	electronsObj->LoadTTrackBuilder(transientTrackBuilderToken);
     ////electronsObj->LoadGeneralTrackTokens(ogGeneralTracksToken);

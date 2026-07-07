@@ -95,7 +95,7 @@ for line2 in targdirs :
     		if rootfile in lline : filelist.append(rootdir+subdir2+'/'+lline)
    
     select =  line2.split("_gam")
-    outfile = 'filelist_' + select[0] + '_v24.txt'
+    outfile = 'filelist_' + select[0] + '_v24b.txt'
     #outfile = 'kuntuple_' + select[0] + '_AL1IsoPho_R17_v24.txt'
     #print( outfile )
     outf = open( outfile, 'w' )
