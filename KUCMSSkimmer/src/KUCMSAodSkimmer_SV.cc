@@ -43,6 +43,7 @@ void KUCMSAodSkimmer::processSV(){
   if( doEVSVs ) nSVs = Vertex_mass->size();
   int nLsv = 0;
   int nHsv = 0;
+  int nHsvPassID = 0;
   //Analysis channel flag accumulators (from AnalysisConfig YAMLs)
   bool anyHadMassGeq15{false}, anyHadMassGeq15DxySigGeq800{false}, anyHadDxySigGeq800{false};
   bool anyLepMassGeq15{false}, anyLepMassGeq10{false}, anyLepMassGeq10DxySigGeq500{false}, anyLepDxySigGeq500{false};
@@ -63,7 +64,8 @@ void KUCMSAodSkimmer::processSV(){
       const uInt ntracks((*Vertex_nTracks)[svit]);
       const bool peleid((*Vertex_passLooseElectronID)[svit]);
       const bool pmuonid((*Vertex_passLooseMuonID)[svit]);
-      const bool hadronicId(mass/ntracks > 1 && ntracks>3);
+      const float massOverNtracks(ntracks > 0 ? mass/ntracks : 0.0f);
+      const bool hadronicId(massOverNtracks > 1 && ntracks >= 4);
 
       ROOT::Math::XYZVectorF vec3D(x, y, z);
       const float etaOrigin(vec3D.eta());
@@ -99,17 +101,21 @@ void KUCMSAodSkimmer::processSV(){
 	if(hasGenInfoFlag)
 	  selSV.fillBranch("LeptonicSV_isGold", (*Vertex_isGold)[svit]);
       }
-      else if(hadronicId) {
+      else if(ntracks >= 4) {
 	svType = "Hadronic";
 	nHsv++;
-	if(mass >= 15)                  anyHadMassGeq15 = true;
-	if(mass >= 15 && dxySig >= 800) anyHadMassGeq15DxySigGeq800 = true;
-	if(dxySig >= 800)               anyHadDxySigGeq800 = true;
-	if(mass >= 15 && dxySig < 100)  anyHadMassGeq15DxySigLt100 = true;
-	if(mass >= 15 && dxySig >= 100 && dxySig < 800) anyHadMassGeq15DxySigGeq100Lt800 = true;
-	if(dxySig < 200)                anyHadDxySigLt200 = true;
+	if(hadronicId) {
+	  nHsvPassID++;
+	  if(mass >= 15)                  anyHadMassGeq15 = true;
+	  if(mass >= 15 && dxySig >= 800) anyHadMassGeq15DxySigGeq800 = true;
+	  if(dxySig >= 800)               anyHadDxySigGeq800 = true;
+	  if(mass >= 15 && dxySig < 100)  anyHadMassGeq15DxySigLt100 = true;
+	  if(mass >= 15 && dxySig >= 100 && dxySig < 800) anyHadMassGeq15DxySigGeq100Lt800 = true;
+	  if(dxySig < 200)                anyHadDxySigLt200 = true;
+	}
 
-	selSV.fillBranch("HadronicSV_massOverNtracks", mass/ntracks);
+	selSV.fillBranch("HadronicSV_massOverNtracks", massOverNtracks);
+	selSV.fillBranch("HadronicSV_passHadronicID", hadronicId);
 	if(hasGenInfoFlag)
 	  selSV.fillBranch("HadronicSV_matchRatio", (*Vertex_matchRatio)[svit]);
       }
@@ -137,25 +143,25 @@ void KUCMSAodSkimmer::processSV(){
 
   //Analysis channel flags — LittleGuy compressed regions
   selSV.fillBranch("passNSVGe1Selection",
-      bool((nHsv >= 1 && anyHadMassGeq15) || (nLsv >= 1 && anyLepMassGeq15)));
+      bool((nHsvPassID >= 1 && anyHadMassGeq15) || (nLsv >= 1 && anyLepMassGeq15)));
   selSV.fillBranch("passNSVGe1SelectionLowDxySigCR",
-      bool(((nHsv >= 1 && anyHadMassGeq15) || (nLsv >= 1 && anyLepMassGeq10))
+      bool(((nHsvPassID >= 1 && anyHadMassGeq15) || (nLsv >= 1 && anyLepMassGeq10))
            && !anyHadMassGeq15DxySigGeq800 && !anyLepMassGeq10DxySigGeq500));
   selSV.fillBranch("passNSVGe1SelectionHighDxySigSR",
       bool(anyHadMassGeq15DxySigGeq800 || anyLepMassGeq10DxySigGeq500));
   selSV.fillBranch("passNHadEq1SelectionLowDxySigCR",
-      bool(nHsv == 1 && anyHadMassGeq15 && !anyHadMassGeq15DxySigGeq800));
+      bool(nHsvPassID == 1 && anyHadMassGeq15 && !anyHadMassGeq15DxySigGeq800));
   selSV.fillBranch("passNSVEq0Selection",
-      bool(nHsv == 0 && nLsv == 0));
+      bool(nHsvPassID == 0 && nLsv == 0));
   //Analysis channel flags — BigGuy non-compressed regions
   selSV.fillBranch("passNLepGe1SelectionHighDxySigSR",
       bool(nLsv >= 1 && anyLepDxySigGeq500));
   selSV.fillBranch("passNLepGe1SelectionLowDxySigCR",
       bool(nLsv >= 1 && !anyLepDxySigGeq500));
   selSV.fillBranch("passNHadGe1SelectionHighDxySigSR",
-      bool(nLsv == 0 && nHsv >= 1 && anyHadDxySigGeq800));
+      bool(nLsv == 0 && nHsvPassID >= 1 && anyHadDxySigGeq800));
   selSV.fillBranch("passNHadGe1SelectionLowDxySigCR",
-      bool(nLsv == 0 && nHsv >= 1 && !anyHadDxySigGeq800));
+      bool(nLsv == 0 && nHsvPassID >= 1 && !anyHadDxySigGeq800));
   //Analysis channel flags — LittleGuy compressed validation regions
   selSV.fillBranch("passNSVGe1SelectionLowDxySigValCR",
       bool((anyHadMassGeq15DxySigLt100 || anyLepMassGeq10DxySigLt100)
@@ -168,10 +174,10 @@ void KUCMSAodSkimmer::processSV(){
   selSV.fillBranch("passNLepGe1SelectionLowDxySigValCR",
       bool(nLsv >= 1 && anyLepDxySigLt50));
   selSV.fillBranch("passNHadGe1SelectionLowDxySigValCR",
-      bool(nLsv == 0 && nHsv >= 1 && anyHadDxySigLt200));
+      bool(nLsv == 0 && nHsvPassID >= 1 && anyHadDxySigLt200));
 
   geVars.set("nSVLep", nLsv);
-  geVars.set("nSVHad", nHsv);
+  geVars.set("nSVHad", nHsvPassID);
 
 }//<<>>void KUCMSAodSkimmer::processSV()
 
@@ -203,6 +209,7 @@ void KUCMSAodSkimmer::setSVBranches( TTree* fOutTree ){
   selSV.makeBranch("LeptonicSV_passElectronID", VBOOL);
 
   selSV.makeBranch("HadronicSV_massOverNtracks", VFLOAT);
+  selSV.makeBranch("HadronicSV_passHadronicID",   VBOOL);
 
   selSV.makeBranch("SV_nLeptonic", INT);
   selSV.makeBranch("SV_nHadronic", INT);

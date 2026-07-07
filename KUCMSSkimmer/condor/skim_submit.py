@@ -108,6 +108,8 @@ TIMECALI = {
     ('R23', 'mc'):   'r2_ul18_mc',   # TODO: confirm R3 MC timecali tag
     ('R24', 'data'): 'r3_p24',
     ('R24', 'mc'):   'r2_ul18_mc',   # TODO: confirm R3 MC timecali tag
+    ('R25', 'data'): 'r3_p25unc',
+    ('R25', 'mc'):   'r2_ul18_mc',   # TODO: confirm R3 2025 MC timecali tag
 }
 
 DATA_KEYWORDS  = {'MET', 'JetMET', 'JetMET0', 'JetMET1', 'JetHT', 'EGamma', 'EGamma0', 'EGamma1', 'EGamma2', 'DisJet'}
@@ -135,7 +137,7 @@ def detect_sample_type(eos_path):
 
 def detect_year(eos_path):
     """Return 'R16', 'R17', 'R18', 'R22', 'R23', or ''."""
-    for yr in ['R16', 'R17', 'R18', 'R22', 'R23', 'R24']:
+    for yr in ['R16', 'R17', 'R18', 'R22', 'R23', 'R24', 'R25']:
         if yr in eos_path:
             return yr
     return ''
@@ -210,12 +212,18 @@ def signal_process_key(name):
     return 'gogoGZ'
 
 
-def normalize_signal_ctau(raw_ctau):
-    if raw_ctau.startswith('-0p') and len(raw_ctau) == 4:
-        return raw_ctau[3:]
+def signal_event_count_tier(name):
+    if re.search(r'(?:FULLMINI|MINIAOD|MINI|MiniAOD|Mini)', name):
+        return 'FULLMINI'
+    return 'AODSIM'
+
+
+def normalize_signal_ctau(raw_ctau, tier):
     value = raw_ctau.lstrip('-')
-    if value.startswith('0p') and len(value) == 3:
-        return value
+    if tier == 'AODSIM' and value.startswith('0p') and len(value) == 3:
+        return value[-1]
+    if tier == 'FULLMINI' and value in {'1', '5'}:
+        return '0p' + value
     return value
 
 
@@ -223,7 +231,7 @@ def signal_event_count_key(name):
     mgl = re.search(r'mGl-(\d+)', name)
     mn2 = re.search(r'mN2-(\d+)', name)
     mn1 = re.search(r'mN1-(\d+)', name)
-    ctau = re.search(r'(?:^|[_-])ct(-?[0-9]+p[0-9]+|-?[0-9]+)', name)
+    ctau = re.search(r'(?:(?:^|[_-])ct|\dctau-)(-?[0-9]+p[0-9]+|-?[0-9]+)', name)
 
     if not (mgl and mn2 and mn1 and ctau):
         match = re.search(
@@ -231,15 +239,19 @@ def signal_event_count_key(name):
             name,
         )
         if match:
-            key = re.sub(r'_(FULLMINI|MINIAOD|MINI|AOD)_',
-                         '_AODSIM_', match.group(1))
-            return re.sub(r'_ct0p([15])$', r'_ct\1', key)
+            key = re.sub(r'_(MINIAOD|MINI)_', '_FULLMINI_', match.group(1))
+            if '_AODSIM_' in key:
+                return re.sub(r'_ct0p([15])$', r'_ct\1', key)
+            if '_FULLMINI_' in key:
+                return re.sub(r'_ct([15])$', r'_ct0p\1', key)
+            return key
         raise ValueError('could not derive signal EventCount key from: ' + name)
 
     process = signal_process_key(name)
-    ct_key = normalize_signal_ctau(ctau.group(1))
+    tier = signal_event_count_tier(name)
+    ct_key = normalize_signal_ctau(ctau.group(1), tier)
     return (
-        f'{process}_AODSIM_mGl-{mgl.group(1)}'
+        f'{process}_{tier}_mGl-{mgl.group(1)}'
         f'_mN2-{mn2.group(1)}_mN1-{mn1.group(1)}_ct{ct_key}'
     )
 
