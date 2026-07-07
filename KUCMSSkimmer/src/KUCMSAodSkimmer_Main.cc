@@ -9,22 +9,24 @@
 
 #include "KUCMSHelperFunctions.hh"
 #include <ctime>
+#include <fstream>
+#include <set>
 
 #include "KUCMSAodSVSkimmer.hh"
 /*
-#include "KUCMSAodSkimmer_Helpers.hpp"
-#include "KUCMSAodSkimmer_EvntMetVars.hpp"
-#include "KUCMSAodSkimmer_Tracks.hpp"
-#include "KUCMSAodSkimmer_Ecal.hpp"
-#include "KUCMSAodSkimmer_Gen.hpp"
-#include "KUCMSAodSkimmer_Photons.hpp"
-#include "KUCMSAodSkimmer_RJR.hpp"
-#include "KUCMSAodSkimmer_Electron.hpp"
-#include "KUCMSAodSkimmer_Jets.hpp"
-#include "KUCMSAodSkimmer_Muons.hpp"
-#include "KUCMSAodSkimmer_SV.hpp"
-#include "KUCMSAodSkimmer_BHC.hpp"
-#include "KUCMSAodSkimmer_TimeSig.hpp"
+  #include "KUCMSAodSkimmer_Helpers.hpp"
+  #include "KUCMSAodSkimmer_EvntMetVars.hpp"
+  #include "KUCMSAodSkimmer_Tracks.hpp"
+  #include "KUCMSAodSkimmer_Ecal.hpp"
+  #include "KUCMSAodSkimmer_Gen.hpp"
+  #include "KUCMSAodSkimmer_Photons.hpp"
+  #include "KUCMSAodSkimmer_RJR.hpp"
+  #include "KUCMSAodSkimmer_Electron.hpp"
+  #include "KUCMSAodSkimmer_Jets.hpp"
+  #include "KUCMSAodSkimmer_Muons.hpp"
+  #include "KUCMSAodSkimmer_SV.hpp"
+  #include "KUCMSAodSkimmer_BHC.hpp"
+  #include "KUCMSAodSkimmer_TimeSig.hpp"
 */
 
 //-----------------------------------------------------------------------------------------------------------------------------
@@ -284,11 +286,11 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 
   std::map<UInt_t,kucms_DetIDStruct> detidmap = timeCali->getDetIDMapRef();
   for(auto it = detidmap.begin(); it != detidmap.end(); it++){
-	  kucms_DetIDStruct detidstruct = it->second;
-	  int ieta = detidstruct.i2;
-	  int iphi = detidstruct.i1;
-	  _detidmap[it->first] = std::make_pair(ieta, iphi);
-   }//<<>>for(auto it = detidmap.begin(); it != detidmap.end(); it++)
+    kucms_DetIDStruct detidstruct = it->second;
+    int ieta = detidstruct.i2;
+    int iphi = detidstruct.i1;
+    _detidmap[it->first] = std::make_pair(ieta, iphi);
+  }//<<>>for(auto it = detidmap.begin(); it != detidmap.end(); it++)
 
   // ------------------------------------------------------------------------------------------
 
@@ -309,286 +311,292 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
   useUnCC = false;
   isCC = false;
   doSlimmed = false;
+  useBranchMask = false;
+  branchMaskFile = "";
+  branchMaskPatterns.clear();
 
   _evti = -1;
   _evtj = -1;
 
   // event varibles
 
-    dataSetKey = "single";
-    xsctn = 1.f;
-    gmass = -1.f;
-    xmass = -1.f;
-    mcwgt = 1.f;;
-    mctype = 0;  // what type of input PD :  0 MC (AODSIM), 1 DATA (AOD), if we need fastSim ( 2 ) ect, add new enrty here
-    tctag = "none";
+  dataSetKey = "single";
+  xsctn = 1.f;
+  gmass = -1.f;
+  xmass = -1.f;
+  mcwgt = 1.f;;
+  mctype = 0;  // what type of input PD :  0 MC (AODSIM), 1 DATA (AOD), if we need fastSim ( 2 ) ect, add new enrty here
+  tctag = "none";
 
-	// input tree names
+  // input tree names
 
-	disphoTreeName = "tree/llpgtree";
-	configTreeName = "tree/configtree";
-	inFilePath = "none";
-	inFileName = "none";
-	listDirPath = "none";
-	eosDirPath = "none";
-	outFileName = "rjr_skimfile.root";
+  disphoTreeName = "tree/llpgtree";
+  configTreeName = "tree/configtree";
+  inFilePath = "none";
+  inFileName = "none";
+  listDirPath = "none";
+  eosDirPath = "none";
+  outFileName = "rjr_skimfile.root";
 
-    // event varibles
+  // event varibles
 
-	doSVs = true;
-    doBHC = true;
-	genSigPerfectFlag = false;
-    noSVorPhoFlag = false;
-    useEvtGenWgtFlag = true;
-    hasGenInfoFlag = true;
-    nEvents = 0, 
+  doSVs = true;
+  doBHC = true;
+  genSigPerfectFlag = false;
+  noSVorPhoFlag = false;
+  useEvtGenWgtFlag = true;
+  hasGenInfoFlag = true;
+  nEvents = 0, 
     nSelectedEvents = 0;
-    sumEvtGenWgt = 0;
-	setGenInfoBase(hasGenInfoFlag); 
-	setDoSVsBase(doSVs);
-	setNewSigBase(true);
-	setHTLPathsBase(false);
-	setDoUnCCBase(false);
+  sumEvtGenWgt = 0;
+  setGenInfoBase(hasGenInfoFlag); 
+  setDoSVsBase(doSVs);
+  setNewSigBase(true);
+  setHTLPathsBase(false);
+  setDoUnCCBase(false);
 
-  	diJetIndex = {-1,-1};
-	gammaJetIndex = {-1,-1};
+  diJetIndex = {-1,-1};
+  gammaJetIndex = {-1,-1};
 
-	// BNC Intiation
+  // BNC Intiation
 
-    _ca.SetVerbosity(-1); //can turn on to see low-level warnings
-    _ca.SetDetIDs(_detidmap);
-    _ca.SetCNNModel("config/json/KU-CNN_detector_1000epochs_archsmall3_2017and2018_CMS.json");
-    _ca.SetBarrelDNNModel("config/json/KU-DNN_photonID_MINIJetHT18RunB_MINIEGamma18RunC_barrelOnly_fullDatasets_isoShape_1500epochs_MINI_16-8-4.json");
-    _ca.SetEndcapDNNModel("config/json/KU-DNN_photonID_MINIJetHT18RunB_MINIEGamma18RunC_fullDatasets_isoShape_1000epochs_MINI_large8_endcapOnly.json");
+  _ca.SetVerbosity(-1); //can turn on to see low-level warnings
+  _ca.SetDetIDs(_detidmap);
+  _ca.SetCNNModel("config/json/KU-CNN_detector_1000epochs_archsmall3_2017and2018_CMS.json");
+  _ca.SetBarrelDNNModel("config/json/KU-DNN_photonID_MINIJetHT18RunB_MINIEGamma18RunC_barrelOnly_fullDatasets_isoShape_1500epochs_MINI_16-8-4.json");
+  _ca.SetEndcapDNNModel("config/json/KU-DNN_photonID_MINIJetHT18RunB_MINIEGamma18RunC_fullDatasets_isoShape_1000epochs_MINI_large8_endcapOnly.json");
 
 }//<<>>KUCMSAodSkimmer::KUCMSAodSkimmer()
 
 KUCMSAodSkimmer::~KUCMSAodSkimmer(){
 
-    delete LAB;
-    delete S;
-    delete X2a;
-    delete X2b;
-    delete Ja;
-    delete Jb;
-    delete X1a;
-    delete X1b;
-    delete J1a;
-    delete J2a;
-    delete J1b;
-    delete J2b;      
+  delete LAB;
+  delete S;
+  delete X2a;
+  delete X2b;
+  delete Ja;
+  delete Jb;
+  delete X1a;
+  delete X1b;
+  delete J1a;
+  delete J2a;
+  delete J1b;
+  delete J2b;      
 
-    delete INV;
-    delete InvM;
-    delete InvEta;
-    delete InvSplit;
+  delete INV;
+  delete InvM;
+  delete InvEta;
+  delete InvSplit;
       
-    delete COMB_J;
-    delete CombSplit_J;
-    delete CombSplit_Ja;
-    delete CombSplit_Jb;
+  delete COMB_J;
+  delete CombSplit_J;
+  delete CombSplit_Ja;
+  delete CombSplit_Jb;
 
-    delete LAB_c;
-    delete CM_c;
-    delete S_c;
-    delete X2a_c;
-    delete X2b_c;
-	delete ISR_c;
-    delete Ja_c;
-    delete Jb_c;
-    delete X1a_c;
-    delete X1b_c;
-    delete J1a_c;
-    delete J2a_c;
-    delete J1b_c;
-    delete J2b_c;
+  delete LAB_c;
+  delete CM_c;
+  delete S_c;
+  delete X2a_c;
+  delete X2b_c;
+  delete ISR_c;
+  delete Ja_c;
+  delete Jb_c;
+  delete X1a_c;
+  delete X1b_c;
+  delete J1a_c;
+  delete J2a_c;
+  delete J1b_c;
+  delete J2b_c;
 
-    delete INV_c;
-    delete InvM_c;
-    delete InvEta_c;
-    delete InvSplit_c;
+  delete INV_c;
+  delete InvM_c;
+  delete InvEta_c;
+  delete InvSplit_c;
 
-    delete COMB_J_c;
-    delete CombSplit_J_c;
-    delete CombSplit_Ja_c;
-    delete CombSplit_Jb_c;
+  delete COMB_J_c;
+  delete CombSplit_J_c;
+  delete CombSplit_Ja_c;
+  delete CombSplit_Jb_c;
 
-    delete timeCali;
+  delete timeCali;
       
 }//<<>>KUCMSAodSkimmer::~KUCMSAodSkimmer()
 
 void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
 
 
-	bool debug = true;
-	if( debug) std::cout << "<<<<<<<< Processing Main Loop <<<<<<<<<<<<<< " << std::endl;
+  bool debug = true;
+  if( debug) std::cout << "<<<<<<<< Processing Main Loop <<<<<<<<<<<<<< " << std::endl;
 
-    // --- setup for main loop
-    TTree* fOutTree = new TTree("kuSkimTree","output root file for kUCMSSkimmer");
-    TTree* fConfigTree = new TTree("kuSkimConfigTree","config root file for kUCMSSkimmer");
+  // --- setup for main loop
+  TTree* fOutTree = new TTree("kuSkimTree","output root file for kUCMSSkimmer");
+  TTree* fConfigTree = new TTree("kuSkimConfigTree","config root file for kUCMSSkimmer");
 
-    if( tctag == "r3_p25" or tctag == "r3_p26" ){ isCC = true; }
-    if( tctag == "r3_p25unc" or tctag == "r3_p26unc" ){ useUnCC = true; isCC = true; }
-    setDoUnCCBase( useUnCC );
+  if( tctag == "r3_p25" or tctag == "r3_p26" ){ isCC = true; }
+  if( tctag == "r3_p25unc" or tctag == "r3_p26unc" ){ useUnCC = true; isCC = true; }
+  setDoUnCCBase( useUnCC );
 
-	setGenInfoBase( hasGenInfoFlag );
-	setDoSVsBase( doSVs );
-	setNewSigBase( true );
-	setHTLPathsBase( doHTLPathsBase );
-	Init( fInTree );
+  setGenInfoBase( hasGenInfoFlag );
+  setDoSVsBase( doSVs );
+  setNewSigBase( true );
+  setHTLPathsBase( doHTLPathsBase );
+  Init( fInTree );
 
-    ////Init( fInTree, hasGenInfoFlag, doSVs );
-    auto nEntries = fInTree->GetEntries();
+  ////Init( fInTree, hasGenInfoFlag, doSVs );
+  auto nEntries = fInTree->GetEntries();
 
-    //loop over events
-    if( _evti < 0 || _evti == _evtj){ _evti = 0; _evtj = nEntries; }
-	else {
-		if( _evtj > nEntries ){ _evtj = nEntries; } //cap at max number of entries
-		if( _evti > nEntries ){ 
-			cout << "Starting event " << _evti << " above # of entries in tree " << nEntries << " returning." << endl;
- 			return; 
-		}//<<>>if( _evti > nEntries )
-	}//<<>> if( _evti < 0 ) else
-	//if( not doSVs ){ _evtj = 2500000; _evti = 1500000; }
-	int nEventsProcessed = _evtj - _evti;
+  //loop over events
+  if( _evti < 0 || _evti == _evtj){ _evti = 0; _evtj = nEntries; }
+  else {
+    if( _evtj > nEntries ){ _evtj = nEntries; } //cap at max number of entries
+    if( _evti > nEntries ){ 
+      cout << "Starting event " << _evti << " above # of entries in tree " << nEntries << " returning." << endl;
+      return; 
+    }//<<>>if( _evti > nEntries )
+  }//<<>> if( _evti < 0 ) else
+  //if( not doSVs ){ _evtj = 2500000; _evti = 1500000; }
+  int nEventsProcessed = _evtj - _evti;
 
-    if( debug) std::cout << "<<<<<<<< initHists <<<<<<<<<<<<<< " << std::endl;
-    initHists();
-    std::cout << "<<<<<<<< setOutputBranches <<<<<<<<<<<<<< " << std::endl;
-    if( debug) setOutputBranches(fOutTree);
+  if( debug) std::cout << "<<<<<<<< initHists <<<<<<<<<<<<<< " << std::endl;
+  initHists();
+  std::cout << "<<<<<<<< setOutputBranches <<<<<<<<<<<<<< " << std::endl;
+  loadBranchMaskFile();
+  applyBranchMask();
+  if( debug) setOutputBranches(fOutTree);
+  printBranchMaskSummary();
 
-    startJobs(); // clear && init count varibles
+  startJobs(); // clear && init count varibles
 
-    // ---   do config input
+  // ---   do config input
 
-    if( debug) std::cout << "<<<<<<<< ProcessConfigTree <<<<<<<<<<<<<< " << std::endl;
-	ProcessConfigTree( fInConfigTree );
-	if( not isLocal ) ProcessConfigFile();
+  if( debug) std::cout << "<<<<<<<< ProcessConfigTree <<<<<<<<<<<<<< " << std::endl;
+  ProcessConfigTree( fInConfigTree );
+  if( not isLocal ) ProcessConfigFile();
 
-    // --  main loop
+  // --  main loop
 
-    std::cout << "Setting up For Main Loop." << std::endl;
-	int nForPrecent =  ( nEventsProcessed < 10 ) ? 1 : 10;
-	if( not doSVs ){ std::cout << " ::::  Doing noSv for EGamma " << std::endl; } //nForPrecent = 100; }
-    int loopCounter( nEventsProcessed / nForPrecent );
-    std::cout << "Processing " << nEntries << " entries." << std::endl;
-    nEvents = nEventsProcessed;//save # of events actually ran over so that when files are hadded, this should total nEntries in TChain
-    cout << "Running over events " << _evti << " to " << _evtj << endl;
-    cout << "loopCounter " << loopCounter << " nEventsProcessed " << nEventsProcessed << " nForPrecent " << nForPrecent << endl;
-	int count_of_events = 0;
-    for( Long64_t centry = _evti; centry < _evtj; centry++ ){
-        if( centry%loopCounter == 0 ){
-            std::time_t now = std::time(nullptr);
-            std::string curtime = std::ctime(&now);
-            curtime.pop_back();
-            std::cout << "Proccessed " << centry << " of " << nEntries << " entries at " << curtime << std::endl;
-        }//<<>>if( centry%loopCounter == 0 )
- 	    auto entry = fInTree->LoadTree(centry);
-        if(DEBUG){ 
-			std::cout << " -- Getting Branches " << std::endl;
-			TTree* currentTree = fChain->GetTree();
-			TBranch* brUnCorrTime = currentTree->GetBranch("ECALRecHit_UnCorrTime");
-			std::cout << "DEBUG before ECALRecHit_UnCorrTime GetEntry" << std::endl;
-			std::cout << "  global entry      = " << centry << std::endl;
-			std::cout << "  local entry       = " << entry << std::endl;
-			std::cout << "  tree number       = " << fChain->GetTreeNumber() << std::endl;
-			std::cout << "  stored branch ptr = " << b_ECALRecHit_UnCorrTime << std::endl;
-			std::cout << "  current branch ptr= " << brUnCorrTime << std::endl;
-			if( fChain->GetCurrentFile() ) std::cout << "  file              = " << fChain->GetCurrentFile()->GetName() << std::endl;
-		}//<<>>if(DEBUG)
+  std::cout << "Setting up For Main Loop." << std::endl;
+  int nForPrecent =  ( nEventsProcessed < 10 ) ? 1 : 10;
+  if( not doSVs ){ std::cout << " ::::  Doing noSv for EGamma " << std::endl; } //nForPrecent = 100; }
+  int loopCounter( nEventsProcessed / nForPrecent );
+  std::cout << "Processing " << nEntries << " entries." << std::endl;
+  nEvents = nEventsProcessed;//save # of events actually ran over so that when files are hadded, this should total nEntries in TChain
+  cout << "Running over events " << _evti << " to " << _evtj << endl;
+  cout << "loopCounter " << loopCounter << " nEventsProcessed " << nEventsProcessed << " nForPrecent " << nForPrecent << endl;
+  int count_of_events = 0;
+  for( Long64_t centry = _evti; centry < _evtj; centry++ ){
+    if( centry%loopCounter == 0 ){
+      std::time_t now = std::time(nullptr);
+      std::string curtime = std::ctime(&now);
+      curtime.pop_back();
+      std::cout << "Proccessed " << centry << " of " << nEntries << " entries at " << curtime << std::endl;
+    }//<<>>if( centry%loopCounter == 0 )
+    auto entry = fInTree->LoadTree(centry);
+    if(DEBUG){ 
+      std::cout << " -- Getting Branches " << std::endl;
+      TTree* currentTree = fChain->GetTree();
+      TBranch* brUnCorrTime = currentTree->GetBranch("ECALRecHit_UnCorrTime");
+      std::cout << "DEBUG before ECALRecHit_UnCorrTime GetEntry" << std::endl;
+      std::cout << "  global entry      = " << centry << std::endl;
+      std::cout << "  local entry       = " << entry << std::endl;
+      std::cout << "  tree number       = " << fChain->GetTreeNumber() << std::endl;
+      std::cout << "  stored branch ptr = " << b_ECALRecHit_UnCorrTime << std::endl;
+      std::cout << "  current branch ptr= " << brUnCorrTime << std::endl;
+      if( fChain->GetCurrentFile() ) std::cout << "  file              = " << fChain->GetCurrentFile()->GetName() << std::endl;
+    }//<<>>if(DEBUG)
 
-        getBranches( entry );
-        ////getBranches( entry, hasGenInfoFlag, doSVs );
-		//std::cout << " -- ? Valid Lumi with mctype " << mctype << " run " << Evt_run << " block " << Evt_luminosityBlock << std::endl;
-        count_of_events++;
-        if( mctype==1 && not isValidLumisection( Evt_run, Evt_luminosityBlock ) ) continue;
-		//std::cout << " --- Valid Lumi Processing Event " << std::endl;
+    getBranches( entry );
+    ////getBranches( entry, hasGenInfoFlag, doSVs );
+    //std::cout << " -- ? Valid Lumi with mctype " << mctype << " run " << Evt_run << " block " << Evt_luminosityBlock << std::endl;
+    count_of_events++;
+    if( mctype==1 && not isValidLumisection( Evt_run, Evt_luminosityBlock ) ) continue;
+    //std::cout << " --- Valid Lumi Processing Event " << std::endl;
 
-        geCnts.clear();
-        geVars.clear();
-        hemBits.clear();
-        hasHemObj = false;
+    geCnts.clear();
+    geVars.clear();
+    hemBits.clear();
+    hasHemObj = false;
 
-        if( genSigPerfectFlag ) geVars.set( "genSigPerfect", 1 ); else geVars.set( "genSigPerfect", 0 );
-        if( noSVorPhoFlag ) geVars.set( "noSVorPho", 1 ); else geVars.set( "noSVorPho", 0 );
+    if( genSigPerfectFlag ) geVars.set( "genSigPerfect", 1 ); else geVars.set( "genSigPerfect", 0 );
+    if( noSVorPhoFlag ) geVars.set( "noSVorPho", 1 ); else geVars.set( "noSVorPho", 0 );
 
-        if(DEBUG) std::cout << " -- Event Loop " << std::endl;
-        auto saveToTree = eventLoop(entry);
-        if( saveToTree ){ fOutTree->Fill(); }
+    if(DEBUG) std::cout << " -- Event Loop " << std::endl;
+    auto saveToTree = eventLoop(entry);
+    if( saveToTree ){ fOutTree->Fill(); }
 
-    }//<<>>for (Long64_t centry = 0; centry < nEntries; centry++)  end entry loop
-	if( count_of_events != nEvents ) std::cout << " ! nEvents " << nEvents << " not = count " << count_of_events << " !" << std::endl;
+  }//<<>>for (Long64_t centry = 0; centry < nEntries; centry++)  end entry loop
+  if( count_of_events != nEvents ) std::cout << " ! nEvents " << nEvents << " not = count " << count_of_events << " !" << std::endl;
 
-    // -- main end jobs
+  // -- main end jobs
 
-    if( debug) std::cout << "<<<<<<<< fillConfigTreee <<<<<<<<<<<<<< " << std::endl;
-    fillConfigTree( fConfigTree );
+  if( debug) std::cout << "<<<<<<<< fillConfigTreee <<<<<<<<<<<<<< " << std::endl;
+  fillConfigTree( fConfigTree );
 
-    endJobs();
+  endJobs();
 
-    std::cout << "<<<<<<<< Write Output Maps and Hists <<<<<<<<<<<<<< " << std::endl;
-    std::cout << "Writing to " << outFileName  << endl;
-    TFile* fOutFile = new TFile( outFileName.c_str(), "RECREATE" );
-    fOutFile->cd();
+  std::cout << "<<<<<<<< Write Output Maps and Hists <<<<<<<<<<<<<< " << std::endl;
+  std::cout << "Writing to " << outFileName  << endl;
+  TFile* fOutFile = new TFile( outFileName.c_str(), "RECREATE" );
+  fOutFile->cd();
 
-    fOutTree->Write();
-    fConfigTree->Write();
+  fOutTree->Write();
+  fConfigTree->Write();
 
-    // --- write & delete histograms
+  // --- write & delete histograms
 
-    for( int it = 0; it < n1dHists; it++ ){ if(hist1d[it]){ hist1d[it]->Write(); delete hist1d[it]; } }
-    for( int it = 0; it < n2dHists; it++ ){ if(hist2d[it]){ hist2d[it]->Write(); delete hist2d[it]; } }
-    for( int it = 0; it < n3dHists; it++ ){ if(hist3d[it]){ hist3d[it]->Write(); delete hist3d[it]; } }
+  for( int it = 0; it < n1dHists; it++ ){ if(hist1d[it]){ hist1d[it]->Write(); delete hist1d[it]; } }
+  for( int it = 0; it < n2dHists; it++ ){ if(hist2d[it]){ hist2d[it]->Write(); delete hist2d[it]; } }
+  for( int it = 0; it < n3dHists; it++ ){ if(hist3d[it]){ hist3d[it]->Write(); delete hist3d[it]; } }
 
-    if( CLSTRMAPS ){
-        nMaps = 0;
-        for( int it = 0; it < nEBEEMaps; it++ ){
-            ebeeMapP[it]->Write(); delete ebeeMapP[it];
-            ebeeMapT[it]->Write(); delete ebeeMapT[it];
-            ebeeMapR[it]->Write(); delete ebeeMapR[it];
-        }//<<>>for( int it = 0; it < nEBEEMaps; it++ )
-    }//<<>>f( clsttrMaps )
+  if( CLSTRMAPS ){
+    nMaps = 0;
+    for( int it = 0; it < nEBEEMaps; it++ ){
+      ebeeMapP[it]->Write(); delete ebeeMapP[it];
+      ebeeMapT[it]->Write(); delete ebeeMapT[it];
+      ebeeMapR[it]->Write(); delete ebeeMapR[it];
+    }//<<>>for( int it = 0; it < nEBEEMaps; it++ )
+  }//<<>>f( clsttrMaps )
 
-    // ----- closeout open sys
+  // ----- closeout open sys
 
 
-    fOutFile->Close();
+  fOutFile->Close();
 
-    delete fInTree;
-    delete fOutTree;
-    delete fConfigTree;
-    delete fOutFile;
+  delete fInTree;
+  delete fOutTree;
+  delete fConfigTree;
+  delete fOutFile;
 
-    if( debug) std::cout << "<<<<<<<< Finished Processing Main Loop <<<<<<<<<<<<<< " << std::endl;
+  if( debug) std::cout << "<<<<<<<< Finished Processing Main Loop <<<<<<<<<<<<<< " << std::endl;
 
 }//<<>>void KUCMSAodSkimmer::ProcessMainLoop()
 
 
 int KUCMSAodSkimmer::ProcessFile(string infilename, TChain*& fInTree, TChain*& fInConfigTree){
 
-    const std::string disphotreename = "tree/llpgtree";
-    const std::string configtreename = "tree/configtree";
-    if(gSystem->AccessPathName(infilename.c_str())){
-      cout << "Error: File " << infilename << " not found" << endl;
-      return -1;
-    }
+  const std::string disphotreename = "tree/llpgtree";
+  const std::string configtreename = "tree/configtree";
+  if(gSystem->AccessPathName(infilename.c_str())){
+    cout << "Error: File " << infilename << " not found" << endl;
+    return -1;
+  }
   
-    if( DEBUG ) std:: cout << "InFile: " << infilename << std::endl;
-    if( DEBUG ) std:: cout << "Key: " << dataSetKey << std::endl;
-    if( DEBUG ) std:: cout << "XSec: " << xsctn << std::endl;
-    if( DEBUG ) std:: cout << "GM: " << gmass << std::endl;
-    if( DEBUG ) std:: cout << "XM: " << xmass << std::endl;
-    if( DEBUG ) std:: cout << "MCw: " << mcwgt << std::endl;
-    if( DEBUG ) std:: cout << "MCt: " << mctype << std::endl;
-    if( DEBUG ) std:: cout << "tcTag: " << tctag << std::endl;
+  if( DEBUG ) std:: cout << "InFile: " << infilename << std::endl;
+  if( DEBUG ) std:: cout << "Key: " << dataSetKey << std::endl;
+  if( DEBUG ) std:: cout << "XSec: " << xsctn << std::endl;
+  if( DEBUG ) std:: cout << "GM: " << gmass << std::endl;
+  if( DEBUG ) std:: cout << "XM: " << xmass << std::endl;
+  if( DEBUG ) std:: cout << "MCw: " << mcwgt << std::endl;
+  if( DEBUG ) std:: cout << "MCt: " << mctype << std::endl;
+  if( DEBUG ) std:: cout << "tcTag: " << tctag << std::endl;
 
-    std::cout << "Processing Events for : " << infilename << std::endl;
-    fInTree = new TChain(disphotreename.c_str());
-    fInConfigTree = new TChain(configtreename.c_str());
-    fInTree->Add(infilename.c_str());
-    fInConfigTree->Add(infilename.c_str());
-    if(DEBUG) std::cout << "--  adding file: " << infilename << std::endl; //else std::cout << ".";
-    return 0;
+  std::cout << "Processing Events for : " << infilename << std::endl;
+  fInTree = new TChain(disphotreename.c_str());
+  fInConfigTree = new TChain(configtreename.c_str());
+  fInTree->Add(infilename.c_str());
+  fInConfigTree->Add(infilename.c_str());
+  if(DEBUG) std::cout << "--  adding file: " << infilename << std::endl; //else std::cout << ".";
+  return 0;
 
 
 }
@@ -597,300 +605,300 @@ int KUCMSAodSkimmer::ProcessFile(string infilename, TChain*& fInTree, TChain*& f
 
 int KUCMSAodSkimmer::ProcessFilelist(string eosdir, string infilename, TChain*& fInTree, TChain*& fInConfigTree){
 
-    const std::string disphotreename = "tree/llpgtree";
-    const std::string configtreename = "tree/configtree";
+  const std::string disphotreename = "tree/llpgtree";
+  const std::string configtreename = "tree/configtree";
 
 
-    if(gSystem->AccessPathName(infilename.c_str())){
-      cout << "Error: File " << infilename << " not found" << endl;
-      return -1;
-    }
+  if(gSystem->AccessPathName(infilename.c_str())){
+    cout << "Error: File " << infilename << " not found" << endl;
+    return -1;
+  }
   
-    if( DEBUG ) std:: cout << "InFile: " << infilename << std::endl;
-    if( DEBUG ) std:: cout << "Key: " << dataSetKey << std::endl;
-    if( DEBUG ) std:: cout << "XSec: " << xsctn << std::endl;
-    if( DEBUG ) std:: cout << "GM: " << gmass << std::endl;
-    if( DEBUG ) std:: cout << "XM: " << xmass << std::endl;
-    if( DEBUG ) std:: cout << "MCw: " << mcwgt << std::endl;
-    if( DEBUG ) std:: cout << "MCt: " << mctype << std::endl;
-    if( DEBUG ) std:: cout << "tcTag: " << tctag << std::endl;
+  if( DEBUG ) std:: cout << "InFile: " << infilename << std::endl;
+  if( DEBUG ) std:: cout << "Key: " << dataSetKey << std::endl;
+  if( DEBUG ) std:: cout << "XSec: " << xsctn << std::endl;
+  if( DEBUG ) std:: cout << "GM: " << gmass << std::endl;
+  if( DEBUG ) std:: cout << "XM: " << xmass << std::endl;
+  if( DEBUG ) std:: cout << "MCw: " << mcwgt << std::endl;
+  if( DEBUG ) std:: cout << "MCt: " << mctype << std::endl;
+  if( DEBUG ) std:: cout << "tcTag: " << tctag << std::endl;
 
-    std::cout << "Processing Events for : " << infilename << std::endl;
-    fInTree = new TChain(disphotreename.c_str());
-    fInConfigTree = new TChain(configtreename.c_str());
-    std::cout << "Adding files to TChain." << std::endl;
-    std::cout << " - With : " << infilename << " >> " << fInTree << std::endl;
-    std::string str;
-    if( not DEBUG ) std::cout << "--  adding files";
-    int nfiles = 0;	
-    if( dataSetKey !=  "single" ){
-      std::ifstream infile(infilename);
-      while( std::getline( infile, str ) ){
-	      if(str.find("#") != string::npos) continue;
-	nfiles++;
-	//if( skipCnt != 0 && ( nfiles%skipCnt != 0 ) ) continue;
-    string sample_str = str.substr(0,str.find("/"));
-	string prefix = str.substr(str.find("/")+1);
-	string match = "kucmsntuple_";
-	string proc = prefix.substr(match.size());
-        proc = proc.substr(0,proc.find("_"));	
-	string inpath = prefix.substr(0,prefix.find(sample_str,prefix.find(sample_str)+sample_str.size())-1);
-	prefix = prefix.substr(0,prefix.rfind(proc));
-	prefix.replace(prefix.rfind("_"),1,"/");
-	inpath = prefix+str;
-	auto tfilename = eosdir + inpath;
-	fInTree->Add(tfilename.c_str());
-	fInConfigTree->Add(tfilename.c_str());
-	if(DEBUG) std::cout << "--  adding file: " << tfilename << std::endl; //else std::cout << ".";
-	//if(DEBUG) break;
-      }//<<>>while (std::getline(infile,str))
-    } else { // single infile and not a list of infile
-    	string sample_str = str.substr(0,str.find("/"));
-	string prefix = str.substr(str.find("/")+1);
-	string inpath = prefix.substr(0,prefix.find(sample_str,prefix.find(sample_str)+sample_str.size())-1)+"/";
-      auto tfilename = eosdir + inpath + infilename;
+  std::cout << "Processing Events for : " << infilename << std::endl;
+  fInTree = new TChain(disphotreename.c_str());
+  fInConfigTree = new TChain(configtreename.c_str());
+  std::cout << "Adding files to TChain." << std::endl;
+  std::cout << " - With : " << infilename << " >> " << fInTree << std::endl;
+  std::string str;
+  if( not DEBUG ) std::cout << "--  adding files";
+  int nfiles = 0;	
+  if( dataSetKey !=  "single" ){
+    std::ifstream infile(infilename);
+    while( std::getline( infile, str ) ){
+      if(str.find("#") != string::npos) continue;
+      nfiles++;
+      //if( skipCnt != 0 && ( nfiles%skipCnt != 0 ) ) continue;
+      string sample_str = str.substr(0,str.find("/"));
+      string prefix = str.substr(str.find("/")+1);
+      string match = "kucmsntuple_";
+      string proc = prefix.substr(match.size());
+      proc = proc.substr(0,proc.find("_"));	
+      string inpath = prefix.substr(0,prefix.find(sample_str,prefix.find(sample_str)+sample_str.size())-1);
+      prefix = prefix.substr(0,prefix.rfind(proc));
+      prefix.replace(prefix.rfind("_"),1,"/");
+      inpath = prefix+str;
+      auto tfilename = eosdir + inpath;
       fInTree->Add(tfilename.c_str());
       fInConfigTree->Add(tfilename.c_str());
-      nfiles++;			
-    }//<<>>if( key !=  "test" )
-    if( not DEBUG ) std::cout << std::endl;
-    if( nfiles == 0 ){ std::cout << " !!!!! no input files !!!!! " << std::endl; return -1; }
-    return 0;    
+      if(DEBUG) std::cout << "--  adding file: " << tfilename << std::endl; //else std::cout << ".";
+      //if(DEBUG) break;
+    }//<<>>while (std::getline(infile,str))
+  } else { // single infile and not a list of infile
+    string sample_str = str.substr(0,str.find("/"));
+    string prefix = str.substr(str.find("/")+1);
+    string inpath = prefix.substr(0,prefix.find(sample_str,prefix.find(sample_str)+sample_str.size())-1)+"/";
+    auto tfilename = eosdir + inpath + infilename;
+    fInTree->Add(tfilename.c_str());
+    fInConfigTree->Add(tfilename.c_str());
+    nfiles++;			
+  }//<<>>if( key !=  "test" )
+  if( not DEBUG ) std::cout << std::endl;
+  if( nfiles == 0 ){ std::cout << " !!!!! no input files !!!!! " << std::endl; return -1; }
+  return 0;    
 }//<<>>int KUCMSAodSkimmer::ProcessFilelist(string eosdir, string infilename, TChain*& fInTree, TChain*& fInConfigTree)
 
 int KUCMSAodSkimmer::ProcessFilelistOfLists(string eosdir, vector<string> processed_strings, TChain*& fInTree, TChain*& fInConfigTree){
 
-    const std::string disphotreename = "tree/llpgtree";
-    const std::string configtreename = "tree/configtree";
+  const std::string disphotreename = "tree/llpgtree";
+  const std::string configtreename = "tree/configtree";
 
-    auto inpath = processed_strings[0];
-    cout << "inpath " << inpath << endl;
-    auto infile_str = processed_strings[1];
-    dataSetKey = processed_strings[2];
-    xsctn = std::stof( processed_strings[3] );
-    gmass = std::stof( processed_strings[4] );
-    xmass = std::stof( processed_strings[5] );
-    mcwgt = std::stof( processed_strings[6] );
-    mctype = std::stoi( processed_strings[7] );
-    tctag = processed_strings[8];
-    if( DEBUG ) std:: cout << "InFile: " << infile_str << std::endl;
-    if( DEBUG ) std:: cout << "XSec: " << xsctn << std::endl;
-    if( DEBUG ) std:: cout << "GM: " << gmass << std::endl;
-    if( DEBUG ) std:: cout << "XM: " << xmass << std::endl;
-    if( DEBUG ) std:: cout << "MCw: " << mcwgt << std::endl;
-    if( DEBUG ) std:: cout << "MCt: " << mctype << std::endl;
-    if( DEBUG ) std:: cout << "tcTag: " << tctag << std::endl;
+  auto inpath = processed_strings[0];
+  cout << "inpath " << inpath << endl;
+  auto infile_str = processed_strings[1];
+  dataSetKey = processed_strings[2];
+  xsctn = std::stof( processed_strings[3] );
+  gmass = std::stof( processed_strings[4] );
+  xmass = std::stof( processed_strings[5] );
+  mcwgt = std::stof( processed_strings[6] );
+  mctype = std::stoi( processed_strings[7] );
+  tctag = processed_strings[8];
+  if( DEBUG ) std:: cout << "InFile: " << infile_str << std::endl;
+  if( DEBUG ) std:: cout << "XSec: " << xsctn << std::endl;
+  if( DEBUG ) std:: cout << "GM: " << gmass << std::endl;
+  if( DEBUG ) std:: cout << "XM: " << xmass << std::endl;
+  if( DEBUG ) std:: cout << "MCw: " << mcwgt << std::endl;
+  if( DEBUG ) std:: cout << "MCt: " << mctype << std::endl;
+  if( DEBUG ) std:: cout << "tcTag: " << tctag << std::endl;
 		
-    if(gSystem->AccessPathName(infile_str.c_str())){
-      cout << "Error: File " << infile_str << " not found" << endl;
-      return -1;
-    }
+  if(gSystem->AccessPathName(infile_str.c_str())){
+    cout << "Error: File " << infile_str << " not found" << endl;
+    return -1;
+  }
   
-    std::cout << "Processing Events for : " << infile_str << std::endl;
-    fInTree = new TChain(disphotreename.c_str());
-    fInConfigTree = new TChain(configtreename.c_str());
-    std::cout << "Adding files to TChain." << std::endl;
-    std::cout << " - With : " << infile_str << " >> " << fInTree << std::endl;
-    std::string str;
-    if( not DEBUG ) std::cout << "--  adding files";
-    int nfiles = 0;	
-    if( dataSetKey !=  "single" ){
-      std::ifstream infile(infile_str);
-      while( std::getline( infile, str ) ){
-	      if(str.find("#") != string::npos) continue;
-	nfiles++;
-	//if( skipCnt != 0 && ( nfiles%skipCnt != 0 ) ) continue;
-	auto tfilename = eosdir + inpath + str;
-	fInTree->Add(tfilename.c_str());
-	fInConfigTree->Add(tfilename.c_str());
-	if(DEBUG) std::cout << "--  adding file: " << tfilename << std::endl; //else std::cout << ".";
-	//if(DEBUG) break;
-      }//<<>>while (std::getline(infile,str))
-    } else { // single infile and not a list of infile
-      auto tfilename = eosdir + inpath + infile_str;
+  std::cout << "Processing Events for : " << infile_str << std::endl;
+  fInTree = new TChain(disphotreename.c_str());
+  fInConfigTree = new TChain(configtreename.c_str());
+  std::cout << "Adding files to TChain." << std::endl;
+  std::cout << " - With : " << infile_str << " >> " << fInTree << std::endl;
+  std::string str;
+  if( not DEBUG ) std::cout << "--  adding files";
+  int nfiles = 0;	
+  if( dataSetKey !=  "single" ){
+    std::ifstream infile(infile_str);
+    while( std::getline( infile, str ) ){
+      if(str.find("#") != string::npos) continue;
+      nfiles++;
+      //if( skipCnt != 0 && ( nfiles%skipCnt != 0 ) ) continue;
+      auto tfilename = eosdir + inpath + str;
       fInTree->Add(tfilename.c_str());
       fInConfigTree->Add(tfilename.c_str());
-      nfiles++;			
-    }//<<>>if( key !=  "test" )
-    if( not DEBUG ) std::cout << std::endl;
-    if( nfiles == 0 ){ std::cout << " !!!!! no input files !!!!! " << std::endl; return -1; }
-    return 0;    
+      if(DEBUG) std::cout << "--  adding file: " << tfilename << std::endl; //else std::cout << ".";
+      //if(DEBUG) break;
+    }//<<>>while (std::getline(infile,str))
+  } else { // single infile and not a list of infile
+    auto tfilename = eosdir + inpath + infile_str;
+    fInTree->Add(tfilename.c_str());
+    fInConfigTree->Add(tfilename.c_str());
+    nfiles++;			
+  }//<<>>if( key !=  "test" )
+  if( not DEBUG ) std::cout << std::endl;
+  if( nfiles == 0 ){ std::cout << " !!!!! no input files !!!!! " << std::endl; return -1; }
+  return 0;    
 }//<<>>int KUCMSAodSkimmer::ProcessFilelistOfLists(string eosdir, vector<string> processed_strings, TChain*& fInTree, TChain*& fInConfigTree)
 
 void KUCMSAodSkimmer::ProcessConfigTree( TChain* fInConfigTree ){
 
-    int nTotEvts;
-    int nFltrdEvts;
-    float sumEvtWgt;
-    float sumFltrdEvtWgt;
-    int nMetFltrdEvts;
-    int nPhoFltrdEvts;
+  int nTotEvts;
+  int nFltrdEvts;
+  float sumEvtWgt;
+  float sumFltrdEvtWgt;
+  int nMetFltrdEvts;
+  int nPhoFltrdEvts;
    
-	TBranch *b_nTotEvts;
-    TBranch *b_nFltrdEvts;
-    TBranch *b_sumEvtWgt;
-    TBranch *b_sumFltrdEvtWgt;
-    TBranch *b_nMetFltrdEvts;
-    TBranch *b_nPhoFltrdEvts;
+  TBranch *b_nTotEvts;
+  TBranch *b_nFltrdEvts;
+  TBranch *b_sumEvtWgt;
+  TBranch *b_sumFltrdEvtWgt;
+  TBranch *b_nMetFltrdEvts;
+  TBranch *b_nPhoFltrdEvts;
 
-    fInConfigTree->SetBranchAddress("nTotEvts", &nTotEvts, &b_nTotEvts);
-    fInConfigTree->SetBranchAddress("nFltrdEvts", &nFltrdEvts, &b_nFltrdEvts);
-    fInConfigTree->SetBranchAddress("sumEvtWgt", &sumEvtWgt, &b_sumEvtWgt);
-    fInConfigTree->SetBranchAddress("sumFltrdEvtWgt", &sumFltrdEvtWgt, &b_sumFltrdEvtWgt);
-    fInConfigTree->SetBranchAddress("nMetFltrdEvts", &nMetFltrdEvts, &b_nMetFltrdEvts);
-    fInConfigTree->SetBranchAddress("nPhoFltrdEvts", &nPhoFltrdEvts, &b_nPhoFltrdEvts);
+  fInConfigTree->SetBranchAddress("nTotEvts", &nTotEvts, &b_nTotEvts);
+  fInConfigTree->SetBranchAddress("nFltrdEvts", &nFltrdEvts, &b_nFltrdEvts);
+  fInConfigTree->SetBranchAddress("sumEvtWgt", &sumEvtWgt, &b_sumEvtWgt);
+  fInConfigTree->SetBranchAddress("sumFltrdEvtWgt", &sumFltrdEvtWgt, &b_sumFltrdEvtWgt);
+  fInConfigTree->SetBranchAddress("nMetFltrdEvts", &nMetFltrdEvts, &b_nMetFltrdEvts);
+  fInConfigTree->SetBranchAddress("nPhoFltrdEvts", &nPhoFltrdEvts, &b_nPhoFltrdEvts);
 
-    auto nConfigEntries = fInConfigTree->GetEntries();
-    std::cout << "Proccessing " << nConfigEntries << " config entries." << std::endl;
-    configCnts.clear();
-    configWgts.clear();
+  auto nConfigEntries = fInConfigTree->GetEntries();
+  std::cout << "Proccessing " << nConfigEntries << " config entries." << std::endl;
+  configCnts.clear();
+  configWgts.clear();
 
-	if( _evti == 0 ){
+  if( _evti == 0 ){
 
-      for (Long64_t centry = 0; centry < nConfigEntries; centry++){
+    for (Long64_t centry = 0; centry < nConfigEntries; centry++){
 
-        auto entry = fInConfigTree->LoadTree(centry);
+      auto entry = fInConfigTree->LoadTree(centry);
 
-        b_nTotEvts->GetEntry(entry);   //!
-        b_nFltrdEvts->GetEntry(entry);   //!
-        b_sumEvtWgt->GetEntry(entry);   //!  
-        b_sumFltrdEvtWgt->GetEntry(entry);   //!
-        b_nMetFltrdEvts->GetEntry(entry);   //!
-        b_nPhoFltrdEvts->GetEntry(entry);   //!
+      b_nTotEvts->GetEntry(entry);   //!
+      b_nFltrdEvts->GetEntry(entry);   //!
+      b_sumEvtWgt->GetEntry(entry);   //!  
+      b_sumFltrdEvtWgt->GetEntry(entry);   //!
+      b_nMetFltrdEvts->GetEntry(entry);   //!
+      b_nPhoFltrdEvts->GetEntry(entry);   //!
 
-        cutflow["nTotEvts"] += nTotEvts;
-        cutflow["nFltrdEvts"] += nFltrdEvts;
+      cutflow["nTotEvts"] += nTotEvts;
+      cutflow["nFltrdEvts"] += nFltrdEvts;
 
-        configCnts["nTotEvts"] += nTotEvts;
-        configCnts["nFltrdEvts"] += nFltrdEvts;
-        configWgts["sumEvtWgt"] += useEvtGenWgtFlag ? sumEvtWgt : nTotEvts;
-        configWgts["sumFltrdEvtWgt"] += useEvtGenWgtFlag ? sumFltrdEvtWgt : nFltrdEvts;
-        configCnts["nMetFltrdEvts"] += nMetFltrdEvts;
-        configCnts["nPhoFltrdEvts"] += nPhoFltrdEvts;
+      configCnts["nTotEvts"] += nTotEvts;
+      configCnts["nFltrdEvts"] += nFltrdEvts;
+      configWgts["sumEvtWgt"] += useEvtGenWgtFlag ? sumEvtWgt : nTotEvts;
+      configWgts["sumFltrdEvtWgt"] += useEvtGenWgtFlag ? sumFltrdEvtWgt : nFltrdEvts;
+      configCnts["nMetFltrdEvts"] += nMetFltrdEvts;
+      configCnts["nPhoFltrdEvts"] += nPhoFltrdEvts;
 
 
-      }//<<>>for (Long64_t centry = 0; centry < nConfigEntries; centry++)
+    }//<<>>for (Long64_t centry = 0; centry < nConfigEntries; centry++)
 
-	} else {
+  } else {
 
-      cutflow["nTotEvts"] = 0;
-      cutflow["nFltrdEvts"] = 0;
+    cutflow["nTotEvts"] = 0;
+    cutflow["nFltrdEvts"] = 0;
 
-      configCnts["nTotEvts"] = 0;
-      configCnts["nFltrdEvts"] = 0;
-      configWgts["sumEvtWgt"] = 0;
-      configWgts["sumFltrdEvtWgt"] = 0;
-      configCnts["nMetFltrdEvts"] = 0;
-      configCnts["nPhoFltrdEvts"] = 0;
+    configCnts["nTotEvts"] = 0;
+    configCnts["nFltrdEvts"] = 0;
+    configWgts["sumEvtWgt"] = 0;
+    configWgts["sumFltrdEvtWgt"] = 0;
+    configCnts["nMetFltrdEvts"] = 0;
+    configCnts["nPhoFltrdEvts"] = 0;
 	
-	}//<<>if( _evti == 0 )
+  }//<<>if( _evti == 0 )
 	
 
-    std::cout << "configCnts ( ";
-    for( auto item : configCnts ){
-      std::cout << item.first <<  " " << item.second << " ";
-    }//<<>>for( auto item : configInfo )
-    std::cout << ")" << std::endl;
+  std::cout << "configCnts ( ";
+  for( auto item : configCnts ){
+    std::cout << item.first <<  " " << item.second << " ";
+  }//<<>>for( auto item : configInfo )
+  std::cout << ")" << std::endl;
 
-    std::cout << "configWgts ( ";
-    for( auto item : configWgts ){
-      std::cout << item.first <<  " " << item.second << " ";
-    }//<<>>for( auto item : configInfo )
-    std::cout << ")" << std::endl;
+  std::cout << "configWgts ( ";
+  for( auto item : configWgts ){
+    std::cout << item.first <<  " " << item.second << " ";
+  }//<<>>for( auto item : configInfo )
+  std::cout << ")" << std::endl;
 
 }//<<>>void KUCMSAodSkimmer::ProcessConfigTree(TChain* fInConfigTree)
 
 void KUCMSAodSkimmer::ProcessConfigFile(){
 
-	std::cout << " -- reading config/EventCount.txt " << std::endl;
-    std::ifstream infile("config/EventCount.txt");
-    if( !infile ){
-        std::cerr << "  --  Could not open config/EventCount.txt !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! " << std::endl;
-        return;
-    }//<<>>if( !infile )
+  std::cout << " -- reading config/EventCount.txt " << std::endl;
+  std::ifstream infile("config/EventCount.txt");
+  if( !infile ){
+    std::cerr << "  --  Could not open config/EventCount.txt !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! " << std::endl;
+    return;
+  }//<<>>if( !infile )
 
-	configData.clear();
+  configData.clear();
 
-    std::string key;
-    float total, sum;
-    while( infile >> key >> total >> sum ){ configData[key] = {total, sum}; }
+  std::string key;
+  float total, sum;
+  while( infile >> key >> total >> sum ){ configData[key] = {total, sum}; }
 
-    // Print everything
-    //for( const auto& kv : configData ){
-    //    std::cout << " -- ConfigFile : " << kv.first << " : total=" << kv.second.first << ", sum=" << kv.second.second << std::endl;
-    //}//<<>>for (const auto& kv : data)//<<>>if( DEBUG )
+  // Print everything
+  //for( const auto& kv : configData ){
+  //    std::cout << " -- ConfigFile : " << kv.first << " : total=" << kv.second.first << ", sum=" << kv.second.second << std::endl;
+  //}//<<>>for (const auto& kv : data)//<<>>if( DEBUG )
 
 }//<<>>void KUCMSAodSkimmer::ProcessConfigTreeAndFile(TChain* fInConfigTree)
 
 void KUCMSAodSkimmer::kucmsAodSkimmer( std::string infile, std::string outfilename){
 
-    std::cout << "Processing Input Lists for : " << infile << std::endl;
+  std::cout << "Processing Input Lists for : " << infile << std::endl;
 
-    //add path to input file
-    //TTree* fOutTree = new TTree("kuSkimTree","output root file for kUCMSSkimmer");
-    //TTree* fConfigTree = new TTree("kuSkimConfigTree","config root file for kUCMSSkimmer");
-    TChain* fInTree = nullptr;
-    TChain* fInConfigTree = nullptr;
-    int ret = ProcessFile( infile, fInTree, fInConfigTree);
-    if(ret < 0) return;
+  //add path to input file
+  //TTree* fOutTree = new TTree("kuSkimTree","output root file for kUCMSSkimmer");
+  //TTree* fConfigTree = new TTree("kuSkimConfigTree","config root file for kUCMSSkimmer");
+  TChain* fInTree = nullptr;
+  TChain* fInConfigTree = nullptr;
+  int ret = ProcessFile( infile, fInTree, fInConfigTree);
+  if(ret < 0) return;
 
-	SetOutFileName(outfilename);
-    ProcessMainLoop(fInTree, fInConfigTree);
-    std::cout << "Finished processing events for : " << infile << std::endl;
-  	std::cout << "KUCMSAodSkimmer : Thats all Folks!!" << std::endl;
+  SetOutFileName(outfilename);
+  ProcessMainLoop(fInTree, fInConfigTree);
+  std::cout << "Finished processing events for : " << infile << std::endl;
+  std::cout << "KUCMSAodSkimmer : Thats all Folks!!" << std::endl;
 
 }//<<>>void KUCMSAodSkimmer::kucmsAodSkimmer( std::string eosdir, std::string infilelist, std::string outfilename)
 
 void KUCMSAodSkimmer::kucmsAodSkimmer_Filelist( std::string eosdir, std::string infilelist, std::string outfilename){
 
-    std::cout << "Processing Input Lists for : " << infilelist << std::endl;
+  std::cout << "Processing Input Lists for : " << infilelist << std::endl;
 
-    //add path to input file
-    //TTree* fOutTree = new TTree("kuSkimTree","output root file for kUCMSSkimmer");
-    //TTree* fConfigTree = new TTree("kuSkimConfigTree","config root file for kUCMSSkimmer");
-    TChain* fInTree = nullptr;
-    TChain* fInConfigTree = nullptr;
-    int ret = ProcessFilelist(eosdir, infilelist, fInTree, fInConfigTree);
-    if(ret < 0) return;
+  //add path to input file
+  //TTree* fOutTree = new TTree("kuSkimTree","output root file for kUCMSSkimmer");
+  //TTree* fConfigTree = new TTree("kuSkimConfigTree","config root file for kUCMSSkimmer");
+  TChain* fInTree = nullptr;
+  TChain* fInConfigTree = nullptr;
+  int ret = ProcessFilelist(eosdir, infilelist, fInTree, fInConfigTree);
+  if(ret < 0) return;
 
-	SetOutFileName(outfilename);
-	cout << "is in tree null " << (fInTree == nullptr) << endl; 
-    ProcessMainLoop(fInTree, fInConfigTree);
-    std::cout << "Finished processing events for : " << infilelist << std::endl;
-  	std::cout << "KUCMSAodSkimmer : Thats all Folks!!" << std::endl;
+  SetOutFileName(outfilename);
+  cout << "is in tree null " << (fInTree == nullptr) << endl; 
+  ProcessMainLoop(fInTree, fInConfigTree);
+  std::cout << "Finished processing events for : " << infilelist << std::endl;
+  std::cout << "KUCMSAodSkimmer : Thats all Folks!!" << std::endl;
 
 }//<<>>void KUCMSAodSkimmer::kucmsAodSkimmer( std::string eosdir, std::string infilelist, std::string outfilename)
 
 
 void KUCMSAodSkimmer::kucmsAodSkimmer_listsOfLists( std::string eosdir, std::string infilelist, std::string outfilename){
-	//std::string inpath, infiles, key, 
-	std::string masterstr; 
-	//int mct;
-	//float crossSection, gmsblam, gmsbct, mcw;
-	std::cout << "Processing Input Lists for : " << infilelist << std::endl;
-	std::ifstream masterInfile(infilelist);
+  //std::string inpath, infiles, key, 
+  std::string masterstr; 
+  //int mct;
+  //float crossSection, gmsblam, gmsbct, mcw;
+  std::cout << "Processing Input Lists for : " << infilelist << std::endl;
+  std::ifstream masterInfile(infilelist);
 	
-	string listdir = infilelist.substr(0,infilelist.find("/")+1); 
-	while( std::getline( masterInfile, masterstr ) ){
+  string listdir = infilelist.substr(0,infilelist.find("/")+1); 
+  while( std::getline( masterInfile, masterstr ) ){
 	
-	  if( DEBUG ) std:: cout << masterstr << std::endl;
-	  if( masterstr[0] == '#' ) continue;
-	  if( masterstr == " " ) continue;
-	  auto instrs = splitString( masterstr, " " );
-	  if( DEBUG ) std:: cout << instrs.size() << std::endl;
-	  if( instrs.size() < 9 ) continue;
-	  //add path to input file
-	  instrs[1] = listdir+instrs[1];
-	  TTree* fOutTree = new TTree("kuSkimTree","output root file for kUCMSSkimmer");
-	  TTree* fConfigTree = new TTree("kuSkimConfigTree","config root file for kUCMSSkimmer");
-	  TChain* fInTree = nullptr;
-	  TChain* fInConfigTree = nullptr;
-	  int ret = ProcessFilelistOfLists(eosdir, instrs, fInTree, fInConfigTree);
-	  if(ret < 0) return;
-	  SetOutFileName(outfilename);
-	  ProcessMainLoop(fInTree, fInConfigTree);	
-    	std::cout << "Finished processing events for : " << instrs[1] << std::endl;
-	}//<<>>while (std::getline(infile,str))
+    if( DEBUG ) std:: cout << masterstr << std::endl;
+    if( masterstr[0] == '#' ) continue;
+    if( masterstr == " " ) continue;
+    auto instrs = splitString( masterstr, " " );
+    if( DEBUG ) std:: cout << instrs.size() << std::endl;
+    if( instrs.size() < 9 ) continue;
+    //add path to input file
+    instrs[1] = listdir+instrs[1];
+    TTree* fOutTree = new TTree("kuSkimTree","output root file for kUCMSSkimmer");
+    TTree* fConfigTree = new TTree("kuSkimConfigTree","config root file for kUCMSSkimmer");
+    TChain* fInTree = nullptr;
+    TChain* fInConfigTree = nullptr;
+    int ret = ProcessFilelistOfLists(eosdir, instrs, fInTree, fInConfigTree);
+    if(ret < 0) return;
+    SetOutFileName(outfilename);
+    ProcessMainLoop(fInTree, fInConfigTree);	
+    std::cout << "Finished processing events for : " << instrs[1] << std::endl;
+  }//<<>>while (std::getline(infile,str))
 
   std::cout << "KUCMSAodSkimmer : Thats all Folks!!" << std::endl;
 
@@ -912,8 +920,8 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
   std::cout << "Processing Input Lists for : " << listdir+infilelist << std::endl;
   std::ifstream masterInfile(listdir+infilelist);
   if( !masterInfile.is_open() ){
-	std::cerr << "ERROR: could not open input file list: " << listdir+infilelist << std::endl;
-	return;
+    std::cerr << "ERROR: could not open input file list: " << listdir+infilelist << std::endl;
+    return;
   }//<<>>if( !infilelist.is_open() ) 
   //while( masterInfile >> inFilePath >> inFileName >> key >> crossSection >> gmsblam >> gmsbct >> mcwgt >> mctype ){
   while( std::getline( masterInfile, masterstr ) ){
@@ -968,10 +976,10 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
 
     if( not DEBUG ) std::cout << "--  adding files";
     int nfiles = 0;
-	int skipCnt = localSkip;
+    int skipCnt = localSkip;
     if( skipCnt != 0 ) std::cout << "-- !! Skipping every " << skipCnt << std::endl;
 
-	// -------------  new input -----------------------
+    // -------------  new input -----------------------
 
     //int fileskipcnt = 0;
     int nAdded = 0;
@@ -987,42 +995,42 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
     //while (std::getline(infile,instr)){
     for (const auto& tfilename : files) {
 
-        //if( instr.empty() || instr[0] == '#' ) continue;
-        nfiles++;
-    	if( skipCnt != 0 && ( nfiles%skipCnt != 0 ) ) continue;
-        //fileskipcnt++;
-        //if( fileskipcnt%10 != 0 ) continue;
-        //auto tfilename = eosDir + inDir + instr;
+      //if( instr.empty() || instr[0] == '#' ) continue;
+      nfiles++;
+      if( skipCnt != 0 && ( nfiles%skipCnt != 0 ) ) continue;
+      //fileskipcnt++;
+      //if( fileskipcnt%10 != 0 ) continue;
+      //auto tfilename = eosDir + inDir + instr;
 
-        TFile* testFile = TFile::Open(tfilename.c_str(), "READ");
+      TFile* testFile = TFile::Open(tfilename.c_str(), "READ");
 
-        if( !testFile || testFile->IsZombie() || !testFile->IsOpen() ){
-            std::cerr << "\nERROR: bad ROOT file, skipping: " << tfilename << std::endl;
-            if( testFile ) testFile->Close();
-            nBadFiles++;
-            std::cout << "Z";
-            continue;
-        }//<<>>if( !testFile || testFile->IsZombie() || !testFile->IsOpen() )
+      if( !testFile || testFile->IsZombie() || !testFile->IsOpen() ){
+	std::cerr << "\nERROR: bad ROOT file, skipping: " << tfilename << std::endl;
+	if( testFile ) testFile->Close();
+	nBadFiles++;
+	std::cout << "Z";
+	continue;
+      }//<<>>if( !testFile || testFile->IsZombie() || !testFile->IsOpen() )
 
-        TTree* testTree = nullptr;
-        testFile->GetObject(disphoTreeName.c_str(), testTree);
+      TTree* testTree = nullptr;
+      testFile->GetObject(disphoTreeName.c_str(), testTree);
 
-        if( !testTree ){
-            std::cerr << "\nERROR: missing tree " << disphoTreeName << ", skipping: " << tfilename << std::endl;
-            testFile->Close();
-            nBadFiles++;
-            std::cout << "T";
-            continue;
-        }//<<>>if( !testTree )
+      if( !testTree ){
+	std::cerr << "\nERROR: missing tree " << disphoTreeName << ", skipping: " << tfilename << std::endl;
+	testFile->Close();
+	nBadFiles++;
+	std::cout << "T";
+	continue;
+      }//<<>>if( !testTree )
 
-        testFile->Close();
-        //std::cout << "opening tfile : " << tfilename << std::endl;
-        std::cout << "-";
-        int result = fInTree->Add(tfilename.c_str());
-        int cfresult = fInConfigTree->Add(tfilename.c_str());
+      testFile->Close();
+      //std::cout << "opening tfile : " << tfilename << std::endl;
+      std::cout << "-";
+      int result = fInTree->Add(tfilename.c_str());
+      int cfresult = fInConfigTree->Add(tfilename.c_str());
 
-        if( result > 0 && cfresult > 0 ){ std::cout << "-"; nAdded++; }
-        else std::cout << "0";
+      if( result > 0 && cfresult > 0 ){ std::cout << "-"; nAdded++; }
+      else std::cout << "0";
 
 
     }//<<>>while (std::getline(infile,str))
@@ -1031,37 +1039,37 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
 
     // -------------  new input -----------------------
 
-/*
-    if( dataSetKey !=  "Single" ){
-        std::ifstream infile(listDirPath+inFileName);
-        while( std::getline( infile, str ) ){
-            if(str.find("#") != string::npos) continue;
-            nfiles++;
-            if( skipCnt != 0 && ( nfiles%skipCnt != 0 ) ) continue;
-            auto tfilename = eosDirPath + inFilePath + str;
-            fInTree->Add(tfilename.c_str());
-            fInConfigTree->Add(tfilename.c_str());
-            if(DEBUG) std::cout << "--  adding file: " << tfilename << std::endl; else std::cout << ".";
-        }//<<>>while (std::getline(infile,str))
-    } else { // single infile and not a list of inFileName
-        auto tfilename = eosDirPath + inFilePath + inFileName;
-        fInTree->Add(tfilename.c_str());
-        fInConfigTree->Add(tfilename.c_str());
-        nfiles++;
-    }//<<>>if( key !=  "test" )
-*/
+    /*
+      if( dataSetKey !=  "Single" ){
+      std::ifstream infile(listDirPath+inFileName);
+      while( std::getline( infile, str ) ){
+      if(str.find("#") != string::npos) continue;
+      nfiles++;
+      if( skipCnt != 0 && ( nfiles%skipCnt != 0 ) ) continue;
+      auto tfilename = eosDirPath + inFilePath + str;
+      fInTree->Add(tfilename.c_str());
+      fInConfigTree->Add(tfilename.c_str());
+      if(DEBUG) std::cout << "--  adding file: " << tfilename << std::endl; else std::cout << ".";
+      }//<<>>while (std::getline(infile,str))
+      } else { // single infile and not a list of inFileName
+      auto tfilename = eosDirPath + inFilePath + inFileName;
+      fInTree->Add(tfilename.c_str());
+      fInConfigTree->Add(tfilename.c_str());
+      nfiles++;
+      }//<<>>if( key !=  "test" )
+    */
 
     if( not DEBUG ) std::cout << std::endl;
     if( nfiles == 0 ){ std::cout << " !!!!! no input files !!!!! " << std::endl; return; }
 
     // ------ Do Main Loop
-	_evti = -1; _evti = -1;
+    _evti = -1; _evti = -1;
     auto ext = splitString( inFileName, "." );
     std::string extOutFileName( ext[0] + outfilename );
-	SetOutFileName( extOutFileName );
+    SetOutFileName( extOutFileName );
     ProcessMainLoop( fInTree, fInConfigTree );
 
-  // ------- while loop -----------------------------------------------------
+    // ------- while loop -----------------------------------------------------
   }//<<>>while (std::getline(infile,str))
 
   std::cout << "KUCMSAodSkimmer : Thats all Folks!!" << std::endl;
@@ -1070,58 +1078,160 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
 
 //------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------
-// event loop and startup jobs 
+// event loop and startup jobs
 //------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------
+
+void KUCMSAodSkimmer::loadBranchMaskFile(){
+
+  if( !useBranchMask || branchMaskFile.empty() ) return;
+  branchMaskPatterns.clear();
+
+  std::ifstream infile(branchMaskFile);
+  if( !infile.is_open() ){
+    std::cout << " -- Branch mask requested but file could not be opened: " << branchMaskFile << std::endl;
+    useBranchMask = false;
+    return;
+  }
+
+  std::string line;
+  while( std::getline(infile, line) ){
+    auto comment = line.find('#');
+    if( comment != std::string::npos ) line = line.substr(0, comment);
+    auto first = line.find_first_not_of(" \t\r\n");
+    if( first == std::string::npos ) continue;
+    auto last = line.find_last_not_of(" \t\r\n");
+    branchMaskPatterns.push_back(line.substr(first, last - first + 1));
+  }
+
+  if( branchMaskPatterns.empty() ){
+    std::cout << " -- Branch mask file has no active patterns: " << branchMaskFile << std::endl;
+    useBranchMask = false;
+    return;
+  }
+
+  std::cout << " -- Loaded branch mask " << branchMaskFile
+	    << " with " << branchMaskPatterns.size() << " active patterns." << std::endl;
+
+}//<<>>void KUCMSAodSkimmer::loadBranchMaskFile()
+
+void KUCMSAodSkimmer::applyBranchMask(){
+
+  if( !useBranchMask || branchMaskPatterns.empty() ) return;
+
+  selEvtVars.setBranchMask(branchMaskPatterns);
+  selMet.setBranchMask(branchMaskPatterns);
+  selElectrons.setBranchMask(branchMaskPatterns);
+  selPhotons.setBranchMask(branchMaskPatterns);
+  selMuons.setBranchMask(branchMaskPatterns);
+  selJets.setBranchMask(branchMaskPatterns);
+  selRjrVars.setBranchMask(branchMaskPatterns);
+  selRjrIsrVars.setBranchMask(branchMaskPatterns);
+  selGenPart.setBranchMask(branchMaskPatterns);
+  selSV.setBranchMask(branchMaskPatterns);
+  selTracks.setBranchMask(branchMaskPatterns);
+  BHCPhoInfo.setBranchMask(branchMaskPatterns);
+  BHCJetInfo.setBranchMask(branchMaskPatterns);
+  TSPhoInfo.setBranchMask(branchMaskPatterns);
+
+}//<<>>void KUCMSAodSkimmer::applyBranchMask()
+
+void KUCMSAodSkimmer::printBranchMaskSummary(){
+
+  if( !useBranchMask || branchMaskPatterns.empty() ) return;
+
+  std::set<std::string> matched;
+  selEvtVars.collectMatchedPatterns(matched);
+  selMet.collectMatchedPatterns(matched);
+  selElectrons.collectMatchedPatterns(matched);
+  selPhotons.collectMatchedPatterns(matched);
+  selMuons.collectMatchedPatterns(matched);
+  selJets.collectMatchedPatterns(matched);
+  selRjrVars.collectMatchedPatterns(matched);
+  selRjrIsrVars.collectMatchedPatterns(matched);
+  selGenPart.collectMatchedPatterns(matched);
+  selSV.collectMatchedPatterns(matched);
+  selTracks.collectMatchedPatterns(matched);
+  BHCPhoInfo.collectMatchedPatterns(matched);
+  BHCJetInfo.collectMatchedPatterns(matched);
+  TSPhoInfo.collectMatchedPatterns(matched);
+
+  std::cout << " -- Branch mask active: " << branchMaskFile << std::endl;
+  selEvtVars.printBranchMaskSummary("EventVars");
+  selMet.printBranchMaskSummary("MET");
+  selElectrons.printBranchMaskSummary("Electrons");
+  selPhotons.printBranchMaskSummary("Photons");
+  selMuons.printBranchMaskSummary("Muons");
+  selJets.printBranchMaskSummary("Jets");
+  selRjrVars.printBranchMaskSummary("RJR");
+  selRjrIsrVars.printBranchMaskSummary("RJRISR");
+  selGenPart.printBranchMaskSummary("Gen");
+  selSV.printBranchMaskSummary("SV");
+  selTracks.printBranchMaskSummary("Tracks");
+  BHCPhoInfo.printBranchMaskSummary("BHCPhotons");
+  BHCJetInfo.printBranchMaskSummary("BHCJets");
+  TSPhoInfo.printBranchMaskSummary("TimeSig");
+
+  std::set<std::string> unmatched;
+  for( const auto& pattern : branchMaskPatterns ){
+    if( matched.find(pattern) == matched.end() ) unmatched.insert(pattern);
+  }
+
+  if( !unmatched.empty() ){
+    std::cout << " -- Branch mask unmatched patterns:" << std::endl;
+    for( const auto& pattern : unmatched ) std::cout << "    " << pattern << std::endl;
+  }
+
+}//<<>>void KUCMSAodSkimmer::printBranchMaskSummary()
 
 void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
 
-	setEvtVarMetBranches( fOutTree );
-    setTrackBranches( fOutTree );
-    setEcalBranches( fOutTree );
-    setGenBranches( fOutTree );
-    setPhotonBranches( fOutTree );
-    setRJRBranches( fOutTree );
-	setRJRISRBranches( fOutTree );
-    setElectronBranches( fOutTree );
-    setJetsBranches( fOutTree );
-    setMuonsBranches( fOutTree );
-    setSVBranches( fOutTree );
-    //setBCBranches( fOutTree );
+  setEvtVarMetBranches( fOutTree );
+  setTrackBranches( fOutTree );
+  setEcalBranches( fOutTree );
+  setGenBranches( fOutTree );
+  setPhotonBranches( fOutTree );
+  setRJRBranches( fOutTree );
+  setRJRISRBranches( fOutTree );
+  setElectronBranches( fOutTree );
+  setJetsBranches( fOutTree );
+  setMuonsBranches( fOutTree );
+  setSVBranches( fOutTree );
+  //setBCBranches( fOutTree );
 
 }//<<>>void KUCMSAodSkimmer::setOutputBranches(fOutTree)
 
 void KUCMSAodSkimmer::startJobs(){
 
-    std::cout << "Runing StartJobs." << std::endl;
+  std::cout << "Runing StartJobs." << std::endl;
 
-    nEvents = 0;
-    nSelectedEvents = 0;
+  nEvents = 0;
+  nSelectedEvents = 0;
 
-    //sumEvtGenWgt = 0.0;
+  //sumEvtGenWgt = 0.0;
 
-    configCnts.clear();
-    configWgts.clear();
-    configCnts["nTotEvts"] = 0;
-    configCnts["nFltrdEvts"] = 0;
-    configWgts["sumEvtWgt"] = 0;
-    configWgts["sumFltrdEvtWgt"] = 0;
-    configCnts["nMetFltrdEvts"] = 0;
-    configCnts["nPhoFltrdEvts"] = 0;
+  configCnts.clear();
+  configWgts.clear();
+  configCnts["nTotEvts"] = 0;
+  configCnts["nFltrdEvts"] = 0;
+  configWgts["sumEvtWgt"] = 0;
+  configWgts["sumFltrdEvtWgt"] = 0;
+  configCnts["nMetFltrdEvts"] = 0;
+  configCnts["nPhoFltrdEvts"] = 0;
 
-    cutflow.clear();
-    cutflow["nTotEvts"] = 0;
-    cutflow["nFltrdEvts"] = 0;
-    cutflow["met150"] = 0;
-    cutflow["m_gt2jets"] = 0;
-    cutflow["mj_gt1phos"] = 0;
-    cutflow["mjp_leadPhoPt30"] = 0;
-    cutflow["sel_m"] = 0;
-    cutflow["sel_j"] = 0;
-    cutflow["sel_p"] = 0;
-    cutflow["sel_ppt"] = 0;
+  cutflow.clear();
+  cutflow["nTotEvts"] = 0;
+  cutflow["nFltrdEvts"] = 0;
+  cutflow["met150"] = 0;
+  cutflow["m_gt2jets"] = 0;
+  cutflow["mj_gt1phos"] = 0;
+  cutflow["mjp_leadPhoPt30"] = 0;
+  cutflow["sel_m"] = 0;
+  cutflow["sel_j"] = 0;
+  cutflow["sel_p"] = 0;
+  cutflow["sel_ppt"] = 0;
 
-	std::cout << "Finished StartJobs." << std::endl;
+  std::cout << "Finished StartJobs." << std::endl;
 
 };//<<>>void KUCMSAodSkimmer::startJobs()
 
@@ -1161,13 +1271,13 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
 
     //if( doBHC ){ //processBHCPhotons();
     if( debugl1 && doBHC ) std::cout << "KUCMSAodSkimmer : processBHCJets" << std::endl;
-	if( doBHC ){ processBHCJets(); }
+    if( doBHC ){ processBHCJets(); }
     if( debugl1 ) std::cout << "KUCMSAodSkimmer : processRJR 0" << std::endl;
-	processRJR(0,true); 
+    processRJR(0,true); 
     //if( debugl1 ) std::cout << "KUCMSAodSkimmer : processRJR 1" << std::endl;
-	//processRJR(1,false); 
+    //processRJR(1,false); 
     if( debugl1 ) std::cout << "KUCMSAodSkimmer : processRJR ISR" << std::endl;
-	processRJRISR();
+    processRJRISR();
 
   }//<<>>if( saveToTree )
   if( debugl1 ) std::cout << "KUCMSAodSkimmer : Return saveToTree" << std::endl;
@@ -1285,30 +1395,30 @@ void KUCMSAodSkimmer::fillConfigTree( TTree* fConfigTree ){
   }//<<>>for( auto item : configInfo )
 
   for( auto item : configCnts ){
-	//std::cout << " -- configCnts : " << item.first << " local " << isLocal << std::endl;
+    //std::cout << " -- configCnts : " << item.first << " local " << isLocal << std::endl;
     if( item.first == "nTotEvts" && not isLocal ){
-		int nTotEvtsKey = configData[dataSetKey].first;
-		//std::cout << " -- Filling nTotEvts : " << dataSetKey << " " << nTotEvtsKey << " for " << item.first << std::endl;
-		TBranch *cfBranch = fConfigTree->Branch( "nTotEvts", &nTotEvtsKey );
-		cfBranch->Fill();
+      int nTotEvtsKey = configData[dataSetKey].first;
+      //std::cout << " -- Filling nTotEvts : " << dataSetKey << " " << nTotEvtsKey << " for " << item.first << std::endl;
+      TBranch *cfBranch = fConfigTree->Branch( "nTotEvts", &nTotEvtsKey );
+      cfBranch->Fill();
     } else {
-    	std::string bname = item.first;
-    	TBranch *cfBranch = fConfigTree->Branch( bname.c_str(), &item.second );
-    	cfBranch->Fill();
-	}//<<>>
+      std::string bname = item.first;
+      TBranch *cfBranch = fConfigTree->Branch( bname.c_str(), &item.second );
+      cfBranch->Fill();
+    }//<<>>
   }//<<>>for( auto item : configInfo )
 
   for( auto item : configWgts ){
-	//std::cout << " -- configWgts : " << item.first << " local " << isLocal << std::endl;
+    //std::cout << " -- configWgts : " << item.first << " local " << isLocal << std::endl;
     if( item.first == "sumEvtWgt" && not isLocal ){
-		float sumEvtWgtKey = useEvtGenWgtFlag ? configData[dataSetKey].second : configData[dataSetKey].first;
-        //std::cout << " -- Filling sumEvtWgt : " << dataSetKey << " " << sumEvtWgtKey << " for " << item.first << std::endl;
-		TBranch *cfBranch = fConfigTree->Branch( "sumEvtWgt", &sumEvtWgtKey );
-		cfBranch->Fill();
+      float sumEvtWgtKey = useEvtGenWgtFlag ? configData[dataSetKey].second : configData[dataSetKey].first;
+      //std::cout << " -- Filling sumEvtWgt : " << dataSetKey << " " << sumEvtWgtKey << " for " << item.first << std::endl;
+      TBranch *cfBranch = fConfigTree->Branch( "sumEvtWgt", &sumEvtWgtKey );
+      cfBranch->Fill();
     } else {
-    	std::string bname = item.first;
-    	TBranch *cfBranch = fConfigTree->Branch( bname.c_str(), &item.second );
-    	cfBranch->Fill();
+      std::string bname = item.first;
+      TBranch *cfBranch = fConfigTree->Branch( bname.c_str(), &item.second );
+      cfBranch->Fill();
     }//<<>>
   }//<<>>for( auto item : configInfo )
 
@@ -1322,105 +1432,105 @@ void KUCMSAodSkimmer::fillConfigTree( TTree* fConfigTree ){
 
 void KUCMSAodSkimmer::initHists(){
 
-	for( int it = 0; it < n1dHists; it++ ){ hist1d[it] = NULL; }
-    for( int it = 0; it < n2dHists; it++ ){ hist2d[it] = NULL; }
-    for( int it = 0; it < n3dHists; it++ ){ hist3d[it] = NULL; }
+  for( int it = 0; it < n1dHists; it++ ){ hist1d[it] = NULL; }
+  for( int it = 0; it < n2dHists; it++ ){ hist2d[it] = NULL; }
+  for( int it = 0; it < n3dHists; it++ ){ hist3d[it] = NULL; }
 
-	//------------------------------------------------------------------------------------------
-    //------ 1D Hists --------------------------------------------------------------------------
+  //------------------------------------------------------------------------------------------
+  //------ 1D Hists --------------------------------------------------------------------------
 
-	hist1d[0] = new TH1D("ecalrhenergy0all", "RecHit Energy;rechit E [GeV]",1000,0,1000);
-    hist1d[1] = new TH1D("ecalrhtimevarall", "RecHit Time Var;rechit Var",200,0,20);
-    hist1d[2] = new TH1D("ecalrhcorall", "RecHit Time Core;rechit Time [ns]",200,-10,10);
-    hist1d[5] = new TH1D("ecalrhtimeall", "RecHit Time;rechit Time [ns]",200,-10,10);
-    hist1d[70] = new TH1D("ecalrhenergy02", "RecHit Energy;rechit E [GeV]",1000,0,1000);
-    hist1d[71] = new TH1D("ecalrhtimevar2", "RecHit Time Var;rechit Var",200,0,20);
-    hist1d[72] = new TH1D("ecalrhcor2", "RecHit Time Core;rechit Time [ns]",200,-10,10);
-    hist1d[75] = new TH1D("ecalrhtime2", "RecHit Time;rechit Time [ns]",200,-10,10);
-    hist1d[80] = new TH1D("ecalrhenergy03", "RecHit Energy;rechit E [GeV]",1000,0,1000);
-    hist1d[81] = new TH1D("ecalrhtimevar3", "RecHit Time Var;rechit Var",200,0,20);
-    hist1d[82] = new TH1D("ecalrhcor3", "RecHit Time Core;rechit Time [ns]",200,-10,10);
-    hist1d[85] = new TH1D("ecalrhtime3", "RecHit Time;rechit Time [ns]",200,-10,10);
+  hist1d[0] = new TH1D("ecalrhenergy0all", "RecHit Energy;rechit E [GeV]",1000,0,1000);
+  hist1d[1] = new TH1D("ecalrhtimevarall", "RecHit Time Var;rechit Var",200,0,20);
+  hist1d[2] = new TH1D("ecalrhcorall", "RecHit Time Core;rechit Time [ns]",200,-10,10);
+  hist1d[5] = new TH1D("ecalrhtimeall", "RecHit Time;rechit Time [ns]",200,-10,10);
+  hist1d[70] = new TH1D("ecalrhenergy02", "RecHit Energy;rechit E [GeV]",1000,0,1000);
+  hist1d[71] = new TH1D("ecalrhtimevar2", "RecHit Time Var;rechit Var",200,0,20);
+  hist1d[72] = new TH1D("ecalrhcor2", "RecHit Time Core;rechit Time [ns]",200,-10,10);
+  hist1d[75] = new TH1D("ecalrhtime2", "RecHit Time;rechit Time [ns]",200,-10,10);
+  hist1d[80] = new TH1D("ecalrhenergy03", "RecHit Energy;rechit E [GeV]",1000,0,1000);
+  hist1d[81] = new TH1D("ecalrhtimevar3", "RecHit Time Var;rechit Var",200,0,20);
+  hist1d[82] = new TH1D("ecalrhcor3", "RecHit Time Core;rechit Time [ns]",200,-10,10);
+  hist1d[85] = new TH1D("ecalrhtime3", "RecHit Time;rechit Time [ns]",200,-10,10);
 
-    hist1d[90] = new TH1D("ecalrhtime_pho", "Pho RecHit Time;rechit Time [ns]",200,-10,10);
-
-
-    hist1d[40] = new TH1D("ecalrhenergy01", "RecHit Energy G2;rechit E [GeV]",1000,0,1000);
-    hist1d[41] = new TH1D("ecalrhtimevar1", "RecHit Time Var G2;rechit Var",200,0,20);
-    hist1d[42] = new TH1D("ecalrhcor1", "RecHit Time Core G2;rechit Time [ns]",200,-10,10);
-    hist1d[45] = new TH1D("ecalrhtime1", "RecHit Time G2;rechit Time [ns]",200,-10,10);
-    hist1d[50] = new TH1D("ecalrhenergy01eb", "RecHit Energy EB;rechit E [GeV]",1000,0,1000);
-    hist1d[51] = new TH1D("ecalrhtimevar1eb", "RecHit Time Var EB;rechit Var",200,0,20);
-    hist1d[52] = new TH1D("ecalrhcor1eb", "RecHit Time Core EB;rechit Time [ns]",200,-10,10);
-    hist1d[55] = new TH1D("ecalrhtime1eb", "RecHit Time EB;rechit Time [ns]",200,-10,10);
-    hist1d[60] = new TH1D("ecalrhenergy01ee", "RecHit Energy EE;rechit E [GeV]",1000,0,1000);
-    hist1d[61] = new TH1D("ecalrhtimevar1ee", "RecHit Time Var EE;rechit Var",200,0,20);
-    hist1d[62] = new TH1D("ecalrhcor1ee", "RecHit Time Core EE;rechit Time [ns]",200,-10,10);
-    hist1d[65] = new TH1D("ecalrhtime1ee", "RecHit Time EE;rechit Time [ns]",200,-10,10);
+  hist1d[90] = new TH1D("ecalrhtime_pho", "Pho RecHit Time;rechit Time [ns]",200,-10,10);
 
 
-    hist1d[3] = new TH1D("sctype","SC !Orig, Orig, OOT, Excl",4,0,4);
-    hist1d[4] = new TH1D("scorigtype","Orig+OOT, Orig+!OOT, Orig+Exc, !Orig+OOT, !Orig+Exc, !Orig+!OOT",6,0,6);
-	// hist1d[5] above
-    hist1d[6] = new TH1D("scenergy","SC rawEnergy;energy [GeV]",200,0,1000);
-    hist1d[7] = new TH1D("trckpt","Track pt;Track pt [GeV]",500,0,1000);
-    hist1d[8] = new TH1D("NRecHitsInSCs","NRecHitsInSCs;NRecHitsInSCs",100,0,100);
-    hist1d[9] = new TH1D("sceta","SC Eta;Eta",200,-10,10);
+  hist1d[40] = new TH1D("ecalrhenergy01", "RecHit Energy G2;rechit E [GeV]",1000,0,1000);
+  hist1d[41] = new TH1D("ecalrhtimevar1", "RecHit Time Var G2;rechit Var",200,0,20);
+  hist1d[42] = new TH1D("ecalrhcor1", "RecHit Time Core G2;rechit Time [ns]",200,-10,10);
+  hist1d[45] = new TH1D("ecalrhtime1", "RecHit Time G2;rechit Time [ns]",200,-10,10);
+  hist1d[50] = new TH1D("ecalrhenergy01eb", "RecHit Energy EB;rechit E [GeV]",1000,0,1000);
+  hist1d[51] = new TH1D("ecalrhtimevar1eb", "RecHit Time Var EB;rechit Var",200,0,20);
+  hist1d[52] = new TH1D("ecalrhcor1eb", "RecHit Time Core EB;rechit Time [ns]",200,-10,10);
+  hist1d[55] = new TH1D("ecalrhtime1eb", "RecHit Time EB;rechit Time [ns]",200,-10,10);
+  hist1d[60] = new TH1D("ecalrhenergy01ee", "RecHit Energy EE;rechit E [GeV]",1000,0,1000);
+  hist1d[61] = new TH1D("ecalrhtimevar1ee", "RecHit Time Var EE;rechit Var",200,0,20);
+  hist1d[62] = new TH1D("ecalrhcor1ee", "RecHit Time Core EE;rechit Time [ns]",200,-10,10);
+  hist1d[65] = new TH1D("ecalrhtime1ee", "RecHit Time EE;rechit Time [ns]",200,-10,10);
 
-	hist1d[10] = new TH1D("elept","Electron Pt [GeV];Electron Pt [GeV];a.u.",100,0,1000);
-    hist1d[11] = new TH1D("elept_lv","LooseVeto;Electron Pt [GeV];Eff",100,0,1000);
-    hist1d[12] = new TH1D("elept_v","Veto;Electron Pt [GeV];Eff",100,0,1000);
-    hist1d[13] = new TH1D("elept_l","Loose;Electron Pt [GeV];Eff",100,0,1000);
-    hist1d[14] = new TH1D("elept_m","Medium;Electron Pt [GeV];Eff",100,0,1000);
 
-    hist1d[20] = new TH1D("erhnamps","Pho SC Nomilized RH Ampsig;Norm Ampsig",100,0,1);
-    hist1d[21] = new TH1D("nlwts","Norm leadPho WTimeSig (data ms< 1000);WTimeSig",500,-25,25);
+  hist1d[3] = new TH1D("sctype","SC !Orig, Orig, OOT, Excl",4,0,4);
+  hist1d[4] = new TH1D("scorigtype","Orig+OOT, Orig+!OOT, Orig+Exc, !Orig+OOT, !Orig+Exc, !Orig+!OOT",6,0,6);
+  // hist1d[5] above
+  hist1d[6] = new TH1D("scenergy","SC rawEnergy;energy [GeV]",200,0,1000);
+  hist1d[7] = new TH1D("trckpt","Track pt;Track pt [GeV]",500,0,1000);
+  hist1d[8] = new TH1D("NRecHitsInSCs","NRecHitsInSCs;NRecHitsInSCs",100,0,100);
+  hist1d[9] = new TH1D("sceta","SC Eta;Eta",200,-10,10);
 
-    hist1d[30] = new TH1D("phowtime","Photon Wt Time;Time [ns];a.u.",400,-20,20);
-    hist1d[31] = new TH1D("phogeotime","Photon Geo Time;Time [ns];a.u.",400,-20,20);
-    hist1d[32] = new TH1D("phogentime","Photon Gen Time;;Time [ns];a.u.",400,-20,20);
-    hist1d[33] = new TH1D("blphowtime","BL Photon Wt Time;Time [ns];a.u.",400,-20,20);
-    hist1d[34] = new TH1D("blphogeotime","BL Photon Geo Time;Time [ns];a.u.",400,-20,20);
-    hist1d[35] = new TH1D("blphogentime","BL Photon Gen Time;;Time [ns];a.u.",400,-20,20);
+  hist1d[10] = new TH1D("elept","Electron Pt [GeV];Electron Pt [GeV];a.u.",100,0,1000);
+  hist1d[11] = new TH1D("elept_lv","LooseVeto;Electron Pt [GeV];Eff",100,0,1000);
+  hist1d[12] = new TH1D("elept_v","Veto;Electron Pt [GeV];Eff",100,0,1000);
+  hist1d[13] = new TH1D("elept_l","Loose;Electron Pt [GeV];Eff",100,0,1000);
+  hist1d[14] = new TH1D("elept_m","Medium;Electron Pt [GeV];Eff",100,0,1000);
 
-    ////hist1d[100] = new TH1D("genPhoPt", "genPhoPt;Pt [GeV]",500,0,1000);
+  hist1d[20] = new TH1D("erhnamps","Pho SC Nomilized RH Ampsig;Norm Ampsig",100,0,1);
+  hist1d[21] = new TH1D("nlwts","Norm leadPho WTimeSig (data ms< 1000);WTimeSig",500,-25,25);
 
-    for( int it = 0; it < n1dHists; it++ ){ if(hist1d[it]) hist1d[it]->Sumw2();}
+  hist1d[30] = new TH1D("phowtime","Photon Wt Time;Time [ns];a.u.",400,-20,20);
+  hist1d[31] = new TH1D("phogeotime","Photon Geo Time;Time [ns];a.u.",400,-20,20);
+  hist1d[32] = new TH1D("phogentime","Photon Gen Time;;Time [ns];a.u.",400,-20,20);
+  hist1d[33] = new TH1D("blphowtime","BL Photon Wt Time;Time [ns];a.u.",400,-20,20);
+  hist1d[34] = new TH1D("blphogeotime","BL Photon Geo Time;Time [ns];a.u.",400,-20,20);
+  hist1d[35] = new TH1D("blphogentime","BL Photon Gen Time;;Time [ns];a.u.",400,-20,20);
 
-	//------------------------------------------------------------------------------------------
-    //------ 2D Hists --------------------------------------------------------------------------
+  ////hist1d[100] = new TH1D("genPhoPt", "genPhoPt;Pt [GeV]",500,0,1000);
 
-    ////hist2d[1] = new TH2D("jetDrMuTime_pt", "jetDrMuTime_pt", jtdiv, -1*jtran, jtran, 500, 0, 500);
-	hist2d[1] = new TH2D("scorigcross", "SC Types;Mian-Orig;Std-OOT-Excluded", 2, 0, 2, 3, 0, 3); 
-    hist2d[2] = new TH2D("rjrPtS_v_rjrdPhiSI_t0", "rjrDPhiSI_v_rjrPtS Type 0;rjrDphiSI;rjrPtS", 32, 0, 3.2, 60, 0, 3000);
-    hist2d[3] = new TH2D("rjrPtS_v_rjrdPhiSI_t1", "rjrDPhiSI_v_rjrPtS Type 1;rjrDphiSI;rjrPtS", 32, 0, 3.2, 60, 0, 3000);
+  for( int it = 0; it < n1dHists; it++ ){ if(hist1d[it]) hist1d[it]->Sumw2();}
 
-	std::string fHTitle = "KUSkim";
-    hist2d[10] = new TH2D("EnergyVRtTimeG6",addstr(fHTitle,"Energy V RtTime;Energy [GeV] hasGS6;Time [ns]").c_str(),250,0,1000,600,-30,30);
-    hist2d[11] = new TH2D("EnergyVRtTimeG1",addstr(fHTitle,"Energy V RtTime;Energy [GeV] hasGS1;Time [ns]").c_str(),250,0,1000,600,-30,30);
-    hist2d[12] = new TH2D("EnergyVRtTimeG0",addstr(fHTitle,"Energy V RtTime;Energy [GeV] noGS;Time [ns]").c_str(),250,0,1000,600,-30,30);
+  //------------------------------------------------------------------------------------------
+  //------ 2D Hists --------------------------------------------------------------------------
 
-	//------------------------------------------------------------------------------------------
-    //------ 3D Hists --------------------------------------------------------------------------
+  ////hist2d[1] = new TH2D("jetDrMuTime_pt", "jetDrMuTime_pt", jtdiv, -1*jtran, jtran, 500, 0, 500);
+  hist2d[1] = new TH2D("scorigcross", "SC Types;Mian-Orig;Std-OOT-Excluded", 2, 0, 2, 3, 0, 3); 
+  hist2d[2] = new TH2D("rjrPtS_v_rjrdPhiSI_t0", "rjrDPhiSI_v_rjrPtS Type 0;rjrDphiSI;rjrPtS", 32, 0, 3.2, 60, 0, 3000);
+  hist2d[3] = new TH2D("rjrPtS_v_rjrdPhiSI_t1", "rjrDPhiSI_v_rjrPtS Type 1;rjrDphiSI;rjrPtS", 32, 0, 3.2, 60, 0, 3000);
 
-    //hist3d[0] = new TH3D("phoNRH_ClR9_phoID","Photon nClRecHits v clR9 v phoId;nRecHits;ClusterR9;PhotonID(fake1,loose2,tight3)",200,0,200,100,0,1,8,0,4);
+  std::string fHTitle = "KUSkim";
+  hist2d[10] = new TH2D("EnergyVRtTimeG6",addstr(fHTitle,"Energy V RtTime;Energy [GeV] hasGS6;Time [ns]").c_str(),250,0,1000,600,-30,30);
+  hist2d[11] = new TH2D("EnergyVRtTimeG1",addstr(fHTitle,"Energy V RtTime;Energy [GeV] hasGS1;Time [ns]").c_str(),250,0,1000,600,-30,30);
+  hist2d[12] = new TH2D("EnergyVRtTimeG0",addstr(fHTitle,"Energy V RtTime;Energy [GeV] noGS;Time [ns]").c_str(),250,0,1000,600,-30,30);
 
-	//------------------------------------------------------------------------------------
-    // Cluster maps -----------------------------------------------------------------------
+  //------------------------------------------------------------------------------------------
+  //------ 3D Hists --------------------------------------------------------------------------
 
-    if( CLSTRMAPS ){
-		nMaps = 0;
-		for(int it=0; it<nEBEEMaps; it++){
-			fMap[it] = false;
-			std::string label(";iEta;iPhi");
-    	    std::string stt1("ebeeMapPhoCluster_"+std::to_string(it));
-    	    ebeeMapP[it] = new TH2D( stt1.c_str(), (stt1+label).c_str(), 361, -90, 90, 721, 0, 360);
-    	    std::string stt2("ebeeMapPhoClusterTime_"+std::to_string(it));
-    	    ebeeMapT[it] = new TH2D( stt2.c_str(), (stt2+label).c_str(), 361, -90, 90, 721, 0, 360);
-			std::string stt3("ebeeMapPhoClusterRes_"+std::to_string(it));
-    	    ebeeMapR[it] = new TH2D( stt3.c_str(), (stt3+label).c_str(), 361, -90, 90, 721, 0, 360);
-		}//<<>>for(int it=0; it<nEBEEMaps; it++)
-	}//<<>>if( CLSTRMAPS )
+  //hist3d[0] = new TH3D("phoNRH_ClR9_phoID","Photon nClRecHits v clR9 v phoId;nRecHits;ClusterR9;PhotonID(fake1,loose2,tight3)",200,0,200,100,0,1,8,0,4);
+
+  //------------------------------------------------------------------------------------
+  // Cluster maps -----------------------------------------------------------------------
+
+  if( CLSTRMAPS ){
+    nMaps = 0;
+    for(int it=0; it<nEBEEMaps; it++){
+      fMap[it] = false;
+      std::string label(";iEta;iPhi");
+      std::string stt1("ebeeMapPhoCluster_"+std::to_string(it));
+      ebeeMapP[it] = new TH2D( stt1.c_str(), (stt1+label).c_str(), 361, -90, 90, 721, 0, 360);
+      std::string stt2("ebeeMapPhoClusterTime_"+std::to_string(it));
+      ebeeMapT[it] = new TH2D( stt2.c_str(), (stt2+label).c_str(), 361, -90, 90, 721, 0, 360);
+      std::string stt3("ebeeMapPhoClusterRes_"+std::to_string(it));
+      ebeeMapR[it] = new TH2D( stt3.c_str(), (stt3+label).c_str(), 361, -90, 90, 721, 0, 360);
+    }//<<>>for(int it=0; it<nEBEEMaps; it++)
+  }//<<>>if( CLSTRMAPS )
 
 }//<<>>void KUCMSAodSkimmer::initHists()
 

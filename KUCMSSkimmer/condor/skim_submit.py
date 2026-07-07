@@ -767,6 +767,8 @@ def new_inputs_mode(args):
             flags += ' --noSV'
         if args.hlt_off:
             flags += ' --HLTPathsOff'
+        if args.branch_mask:
+            flags += ' --branchMask ' + args.branch_mask
 
         print('  xsec:', xsec, '| key:', key)
         if mctype != 1 and event_count_keys and key not in event_count_keys:
@@ -1109,6 +1111,8 @@ def main():
         help='Max .root files per subfolder (useful for testing)')
     parser.add_argument('--no-sv',   action='store_true', help='Pass --noSV to skimmer')
     parser.add_argument('--hlt-off', action='store_true', help='Pass --HLTPathsOff to skimmer')
+    parser.add_argument('--branch-mask', dest='branch_mask', default='',
+        help='Branch mask file passed to skimmer, e.g. config/branch_masks/sv_analysis_core.txt')
     parser.add_argument('--psiche',  action='store_true', help='Enable PSICHE jets (default: off)')
     parser.add_argument('--eos-out', dest='eos_out', default='/eos/uscms/store/user/$USER/LLPSkims',
         help='Write output directly to this EOS path (default: /eos/uscms/store/user/$USER/LLPSkims)')
@@ -1259,6 +1263,8 @@ def main():
             flags += ' --noSV'
         if args.hlt_off:
             flags += ' --HLTPathsOff'
+        if args.branch_mask:
+            flags += ' --branchMask ' + args.branch_mask
 
         print('  xsec:', xsec, '| key:', key)
         if mctype != 1 and event_count_keys and key not in event_count_keys:
