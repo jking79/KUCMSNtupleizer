@@ -21,6 +21,7 @@ import os
 import re
 import subprocess
 import sys
+from collections import namedtuple
 
 # ---------------------------------------------------------------------------
 # Hard-coded cross sections and metadata from master lists
@@ -116,8 +117,7 @@ DATA_KEYWORDS  = {'MET', 'JetMET', 'JetMET0', 'JetMET1', 'JetHT', 'EGamma', 'EGa
 SIGNAL_KEYWORDS = {'SMS', 'gogoG', 'gogoZ', 'gogoGZ', 'sqsqG', 'GlGl'}
 
 SANDBOX_DEFAULT  = "/uscms/home/mlazarov/nobackup/sandboxes/sandbox-CMSSW_13_3_3.tar.bz2"
-#EOS_SKIMS_BASE   = "/store/group/lpcsusylep/malazaro/KUCMSSkims"
-EOS_SKIMS_BASE   = "/store/user/malazaro/LLPSkims"
+EOS_SKIMS_BASE   = "/store/group/lpcsusylep/malazaro/KUCMSSkims"
 EOS_SERVER       = "root://cmseos.fnal.gov"
 
 # ---------------------------------------------------------------------------
@@ -257,6 +257,22 @@ def signal_event_count_key(name):
     )
 
 
+def signal_metadata_name(subfolder, eos_path):
+    """Choose the best available name for signal xsec/EventCount parsing."""
+    candidates = [
+        subfolder,
+        os.path.basename(eos_path.rstrip('/')),
+        os.path.basename(os.path.dirname(eos_path.rstrip('/'))),
+    ]
+    for name in candidates:
+        if (re.search(r'mGl-\d+', name)
+                and re.search(r'mN2-\d+', name)
+                and re.search(r'mN1-\d+', name)
+                and re.search(r'(?:ct|\dctau-)(?:-?[0-9]+p[0-9]+|-?[0-9]+)', name)):
+            return name
+    return subfolder
+
+
 def make_data_key(subfolder, sample_type_kw):
     """Build a short dataset key for data from the subfolder name."""
     # e.g. 'MET_AOD_Run2018A-15Feb...' -> 'MET18A'
@@ -265,6 +281,156 @@ def make_data_key(subfolder, sample_type_kw):
     yr  = year_m.group(1)[2:] if year_m else ''
     era = era_m.group(1)       if era_m  else ''
     return sample_type_kw + yr + era
+
+
+DatasetPaths = namedtuple('DatasetPaths', [
+    'subfolder',
+    'prefix',
+    'work_dir',
+    'src_dir',
+    'log_dir',
+    'out_dir',
+    'submit_path',
+    'ofilename',
+])
+
+
+def data_keyword(eos_path):
+    return next((kw for kw in sorted(DATA_KEYWORDS, key=len, reverse=True)
+                 if kw in eos_path), 'Data')
+
+
+def sample_context(eos_path):
+    sample_type = detect_sample_type(eos_path)
+    year        = detect_year(eos_path)
+    timecali    = get_timecali(year, sample_type)
+    if not timecali and sample_type == 'signal':
+        timecali = 'r2_ul18_mc'
+    return sample_type, year, timecali, data_keyword(eos_path)
+
+
+def print_sample_context(eos_path, sample_type, year, timecali):
+    print('EOS path:    ', eos_path)
+    print('Sample type: ', sample_type)
+    print('Year:        ', year)
+    print('Timecali:    ', timecali)
+    print()
+
+
+def resolve_dataset_metadata(subfolder, eos_path, sample_type, data_kw):
+    xsec       = '1'
+    key        = subfolder[:subfolder.index('_')] if '_' in subfolder else subfolder
+    gluinomass = '0'
+    n2mass     = '0'
+    n1mass     = '0'
+    mctype     = 0
+    mc_wt      = '1'
+
+    if sample_type == 'data':
+        mctype = 1
+        key    = make_data_key(subfolder, data_kw)
+    elif sample_type == 'signal':
+        metadata_name = signal_metadata_name(subfolder, eos_path)
+        sig_xsec, gluinomass, n2mass, n1mass = lookup_signal_xsec(metadata_name)
+        if sig_xsec is not None:
+            xsec = str(sig_xsec)
+        else:
+            print('  WARNING: no xsec found for', metadata_name, '- using 0')
+            xsec = '0'
+        key = signal_event_count_key(metadata_name)
+    else:
+        meta = lookup_bg_meta(subfolder)
+        if meta:
+            xsec = str(meta['xsec'])
+            key  = meta['key']
+        else:
+            print('  WARNING: no xsec found for', subfolder, '- using 0')
+            xsec = '0'
+
+    return {
+        'xsec': xsec,
+        'key': key,
+        'gluinomass': gluinomass,
+        'n2mass': n2mass,
+        'n1mass': n1mass,
+        'mctype': mctype,
+        'mc_wt': mc_wt,
+    }
+
+
+def build_skimmer_flags(metadata, args, timecali):
+    flags = (
+        ' --xsec '        + metadata['xsec']
+        + ' --dataSetKey ' + metadata['key']
+        + ' --gluinoMass ' + metadata['gluinomass']
+        + ' --N2Mass '     + metadata['n2mass']
+        + ' --timeCaliTag ' + timecali
+        + ' --MCweight '   + metadata['mc_wt']
+        + ' --MCtype '     + str(metadata['mctype'])
+    )
+    if metadata['mctype'] == 0:
+        flags += ' --hasGenInfo'
+    if not args.psiche:
+        flags += ' --noBHC'
+    if args.no_sv:
+        flags += ' --noSV'
+    if args.hlt_off:
+        flags += ' --HLTPathsOff'
+    if args.branch_mask:
+        flags += ' --branchMask ' + args.branch_mask
+    return flags
+
+
+def dataset_paths(output_dir, subfolder, tag):
+    odir     = output_dir.rstrip('/') + '/'
+    prefix   = subfolder.split('_')[0]
+    work_dir = odir + prefix + '/' + subfolder + '/' + tag
+    return DatasetPaths(
+        subfolder=subfolder,
+        prefix=prefix,
+        work_dir=work_dir,
+        src_dir=work_dir + '/src',
+        log_dir=work_dir + '/log',
+        out_dir=work_dir + '/out',
+        submit_path=work_dir + '/src/submit.sh',
+        ofilename='condor_' + subfolder + '_' + tag,
+    )
+
+
+def eos_output_dir(args, paths):
+    if not args.eos_out:
+        return None
+    return (os.path.expandvars(args.eos_out).rstrip('/')
+            + '/' + paths.prefix + '/' + paths.subfolder
+            + '/' + args.tag)
+
+
+def ensure_submit_dirs(paths, eos_out_dir):
+    local_dirs = [paths.src_dir, paths.log_dir] if eos_out_dir else [
+        paths.src_dir, paths.log_dir, paths.out_dir,
+    ]
+    for d in local_dirs:
+        os.makedirs(d, exist_ok=True)
+
+
+def warn_missing_event_count_key(metadata, event_count_keys):
+    if metadata['mctype'] != 1 and event_count_keys and metadata['key'] not in event_count_keys:
+        print('  WARNING: key not found in config/EventCount.txt:', metadata['key'])
+        print('           This job will likely get inf evtFillWgt.')
+
+
+def weight_record(metadata, timecali, root_files, subfolder):
+    return {
+        'xsec': metadata['xsec'],
+        'mc_wt': metadata['mc_wt'],
+        'mctype': metadata['mctype'],
+        'timecali': timecali,
+        'gluinomass': metadata['gluinomass'],
+        'n2mass': metadata['n2mass'],
+        'n1mass': metadata['n1mass'],
+        'n_files': len(root_files),
+        'subfolder': subfolder,
+    }
 
 
 def xrdfs_mkdir(path, verbose=False):
@@ -344,7 +510,7 @@ def collection_tag_from_url(url):
     return m.group(1) if m else ''
 
 
-_CRAB_TS_RE = re.compile(r'^\d{6}_\d{6}$')
+_CRAB_TS_RE = re.compile(r'^(?:\d{6}|\d{8})_\d{6}$')
 
 
 def find_root_files(path, max_files=-1, verbose=False):
@@ -514,6 +680,42 @@ def parse_submit_file(submit_path):
     return header_lines, job_entries, eos_out_dir
 
 
+def find_submit_files(output_dir):
+    submit_files = []
+    for root, dirs, files in os.walk(output_dir):
+        if 'submit.sh' in files:
+            submit_files.append(os.path.join(root, 'submit.sh'))
+    return submit_files
+
+
+def submit_path_parts(submit_path):
+    parts = submit_path.replace('\\', '/').split('/')
+    return {
+        'subfolder': parts[-4] if len(parts) >= 4 else submit_path,
+        'tag': parts[-3] if len(parts) >= 3 else 'rjrskim',
+    }
+
+
+def write_multi_submit_script(path, submit_files, action='Submitting', blank_lines=True):
+    with open(path, 'w') as fh:
+        fh.write('#!/bin/bash\n')
+        for sp in submit_files:
+            label = '/'.join(sp.replace('\\', '/').split('/')[-4:-2])
+            fh.write('echo "{} {}..."\n'.format(action, label))
+            fh.write('condor_submit ' + sp + '\n')
+            if blank_lines:
+                fh.write('echo ""\n')
+    os.chmod(path, 0o755)
+
+
+def first_input_url(job_entries):
+    for _, arg_line in job_entries[:1]:
+        m = re.search(r'-i\s+(\S+)', arg_line)
+        if m:
+            return m.group(1)
+    return ''
+
+
 def get_job_num_from_filename(fname):
     """Extract job number from condor_xxx.N.root -> N, or None."""
     base = os.path.basename(fname)
@@ -563,11 +765,7 @@ def check_jobs(output_dir, verbose=False, test_job=None):
     """Scan output_dir for submit.sh files, report completeness, and write
     resubmission files for any subfolders with missing output."""
 
-    submit_files = []
-    for root, dirs, files in os.walk(output_dir):
-        if 'submit.sh' in files:
-            submit_files.append(os.path.join(root, 'submit.sh'))
-
+    submit_files = find_submit_files(output_dir)
     if not submit_files:
         print('No submit.sh files found under', output_dir)
         return
@@ -586,8 +784,7 @@ def check_jobs(output_dir, verbose=False, test_job=None):
 
         # Sample name is 4 levels up from submit.sh
         # e.g. Output/QCD/QCD_HT100to200_.../rjrskim/src/submit.sh
-        parts    = submit_path.replace('\\', '/').split('/')
-        subfolder = parts[-4] if len(parts) >= 4 else submit_path
+        subfolder = submit_path_parts(submit_path)['subfolder']
 
         # List output files from EOS or local
         if eos_out_dir:
@@ -634,13 +831,7 @@ def check_jobs(output_dir, verbose=False, test_job=None):
         print_test_command(first_missing_path, first_missing_jobs, target_idx)
 
     multi = os.path.join(output_dir, 'multi_resub.sh')
-    with open(multi, 'w') as fh:
-        fh.write('#!/bin/bash\n')
-        for rp in resub_files:
-            label = '/'.join(rp.replace('\\', '/').split('/')[-4:-2])
-            fh.write('echo "Resubmitting {}..."\n'.format(label))
-            fh.write('condor_submit {}\n'.format(rp))
-    os.chmod(multi, 0o755)
+    write_multi_submit_script(multi, resub_files, action='Resubmitting', blank_lines=False)
     print('Multi-resub script:', multi)
     print('Run with:  source', multi)
 
@@ -657,20 +848,8 @@ def new_inputs_mode(args):
 
     eos_path    = args.eos_path.rstrip('/')
     odir        = args.output.rstrip('/') + '/'
-    sample_type = detect_sample_type(eos_path)
-    year        = detect_year(eos_path)
-    timecali    = get_timecali(year, sample_type)
-    if not timecali and sample_type == 'signal':
-        timecali = 'r2_ul18_mc'
-
-    print('EOS path:    ', eos_path)
-    print('Sample type: ', sample_type)
-    print('Year:        ', year)
-    print('Timecali:    ', timecali)
-    print()
-
-    data_kw = next((kw for kw in sorted(DATA_KEYWORDS, key=len, reverse=True)
-                    if kw in eos_path), 'Data')
+    sample_type, year, timecali, data_kw = sample_context(eos_path)
+    print_sample_context(eos_path, sample_type, year, timecali)
 
     print('Scanning EOS tree...')
     datasets = find_crab_datasets(eos_path, max_files=args.max_files,
@@ -685,20 +864,15 @@ def new_inputs_mode(args):
     new_submit_files = []
 
     for subfolder, root_files in datasets:
-        prefix      = subfolder.split('_')[0]
-        work_dir    = odir + prefix + '/' + subfolder + '/' + args.tag
-        src_dir     = work_dir + '/src'
-        log_dir     = work_dir + '/log'
-        out_dir     = work_dir + '/out'
-        submit_path = src_dir  + '/submit.sh'
+        paths = dataset_paths(args.output, subfolder, args.tag)
 
         print('\nDataset:', subfolder)
 
-        if not os.path.exists(submit_path):
+        if not os.path.exists(paths.submit_path):
             print('  No existing submit.sh found — run without --new-inputs first, skipping.')
             continue
 
-        header_lines, job_entries, eos_out_dir_parsed = parse_submit_file(submit_path)
+        _, job_entries, eos_out_dir_parsed = parse_submit_file(paths.submit_path)
 
         # Build set of already-submitted files as normalized bare /store/... paths
         submitted_bare = set()
@@ -721,70 +895,16 @@ def new_inputs_mode(args):
         # New job indices start immediately after the original submission
         offset = len(job_entries)
 
-        # --- metadata lookup (mirrors main loop) ---
-        xsec       = '1'
-        key        = subfolder[:subfolder.index('_')] if '_' in subfolder else subfolder
-        gluinomass = '0'
-        n2mass     = '0'
-        n1mass     = '0'
-        mctype     = 0
-        mc_wt      = '1'
+        metadata = resolve_dataset_metadata(subfolder, eos_path, sample_type, data_kw)
+        flags    = build_skimmer_flags(metadata, args, timecali)
 
-        if sample_type == 'data':
-            mctype = 1
-            key    = make_data_key(subfolder, data_kw)
-        elif sample_type == 'signal':
-            sig_xsec, gluinomass, n2mass, n1mass = lookup_signal_xsec(subfolder)
-            if sig_xsec is not None:
-                xsec = str(sig_xsec)
-            else:
-                print('  WARNING: no xsec found for', subfolder, '- using 0')
-                xsec = '0'
-            key = signal_event_count_key(subfolder)
-        else:
-            meta = lookup_bg_meta(subfolder)
-            if meta:
-                xsec = str(meta['xsec'])
-                key  = meta['key']
-            else:
-                print('  WARNING: no xsec found for', subfolder, '- using 0')
-                xsec = '0'
-
-        flags = (
-            ' --xsec '        + xsec
-            + ' --dataSetKey ' + key
-            + ' --gluinoMass ' + gluinomass
-            + ' --N2Mass '     + n2mass
-            + ' --timeCaliTag ' + timecali
-            + ' --MCweight '   + mc_wt
-            + ' --MCtype '     + str(mctype)
-        )
-        if mctype == 0:
-            flags += ' --hasGenInfo'
-        if not args.psiche:
-            flags += ' --noBHC'
-        if args.no_sv:
-            flags += ' --noSV'
-        if args.hlt_off:
-            flags += ' --HLTPathsOff'
-        if args.branch_mask:
-            flags += ' --branchMask ' + args.branch_mask
-
-        print('  xsec:', xsec, '| key:', key)
-        if mctype != 1 and event_count_keys and key not in event_count_keys:
-            print('  WARNING: key not found in config/EventCount.txt:', key)
-            print('           This job will likely get inf evtFillWgt.')
+        print('  xsec:', metadata['xsec'], '| key:', metadata['key'])
+        warn_missing_event_count_key(metadata, event_count_keys)
 
         # EOS output dir: prefer --eos-out from CLI, fall back to parsed original
-        eos_out_dir = None
-        if args.eos_out:
-            eos_out_dir = (os.path.expandvars(args.eos_out).rstrip('/')
-                           + '/' + prefix + '/' + subfolder + '/' + args.tag)
-        elif eos_out_dir_parsed:
-            eos_out_dir = eos_out_dir_parsed
+        eos_out_dir = eos_output_dir(args, paths) or eos_out_dir_parsed
 
-        newfiles_path = src_dir + '/newfiles.sh'
-        ofilename     = 'condor_' + subfolder + '_' + args.tag
+        newfiles_path = paths.src_dir + '/newfiles.sh'
 
         print('  Job offset       :', offset, '(indices start at', offset, ')')
         print('  Newfiles submit  :', newfiles_path)
@@ -799,11 +919,9 @@ def new_inputs_mode(args):
         if eos_out_dir:
             xrdfs_mkdir(eos_out_dir, verbose=args.verbose)
 
-        local_dirs = [src_dir, log_dir] if eos_out_dir else [src_dir, log_dir, out_dir]
-        for d in local_dirs:
-            os.makedirs(d, exist_ok=True)
+        ensure_submit_dirs(paths, eos_out_dir)
 
-        write_submit(newfiles_path, log_dir, out_dir, ofilename,
+        write_submit(newfiles_path, paths.log_dir, paths.out_dir, paths.ofilename,
                      new_files, flags, args, eos_out_dir=eos_out_dir, offset=offset)
         new_submit_files.append(newfiles_path)
 
@@ -819,14 +937,7 @@ def new_inputs_mode(args):
     else:
         multi = odir + args.tag + '_NewFiles_MultiSub.sh'
         if not args.dry_run:
-            with open(multi, 'w') as fh:
-                fh.write('#!/bin/bash\n')
-                for sp in new_submit_files:
-                    label = '/'.join(sp.split('/')[-4:-2])
-                    fh.write('echo "Submitting {}..."\n'.format(label))
-                    fh.write('condor_submit ' + sp + '\n')
-                    fh.write('echo ""\n')
-            os.chmod(multi, 0o755)
+            write_multi_submit_script(multi, new_submit_files)
             print('Multi-submit script:', multi)
             print('Run with:  source', multi)
         else:
@@ -839,25 +950,7 @@ def new_inputs_mode(args):
 # Transfer: hadd per-job EOS output, xrdcp to final skim destination
 # ---------------------------------------------------------------------------
 
-def transfer_jobs(args):
-    """For each submit.sh, hadd per-job output files from EOS and xrdcp to
-    /store/group/lpcsusylep/malazaro/KUCMSSkims/{version}/."""
-
-    dest_base = EOS_SKIMS_BASE.rstrip('/') + '/' + args.version.strip('/')
-    dest_xrd  = EOS_SERVER + '//' + dest_base.lstrip('/')
-    version = args.version.split("_")[1]
-    submit_files = []
-    for root, dirs, files in os.walk(args.output):
-        if 'submit.sh' in files:
-            submit_files.append(os.path.join(root, 'submit.sh'))
-    if not submit_files:
-        print('No submit.sh files found under', args.output)
-        return
-
-    print('Found', len(submit_files), 'submit file(s)')
-    print('Destination:', dest_xrd)
-    print()
-
+def require_transfer_tools():
     for tool in ('hadd', 'xrdcp'):
         try:
             subprocess.check_call(['which', tool],
@@ -866,22 +959,150 @@ def transfer_jobs(args):
             print('ERROR:', tool, 'not found. Run with CMSSW set up.')
             sys.exit(1)
 
+
+def ensure_transfer_destination(dest_base, verbose=False):
+    if not xrdfs_stat(dest_base, verbose=verbose):
+        print('Destination folder not found — creating:', dest_base)
+        if not xrdfs_mkdir(dest_base, verbose=verbose):
+            print('ERROR: could not create destination folder:', dest_base)
+            sys.exit(1)
+        print('Created:', dest_base)
+    else:
+        print('Destination folder exists:', dest_base)
+    print()
+
+
+def merged_output_name(subfolder, tag, job_entries):
+    coll_tag = collection_tag_from_url(first_input_url(job_entries))
+
+    # Strip 'kucmsntuple_{coll_tag}_' prefix from subfolder if present
+    # (older R22 ntuple dirs were named kucmsntuple_{tag}_{dataset}_...,
+    # while R23/R24 dirs are just {dataset}_...; normalize to the clean form)
+    clean_subfolder = subfolder
+    kucms_prefix = 'kucmsntuple_' + coll_tag + '_'
+    if coll_tag and clean_subfolder.startswith(kucms_prefix):
+        clean_subfolder = clean_subfolder[len(kucms_prefix):]
+    elif clean_subfolder.startswith('kucmsntuple_'):
+        clean_subfolder = clean_subfolder[len('kucmsntuple_'):]
+
+    return (coll_tag + '_' if coll_tag else '') + clean_subfolder + '_' + tag + '.root'
+
+
+def cleanup_existing(paths):
+    for path in paths:
+        if os.path.exists(path):
+            os.remove(path)
+
+
+def stage_root_files(root_files, scratch):
+    local_inputs = []
+    for f in root_files:
+        src_url = EOS_SERVER + '//' + f.lstrip('/')
+        local_f = os.path.join(scratch, os.path.basename(f))
+        result  = subprocess.run(['xrdcp', '-s', src_url, local_f])
+        if result.returncode != 0:
+            print('  WARNING: xrdcp staging failed for', os.path.basename(f))
+            cleanup_existing(local_inputs)
+            return None
+        local_inputs.append(local_f)
+    return local_inputs
+
+
+def hadd_root_files(output_path, input_files, scratch, force=False):
+    hadd_flags = ['-f'] if force and os.path.exists(output_path) else []
+    result = subprocess.run(['hadd', '-k', '-j', '4', '-v', '0', '-d', scratch]
+                            + hadd_flags + [output_path] + input_files)
+    return result.returncode == 0
+
+
+def merge_root_files(root_files, hadded, scratch, merged_name, chunk_size, force=False):
+    use_chunks = chunk_size > 0 and len(root_files) > chunk_size
+
+    if os.path.exists(hadded) and not force:
+        print('  Local hadded file already exists, skipping hadd (use --force to redo)')
+        return True
+
+    if use_chunks:
+        chunks   = [root_files[i:i+chunk_size] for i in range(0, len(root_files), chunk_size)]
+        partials = []
+        print('  Chunked merge: {} files in {} chunk(s) of {}'.format(
+              len(root_files), len(chunks), chunk_size))
+        for ci, chunk in enumerate(chunks):
+            partial = os.path.join(scratch, merged_name.replace('.root', '.part{}.root'.format(ci)))
+            partials.append(partial)
+            print('  Chunk {}/{}: staging {} file(s)...'.format(ci+1, len(chunks), len(chunk)))
+            local_inputs = stage_root_files(chunk, scratch)
+            if local_inputs is None:
+                cleanup_existing(partials)
+                return False
+            ok = hadd_root_files(partial, local_inputs, scratch)
+            cleanup_existing(local_inputs)
+            if not ok:
+                print('  WARNING: hadd failed on chunk', ci)
+                cleanup_existing(partials)
+                return False
+
+        print('  Final merge of', len(partials), 'partial(s) ->', hadded)
+        ok = hadd_root_files(hadded, partials, scratch, force=force)
+        cleanup_existing(partials)
+        if not ok:
+            print('  WARNING: final hadd failed -- skipping')
+        return ok
+
+    # Stage all files at once then hadd locally
+    print('  Staging', len(root_files), 'file(s) to scratch...')
+    local_inputs = stage_root_files(root_files, scratch)
+    if local_inputs is None:
+        return False
+    print('  hadd:', len(local_inputs), 'file(s) ->', hadded)
+    ok = hadd_root_files(hadded, local_inputs, scratch, force=force)
+    cleanup_existing(local_inputs)
+    if not ok:
+        print('  WARNING: hadd failed -- skipping')
+    return ok
+
+
+def xrdcp_to_eos(local_path, dest_url, force=False):
+    xrdcp_flags = ['-f'] if force else []
+    xrdcp_cmd   = ['xrdcp', '-s'] + xrdcp_flags + [local_path, dest_url]
+    print('  xrdcp ->', dest_url)
+    result = subprocess.run(xrdcp_cmd)
+    return result.returncode == 0
+
+
+def transfer_jobs(args):
+    """For each submit.sh, hadd per-job output files from EOS and xrdcp to
+    /store/group/lpcsusylep/malazaro/KUCMSSkims/{version}/."""
+
+    dest_base = EOS_SKIMS_BASE.rstrip('/') + '/' + args.version.strip('/')
+    dest_xrd  = EOS_SERVER + '//' + dest_base.lstrip('/')
+    submit_files = find_submit_files(args.output)
+    if not submit_files:
+        print('No submit.sh files found under', args.output)
+        return
+
+    print('Found', len(submit_files), 'submit file(s)')
+    print('Destination:', dest_xrd)
+    print('Tag filter:', args.tag if args.tag else 'all')
+    print()
+
+    require_transfer_tools()
+
     if not args.dry_run:
-        if not xrdfs_stat(dest_base, verbose=args.verbose):
-            print('Destination folder not found — creating:', dest_base)
-            if not xrdfs_mkdir(dest_base, verbose=args.verbose):
-                print('ERROR: could not create destination folder:', dest_base)
-                sys.exit(1)
-            print('Created:', dest_base)
-        else:
-            print('Destination folder exists:', dest_base)
-        print()
+        ensure_transfer_destination(dest_base, verbose=args.verbose)
 
     n_ok = 0
     n_skip = 0
     n_fail = 0
+    n_tag_skip = 0
+    tag_skip_examples = []
     for submit_path in sorted(submit_files):
-        if f"rjrskim_{version}" not in submit_path:
+        path_info = submit_path_parts(submit_path)
+        tag       = path_info['tag']
+        if args.tag and tag != args.tag:
+            n_tag_skip += 1
+            if len(tag_skip_examples) < 5:
+                tag_skip_examples.append(submit_path)
             continue
         header_lines, job_entries, eos_out_dir = parse_submit_file(submit_path)
         if not eos_out_dir:
@@ -889,27 +1110,8 @@ def transfer_jobs(args):
             n_skip += 1
             continue
 
-        parts     = submit_path.replace('\\', '/').split('/')
-        subfolder = parts[-4] if len(parts) >= 4 else 'unknown'
-        tag       = parts[-3] if len(parts) >= 3 else 'rjrskim'
-
-        coll_tag = ''
-        for _, arg_line in job_entries[:1]:
-            m = re.search(r'-i\s+(\S+)', arg_line)
-            if m:
-                coll_tag = collection_tag_from_url(m.group(1))
-
-        # Strip 'kucmsntuple_{coll_tag}_' prefix from subfolder if present
-        # (older R22 ntuple dirs were named kucmsntuple_{tag}_{dataset}_...,
-        # while R23/R24 dirs are just {dataset}_...; normalize to the clean form)
-        clean_subfolder = subfolder
-        kucms_prefix = 'kucmsntuple_' + coll_tag + '_'
-        if coll_tag and clean_subfolder.startswith(kucms_prefix):
-            clean_subfolder = clean_subfolder[len(kucms_prefix):]
-        elif clean_subfolder.startswith('kucmsntuple_'):
-            clean_subfolder = clean_subfolder[len('kucmsntuple_'):]
-
-        merged_name = (coll_tag + '_' if coll_tag else '') + clean_subfolder + '_' + tag + '.root'
+        subfolder   = path_info['subfolder']
+        merged_name = merged_output_name(subfolder, tag, job_entries)
         dest_path   = dest_base.rstrip('/') + '/' + merged_name
         dest_url    = EOS_SERVER + '//' + dest_path.lstrip('/')
 
@@ -933,13 +1135,12 @@ def transfer_jobs(args):
             continue
 
         print('  Files  :', len(root_files))
-        xrd_inputs = [EOS_SERVER + '//' + f.lstrip('/') for f in root_files]
 
         scratch = os.path.expandvars(args.scratch).rstrip('/')
         hadded  = os.path.join(scratch, merged_name)
 
         if args.dry_run:
-            print('  [dry-run] hadd', len(xrd_inputs), 'file(s) ->', hadded)
+            print('  [dry-run] hadd', len(root_files), 'file(s) ->', hadded)
             print('  [dry-run] xrdcp ->', dest_url)
             print()
             continue
@@ -947,98 +1148,13 @@ def transfer_jobs(args):
         if not os.path.isdir(scratch):
             os.makedirs(scratch, exist_ok=True)
 
-        use_chunks = args.chunk_size > 0 and len(root_files) > args.chunk_size
+        if not merge_root_files(root_files, hadded, scratch, merged_name,
+                                args.chunk_size, force=args.force):
+            n_fail += 1
+            print()
+            continue
 
-        if os.path.exists(hadded) and not args.force:
-            print('  Local hadded file already exists, skipping hadd (use --force to redo)')
-        elif use_chunks:
-            chunks   = [root_files[i:i+args.chunk_size] for i in range(0, len(root_files), args.chunk_size)]
-            partials = []
-            chunk_ok = True
-            print('  Chunked merge: {} files in {} chunk(s) of {}'.format(
-                  len(root_files), len(chunks), args.chunk_size))
-            for ci, chunk in enumerate(chunks):
-                partial = os.path.join(scratch, merged_name.replace('.root', '.part{}.root'.format(ci)))
-                partials.append(partial)
-                print('  Chunk {}/{}: staging {} file(s)...'.format(ci+1, len(chunks), len(chunk)))
-                local_inputs = []
-                stage_ok = True
-                for f in chunk:
-                    src_url = EOS_SERVER + '//' + f.lstrip('/')
-                    local_f = os.path.join(scratch, os.path.basename(f))
-                    result  = subprocess.run(['xrdcp', '-s', src_url, local_f])
-                    if result.returncode != 0:
-                        print('  WARNING: xrdcp staging failed for', os.path.basename(f))
-                        stage_ok = False
-                        break
-                    local_inputs.append(local_f)
-                if not stage_ok:
-                    for f in local_inputs:
-                        if os.path.exists(f): os.remove(f)
-                    chunk_ok = False
-                    break
-                hadd_cmd = ['hadd', '-k', '-j', '4', '-v', '0', '-d', scratch, partial] + local_inputs
-                result   = subprocess.run(hadd_cmd)
-                for f in local_inputs:
-                    if os.path.exists(f): os.remove(f)
-                if result.returncode != 0:
-                    print('  WARNING: hadd failed on chunk', ci)
-                    chunk_ok = False
-                    break
-            if not chunk_ok:
-                for p in partials:
-                    if os.path.exists(p): os.remove(p)
-                n_fail += 1
-                print()
-                continue
-            print('  Final merge of', len(partials), 'partial(s) ->', hadded)
-            hadd_flags = ['-f'] if args.force and os.path.exists(hadded) else []
-            result = subprocess.run(['hadd', '-k', '-j', '4', '-v', '0', '-d', scratch]
-                                    + hadd_flags + [hadded] + partials)
-            for p in partials:
-                if os.path.exists(p): os.remove(p)
-            if result.returncode != 0:
-                print('  WARNING: final hadd failed -- skipping')
-                n_fail += 1
-                print()
-                continue
-        else:
-            # Stage all files at once then hadd locally
-            local_inputs = []
-            print('  Staging', len(root_files), 'file(s) to scratch...')
-            stage_ok = True
-            for f in root_files:
-                src_url = EOS_SERVER + '//' + f.lstrip('/')
-                local_f = os.path.join(scratch, os.path.basename(f))
-                result  = subprocess.run(['xrdcp', '-s', src_url, local_f])
-                if result.returncode != 0:
-                    print('  WARNING: xrdcp staging failed for', os.path.basename(f))
-                    stage_ok = False
-                    break
-                local_inputs.append(local_f)
-            if not stage_ok:
-                for f in local_inputs:
-                    if os.path.exists(f): os.remove(f)
-                n_fail += 1
-                print()
-                continue
-            hadd_flags = ['-f'] if args.force and os.path.exists(hadded) else []
-            hadd_cmd   = ['hadd', '-k', '-j', '4', '-v', '0', '-d', scratch] + hadd_flags + [hadded] + local_inputs
-            print('  hadd:', len(local_inputs), 'file(s) ->', hadded)
-            result = subprocess.run(hadd_cmd)
-            for f in local_inputs:
-                if os.path.exists(f): os.remove(f)
-            if result.returncode != 0:
-                print('  WARNING: hadd failed -- skipping')
-                n_fail += 1
-                print()
-                continue
-
-        xrdcp_flags = ['-f'] if args.force else []
-        xrdcp_cmd   = ['xrdcp', '-s'] + xrdcp_flags + [hadded, dest_url]
-        print('  xrdcp ->', dest_url)
-        result = subprocess.run(xrdcp_cmd)
-        if result.returncode != 0:
+        if not xrdcp_to_eos(hadded, dest_url, force=args.force):
             print('  WARNING: xrdcp failed')
             n_fail += 1
             print()
@@ -1060,6 +1176,11 @@ def transfer_jobs(args):
 
     print('=' * 60)
     print('Transfer complete: {} merged, {} skipped, {} failed'.format(n_ok, n_skip, n_fail))
+    if n_tag_skip:
+        print('Ignored {} submit file(s) that did not match job tag {}'.format(
+              n_tag_skip, args.tag))
+        for path in tag_skip_examples:
+            print('  ignored:', path)
     print('=' * 60)
 
 
@@ -1097,8 +1218,8 @@ def main():
         help='EOS directory to scan (bare /eos/... or root://... URL); required unless --check or --transfer')
     parser.add_argument('--output', '-o', default='Output',
         help='Output directory (default: Output)')
-    parser.add_argument('--tag', '-t', default='rjrskim',
-        help='Job name tag (default: rjrskim)')
+    parser.add_argument('--tag', '-t', default=None,
+        help='Job name tag (default: rjrskim for submission; all tags for --transfer)')
     parser.add_argument('--sandbox', default=SANDBOX_DEFAULT,
         help='CMSSW sandbox tarball path on worker node')
     parser.add_argument('--max-mat',  dest='max_mat',  type=int, default=-1,
@@ -1123,6 +1244,8 @@ def main():
     if args.new_inputs:
         if not args.eos_path:
             parser.error('--new-inputs requires --eos-path')
+        if args.tag is None:
+            args.tag = 'rjrskim'
         if args.version:
             args.tag = args.tag + '_v' + args.version.lstrip('v')
         new_inputs_mode(args)
@@ -1135,14 +1258,12 @@ def main():
     if args.transfer:
         if args.version is None:
             detected = None
-            for root, dirs, files in os.walk(args.output):
-                if 'submit.sh' in files:
-                    parts = root.replace('\\', '/').split('/')
-                    tag_part = parts[-2] if len(parts) >= 2 else ''
-                    m = re.search(r'_v(\d+)$', tag_part)
-                    if m:
-                        detected = m.group(1)
-                        break
+            for submit_path in find_submit_files(args.output):
+                tag_part = submit_path_parts(submit_path)['tag']
+                m = re.search(r'_v(\d+)$', tag_part)
+                if m:
+                    detected = m.group(1)
+                    break
             if detected:
                 version_str = 'skims_v' + detected
                 ans = input('Auto-detected version {}. Proceed? [Y/n] '.format(version_str)).strip().lower()
@@ -1161,25 +1282,16 @@ def main():
     if not args.eos_path:
         parser.error('--eos-path is required unless --check or --transfer is specified')
 
+    if args.tag is None:
+        args.tag = 'rjrskim'
+
     if args.version:
         args.tag = args.tag + '_v' + args.version.lstrip('v')
 
     eos_path    = args.eos_path.rstrip('/')
     odir        = args.output.rstrip('/') + '/'
-    sample_type = detect_sample_type(eos_path)
-    year        = detect_year(eos_path)
-    timecali    = get_timecali(year, sample_type)
-    if not timecali and sample_type == 'signal':
-        timecali = 'r2_ul18_mc'
-
-    print('EOS path:    ', eos_path)
-    print('Sample type: ', sample_type)
-    print('Year:        ', year)
-    print('Timecali:    ', timecali)
-    print()
-
-    # detect the dominant keyword for data key generation
-    data_kw = next((kw for kw in sorted(DATA_KEYWORDS, key=len, reverse=True) if kw in eos_path), 'Data')
+    sample_type, year, timecali, data_kw = sample_context(eos_path)
+    print_sample_context(eos_path, sample_type, year, timecali)
 
     # -----------------------------------------------------------------------
     # Discover datasets
@@ -1214,99 +1326,31 @@ def main():
             print('  No .root files found, skipping.')
             continue
 
-        # --- metadata lookup ---
-        xsec       = '1'
-        key        = subfolder[:subfolder.index('_')] if '_' in subfolder else subfolder
-        gluinomass = '0'
-        n2mass     = '0'
-        n1mass     = '0'
-        mctype     = 0
-        mc_wt      = '1'
+        metadata = resolve_dataset_metadata(subfolder, eos_path, sample_type, data_kw)
+        flags    = build_skimmer_flags(metadata, args, timecali)
+        paths    = dataset_paths(args.output, subfolder, args.tag)
 
-        if sample_type == 'data':
-            mctype   = 1
-            key      = make_data_key(subfolder, data_kw)
-
-        elif sample_type == 'signal':
-            sig_xsec, gluinomass, n2mass, n1mass = lookup_signal_xsec(subfolder)
-            if sig_xsec is not None:
-                xsec = str(sig_xsec)
-            else:
-                print('  WARNING: no xsec found for', subfolder, '- using 0')
-                xsec = '0'
-            key = signal_event_count_key(subfolder)
-
-        else:  # bg
-            meta = lookup_bg_meta(subfolder)
-            if meta:
-                xsec = str(meta['xsec'])
-                key  = meta['key']
-            else:
-                print('  WARNING: no xsec found for', subfolder, '- using 0')
-                xsec = '0'
-
-        # --- build skimmer flags ---
-        flags = (
-            ' --xsec '        + xsec
-            + ' --dataSetKey ' + key
-            + ' --gluinoMass ' + gluinomass
-            + ' --N2Mass '     + n2mass
-            + ' --timeCaliTag ' + timecali
-            + ' --MCweight '   + mc_wt
-            + ' --MCtype '     + str(mctype)
-        )
-        if mctype == 0:
-            flags += ' --hasGenInfo'
-        if not args.psiche:
-            flags += ' --noBHC'
-        if args.no_sv:
-            flags += ' --noSV'
-        if args.hlt_off:
-            flags += ' --HLTPathsOff'
-        if args.branch_mask:
-            flags += ' --branchMask ' + args.branch_mask
-
-        print('  xsec:', xsec, '| key:', key)
-        if mctype != 1 and event_count_keys and key not in event_count_keys:
-            print('  WARNING: key not found in config/EventCount.txt:', key)
-            print('           This job will likely get inf evtFillWgt.')
-
-        # --- output paths ---
-        prefix      = subfolder.split('_')[0]
-        work_dir    = odir + prefix + '/' + subfolder + '/' + args.tag
-        src_dir     = work_dir + '/src'
-        log_dir     = work_dir + '/log'
-        out_dir     = work_dir + '/out'
-        submit_path = src_dir  + '/submit.sh'
-        ofilename   = 'condor_' + subfolder + '_' + args.tag
-
-        print('  Submit:', submit_path)
+        print('  xsec:', metadata['xsec'], '| key:', metadata['key'])
+        warn_missing_event_count_key(metadata, event_count_keys)
+        print('  Submit:', paths.submit_path)
 
         # --- record weights ---
-        weights[key] = {
-            'xsec': xsec, 'mc_wt': mc_wt, 'mctype': mctype,
-            'timecali': timecali, 'gluinomass': gluinomass,
-            'n2mass': n2mass, 'n1mass': n1mass,
-            'n_files': len(root_files), 'subfolder': subfolder,
-        }
+        weights[metadata['key']] = weight_record(metadata, timecali, root_files, subfolder)
 
-        submit_files.append(submit_path)
+        submit_files.append(paths.submit_path)
 
         if args.dry_run:
             print('  [DRY RUN]')
             continue
 
-        eos_out_dir = None
-        if args.eos_out:
-            eos_out_dir = os.path.expandvars(args.eos_out).rstrip('/') + '/' + prefix + '/' + subfolder + '/' + args.tag
+        eos_out_dir = eos_output_dir(args, paths)
+        if eos_out_dir:
             print('  EOS out:', eos_out_dir)
             xrdfs_mkdir(eos_out_dir, verbose=args.verbose)
 
-        local_dirs = [src_dir, log_dir] if eos_out_dir else [src_dir, log_dir, out_dir]
-        for d in local_dirs:
-            os.makedirs(d, exist_ok=True)
+        ensure_submit_dirs(paths, eos_out_dir)
 
-        write_submit(submit_path, log_dir, out_dir, ofilename,
+        write_submit(paths.submit_path, paths.log_dir, paths.out_dir, paths.ofilename,
                      root_files, flags, args, eos_out_dir=eos_out_dir)
 
     # -----------------------------------------------------------------------
@@ -1334,14 +1378,7 @@ def main():
     else:
         multi = odir + args.tag + '_MultiSub.sh'
         if not args.dry_run:
-            with open(multi, 'w') as fh:
-                fh.write('#!/bin/bash\n')
-                for sp in submit_files:
-                    label = '/'.join(sp.split('/')[-4:-2])
-                    fh.write('echo "Submitting ' + label + '..."\n')
-                    fh.write('condor_submit ' + sp + '\n')
-                    fh.write('echo ""\n')
-            os.chmod(multi, 0o755)
+            write_multi_submit_script(multi, submit_files)
             print('Multi-submit script:', multi)
             print('Run with:  source', multi)
         else:
