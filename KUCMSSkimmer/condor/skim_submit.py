@@ -119,6 +119,8 @@ SIGNAL_KEYWORDS = {'SMS', 'gogoG', 'gogoZ', 'gogoGZ', 'sqsqG', 'GlGl'}
 SANDBOX_DEFAULT  = "/uscms/home/mlazarov/nobackup/sandboxes/sandbox-CMSSW_13_3_3.tar.bz2"
 EOS_SKIMS_BASE   = "/store/group/lpcsusylep/malazaro/KUCMSSkims"
 EOS_SERVER       = "root://cmseos.fnal.gov"
+SKIMMER_DIR      = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CONDOR_DIR       = os.path.dirname(os.path.abspath(__file__))
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -174,6 +176,47 @@ def read_event_count_keys(path=None):
         print('WARNING: could not read', path,
               '- MC EventCount key checks will be skipped')
     return keys
+
+
+def normalize_branch_mask_path(mask_path):
+    """Resolve a submit-side branch mask path and return the worker-side path.
+
+    Condor jobs run from scratch after unpacking config.tgz, so skimmer
+    arguments must refer to files as config/branch_masks/<name>. Locally the
+    user may call this script from KUCMSSkimmer/, KUCMSSkimmer/condor/, or
+    elsewhere, so accept cwd-relative and skimmer-relative paths.
+    """
+    if not mask_path:
+        return ''
+
+    candidates = []
+    if os.path.isabs(mask_path):
+        candidates.append(mask_path)
+    else:
+        candidates.extend([
+            os.path.abspath(mask_path),
+            os.path.abspath(os.path.join(CONDOR_DIR, mask_path)),
+            os.path.abspath(os.path.join(SKIMMER_DIR, mask_path)),
+        ])
+
+    resolved = None
+    for candidate in candidates:
+        if os.path.isfile(candidate):
+            resolved = candidate
+            break
+
+    if resolved is None:
+        raise ValueError('branch mask file not found: ' + mask_path)
+
+    branch_mask_dir = os.path.join(SKIMMER_DIR, 'config', 'branch_masks')
+    if os.path.commonpath([branch_mask_dir, resolved]) != branch_mask_dir:
+        raise ValueError(
+            'branch mask must be under config/branch_masks so it is available '
+            'inside config.tgz: ' + resolved
+        )
+
+    rel = os.path.relpath(resolved, SKIMMER_DIR)
+    return rel.replace(os.sep, '/')
 
 
 def lookup_bg_meta(subfolder):
@@ -283,9 +326,24 @@ def make_data_key(subfolder, sample_type_kw):
     return sample_type_kw + yr + era
 
 
+DatasetInfo = namedtuple('DatasetInfo', [
+    'collection_dir',
+    'collection_name',
+    'task_dir',
+    'task_name',
+    'timestamp_dir',
+    'raw_task_suffix',
+    'sample_tag',
+    'ntuple_tag',
+    'canonical_base',
+    'root_files',
+])
+
+
 DatasetPaths = namedtuple('DatasetPaths', [
-    'subfolder',
-    'prefix',
+    'sample_tag',
+    'ntuple_tag',
+    'canonical_base',
     'work_dir',
     'src_dir',
     'log_dir',
@@ -381,19 +439,19 @@ def build_skimmer_flags(metadata, args, timecali):
     return flags
 
 
-def dataset_paths(output_dir, subfolder, tag):
+def dataset_paths(output_dir, dataset, tag):
     odir     = output_dir.rstrip('/') + '/'
-    prefix   = subfolder.split('_')[0]
-    work_dir = odir + prefix + '/' + subfolder + '/' + tag
+    work_dir = odir + dataset.ntuple_tag + '/' + dataset.sample_tag + '/' + tag
     return DatasetPaths(
-        subfolder=subfolder,
-        prefix=prefix,
+        sample_tag=dataset.sample_tag,
+        ntuple_tag=dataset.ntuple_tag,
+        canonical_base=dataset.canonical_base,
         work_dir=work_dir,
         src_dir=work_dir + '/src',
         log_dir=work_dir + '/log',
         out_dir=work_dir + '/out',
         submit_path=work_dir + '/src/submit.sh',
-        ofilename='condor_' + subfolder + '_' + tag,
+        ofilename='condor_' + dataset.canonical_base + '__' + tag,
     )
 
 
@@ -401,7 +459,7 @@ def eos_output_dir(args, paths):
     if not args.eos_out:
         return None
     return (os.path.expandvars(args.eos_out).rstrip('/')
-            + '/' + paths.prefix + '/' + paths.subfolder
+            + '/' + paths.ntuple_tag + '/' + paths.sample_tag
             + '/' + args.tag)
 
 
@@ -490,27 +548,175 @@ def normalize_eos_path(fpath):
     """Normalize any EOS path form to a bare /store/... path for comparison.
     Handles: root://server//store/..., root://server/store/..., /eos/uscms/store/..., /store/...
     """
+    def clean(path):
+        return re.sub(r'/+', '/', path.rstrip('/'))
+
     if fpath.startswith('root://'):
         m = re.match(r'root://[^/]+/(/.+)', fpath)
         if m:
-            return m.group(1)
+            return clean(m.group(1))
         m = re.match(r'root://[^/]+/(.+)', fpath)
         if m:
-            return '/' + m.group(1)
+            return clean('/' + m.group(1))
     if fpath.startswith('/eos/uscms'):
-        return fpath[len('/eos/uscms'):]
-    return '/' + fpath.lstrip('/')
+        return clean(fpath[len('/eos/uscms'):])
+    return clean('/' + fpath.lstrip('/'))
 
 
-def collection_tag_from_url(url):
-    """Extract collection tag from an XRootD input URL.
-    e.g. root://...//store/.../kucmsntuple_QCD_R18_SVIPM100_MiniAOD_v34/... -> QCD_R18_SVIPM100_MiniAOD_v34
-    Returns empty string if not found."""
-    m = re.search(r'kucmsntuple_([^/]+)', url)
-    return m.group(1) if m else ''
+def task_suffix_from_name(collection_name, task_name):
+    collection_core = remove_prefix_once(collection_name, 'kucmsntuple_')
+    exact_prefix = 'kucmsntuple_' + collection_core + '_'
+    if task_name.startswith(exact_prefix):
+        return task_name[len(exact_prefix):]
+    return task_name
+
+
+def make_sample_tag(raw_task_suffix):
+    tier_tokens = {'MiniAOD', 'MINIAOD', 'AODSIM', 'MINI', 'MIN'}
+    tokens = [token for token in raw_task_suffix.split('_') if token not in tier_tokens]
+    sample = '_'.join(tokens)
+    if sample.startswith('SMS-'):
+        sample = sample[len('SMS-'):]
+    elif sample.startswith('SMS_'):
+        sample = sample[len('SMS_'):]
+    return sample
+
+
+def make_ntuple_tag(collection_name):
+    core = remove_prefix_once(collection_name, 'kucmsntuple_')
+    tokens = core.split('_')
+    start = None
+    for i, token in enumerate(tokens):
+        if token.startswith('SV'):
+            start = i
+            break
+    if start is None:
+        raise ValueError('Collection has no SV* ntuple token: ' + collection_name)
+    kept = [token for token in tokens[start:] if token not in {'MiniAOD', 'MINIAOD'}]
+    return '_'.join(kept)
+
+
+def final_merged_filename(sample_tag, ntuple_tag, skim_tag):
+    return sample_tag + '__' + ntuple_tag + '__' + skim_tag + '.root'
+
+
+def find_enclosing_collection(path):
+    norm = normalize_eos_path(path)
+    parts = [p for p in norm.split('/') if p]
+    prefix = ''
+    for part in parts:
+        prefix += '/' + part
+        if part.startswith('kucmsntuple_'):
+            return prefix, part
+    raise ValueError('EOS path must identify one kucmsntuple_* collection directory: ' + path)
+
+
+def reject_shard_level_path(path):
+    norm = normalize_eos_path(path)
+    parent = os.path.basename(os.path.dirname(norm))
+    leaf = os.path.basename(norm)
+    if _CRAB_TS_RE.match(parent) and re.match(r'^\d+$', leaf):
+        raise ValueError(
+            'Shard-level paths are not supported; provide the CRAB task or timestamp directory: '
+            + path
+        )
+
+
+def _is_dir_path(path):
+    return not path.endswith('.root') and '.' not in os.path.basename(path)
+
+
+def _root_files_for_timestamp(timestamp_dir, max_files=-1, verbose=False):
+    files = find_root_files(timestamp_dir, max_files=max_files, verbose=verbose)
+    return tuple(normalize_eos_path(f) for f in files)
+
+
+def _dataset_info(collection_dir, collection_name, task_dir, timestamp_dir,
+                  max_files=-1, verbose=False):
+    task_dir = normalize_eos_path(task_dir)
+    timestamp_dir = normalize_eos_path(timestamp_dir)
+    task_name = os.path.basename(task_dir)
+    raw_task_suffix = task_suffix_from_name(collection_name, task_name)
+    sample_tag = make_sample_tag(raw_task_suffix)
+    ntuple_tag = make_ntuple_tag(collection_name)
+    canonical_base = sample_tag + '__' + ntuple_tag
+    return DatasetInfo(
+        collection_dir=collection_dir,
+        collection_name=collection_name,
+        task_dir=task_dir,
+        task_name=task_name,
+        timestamp_dir=timestamp_dir,
+        raw_task_suffix=raw_task_suffix,
+        sample_tag=sample_tag,
+        ntuple_tag=ntuple_tag,
+        canonical_base=canonical_base,
+        root_files=_root_files_for_timestamp(timestamp_dir, max_files=max_files,
+                                             verbose=verbose),
+    )
+
+
+def _task_timestamp_dirs(task_dir, verbose=False):
+    return sorted(
+        normalize_eos_path(e) for e in xrdfs_ls(task_dir, verbose=verbose)
+        if _CRAB_TS_RE.match(os.path.basename(e))
+    )
+
+
+def _discover_task_dirs(path, collection_dir, collection_name, max_files=-1,
+                        verbose=False):
+    entries = [normalize_eos_path(e) for e in xrdfs_ls(path, verbose=verbose)]
+    subdirs = [e for e in entries if _is_dir_path(e)]
+    timestamps = [e for e in subdirs if _CRAB_TS_RE.match(os.path.basename(e))]
+    if timestamps:
+        latest = max(timestamps, key=crab_timestamp_key)
+        skipped = sorted(os.path.basename(e) for e in timestamps if e != latest)
+        if skipped:
+            print('  [crab] skipping:', ', '.join(skipped),
+                  '-> using:', os.path.basename(latest))
+        return [_dataset_info(collection_dir, collection_name, path, latest,
+                              max_files=max_files, verbose=verbose)]
+
+    results = []
+    for subdir in subdirs:
+        results.extend(_discover_task_dirs(subdir, collection_dir, collection_name,
+                                           max_files=max_files, verbose=verbose))
+    return results
+
+
+def validate_unique_canonical_bases(datasets):
+    seen = {}
+    for dataset in datasets:
+        previous = seen.get(dataset.canonical_base)
+        if previous and previous.task_dir != dataset.task_dir:
+            raise ValueError(
+                'Duplicate cleaned skim name "{}" for tasks:\n'
+                '  {} ({})\n'
+                '  {} ({})'.format(
+                    dataset.canonical_base,
+                    previous.task_dir,
+                    previous.timestamp_dir,
+                    dataset.task_dir,
+                    dataset.timestamp_dir,
+                )
+            )
+        seen[dataset.canonical_base] = dataset
 
 
 _CRAB_TS_RE = re.compile(r'^(?:\d{6}|\d{8})_\d{6}$')
+
+
+def remove_prefix_once(text, prefix):
+    if text.startswith(prefix):
+        return text[len(prefix):]
+    return text
+
+
+def crab_timestamp_key(path):
+    name = os.path.basename(path)
+    date, time = name.split('_', 1)
+    if len(date) == 6:
+        date = '20' + date
+    return date + '_' + time
 
 
 def find_root_files(path, max_files=-1, verbose=False):
@@ -529,54 +735,26 @@ def find_root_files(path, max_files=-1, verbose=False):
 
 
 def find_crab_datasets(path, name='', max_files=-1, peek_only=False, verbose=False):
-    """Walk the EOS tree and return [(group_name, [root_files])] per dataset.
+    """Discover CRAB datasets with names derived from collection and task dirs."""
+    del name, peek_only
+    norm = normalize_eos_path(path)
+    reject_shard_level_path(norm)
+    collection_dir, collection_name = find_enclosing_collection(norm)
 
-    group_name accumulates the basenames of directories traversed below the
-    entry point, so it reflects scope regardless of where --eos-path points:
-      year level   -> 'JetMET0_kucmsntuple_..._Run2024C-PromptReco-v1'
-      stream level -> 'kucmsntuple_..._Run2024C-PromptReco-v1'
-      era level    -> 'kucmsntuple_..._Run2024C-PromptReco-v1'
+    leaf = os.path.basename(norm)
+    parent = normalize_eos_path(os.path.dirname(norm))
+    if _CRAB_TS_RE.match(leaf):
+        timestamps = _task_timestamp_dirs(parent, verbose=verbose)
+        if norm not in timestamps:
+            raise ValueError('Explicit timestamp directory does not exist under task: ' + norm)
+        datasets = [_dataset_info(collection_dir, collection_name, parent, norm,
+                                  max_files=max_files, verbose=verbose)]
+    else:
+        datasets = _discover_task_dirs(norm, collection_dir, collection_name,
+                                       max_files=max_files, verbose=verbose)
 
-    Dirs whose children are all CRAB timestamps (YYMMDD_HHMMSS) are treated as
-    dataset dirs; only the latest timestamp is used.  peek_only skips deep
-    recursion for dry-run estimates.
-    """
-    entries    = xrdfs_ls(path, verbose=verbose)
-    root_files = [e for e in entries if e.endswith('.root')]
-    subdirs    = [e for e in entries if not e.endswith('.root')
-                  and '.' not in os.path.basename(e)]
-
-    group = name or os.path.basename(path)
-
-    # Case 1: .root files live directly here
-    if root_files:
-        files = root_files[:max_files] if max_files > 0 else root_files
-        return [(group, files)]
-
-    if not subdirs:
-        return []
-
-    # Case 2: all subdirs are CRAB timestamps -> dataset dir, use only latest
-    if all(_CRAB_TS_RE.match(os.path.basename(e)) for e in subdirs):
-        latest  = max(subdirs, key=os.path.basename)
-        skipped = sorted(os.path.basename(e) for e in subdirs if e != latest)
-        if skipped:
-            print('  [crab] skipping:', ', '.join(skipped),
-                  '-> using:', os.path.basename(latest))
-        if peek_only:
-            files = [e for e in xrdfs_ls(latest, verbose=verbose) if e.endswith('.root')]
-        else:
-            files = find_root_files(latest, max_files=max_files, verbose=verbose)
-        return [(group, files)]
-
-    # Case 3: intermediate dirs -> recurse, accumulating name
-    results = []
-    for sd in subdirs:
-        child_name = (name + '_' + os.path.basename(sd)) if name else os.path.basename(sd)
-        results.extend(find_crab_datasets(sd, name=child_name,
-                                          max_files=max_files, peek_only=peek_only,
-                                          verbose=verbose))
-    return results
+    validate_unique_canonical_bases(datasets)
+    return datasets
 
 
 def write_submit(path, log_dir, out_dir, ofilename, root_files, flags, args, eos_out_dir=None, offset=0):
@@ -690,8 +868,12 @@ def find_submit_files(output_dir):
 
 def submit_path_parts(submit_path):
     parts = submit_path.replace('\\', '/').split('/')
+    ntuple_tag = parts[-5] if len(parts) >= 5 else ''
+    sample_tag = parts[-4] if len(parts) >= 4 else submit_path
     return {
-        'subfolder': parts[-4] if len(parts) >= 4 else submit_path,
+        'ntuple_tag': ntuple_tag,
+        'sample_tag': sample_tag,
+        'canonical_base': sample_tag + '__' + ntuple_tag if ntuple_tag else sample_tag,
         'tag': parts[-3] if len(parts) >= 3 else 'rjrskim',
     }
 
@@ -706,14 +888,6 @@ def write_multi_submit_script(path, submit_files, action='Submitting', blank_lin
             if blank_lines:
                 fh.write('echo ""\n')
     os.chmod(path, 0o755)
-
-
-def first_input_url(job_entries):
-    for _, arg_line in job_entries[:1]:
-        m = re.search(r'-i\s+(\S+)', arg_line)
-        if m:
-            return m.group(1)
-    return ''
 
 
 def get_job_num_from_filename(fname):
@@ -782,9 +956,8 @@ def check_jobs(output_dir, verbose=False, test_job=None):
         header_lines, job_entries, eos_out_dir = parse_submit_file(submit_path)
         n_total = len(job_entries)
 
-        # Sample name is 4 levels up from submit.sh
-        # e.g. Output/QCD/QCD_HT100to200_.../rjrskim/src/submit.sh
-        subfolder = submit_path_parts(submit_path)['subfolder']
+        path_info = submit_path_parts(submit_path)
+        label = path_info['canonical_base'] + ' [' + path_info['tag'] + ']'
 
         # List output files from EOS or local
         if eos_out_dir:
@@ -807,7 +980,7 @@ def check_jobs(output_dir, verbose=False, test_job=None):
         n_missing  = n_total - n_done
         status     = 'OK' if n_missing == 0 else 'INCOMPLETE'
 
-        print('{}: {}/{} missing  [{}]'.format(subfolder, n_missing, n_total, status))
+        print('{}: {}/{} missing  [{}]'.format(label, n_missing, n_total, status))
 
         if n_missing > 0:
             missing_indices = sorted(set(range(n_total)) - completed)
@@ -863,10 +1036,14 @@ def new_inputs_mode(args):
 
     new_submit_files = []
 
-    for subfolder, root_files in datasets:
-        paths = dataset_paths(args.output, subfolder, args.tag)
+    for dataset in datasets:
+        paths = dataset_paths(args.output, dataset, args.tag)
+        root_files = dataset.root_files
 
-        print('\nDataset:', subfolder)
+        final_skim = final_merged_filename(dataset.sample_tag, dataset.ntuple_tag,
+                                           args.tag)
+
+        print('\nDataset:', dataset.sample_tag)
 
         if not os.path.exists(paths.submit_path):
             print('  No existing submit.sh found — run without --new-inputs first, skipping.')
@@ -895,7 +1072,9 @@ def new_inputs_mode(args):
         # New job indices start immediately after the original submission
         offset = len(job_entries)
 
-        metadata = resolve_dataset_metadata(subfolder, eos_path, sample_type, data_kw)
+        dataset_data_kw = data_keyword(dataset.raw_task_suffix) if sample_type == 'data' else data_kw
+        metadata = resolve_dataset_metadata(dataset.raw_task_suffix, dataset.task_name,
+                                            sample_type, dataset_data_kw)
         flags    = build_skimmer_flags(metadata, args, timecali)
 
         print('  xsec:', metadata['xsec'], '| key:', metadata['key'])
@@ -972,20 +1151,60 @@ def ensure_transfer_destination(dest_base, verbose=False):
     print()
 
 
-def merged_output_name(subfolder, tag, job_entries):
-    coll_tag = collection_tag_from_url(first_input_url(job_entries))
+def merged_output_name(path_info):
+    return final_merged_filename(path_info['sample_tag'], path_info['ntuple_tag'],
+                                 path_info['tag'])
 
-    # Strip 'kucmsntuple_{coll_tag}_' prefix from subfolder if present
-    # (older R22 ntuple dirs were named kucmsntuple_{tag}_{dataset}_...,
-    # while R23/R24 dirs are just {dataset}_...; normalize to the clean form)
-    clean_subfolder = subfolder
-    kucms_prefix = 'kucmsntuple_' + coll_tag + '_'
-    if coll_tag and clean_subfolder.startswith(kucms_prefix):
-        clean_subfolder = clean_subfolder[len(kucms_prefix):]
-    elif clean_subfolder.startswith('kucmsntuple_'):
-        clean_subfolder = clean_subfolder[len('kucmsntuple_'):]
 
-    return (coll_tag + '_' if coll_tag else '') + clean_subfolder + '_' + tag + '.root'
+TransferOutputClassification = namedtuple('TransferOutputClassification', [
+    'output_for_index',
+    'selected_outputs',
+    'missing_indices',
+    'unexpected_indices',
+    'duplicate_indices',
+    'unrelated_root_files',
+])
+
+
+def classify_transfer_outputs(entries, expected_prefix, expected_indices):
+    pattern = re.compile(r'^' + re.escape(expected_prefix) + r'\.(\d+)\.root$')
+    paths_by_index = {}
+    unrelated_root_files = []
+
+    for entry in entries:
+        base = os.path.basename(entry)
+        match = pattern.match(base)
+        if match:
+            index = int(match.group(1))
+            paths_by_index.setdefault(index, []).append(entry)
+        elif base.endswith('.root'):
+            unrelated_root_files.append(entry)
+
+    duplicate_indices = sorted(index for index, paths in paths_by_index.items()
+                               if len(paths) > 1)
+    found_indices = set(paths_by_index)
+    missing_indices = sorted(expected_indices - found_indices)
+    unexpected_indices = sorted(found_indices - expected_indices)
+    duplicate_set = set(duplicate_indices)
+    output_for_index = {
+        index: paths[0]
+        for index, paths in paths_by_index.items()
+        if index in expected_indices and index not in duplicate_set and len(paths) == 1
+    }
+    selected_outputs = [
+        output_for_index[index]
+        for index in sorted(expected_indices)
+        if index in output_for_index
+    ]
+
+    return TransferOutputClassification(
+        output_for_index=output_for_index,
+        selected_outputs=selected_outputs,
+        missing_indices=missing_indices,
+        unexpected_indices=unexpected_indices,
+        duplicate_indices=duplicate_indices,
+        unrelated_root_files=unrelated_root_files,
+    )
 
 
 def cleanup_existing(paths):
@@ -1109,27 +1328,46 @@ def transfer_jobs(args):
             print('SKIP (no --eos-out found):', submit_path)
             n_skip += 1
             continue
+        expected_indices = set(range(len(job_entries)))
 
-        subfolder   = path_info['subfolder']
-        merged_name = merged_output_name(subfolder, tag, job_entries)
+        sample_tag  = path_info['sample_tag']
+        merged_name = merged_output_name(path_info)
         dest_path   = dest_base.rstrip('/') + '/' + merged_name
         dest_url    = EOS_SERVER + '//' + dest_path.lstrip('/')
 
-        print('Sample:', subfolder)
+        print('Sample:', sample_tag)
         print('  Merged :', merged_name)
         print('  Dest   :', dest_url)
 
-        if not args.force and xrdfs_stat(dest_path, verbose=args.verbose):
-            print('  Already on EOS, skipping (use --force to overwrite)')
-            n_skip += 1
+        expected_prefix = 'condor_' + path_info['canonical_base'] + '__' + path_info['tag']
+        entries = xrdfs_ls(eos_out_dir, verbose=args.verbose)
+        classified = classify_transfer_outputs(entries, expected_prefix, expected_indices)
+        root_files = [
+            classified.output_for_index[index]
+            for index in sorted(expected_indices)
+            if index in classified.output_for_index
+        ]
+
+        print('  Expected jobs:', len(expected_indices))
+        print('  Completed expected jobs:', len(root_files))
+        if classified.missing_indices:
+            print('  Missing indices:', classified.missing_indices)
+        if classified.unexpected_indices:
+            print('  Unexpected indices:', classified.unexpected_indices)
+        if classified.duplicate_indices:
+            print('  Duplicate indices:', classified.duplicate_indices)
+        if classified.unrelated_root_files:
+            print('  Ignoring unrelated ROOT files:', len(classified.unrelated_root_files))
+
+        if (not job_entries or classified.missing_indices
+                or classified.unexpected_indices or classified.duplicate_indices):
+            print('  ERROR: incomplete or inconsistent per-job output set -- not transferring')
+            n_fail += 1
             print()
             continue
 
-        entries    = xrdfs_ls(eos_out_dir, verbose=args.verbose)
-        root_files = [e for e in entries if e.endswith('.root')]
-
-        if not root_files:
-            print('  WARNING: no output .root files found -- skipping')
+        if not args.force and xrdfs_stat(dest_path, verbose=args.verbose):
+            print('  Already on EOS, skipping (use --force to overwrite)')
             n_skip += 1
             print()
             continue
@@ -1241,6 +1479,15 @@ def main():
     parser.add_argument('--verbose', '-v', action='store_true', help='Print xrdfs commands')
     args = parser.parse_args()
 
+    if args.branch_mask:
+        try:
+            original_branch_mask = args.branch_mask
+            args.branch_mask = normalize_branch_mask_path(args.branch_mask)
+            if args.branch_mask != original_branch_mask:
+                print('Branch mask:', original_branch_mask, '->', args.branch_mask)
+        except ValueError as exc:
+            parser.error(str(exc))
+
     if args.new_inputs:
         if not args.eos_path:
             parser.error('--new-inputs requires --eos-path')
@@ -1313,29 +1560,53 @@ def main():
     weights      = {}
     submit_files = []
 
-    for subfolder, root_files in datasets:
-        print('\nDataset:', subfolder)
+    for dataset in datasets:
+        root_files = dataset.root_files
+        paths = dataset_paths(args.output, dataset, args.tag)
+        eos_out_dir = eos_output_dir(args, paths)
+        final_skim = final_merged_filename(dataset.sample_tag, dataset.ntuple_tag,
+                                           args.tag)
 
-        if args.dry_run:
-            print('  .root files (peek):', len(root_files),
-                  '(dry-run; real count may be higher)')
-        else:
-            print('  Files:', len(root_files))
+        print('\nDataset:', dataset.sample_tag)
 
         if not root_files and not args.dry_run:
             print('  No .root files found, skipping.')
             continue
 
-        metadata = resolve_dataset_metadata(subfolder, eos_path, sample_type, data_kw)
+        dataset_data_kw = data_keyword(dataset.raw_task_suffix) if sample_type == 'data' else data_kw
+        metadata = resolve_dataset_metadata(dataset.raw_task_suffix, dataset.task_name,
+                                            sample_type, dataset_data_kw)
         flags    = build_skimmer_flags(metadata, args, timecali)
-        paths    = dataset_paths(args.output, subfolder, args.tag)
 
-        print('  xsec:', metadata['xsec'], '| key:', metadata['key'])
+        print('  Ntuple tag:     ', dataset.ntuple_tag)
+        print('  Skim tag:       ', args.tag)
+        print('  Branch mask:    ', args.branch_mask if args.branch_mask else '[None]')
+        print('  Input files:    ', len(root_files))
+        print('  Jobs:           ', len(root_files))
+        print()
+        print('  Submit file:    ', paths.submit_path)
+        if eos_out_dir:
+            print('  Job output dir: ', eos_out_dir)
+        else:
+            print('  Job output dir: ', paths.out_dir)
+        print('  Job output name:', paths.ofilename + '.<job>.root')
+        print('  Final skim:     ', final_skim)
+        print()
+        print('  Metadata:       ', 'xsec=' + metadata['xsec'] + ', key=' + metadata['key'])
         warn_missing_event_count_key(metadata, event_count_keys)
-        print('  Submit:', paths.submit_path)
+
+        if args.verbose:
+            print()
+            print('  Collection:     ', dataset.collection_dir)
+            print('  Task:           ', dataset.task_dir)
+            print('  Timestamp:      ', dataset.timestamp_dir)
+            print('  Raw task suffix:', dataset.raw_task_suffix)
+            print('  Canonical base: ', dataset.canonical_base)
+            print('  Work directory: ', paths.work_dir)
 
         # --- record weights ---
-        weights[metadata['key']] = weight_record(metadata, timecali, root_files, subfolder)
+        weights[metadata['key']] = weight_record(metadata, timecali, root_files,
+                                                 dataset.raw_task_suffix)
 
         submit_files.append(paths.submit_path)
 
@@ -1343,7 +1614,6 @@ def main():
             print('  [DRY RUN]')
             continue
 
-        eos_out_dir = eos_output_dir(args, paths)
         if eos_out_dir:
             print('  EOS out:', eos_out_dir)
             xrdfs_mkdir(eos_out_dir, verbose=args.verbose)
