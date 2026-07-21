@@ -65,7 +65,7 @@ void KUCMSAodSkimmer::processPhotons(){
   float bhCutVal = 0.917252;
   float lphotsig = -9999;
   float notBHCutVal = 0.18523645;//1-0.81476355;
-  float nonPromptMedIsoCutVal = 0.9;
+  float nonPromptMedIsoCutVal = 0.7;
   float nonPromptMedIsoCutValLow = 0.4;
 
   float EEtightIsoLowScore1pho = 0.9;
@@ -88,18 +88,16 @@ void KUCMSAodSkimmer::processPhotons(){
   float EBVeryLooseIsoCutVal = 0.2919292;
   
   float bh_tagged_lead_timesig = -999; //time sig of lead BH photon
-  float notbh_tagged_lead_timesig = -999; //time sig of lead !BH photon
-  float npmediso_tagged_lead_timesig = -999;
-  float nptightiso_tagged_lead_timesig = -999;
+  float nptightisonotbh_tagged_lead_timesig = -999; //time sig of lead !BH photon
+  float npmedisonotbh_tagged_lead_timesig = -999;
   float val_bh_tagged_lead_timesig = -999; //time sig of lead BH photon
-  float val_notbh_tagged_lead_timesig = -999; //time sig of lead !BH photon
-  float val_npmediso_tagged_lead_timesig = -999;
-  float val_nptightiso_tagged_lead_timesig = -999;
+  float val_nptightisonotbh_tagged_lead_timesig = -999; //time sig of lead !BH photon
+  float val_npmedisonotbh_tagged_lead_timesig = -999;
   //counting number of baseline photons passing a certain ID
   uInt nPromptphotons = 0;
   uInt nNonPromptphotons = 0;
   uInt nBHphotons = 0; 
-  uInt nNotBHphotons = 0;
+  uInt nNotBHTightIsophotons = 0;
   uInt nTightIsoEq1Photons = 0;
   uInt nTightIsoEq2Photons = 0;
   uInt nMedIsophotons = 0;
@@ -107,17 +105,15 @@ void KUCMSAodSkimmer::processPhotons(){
   uInt nMedIsoEq2Photons = 0;
   uInt nCompMedIsoEq2Photons = 0;
   uInt nCompTightIsoEq2Photons = 0;
-  uInt nNPMedIsophotons = 0;
-  uInt nNPTightIsophotons = 0;
+  uInt nNotBHMedIsophotons = 0;
   uInt nValBHphotons = 0; 
-  uInt nValNotBHphotons = 0;
+  uInt nValNotBHTightIsophotons = 0;
   uInt nValTightIsoEq1Photons = 0;
   uInt nValTightIsoEq2Photons = 0;
   uInt nValMedIsophotons = 0;
   uInt nValMedIsoEq1Photons = 0;
   uInt nValMedIsoEq2Photons = 0;
-  uInt nValNPMedIsophotons = 0;
-  uInt nValNPTightIsophotons = 0;
+  uInt nValNotBHMedIsophotons = 0;
   bool bhtag = false;
   bool notbhtag = false;
   bool npmedisotag = false;
@@ -905,10 +901,6 @@ void KUCMSAodSkimmer::processPhotons(){
 		eq2comptightisotag = true;
 	else
 		eq2compmedisotag = true;
-	//else{
-	//	npmedisotag = false;
-	//	nptightisotag = false;
-	//}
 	if(overMaxEta){
 		if(isobkg_score >= 0.75){
 			//eq1 photon region
@@ -1007,10 +999,10 @@ void KUCMSAodSkimmer::processPhotons(){
 		valnotbhtag = true;
 	}
 	else{ };
-	if(isobkg_score < 0.6 && isobkg_score >= 0.5){
+	if(isobkg_score < 0.5){
 		valnpmedisotag = true;
 	}
-	else if(isobkg_score >= 0.6 && isobkg_score < 0.7){
+	else if(isobkg_score >= 0.5 && isobkg_score < nonPromptMedIsoCutVal){
 		valnptightisotag = true;
 	}
 	else{ }
@@ -1108,7 +1100,7 @@ void KUCMSAodSkimmer::processPhotons(){
 	}
 
     	//set BH time sig based on lead BH photon
-	if(bhtag){
+	if(bhtag && nptightisotag){ //early/late BH CR
 		if(nBHphotons == 0)
 			bh_tagged_lead_timesig = phoWTimeSig;
 		//update BH time sig to sublead BH photon if lead is prompt
@@ -1119,31 +1111,27 @@ void KUCMSAodSkimmer::processPhotons(){
 
 	//set !BH time sig based on lead !BH photon
 	if(notbhtag){
-		if(nNotBHphotons == 0)
-			notbh_tagged_lead_timesig = phoWTimeSig;
-		//update BH time sig to sublead BH photon if lead is prompt
-		else if((phoWTimeSig < earlyTimeCut || phoWTimeSig >= lateTimeCut) && (notbh_tagged_lead_timesig >= earlyTimeCut && notbh_tagged_lead_timesig < lateTimeCut))
-			notbh_tagged_lead_timesig = phoWTimeSig;
-		else{ };
+		if(nptightisotag){ //late !bh+tight iso SR/early !BH+tight iso CR
+			if(nNotBHTightIsophotons == 0)
+				nptightisonotbh_tagged_lead_timesig = phoWTimeSig;
+			//update BH time sig to sublead BH photon if lead is prompt
+			else if((phoWTimeSig < earlyTimeCut || phoWTimeSig >= lateTimeCut) && (nptightisonotbh_tagged_lead_timesig >= earlyTimeCut && nptightisonotbh_tagged_lead_timesig < lateTimeCut))
+				nptightisonotbh_tagged_lead_timesig = phoWTimeSig;
+			else{ };
+
+		}
+
+		if(npmedisotag){ //np med iso CR
+			if(nNotBHMedIsophotons == 0)
+				npmedisonotbh_tagged_lead_timesig = phoWTimeSig;
+			//update time sig to sublead BH photon if lead is prompt
+			else if((phoWTimeSig < earlyTimeCut || phoWTimeSig >= lateTimeCut) && (npmedisonotbh_tagged_lead_timesig >= earlyTimeCut && npmedisonotbh_tagged_lead_timesig < lateTimeCut))
+				npmedisonotbh_tagged_lead_timesig = phoWTimeSig;
+			else{ };
+		}
 	}
-	//decide early/late iso based on lead NONPROMPT tagged photon (in designated iso tsig region for early photons)
-	//if(nNonPromptphotons == 0 && ((phoWTimeSig < earlyTimeCut && phoWTimeSig >= earlyBHTimeCut) || (phoWTimeSig >= lateTimeCut))){
-	//	if(npmedisotag)
-	//		npmediso_tagged_lead_timesig = phoWTimeSig;
-	//	else if(nptightisotag)
-	//		nptightiso_tagged_lead_timesig = phoWTimeSig;
-	//	else{ }
-
-  	//}
-	if(((phoWTimeSig < earlyTimeCut && phoWTimeSig >= earlyBHTimeCut) || (phoWTimeSig >= lateTimeCut))){
-		if(npmedisotag && nNPMedIsophotons == 0)
-			npmediso_tagged_lead_timesig = phoWTimeSig;
-		else if(nptightisotag && nNPTightIsophotons == 0)
-			nptightiso_tagged_lead_timesig = phoWTimeSig;
-		else{ }
-
-  	}
-	if(valbhtag){
+	/////// VALIDATION REGIONS //////
+	if(valbhtag && valnptightisotag){
 		if(nValBHphotons == 0)
 			val_bh_tagged_lead_timesig = phoWTimeSig;
 		//update BH time sig to sublead BH photon if lead is prompt
@@ -1152,40 +1140,31 @@ void KUCMSAodSkimmer::processPhotons(){
 		else{ };
 	}
 	if(valnotbhtag){
-		if(nValNotBHphotons == 0)
-			val_notbh_tagged_lead_timesig = phoWTimeSig;
-		//update BH time sig to sublead BH photon if lead is prompt
-		else if((phoWTimeSig < earlyTimeCut || phoWTimeSig >= lateTimeCut) && (val_notbh_tagged_lead_timesig >= earlyTimeCut && val_notbh_tagged_lead_timesig < lateTimeCut))
-			val_notbh_tagged_lead_timesig = phoWTimeSig;
-		else{ };
+		if(valnptightisotag){
+			if(nValNotBHTightIsophotons == 0)
+				val_nptightisonotbh_tagged_lead_timesig = phoWTimeSig;
+			//update BH time sig to sublead BH photon if lead is prompt
+			else if((phoWTimeSig < earlyTimeCut || phoWTimeSig >= lateTimeCut) && (val_nptightisonotbh_tagged_lead_timesig >= earlyTimeCut && val_nptightisonotbh_tagged_lead_timesig < lateTimeCut))
+				val_nptightisonotbh_tagged_lead_timesig = phoWTimeSig;
+			else{ };
+		}
+		if(valnpmedisotag){
+			if(nValNotBHMedIsophotons == 0)
+				val_npmedisonotbh_tagged_lead_timesig = phoWTimeSig;
+			//update BH time sig to sublead BH photon if lead is prompt
+			else if((phoWTimeSig < earlyTimeCut || phoWTimeSig >= lateTimeCut) && (val_npmedisonotbh_tagged_lead_timesig >= earlyTimeCut && val_npmedisonotbh_tagged_lead_timesig < lateTimeCut))
+				val_npmedisonotbh_tagged_lead_timesig = phoWTimeSig;
+			else{ };
+		}
 	}
-	//decide early/late iso based on lead NONPROMPT tagged photon (in designated iso tsig region for early photons)
-	//if(nNonPromptphotons == 0 && ((phoWTimeSig < earlyTimeCut && phoWTimeSig >= earlyBHTimeCut) || (phoWTimeSig >= lateTimeCut))){
-	//	if(valnpmedisotag)
-	//		val_npmediso_tagged_lead_timesig = phoWTimeSig;
-	//	else if(valnptightisotag)
-	//		val_nptightiso_tagged_lead_timesig = phoWTimeSig;
-	//	else{ }
-
-  	//}
-	if(((phoWTimeSig < earlyTimeCut && phoWTimeSig >= earlyBHTimeCut) || (phoWTimeSig >= lateTimeCut))){
-		if(valnpmedisotag && nValNPMedIsophotons == 0)
-			val_npmediso_tagged_lead_timesig = phoWTimeSig;
-		else if(valnptightisotag && nValNPTightIsophotons == 0)
-			val_nptightiso_tagged_lead_timesig = phoWTimeSig;
-		else{ }
-
-  	}
    
 
-	if(bhtag)
+	if(bhtag && nptightisotag)
 		nBHphotons++;
-	if(notbhtag)
-		nNotBHphotons++;
-	if(npmedisotag)
-		nNPMedIsophotons++;
-	if(nptightisotag)
-		nNPTightIsophotons++;
+	if(notbhtag && nptightisotag)
+		nNotBHTightIsophotons++;
+	if(notbhtag && npmedisotag)
+		nNotBHMedIsophotons++;
 	if(eq1tightisotag)
 		nTightIsoEq1Photons++;
 	if(eq1medisotag)
@@ -1199,14 +1178,12 @@ void KUCMSAodSkimmer::processPhotons(){
 	if(eq2comptightisotag)
 		nCompTightIsoEq2Photons++;
 
-	if(valbhtag)
+	if(valbhtag && valnptightisotag)
 		nValBHphotons++;
-	if(valnotbhtag)
-		nValNotBHphotons++;
-	if(valnpmedisotag)
-		nValNPMedIsophotons++;
-	if(valnptightisotag)
-		nValNPTightIsophotons++;
+	if(valnotbhtag && valnptightisotag)
+		nValNotBHTightIsophotons++;
+	if(valnpmedisotag && valnotbhtag)
+		nValNotBHMedIsophotons++;
 	if(valeq1tightisotag)
 		nValTightIsoEq1Photons++;
 	if(valeq1medisotag)
@@ -1305,9 +1282,9 @@ void KUCMSAodSkimmer::processPhotons(){
   //  Fill region index
   //---------------------------------------------------------------------------
   selPhotons.fillBranch( "nblBHPhotons", nBHphotons );
-  selPhotons.fillBranch( "nblNotBHPhotons", nNotBHphotons );
-  selPhotons.fillBranch( "nblNPMedIsoPhotons", nNPMedIsophotons );
-  selPhotons.fillBranch( "nblNPTightIsoPhotons", nNPTightIsophotons );
+  selPhotons.fillBranch( "nblNotBHPhotons", nNotBHTightIsophotons );
+  selPhotons.fillBranch( "nblNPNotBHMedIsoPhotons", nNotBHMedIsophotons );
+  selPhotons.fillBranch( "nblNPNotBHTightIsoPhotons", nNotBHTightIsophotons );
   selPhotons.fillBranch( "nblEq1MedIsoPhotons", nMedIsoEq1Photons );
   selPhotons.fillBranch( "nblEq2MedIsoPhotons", nMedIsoEq2Photons );
   selPhotons.fillBranch( "nblEq1TightIsoPhotons", nTightIsoEq1Photons );
@@ -1315,9 +1292,8 @@ void KUCMSAodSkimmer::processPhotons(){
   selPhotons.fillBranch( "nblNonpromptPhotons", nNonPromptphotons );
   selPhotons.fillBranch( "nblPromptPhotons", nPromptphotons );
   //selPhotons.fillBranch( "nblValBHPhotons", nValBHphotons );
-  //selPhotons.fillBranch( "nblValNotBHPhotons", nValNotBHphotons );
-  //selPhotons.fillBranch( "nblValNPMedIsoPhotons", nValNPMedIsophotons );
-  //selPhotons.fillBranch( "nblValNPTightIsoPhotons", nValNPTightIsophotons );
+  //selPhotons.fillBranch( "nblValNotBHPhotons", nValNotBHTightIsophotons );
+  //selPhotons.fillBranch( "nblValNPMedIsoPhotons", nValNotBHMedIsophotons );
   //selPhotons.fillBranch( "nblValEq1MedIsoPhotons", nValMedIsoEq1Photons );
   //selPhotons.fillBranch( "nblValEq2MedIsoPhotons", nValMedIsoEq2Photons );
 
@@ -1329,44 +1305,30 @@ void KUCMSAodSkimmer::processPhotons(){
 
   selPhotons.fillBranch("passNPhoGe1NonPrompt", bool(nNonPromptphotons > 0));
   selPhotons.fillBranch("bh_tagged_lead_timesig", bh_tagged_lead_timesig);
-  selPhotons.fillBranch("notbh_tagged_lead_timesig", notbh_tagged_lead_timesig);
-  selPhotons.fillBranch("npmediso_tagged_lead_timesig", npmediso_tagged_lead_timesig);
-  selPhotons.fillBranch("nptightiso_tagged_lead_timesig", nptightiso_tagged_lead_timesig);
-  //selPhotons.fillBranch("val_npmediso_tagged_lead_timesig", val_npmediso_tagged_lead_timesig);
-  //selPhotons.fillBranch("val_nptightiso_tagged_lead_timesig", val_nptightiso_tagged_lead_timesig);
+  selPhotons.fillBranch("nptightisonotbh_tagged_lead_timesig", nptightisonotbh_tagged_lead_timesig);
+  selPhotons.fillBranch("npmedisonotbh_tagged_lead_timesig", npmedisonotbh_tagged_lead_timesig);
+  //selPhotons.fillBranch("val_npmedisonotbh_tagged_lead_timesig", val_npmedisonotbh_tagged_lead_timesig);
 
   //delayed CRs - beam halo
   selPhotons.fillBranch("passNPhoGe1SelectionBeamHaloCR", bool(nBHphotons > 0 && nNonPromptphotons > 0));
   //beam halo early CR
-  selPhotons.fillBranch("passNPhoGe1SelectionEarlyBeamHaloCR", bool(nBHphotons > 0 && nNonPromptphotons > 0 && (bh_tagged_lead_timesig < earlyBHTimeCut && bh_tagged_lead_timesig != -999)));
+  selPhotons.fillBranch("passNPhoGe1SelectionEarlyBeamHaloCR", bool(nBHphotons > 0 && nNonPromptphotons > 0 && (bh_tagged_lead_timesig < earlyBHTimeCut && bh_tagged_lead_timesig >= -10)));
   //beam halo late CR
   selPhotons.fillBranch("passNPhoGe1SelectionLateBeamHaloCR", bool(nBHphotons > 0 && nNonPromptphotons > 0 && bh_tagged_lead_timesig >= lateTimeCut));
- 
   //not beam halo early CR
-  selPhotons.fillBranch("passNPhoGe1SelectionEarlyNotBHCR", bool(nNonPromptphotons > 0 && nBHphotons == 0 && nNotBHphotons > 0 && (notbh_tagged_lead_timesig < earlyBHTimeCut && notbh_tagged_lead_timesig >= spikeTimeVeto)));
+  selPhotons.fillBranch("passNPhoGe1SelectionEarlyNotBHCR", bool(nNonPromptphotons > 0 && nBHphotons == 0 && nNotBHTightIsophotons > 0 && (nptightisonotbh_tagged_lead_timesig < earlyBHTimeCut && nptightisonotbh_tagged_lead_timesig >= spikeTimeVeto)));
   //med iso early CR
   //- >= 1 nonprompt 
   //- no bh
-  //- (>= 1 !BH && tagged not NP aka falls outside of NP window) || (== 0 !BH)
+  //- notbh && npmediso
   //early is [-3, -2.5]
-  selPhotons.fillBranch("passNPhoGe1SelectionEarlyMedIsoCR", bool(nNonPromptphotons > 0 && nBHphotons == 0 && nNotBHphotons > 0 && !(notbh_tagged_lead_timesig < earlyBHTimeCut || notbh_tagged_lead_timesig >= lateTimeCut) && nNPMedIsophotons > 0 && (npmediso_tagged_lead_timesig >= earlyBHTimeCut && npmediso_tagged_lead_timesig < earlyTimeCut)));
-  selPhotons.fillBranch("passNPhoGe1SelectionEarlyMedIso0NotBHCR", bool(nNonPromptphotons > 0 && nBHphotons == 0 && nNotBHphotons == 0 && nNPMedIsophotons > 0 && (npmediso_tagged_lead_timesig >= earlyBHTimeCut && npmediso_tagged_lead_timesig < earlyTimeCut)));
+  selPhotons.fillBranch("passNPhoGe1SelectionEarlyMedIsoCR", bool(nNonPromptphotons > 0 && nBHphotons == 0 && nNotBHTightIsophotons == 0 && nNotBHMedIsophotons > 0 && ((npmedisonotbh_tagged_lead_timesig >= earlyBHTimeCut) && (npmedisonotbh_tagged_lead_timesig < earlyTimeCut))));
   //med iso late CR
-  selPhotons.fillBranch("passNPhoGe1SelectionLateMedIsoCR", bool(nNonPromptphotons > 0 && nBHphotons == 0 && nNotBHphotons > 0 && !(notbh_tagged_lead_timesig < earlyBHTimeCut || notbh_tagged_lead_timesig >= lateTimeCut) && nNPMedIsophotons > 0 && (npmediso_tagged_lead_timesig >= lateTimeCut)));
-  selPhotons.fillBranch("passNPhoGe1SelectionLateMedIso0NotBHCR", bool(nNonPromptphotons > 0 && nBHphotons == 0 && nNotBHphotons == 0 && nNPMedIsophotons > 0 && (npmediso_tagged_lead_timesig >= lateTimeCut)));
- 
-  //tight iso early CR - !BH falls outside of NP window
-  selPhotons.fillBranch("passNPhoGe1SelectionEarlyTightIsoCR", bool(nNonPromptphotons > 0 && nBHphotons == 0 && nNotBHphotons > 0 && !(notbh_tagged_lead_timesig < earlyBHTimeCut || notbh_tagged_lead_timesig >= lateTimeCut) && nNPMedIsophotons == 0 && nNPTightIsophotons > 0 && (nptightiso_tagged_lead_timesig >= earlyBHTimeCut && nptightiso_tagged_lead_timesig < earlyTimeCut)));
-  //tight iso early CR - no !BH photons
-  selPhotons.fillBranch("passNPhoGe1SelectionEarlyTightIso0NotBHCR", bool(nNonPromptphotons > 0 && nBHphotons == 0 && nNotBHphotons == 0 && nNPMedIsophotons == 0 && nNPTightIsophotons > 0 && (nptightiso_tagged_lead_timesig >= earlyBHTimeCut && nptightiso_tagged_lead_timesig < earlyTimeCut)));
-
-
+  selPhotons.fillBranch("passNPhoGe1SelectionLateMedIsoCR", bool(nNonPromptphotons > 0 && nBHphotons == 0 && nNotBHTightIsophotons == 0 && nNotBHMedIsophotons > 0 && (npmedisonotbh_tagged_lead_timesig >= lateTimeCut)));
+  //tight iso early CR
+  selPhotons.fillBranch("passNPhoGe1SelectionEarlyTightIsoCR", bool(nNonPromptphotons > 0 && nBHphotons == 0 && nNotBHTightIsophotons > 0 && (nptightisonotbh_tagged_lead_timesig >= earlyBHTimeCut && nptightisonotbh_tagged_lead_timesig < earlyTimeCut)));
   //delayed SR - not beam halo late SR
-  selPhotons.fillBranch("passNPhoGe1SelectionLateNotBHSR", bool(nNonPromptphotons > 0 && nBHphotons == 0 && nNotBHphotons > 0 && (notbh_tagged_lead_timesig >= lateTimeCut)));
-  //delayed SR - not beam halo tight iso (!BH falls outside of NP window)
-  selPhotons.fillBranch("passNPhoGe1SelectionLateNotBHTightIsoSR", bool(nNonPromptphotons > 0 && nBHphotons == 0 && nNotBHphotons > 0 && !(notbh_tagged_lead_timesig < earlyTimeCut || notbh_tagged_lead_timesig >= lateTimeCut) && nNPMedIsophotons == 0 && nNPTightIsophotons > 0 && (nptightiso_tagged_lead_timesig >= lateTimeCut)));
-  //delayed SR - not beam halo tight iso (!BH falls outside of NP window)
-  selPhotons.fillBranch("passNPhoGe1SelectionLateTightIso0NotBHSR", bool(nNonPromptphotons > 0 && nBHphotons == 0 && nNotBHphotons == 0 && nNPMedIsophotons == 0 && nNPTightIsophotons > 0 && (nptightiso_tagged_lead_timesig >= lateTimeCut)));
+  selPhotons.fillBranch("passNPhoGe1SelectionLateNotBHTightIsoSR", bool(nNonPromptphotons > 0 && nBHphotons == 0 && nNotBHTightIsophotons > 0 && (nptightisonotbh_tagged_lead_timesig >= lateTimeCut)));
   
   ////prompt CRs
   //loose-not-tight iso CR
@@ -1382,43 +1344,35 @@ void KUCMSAodSkimmer::processPhotons(){
   selPhotons.fillBranch("passNPhoEq2SelectionCompPromptTightIsoSR", bool(nNonPromptphotons == 0 && nBHphotons == 0 && nBaseLinePhotons == 2 && nCompMedIsoEq2Photons == 0 && nCompTightIsoEq2Photons >= 1));
 
   //for mixed region
-  selPhotons.fillBranch("passNPhoGe1SelectionLateSignal",bool(nNonPromptphotons > 0 && nNotBHphotons > 0 && (notbh_tagged_lead_timesig >= lateTimeCut)));
+  selPhotons.fillBranch("passNPhoGe1SelectionLateSignal",bool(nNonPromptphotons > 0 && nNotBHTightIsophotons > 0 && (nptightisonotbh_tagged_lead_timesig >= lateTimeCut)));
 
 
   ///validation regions
-  //beam halo early CR
-  selPhotons.fillBranch("passNPhoGe1SelectionEarlyBeamHaloValCR", bool(nValBHphotons > 0 && nNonPromptphotons > 0 && (val_bh_tagged_lead_timesig < earlyBHTimeCut && val_bh_tagged_lead_timesig != -999)));
-  //beam halo late CR
-  selPhotons.fillBranch("passNPhoGe1SelectionLateBeamHaloValCR", bool(nValBHphotons > 0 && nNonPromptphotons > 0 && val_bh_tagged_lead_timesig >= lateTimeCut));
- 
-  //not beam halo early CR
-  selPhotons.fillBranch("passNPhoGe1SelectionEarlyNotBHValCR", bool(nNonPromptphotons > 0 && nValBHphotons == 0 && nValNotBHphotons > 0 && (val_notbh_tagged_lead_timesig < earlyBHTimeCut && val_notbh_tagged_lead_timesig >= spikeTimeVeto)));
-  //med iso early CR
+  //delayed ValCRs - beam halo
+  //beam halo early ValCR
+  selPhotons.fillBranch("passNPhoGe1SelectionEarlyBeamHaloValCR", bool(nValBHphotons > 0 && nNonPromptphotons > 0 && (bh_tagged_lead_timesig < earlyBHTimeCut && bh_tagged_lead_timesig != -999)));
+  //beam halo late ValCR
+  selPhotons.fillBranch("passNPhoGe1SelectionLateBeamHaloValCR", bool(nValBHphotons > 0 && nNonPromptphotons > 0 && bh_tagged_lead_timesig >= lateTimeCut));
+  //not beam halo early ValCR
+  selPhotons.fillBranch("passNPhoGe1SelectionEarlyNotBHValCR", bool(nNonPromptphotons > 0 && nValBHphotons == 0 && nValNotBHTightIsophotons > 0 && (val_nptightisonotbh_tagged_lead_timesig < earlyBHTimeCut && nptightisonotbh_tagged_lead_timesig >= spikeTimeVeto)));
+  //med iso early ValCR
   //- >= 1 nonprompt 
   //- no bh
-  //- (>= 1 !BH && tagged not NP aka falls outside of NP window) || (== 0 !BH)
+  //- notbh && val_npmediso
   //early is [-3, -2.5]
-  selPhotons.fillBranch("passNPhoGe1SelectionEarlyMedIsoValCR", bool(nNonPromptphotons > 0 && nValBHphotons == 0 && nValNotBHphotons > 0 && !(val_notbh_tagged_lead_timesig < earlyBHTimeCut || val_notbh_tagged_lead_timesig >= lateTimeCut) && nValNPMedIsophotons > 0 && (val_npmediso_tagged_lead_timesig >= earlyBHTimeCut && val_npmediso_tagged_lead_timesig < earlyTimeCut)));
-  selPhotons.fillBranch("passNPhoGe1SelectionEarlyMedIso0NotBHValCR", bool(nNonPromptphotons > 0 && nValBHphotons == 0 && nValNotBHphotons == 0 && nValNPMedIsophotons > 0 && (val_npmediso_tagged_lead_timesig >= earlyBHTimeCut && val_npmediso_tagged_lead_timesig < earlyTimeCut)));
-  //med iso late CR
-  selPhotons.fillBranch("passNPhoGe1SelectionLateMedIsoValCR", bool(nNonPromptphotons > 0 && nValBHphotons == 0 && nValNotBHphotons > 0 && !(val_notbh_tagged_lead_timesig < earlyBHTimeCut || val_notbh_tagged_lead_timesig >= lateTimeCut) && nValNPMedIsophotons > 0 && (val_npmediso_tagged_lead_timesig >= lateTimeCut)));
-  selPhotons.fillBranch("passNPhoGe1SelectionLateMedIso0NotBHValCR", bool(nNonPromptphotons > 0 && nValBHphotons == 0 && nValNotBHphotons == 0 && nValNPMedIsophotons > 0 && (val_npmediso_tagged_lead_timesig >= lateTimeCut)));
- 
-  //tight iso early CR - !BH falls outside of NP window
-  selPhotons.fillBranch("passNPhoGe1SelectionEarlyTightIsoValCR", bool(nNonPromptphotons > 0 && nValBHphotons == 0 && nValNotBHphotons > 0 && !(val_notbh_tagged_lead_timesig < earlyBHTimeCut || val_notbh_tagged_lead_timesig >= lateTimeCut) && nValNPMedIsophotons == 0 && nValNPTightIsophotons > 0 && (val_nptightiso_tagged_lead_timesig >= earlyBHTimeCut && val_nptightiso_tagged_lead_timesig < earlyTimeCut)));
-  //tight iso early CR - no !BH photons
-  selPhotons.fillBranch("passNPhoGe1SelectionEarlyTightIso0NotBHValCR", bool(nNonPromptphotons > 0 && nValBHphotons == 0 && nValNotBHphotons == 0 && nValNPMedIsophotons == 0 && nValNPTightIsophotons > 0 && (val_nptightiso_tagged_lead_timesig >= earlyBHTimeCut && val_nptightiso_tagged_lead_timesig < earlyTimeCut)));
-
-
+  selPhotons.fillBranch("passNPhoGe1SelectionEarlyMedIsoValCR", bool(nNonPromptphotons > 0 && nValBHphotons == 0 && nValNotBHTightIsophotons == 0 && nValNotBHMedIsophotons > 0 && (val_npmedisonotbh_tagged_lead_timesig >= earlyBHTimeCut && val_npmedisonotbh_tagged_lead_timesig < earlyTimeCut)));
+  //med iso late ValCR
+  selPhotons.fillBranch("passNPhoGe1SelectionLateMedIsoValCR", bool(nNonPromptphotons > 0 && nValBHphotons == 0 && nValNotBHTightIsophotons == 0 && nValNotBHMedIsophotons > 0 && (val_npmedisonotbh_tagged_lead_timesig >= lateTimeCut)));
+  //tight iso early ValCR
+  selPhotons.fillBranch("passNPhoGe1SelectionEarlyTightIsoValCR", bool(nNonPromptphotons > 0 && nValBHphotons == 0 && nValNotBHTightIsophotons > 0 && (val_nptightisonotbh_tagged_lead_timesig >= earlyBHTimeCut && val_nptightisonotbh_tagged_lead_timesig < earlyTimeCut)));
   //delayed SR - not beam halo late SR
-  selPhotons.fillBranch("passNPhoGe1SelectionLateNotBHValSR", bool(nNonPromptphotons > 0 && nValBHphotons == 0 && nValNotBHphotons > 0 && (val_notbh_tagged_lead_timesig >= lateTimeCut)));
-  //delayed SR - not beam halo tight iso (!BH falls outside of NP window)
-  selPhotons.fillBranch("passNPhoGe1SelectionLateNotBHTightIsoValSR", bool(nNonPromptphotons > 0 && nValBHphotons == 0 && nValNotBHphotons > 0 && !(val_notbh_tagged_lead_timesig < earlyTimeCut || val_notbh_tagged_lead_timesig >= lateTimeCut) && nValNPMedIsophotons == 0 && nValNPTightIsophotons > 0 && (val_nptightiso_tagged_lead_timesig >= lateTimeCut)));
-  //delayed SR - not beam halo tight iso (!BH falls outside of NP window)
-  selPhotons.fillBranch("passNPhoGe1SelectionLateTightIso0NotBHValSR", bool(nNonPromptphotons > 0 && nValBHphotons == 0 && nValNotBHphotons == 0 && nValNPMedIsophotons == 0 && nValNPTightIsophotons > 0 && (val_nptightiso_tagged_lead_timesig >= lateTimeCut)));
+  selPhotons.fillBranch("passNPhoGe1SelectionLateNotBHTightIsoValSR", bool(nNonPromptphotons > 0 && nValBHphotons == 0 && nValNotBHTightIsophotons > 0 && (val_nptightisonotbh_tagged_lead_timesig >= lateTimeCut)));
   
-  ////prompt CRs
-  //loose-not-tight iso CR
+  
+  
+  
+  ////prompt ValCRs
+  //loose-not-tight iso ValCR
   selPhotons.fillBranch("passNPhoEq1SelectionPromptMedIsoValCR", bool(nNonPromptphotons == 0 && nValBHphotons == 0 && nBaseLinePhotons == 1 && nValMedIsoEq1Photons == 1));
   selPhotons.fillBranch("passNPhoEq2SelectionPromptMedIsoValCR", bool(nNonPromptphotons == 0 && nValBHphotons == 0 && nBaseLinePhotons == 2 && nValMedIsoEq2Photons >= 1));
 
@@ -1493,8 +1447,8 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch( "nBaseLinePhotons", UINT ); 
   selPhotons.makeBranch( "nblBHPhotons", UINT );
   selPhotons.makeBranch( "nblNotBHPhotons", UINT );
-  selPhotons.makeBranch( "nblNPMedIsoPhotons", UINT );
-  selPhotons.makeBranch( "nblNPTightIsoPhotons", UINT );
+  selPhotons.makeBranch( "nblNPNotBHMedIsoPhotons", UINT );
+  selPhotons.makeBranch( "nblNPNotBHTightIsoPhotons", UINT );
   selPhotons.makeBranch( "nblEq1TightIsoPhotons", UINT );
   selPhotons.makeBranch( "nblEq2TightIsoPhotons", UINT );
   selPhotons.makeBranch( "nblEq1MedIsoPhotons", UINT );
@@ -1605,11 +1559,9 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch("baseLinePhoton_minJetDr",VFLOAT);
 
   selPhotons.makeBranch("bh_tagged_lead_timesig", FLOAT);
-  selPhotons.makeBranch("notbh_tagged_lead_timesig", FLOAT);
-  selPhotons.makeBranch("npmediso_tagged_lead_timesig", FLOAT);
-  selPhotons.makeBranch("nptightiso_tagged_lead_timesig", FLOAT);
-  //selPhotons.makeBranch("val_npmediso_tagged_lead_timesig", FLOAT);
-  //selPhotons.makeBranch("val_nptightiso_tagged_lead_timesig", FLOAT);
+  selPhotons.makeBranch("nptightisonotbh_tagged_lead_timesig", FLOAT);
+  selPhotons.makeBranch("npmedisonotbh_tagged_lead_timesig", FLOAT);
+  //selPhotons.makeBranch("val_npmedisonotbh_tagged_lead_timesig", FLOAT);
   selPhotons.makeBranch("passNPhoGe1NonPrompt",BOOL);
   //beam halo
   selPhotons.makeBranch("passNPhoGe1SelectionBeamHaloCR", BOOL);
@@ -1618,18 +1570,11 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   //not beam halo early CR
   selPhotons.makeBranch("passNPhoGe1SelectionEarlyNotBHCR", BOOL);
   selPhotons.makeBranch("passNPhoGe1SelectionEarlyMedIsoCR",BOOL);
-  selPhotons.makeBranch("passNPhoGe1SelectionEarlyMedIso0NotBHCR",BOOL);
-  selPhotons.makeBranch("passNPhoGe1SelectionEarlyTightIsoCR",BOOL);
-  selPhotons.makeBranch("passNPhoGe1SelectionEarlyTightIso0NotBHCR",BOOL);
-
-  //not beam halo late med iso CR
   selPhotons.makeBranch("passNPhoGe1SelectionLateMedIsoCR",BOOL);
-  selPhotons.makeBranch("passNPhoGe1SelectionLateMedIso0NotBHCR",BOOL);
+  selPhotons.makeBranch("passNPhoGe1SelectionEarlyTightIsoCR",BOOL);
 
   //not beam halo late SR 
-  selPhotons.makeBranch("passNPhoGe1SelectionLateNotBHSR", BOOL);
   selPhotons.makeBranch("passNPhoGe1SelectionLateNotBHTightIsoSR",BOOL);
-  selPhotons.makeBranch("passNPhoGe1SelectionLateTightIso0NotBHSR",BOOL);
 
   ////prompt CRs
   selPhotons.makeBranch("passNPhoEq1SelectionPromptMedIsoCR", BOOL);
@@ -1653,29 +1598,22 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
  
   //not beam halo early CR
   selPhotons.makeBranch("passNPhoGe1SelectionEarlyNotBHValCR", BOOL);
+  selPhotons.makeBranch("passNPhoGe1SelectionEarlyTightIsoValCR", BOOL);
   //med iso early CR
   //- >= 1 nonprompt 
   //- no bh
   //- (>= 1 !BH && tagged not NP aka falls outside of NP window) || (== 0 !BH)
   //early is [-3, -2.5]
   selPhotons.makeBranch("passNPhoGe1SelectionEarlyMedIsoValCR", BOOL);
-  selPhotons.makeBranch("passNPhoGe1SelectionEarlyMedIso0NotBHValCR", BOOL);
   //med iso late CR
   selPhotons.makeBranch("passNPhoGe1SelectionLateMedIsoValCR", BOOL);
-  selPhotons.makeBranch("passNPhoGe1SelectionLateMedIso0NotBHValCR", BOOL);
  
   //tight iso early CR - !BH falls outside of NP window
   selPhotons.makeBranch("passNPhoGe1SelectionEarlyTightIsoValCR", BOOL);
-  //tight iso early CR - no !BH photons
-  selPhotons.makeBranch("passNPhoGe1SelectionEarlyTightIso0NotBHValCR", BOOL);
 
 
   //delayed SR - not beam halo late SR
-  selPhotons.makeBranch("passNPhoGe1SelectionLateNotBHValSR", BOOL);
-  //delayed SR - not beam halo tight iso (!BH falls outside of NP window)
   selPhotons.makeBranch("passNPhoGe1SelectionLateNotBHTightIsoValSR", BOOL);
-  //delayed SR - not beam halo tight iso (!BH falls outside of NP window)
-  selPhotons.makeBranch("passNPhoGe1SelectionLateTightIso0NotBHValSR", BOOL);
   
   ////prompt CRs
   //loose-not-tight iso CR
