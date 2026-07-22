@@ -1,0 +1,38 @@
+# SV-focused skim for current KUCMSAodSVSkimmer output.
+# Lines are allowlist patterns. Blank lines and comments are ignored.
+
+# Event weights / sample metadata
+DataSetKey
+evtFillWgt
+evtGenWgt
+evtXSection
+
+# MET baseline and inspection
+selCMet
+selCMetPx
+selCMetPy
+selMet
+selMetPx
+selMetPy
+
+# Current skimmer baseline flags and trigger fallback inputs
+Flag_*
+Trigger_*
+
+# RJR variables used by LLPStandardPlots core analysis
+rjr_Ms
+rjr_Rs
+rjrPTS
+
+# Compressed/ISR variables used by LLPStandardPlots core analysis
+rjrIsr_PtIsr
+rjrIsr_RIsr
+rjrIsr_nSVisObjects
+
+# SV collections and current SV region flags
+SV_n*
+HadronicSV_*
+LeptonicSV_*
+passNSV*
+passNHad*
+passNLep*

@@ -1,5 +1,7 @@
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/VertexHelper.h"
 
+#include <cmath>
+
 int VertexHelper::CountInstances(const reco::Vertex &vertex, const reco::TrackCollection &tracks) {
   
   int instances(0);
@@ -205,7 +207,10 @@ double VertexHelper::CalculateDxyError(const reco::Vertex &vertex) {
   const double C_delta_yy = vertex.error().At(1,1);
   const double C_delta_xy = vertex.error().At(0,1);
 
-  double dxy_error = std::sqrt(C_delta_xx + C_delta_yy + 2 * C_delta_xy);
+  const double variance = C_delta_xx + C_delta_yy + 2 * C_delta_xy;
+  if (!std::isfinite(variance) || variance <= 0.0) return -999.0;
+
+  double dxy_error = std::sqrt(variance);
 
   return dxy_error;
 }
@@ -221,7 +226,12 @@ double VertexHelper::CalculateDxyError(const reco::Vertex &vertex, const reco::V
   const double pvcxy = primaryVertex.error().At(0,1);
   const double dx(x-pvx), dy(y-pvy);
   const double dxy(sqrt(dx*dx + dy*dy));
-  const double dxyError(sqrt(dx*dx*(cxx+pvcxx) + dy*dy*(cyy+pvcyy) + 2*dx*dy*(cxy+pvcxy))/dxy);
+  if (!std::isfinite(dxy) || dxy <= 0.0) return -999.0;
+
+  const double variance = dx*dx*(cxx+pvcxx) + dy*dy*(cyy+pvcyy) + 2*dx*dy*(cxy+pvcxy);
+  if (!std::isfinite(variance) || variance <= 0.0) return -999.0;
+
+  const double dxyError(std::sqrt(variance)/dxy);
 
   return dxyError;
 }

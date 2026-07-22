@@ -1,14 +1,18 @@
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/TimingHelper.h"
+#include "TrackingTools/TrajectoryState/interface/FreeTrajectoryState.h"
 
 double TimingHelper::PathLength(const reco::TransientTrack &track, const GlobalPoint &vertexPosition, const GlobalPoint &positionAtECAL) {
 
-  //Calculate path length with helical extrapolation
   SteppingHelixPropagator propagator(track.field());
+  const FreeTrajectoryState initialState = track.initialFreeState();
+  const GlobalTrajectoryParameters vertexParameters(
+      vertexPosition, initialState.momentum(), initialState.charge(), track.field());
 
-  //Calculate path length using the stepping helix propagator
-  double pathLength = propagator.propagateWithPath(track.initialFreeState(), positionAtECAL).second;
+  const FreeTrajectoryState vertexState = initialState.hasError()
+      ? FreeTrajectoryState(vertexParameters, initialState.curvilinearError())
+      : FreeTrajectoryState(vertexParameters);
 
-  return pathLength;
+  return propagator.propagateWithPath(vertexState, positionAtECAL).second;
 }
 
 double TimingHelper::Beta(const reco::Track &track, const double mass) {

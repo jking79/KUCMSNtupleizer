@@ -83,6 +83,9 @@ private:
                              const reco::Vertex& pv,
                              reco::TrackCollection& outputTracks) const;
 
+  static bool passesSip2DSelection(const std::pair<bool, Measurement1D>& ip2dResult,
+                                   double minAbsSip2D);
+
   // Input tokens
   edm::EDGetTokenT<pat::PackedCandidateCollection> pfCandidatesToken_;
   edm::EDGetTokenT<pat::PackedCandidateCollection> lostTracksToken_;
@@ -169,19 +172,11 @@ void MiniAODTrackProducer::extractTracks(
       }
 
       // sip2D cut (requires transient track and PV)
-      if (ttBuilder != nullptr && pv != nullptr) {
-        reco::TransientTrack ttrack = ttBuilder->build(track);
-        auto ip2dResult = IPTools::signedTransverseImpactParameter(
-            ttrack, GlobalVector(track.px(), track.py(), track.pz()), *pv);
-
-        if (ip2dResult.first) {
-          double sip2D = ip2dResult.second.significance();
-          // Keep tracks with |sip2D| >= minAbsSip2D (displaced tracks)
-          if (std::fabs(sip2D) < minAbsSip2D_) {
-            continue;
-          }
-        }
-      }
+      if (ttBuilder == nullptr || pv == nullptr) continue;
+      reco::TransientTrack ttrack = ttBuilder->build(track);
+      auto ip2dResult = IPTools::signedTransverseImpactParameter(
+          ttrack, GlobalVector(track.px(), track.py(), track.pz()), *pv);
+      if (!passesSip2DSelection(ip2dResult, minAbsSip2D_)) continue;
     }
 
     // Track passed all cuts (or cuts disabled)
@@ -241,6 +236,14 @@ void MiniAODTrackProducer::addTracksDeduped(
     }
     if (!overlaps) outputTracks.push_back(track);
   }
+}
+
+bool MiniAODTrackProducer::passesSip2DSelection(
+    const std::pair<bool, Measurement1D>& ip2dResult,
+    double minAbsSip2D) {
+  if (!ip2dResult.first) return false;
+  const double sip2D = ip2dResult.second.significance();
+  return std::isfinite(sip2D) && std::fabs(sip2D) >= minAbsSip2D;
 }
 
 void MiniAODTrackProducer::buildMuonMergedSip2D(
@@ -324,8 +327,7 @@ void MiniAODTrackProducer::buildMuonMergedSip2D(
     reco::TransientTrack ttrack = ttBuilder.build(track);
     auto ip2dResult = IPTools::signedTransverseImpactParameter(
         ttrack, GlobalVector(track.px(), track.py(), track.pz()), pv);
-    if (!ip2dResult.first) continue;
-    if (std::fabs(ip2dResult.second.significance()) < minAbsSip2D_) continue;
+    if (!passesSip2DSelection(ip2dResult, minAbsSip2D_)) continue;
     outputTracks.push_back(track);
   }
 }
@@ -402,12 +404,11 @@ void MiniAODTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
       if (applyCuts_) {
         if (track.pt() <= minPt_) continue;
         if (track.normalizedChi2() >= maxNormalizedChi2_) continue;
-        if (ttBuilder != nullptr && pv != nullptr) {
-          reco::TransientTrack ttrack = ttBuilder->build(track);
-          auto ip2dResult = IPTools::signedTransverseImpactParameter(
-              ttrack, GlobalVector(track.px(), track.py(), track.pz()), *pv);
-          if (ip2dResult.first && std::fabs(ip2dResult.second.significance()) < minAbsSip2D_) continue;
-        }
+        if (ttBuilder == nullptr || pv == nullptr) continue;
+        reco::TransientTrack ttrack = ttBuilder->build(track);
+        auto ip2dResult = IPTools::signedTransverseImpactParameter(
+            ttrack, GlobalVector(track.px(), track.py(), track.pz()), *pv);
+        if (!passesSip2DSelection(ip2dResult, minAbsSip2D_)) continue;
       }
       pfElectronTracks.push_back(track);
     }

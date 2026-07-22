@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cmath>
+
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/HYDDRABase.h"
 
 // Hadronic displaced vertex reconstruction.
@@ -123,9 +125,9 @@ class HadronicHYDDRA : public HYDDRABase<HadronicHYDDRA> {
     for (const auto& vertex : *this) {
       const double dxy      = VertexHelper::CalculateDxy(vertex, *primaryVertex_);
       const double dxyError = VertexHelper::CalculateDxyError(vertex, *primaryVertex_);
-      if (dxyError <= 0) {
-        nFailDxyError++;
-        continue;
+      if (!std::isfinite(dxyError) || dxyError <= 0) {
+	nFailDxyError++;
+	continue;
       }
 
       if (dxy / dxyError <= minDxySignificance_) {

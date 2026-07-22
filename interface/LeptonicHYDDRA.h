@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cmath>
+
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/HYDDRABase.h"
 
 // Leptonic displaced vertex reconstruction.
@@ -227,7 +229,7 @@ class LeptonicHYDDRA : public HYDDRABase<LeptonicHYDDRA> {
       // Displacement significance
       const double dxy      = VertexHelper::CalculateDxy(vertex, *primaryVertex_);
       const double dxyError = VertexHelper::CalculateDxyError(vertex, *primaryVertex_);
-      if (dxyError <= 0) {
+      if (!std::isfinite(dxyError) || dxyError <= 0) {
         nFailDxyError++;
         continue;
       }
