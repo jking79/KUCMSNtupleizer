@@ -35,6 +35,7 @@ KUCMSSkimmer/ecal_config/*bak.root
 !KUCMSSkimmer/ntuple_master_lists/*.txt
 !macros/ecal_config/*.txt
 !KUCMSSkimmer/sublists/*.txt
+!KUCMSSkimmer/config/branch_masks/*.txt
 !*readme.txt
 !test/*JSON*
 !test/*json*

@@ -88,6 +88,7 @@
 #include "CondFormats/EcalObjects/interface/EcalPedestals.h"
 #include "CondFormats/DataRecord/interface/EcalPedestalsRcd.h"
 
+#include <cmath>
 
 // KUCMS Object includes
 
@@ -736,12 +737,13 @@ void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
         const auto lCov = getCovariances( &supclstr );
 
         if( ERHODEBUG ) std::cout << " --- Storing Moments & Covariences : " << supclstr << std::endl;
-        const float scSMaj = ph2ndMoments.sMaj;
-        const float scSMin = ph2ndMoments.sMin;
-        const float scSAlp = ph2ndMoments.alpha;
-        const float scCovEtaEta = lCov[0];
-        const float scCovEtaPhi = lCov[1];
-        const float scCovPhiPhi = lCov[2];
+        const auto finiteOrInvalidShape = [](float value) { return std::isfinite(value) ? value : 999.f; };
+        const float scSMaj = finiteOrInvalidShape(ph2ndMoments.sMaj);
+        const float scSMin = finiteOrInvalidShape(ph2ndMoments.sMin);
+        const float scSAlp = finiteOrInvalidShape(ph2ndMoments.alpha);
+        const float scCovEtaEta = finiteOrInvalidShape(lCov[0]);
+        const float scCovEtaPhi = finiteOrInvalidShape(lCov[1]);
+        const float scCovPhiPhi = finiteOrInvalidShape(lCov[2]);
 
         Branches.fillBranch("zscIsEB",isEB);
         Branches.fillBranch("zscEnergyRaw",scEnergyRaw);
@@ -887,7 +889,7 @@ void KUCMSEcalRecHitObject::PostProcessEvent( ItemManager<float>& geVar ){
 
 
     }//<<>>for (const auto recHit : *recHitsEB_ )
-	float pUsed = nUsed/float(nRecHits); 
+	float pUsed = ( nRecHits > 0 ) ? nUsed/float(nRecHits) : -1.f; 
     Branches.fillBranch("pused",pUsed);
 	if( ERHODEBUG ) std::cout << " -- % rechits used : " << pUsed << std::endl;
 	if( ERHODEBUG ){

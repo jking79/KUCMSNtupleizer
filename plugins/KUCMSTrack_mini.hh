@@ -59,6 +59,8 @@
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/TimingHelper.h"
 #include "TrackingTools/IPTools/interface/IPTools.h"
 
+#include <cmath>
+
 #ifndef KUCMSTrackObjectMiniHeader
 #define KUCMSTrackObjectMiniHeader
 
@@ -379,15 +381,19 @@ void KUCMSTrackObjectMini::ProcessEvent( ItemManager<float>& geVar ){
         auto ttrack = ttBuilder.build( track );
         GlobalVector direction(track.px(), track.py(), track.pz());
 
+        const auto validMeasurement = [](const std::pair<bool, Measurement1D>& result) {
+            return result.first && std::isfinite(result.second.value()) &&
+                   std::isfinite(result.second.error()) && result.second.error() > 0.f;
+        };
         std::pair<bool, Measurement1D> ip2Dtool = IPTools::signedTransverseImpactParameter(ttrack, direction, primevtx );
-		float ip2d = ip2Dtool.second.value();
-        float sip2D = std::abs( ip2d / ip2Dtool.second.error() );
+		float ip2d = validMeasurement(ip2Dtool) ? ip2Dtool.second.value() : -999.f;
+        float sip2D = validMeasurement(ip2Dtool) ? std::abs( ip2d / ip2Dtool.second.error() ) : -999.f;
         Branches.fillBranch("ip2D",ip2d);
 		Branches.fillBranch("sip2D",sip2D);
 
         std::pair<bool, Measurement1D> ip3Dtool = IPTools::signedImpactParameter3D(ttrack, direction, primevtx );
-        float ip3d = std::abs( ip3Dtool.second.value() );
-        float sip3D = std::abs( ip3d / ip3Dtool.second.error() );
+        float ip3d = validMeasurement(ip3Dtool) ? std::abs( ip3Dtool.second.value() ) : -999.f;
+        float sip3D = validMeasurement(ip3Dtool) ? std::abs( ip3d / ip3Dtool.second.error() ) : -999.f;
         Branches.fillBranch("ip3D",ip3d);
         Branches.fillBranch("sip3D",sip3D);
 
@@ -420,7 +426,8 @@ void KUCMSTrackObjectMini::ProcessEvent( ItemManager<float>& geVar ){
         Branches.fillBranch("chi2", float(track.chi2()) );
         Branches.fillBranch("normalizedChi2", float(track.normalizedChi2()) );
         Branches.fillBranch("qoverp", float(track.qoverp()) );
-        Branches.fillBranch("ptError", float(track.ptError()) );
+        const float ptError = std::isfinite(track.ptError()) ? float(track.ptError()) : 999.f;
+        Branches.fillBranch("ptError", ptError );
         Branches.fillBranch("etaError", float(track.etaError()) );
         Branches.fillBranch("phiError", float(track.phiError()) );
         Branches.fillBranch("qualityMask", int(track.qualityMask()) );

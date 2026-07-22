@@ -1,5 +1,7 @@
 #include "KUCMSNtupleizer/KUCMSNtupleizer/interface/TrackVertexSet.h"
 
+#include <cmath>
+
 TrackVertexSet::TrackVertexSet(const std::vector<reco::TrackRef> &init, const TransientTrackBuilder* ttBuilder, bool useSmoothing) :
   std::set<reco::TrackRef>(init.begin(), init.end()),
   ttBuilder_(ttBuilder),
@@ -64,9 +66,16 @@ double TrackVertexSet::compatibility(const reco::TrackRef &track) const {
   auto result(estimator.estimate(*this, ttBuilder_->build(*track)));
   
   if(!result.first)
-    throw std::runtime_error("Track compatibility estimation failed");
-    
-  return std::sqrt(result.second);
+    return 999.;
+
+  if(!std::isfinite(result.second) || result.second < 0.0)
+    return 999.;
+
+  const double compatibility = std::sqrt(result.second);
+  if(!std::isfinite(compatibility))
+    return 999.;
+
+  return compatibility;
 }
 
 double TrackVertexSet::shiftDzAfterTrackRemoval(const reco::TrackRef &track) const {
