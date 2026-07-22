@@ -125,7 +125,6 @@ def docrab( dataset ):
             #runEra         = (inDO[0].split('/')[2]).split('RECO')[0]
             print( runEra )
             dataset        = inDO[0].split('/')[3]
-            dataset        = 'MIN'
             print( dataset )
 
             print( 'with : ',inDO[1] )
@@ -138,7 +137,8 @@ def docrab( dataset ):
             #trial          = "kucmsntuple_SMS_Sig_SVIPM100_v31" #
             #trial          = "kucmsntuple_MET_R17_SVIPM100_p9_v31"# 
             #trial          = "kucmsntuple_SMS_test_SVHPM100_Mini_v33" #
-            trial          = "kucmsntuple_SMS_GZ_SVHPM100_FullMini_v36" #
+            #trial          = "kucmsntuple_SMS_GZ_SVHPM100_FullMini_v34" #
+            trial          = "kucmsntuple_SMS_GZ_SVHPM100_Full_v34p1" #
 
             ######trial          = "kucmsntuple_SMS_GZ_SVHPM100_Full_noGPK" #
 
@@ -212,6 +212,8 @@ def docrab( dataset ):
             # Submit.
             try:
                 print( "Submitting for input dataset %s" % primaryDataset + '_' + runEra + '_' + dataset )
+                print("config",config)
+                exit()
                 crabCommand(options.crabCmd, config = config, *options.crabCmdOpts.split())
                 os.system("rm -rf %s/crab_%s/inputs" % (config.General.workArea, config.General.requestName))
             #except HTTPException as hte:
@@ -248,7 +250,7 @@ def run_multi():
     runDataset = [
 
         #['/SMS-GlGl/mGl-23_mN2-22_mN1-21_GZ_ct5/FASTMINI','filelist_SMS-GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p5_FASTAOD_MINI.txt'],
-        #['/SMS-GlGl/mGl-23_mN2-22_mN1-21_GZ_ct5/FULLMINI','filelist_SMS-GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p5_MINI.txt'],
+        ['/SMS-GlGl/mGl-23_mN2-22_mN1-21_GZ_ct5/FULLMINI','filelist_SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p1_MINI.txt'],
 
         #['/SMS-GlGl-GZ/2300_N2-1600_N1-1000_ct1/FULLMINI',inlist2+'full_mini_SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p1_MINI.txt'],
         #['/SMS-GlGl-GZ/2300_N2-1600_N1-1000_ct5/FULLMINI',inlist2+'full_mini_SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_MINI.txt'],
@@ -257,7 +259,7 @@ def run_multi():
         #['/SMS-GlGl-GZ/2300_N2-2250_N1-2200_ct1/FULLMINI',inlist2+'full_mini_SMS-GlGl_mGl-2300_mN2-2250_mN1-2200_GZ_N2ctau-0p1_MINI.txt'],
         #['/SMS-GlGl-GZ/2300_N2-2250_N1-2200_ct5/FULLMINI',inlist2+'full_mini_SMS-GlGl_mGl-2300_mN2-2250_mN1-2200_GZ_N2ctau-0p5_MINI.txt'],
 
-        #['/SMS-GlGl-GZ/mGl-2300_mN2-1300_mN1-1000_ct1/MINI',inlist2+'SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p1_MINI.txt'],
+        #['/SMS-GlGl-GZ/mGl-2300_mN2-1300_mN1-1000_ct1/MINI','SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p1_MINI.txt'],
         #['/SMS-GlGl-GZ/mGl-2300_mN2-1300_mN1-1000_ct5/MINI',inlist2+'SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p5_MINI.txt'],
         #['/SMS-GlGl-GZ/mGl-2300_mN2-1600_mN1-1000_ct1/MINI',inlist2+'SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p1_MINI.txt'],
         #['/SMS-GlGl-GZ/mGl-2300_mN2-1600_mN1-1000_ct5/MINI',inlist2+'SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_MINI.txt'],
@@ -285,11 +287,7 @@ def run_multi():
         #['/SMS-GlGl-GZ/mGl-2500_mN2-2450_mN1-2350_ct5/MINI',inlist2+'SMS-GlGl_mGl-2500_mN2-2450_mN1-2350_GZ_N2ctau-0p5_MINI.txt'],
         #['/SMS-GlGl-GZ/mGl-2500_mN2-2450_mN1-2400_ct1/MINI',inlist2+'SMS-GlGl_mGl-2500_mN2-2450_mN1-2400_GZ_N2ctau-0p1_MINI.txt'],
         #['/SMS-GlGl-GZ/mGl-2500_mN2-2450_mN1-2400_ct5/MINI',inlist2+'SMS-GlGl_mGl-2500_mN2-2450_mN1-2400_GZ_N2ctau-0p5_MINI.txt'],
-        ['/SMS-GlGl-GZ/mGl-2300_mN2-1300_mN1-1000_ct-3p0/MINI',inlist2+'SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-3p0_MINI_v24b.txt'], 
-        #['/SMS-GlGl-GZ/mGl-2300_mN2-1300_mN1-1000_ct-0p5/MINI',inlist2+'SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p5_MINI.txt'],
-        #['/SMS-GlGl-GZ/mGl-2300_mN2-1300_mN1-1000_ct-0p1/MINI',inlist2+'SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p1_MINI.txt'],
-        ['/SMS-GlGl-GZ/mGl-2300_mN2-1300_mN1-1000_ct-0p01/MINI',inlist2+'SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p01_MINI_v24b.txt'],
-        ['/SMS-GlGl-GZ/mGl-2300_mN2-1300_mN1-1000_ct-0p001/MINI',inlist2+'SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p001_MINI_v24b.txt'],
+
         #['/SMS-GlGl-GZ/mGl-2500_mN2-2450_mN1-2400_ct1/FULLMINI','specail_resubmit.txt'],
 
     ] 
