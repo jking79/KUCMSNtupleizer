@@ -19,6 +19,7 @@ import argparse
 import json
 import os
 import re
+import shlex
 import subprocess
 import sys
 from collections import namedtuple
@@ -353,6 +354,30 @@ DatasetPaths = namedtuple('DatasetPaths', [
 ])
 
 
+SubmittedJob = namedtuple('SubmittedJob', [
+    'index',
+    'input_file',
+    'arg_line',
+    'submit_path',
+])
+
+
+QueueEntry = namedtuple('QueueEntry', [
+    'global_index',
+    'arg_line',
+])
+
+
+SubmissionHistory = namedtuple('SubmissionHistory', [
+    'submit_files',
+    'jobs',
+    'eos_out_dir',
+    'header_lines',
+    'original_count',
+    'original_arg_line',
+])
+
+
 def data_keyword(eos_path):
     return next((kw for kw in sorted(DATA_KEYWORDS, key=len, reverse=True)
                  if kw in eos_path), 'Data')
@@ -563,6 +588,12 @@ def normalize_eos_path(fpath):
     return clean('/' + fpath.lstrip('/'))
 
 
+def eos_xrootd_url(path, server=EOS_SERVER):
+    """Return an EOS path in canonical XRootD URL form."""
+    bare = normalize_eos_path(path)
+    return server.rstrip('/') + '//' + bare.lstrip('/')
+
+
 def task_suffix_from_name(collection_name, task_name):
     collection_core = remove_prefix_once(collection_name, 'kucmsntuple_')
     exact_prefix = 'kucmsntuple_' + collection_core + '_'
@@ -759,6 +790,12 @@ def find_crab_datasets(path, name='', max_files=-1, peek_only=False, verbose=Fal
 
 def write_submit(path, log_dir, out_dir, ofilename, root_files, flags, args, eos_out_dir=None, offset=0):
     outname = ofilename + '.$(Process).root'
+    if offset > 0 and root_files:
+        log_first = offset
+        log_last = offset + len(root_files) - 1
+        log_stem = 'job.{}_{}'.format(log_first, log_last)
+    else:
+        log_stem = 'job'
 
     if eos_out_dir:
         bare_eos = eos_out_dir
@@ -781,9 +818,9 @@ def write_submit(path, log_dir, out_dir, ofilename, root_files, flags, args, eos
     lines = [
         'universe = vanilla',
         'executable = execute_script.sh',
-        'output = ' + os.path.join(log_dir, 'job.$(Process).out'),
-        'error = '  + os.path.join(log_dir, 'job.$(Process).err'),
-        'log = '    + os.path.join(log_dir, 'job.log'),
+        'output = ' + os.path.join(log_dir, log_stem + '.$(Process).out'),
+        'error = '  + os.path.join(log_dir, log_stem + '.$(Process).err'),
+        'log = '    + os.path.join(log_dir, log_stem + '.log'),
         'transfer_input_files = ' + args.sandbox + ', config.tgz,',
         'should_transfer_files = YES',
     ] + output_lines
@@ -793,15 +830,7 @@ def write_submit(path, log_dir, out_dir, ofilename, root_files, flags, args, eos
 
     lines += ['', '', 'queue Arguments from (']
     for i, fpath in enumerate(root_files):
-        # fpath is a bare EOS path; build the xrootd URL without the /eos/uscms
-        # prefix so the skimmer's eosdir guard (//store/...) matches correctly
-        if fpath.startswith('root://'):
-            full = fpath
-        else:
-            bare = fpath
-            if bare.startswith('/eos/uscms'):
-                bare = bare[len('/eos/uscms'):]
-            full = 'root://cmseos.fnal.gov/' + bare
+        full = eos_xrootd_url(fpath)
         eos_arg = ' --eos-out ' + bare_eos if eos_out_dir else ''
         job_num = offset + i
         # When offset > 0 (new-inputs submission), use explicit indices so output
@@ -858,6 +887,373 @@ def parse_submit_file(submit_path):
     return header_lines, job_entries, eos_out_dir
 
 
+def find_submission_history_files(original_submit_path):
+    """Return submit.sh, legacy newfiles.sh, then ranged newfiles batches."""
+    if not os.path.exists(original_submit_path):
+        raise FileNotFoundError(original_submit_path)
+
+    src_dir = os.path.dirname(original_submit_path)
+    history = [original_submit_path]
+
+    legacy = os.path.join(src_dir, 'newfiles.sh')
+    if os.path.exists(legacy):
+        history.append(legacy)
+
+    ranged = []
+    pattern = re.compile(r'^newfiles_(\d+)_(\d+)\.sh$')
+    for name in os.listdir(src_dir):
+        match = pattern.match(name)
+        if match:
+            ranged.append((int(match.group(1)), int(match.group(2)),
+                           os.path.join(src_dir, name)))
+    history.extend(path for _, _, path in sorted(ranged))
+    return history
+
+
+def parse_submit_queue_lines(submit_path):
+    """Return header lines and all non-comment queue argument lines."""
+    header_lines, queue_entries = parse_submit_queue_entries(submit_path)
+    return header_lines, [entry.arg_line for entry in queue_entries]
+
+
+def parse_submit_queue_entries(submit_path):
+    """Return header lines and queue entries for supported queue forms."""
+    with open(submit_path) as f:
+        lines = f.read().splitlines()
+
+    header_lines = []
+    queue_entries = []
+    in_queue = False
+    two_column_queue = False
+
+    for line in lines:
+        stripped = line.strip()
+        if not in_queue:
+            header_lines.append(line)
+            if stripped == 'queue Arguments from (':
+                in_queue = True
+                two_column_queue = False
+            elif stripped == 'queue GlobalJobIndex, Arguments from (':
+                in_queue = True
+                two_column_queue = True
+            continue
+        if stripped == ')':
+            break
+        if stripped.startswith('#') or not stripped:
+            continue
+        if two_column_queue:
+            match = re.match(r'^(\d+)\s*,\s*(.+)$', stripped)
+            if not match:
+                raise ValueError(
+                    '{} has malformed GlobalJobIndex queue row: {}'.format(
+                        submit_path, stripped)
+                )
+            queue_entries.append(QueueEntry(int(match.group(1)), match.group(2)))
+        else:
+            queue_entries.append(QueueEntry(None, stripped))
+
+    return header_lines, queue_entries
+
+
+def _arg_value(tokens, option, arg_line, submit_path):
+    pos = _arg_position(tokens, option, arg_line, submit_path)
+    return tokens[pos + 1]
+
+
+def _arg_position(tokens, option, arg_line, submit_path):
+    try:
+        pos = tokens.index(option)
+    except ValueError:
+        raise ValueError('{} entry is missing {}: {}'.format(
+            submit_path, option, arg_line))
+    if pos + 1 >= len(tokens):
+        raise ValueError('{} entry is missing value for {}: {}'.format(
+            submit_path, option, arg_line))
+    return pos
+
+
+def submit_arg_tokens(arg_line, submit_path):
+    try:
+        return shlex.split(arg_line)
+    except ValueError as exc:
+        raise ValueError('{} has malformed queue arguments: {}'.format(
+            submit_path, exc))
+
+
+def submit_arg_template_signature(arg_line, submit_path):
+    tokens = submit_arg_tokens(arg_line, submit_path)
+    skip = set()
+    for option in ('-i', '-o'):
+        pos = _arg_position(tokens, option, arg_line, submit_path)
+        skip.add(pos)
+        skip.add(pos + 1)
+    return tuple(token for idx, token in enumerate(tokens) if idx not in skip)
+
+
+def build_arg_line_from_template(template_arg_line, submit_path, input_file, output_expr):
+    tokens = submit_arg_tokens(template_arg_line, submit_path)
+    tokens[_arg_position(tokens, '-i', template_arg_line, submit_path) + 1] = input_file
+    tokens[_arg_position(tokens, '-o', template_arg_line, submit_path) + 1] = output_expr
+    return ' '.join(shlex.quote(token) for token in tokens)
+
+
+def replace_output_arg(arg_line, submit_path, output_expr):
+    tokens = submit_arg_tokens(arg_line, submit_path)
+    tokens[_arg_position(tokens, '-o', arg_line, submit_path) + 1] = output_expr
+    return ' '.join(shlex.quote(token) for token in tokens)
+
+
+def parse_submit_arg_fields(arg_line, submit_path):
+    tokens = submit_arg_tokens(arg_line, submit_path)
+
+    input_file = _arg_value(tokens, '-i', arg_line, submit_path)
+    output_prefix = _arg_value(tokens, '-o', arg_line, submit_path)
+    eos_out_dir = None
+    if '--eos-out' in tokens:
+        eos_out_dir = _arg_value(tokens, '--eos-out', arg_line, submit_path)
+    return input_file, output_prefix, eos_out_dir
+
+
+def recover_submission_history(original_submit_path):
+    """Recover and validate actual global jobs from submit history files."""
+    history_files = find_submission_history_files(original_submit_path)
+    original_abs = os.path.abspath(original_submit_path)
+    path_info = submit_path_parts(original_submit_path)
+    expected_prefix = expected_submit_prefix(path_info)
+
+    header_lines = None
+    jobs = []
+    original_count = 0
+    eos_out_dirs = set()
+    original_template_signature = None
+    original_template_arg_line = None
+
+    for submit_path in history_files:
+        file_header, queue_entries = parse_submit_queue_entries(submit_path)
+        if os.path.abspath(submit_path) == original_abs:
+            header_lines = file_header
+            original_count = len(queue_entries)
+        is_original = os.path.abspath(submit_path) == original_abs
+
+        for local_idx, queue_entry in enumerate(queue_entries):
+            arg_line = queue_entry.arg_line
+            input_file, output_expr, eos_out_dir = parse_submit_arg_fields(
+                arg_line, submit_path)
+            if eos_out_dir:
+                eos_out_dirs.add(normalize_eos_path(eos_out_dir))
+
+            template_signature = submit_arg_template_signature(arg_line, submit_path)
+            if is_original:
+                if original_template_signature is None:
+                    original_template_signature = template_signature
+                    original_template_arg_line = arg_line
+                elif template_signature != original_template_signature:
+                    raise ValueError(
+                        'original submit.sh jobs do not share one argument template: '
+                        + submit_path
+                    )
+            elif template_signature != original_template_signature:
+                raise ValueError(
+                    'submission history entry has processing arguments that differ '
+                    'from original submit.sh: ' + submit_path
+                )
+
+            process_expr = expected_prefix + '.$(Process)'
+            explicit_match = re.match(
+                r'^' + re.escape(expected_prefix) + r'\.(\d+)$',
+                output_expr,
+            )
+            if output_expr == process_expr:
+                if not is_original:
+                    raise ValueError(
+                        '$(Process) output entry occurs outside original submit.sh: '
+                        + submit_path
+                )
+                job_index = local_idx
+            elif explicit_match:
+                job_index = int(explicit_match.group(1))
+            else:
+                raise ValueError(
+                    '{} entry uses unexpected output prefix: {} '
+                    '(expected {}.$(Process) or {}.<integer>)'.format(
+                        submit_path, output_expr, expected_prefix, expected_prefix)
+                )
+            if queue_entry.global_index is not None:
+                if not explicit_match:
+                    raise ValueError(
+                        '{} GlobalJobIndex row must use an explicit -o index: {}'.format(
+                            submit_path, arg_line)
+                    )
+                if queue_entry.global_index != job_index:
+                    raise ValueError(
+                        '{} GlobalJobIndex {} does not match -o index {}: {}'.format(
+                            submit_path, queue_entry.global_index, job_index, arg_line)
+                    )
+
+            jobs.append(SubmittedJob(
+                index=job_index,
+                input_file=normalize_eos_path(input_file),
+                arg_line=arg_line,
+                submit_path=submit_path,
+            ))
+
+    if original_count == 0:
+        raise ValueError('no jobs found in original submit.sh: ' + original_submit_path)
+
+    by_index = {}
+    by_input = {}
+    for job in jobs:
+        if job.index in by_index:
+            raise ValueError(
+                'duplicate global job index {} in history files:\n  {}\n  {}'.format(
+                    job.index, by_index[job.index].submit_path, job.submit_path)
+            )
+        by_index[job.index] = job
+
+        if job.input_file in by_input:
+            raise ValueError(
+                'duplicate input file in submission history: {}\n  {}\n  {}'.format(
+                    job.input_file, by_input[job.input_file].submit_path,
+                    job.submit_path)
+            )
+        by_input[job.input_file] = job
+
+    expected_indices = set(range(max(by_index) + 1)) if by_index else set()
+    missing = sorted(expected_indices - set(by_index))
+    if missing:
+        raise ValueError(
+            'submission history has missing global job indices: '
+            + ', '.join(str(i) for i in missing)
+        )
+
+    if len(eos_out_dirs) > 1:
+        raise ValueError(
+            'submission history has conflicting --eos-out directories: '
+            + ', '.join(sorted(eos_out_dirs))
+        )
+
+    return SubmissionHistory(
+        submit_files=history_files,
+        jobs=sorted(jobs, key=lambda job: job.index),
+        eos_out_dir=next(iter(eos_out_dirs)) if eos_out_dirs else None,
+        header_lines=header_lines or [],
+        original_count=original_count,
+        original_arg_line=original_template_arg_line,
+    )
+
+
+def recover_submission_history_or_exit(submit_path):
+    try:
+        return recover_submission_history(submit_path)
+    except (OSError, ValueError) as exc:
+        print('ERROR: invalid submission history for', submit_path)
+        print(' ', exc)
+        sys.exit(1)
+
+
+def history_expected_indices(history):
+    return {job.index for job in history.jobs}
+
+
+def new_input_files(current_eos_inputs, submitted_jobs):
+    submitted_inputs = {job.input_file for job in submitted_jobs}
+    current_inputs = {normalize_eos_path(fpath) for fpath in current_eos_inputs}
+    return sorted(current_inputs - submitted_inputs)
+
+
+def newfiles_submit_path(src_dir, first_index, last_index):
+    return os.path.join(
+        src_dir,
+        'newfiles_{}_{}.sh'.format(first_index, last_index),
+    )
+
+
+def _header_value(line):
+    return line.split('=', 1)[1].strip() if '=' in line else ''
+
+
+def _local_output_dir_from_header(header_lines):
+    for line in header_lines:
+        m = re.search(r'transfer_output_remaps\s*=\s*"[^=]+=([^"]+)/[^/"]+\.root"', line)
+        if m:
+            return m.group(1)
+    raise ValueError('original submit.sh local output remap could not be parsed')
+
+
+def new_input_submit_header(history, expected_prefix, first_index, last_index):
+    log_stem = 'job.{}_{}'.format(first_index, last_index)
+    local_output = history.eos_out_dir is None
+    local_output_file = expected_prefix + '.$(GlobalJobIndex).root'
+    local_output_dir = (_local_output_dir_from_header(history.header_lines)
+                        if local_output else None)
+    header = []
+
+    for line in history.header_lines:
+        stripped = line.strip()
+        if stripped.startswith('output'):
+            old_path = _header_value(line)
+            log_dir = os.path.dirname(old_path)
+            header.append('output = ' + os.path.join(
+                log_dir, log_stem + '.$(Process).out'))
+        elif stripped.startswith('error'):
+            old_path = _header_value(line)
+            log_dir = os.path.dirname(old_path)
+            header.append('error = ' + os.path.join(
+                log_dir, log_stem + '.$(Process).err'))
+        elif stripped.startswith('log'):
+            old_path = _header_value(line)
+            log_dir = os.path.dirname(old_path)
+            header.append('log = ' + os.path.join(log_dir, log_stem + '.log'))
+        elif local_output and stripped.startswith('transfer_output_files'):
+            header.append('transfer_output_files = ' + local_output_file)
+        elif local_output and stripped.startswith('transfer_output_remaps'):
+            remap_target = os.path.join(local_output_dir, local_output_file)
+            header.append(
+                'transfer_output_remaps = "'
+                + local_output_file + '=' + remap_target + '"'
+            )
+        elif stripped in {
+                'queue Arguments from (',
+                'queue GlobalJobIndex, Arguments from (',
+        }:
+            if local_output:
+                header.append('queue GlobalJobIndex, Arguments from (')
+            else:
+                header.append('queue Arguments from (')
+        else:
+            header.append(line)
+    return header
+
+
+def write_inherited_new_inputs_submit(path, history, expected_prefix, new_files,
+                                      first_index):
+    last_index = first_index + len(new_files) - 1
+    header = new_input_submit_header(history, expected_prefix, first_index,
+                                     last_index)
+    local_output = history.eos_out_dir is None
+
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, 'w') as handle:
+        for line in header:
+            handle.write(line + '\n')
+        for offset, input_file in enumerate(new_files):
+            job_index = first_index + offset
+            output_expr = expected_prefix + '.' + str(job_index)
+            input_url = eos_xrootd_url(input_file)
+            arg_line = build_arg_line_from_template(
+                history.original_arg_line,
+                history.submit_files[0],
+                input_url,
+                output_expr,
+            )
+            handle.write('###### job' + str(job_index) + ' ######\n')
+            if local_output:
+                handle.write(str(job_index) + ', ' + arg_line + '\n')
+            else:
+                handle.write(arg_line + '\n')
+        handle.write(')\n')
+
+
 def find_submit_files(output_dir):
     submit_files = []
     for root, dirs, files in os.walk(output_dir):
@@ -876,6 +1272,10 @@ def submit_path_parts(submit_path):
         'canonical_base': sample_tag + '__' + ntuple_tag if ntuple_tag else sample_tag,
         'tag': parts[-3] if len(parts) >= 3 else 'rjrskim',
     }
+
+
+def expected_submit_prefix(path_info):
+    return 'condor_' + path_info['canonical_base'] + '__' + path_info['tag']
 
 
 def write_multi_submit_script(path, submit_files, action='Submitting', blank_lines=True):
@@ -908,12 +1308,40 @@ def write_resub_file(submit_path, header_lines, missing_entries):
     Returns the resub file path.
     """
     resub_path = submit_path.replace('submit.sh', 'resub.sh')
+    local_output = not any('--eos-out' in submit_arg_tokens(arg_line, submit_path)
+                           for _, arg_line in missing_entries)
+    expected_prefix = expected_submit_prefix(submit_path_parts(submit_path))
+    local_output_file = expected_prefix + '.$(GlobalJobIndex).root'
+    local_output_dir = (_local_output_dir_from_header(header_lines)
+                        if local_output else None)
+
     with open(resub_path, 'w') as fh:
         for line in header_lines:
-            fh.write(line + '\n')
+            stripped = line.strip()
+            if local_output and stripped.startswith('transfer_output_files'):
+                fh.write('transfer_output_files = ' + local_output_file + '\n')
+            elif local_output and stripped.startswith('transfer_output_remaps'):
+                remap_target = os.path.join(local_output_dir, local_output_file)
+                fh.write(
+                    'transfer_output_remaps = "'
+                    + local_output_file + '=' + remap_target + '"\n'
+                )
+            elif local_output and stripped in {
+                    'queue Arguments from (',
+                    'queue GlobalJobIndex, Arguments from (',
+            }:
+                fh.write('queue GlobalJobIndex, Arguments from (\n')
+            else:
+                fh.write(line + '\n')
         for job_idx, arg_line in missing_entries:
+            output_expr = expected_prefix + '.' + str(job_idx)
+            resub_arg = replace_output_arg(arg_line.replace('$(Process)', str(job_idx)),
+                                           submit_path, output_expr)
             fh.write('###### job' + str(job_idx) + ' ######\n')
-            fh.write(arg_line.replace('$(Process)', str(job_idx)) + '\n')
+            if local_output:
+                fh.write(str(job_idx) + ', ' + resub_arg + '\n')
+            else:
+                fh.write(resub_arg + '\n')
         fh.write(')\n')
     return resub_path
 
@@ -935,7 +1363,49 @@ def print_test_command(submit_path, job_entries, job_idx):
     print('=' * 60)
 
 
-def check_jobs(output_dir, verbose=False, test_job=None):
+def terminal_color(text, color_code):
+    if sys.stdout.isatty():
+        return color_code + text + '\033[0m'
+    return text
+
+
+def red_text(text):
+    return terminal_color(text, '\033[31m')
+
+
+def blue_text(text):
+    return terminal_color(text, '\033[34m')
+
+
+def check_status_text(status):
+    if status == 'INCOMPLETE':
+        return red_text(status)
+    return status
+
+
+def branch_mask_display(mask_path):
+    text = mask_path if mask_path else '[None]'
+    return blue_text(text) if mask_path else red_text(text)
+
+
+def submit_label_from_parts(path_info):
+    return path_info['canonical_base'] + ' [' + path_info['tag'] + ']'
+
+
+def filter_submit_files_by_label(submit_files, name_filter):
+    matches = []
+    skipped = []
+    for submit_path in sorted(submit_files):
+        path_info = submit_path_parts(submit_path)
+        label = submit_label_from_parts(path_info)
+        if not name_filter or name_filter in label:
+            matches.append((submit_path, path_info, label))
+        else:
+            skipped.append((submit_path, label))
+    return matches, skipped
+
+
+def check_jobs(output_dir, verbose=False, test_job=None, name_filter=None):
     """Scan output_dir for submit.sh files, report completeness, and write
     resubmission files for any subfolders with missing output."""
 
@@ -944,7 +1414,16 @@ def check_jobs(output_dir, verbose=False, test_job=None):
         print('No submit.sh files found under', output_dir)
         return
 
+    filtered_submit_files, _name_skipped = filter_submit_files_by_label(
+        submit_files, name_filter)
+
     print('Found', len(submit_files), 'submit file(s)')
+    if name_filter:
+        print('Name filter:', name_filter)
+        if not filtered_submit_files:
+            print(red_text('No submit files matched filter: ' + name_filter))
+            return
+        print('Matched', len(filtered_submit_files), 'submit file(s)')
     print()
 
     resub_files        = []
@@ -952,12 +1431,15 @@ def check_jobs(output_dir, verbose=False, test_job=None):
     first_missing_idx  = None
     first_missing_jobs = None
 
-    for submit_path in sorted(submit_files):
-        header_lines, job_entries, eos_out_dir = parse_submit_file(submit_path)
-        n_total = len(job_entries)
+    for submit_path, path_info, label in filtered_submit_files:
+        expected_prefix = expected_submit_prefix(path_info)
 
-        path_info = submit_path_parts(submit_path)
-        label = path_info['canonical_base'] + ' [' + path_info['tag'] + ']'
+        history = recover_submission_history_or_exit(submit_path)
+
+        header_lines = history.header_lines
+        eos_out_dir = history.eos_out_dir
+        expected_indices = history_expected_indices(history)
+        n_total = len(expected_indices)
 
         # List output files from EOS or local
         if eos_out_dir:
@@ -975,26 +1457,42 @@ def check_jobs(output_dir, verbose=False, test_job=None):
             else:
                 output_files = []
 
-        completed  = {get_job_num_from_filename(f) for f in output_files} - {None}
-        n_done     = len(completed)
-        n_missing  = n_total - n_done
+        classified = classify_transfer_outputs(output_files, expected_prefix,
+                                               expected_indices)
+        completed = set(classified.output_for_index)
+        n_done = len(completed)
+        incomplete_indices = sorted(expected_indices - completed)
+        n_missing = len(incomplete_indices)
         status     = 'OK' if n_missing == 0 else 'INCOMPLETE'
 
-        print('{}: {}/{} missing  [{}]'.format(label, n_missing, n_total, status))
+        print('{}:'.format(label))
+        print('  Original jobs:', history.original_count)
+        print('  Added jobs:   ', n_total - history.original_count)
+        print('  Expected jobs:', n_total)
+        print('  Missing jobs: ', '{}/{} [{}]'.format(
+            n_missing, n_total, check_status_text(status)))
+        if classified.unexpected_indices:
+            print('  unexpected jobs:', classified.unexpected_indices)
+        if classified.duplicate_indices:
+            print('  duplicate jobs:', classified.duplicate_indices)
 
         if n_missing > 0:
-            missing_indices = sorted(set(range(n_total)) - completed)
-            missing_entries = [(i, a) for i, a in job_entries if i in set(missing_indices)]
+            missing_indices = incomplete_indices
+            missing_set = set(missing_indices)
+            missing_entries = [
+                (job.index, job.arg_line)
+                for job in history.jobs
+                if job.index in missing_set
+            ]
             resub_path = write_resub_file(submit_path, header_lines, missing_entries)
             resub_files.append(resub_path)
-            print('  missing jobs:', missing_indices)
             print('  resub file:  ', resub_path)
             if first_missing_path is None:
                 first_missing_path = submit_path
                 first_missing_idx  = missing_indices[0]
-                first_missing_jobs = job_entries
+                first_missing_jobs = [(job.index, job.arg_line) for job in history.jobs]
+        print()
 
-    print()
     if not resub_files:
         print('All jobs complete.')
         return
@@ -1015,9 +1513,8 @@ def check_jobs(output_dir, verbose=False, test_job=None):
 
 def new_inputs_mode(args):
     """Scan EOS for files not present in existing submit.sh files and generate
-    newfiles.sh submit files for each dataset that has new inputs.
-    Job indices are offset past the original submission so output filenames
-    (condor_SAMPLE_tag.N.root) never collide."""
+    immutable newfiles_<first>_<last>.sh submit files for each dataset that has
+    new inputs. Job indices are assigned after the full submission history."""
 
     eos_path    = args.eos_path.rstrip('/')
     odir        = args.output.rstrip('/') + '/'
@@ -1032,16 +1529,11 @@ def new_inputs_mode(args):
         sys.exit(1)
 
     print('Datasets found:', len(datasets))
-    event_count_keys = read_event_count_keys() if sample_type != 'data' else set()
-
     new_submit_files = []
 
     for dataset in datasets:
         paths = dataset_paths(args.output, dataset, args.tag)
         root_files = dataset.root_files
-
-        final_skim = final_merged_filename(dataset.sample_tag, dataset.ntuple_tag,
-                                           args.tag)
 
         print('\nDataset:', dataset.sample_tag)
 
@@ -1049,17 +1541,23 @@ def new_inputs_mode(args):
             print('  No existing submit.sh found — run without --new-inputs first, skipping.')
             continue
 
-        _, job_entries, eos_out_dir_parsed = parse_submit_file(paths.submit_path)
+        history = recover_submission_history_or_exit(paths.submit_path)
 
-        # Build set of already-submitted files as normalized bare /store/... paths
-        submitted_bare = set()
-        for _, arg_line in job_entries:
-            m = re.search(r'-i\s+(\S+)', arg_line)
-            if m:
-                submitted_bare.add(normalize_eos_path(m.group(1)))
+        submitted_bare = {job.input_file for job in history.jobs}
+        new_files = new_input_files(root_files, history.jobs)
 
-        new_files = [f for f in root_files
-                     if normalize_eos_path(f) not in submitted_bare]
+        cli_eos_out_dir = eos_output_dir(args, paths)
+        if history.eos_out_dir:
+            if getattr(args, '_eos_out_supplied', False) and cli_eos_out_dir:
+                norm_cli_eos = normalize_eos_path(cli_eos_out_dir)
+                if norm_cli_eos != history.eos_out_dir:
+                    print('ERROR: --eos-out differs from existing production output.')
+                    print('  Existing:', history.eos_out_dir)
+                    print('  CLI:     ', norm_cli_eos)
+                    sys.exit(1)
+            eos_out_dir = history.eos_out_dir
+        else:
+            eos_out_dir = None
 
         print('  EOS files now    :', len(root_files))
         print('  Already submitted:', len(submitted_bare))
@@ -1069,26 +1567,19 @@ def new_inputs_mode(args):
             print('  Nothing new, skipping.')
             continue
 
-        # New job indices start immediately after the original submission
-        offset = len(job_entries)
+        first_index = max(history_expected_indices(history)) + 1
+        last_index = first_index + len(new_files) - 1
+        newfiles_path = newfiles_submit_path(paths.src_dir, first_index, last_index)
+        expected_prefix = expected_submit_prefix(submit_path_parts(paths.submit_path))
 
-        dataset_data_kw = data_keyword(dataset.raw_task_suffix) if sample_type == 'data' else data_kw
-        metadata = resolve_dataset_metadata(dataset.raw_task_suffix, dataset.task_name,
-                                            sample_type, dataset_data_kw)
-        flags    = build_skimmer_flags(metadata, args, timecali)
-
-        print('  xsec:', metadata['xsec'], '| key:', metadata['key'])
-        warn_missing_event_count_key(metadata, event_count_keys)
-
-        # EOS output dir: prefer --eos-out from CLI, fall back to parsed original
-        eos_out_dir = eos_output_dir(args, paths) or eos_out_dir_parsed
-
-        newfiles_path = paths.src_dir + '/newfiles.sh'
-
-        print('  Job offset       :', offset, '(indices start at', offset, ')')
+        print('  New job indices  :', '{}-{}'.format(first_index, last_index))
         print('  Newfiles submit  :', newfiles_path)
+        print('  Configuration    : inherited from', paths.submit_path)
         if eos_out_dir:
             print('  EOS out          :', eos_out_dir)
+            print('  Output mode      : direct EOS')
+        else:
+            print('  Output mode      : local Condor transfer')
 
         if args.dry_run:
             print('  [DRY RUN]')
@@ -1099,9 +1590,18 @@ def new_inputs_mode(args):
             xrdfs_mkdir(eos_out_dir, verbose=args.verbose)
 
         ensure_submit_dirs(paths, eos_out_dir)
+        if os.path.exists(newfiles_path):
+            print('ERROR: history file already exists, refusing to overwrite:',
+                  newfiles_path)
+            sys.exit(1)
 
-        write_submit(newfiles_path, paths.log_dir, paths.out_dir, paths.ofilename,
-                     new_files, flags, args, eos_out_dir=eos_out_dir, offset=offset)
+        write_inherited_new_inputs_submit(
+            newfiles_path,
+            history,
+            expected_prefix,
+            new_files,
+            first_index,
+        )
         new_submit_files.append(newfiles_path)
 
     print()
@@ -1110,18 +1610,17 @@ def new_inputs_mode(args):
         return
 
     print('=' * 60)
-    if len(new_submit_files) == 1:
+    if args.dry_run:
+        print('[DRY RUN]', len(new_submit_files),
+              'newfiles submit file(s) would be generated')
+    elif len(new_submit_files) == 1:
         print('To submit:')
         print('  condor_submit', new_submit_files[0])
     else:
         multi = odir + args.tag + '_NewFiles_MultiSub.sh'
-        if not args.dry_run:
-            write_multi_submit_script(multi, new_submit_files)
-            print('Multi-submit script:', multi)
-            print('Run with:  source', multi)
-        else:
-            print('[DRY RUN]', len(new_submit_files),
-                  'newfiles submit file(s) would be generated')
+        write_multi_submit_script(multi, new_submit_files)
+        print('Multi-submit script:', multi)
+        print('Run with:  source', multi)
     print('=' * 60)
 
 
@@ -1216,7 +1715,7 @@ def cleanup_existing(paths):
 def stage_root_files(root_files, scratch):
     local_inputs = []
     for f in root_files:
-        src_url = EOS_SERVER + '//' + f.lstrip('/')
+        src_url = eos_xrootd_url(f)
         local_f = os.path.join(scratch, os.path.basename(f))
         result  = subprocess.run(['xrdcp', '-s', src_url, local_f])
         if result.returncode != 0:
@@ -1289,20 +1788,29 @@ def xrdcp_to_eos(local_path, dest_url, force=False):
     return result.returncode == 0
 
 
-def transfer_jobs(args):
+def transfer_jobs(args, name_filter=None):
     """For each submit.sh, hadd per-job output files from EOS and xrdcp to
     /store/group/lpcsusylep/malazaro/KUCMSSkims/{version}/."""
 
     dest_base = EOS_SKIMS_BASE.rstrip('/') + '/' + args.version.strip('/')
-    dest_xrd  = EOS_SERVER + '//' + dest_base.lstrip('/')
+    dest_xrd  = eos_xrootd_url(dest_base)
     submit_files = find_submit_files(args.output)
     if not submit_files:
         print('No submit.sh files found under', args.output)
         return
 
+    filtered_submit_files, _name_skipped = filter_submit_files_by_label(
+        submit_files, name_filter)
+
     print('Found', len(submit_files), 'submit file(s)')
     print('Destination:', dest_xrd)
     print('Tag filter:', args.tag if args.tag else 'all')
+    if name_filter:
+        print('Name filter:', name_filter)
+        if not filtered_submit_files:
+            print(red_text('No submit files matched filter: ' + name_filter))
+            return
+        print('Matched', len(filtered_submit_files), 'submit file(s)')
     print()
 
     require_transfer_tools()
@@ -1315,31 +1823,31 @@ def transfer_jobs(args):
     n_fail = 0
     n_tag_skip = 0
     tag_skip_examples = []
-    for submit_path in sorted(submit_files):
-        path_info = submit_path_parts(submit_path)
+    for submit_path, path_info, label in filtered_submit_files:
         tag       = path_info['tag']
         if args.tag and tag != args.tag:
             n_tag_skip += 1
             if len(tag_skip_examples) < 5:
                 tag_skip_examples.append(submit_path)
             continue
-        header_lines, job_entries, eos_out_dir = parse_submit_file(submit_path)
+        history = recover_submission_history_or_exit(submit_path)
+        eos_out_dir = history.eos_out_dir
         if not eos_out_dir:
             print('SKIP (no --eos-out found):', submit_path)
             n_skip += 1
             continue
-        expected_indices = set(range(len(job_entries)))
+        expected_indices = history_expected_indices(history)
 
         sample_tag  = path_info['sample_tag']
         merged_name = merged_output_name(path_info)
         dest_path   = dest_base.rstrip('/') + '/' + merged_name
-        dest_url    = EOS_SERVER + '//' + dest_path.lstrip('/')
+        dest_url    = eos_xrootd_url(dest_path)
 
         print('Sample:', sample_tag)
         print('  Merged :', merged_name)
         print('  Dest   :', dest_url)
 
-        expected_prefix = 'condor_' + path_info['canonical_base'] + '__' + path_info['tag']
+        expected_prefix = expected_submit_prefix(path_info)
         entries = xrdfs_ls(eos_out_dir, verbose=args.verbose)
         classified = classify_transfer_outputs(entries, expected_prefix, expected_indices)
         root_files = [
@@ -1348,6 +1856,8 @@ def transfer_jobs(args):
             if index in classified.output_for_index
         ]
 
+        print('  Original jobs:', history.original_count)
+        print('  Added jobs:   ', len(expected_indices) - history.original_count)
         print('  Expected jobs:', len(expected_indices))
         print('  Completed expected jobs:', len(root_files))
         if classified.missing_indices:
@@ -1359,7 +1869,7 @@ def transfer_jobs(args):
         if classified.unrelated_root_files:
             print('  Ignoring unrelated ROOT files:', len(classified.unrelated_root_files))
 
-        if (not job_entries or classified.missing_indices
+        if (not history.jobs or classified.missing_indices
                 or classified.unexpected_indices or classified.duplicate_indices):
             print('  ERROR: incomplete or inconsistent per-job output set -- not transferring')
             n_fail += 1
@@ -1433,14 +1943,17 @@ def main():
         epilog=__doc__,
     )
     parser.add_argument('--new-inputs', dest='new_inputs', action='store_true',
-        help='Generate newfiles.sh for each dataset containing only EOS files '
-             'not present in the existing submit.sh (requires --eos-path)')
-    parser.add_argument('--check', action='store_true',
-        help='Check job completeness and generate resub files for missing output')
+        help='Generate newfiles_<first>_<last>.sh for each dataset containing '
+             'only EOS files not present in the submission history '
+             '(requires --eos-path)')
+    parser.add_argument('--check', nargs='?', const='', default=None, metavar='FILTER',
+        help='Check job completeness and generate resub files for missing output; '
+             'optionally filter submit files by job-name substring')
     parser.add_argument('--test-job', dest='test_job', type=int, nargs='?', const=-1, default=None,
         metavar='N', help='With --check: print local run command for job N (omit N for first missing)')
-    parser.add_argument('--transfer', action='store_true',
-        help='hadd per-job EOS output per sample and xrdcp to final skim destination')
+    parser.add_argument('--transfer', nargs='?', const='', default=None, metavar='FILTER',
+        help='hadd per-job EOS output per sample and xrdcp to final skim destination; '
+             'optionally filter submit files by job-name substring')
     parser.add_argument('--version', default=None,
         metavar='N', help='Skim version number; appends _v{N} to the job tag during submission '
                           'and sets the skims_v{N} destination during --transfer')
@@ -1478,6 +1991,10 @@ def main():
     parser.add_argument('--dry-run', action='store_true', help='Print plan, write nothing')
     parser.add_argument('--verbose', '-v', action='store_true', help='Print xrdfs commands')
     args = parser.parse_args()
+    args._eos_out_supplied = any(
+        item == '--eos-out' or item.startswith('--eos-out=')
+        for item in sys.argv[1:]
+    )
 
     if args.branch_mask:
         try:
@@ -1498,11 +2015,12 @@ def main():
         new_inputs_mode(args)
         return
 
-    if args.check:
-        check_jobs(args.output, verbose=args.verbose, test_job=args.test_job)
+    if args.check is not None:
+        check_jobs(args.output, verbose=args.verbose, test_job=args.test_job,
+                   name_filter=args.check)
         return
 
-    if args.transfer:
+    if args.transfer is not None:
         if args.version is None:
             detected = None
             for submit_path in find_submit_files(args.output):
@@ -1523,7 +2041,7 @@ def main():
             args.version = version_str
         else:
             args.version = 'skims_v{}'.format(args.version.lstrip('v'))
-        transfer_jobs(args)
+        transfer_jobs(args, name_filter=args.transfer)
         return
 
     if not args.eos_path:
@@ -1580,7 +2098,7 @@ def main():
 
         print('  Ntuple tag:     ', dataset.ntuple_tag)
         print('  Skim tag:       ', args.tag)
-        print('  Branch mask:    ', args.branch_mask if args.branch_mask else '[None]')
+        print('  Branch mask:    ', branch_mask_display(args.branch_mask))
         print('  Input files:    ', len(root_files))
         print('  Jobs:           ', len(root_files))
         print()
