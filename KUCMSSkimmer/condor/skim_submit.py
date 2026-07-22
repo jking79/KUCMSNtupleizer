@@ -1392,20 +1392,31 @@ def submit_label_from_parts(path_info):
     return path_info['canonical_base'] + ' [' + path_info['tag'] + ']'
 
 
-def filter_submit_files_by_label(submit_files, name_filter):
+def filter_submit_files(submit_files, name_filter=None, tag_filter=None):
     matches = []
-    skipped = []
+    name_skipped = []
+    tag_skipped = []
     for submit_path in sorted(submit_files):
         path_info = submit_path_parts(submit_path)
         label = submit_label_from_parts(path_info)
-        if not name_filter or name_filter in label:
-            matches.append((submit_path, path_info, label))
-        else:
-            skipped.append((submit_path, label))
-    return matches, skipped
+        if name_filter and name_filter not in label:
+            name_skipped.append((submit_path, label))
+            continue
+        if tag_filter and path_info['tag'] != tag_filter:
+            tag_skipped.append((submit_path, path_info['tag']))
+            continue
+        matches.append((submit_path, path_info, label))
+    return matches, name_skipped, tag_skipped
 
 
-def check_jobs(output_dir, verbose=False, test_job=None, name_filter=None):
+def filter_submit_files_by_label(submit_files, name_filter):
+    matches, name_skipped, _tag_skipped = filter_submit_files(
+        submit_files, name_filter=name_filter)
+    return matches, name_skipped
+
+
+def check_jobs(output_dir, verbose=False, test_job=None, name_filter=None,
+               tag_filter=None):
     """Scan output_dir for submit.sh files, report completeness, and write
     resubmission files for any subfolders with missing output."""
 
@@ -1414,15 +1425,24 @@ def check_jobs(output_dir, verbose=False, test_job=None, name_filter=None):
         print('No submit.sh files found under', output_dir)
         return
 
-    filtered_submit_files, _name_skipped = filter_submit_files_by_label(
-        submit_files, name_filter)
+    filtered_submit_files, _name_skipped, _tag_skipped = filter_submit_files(
+        submit_files, name_filter=name_filter, tag_filter=tag_filter)
 
     print('Found', len(submit_files), 'submit file(s)')
+    if tag_filter:
+        print('Tag filter:', tag_filter)
     if name_filter:
         print('Name filter:', name_filter)
-        if not filtered_submit_files:
-            print(red_text('No submit files matched filter: ' + name_filter))
-            return
+    if (name_filter or tag_filter) and not filtered_submit_files:
+        if name_filter and not tag_filter:
+            filter_text = name_filter
+        elif tag_filter and not name_filter:
+            filter_text = 'tag ' + tag_filter
+        else:
+            filter_text = 'name ' + name_filter + ', tag ' + tag_filter
+        print(red_text('No submit files matched filter: ' + filter_text))
+        return
+    if name_filter or tag_filter:
         print('Matched', len(filtered_submit_files), 'submit file(s)')
     print()
 
@@ -1799,17 +1819,24 @@ def transfer_jobs(args, name_filter=None):
         print('No submit.sh files found under', args.output)
         return
 
-    filtered_submit_files, _name_skipped = filter_submit_files_by_label(
-        submit_files, name_filter)
+    filtered_submit_files, _name_skipped, _tag_skipped = filter_submit_files(
+        submit_files, name_filter=name_filter, tag_filter=args.tag)
 
     print('Found', len(submit_files), 'submit file(s)')
     print('Destination:', dest_xrd)
     print('Tag filter:', args.tag if args.tag else 'all')
     if name_filter:
         print('Name filter:', name_filter)
-        if not filtered_submit_files:
-            print(red_text('No submit files matched filter: ' + name_filter))
-            return
+    if (name_filter or args.tag) and not filtered_submit_files:
+        if name_filter and not args.tag:
+            filter_text = name_filter
+        elif args.tag and not name_filter:
+            filter_text = 'tag ' + args.tag
+        else:
+            filter_text = 'name ' + name_filter + ', tag ' + args.tag
+        print(red_text('No submit files matched filter: ' + filter_text))
+        return
+    if name_filter:
         print('Matched', len(filtered_submit_files), 'submit file(s)')
     print()
 
@@ -1821,15 +1848,8 @@ def transfer_jobs(args, name_filter=None):
     n_ok = 0
     n_skip = 0
     n_fail = 0
-    n_tag_skip = 0
-    tag_skip_examples = []
     for submit_path, path_info, label in filtered_submit_files:
         tag       = path_info['tag']
-        if args.tag and tag != args.tag:
-            n_tag_skip += 1
-            if len(tag_skip_examples) < 5:
-                tag_skip_examples.append(submit_path)
-            continue
         history = recover_submission_history_or_exit(submit_path)
         eos_out_dir = history.eos_out_dir
         if not eos_out_dir:
@@ -1924,11 +1944,6 @@ def transfer_jobs(args, name_filter=None):
 
     print('=' * 60)
     print('Transfer complete: {} merged, {} skipped, {} failed'.format(n_ok, n_skip, n_fail))
-    if n_tag_skip:
-        print('Ignored {} submit file(s) that did not match job tag {}'.format(
-              n_tag_skip, args.tag))
-        for path in tag_skip_examples:
-            print('  ignored:', path)
     print('=' * 60)
 
 
@@ -2017,7 +2032,7 @@ def main():
 
     if args.check is not None:
         check_jobs(args.output, verbose=args.verbose, test_job=args.test_job,
-                   name_filter=args.check)
+                   name_filter=args.check, tag_filter=args.tag)
         return
 
     if args.transfer is not None:
