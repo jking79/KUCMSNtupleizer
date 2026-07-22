@@ -323,6 +323,9 @@ void KUCMSAodSkimmer::processPhotons(){
     float wttimesig1 = phoWTime1/phoWRes1;
 
     float phoWTime, phoWRes;
+    int sysvar = 0;
+    if( systematicName == "wPhoTimeSig_up" ) sysvar = 1;
+    if( systematicName == "wPhoTimeSig_down" ) sysvar = -1;
 	float phoWTimeSig = getTimeSig( scIndx, phoWTime, phoWRes );
     allphowtime.push_back( phoWTime );
 

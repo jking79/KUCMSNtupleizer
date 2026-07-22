@@ -115,6 +115,7 @@ public:
   void SetDoSlimmed( bool f ){ doSlimmed = f; }
   void SetDoLocalTimeCali( bool f ){ useLocalTimeCali = f; }
   void SetBranchMaskFile( std::string f ){ branchMaskFile = f; useBranchMask = !f.empty(); }
+  void SetSystematic( std::string f ){ systematicName = f; }
 
   // set branches
 
@@ -302,6 +303,7 @@ public:
   std::string listDirPath;
   std::string eosDirPath;
   std::string outFileName;
+  std::string systematicName;
 
   // event varibles
 

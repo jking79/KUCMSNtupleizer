@@ -312,11 +312,19 @@ KUCMSAodSkimmer::KUCMSAodSkimmer( bool doLocal ){
   localSkip = 0;
   useUnCC = false; // for post 2025 data processing with CC ECAL time reco
   isCC = false; // for post 2025 data processing with CC ECAL time reco
+
+  // slimming, branch masking, and systematic varibles
+
   doSlimmed = false;
   useBranchMask = false;
   branchMaskFile = "";
   branchMaskPatterns.clear();
 
+  // systematic evaluation varible
+  // None - do nothing
+  // xxxxxxx_up or xxxxxxx_down for systimatics
+  // everything before first "_" added to tree name
+  systematicName = "None"; 
 
   // condor event segmenting varibles : used to run over subset of events for condor jobs
   _evti = -1;
@@ -438,8 +446,16 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
   if( debug) std::cout << "<<<<<<<< Processing Main Loop <<<<<<<<<<<<<< " << std::endl;
 
   // --- setup for main loop
-  TTree* fOutTree = new TTree("kuSkimTree","output root file for kUCMSSkimmer");
-  TTree* fConfigTree = new TTree("kuSkimConfigTree","config root file for kUCMSSkimmer");
+  std::string skimTreeName = "kuSkimTree"; 
+  std::string conigTreeName = "kuSkimConfigTree";
+  if( systematicName != "None" ){
+  	treeNameExt = splitString( systematicName, "_" );
+	skimTreeName = skimTreeName + "_" + treeNameExt;
+    conigTreeName = conigTreeName + "_" + treeNameExt;
+  }//<<>>if( systematicName != "None" )
+
+  TTree* fOutTree = new TTree( skimTreeName.c_str(), "output root file for kUCMSSkimmer" );
+  TTree* fConfigTree = new TTree( conigTreeName.c_str(), "config root file for kUCMSSkimmer" );
 
   if( tctag == "r3_p25" or tctag == "r3_p26" ){ isCC = true; }
   if( tctag == "r3_p25unc" or tctag == "r3_p26unc" ){ useUnCC = true; isCC = true; }
