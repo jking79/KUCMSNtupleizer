@@ -22,11 +22,11 @@
 struct kucms_sumCnt { 
 
     kucms_sumCnt(){} 
-    kucms_sumCnt( float s, float s2, float c ) : sum(s), sumsqr(s2), cnt(c) {}  
+    kucms_sumCnt( double s, double s2, double c ) : sum(s), sumsqr(s2), cnt(c) {}  
  
-    float sum; 
-    float sumsqr; 
-    float cnt; 
+    double sum; 
+    double sumsqr; 
+    double cnt; 
  
 };//<<>>struct sumCnt 
 
@@ -57,8 +57,8 @@ class kucms_CaliRunClass : public KUCMS_RootHelperBaseClass {
     bool isExternal; 
  
     std::map<uInt,kucms_sumCnt> sumCntMap; 
-    std::map<uInt,float> meanMap; 
-    std::map<uInt,float> errMap; 
+    std::map<uInt,double> meanMap; 
+    std::map<uInt,double> errMap; 
     std::map<uInt,TH1F*> detIdHists; 
     //detIdHists[cmsswId] = new TH1F(histname.c_str(),"AveXtalTimeDist;XtalTime [ns]",500,-5,5);     
  
@@ -80,17 +80,19 @@ class kucms_CaliRunClass : public KUCMS_RootHelperBaseClass {
         //std::cout << " make mean maps: " << std::endl; 
         for( auto& entry : sumCntMap ){ 
      
-            float cnt = float( entry.second.cnt ); 
+            double cnt = double( entry.second.cnt ); 
             if( cnt == 0 ) cnt = 1; 
-            float mean = entry.second.sum / cnt;  
-            float err = sqrt( (entry.second.sumsqr/cnt - mean*mean)/cnt ); 
+            double mean = entry.second.sum / cnt;  
+            double err = sqrt( (entry.second.sumsqr/cnt - mean*mean)/cnt ); 
             if( err == 0 ){ err = 9; mean = 0; } 
             //std::cout << " - calc: " << entry.first << " = " << mean << " +/- " << err << " occ: " << cnt << std::endl; 
-            if( filter && cnt > 100 ){ 
-                auto fitFunc  = new TF1("gfit","gaus",-3.0,3.0); 
+            if( filter && ( cnt > 10 ) ){ 
+				double high = mean + 3*err;
+                double low = mean - 3*err;
+                auto fitFunc  = new TF1("gfit","gaus",low,high); 
                 auto thefit = detIdHists[entry.first]->Fit("gfit","QNRL"); 
-                float fmean = fitFunc->GetParameter(1); 
-                float ferr = fitFunc->GetParError(1); 
+                double fmean = fitFunc->GetParameter(1); 
+                double ferr = fitFunc->GetParError(1); 
                 //std::cout << " --- fit: result " << thefit << " mean " << fmean << " +/- " << ferr << std::endl; 
                 if( thefit != 4 && ferr != 0 && ferr < err ){ mean = fmean; err = ferr; } 
                 delete fitFunc; 
@@ -104,7 +106,7 @@ class kucms_CaliRunClass : public KUCMS_RootHelperBaseClass {
     }//<<>>void CaliRunClass::makeMeanMap() 
      
     //inline void kucms_CaliRunClass::fillSumCnt( uInt detid, float val, int cnt ){ 
-	void fillSumCnt( uInt detid, float val, float cnt = 1 ){
+	void fillSumCnt( uInt detid, double val, double cnt = 1 ){
     
 		//std::cout << "Cecking " << detid << " with " << endRun << " " << lastRun <<  " " << hasGID2 << " " << doGID2  << std::endl; 
         if( endRun == lastRun ){ 
@@ -113,7 +115,7 @@ class kucms_CaliRunClass : public KUCMS_RootHelperBaseClass {
 		}//<<>>if( ( endRun == lastRun )
         //std::cout << "Filling " << detid << " with " << val << " " << cnt << std::endl; 
         updated = true; 
-        float wval = val*cnt;
+        double wval = val*cnt;
         if( sumCntMap.find(detid) != sumCntMap.end() ){ 
             sumCntMap[detid].sum += wval; 
             sumCntMap[detid].sumsqr += wval*wval;  
