@@ -725,11 +725,16 @@ void KUCMS_TimeCalibration::ReadResFile(){
     std::ifstream infile( caliResConfig, std::ios::in);
     if( not infile.is_open() ){ std::cout << " -- " << caliResConfig << " not opened. "  << std::endl; return; }
     std::string tag;
-    float ebnoise, ebstoch, ebstant, eenoise, eestoch, eestant;
-    while( infile >> tag >> ebnoise >> ebstoch >> ebstant >> eenoise >> eestoch >> eestant ){
-        ResTagSet[tag] = { ebnoise, ebstoch, ebstant, eenoise, eestoch, eestant };
-		std::cout << " -- restag : " << tag << " " << ebnoise << " " << ebstoch << " " << ebstant << " " << eenoise;
-        std::cout << " " << eestoch << " " << eestant << std::endl;
+    float ebnoise, ebstoch, ebstant, ebg1he1res, ebg1he2res, ebg1he3res, ebhg1res, ebhg2res, ebhg3res;
+    float eenoise, eestoch, eestant, eeg1he1res, eeg1he2res, eeg1he3res, eehg1res, eehg2res, eehg3res;
+    while( infile >> tag >> ebnoise >> ebstoch >> ebstant >> ebg1he1res >> ebg1he2res >> ebg1he3res >> ebhg1res >> ebhg2res >> 
+				ebhg3res >> eenoise >> eestoch >> eestant >> eeg1he1res >> eeg1he2res >> eeg1he3res >> eehg1res >> eehg2res >> eehg3res ){
+        ResTagSet[tag] = { ebnoise, ebstoch, ebstant,ebg1he1res, ebg1he2res, ebg1he3res,ebhg1res, ebhg2res, 
+							ebhg3res,eenoise, eestoch, eestant,eeg1he1res, eeg1he2res, eeg1he3res,eehg1res, eehg2res, eehg3res };
+		std::cout << " -- restag : " << tag << " " << ebnoise << " " << ebstoch << " " << ebstant << " " << ebg1he1res;
+        std::cout << " " << ebg1he2res << " " << ebg1he3res << " " << ebhg1res << " " << ebhg2res << " " << ebhg3res; 
+        std::cout << " " << eenoise << " " << eestoch << " " << eestant << " " << eeg1he1res << " " << eeg1he2res; 
+        std::cout << " " << eeg1he3res << " " << eehg1res << " " << eehg2res << " " << eehg3res << " " << std::endl;
     }//<<>>while (infile >>
     infile.close();
 
@@ -757,26 +762,26 @@ void KUCMS_TimeCalibration::SaveResFile(){
         float ebstant = restag.second.ebstant;
         float ebg1he1res = restag.second.ebg1he1res;
         float ebg1he2res = restag.second.ebg1he2res;
-        float ebg1he2res = restag.second.ebg1he3res;
+        float ebg1he3res = restag.second.ebg1he3res;
         float ebhg1res = restag.second.ebhg1res;
         float ebhg2res = restag.second.ebhg2res;
-        float ebhg2res = restag.second.ebhg3res;
+        float ebhg3res = restag.second.ebhg3res;
         float eenoise = restag.second.eenoise;
         float eestoch = restag.second.eestoch;
         float eestant = restag.second.eestant;
         float eeg1he1res = restag.second.eeg1he1res;
         float eeg1he2res = restag.second.eeg1he2res;
-        float eeg1he2res = restag.second.eeg1he3res;
+        float eeg1he3res = restag.second.eeg1he3res;
         float eehg1res = restag.second.eehg1res;
         float eehg2res = restag.second.eehg2res;
-        float eehg2res = restag.second.eehg3res;
+        float eehg3res = restag.second.eehg3res;
 
         outfile << tag << " " << ebnoise << " " << ebstoch << " " << ebstant << " " << 
-					ebg1he1res << " " << ebg1he1res << " " << ebg1he1res << " " <<
-					ebhg1res << " " << ebhg1res << " " << ebhg1res << " " <<
+					ebg1he1res << " " << ebg1he2res << " " << ebg3he1res << " " <<
+					ebhg1res << " " << ebhg2res << " " << ebhg3res << " " <<
 					eenoise << " " << eestoch << " " << eestant << " " <<
-                    eeg1he1res << " " << eeg1he1res << " " << eeg1he1res << " " <<
-                    eehg1res << " " << eehg1res << " " << eehg1res << " " << std::endl;
+                    eeg1he1res << " " << eeg1he2res << " " << eeg1he3res << " " <<
+                    eehg1res << " " << eehg2res << " " << eehg3res << " " << std::endl;
 
     }//<<>>for( auto& calirunmap : SmearTagSet )
     outfile.close();
@@ -1566,11 +1571,30 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
     float var = ( dataSetKey == "None" ) ? -1 : -99;
     if( mctype == 1 ){ // data or MC
 		if( ResTagSet.find(dataSetKey) != ResTagSet.end() ){
-			float noise = isEB ? ResTagSet[dataSetKey].ebnoise : ResTagSet[dataSetKey].eenoise;
-            float stoch = isEB ? ResTagSet[dataSetKey].ebstoch : ResTagSet[dataSetKey].eestoch;
-            float stant = isEB ? ResTagSet[dataSetKey].ebstant : ResTagSet[dataSetKey].eestant;
-			var = sq2(noise/amplitude) + sq2(stoch)/amplitude + 2*sq2(stant);
+			if( amplitude > 400 ){ 
 
+				float res = 0;
+				if( amplitude > 900 ){ 
+					if( isEB ) res = ( gianID == 1 ) ? ResTagSet[dataSetKey].ebg1he3res : ResTagSet[dataSetKey].ebhg3res;
+					else res = ( gianID == 1 ) ? ResTagSet[dataSetKey].eeg1he3res : ResTagSet[dataSetKey].eehg3res;
+				} else if( amplitude > 600 ){ 
+					if( isEB ) res = ( gianID == 1 ) ? ResTagSet[dataSetKey].ebg1he2res : ResTagSet[dataSetKey].ebhg2res;
+					else res = ( gianID == 1 ) ? ResTagSet[dataSetKey].eeg1he2res : ResTagSet[dataSetKey].eehg2res;
+				} else { 
+					if( isEB ) res = ( gianID == 1 ) ? ResTagSet[dataSetKey].ebg1he1res : ResTagSet[dataSetKey].ebhg1res;
+					else res = ( gianID == 1 ) ? ResTagSet[dataSetKey].eeg1he1res : ResTagSet[dataSetKey].eehg1res;
+				}//<<>>if( amplitude > 900 )
+				var = sq2( res );
+
+			}//<<>>if( amplitude > 400 )
+			if( amplitude <= 400 or var == 0 ){
+			
+				float noise = isEB ? ResTagSet[dataSetKey].ebnoise : ResTagSet[dataSetKey].eenoise;
+            	float stoch = isEB ? ResTagSet[dataSetKey].ebstoch : ResTagSet[dataSetKey].eestoch;
+            	float stant = isEB ? ResTagSet[dataSetKey].ebstant : ResTagSet[dataSetKey].eestant;
+				var = sq2(noise/amplitude) + sq2(stoch)/amplitude + 2*sq2(stant);
+
+			}//<<>>if( amplitude > 400 )
 /* 
  			// test to see if photon wtsig in 24C-E was impacted by incorrect resolutions -  nope 
 			if( dataSetKey == "r3_p24" and Evt_run > 379411 and Evt_run < 381943 ){
@@ -1582,32 +1606,6 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
             	var = sq2(noise/amplitude) + sq2(stoch)/amplitude + 2*sq2(stant);
 			}//<<>>if( dataSetKey == "run3_24p" and Evt_run > 380253 and Evt_run < 380947 )
 */
-
-			if( dataSetKey == "r3_p25" and gianID != 1 and amplitude > 250 ){
-				if( isEB ) var = ( amplitude > 800 ) ? 0.621 : ( amplitude > 600 ) ? 0.207 : ( amplitude > 400 ) ? 0.178 : 
-									( amplitude > 300 ) ? 0.182 : 0.192;
-                else var = ( amplitude > 800 ) ? 0.217 : ( amplitude > 600 ) ? 0.205 : ( amplitude > 400 ) ? 0.178 : 
-									( amplitude > 300 ) ? 0.158 : 0.159;
-			}//<<>>if( dataSetKey == "r3_p25" and gianID != 1 and amplitude > 250  )
-            if( dataSetKey == "r3_p25unc" and gianID != 1 and amplitude > 250 ){
-                if( isEB ) var = ( amplitude > 800 ) ? 0.618 : ( amplitude > 600 ) ? 0.173 : ( amplitude > 400 ) ? 0.157 : 
-									( amplitude > 300 ) ? 0.162 : 0.174;
-                else var = ( amplitude > 800 ) ? 0.240 : ( amplitude > 600 ) ? 0.234 : ( amplitude > 400 ) ? 0.214 : 
-									( amplitude > 300 ) ? 0.202 : 0.207;
-            }//<<>>if( dataSetKey == "r3_p25unc" and gianID != 1 and amplitude > 250 )
-            if( dataSetKey == "r3_p25" and gianID == 1 and amplitude > 250 ){
-                if( isEB ) var = ( amplitude > 800 ) ? 0.193 : ( amplitude > 600 ) ? 0.181 : ( amplitude > 400 ) ? 0.174 : 
-									( amplitude > 300 ) ? 0.183 : 0.192;
-                else var = ( amplitude > 800 ) ? 0.207 : ( amplitude > 600 ) ? 0.203 : ( amplitude > 400 ) ? 0.178 : 
-									( amplitude > 300 ) ? 0.159 : 0.159;
-            }//<<>>if( dataSetKey == "r3_p25"  and gianID == 1 and amplitude > 250  )
-            if( dataSetKey == "r3_p25unc" and gianID == 1 and amplitude > 250 ){
-                if( isEB ) var = ( amplitude > 800 ) ? 0.147 : ( amplitude > 600 ) ? 0.158 : ( amplitude > 400 ) ? 0.151 : 
-									( amplitude > 300 ) ? 0.162 : 0.174;
-                else var = ( amplitude > 800 ) ? 0.227 : ( amplitude > 600 ) ? 0.230 : ( amplitude > 400 ) ? 0.214 : 
-									( amplitude > 300 ) ? 0.202 : 0.207;
-            }//<<>>if( dataSetKey == "r3_p25"  and gianID == 1 and amplitude > 250  )
-
 		}//<<>>if( ResTagSet.find(tag) != ResTagSet.end() )
     }//<<>>if( mctype == 0 )
     else if( mctype == 0 or mctype == 2 ){ // data or MC   --- resTag is the target resolution for smearing
