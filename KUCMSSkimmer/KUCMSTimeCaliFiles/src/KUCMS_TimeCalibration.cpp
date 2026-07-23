@@ -735,9 +735,12 @@ void KUCMS_TimeCalibration::ReadResFile(){
 
 }//<<>>void KUCMS_TimeCalibration::ReadSmearFile()
 
-void KUCMS_TimeCalibration::SetResParamters( std::string tag, float ebnoise, float ebstoch, float ebstant, float eenoise, float eestoch, float eestant ){
+void KUCMS_TimeCalibration::SetResParamters( std::string tag, float ebnoise, float ebstoch, float ebstant, float ebg1he1res, 
+	float ebg1he2res, float ebg1he3res, float ebhg1res, float ebhg2res, float ebhg3res, float eenoise, float eestoch,
+    float eestant, float eeg1he1res, float eeg1he2res, float eeg1he3res, float eehg1res, float eehg2res, float eehg3res ){
 
-	ResTagSet[tag] = { ebnoise, ebstoch, ebstant, eenoise, eestoch, eestant };
+	ResTagSet[tag] = { ebnoise, ebstoch, ebstant, ebg1he1res, ebg1he2res, ebg1he3res, ebhg1res, ebhg2res, ebhg3res,
+		eenoise, eestoch, eestant, eeg1he1res, eeg1he2res, eeg1he3res, eehg1res, eehg2res, eehg3res };
 
 }//<<>>void KUCMS_TimeCalibration::SetResParamters
 
@@ -752,11 +755,28 @@ void KUCMS_TimeCalibration::SaveResFile(){
 		float ebnoise = restag.second.ebnoise;
         float ebstoch = restag.second.ebstoch;
         float ebstant = restag.second.ebstant;
+        float ebg1he1res = restag.second.ebg1he1res;
+        float ebg1he2res = restag.second.ebg1he2res;
+        float ebg1he2res = restag.second.ebg1he3res;
+        float ebhg1res = restag.second.ebhg1res;
+        float ebhg2res = restag.second.ebhg2res;
+        float ebhg2res = restag.second.ebhg3res;
         float eenoise = restag.second.eenoise;
         float eestoch = restag.second.eestoch;
         float eestant = restag.second.eestant;
+        float eeg1he1res = restag.second.eeg1he1res;
+        float eeg1he2res = restag.second.eeg1he2res;
+        float eeg1he2res = restag.second.eeg1he3res;
+        float eehg1res = restag.second.eehg1res;
+        float eehg2res = restag.second.eehg2res;
+        float eehg2res = restag.second.eehg3res;
 
-        outfile << tag << " " << ebnoise << " " << ebstoch << " " << ebstant << " " << eenoise << " " << eestoch << " " << eestant << std::endl;
+        outfile << tag << " " << ebnoise << " " << ebstoch << " " << ebstant << " " << 
+					ebg1he1res << " " << ebg1he1res << " " << ebg1he1res << " " <<
+					ebhg1res << " " << ebhg1res << " " << ebhg1res << " " <<
+					eenoise << " " << eestoch << " " << eestant << " " <<
+                    eeg1he1res << " " << eeg1he1res << " " << eeg1he1res << " " <<
+                    eehg1res << " " << eehg1res << " " << eehg1res << " " << std::endl;
 
     }//<<>>for( auto& calirunmap : SmearTagSet )
     outfile.close();
