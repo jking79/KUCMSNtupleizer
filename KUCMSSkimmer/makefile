@@ -144,7 +144,7 @@ configrestar: res
 	cp $(EXE_RES) config/
 	cp -r ntuple_master_lists/* config/ntuple_master_lists/
 	cp ecal_config/brilcalc* config/ecal_config/
-	cp ecal_config/cali_config/cali* config/ecal_config/
+	cp ecal_config/config_ecalcali/cali* config/ecal_config/
 	cp ecal_config/fullinfo* config/ecal_config/
 	cp ecal_config/reducedinfo* config/ecal_config/
 	tar -czf condor/configres.tgz config

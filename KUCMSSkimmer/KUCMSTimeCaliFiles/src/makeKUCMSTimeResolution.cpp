@@ -92,15 +92,18 @@ int main ( int argc, char *argv[] ){
 
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCGjetsTFile.txt");
 
-    //std::string inputfilename( "ecal_config/kucmsTimeCaliR18ULTFile.txt");
-    //std::string inputfilename( "ecal_config/kucmsTimeCaliR17ULTFile.txt");
-    //std::string inputfilename( "ecal_config/kucmsTimeCaliR16ULTFile.txt");
-    //std::string inputfilename( "ecal_config/kucmsTimeCaliR22PrmptTFile.txt");
-    //std::string inputfilename( "ecal_config/kucmsTimeCaliR23PrmptTFile.txt");
-    //std::string inputfilename( "ecal_config/kucmsTimeCaliR24PrmptTFile.txt");
+    ////std::string inputfilename( "ecal_config/kucmsTimeCaliR18ULTFile.txt");
+    ////std::string inputfilename( "ecal_config/kucmsTimeCaliR17ULTFile.txt");
+    ////std::string inputfilename( "ecal_config/kucmsTimeCaliR16ULTFile.txt");
+    ////std::string inputfilename( "ecal_config/kucmsTimeCaliR22PrmptTFile.txt");
+    ////std::string inputfilename( "ecal_config/kucmsTimeCaliR23PrmptTFile.txt");
+    ////std::string inputfilename( "ecal_config/kucmsTimeCaliR24PrmptTFile.txt");
+
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR25PrmptTFile.txt");
+
+    std::string inputfilename( "ecal_config/kucmsTimeCaliR24ReRecoTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR23ReRecoTFile.txt");
-    std::string inputfilename( "ecal_config/kucmsTimeCaliR22ReRecoTFile.txt");
+    //std::string inputfilename( "ecal_config/kucmsTimeCaliR22ReRecoTFile.txt");
 
 	//std::string eosdir("root://cmseos.fnal.gov//store/user/jaking/");// input parameter!
     //std::string eosdir("root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/");
@@ -111,13 +114,18 @@ int main ( int argc, char *argv[] ){
     ////std::string indir("kuncali/gammares_mc18/");
     ////std::string indir("kuncali/gammares_cali/DoubleEG/");
 
-    //std::string indir("KUCMSNtuple/gammares_ul18/");
-    //std::string indir("KUCMSNtuple/gammares_ul17/");
-    //std::string indir("KUCMSNtuple/gammares_ul16/DoubleEG/");
-    //std::string indir("KUCMSNtuple/gammares_prmt22/EGamma/");
-    //std::string indir("KUCMSNtuple/");// 23 & 24
+    ////std::string indir("KUCMSNtuple/gammares_ul18/");
+    ////std::string indir("KUCMSNtuple/gammares_ul17/");
+    ////std::string indir("KUCMSNtuple/gammares_ul16/DoubleEG/");
+    ////std::string indir("KUCMSNtuple/gammares_prmt22/EGamma/");
+    ////std::string indir("KUCMSNtuple/");// 23 & 24
+
     //std::string indir("KUCMSNtuple/gammares_prmt25/");
-    std::string indir("KUCMSNtuple/gammares_R22_22sept23/");
+
+    //std::string indir("KUCMSNtuple/gammares_R22_22sept23/");
+    //std::string indir("KUCMSNtuple/gammares_R23_22sept23/");
+    std::string indir("KUCMSNtuple/gammares_R24_m6n15/");
+	
 
     bool doScale = true;
     bool useCali = true;
@@ -141,7 +149,8 @@ int main ( int argc, char *argv[] ){
     if( argc > 4 ) doSmear = parseBoolArg( argv[4] );
     if( argc > 5 ) nameExt = argv[5];
 
-    KUCMS_TimeCalibration theCali;
+    //KUCMS_TimeCalibration theCali;
+    KUCMS_TimeCalibration theCali( true );// true allows for run local condition
     theCali.setUseLocalCali();
     theCali.SetEosDir(eosdir);
     theCali.SetInDir(indir);
@@ -569,8 +578,11 @@ int main ( int argc, char *argv[] ){
 	// plotting of mean time by run with calibraton : filename, start run, end run, usecali ( defaults to usecali true )
 	//theCali.plotMeanRunTimeEGR( inputfilename, 315257, 325172 ); // R2 2018 UL 315257_325172 // R2 2017 UL 296399_306460
     //theCali.plotMeanRunTimeEGR( inputfilename, 315257, 325172, false );
-    //352319_362760
-	theCali.plotMeanRunTimeEGR( inputfilename, 355794, 360331, false );
+    //352319_362760 // 2022  full
+	//theCali.plotMeanRunTimeEGR( inputfilename, 357487, 358000, true );//22C
+	//theCali.plotMeanRunTimeEGR( inputfilename, 355794, 362180, false );//22C-22F
+    //theCali.plotMeanRunTimeEGR( inputfilename, 392159, 398903, false );
+    theCali.plotMeanRunTimeEGR( inputfilename, 379412, 380947, false );//24CD 
 
     ////theCali.plotMeanRunTimeEGR( inputfilename, 296399, 307554, true );
 	////theCali.makeTTDiffMaps();// make trigger tower diffrence maps

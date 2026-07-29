@@ -51,6 +51,7 @@ void KUCMSAodSkimmer::processRechits(){
 		auto rhid = (*ECALRecHit_ID)[it];
 		rhIDtoIterMap[rhid] = it;
 		auto idinfo = timeCali->getDetIdInfo(rhid);
+		bool isEB = ( idinfo.ecal == 0 );
     	if( DEBUGECAL ) std::cout << " -- TimeCali DetIDInfo : " << idinfo.i2 << " " << idinfo.i1 << " " << idinfo.ecal << std::endl;
 		float rht = (*ECALRecHit_time)[it];
         const bool gs6 = (*ECALRecHit_hasGS6)[it];
@@ -65,6 +66,7 @@ void KUCMSAodSkimmer::processRechits(){
 		float rha = (*ECALRecHit_ampres)[it]; //( this is the ADC amplitude in units of the pedistal rms for this rechit )
 		timeCali->setMCResTag(mctrtag);
 		float corrht = timeCali->getCorrectedTime( rht, rha, rhid, Evt_run, tctag, mctype, gainid );
+		float hgncht = timeCali->getCorrectedTime( rht, rha, rhid, Evt_run, tctag, mctype, 1 );
 		float rhtres = timeCali->getTimeResoltuion( rha, rhid, Evt_run, tctag, mctype, gainid );
 		//if( rhid < 840000000 ){
 		//std::cout << " TC check : inputs : rhid " << rhid << " run " << Evt_run << " tag "  << tctag << " type " << mctype << std::endl;
@@ -73,44 +75,54 @@ void KUCMSAodSkimmer::processRechits(){
 		erh_corTime.push_back( corrht );
         erh_timeRes.push_back( rhtres );
 
+        if( true ){
+		//if( Evt_run > 35900 and Evt_run < 360600 ){
+
+		if( rhe > 5 ){
         hist1d[0]->Fill( rhe, 1 );
         hist1d[1]->Fill( rhtres, 1 );
         hist1d[2]->Fill( corrht, 1 );
         hist1d[5]->Fill( rht, 1 );
 		if( gainid == 2 ){ 
-			hist2d[10]->Fill(rhe,rht);
+			if( isEB ) hist2d[10]->Fill(rhe,hgncht);
+			else hist2d[13]->Fill(rhe,hgncht);
         	hist1d[70]->Fill( rhe, 1 );
         	hist1d[71]->Fill( rhtres, 1 );
-        	hist1d[72]->Fill( rht, 1 );
+        	hist1d[72]->Fill( hgncht, 1 );
         	hist1d[75]->Fill( rht, 1 );
 		}//<<>>if( gainid == 2 )
         if( gainid == 3 ){ 
-			hist2d[11]->Fill(rhe,rht);
+			if( isEB ) hist2d[11]->Fill(rhe,hgncht);
+            else hist2d[14]->Fill(rhe,hgncht);
             hist1d[80]->Fill( rhe, 1 );
             hist1d[81]->Fill( rhtres, 1 );
-            hist1d[82]->Fill( rht, 1 );
+            hist1d[82]->Fill( hgncht, 1 );
             hist1d[85]->Fill( rht, 1 );
         }//<<>>if( gainid == 3 )
-        if( gainid == 1 ) hist2d[12]->Fill(rhe,corrht);
         if( gainid == 1 ){
+			if( isEB ) hist2d[12]->Fill(rhe,corrht);
+            else hist2d[15]->Fill(rhe,corrht);
 			hist1d[40]->Fill( rhe, 1 );
             hist1d[41]->Fill( rhtres, 1 );
-            hist1d[42]->Fill( corrht, 1 );
+            hist1d[42]->Fill( hgncht, 1 );
             hist1d[45]->Fill( rht, 1 );
 		//}//<<>>if( (*rhSubdet)[it] == 0 )
         if( rhid < 840000000 ){
             hist1d[50]->Fill( rhe, 1 );
             hist1d[51]->Fill( rhtres, 1 );
-            hist1d[52]->Fill( corrht, 1 );
+            hist1d[52]->Fill( hgncht, 1 );
             hist1d[55]->Fill( rht, 1 );
         }//<<>>if( (*rhSubdet)[it] == 0 )
         if( rhid > 840000000 ){
             hist1d[60]->Fill( rhe, 1 );
             hist1d[61]->Fill( rhtres, 1 );
-            hist1d[62]->Fill( corrht, 1 );
+            hist1d[62]->Fill( hgncht, 1 );
             hist1d[65]->Fill( rht, 1 );
         }//<<>>if( (*rhSubdet)[it] == 0 )
 		}//<<>>if( gainid == 1 )
+		}//<<>>if( rhe > 1.f )
+
+		}//<<>>if( Evt_run > 359000 and Evt_run < 359688 )
 
 		/*  ECAL Rechit information --  not saved currenty
  

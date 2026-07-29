@@ -37,7 +37,7 @@
 //#define CLSTRMAPS true
 #define CLSTRMAPS false
 
-KUCMSAodSkimmer::KUCMSAodSkimmer(){
+KUCMSAodSkimmer::KUCMSAodSkimmer( bool doLocal ){
 
 
   ////    Base RJR ------------------------------------------
@@ -263,11 +263,12 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
   }//<<>>treeplot on off
 
   // -------------  default root branch intilization -------------
+  //   - used for backwards compatablity 
 
-  doGenInfoBase = false;
-  doSVsBase = true;
+  doGenInfoBase = false; // turns on/off new gen info branch processing 
+  doSVsBase = true; // turns on/off SV processing
   doNewSigBase = true; // for internal setting of flag - does not change in general;
-  doHTLPathsBase = true;
+  doHTLPathsBase = true; // turns on/off HTL trigger path processing
 
   // -----------  Time Calibration -----------------
 
@@ -277,7 +278,8 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
   std::string r2Fall17MINIAOD( "RunIIFall17MiniAODv2" );
   std::string r2UL( "r2_ul18" );
 
-  timeCali = new KUCMS_TimeCalibration();
+  useLocalTimeCali = doLocal;	
+  timeCali = new KUCMS_TimeCalibration( false, false, useLocalTimeCali );
   timeCali->setTag(r2UL);
   // --- resTag is the target resolution for smearing
   mctrtag = "r2_ul18";
@@ -296,25 +298,27 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
 
   // setup lumi json map
 
+  loadLumiJson("config/json/Cert_Collisions2025_391658_398903_Golden.json");
   loadLumiJson("config/json/Cert_Collisions2024_378981_386951_Golden.json");
   loadLumiJson("config/json/Cert_Collisions2023_366442_370790_Golden.json");
   loadLumiJson("config/json/Cert_Collisions2022_355100_362760_Golden.json");
   loadLumiJson("config/json/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.json");
   loadLumiJson("config/json/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt");
   loadLumiJson("config/json/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt");
-  loadLumiJson("config/json/Cert_Collisions2025_391658_398903_Golden.json");
   
-  // condor event segmenting varibles : used to run over subset of events for condor jobs
+  //  post 2025 data processing with CC ECAL time reco
 
   isLocal = false;
   localSkip = 0;
-  useUnCC = false;
-  isCC = false;
+  useUnCC = false; // for post 2025 data processing with CC ECAL time reco
+  isCC = false; // for post 2025 data processing with CC ECAL time reco
   doSlimmed = false;
   useBranchMask = false;
   branchMaskFile = "";
   branchMaskPatterns.clear();
 
+
+  // condor event segmenting varibles : used to run over subset of events for condor jobs
   _evti = -1;
   _evtj = -1;
 
@@ -347,13 +351,18 @@ KUCMSAodSkimmer::KUCMSAodSkimmer(){
   useEvtGenWgtFlag = true;
   hasGenInfoFlag = true;
   nEvents = 0, 
-    nSelectedEvents = 0;
+  nSelectedEvents = 0;
+
   sumEvtGenWgt = 0;
+
+  // sets current default behavoir
   setGenInfoBase(hasGenInfoFlag); 
   setDoSVsBase(doSVs);
   setNewSigBase(true);
   setHTLPathsBase(false);
   setDoUnCCBase(false);
+
+  // for photons GJet selections
 
   diJetIndex = {-1,-1};
   gammaJetIndex = {-1,-1};
@@ -1505,10 +1514,13 @@ void KUCMSAodSkimmer::initHists(){
   hist2d[2] = new TH2D("rjrPtS_v_rjrdPhiSI_t0", "rjrDPhiSI_v_rjrPtS Type 0;rjrDphiSI;rjrPtS", 32, 0, 3.2, 60, 0, 3000);
   hist2d[3] = new TH2D("rjrPtS_v_rjrdPhiSI_t1", "rjrDPhiSI_v_rjrPtS Type 1;rjrDphiSI;rjrPtS", 32, 0, 3.2, 60, 0, 3000);
 
-  std::string fHTitle = "KUSkim";
-  hist2d[10] = new TH2D("EnergyVRtTimeG6",addstr(fHTitle,"Energy V RtTime;Energy [GeV] hasGS6;Time [ns]").c_str(),250,0,1000,600,-30,30);
-  hist2d[11] = new TH2D("EnergyVRtTimeG1",addstr(fHTitle,"Energy V RtTime;Energy [GeV] hasGS1;Time [ns]").c_str(),250,0,1000,600,-30,30);
-  hist2d[12] = new TH2D("EnergyVRtTimeG0",addstr(fHTitle,"Energy V RtTime;Energy [GeV] noGS;Time [ns]").c_str(),250,0,1000,600,-30,30);
+ std::string fHTitle = "KUSkim";
+ hist2d[10] = new TH2D("EnergyVRtTimeG6b",addstr(fHTitle,"Energy V RtTime EB;Energy [GeV] hasGS6;Time [ns]").c_str(),250,0,1000,600,-30,30);
+ hist2d[11] = new TH2D("EnergyVRtTimeG1b",addstr(fHTitle,"Energy V RtTime EB;Energy [GeV] hasGS1;Time [ns]").c_str(),250,0,1000,600,-30,30);
+ hist2d[12] = new TH2D("EnergyVRtTimeG0b",addstr(fHTitle,"Energy V RtTime EB;Energy [GeV] noGS;Time [ns]").c_str(),250,0,1000,600,-30,30);
+ hist2d[13] = new TH2D("EnergyVRtTimeG6e",addstr(fHTitle,"Energy V RtTime EE;Energy [GeV] hasGS6;Time [ns]").c_str(),250,0,1000,600,-30,30);
+ hist2d[14] = new TH2D("EnergyVRtTimeG1e",addstr(fHTitle,"Energy V RtTime EE;Energy [GeV] hasGS1;Time [ns]").c_str(),250,0,1000,600,-30,30);
+ hist2d[15] = new TH2D("EnergyVRtTimeG0e",addstr(fHTitle,"Energy V RtTime EE;Energy [GeV] noGS;Time [ns]").c_str(),250,0,1000,600,-30,30);
 
   //------------------------------------------------------------------------------------------
   //------ 3D Hists --------------------------------------------------------------------------

@@ -50,16 +50,23 @@ int main ( int argc, char *argv[] ){
 	//std::string inputfilename( "ecal_config/kucmsTimeCaliTestTFile.txt");
     ////std::string inputfilename( "ecal_config/kucmsTimeCaliR17EOYTFile.txt");
 
+    //std::string inputfilename( "ecal_config/kucmsTimeCaliR25CPrmptTFile.txt");
+
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCGjetsTFile.txt");
  
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR18ULTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR17ULTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR16ULTFile.txt"); 
-	//std::string inputfilename( "ecal_config/kucmsTimeCaliR22PrmptTFile.txt"); 
-    //std::string inputfilename( "ecal_config/kucmsTimeCaliR23PrmptTFile.txt");
-    //std::string inputfilename( "ecal_config/kucmsTimeCaliR24PrmptTFile.txt");
+
+	//std::string inputfilename( "ecal_config/kucmsTimeCaliR22ReRecoTFile.txt"); 
+    //std::string inputfilename( "ecal_config/kucmsTimeCaliR23ReRecoTFile.txt");
+    std::string inputfilename( "ecal_config/kucmsTimeCaliR24ReRecoTFile.txt");
+
+    ////std::string inputfilename( "ecal_config/kucmsTimeCaliR23PrmptTFile.txt");
+    ////std::string inputfilename( "ecal_config/kucmsTimeCaliR24PrmptTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR25PrmptTFile.txt");
-    std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCQCDTFile.txt");
+
+    //std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCQCDTFile.txt");
 
 	//std::string eosdir("root://cmseos.fnal.gov//store/user/jaking/");// input parameter!
     //std::string eosdir("root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/");
@@ -74,8 +81,14 @@ int main ( int argc, char *argv[] ){
     //std::string indir("KUCMSNtuple/gammares_ul17/");
     //std::string indir("KUCMSNtuple/gammares_ul16/DoubleEG/");
     //std::string indir("KUCMSNtuple/gammares_prmt22/EGamma/");
-    std::string indir("KUCMSNtuple/");
-    //std::string indir("KUCMSNtuple/gammares_prmt25/");
+    //std::string indir("KUCMSNtuple/");
+    
+	//std::string indir("KUCMSNtuple/gammares_R22_22sept23/");
+    //std::string indir("KUCMSNtuple/gammares_R23_22sept23/");
+    std::string indir("KUCMSNtuple/gammares_R24_m6n15/");
+
+    ///std::string indir("KUCMSNtuple/gammares_prmt25/");
+
     //std::string indir("KUCMSNtuple/gammares_QCD18/");
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -87,8 +100,7 @@ int main ( int argc, char *argv[] ){
 	// KUCMS_TimeCalibration( bool stayOpen = false, bool makeNew = false  ); are defaults
 
 	////KUCMS_TimeCalibration theCali; // open tfile in read only then close after setup
-	KUCMS_TimeCalibration theCali( true );
-    theCali.setUseLocalCali();
+	KUCMS_TimeCalibration theCali( true );// true allows for run local condition
 	theCali.SetEosDir(eosdir);
 	theCali.SetInDir(indir);
 	//
@@ -98,11 +110,11 @@ int main ( int argc, char *argv[] ){
     //theCali.setTTIov( r2ulTag );
     //theCali.setXIov( xiovtag );
 	// for MC
-    theCali.setTTIov( mctag );
-    theCali.setXIov( mctag );
+    //theCali.setTTIov( mctag );
+    //theCali.setXIov( mctag );
     // for PD R3
-	//theCali.setTTIov( r3TagTT );
-	//theCali.setXIov( r3TagX );
+	theCali.setTTIov( r3TagTT );
+	theCali.setXIov( r3TagX );
     //theCali.setIsCC(true);
 	//theCali.setIsCC(false);
 	//theCali.setDoUnCC(true);
@@ -114,27 +126,28 @@ int main ( int argc, char *argv[] ){
     ////        { makeCaliMapsEGR( inputFileName, true, GID, small, doCali ); };
     ////void makeXCaliMapEGR( std::string inputFileName, int GID = 1, bool small = false, bool doCali = true )
     ////        { makeCaliMapsEGR( inputFileName, false, GID, small, doCali ); };
-    //theCali.makeTTCaliMapEGR( inputfilename, 1, true ); // true == run only subset of events
+    ////theCali.makeTTCaliMapEGR( inputfilename, 1, true ); // true == run only subset of events ( only change doCali for testing, ever )
 	//theCali.makeTTCaliMapEGR( inputfilename );
     //theCali.makeCaliHists();
     //theCali.SaveCaliHists();
     //theCali.SaveTTRunFile();
 
     //-----//////////  making xtal cali :
-    //theCali.makeXCaliMapEGR( inputfilename, true ); // true == run only subset of events
-	//theCali.makeXCaliMapEGR( inputfilename, 1, true ); // true == run only subset of events
-    //theCali.makeXCaliMapEGR( inputfilename );
-    //theCali.makeCaliHists();
-    //theCali.SaveCaliHists();
-    //theCali.SaveCaliRunFile();
+    ////theCali.makeXCaliMapEGR( inputfilename, true ); // true == run only subset of events
+	////theCali.makeXCaliMapEGR( inputfilename, 1, true ); // true == run only subset of events
+    theCali.makeXCaliMapEGR( inputfilename );
+    theCali.makeCaliHists();
+	theCali.SaveCaliHists();
+    theCali.SaveCaliRunFile();
 
 	//----///////////  make gainid 2 calibrations
-    //theCali.makeTTCaliMapEGR( inputfilename, 2, false, false ); // do gainID 2 no calibration step
-    //theCali.makeTTCaliMapEGR( inputfilename, 2, true ); // do gainID 2; true == run only subset of events 
-    //theCali.makeTTCaliMapEGR( inputfilename, 2 ); // do gainID 2
-    //theCali.makeCaliHists();
+    ////theCali.makeTTCaliMapEGR( inputfilename, 2, false, false ); // do gainID 2 no calibration step
+    ////theCali.makeTTCaliMapEGR( inputfilename, 2, true ); // do gainID 2; true == run only subset of events 
+    //theCali.makeXCaliMapEGR( inputfilename, 2 ); // do gainID 2+
+	//theCali.makeCaliHists();
     //theCali.SaveCaliHists();
     //theCali.SaveTTRunFile();
+    //theCali.SaveCaliRunFile();
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -300,6 +313,10 @@ int main ( int argc, char *argv[] ){
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+
+	//  ---------- the below is done in re stuff now ------------------------
+
 	// plotting of mean time by run with calibraton : filename, start run, end run, usecali
 	// usecali ( defaults to usecali true )
 	//KUCMS_TimeCalibration theCali;
@@ -308,12 +325,12 @@ int main ( int argc, char *argv[] ){
     //theCali.plotMeanRunTimeEGR( inputfilename, 315257, 325172 ); // R2 2018 UL 315257_325172 // R2 2017 UL 296399_306460
     //theCali.plotMeanRunTimeEGR( inputfilename, 315257, 325172, false );
     ////theCali.plotMeanRunTimeEGR( inputfilename, 296399, 307554, true );	
-	//theCali.makeTTDiffMaps();// make trigger tower diffrence maps
 	
 	/////////////////////////////////////////////////////////////////////
 
 	//KUCMS_TimeCalibration theCali;
 
+    //theCali.makeTTDiffMaps();// make trigger tower diffrence maps
 	//theCali.makeTTDriftMaps( "r2_ul18", 315257, 325172 );	
     //theCali.makeTTDriftMaps( "r2_ul18", 315000, 318000 );
 

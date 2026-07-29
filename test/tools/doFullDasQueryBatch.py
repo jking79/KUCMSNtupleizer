@@ -232,7 +232,35 @@ dl2023ZJetsmini = [
 
 ]
 
-datalist = dl2024Mini    # <-- set the list you actually want
+dl2018v2 = [
+
+    "/MET/Run2018A-UL2018_MiniAODv2_GT36-v1/MINIAOD",
+    "/MET/Run2018B-UL2018_MiniAODv2_GT36-v1/MINIAOD",
+    "/MET/Run2018C-UL2018_MiniAODv2_GT36-v1/MINIAOD",
+    "/MET/Run2018D-UL2018_MiniAODv2_GT36-v1/MINIAOD",
+]
+
+dl2017v2 = [
+    "/MET/Run2017B-UL2017_MiniAODv2-v1/MINIAOD", 
+    "/MET/Run2017C-UL2017_MiniAODv2-v1/MINIAOD", 
+    "/MET/Run2017D-UL2017_MiniAODv2-v1/MINIAOD", 
+    "/MET/Run2017E-UL2017_MiniAODv2-v1/MINIAOD", 
+    "/MET/Run2017F-UL2017_MiniAODv2-v1/MINIAOD", 
+]
+
+dl2016v2 = [ 
+    "/MET/Run2016B-ver1_HIPM_UL2016_MiniAODv2-v2/MINIAOD",
+    "/MET/Run2016B-ver2_HIPM_UL2016_MiniAODv2-v2/MINIAOD",
+    "/MET/Run2016C-HIPM_UL2016_MiniAODv2-v2/MINIAOD",
+    "/MET/Run2016D-HIPM_UL2016_MiniAODv2-v2/MINIAOD",
+    "/MET/Run2016E-HIPM_UL2016_MiniAODv2-v2/MINIAOD",
+    "/MET/Run2016F-HIPM_UL2016_MiniAODv2-v2/MINIAOD",
+    "/MET/Run2016F-UL2016_MiniAODv2-v2/MINIAOD",
+    "/MET/Run2016G-UL2016_MiniAODv2-v2/MINIAOD",
+    "/MET/Run2016H-UL2016_MiniAODv2-v2/MINIAOD",
+]
+
+datalist = dl2016v2    # <-- set the list you actually want
 
 # -------------------------
 # TSV output (paste into Sheets/Excel)

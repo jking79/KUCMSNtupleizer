@@ -54,3 +54,4 @@ __*
 !KUCMSSkimmer/config/json/*
 !KUCMSSkimmer/ecal_config/*.root
 !KUCMSSkimmer/fullMask60cm_Data.root
+meanRunTime_*

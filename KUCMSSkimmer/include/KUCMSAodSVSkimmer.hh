@@ -64,7 +64,9 @@ class KUCMSAodSkimmer : public llpgtree {
 
 public:
 
-  KUCMSAodSkimmer();
+  //KUCMSAodSkimmer();
+  KUCMSAodSkimmer( bool doLocal = false );
+
   ~KUCMSAodSkimmer();
 
   void kucmsAodSkimmer( std::string infile, std::string outfilename);
@@ -111,6 +113,7 @@ public:
   void SetUseUnCC( bool f ){ useUnCC = f; }
   void SetIsCC( bool f ){ isCC = f; }
   void SetDoSlimmed( bool f ){ doSlimmed = f; }
+  void SetDoLocalTimeCali( bool f ){ useLocalTimeCali = f; }
   void SetBranchMaskFile( std::string f ){ branchMaskFile = f; useBranchMask = !f.empty(); }
 
   // set branches
@@ -287,6 +290,8 @@ public:
   bool useBranchMask;
   std::string branchMaskFile;
   std::vector<std::string> branchMaskPatterns;
+
+  bool useLocalTimeCali;
 
   // input tree, paths, and file names
 

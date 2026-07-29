@@ -125,7 +125,7 @@ float KUCMSAodSkimmer::getTimeSig( int scIndex, float& num, float& denom, const 
                 }//<<>>if( not isCC )
 
                 float gainwt = 0;
-                if( isValid ){ gainwt = 1; hist1d[90]->Fill( erhct ); }
+                if( isValid ) gainwt = 1;
 
                 double invertres = ( ertres > 0 ) ? 1/ertres : -1;
                 double erhar = ( invertres > 0 ) ? invertres*gainwt : 0;
@@ -134,7 +134,9 @@ float KUCMSAodSkimmer::getTimeSig( int scIndex, float& num, float& denom, const 
 					if(rhIdToBHCw.find(scrhid) != rhIdToBHCw.end()) bhcw = rhIdToBHCw.at(scrhid);
 					erhar *= bhcw;
 				}//<<>>if(rhIdToBHCw.size() > 0) 
-                sumtw += erhar*ertoftime;
+				double wttoftime = erhar*ertoftime;
+                hist1d[90]->Fill( float(wttoftime) );
+                sumtw += wttoftime;
 				sumrh += gainwt;
                 sumw += erhar;
 

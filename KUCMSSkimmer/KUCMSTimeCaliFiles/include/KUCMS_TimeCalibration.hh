@@ -48,7 +48,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 
 	public:
 
-    KUCMS_TimeCalibration( bool stayOpen = false, bool makeNew = false  );
+    KUCMS_TimeCalibration( bool stayOpen = false, bool makeNew = false, bool doLocalCali = false );
 	~KUCMS_TimeCalibration();
 	void setUseLocalCali(){ useEosRootCali = false; };
 
@@ -214,6 +214,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 	uInt getTTId( uInt detId, int gainID = 1 );
 	std::pair<int,int> getTTInfo( uInt ttid );
     uInt getInvTTId( int i1, int i2, bool isEB );
+	uInt getGSRhId( uInt detID, int gianID );
 
 	void setTag( std::string tag ){ curTag = tag; }; // used to change rereco version or campaian calibrations are for
     void setXIov( std::string tag ){ curXIov = tag; };
