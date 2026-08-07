@@ -326,7 +326,7 @@ void KUCMSAodSkimmer::processPhotons(){
     int sysvar = 0;
     if( systematicName == "wPhoTimeSig_up" ) sysvar = 1;
     if( systematicName == "wPhoTimeSig_down" ) sysvar = -1;
-	float phoWTimeSig = getTimeSig( scIndx, phoWTime, phoWRes );
+	float phoWTimeSig = getTimeSig( scIndx, phoWTime, phoWRes, sysvar );
     allphowtime.push_back( phoWTime );
 
     float scx = (*SuperCluster_clcx)[scIndx];

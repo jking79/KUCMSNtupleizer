@@ -92,40 +92,28 @@ int main ( int argc, char *argv[] ){
 
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCGjetsTFile.txt");
 
-    ////std::string inputfilename( "ecal_config/kucmsTimeCaliR18ULTFile.txt");
-    ////std::string inputfilename( "ecal_config/kucmsTimeCaliR17ULTFile.txt");
-    ////std::string inputfilename( "ecal_config/kucmsTimeCaliR16ULTFile.txt");
-    ////std::string inputfilename( "ecal_config/kucmsTimeCaliR22PrmptTFile.txt");
-    ////std::string inputfilename( "ecal_config/kucmsTimeCaliR23PrmptTFile.txt");
-    ////std::string inputfilename( "ecal_config/kucmsTimeCaliR24PrmptTFile.txt");
-
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR25PrmptTFile.txt");
-
     std::string inputfilename( "ecal_config/kucmsTimeCaliR24ReRecoTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR23ReRecoTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR22ReRecoTFile.txt");
+
+    //std::string inputfilename( "ecal_config/kucmsTimeCaliR18ULv2GT36TFile.txt");
+    //std::string inputfilename( "ecal_config/kucmsTimeCaliR17ULv2TFile.txt");
+    //std::string inputfilename( "ecal_config/kucmsTimeCaliR16ULv2TFile.txt"); 
 
 	//std::string eosdir("root://cmseos.fnal.gov//store/user/jaking/");// input parameter!
     //std::string eosdir("root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/");
 	std::string eosdir("/store/user/lpcsusylep/jaking/");
 
-    ////std::string indir("/kuncali/gammares_cali_mc/");
-    ////std::string indir("/kuncali/gammares_cali/");
-    ////std::string indir("kuncali/gammares_mc18/");
-    ////std::string indir("kuncali/gammares_cali/DoubleEG/");
-
-    ////std::string indir("KUCMSNtuple/gammares_ul18/");
-    ////std::string indir("KUCMSNtuple/gammares_ul17/");
-    ////std::string indir("KUCMSNtuple/gammares_ul16/DoubleEG/");
-    ////std::string indir("KUCMSNtuple/gammares_prmt22/EGamma/");
-    ////std::string indir("KUCMSNtuple/");// 23 & 24
-
-    //std::string indir("KUCMSNtuple/gammares_prmt25/");
+    //std::string indir("KUCMSNtuple/gammares_ul16v2/");
+    //std::string indir("KUCMSNtuple/gammares_ul17v2/");
+    //std::string indir("KUCMSNtuple/gammares_ul18v2gt36/");
 
     //std::string indir("KUCMSNtuple/gammares_R22_22sept23/");
     //std::string indir("KUCMSNtuple/gammares_R23_22sept23/");
     std::string indir("KUCMSNtuple/gammares_R24_m6n15/");
-	
+
+    ///std::string indir("KUCMSNtuple/gammares_prmt25/");
 
     bool doScale = true;
     bool useCali = true;
@@ -230,8 +218,8 @@ int main ( int argc, char *argv[] ){
     //theCali.setLowEnergy( false ); // true is default
     ////theCali.setUseEffEnergy( true );
 
-    theCali.useGainSwitch( true, true ); // use gainid ? --  do all gians ? : all Gains (HG)
-    //theCali.useGainSwitch( true, false ); // use gainid ? --  do all gians ? : only gainID1 (LG)
+    //theCali.useGainSwitch( true, true ); // use gainid ? --  do all gians ? : all Gains (HG)
+    theCali.useGainSwitch( true, false ); // use gainid ? --  do all gians ? : only gainID1 (LG)
 
     //theCali.setIsCC(true);
     //theCali.setDoUnCC(true);
@@ -285,50 +273,19 @@ int main ( int argc, char *argv[] ){
     //-------------------------------------------------------
     //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_xa_pm9b720_r325" );// scale, cali, smear
 
-	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_deg24fval_xa_pm9b1800_v501" );
-	//theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_deg24fprmt_xgs_pm3b240_v508" );
-    //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_deg24fcc_xer_pm3b240_v508" );
-	//theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_deg25bc_xa_pm6b480_v616" );
-	//theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg24d_xa_pm6b480_v810" );
-	//
-
-	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18ULQCDMC_HG_xa_pm24b1200_v0527" );
-    //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18ULQCDMC_LG_xa_pm24b1200_v0527" );
-
-	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18UL_xa_pm24b1200_v0121" );
-    //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_18UL_xa_pm24b1200_v0121" );
-
-    //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_17UL_xa_pm24b1200_v0121" );
-    //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_17UL_xa_pm24b1200_v0121" );
-
-    //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_16UL_xa_pm24b1200_v0127" );
-    //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_16UL_xa_pm24b1200_v0121" );
- 
-    //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_22p_xa_pm24b1200_v0120" );
-    //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_22p_xa_pm24b1200_v0120" );
-
-    //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_23p_xa_pm24b1200_v0115" );
-    //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_23p_xa_pm24b1200_v0115" );
-
-    //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_24p_xa_pm24b1200_v0119" );
-    //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_24p_xa_pm24b1200_v0119" );
-
-    //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_25p_xa_pm24b1200_v0210" );
-	//theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_25Cp_xa_pm24b1200_v0422" );
-    //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_25Dp_xa_pm24b1200_v0422" );
-    //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_25Ep_xa_pm24b1200_v0608" );
-    //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_25Fp_xa_pm24b1200_v0422" );
-    //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_25Gp_xa_pm24b1200_v0422" );
-
-    //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_25p_uncor_xa_pm24b1200_v0316" );
-    //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_25Cp_uncor_xa_pm24b1200_v0422" );
-    //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_25Dp_uncor_xa_pm24b1200_v0422" );
-    //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_25Ep_uncor_xa_pm24b1200_v0422" );
-    //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_25Fp_uncor_xa_pm24b1200_v0422" );
-    //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_25Gp_uncor_xa_pm24b1200_v0422" );
-
     //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_22_22sept23_xa_pm24b1200_v0620" );
     //theCali.plot2dResolutionEGR( inputfilename, true, false, false, "_eg_23_22sept23_xa_pm24b1200_v0618" );
+
+    //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_16UL_miniAODv2_xa_pm24b1200_v0731" );
+	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_16UL_miniAODv2_lg_xa_pm24b1200_v0801" );
+    //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_17UL_miniAODv2_xa_pm24b1200_v0801" );
+	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_17UL_miniAODv2_lg_xa_pm24b1200_v0801" );
+	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18UL_D_miniAODv2_lg_xa_pm24b1200_v0802" );
+	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18UL_ABC_miniAODv2_lg_xa_pm24b1200_v0804" );
+	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_22_22sept23_xa_pm24b1200_v0805" );
+	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_22_22sept23_lg_xa_pm24b1200_v0805" );
+    //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_23_22sept23_xa_pm24b1200_v0805" );
+    //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_23_22sept23_lg_xa_pm24b1200_v0805" );
 
 	//theCali.setMCResTag("r2_ul16");
 	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18MC_xa_pm24b1200_v0204" );
@@ -353,99 +310,6 @@ int main ( int argc, char *argv[] ){
     ////theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600" ); // : xa llpana LG resfit
 //  theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600 3200" ); // : xa llpana HG resfit
 
-	//std::string histName = "ResMap_315257_325172__DRO_Data_Hist_eg_18UL_HG_EB_xa_pm24b1200_v1209";
-	//std::string histName = "ResMap_315257_325172__DRO_Data_Hist_eg_18UL_HG_EE_xa_pm24b1200_v1212";
-	//std::string histName = "ResMap_296399_306460__DRO_Data_Hist_eg_17UL_HG_EB_xa_pm24b1200_v1212";
-    //std::string histName = "ResMap_296399_306460__DRO_Data_Hist_eg_17UL_HG_EE_xa_pm24b1200_v1212";
-
-	//std::string histName = "ResMap_315257_325172__DRO_Data_Hist_eg_18UL_LG_EB_xa_pm24b1200_v0106";
-    //std::string histName = "ResMap_315257_325172__DRO_Data_Hist_eg_18UL_LG_EE_xa_pm24b1200_v0106";
-    //std::string histName = "ResMap_296399_306460__DRO_Data_Hist_eg_17UL_LG_EB_xa_pm24b1200_v0106";
-    //std::string histName = "ResMap_296399_306460__DRO_Data_Hist_eg_17UL_LG_EE_xa_pm24b1200_v0106";
-
-	//std::string histName = "ResMap_275600_283900__DRO_Data_Hist_eg_16UL_HG_EB_xa_pm24b1200_v0105";
-    //std::string histName = "ResMap_275600_283900__DRO_Data_Hist_eg_16UL_LG_EB_xa_pm24b1200_v0105";
-	//std::string histName = "ResMap_275600_283900__DRO_Data_Hist_eg_16UL_HG_EE_xa_pm24b1200_v0105";
-    //std::string histName = "ResMap_275600_283900__DRO_Data_Hist_eg_16UL_LG_EE_xa_pm24b1200_v0105";
-
-    //std::string histName = "ResMap_315257_325172__SRO_Data_Hist_eg_18UL_LG_EB_xa_pm24b1200_v0106";
-    //std::string histName = "ResMap_315257_325172__SRO_Data_Hist_eg_18UL_LG_EE_xa_pm24b1200_v0106";
-    //std::string histName = "ResMap_296399_306460__SRO_Data_Hist_eg_17UL_LG_EB_xa_pm24b1200_v0106";
-    //std::string histName = "ResMap_296399_306460__SRO_Data_Hist_eg_17UL_LG_EE_xa_pm24b1200_v0106";
-    //std::string histName = "ResMap_275600_283900__SRO_Data_Hist_eg_16UL_LG_EB_xa_pm24b1200_v0105";
-    //std::string histName = "ResMap_275600_283900__SRO_Data_Hist_eg_16UL_LG_EE_xa_pm24b1200_v0105";
-
-	//std::string histName = "ResMap_315257_325172__DRO_Data_Hist_NoCali_eg_18UL_EB_xa_pm24b1200_v0108";
-    //std::string histName = "ResMap_315257_325172__SRO_Data_Hist_NoCali_eg_18UL_EB_xa_pm24b1200_v0108";
-	//std::string histName = "ResMap_315257_325172__DRO_Data_Hist_NoCali_eg_18UL_EE_xa_pm24b1200_v0108";
-    //std::string histName = "ResMap_315257_325172__SRO_Data_Hist_NoCali_eg_18UL_EE_xa_pm24b1200_v0108";
-
-    //std::string histName = "ResMap_296399_306460__DRO_Data_Hist_NoCali_eg_17UL_EB_xa_pm24b1200_v0108";
-    //std::string histName = "ResMap_296399_306460__SRO_Data_Hist_NoCali_eg_17UL_EB_xa_pm24b1200_v0108";
-    //std::string histName = "ResMap_296399_306460__DRO_Data_Hist_NoCali_eg_17UL_EE_xa_pm24b1200_v0108";
-    //std::string histName = "ResMap_296399_306460__SRO_Data_Hist_NoCali_eg_17UL_EE_xa_pm24b1200_v0108";
-
-    //std::string histName = "ResMap_275600_283900__DRO_Data_Hist_NoCali_eg_16UL_EB_xa_pm24b1200_v0108";
-    //std::string histName = "ResMap_275600_283900__SRO_Data_Hist_NoCali_eg_16UL_EB_xa_pm24b1200_v0108";
-    //std::string histName = "ResMap_275600_283900__DRO_Data_Hist_NoCali_eg_16UL_EE_xa_pm24b1200_v0108";
-    //std::string histName = "ResMap_275600_283900__SRO_Data_Hist_NoCali_eg_16UL_EE_xa_pm24b1200_v0108";
-
-	//------------------------------------------------------------------------------------------------
-
-	//std::string histName1 = "ResMap_315257_325172_DRO_Data_Hist_NoCali_eg_18UL_xa_pm24b1200_v0121_EB";
-    //std::string histName2 = "ResMap_315257_325172_SRO_Data_Hist_NoCali_eg_18UL_xa_pm24b1200_v0121_EB";
-    //std::string histName3 = "ResMap_315257_325172_SRO_Data_Hist_NoCali_eg_18UL_xa_pm24b1200_v0121_EE";
-    //std::string histName4 = "ResMap_315257_325172_DRO_Data_Hist_NoCali_eg_18UL_xa_pm24b1200_v0121_EE";
-
-    //std::string histName1 = "ResMap_315257_325172_DRO_Data_Hist_eg_18UL_xa_pm24b1200_v0121_EB";
-    //std::string histName2 = "ResMap_315257_325172_SRO_Data_Hist_eg_18UL_xa_pm24b1200_v0121_EB";
-    //std::string histName3 = "ResMap_315257_325172_SRO_Data_Hist_eg_18UL_xa_pm24b1200_v0121_EE";
-    //std::string histName4 = "ResMap_315257_325172_DRO_Data_Hist_eg_18UL_xa_pm24b1200_v0121_EE";
-
-    //std::string histName1 = "ResMap_296399_306460_DRO_Data_Hist_NoCali_eg_17UL_xa_pm24b1200_v0121_EB";
-    //std::string histName2 = "ResMap_296399_306460_SRO_Data_Hist_NoCali_eg_17UL_xa_pm24b1200_v0121_EB";
-    //std::string histName3 = "ResMap_296399_306460_DRO_Data_Hist_NoCali_eg_17UL_xa_pm24b1200_v0121_EE";
-    //std::string histName4 = "ResMap_296399_306460_SRO_Data_Hist_NoCali_eg_17UL_xa_pm24b1200_v0121_EE";
-
-    //std::string histName1 = "ResMap_296399_306460_DRO_Data_Hist_eg_17UL_xa_pm24b1200_v0121_EB";
-    //std::string histName2 = "ResMap_296399_306460_SRO_Data_Hist_eg_17UL_xa_pm24b1200_v0121_EB";
-    //std::string histName3 = "ResMap_296399_306460_DRO_Data_Hist_eg_17UL_xa_pm24b1200_v0121_EE";
-    //std::string histName4 = "ResMap_296399_306460_SRO_Data_Hist_eg_17UL_xa_pm24b1200_v0121_EE";
-
-    //std::string histName1 = "ResMap_275600_283900_DRO_Data_Hist_NoCali_eg_16UL_xa_pm24b1200_v0121_EB";
-    //std::string histName2 = "ResMap_275600_283900_SRO_Data_Hist_NoCali_eg_16UL_xa_pm24b1200_v0121_EB";
-    //std::string histName3 = "ResMap_275600_283900_DRO_Data_Hist_NoCali_eg_16UL_xa_pm24b1200_v0121_EE";
-    //std::string histName4 = "ResMap_275600_283900_SRO_Data_Hist_NoCali_eg_16UL_xa_pm24b1200_v0121_EE";
-
-    //std::string histName1 = "ResMap_275600_283900_DRO_Data_Hist_eg_16UL_xa_pm24b1200_v0121_EB";
-    //std::string histName2 = "ResMap_275600_283900_SRO_Data_Hist_eg_16UL_xa_pm24b1200_v0121_EB";
-    //std::string histName3 = "ResMap_275600_283900_DRO_Data_Hist_eg_16UL_xa_pm24b1200_v0121_EE";
-    //std::string histName4 = "ResMap_275600_283900_SRO_Data_Hist_eg_16UL_xa_pm24b1200_v0121_EE";
-
-	//std::string histName1 = "ResMap_355794_362760__DRO_Data_Hist_eg_22p_EB_xa_pm24b1200_v0112";
-    //std::string histName2 = "ResMap_355794_362760__SRO_Data_Hist_eg_22p_EB_xa_pm24b1200_v0112";
-    //std::string histName3 = "ResMap_355794_362760__DRO_Data_Hist_eg_22p_EE_xa_pm24b1200_v0112";
-    //std::string histName4 = "ResMap_355794_362760__SRO_Data_Hist_eg_22p_EE_xa_pm24b1200_v0112";
-
-	//std::string histName1 = "ResMap_355794_362760_DRO_Data_Hist_NoCali_eg_22p_xa_pm24b1200_v0120_EB";
-    //std::string histName2 = "ResMap_355794_362760_DRO_Data_Hist_NoCali_eg_22p_xa_pm24b1200_v0120_EE";
-    //std::string histName3 = "ResMap_355794_362760_SRO_Data_Hist_NoCali_eg_22p_xa_pm24b1200_v0120_EB";
-    //std::string histName4 = "ResMap_355794_362760_SRO_Data_Hist_NoCali_eg_22p_xa_pm24b1200_v0120_EE";
-
-    //std::string histName1 = "ResMap_366365_372415_DRO_Data_Hist_eg_23p_xa_pm24b1200_v0115_EB";
-    //std::string histName2 = "ResMap_366365_372415_SRO_Data_Hist_eg_23p_xa_pm24b1200_v0115_EB";
-    //std::string histName3 = "ResMap_366365_372415_DRO_Data_Hist_eg_23p_xa_pm24b1200_v0115_EE";
-    //std::string histName4 = "ResMap_366365_372415_SRO_Data_Hist_eg_23p_xa_pm24b1200_v0115_EE";
-
-    //std::string histName1 = "ResMap_366365_372415_DRO_Data_Hist_NoCali_eg_23p_xa_pm24b1200_v0115_EB";
-    //std::string histName2 = "ResMap_366365_372415_SRO_Data_Hist_NoCali_eg_23p_xa_pm24b1200_v0115_EB";
-    //std::string histName3 = "ResMap_366365_372415_DRO_Data_Hist_NoCali_eg_23p_xa_pm24b1200_v0115_EE";
-    //std::string histName4 = "ResMap_366365_372415_SRO_Data_Hist_NoCali_eg_23p_xa_pm24b1200_v0115_EE";
-
-    //std::string histName1 = "ResMap_0_999999_DRO_Data_Hist_NoCali_eg_18MC_xa_pm24b1200_v0116_EB";
-    //std::string histName2 = "ResMap_0_999999_DRO_Data_Hist_NoCali_eg_18MC_xa_pm24b1200_v0116_EE";
-    //std::string histName3 = "ResMap_0_999999_SRO_Data_Hist_NoCali_eg_18MC_xa_pm24b1200_v0116_EB";
-    //std::string histName4 = "ResMap_0_999999_SRO_Data_Hist_NoCali_eg_18MC_xa_pm24b1200_v0116_EE";
 
     //std::string histName1 = "ResMap_378971_387721_DRO_Data_Hist_NoCali_eg_24p_xa_pm24b1200_v0119_EB";
     //std::string histName2 = "ResMap_378971_387721_DRO_Data_Hist_NoCali_eg_24p_xa_pm24b1200_v0119_EE";
@@ -539,10 +403,70 @@ int main ( int argc, char *argv[] ){
     //std::string histName3 = "ResMap_366365_372415_DRO_Data_Hist_NoCali_eg_23_22sept23_xa_pm24b1200_v0618_EB";
     //std::string histName4 = "ResMap_366365_372415_DRO_Data_Hist_NoCali_eg_23_22sept23_xa_pm24b1200_v0618_EE";
 
-    std::string histName1 = "ResMap_352319_362760_SRO_Data_Hist_NoCali_eg_22_22sept23_xa_pm24b1200_v0620_EB";
-    std::string histName2 = "ResMap_352319_362760_SRO_Data_Hist_NoCali_eg_22_22sept23_xa_pm24b1200_v0620_EE";
-    std::string histName3 = "ResMap_352319_362760_DRO_Data_Hist_NoCali_eg_22_22sept23_xa_pm24b1200_v0620_EB";
-    std::string histName4 = "ResMap_352319_362760_DRO_Data_Hist_NoCali_eg_22_22sept23_xa_pm24b1200_v0620_EE";
+    //std::string histName1 = "ResMap_352319_362760_SRO_Data_Hist_NoCali_eg_22_22sept23_xa_pm24b1200_v0620_EB";
+    //std::string histName2 = "ResMap_352319_362760_SRO_Data_Hist_NoCali_eg_22_22sept23_xa_pm24b1200_v0620_EE";
+    //std::string histName3 = "ResMap_352319_362760_DRO_Data_Hist_NoCali_eg_22_22sept23_xa_pm24b1200_v0620_EB";
+    //std::string histName4 = "ResMap_352319_362760_DRO_Data_Hist_NoCali_eg_22_22sept23_xa_pm24b1200_v0620_EE";
+
+    //std::string histName1 = "ResMap_272760_284044_SRO_Data_Hist_eg_16UL_miniAODv2_xa_pm24b1200_v0731_EB";
+    //std::string histName2 = "ResMap_272760_284044_SRO_Data_Hist_eg_16UL_miniAODv2_xa_pm24b1200_v0731_EE";
+    //std::string histName3 = "ResMap_272760_284044_DRO_Data_Hist_eg_16UL_miniAODv2_xa_pm24b1200_v0731_EB";
+    //std::string histName4 = "ResMap_272760_284044_DRO_Data_Hist_eg_16UL_miniAODv2_xa_pm24b1200_v0731_EE";
+
+    //std::string histName1 = "ResMap_272760_284044_SRO_Data_Hist_eg_16UL_miniAODv2_lg_xa_pm24b1200_v0801_EB";
+    //std::string histName2 = "ResMap_272760_284044_SRO_Data_Hist_eg_16UL_miniAODv2_lg_xa_pm24b1200_v0801_EE";
+    //std::string histName3 = "ResMap_272760_284044_DRO_Data_Hist_eg_16UL_miniAODv2_lg_xa_pm24b1200_v0801_EB";
+    //std::string histName4 = "ResMap_272760_284044_DRO_Data_Hist_eg_16UL_miniAODv2_lg_xa_pm24b1200_v0801_EE";
+
+    //std::string histName1 = "ResMap_296398_306460_SRO_Data_Hist_eg_17UL_miniAODv2_xa_pm24b1200_v0801_EB";
+    //std::string histName2 = "ResMap_296398_306460_SRO_Data_Hist_eg_17UL_miniAODv2_xa_pm24b1200_v0801_EE";
+    //std::string histName3 = "ResMap_296398_306460_DRO_Data_Hist_eg_17UL_miniAODv2_xa_pm24b1200_v0801_EB";
+    //std::string histName4 = "ResMap_296398_306460_DRO_Data_Hist_eg_17UL_miniAODv2_xa_pm24b1200_v0801_EE";
+
+    //std::string histName1 = "ResMap_296398_306460_SRO_Data_Hist_eg_17UL_miniAODv2_lg_xa_pm24b1200_v0801_EB";
+    //std::string histName2 = "ResMap_296398_306460_SRO_Data_Hist_eg_17UL_miniAODv2_lg_xa_pm24b1200_v0801_EE";
+    //std::string histName3 = "ResMap_296398_306460_DRO_Data_Hist_eg_17UL_miniAODv2_lg_xa_pm24b1200_v0801_EB";
+    //std::string histName4 = "ResMap_296398_306460_DRO_Data_Hist_eg_17UL_miniAODv2_lg_xa_pm24b1200_v0801_EE";
+
+    //std::string histName1 = "ResMap_306461_327238_SRO_Data_Hist_eg_18UL_ABC_miniAODv2_xa_pm24b1200_v0804_EB";
+    //std::string histName2 = "ResMap_306461_327238_SRO_Data_Hist_eg_18UL_ABC_miniAODv2_xa_pm24b1200_v0804_EE";
+    //std::string histName3 = "ResMap_306461_327238_DRO_Data_Hist_eg_18UL_ABC_miniAODv2_xa_pm24b1200_v0804_EB";
+    //std::string histName4 = "ResMap_306461_327238_DRO_Data_Hist_eg_18UL_ABC_miniAODv2_xa_pm24b1200_v0804_EE";
+
+    //std::string histName1 = "ResMap_306461_327238_SRO_Data_Hist_eg_18UL_ABC_miniAODv2_lg_xa_pm24b1200_v0804_EB";
+    //std::string histName2 = "ResMap_306461_327238_SRO_Data_Hist_eg_18UL_ABC_miniAODv2_lg_xa_pm24b1200_v0804_EE";
+    //std::string histName3 = "ResMap_306461_327238_DRO_Data_Hist_eg_18UL_ABC_miniAODv2_lg_xa_pm24b1200_v0804_EB";
+    //std::string histName4 = "ResMap_306461_327238_DRO_Data_Hist_eg_18UL_ABC_miniAODv2_lg_xa_pm24b1200_v0804_EE";
+
+    //std::string histName1 = "ResMap_306461_327238_SRO_Data_Hist_eg_18UL_D_miniAODv2_xa_pm24b1200_v0802_EB";
+    //std::string histName2 = "ResMap_306461_327238_SRO_Data_Hist_eg_18UL_D_miniAODv2_xa_pm24b1200_v0802_EE";
+    //std::string histName3 = "ResMap_306461_327238_DRO_Data_Hist_eg_18UL_D_miniAODv2_xa_pm24b1200_v0802_EB";
+    //std::string histName4 = "ResMap_306461_327238_DRO_Data_Hist_eg_18UL_D_miniAODv2_xa_pm24b1200_v0802_EE";
+
+    //std::string histName1 = "ResMap_306461_327238_SRO_Data_Hist_eg_18UL_D_miniAODv2_lg_xa_pm24b1200_v0802_EB";
+    //std::string histName2 = "ResMap_306461_327238_SRO_Data_Hist_eg_18UL_D_miniAODv2_lg_xa_pm24b1200_v0802_EE";
+    //std::string histName3 = "ResMap_306461_327238_DRO_Data_Hist_eg_18UL_D_miniAODv2_lg_xa_pm24b1200_v0802_EB";
+    //std::string histName4 = "ResMap_306461_327238_DRO_Data_Hist_eg_18UL_D_miniAODv2_lg_xa_pm24b1200_v0802_EE";
+
+    //std::string histName1 = "ResMap_352319_362760_SRO_Data_Hist_eg_22_22sept23_xa_pm24b1200_v0805_EB";
+    //std::string histName2 = "ResMap_352319_362760_SRO_Data_Hist_eg_22_22sept23_xa_pm24b1200_v0805_EE";
+    //std::string histName3 = "ResMap_352319_362760_DRO_Data_Hist_eg_22_22sept23_xa_pm24b1200_v0805_EB";
+    //std::string histName4 = "ResMap_352319_362760_DRO_Data_Hist_eg_22_22sept23_xa_pm24b1200_v0805_EE";
+
+    //std::string histName1 = "ResMap_352319_362760_SRO_Data_Hist_eg_22_22sept23_lg_xa_pm24b1200_v0805_EB";
+    //std::string histName2 = "ResMap_352319_362760_SRO_Data_Hist_eg_22_22sept23_lg_xa_pm24b1200_v0805_EE";
+    //std::string histName3 = "ResMap_352319_362760_DRO_Data_Hist_eg_22_22sept23_lg_xa_pm24b1200_v0805_EB";
+    //std::string histName4 = "ResMap_352319_362760_DRO_Data_Hist_eg_22_22sept23_lg_xa_pm24b1200_v0805_EE";
+
+    //std::string histName1 = "ResMap_366365_372415_SRO_Data_Hist_eg_23_22sept23_xa_pm24b1200_v0805_EB";
+    //std::string histName2 = "ResMap_366365_372415_SRO_Data_Hist_eg_23_22sept23_xa_pm24b1200_v0805_EE";
+    //std::string histName3 = "ResMap_366365_372415_DRO_Data_Hist_eg_23_22sept23_xa_pm24b1200_v0805_EB";
+    //std::string histName4 = "ResMap_366365_372415_DRO_Data_Hist_eg_23_22sept23_xa_pm24b1200_v0805_EE";
+
+    std::string histName1 = "ResMap_366365_372415_SRO_Data_Hist_eg_23_22sept23_lg_xa_pm24b1200_v0805_EB";
+    std::string histName2 = "ResMap_366365_372415_SRO_Data_Hist_eg_23_22sept23_lg_xa_pm24b1200_v0805_EE";
+    std::string histName3 = "ResMap_366365_372415_DRO_Data_Hist_eg_23_22sept23_lg_xa_pm24b1200_v0805_EB";
+    std::string histName4 = "ResMap_366365_372415_DRO_Data_Hist_eg_23_22sept23_lg_xa_pm24b1200_v0805_EE";
 
 //    std::string histName1 = "";
 //    std::string histName2 = "";
@@ -580,9 +504,17 @@ int main ( int argc, char *argv[] ){
     //theCali.plotMeanRunTimeEGR( inputfilename, 315257, 325172, false );
     //352319_362760 // 2022  full
 	//theCali.plotMeanRunTimeEGR( inputfilename, 357487, 358000, true );//22C
-	//theCali.plotMeanRunTimeEGR( inputfilename, 355794, 362180, false );//22C-22F
+	//theCali.plotMeanRunTimeEGR( inputfilename, 355794, 362180, true );//22C-22F
     //theCali.plotMeanRunTimeEGR( inputfilename, 392159, 398903, false );
-    theCali.plotMeanRunTimeEGR( inputfilename, 379412, 380947, false );//24CD 
+    //theCali.plotMeanRunTimeEGR( inputfilename, 379412, 380947, false );//24CD 
+    //theCali.plotMeanRunTimeEGR( inputfilename, 394286, 395967, false );//25D
+
+    //theCali.plotMeanRunTimeEGR( inputfilename, 273158, 284044, true );//16
+	//theCali.plotMeanRunTimeEGR( inputfilename, 297050, 306460, true );//17
+	//theCali.plotMeanRunTimeEGR( inputfilename, 315257, 320672, true );//18
+
+	//theCali.plotMeanRunTimeEGR( inputfilename, 366365, 372415, true );//23
+	theCali.plotMeanRunTimeEGR( inputfilename, 378985, 386951, true );//24
 
     ////theCali.plotMeanRunTimeEGR( inputfilename, 296399, 307554, true );
 	////theCali.makeTTDiffMaps();// make trigger tower diffrence maps

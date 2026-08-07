@@ -777,7 +777,7 @@ void KUCMS_TimeCalibration::SaveResFile(){
         float eehg3res = restag.second.eehg3res;
 
         outfile << tag << " " << ebnoise << " " << ebstoch << " " << ebstant << " " << 
-					ebg1he1res << " " << ebg1he2res << " " << ebg3he1res << " " <<
+					ebg1he1res << " " << ebg1he2res << " " << ebg1he3res << " " <<
 					ebhg1res << " " << ebhg2res << " " << ebhg3res << " " <<
 					eenoise << " " << eestoch << " " << eestant << " " <<
                     eeg1he1res << " " << eeg1he2res << " " << eeg1he3res << " " <<
@@ -1570,6 +1570,7 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
     bool isEB( DetIDMap[rechitID].ecal == ECAL::EB );
     float var = ( dataSetKey == "None" ) ? -1 : -99;
     if( mctype == 1 ){ // data or MC
+		if( dataSetKey == "r2_ul18" ){ if( Evt_run > 320672 ) dataSetKey = "r2_ul18D"; else dataSetKey = "r2_ul18ABC"; }
 		if( ResTagSet.find(dataSetKey) != ResTagSet.end() ){
 			if( amplitude > 400 ){ 
 
@@ -1645,7 +1646,9 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
 
     if( mctype == 1 ){ // data
 		
-        if( CaliRunMapSet.find(dataSetKey) != CaliRunMapSet.end() ){ 
+		std::string theKey = dataSetKey;
+		if( theKey == "r2_ul18D" or theKey == "r2_ul18ABC") theKey = "r2_ul18";
+        if( CaliRunMapSet.find(theKey) != CaliRunMapSet.end() ){ 
 			//std::cout << " ----- cali : " << getCalibration(rechitID,Evt_run,dataSetKey,gainID) << std::endl;
 			rtime = time - getCalibration(rechitID,Evt_run,dataSetKey,gainID);
 			return rtime;
@@ -1667,20 +1670,21 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
 		if( dataSetKey == "None" ) return ctime; // dataSetKey is the calibration used && source resolution for smearing
 		//std::cout << " Post Check amplitude : " << amplitude << std::endl;
 
-		if( resTag != "default" && ResTagSet.find(resTag) != ResTagSet.end() ){  // TARGET RESOLUTION
+        std::string theKey = dataSetKey;
+		if( resTag != "default" && ResTagSet.find(theKey) != ResTagSet.end() ){  // TARGET RESOLUTION
 
 			tarvar = getTimeResoltuion( amplitude, rechitID, Evt_run, resTag, mctype, gainID );
 			
 		}//<<>>if( resTag != "default" )
 		else if( resTag == "default" || dataSetKey.substr(1,2) == "r2" ){ // use smear tag?  -- check first for set tag ! 
 
-            std::string tag= "r2_ul18";
+            std::string tag= "r2_ul18D";
 			tarvar = getTimeResoltuion( amplitude, rechitID, Evt_run, tag, mctype, gainID );
 
 		}//<<>>if( dataSetKey.substr(1,2) == "r2" )
         else if( dataSetKey.substr(1,2) == "r3" ){ 
 
-            std::string tag= "r2_ul18";
+            std::string tag= "r2_ul18D";
             tarvar = getTimeResoltuion( amplitude, rechitID, Evt_run, tag, mctype, gainID );
 
 		}//<<>>if( dataSetKey.substr(1,2) == "r3" )

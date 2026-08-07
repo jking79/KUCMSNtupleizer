@@ -449,9 +449,9 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
   std::string skimTreeName = "kuSkimTree"; 
   std::string conigTreeName = "kuSkimConfigTree";
   if( systematicName != "None" ){
-  	treeNameExt = splitString( systematicName, "_" );
-	skimTreeName = skimTreeName + "_" + treeNameExt;
-    conigTreeName = conigTreeName + "_" + treeNameExt;
+  	//std::string treeNameExt = splitString( systematicName, "_" );
+	skimTreeName = skimTreeName + "_" +  systematicName; //treeNameExt;
+    conigTreeName = conigTreeName + "_" + systematicName; //treeNameExt;
   }//<<>>if( systematicName != "None" )
 
   TTree* fOutTree = new TTree( skimTreeName.c_str(), "output root file for kUCMSSkimmer" );

@@ -163,7 +163,7 @@ public:
   //float getTimeSig( int scIndex );
   //float getTimeSig( const std::vector<int>& scIndexs, float& num, float& denom );
   float getTimeSig( const std::vector<int>& scIndexs, float& num, float& denom, const std::vector<float>& eledelay = {} );
-  float getTimeSig( int scIndex, float& num, float& denom, const map<unsigned int, float>& rhIdToBHCw  = {});
+  float getTimeSig( int scIndex, float& num, float& denom, int syst = 0, const map<unsigned int, float>& rhIdToBHCw  = {});
   float getTimeSig( const vector<vector<unsigned int>>& rhids );
   void setMCTargetResTag( std::string tag ){ mctrtag = tag; };
 
