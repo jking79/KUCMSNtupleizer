@@ -65,8 +65,8 @@ void KUCMSAodSkimmer::processPhotons(){
   float bhCutVal = 0.917252;
   float lphotsig = -9999;
   float notBHCutVal = 0.18523645;//1-0.81476355;
-  float nonPromptMedIsoCutVal = 0.7;
-  float nonPromptMedIsoCutValLow = 0.4;
+  float nonPromptMedIsoCutVal = 0.5;
+  float nonPromptMedIsoCutValLow = 0;
 
   float EEtightIsoLowScore1pho = 0.9;
   float EEtightIsoLowScore2pho = 0.99;
