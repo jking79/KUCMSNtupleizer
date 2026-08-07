@@ -85,7 +85,7 @@ void KUCMSAodSkimmer::setTSBranches( TTree* fOutTree ){
 //}//<<>>void KUCMSAodSkimmer::getTimeSig
 
 //float KUCMSAodSkimmer::getTimeSig( vector<vector<unsigned int>> rhids ){
-float KUCMSAodSkimmer::getTimeSig( int scIndex, float& num, float& denom, const map<unsigned int, float>& rhIdToBHCw){
+float KUCMSAodSkimmer::getTimeSig( int scIndex, float& num, float& denom, int syst, const map<unsigned int, float>& rhIdToBHCw){
 
 		auto rhids = (*SuperCluster_rhIds)[scIndex];
 
@@ -110,6 +110,7 @@ float KUCMSAodSkimmer::getTimeSig( int scIndex, float& num, float& denom, const 
                 double cor_cms000 = hypo(erx,ery,erz)/SOL;
                 double cor_tofPVtoRH = hypo(erx-PV_x,ery-PV_y,erz-PV_z)/SOL;
                 double ertoftime = erhct + cor_cms000 - cor_tofPVtoRH;
+				if( syst != 0 ) ertoftime += syst*std::sqrt(ertres);
 
                 bool isEE = fabs((*ECALRecHit_eta)[erhiter]) > 1.479;
                 bool isValid = true;
@@ -146,7 +147,7 @@ float KUCMSAodSkimmer::getTimeSig( int scIndex, float& num, float& denom, const 
         if( sumw == 0 ){ sumw = 1; sumtw = -25; sumrh = 0; }
         float phoWTime = sumtw/sumw;
         float phoWVar = 1/sumw;
-    	float phoWHVar = sumrh/sumw;
+    	//float phoWHVar = sumrh/sumw;
 		float sqrtPhoWVar = std::sqrt(phoWVar);
         float wttimesig = phoWTime/sqrtPhoWVar;
 	    num = phoWTime;
@@ -225,7 +226,7 @@ float KUCMSAodSkimmer::getTimeSig( const std::vector<int>& scIndexs, float& num,
 	if( nRHUsed < 5 ){ num = -43; denom = -1; return -43; }
     if( sumw == 0 ){ num = -42; denom = -1; return -42; }
     float phoWTime = sumtw/sumw;
-    float phoWHVar = sumrh/sumw;
+    //float phoWHVar = sumrh/sumw;
     float phoWVar = 1/sumw;
     float sqrtPhoWVar = std::sqrt(phoWVar);
     float wttimesig = phoWTime/sqrtPhoWVar;

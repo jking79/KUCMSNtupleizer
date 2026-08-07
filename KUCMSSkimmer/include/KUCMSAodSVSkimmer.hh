@@ -115,6 +115,7 @@ public:
   void SetDoSlimmed( bool f ){ doSlimmed = f; }
   void SetDoLocalTimeCali( bool f ){ useLocalTimeCali = f; }
   void SetBranchMaskFile( std::string f ){ branchMaskFile = f; useBranchMask = !f.empty(); }
+  void SetSystematic( std::string f ){ systematicName = f; }
 
   // set branches
 
@@ -162,7 +163,7 @@ public:
   //float getTimeSig( int scIndex );
   //float getTimeSig( const std::vector<int>& scIndexs, float& num, float& denom );
   float getTimeSig( const std::vector<int>& scIndexs, float& num, float& denom, const std::vector<float>& eledelay = {} );
-  float getTimeSig( int scIndex, float& num, float& denom, const map<unsigned int, float>& rhIdToBHCw  = {});
+  float getTimeSig( int scIndex, float& num, float& denom, int syst = 0, const map<unsigned int, float>& rhIdToBHCw  = {});
   float getTimeSig( const vector<vector<unsigned int>>& rhids );
   void setMCTargetResTag( std::string tag ){ mctrtag = tag; };
 
@@ -302,6 +303,7 @@ public:
   std::string listDirPath;
   std::string eosDirPath;
   std::string outFileName;
+  std::string systematicName;
 
   // event varibles
 

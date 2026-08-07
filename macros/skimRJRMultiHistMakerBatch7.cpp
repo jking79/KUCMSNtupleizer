@@ -31,9 +31,9 @@ void HistMaker::histMaker( std::string indir, std::string infilelist, std::strin
 
     const std::string disphotreename("kuSkimTree");
     const std::string configtreename("kuSkimConfigTree");
-    const std::string eosdir("root://cmseos.fnal.gov//store/user/lpcsusylep/malazaro/KUCMSSkims/skims_v49/");
+    //const std::string eosdir("root://cmseos.fnal.gov//store/user/lpcsusylep/malazaro/KUCMSSkims/skims_v49/");
     //const std::string eosdir("root://cmseos.fnal.gov//store/user/lpcsusylep/malazaro/KUCMSSkims/skims_v50/");
-    //const std::string eosdir("");
+    const std::string eosdir("");
     const std::string listdir("");
 	const std::string ofnending = "_RjrSkim_Hists.root";
 
@@ -568,6 +568,7 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 	float pvres = -10;
 	float gwtimeres = -10;
     float gwenergy = -10;
+	float gweta = -999;
 	float dPVenergy = -10;
 
 	float sr2 = std::sqrt(1);
@@ -583,6 +584,7 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
         	gwtimeres = (*baseLinePhoton_WTRes)[ip];
 			gwenergy = (*baseLinePhoton_Energy)[ip];
 			gjetsCR = (*baseLinePhoton_GJetsCR)[ip];
+		    gweta = (*baseLinePhoton_Eta)[ip];
 			//break;
 
 		//}//<<>>if( (*baseLinePhoton_GJetsCR)[ip] )
@@ -823,6 +825,12 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     }//<<>>if( nRjrPhos == 13 )
 */
 
+
+	if( gwtimeres > 0 && std::abs( gwtime ) < 2.0 && gweta > 1.5 ){
+		hist1d[57]->Fill(gwtimeres,fillwt);
+    	hist1d[58]->Fill(gwtsig,fillwt);
+	}//<<>>if( gwtimeres > 0 )
+
 	hist1d[0]->Fill(mr,fillwt);
     hist1d[1]->Fill(ms,fillwt);
     hist1d[2]->Fill(mva,fillwt);
@@ -967,7 +975,7 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 
 void HistMaker::endJobs(){
 
-    for( int it = 10; it < 30; it++ ){ if(hist1d[it]) smoothTH1D_v2(hist1d[it]);}
+    //for( int it = 10; it < 30; it++ ){ if(hist1d[it]) smoothTH1D_v2(hist1d[it]);}
 	//normTH2D(hist2d[220]);
 
 }//<<>>void HistMaker::endJobs()
@@ -1091,6 +1099,9 @@ void HistMaker::initHists( std::string ht ){
     hist1d[54] = new TH1D("selPhoTOFTime", addstr(ht," selPhoTOFTime;selPhoTOFTime").c_str(), 500, -25, 25);
     hist1d[55] = new TH1D("selPhoEnergy", addstr(ht," selPhoEnergy;selPhoEnergy").c_str(), 300, 0, 3000);
     hist1d[56] = new TH1D("selPhoCEnergy", addstr(ht," selPhoCEnergy;selPhoCEnergy").c_str(), 300, 0, 3000);
+    hist1d[57] = new TH1D("blPhoWTimeStDev", addstr(ht," blPhoWTimeStDev;blPhoWTimeStDev").c_str(), 600, 0, 6);
+    hist1d[58] = new TH1D("blPhoWTimeSig", addstr(ht," blPhoWTimeSig;blPhoWTimeSig").c_str(), 200, -10, 10);
+
 
     hist1d[60] = new TH1D("dPVPull",addstr(ht," dPV_Pull;dPV_Pull").c_str(),500,-25,25);
     hist1d[61] = new TH1D("PVEnergy",addstr(ht," pvenergy;pvenergy [GeV]").c_str(),500,0,2000);
@@ -1234,9 +1245,11 @@ int main ( int argc, char *argv[] ){
                 
 				//std::string listdir = "../KUCMSSkimmer/condor/";
 				//std::string listdir = "/uscms/home/jaking/nobackup/llpana_skims/";
-				std::string listdir = "";
+				//std::string listdir = "";
 				//std::string listdir = "/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/tsig_skims/"; 
                 //std::string listdir = "/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/";
+
+				std::string listdir = "/uscms/home/jaking/nobackup/el9/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/";
 
 				//std::string infilenameJ = "rjr_skim_files/KUCMS_RJR_GIGI_ootmet_Skim_List.txt";
                 //std::string infilenameJ = "rjr_skim_files/KUCMS_RJR_SMS_ootmet_Skim_List.txt";

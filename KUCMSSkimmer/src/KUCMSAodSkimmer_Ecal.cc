@@ -84,39 +84,39 @@ void KUCMSAodSkimmer::processRechits(){
         hist1d[2]->Fill( corrht, 1 );
         hist1d[5]->Fill( rht, 1 );
 		if( gainid == 2 ){ 
-			if( isEB ) hist2d[10]->Fill(rhe,hgncht);
-			else hist2d[13]->Fill(rhe,hgncht);
+			if( isEB ) hist2d[10]->Fill(rhe,corrht);
+			else hist2d[13]->Fill(rhe,corrht);
         	hist1d[70]->Fill( rhe, 1 );
         	hist1d[71]->Fill( rhtres, 1 );
-        	hist1d[72]->Fill( hgncht, 1 );
-        	hist1d[75]->Fill( rht, 1 );
+        	hist1d[72]->Fill( corrht, 1 );
+        	hist1d[75]->Fill( hgncht, 1 );
 		}//<<>>if( gainid == 2 )
         if( gainid == 3 ){ 
-			if( isEB ) hist2d[11]->Fill(rhe,hgncht);
-            else hist2d[14]->Fill(rhe,hgncht);
+			if( isEB ) hist2d[11]->Fill(rhe,corrht);
+            else hist2d[14]->Fill(rhe,corrht);
             hist1d[80]->Fill( rhe, 1 );
             hist1d[81]->Fill( rhtres, 1 );
-            hist1d[82]->Fill( hgncht, 1 );
-            hist1d[85]->Fill( rht, 1 );
+            hist1d[82]->Fill( corrht, 1 );
+            hist1d[85]->Fill( hgncht, 1 );
         }//<<>>if( gainid == 3 )
         if( gainid == 1 ){
 			if( isEB ) hist2d[12]->Fill(rhe,corrht);
             else hist2d[15]->Fill(rhe,corrht);
 			hist1d[40]->Fill( rhe, 1 );
             hist1d[41]->Fill( rhtres, 1 );
-            hist1d[42]->Fill( hgncht, 1 );
+            hist1d[42]->Fill( corrht, 1 );
             hist1d[45]->Fill( rht, 1 );
 		//}//<<>>if( (*rhSubdet)[it] == 0 )
         if( rhid < 840000000 ){
             hist1d[50]->Fill( rhe, 1 );
             hist1d[51]->Fill( rhtres, 1 );
-            hist1d[52]->Fill( hgncht, 1 );
+            hist1d[52]->Fill( corrht, 1 );
             hist1d[55]->Fill( rht, 1 );
         }//<<>>if( (*rhSubdet)[it] == 0 )
         if( rhid > 840000000 ){
             hist1d[60]->Fill( rhe, 1 );
             hist1d[61]->Fill( rhtres, 1 );
-            hist1d[62]->Fill( hgncht, 1 );
+            hist1d[62]->Fill( corrht, 1 );
             hist1d[65]->Fill( rht, 1 );
         }//<<>>if( (*rhSubdet)[it] == 0 )
 		}//<<>>if( gainid == 1 )

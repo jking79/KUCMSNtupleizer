@@ -147,7 +147,9 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
     void SaveTTRunFile();
 	void ReadResFile();
     void SaveResFile();
-	void SetResParamters( std::string tag, float ebnoise, float ebstoch, float ebstant, float eenoise, float eestoch, float eestant );
+	void SetResParamters( std::string tag, float ebnoise, float ebstoch, float ebstant, float ebg1he1res, float ebg1he2res, 
+			float ebg1he3res, float ebhg1res, float ebhg2res, float ebhg3res, float eenoise, float eestoch, float eestant, 
+			float eeg1he1res, float eeg1he2res, float eeg1he3res, float eehg1res, float eehg2res, float eehg3res );
 	void ReadLumiFile( std::string lumifile, std::string tag );// only need to create caliRunMap entries - made with brilcalc
 
     void LoadCaliHists( bool stayOpen = false, bool makeNew = false );// loads up all starting info
