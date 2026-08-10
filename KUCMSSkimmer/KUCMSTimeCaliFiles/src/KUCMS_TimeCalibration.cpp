@@ -3223,12 +3223,12 @@ void KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
     std::string hname_ee = hname + "_ee";
 	hist1d[100] = new TH1D(hname_eb.c_str(),title_eb.c_str(),rrange,srun,erun);
     hist1d[101] = new TH1D(hname_ee.c_str(),title_ee.c_str(),rrange,srun,erun);
-    std::string title_all_eb = hname + "_allTT;Run;EB Mean Time [ns]";
+    std::string title_all_eb = hname + "_allTT_eb;Run;EB Mean TT Time [ns]";
     std::string hname_all_eb = hname + "_allTT_eb";
-    std::string title_all_ee = hname + "_allTT;Run;EE Mean Time [ns]";
+    std::string title_all_ee = hname + "_allTT_ee;Run;EE Mean TT Time [ns]";
     std::string hname_all_ee = hname + "_allTT_ee";
     hist2d[110] = new TH2D(hname_all_eb.c_str(),title_all_eb.c_str(),rrange,srun,erun,500,-5.0,5.0);
-    hist2d[111] = new TH2D(hname_all_ee.c_str(),title_all_eb.c_str(),rrange,srun,erun,500,-5.0,5.0);
+    hist2d[111] = new TH2D(hname_all_ee.c_str(),title_all_ee.c_str(),rrange,srun,erun,500,-5.0,5.0);
 
  	//    ebtt_ranges = {35,-17,18,72,1,73};
 /*
