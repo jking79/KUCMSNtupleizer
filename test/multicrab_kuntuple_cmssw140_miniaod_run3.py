@@ -85,7 +85,7 @@ def docrab( dataset ):
 
         #config.Data.partialDataset = True
         config.Data.inputDataset   = None
-        #config.Data.lumiMask       = inputJSON    # Comment out for MC only set for data !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        config.Data.lumiMask       = inputJSON    # Comment out for MC only set for data !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         #config.Data.lumiMask       = 'lumis_in_failed_files_25E0.json'
         #config.Data.splitting     = 'Automatic' # data
         config.Data.splitting = 'FileBased' # Justin
@@ -156,11 +156,17 @@ def docrab( dataset ):
             ##trial          = "kucmsntuple_JetMET_R24_SVIPM100" + version # 
             ##trial          = "kucmsntuple_JetMET_R23_NoFilter" + version # 
             ##trial          = "kucmsntuple_JetMET_R23_MET100" + version # 
+
             #trial          = "kucmsntuple_JetMET_R25_SVHPM100_MiniAOD" + version # 
             #trial          = "kucmsntuple_JetMET_R25_SVHPM100_resub2" + version # 
             #trial          = "kucmsntuple_JetMET_R24_ReReco_SVHPM100_MiniAOD" + version # 
 
-            trial          = "kucmsntuple_MET_R18_SVHPM100_MiniAODv2" + version # 
+            #trial          = "kucmsntuple_JetMET_R23_SVHPM100_MiniAOD_t2" + version # 
+
+            #trial          = "kucmsntuple_MET_R18_SVHPM100_MiniAODv2" + version # 
+            trial          = "kucmsntuple_MET_R18D_SVHPM100_MiniAODv2" + version # 
+            #trial          = "kucmsntuple_MET_R17_SVHPM100_MiniAODv2" + version # 
+            #trial          = "kucmsntuple_MET_R16_SVHPM100_MiniAODv2" + version #  
 
             #trial          = "kucmsntuple_TTXJets_R23_SVIPM100" + version #
             #trial          = "kucmsntuple_GJets_R23_SVHPM100_MiniAOD" + version
@@ -175,8 +181,10 @@ def docrab( dataset ):
 
             # !!!!!!!!!!!!!!!!!    Set output paths !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1!1
             config.Data.outLFNDirBase  = "/store/group/lpcsusylep/jaking/KUCMSNtuple/"+trial+"/"
-            config.General.requestName   = trial+"_"+primaryDataset+"_"+dataset+"_"+runEra+"_request"
-            config.Data.outputDatasetTag = trial+"_"+primaryDataset+"_"+dataset+"_"+runEra
+            #config.General.requestName   = trial+"_"+primaryDataset+"_"+dataset+"_"+runEra+"_request"
+            #config.Data.outputDatasetTag = trial+"_"+primaryDataset+"_"+dataset+"_"+runEra
+            config.General.requestName   = trial+"_"+primaryDataset+"_"+runEra+"_request" 
+            config.Data.outputDatasetTag = trial+"_"+primaryDataset+"_"+runEra 
 
             fSVHPM100 = 'eventFilter=SVHPMet100'
             fSVHPM150 = 'eventFilter=SVHPMet150'
@@ -223,15 +231,24 @@ def docrab( dataset ):
             gt = 'globalTag=106X_dataRun2_v37' ## for MiniAODv2
             isrun2 = 'runera=Run2_2018'
             config.JobType.pyCfgParams   = [gt,mcrab,efilter,isrun2]
+#>>>>>>>>>>>>>>>>>>>     #2017UL #globalTag=106X_dataRun2_v37
+            #gt = 'globalTag=106X_dataRun2_v37' ## for MiniAODv2
+            #isrun2 = 'runera=Run2_2017'
+            #config.JobType.pyCfgParams   = [gt,mcrab,efilter,isrun2]
+#>>>>>>>>>>>>>>>>>>>     #2016UL #globalTag=106X_dataRun2_v37 
+            #gt = 'globalTag=106X_dataRun2_v37' ## for MiniAODv2 
+            #isrun2 = 'runera=Run2_2016' 
+            #config.JobType.pyCfgParams   = [gt,mcrab,efilter,isrun2] 
 
 #>>>>>>>>>>>>>>>>>>> RUN 3
 #>>>>>>>>>>>>>>>>>>> 
 #>>>>>>>>>>>>>>>>>>>        #2022 #globalTag=124X_dataRun3_v15 # prompt
-            #gt = 'globalTag=124X_dataRun3_v15'
+            #gt = 'globalTag=130X_dataRun3_PromptAnalysis_v1'#FG
+            #gt = 'globalTag=130X_dataRun3_v2'#CDE
             #isrun3 = 'runera=Run3_2022' 
             ###config.JobType.pyCfgParams   = [gt,mcrab,efilter,mDoETOnly]
 #>>>>>>>>>>>>>>>>>>>        # 2022 & 2023 #globalTag=124X_dataRun3_v17 ## rereco
-            #gt = 'globalTag=140X_dataRun3_v17' # rereco
+            #gt = 'globalTag=130X_dataRun3_PromptAnalysis_v1' # rereco
             #isrun3 = 'runera=Run3_2023' 
             #config.JobType.pyCfgParams   = [gt,mcrab,efilter,isrun3]
             #config.JobType.pyCfgParams   = [gt,mcrab,efilter,isrun3,mNoSV]
@@ -327,9 +344,9 @@ def run_multi():
         #["/MET/Run2017E-UL2017_MiniAODv2-v1/MINIAOD",1],
         #["/MET/Run2017F-UL2017_MiniAODv2-v1/MINIAOD",1],
 
-        ["/MET/Run2018A-UL2018_MiniAODv2_GT36-v1/MINIAOD",1],
-        ["/MET/Run2018B-UL2018_MiniAODv2_GT36-v1/MINIAOD",1],
-        ["/MET/Run2018C-UL2018_MiniAODv2_GT36-v1/MINIAOD",1],
+        #["/MET/Run2018A-UL2018_MiniAODv2_GT36-v1/MINIAOD",1],
+        #["/MET/Run2018B-UL2018_MiniAODv2_GT36-v1/MINIAOD",1],
+        #["/MET/Run2018C-UL2018_MiniAODv2_GT36-v1/MINIAOD",1],
         ["/MET/Run2018D-UL2018_MiniAODv2_GT36-v1/MINIAOD",1],
 
         #["/JetMET/Run2022C-19Dec2023-v1/MINIAOD",1],

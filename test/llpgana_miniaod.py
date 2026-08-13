@@ -45,8 +45,8 @@ options.register('runMETFilters',False,VarParsing.multiplicity.singleton,VarPars
 #options.register('globalTag','130X_mcRun3_2023_realistic_postBPix_v2',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for R3 23');
 
 ##------------------ data gt  
-#options.register('globalTag','106X_dataRun2_v36',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
-options.register('globalTag','150X_dataRun3_v2',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
+options.register('globalTag','106X_dataRun2_v37',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
+#options.register('globalTag','150X_dataRun3_v2',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 ##options.register('globalTag','106X_dataRun2_v28',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 #options.register('globalTag','124X_dataRun3_v15',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2022');
 #options.register('globalTag','140X_dataRun3_v17',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
@@ -71,9 +71,9 @@ options.parseArguments()
 #runera = "Run3"  # current siganl model   !!!!!!!!  Run3 must be in CMSSW 14 or 15
 #runera = "Run3_2025"
 #runera = "Run3_2022"
-runera = "Run3_2024"
+#runera = "Run3_2024"
 #runera = "Run2_2018" # BG models
-##runera = "Run2_2016"
+runera = "Run2_2017"
 if options.multicrab == True : runera = options.runera
 
 from Configuration.StandardSequences.Eras import eras
@@ -153,8 +153,9 @@ process.source = cms.Source("PoolSource",
         #root://cmseos.fnal.gov/
         #root://cms-xrd-global.cern.ch/
         #file:
-    
-        'root://cmsxrootd.fnal.gov//store/data/Run2024D/JetMET0/MINIAOD/MINIv6NANOv15-v1/2530000/0015790c-a12b-4936-bc66-1abc66dfdbdb.root',
+    'root://cmsxrootd.fnal.gov//store/data/Run2016F/MET/MINIAOD/UL2016_MiniAODv2-v2/120000/0022C307-4BA7-1F4E-8588-CCDCEFAA7D12.root',    
+    #'root://cmsxrootd.fnal.gov//store/data/Run2017B/MET/MINIAOD/UL2017_MiniAODv2-v1/100000/9B53ACB7-C063-1D44-A564-42435C24DE7B.root',
+    #'root://cmsxrootd.fnal.gov//store/data/Run2024D/JetMET0/MINIAOD/MINIv6NANOv15-v1/2530000/0015790c-a12b-4936-bc66-1abc66dfdbdb.root',
         #### AOD Run3   MUST BE IN CMSSW  14 or 15 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         # Data
         #'root://cmsxrootd.fnal.gov//store/data/Run2024C/JetMET0/MINIAOD/PromptReco-v1/000/379/415/00000/f41372ad-bc84-47c3-9c74-49f96cf26866.root',
@@ -201,10 +202,10 @@ process.source = cms.Source("PoolSource",
 ## How many events to process
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))#ONE
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
-#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
 #process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
 
 # Override hardcoded source file(s) when inputFiles is passed on the command line
