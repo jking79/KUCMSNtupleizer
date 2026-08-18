@@ -92,8 +92,8 @@ int main ( int argc, char *argv[] ){
 
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCGjetsTFile.txt");
 
-    //std::string inputfilename( "ecal_config/kucmsTimeCaliR25PrmptTFile.txt");
-    std::string inputfilename( "ecal_config/kucmsTimeCaliR24ReRecoTFile.txt");
+    std::string inputfilename( "ecal_config/kucmsTimeCaliR25PrmptTFile.txt");
+    //std::string inputfilename( "ecal_config/kucmsTimeCaliR24ReRecoTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR23ReRecoTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR22ReRecoTFile.txt");
 
@@ -111,7 +111,8 @@ int main ( int argc, char *argv[] ){
 
     //std::string indir("KUCMSNtuple/gammares_R22_22sept23/");
     //std::string indir("KUCMSNtuple/gammares_R23_22sept23/");
-    std::string indir("KUCMSNtuple/gammares_R24_m6n15/");
+    //std::string indir("KUCMSNtuple/gammares_R24_m6n15/");
+    std::string indir("KUCMSNtuple/gammares_prmt25/");
 
     ///std::string indir("KUCMSNtuple/gammares_prmt25/");
 
@@ -218,11 +219,11 @@ int main ( int argc, char *argv[] ){
     //theCali.setLowEnergy( false ); // true is default
     ////theCali.setUseEffEnergy( true );
 
-    theCali.useGainSwitch( true, true ); // use gainid ? --  do all gians ? : all Gains (HG)
-    //theCali.useGainSwitch( true, false ); // use gainid ? --  do all gians ? : only gainID1 (LG)
+    //theCali.useGainSwitch( true, true ); // use gainid ? --  do all gians ? : all Gains (HG)
+    theCali.useGainSwitch( true, false ); // use gainid ? --  do all gians ? : only gainID1 (LG)
 
-    //theCali.setIsCC(true);
-    //theCali.setDoUnCC(true);
+    theCali.setIsCC(true);
+    theCali.setDoUnCC(true);
     ////theCali.setIsCC(false);//default
 
 	////theCali.setDoEE( false ); depreciated - now do EB & EE at the same time
@@ -287,6 +288,7 @@ int main ( int argc, char *argv[] ){
     //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_23_22sept23_xa_pm24b1200_v0805" );
     //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_23_22sept23_lg_xa_pm24b1200_v0805" );
 	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_24_miniAODv6_lg_xa_pm24b1200_v0808" );
+	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_25_prompt_lg_xa_pm24b1200_v0817" );
 
 	//theCali.setMCResTag("r2_ul16");
 	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18MC_xa_pm24b1200_v0204" );
@@ -474,11 +476,20 @@ int main ( int argc, char *argv[] ){
     //std::string histName3 = "ResMap_379412_387121_DRO_Data_Hist_eg_24_miniAODv6_xa_pm24b1200_v0808_EB";
     //std::string histName4 = "ResMap_379412_387121_DRO_Data_Hist_eg_24_miniAODv6_xa_pm24b1200_v0808_EE";
 
-    std::string histName1 = "ResMap_379412_387121_SRO_Data_Hist_eg_24_miniAODv6_lg_xa_pm24b1200_v0808_EB";
-    std::string histName2 = "ResMap_379412_387121_SRO_Data_Hist_eg_24_miniAODv6_lg_xa_pm24b1200_v0808_EE";
-    std::string histName3 = "ResMap_379412_387121_DRO_Data_Hist_eg_24_miniAODv6_lg_xa_pm24b1200_v0808_EB";
-    std::string histName4 = "ResMap_379412_387121_DRO_Data_Hist_eg_24_miniAODv6_lg_xa_pm24b1200_v0808_EE";
+    //std::string histName1 = "ResMap_379412_387121_SRO_Data_Hist_eg_24_miniAODv6_lg_xa_pm24b1200_v0808_EB";
+    //std::string histName2 = "ResMap_379412_387121_SRO_Data_Hist_eg_24_miniAODv6_lg_xa_pm24b1200_v0808_EE";
+    //std::string histName3 = "ResMap_379412_387121_DRO_Data_Hist_eg_24_miniAODv6_lg_xa_pm24b1200_v0808_EB";
+    //std::string histName4 = "ResMap_379412_387121_DRO_Data_Hist_eg_24_miniAODv6_lg_xa_pm24b1200_v0808_EE";
 
+    //std::string histName1 = "ResMap_387742_398903_SRO_Data_Hist_UnCorr_eg_25_prompt_xa_pm24b1200_v0817_EB";
+    //std::string histName2 = "ResMap_387742_398903_SRO_Data_Hist_UnCorr_eg_25_prompt_xa_pm24b1200_v0817_EE";
+    //std::string histName3 = "ResMap_387742_398903_DRO_Data_Hist_UnCorr_eg_25_prompt_xa_pm24b1200_v0817_EB";
+    //std::string histName4 = "ResMap_387742_398903_DRO_Data_Hist_UnCorr_eg_25_prompt_xa_pm24b1200_v0817_EE";
+
+    std::string histName1 = "ResMap_387742_398903_SRO_Data_Hist_UnCorr_eg_25_prompt_lg_xa_pm24b1200_v0817_EB";
+    std::string histName2 = "ResMap_387742_398903_SRO_Data_Hist_UnCorr_eg_25_prompt_lg_xa_pm24b1200_v0817_EE";
+    std::string histName3 = "ResMap_387742_398903_DRO_Data_Hist_UnCorr_eg_25_prompt_lg_xa_pm24b1200_v0817_EB";
+    std::string histName4 = "ResMap_387742_398903_DRO_Data_Hist_UnCorr_eg_25_prompt_lg_xa_pm24b1200_v0817_EE";
 
 //    std::string histName1 = "";
 //    std::string histName2 = "";
@@ -511,6 +522,9 @@ int main ( int argc, char *argv[] ){
 
 	///////////////   mean time by run   ////////////////////
 
+    //theCali.setIsCC(true);
+    //theCali.setDoUnCC(true);
+    
 	// plotting of mean time by run with calibraton : filename, start run, end run, usecali ( defaults to usecali true )
 	//theCali.plotMeanRunTimeEGR( inputfilename, 315257, 325172 ); // R2 2018 UL 315257_325172 // R2 2017 UL 296399_306460
     //theCali.plotMeanRunTimeEGR( inputfilename, 315257, 325172, false );
@@ -527,6 +541,8 @@ int main ( int argc, char *argv[] ){
 
 	//theCali.plotMeanRunTimeEGR( inputfilename, 366365, 372415, true );//23
 	//theCali.plotMeanRunTimeEGR( inputfilename, 378985, 386951, false );//24
+	//theCali.plotMeanRunTimeEGR( inputfilename, 390735, 398903, false );//25
+
 
     ////theCali.plotMeanRunTimeEGR( inputfilename, 296399, 307554, true );
 	////theCali.makeTTDiffMaps();// make trigger tower diffrence maps

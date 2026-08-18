@@ -628,6 +628,16 @@ sro24lgee = 'ResMap_379412_387121_SRO_Data_Hist_eg_24_miniAODv6_lg_xa_pm24b1200_
 dro24lgeb = 'ResMap_379412_387121_DRO_Data_Hist_eg_24_miniAODv6_lg_xa_pm24b1200_v0808_EB'
 dro24lgee = 'ResMap_379412_387121_DRO_Data_Hist_eg_24_miniAODv6_lg_xa_pm24b1200_v0808_EE'
 
+dro25lgeb = 'ResMap_387742_398903_DRO_Data_Hist_UnCorr_eg_25_prompt_lg_xa_pm24b1200_v0817_EB'
+dro25lgee = 'ResMap_387742_398903_DRO_Data_Hist_UnCorr_eg_25_prompt_lg_xa_pm24b1200_v0817_EE'
+sro25lgeb = 'ResMap_387742_398903_SRO_Data_Hist_UnCorr_eg_25_prompt_lg_xa_pm24b1200_v0817_EB'
+sro25lgee = 'ResMap_387742_398903_SRO_Data_Hist_UnCorr_eg_25_prompt_lg_xa_pm24b1200_v0817_EE'
+
+dro25eb = 'ResMap_387742_398903_DRO_Data_Hist_UnCorr_eg_25_prompt_xa_pm24b1200_v0817_EB'
+dro25ee = 'ResMap_387742_398903_DRO_Data_Hist_UnCorr_eg_25_prompt_xa_pm24b1200_v0817_EE'
+sro25eb = 'ResMap_387742_398903_SRO_Data_Hist_UnCorr_eg_25_prompt_xa_pm24b1200_v0817_EB'
+sro25ee = 'ResMap_387742_398903_SRO_Data_Hist_UnCorr_eg_25_prompt_xa_pm24b1200_v0817_EE'
+
 
 hl_r2_16_v2_ebee = [ 
     [sro16eb+shend,"",indir+sro16eb+rfend,"SRO EB"], 
@@ -704,6 +714,16 @@ hl_r3_24_v2_ebee = [
     [dro24lgee+shend,"",indir+dro24lgee+rfend,"DRO LG EE"],
 ]
 
+hl_r3_25_v2_ebee = [
+    #[sro25eb+shend,"",indir+sro25eb+rfend,"SRO EB"],
+    #[sro25ee+shend,"",indir+sro25ee+rfend,"SRO EE"],
+    [dro25eb+shend,"",indir+dro25eb+rfend,"DRO EB"],
+    [dro25ee+shend,"",indir+dro25ee+rfend,"DRO EE"],
+    #[sro25lgeb+shend,"",indir+sro25lgeb+rfend,"SRO LG EB"],
+    #[sro25lgee+shend,"",indir+sro25lgee+rfend,"SRO LG EE"],
+    [dro25lgeb+shend,"",indir+dro25lgeb+rfend,"DRO LG EB"],
+    [dro25lgee+shend,"",indir+dro25lgee+rfend,"DRO LG EE"],
+]
 
 ##### ---------------------------------------------------------------------------------------
 
@@ -1230,9 +1250,10 @@ hl_r3_25b = [
 #ptitle=['','Run 3 (13.6 TeV)','#splitline{SRU Resolution}{2025 Prompt}'] #{}'
 #ptitle=['','Run 3 (13.6 TeV)','#splitline{SRU Resolution}{2025 Prompt Chronus}'] #{}'
 
-#ptitle=['','Run 2 (13.6 TeV)','#splitline{Chronus Calibration}{2022 22Sept2023}'] #{}' 
-#ptitle=['','Run 2 (13.6 TeV)','#splitline{Chronus Calibration}{2023 22Sept2023}'] #{}' 
-ptitle=['','Run 2 (13.6 TeV)','#splitline{Chronus Calibration}{2024 miniAODv6}'] #{}' 
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2022 22Sept2023}'] #{}' 
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2023 22Sept2023}'] #{}' 
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2024 miniAODv6}'] #{}' 
+ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2025 Prompt Uncorr}'] #{}'
 
 #y = [ 0.4, 0.04 ]
 #y = [ 0.7, -0.05 ]
@@ -1259,7 +1280,7 @@ t = [0.325,0.85,0.1,0.175,0.285]#adjsuting lumi-sqrt(s) in title bar
 #outname = 'downloads/tr_hl_r3_24d_part_trvcc_ccgt_v7'
 #outname = 'downloads/tr_hl_r3_25c2'
 #outname = 'downloads/tr_hl_r3_25bc_xa'
-outname = 'hl_r3_24_v2_ebee'
-dostack(hl_r3_24_v2_ebee, outname, date, Ic_layout, ptitle,  y, x, l, t)
+outname = 'hl_r3_25_v2_ebee'
+dostack(hl_r3_25_v2_ebee, outname, date, Ic_layout, ptitle,  y, x, l, t)
 #outname = 'tr_hl_r2_16v2'
 #dostack(hl_r2_16_ebee, outname, date, Ic_layout, ptitle,  y, x, l, t)

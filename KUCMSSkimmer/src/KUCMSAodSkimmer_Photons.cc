@@ -157,10 +157,10 @@ void KUCMSAodSkimmer::processPhotons(){
     //---------------------------------------------------
 
     if( DEBUG ) std::cout << " -- looping photons : getting pho isEB, has min pt, not excluded, electron veto " << std::endl;
-    auto isExcluded = (*Photon_excluded)[it];
-    auto scIndx = (*Photon_scIndex)[it];
-    auto isEB = (*SuperCluster_seedIsEB)[scIndx];
-    auto hasEleVeto = (*Photon_electronVeto)[it];
+    bool isExcluded = (*Photon_excluded)[it];
+    int scIndx = (*Photon_scIndex)[it];
+    bool isEB = (*SuperCluster_seedIsEB)[scIndx];
+    bool hasEleVeto = (*Photon_electronVeto)[it];
     bool hasPixSeed = (*Photon_pixelSeed)[it];
 
 	if( DEBUG ) std::cout << " -- pho pull GenSig info" << std::endl;
@@ -168,20 +168,21 @@ void KUCMSAodSkimmer::processPhotons(){
     bool isGenSig = hasGenInfoFlag ? (*Photon_genIdx)[it] > -1 ? ( (*Gen_susId)[(*Photon_genIdx)[it]] == 22 )  : 0 : 0;
 
     if( DEBUG ) std::cout << " -- getting pho e, pt, eta, phi info" << std::endl;
-    auto energy = (*Photon_energy)[it];
-    auto pt = (*Photon_pt)[it];
+    float energy = (*Photon_energy)[it];
+    float pt = (*Photon_pt)[it];
     bool underMinPtEB = pt < 30;
     bool underMinPtEE = pt < 30;
     bool overMinPt = pt >= 30;
-    auto eta = (*Photon_eta)[it];
-    auto overMaxEta = std::abs(eta) > 1.479;
+    float eta = (*Photon_eta)[it];
+    bool overMaxEta = std::abs(eta) > 1.479;
+	bool ECALEndCapEdge = std::abs(eta) > 2.6;
     auto phi = (*Photon_phi)[it];
 
     //---------------------------------------------------
     /////////// skip all excluded photons ///////////////////////////////////
     //---------------------------------------------------
 
-    if( isExcluded ){ 
+    if( isExcluded or ECALEndCapEdge ){ 
 		isBaseLinePho.push_back(false); 
 		allphoBaseline.push_back(false);
 		allphowtime.push_back(-50.f); 
@@ -540,7 +541,7 @@ void KUCMSAodSkimmer::processPhotons(){
 
     bool pass_very_loose_id = isoPho && overMinPt; // ?  this is place holder - was not in place in v37  and prior to 2/17/26 
 
-	bool standard_selction = not badNRechits and not hasPixSeed and not isExcluded;
+	bool standard_selction = not badNRechits and not hasPixSeed and not isExcluded and not ECALEndCapEdge;
     bool underNMaxBasePhos = nBaseRJRPhos < 2;// checks how many RJR photons already found - need to have found less then 2 already
     bool in_base_selection = standard_selction and pass_very_loose_id and underNMaxBasePhos;
     allphoBaseline.push_back( in_base_selection );
