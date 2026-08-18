@@ -1501,6 +1501,8 @@ float KUCMS_TimeCalibration::getTTCali( uInt rhid, int run, std::string tag, int
 float KUCMS_TimeCalibration::getSmearedTime( float mtime, float ampres, std::string stag  ){
 
 	if( stag == "debug" ) std::cout << " -- smeairng : " << mtime << " with " << ampres << std::endl;
+
+
 	return getRandom->Gaus( mtime, ampres );
 
 /*
@@ -1517,7 +1519,7 @@ float KUCMS_TimeCalibration::getSmearedTime( float mtime, float ampres, std::str
     float smearedtime = getRandom->Gaus( rhtime, resolution );
     return smearedtime;
 */
-	//return 1.f;
+	//return -99.f;
 
 }//<<>>float KUCMS_TimeCalibration::getSmearedTime( std::string tag , float time, uInt rhid )
 
@@ -1529,7 +1531,7 @@ float KUCMS_TimeCalibration::getSmrdCalibTime( float rhtime, float rhamp, uInt r
     return smrdCalibTime;
 */
 
-	return 1.f;
+	return -99.f;
 
 }//<<>>float KUCMS_TimeCalibration::getSmearedTime( std::string tag , float time, uInt rhid )
 
@@ -3269,6 +3271,7 @@ void KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
     uInt run;
     std::vector<unsigned int> *rhID;
     std::vector<float> *rhTime;
+    std::vector<float> *rhCCTime;
     std::vector<float> *rhEnergy;
     std::vector<bool> *rhisGS6;
     std::vector<bool> *rhisGS1;
@@ -3278,6 +3281,7 @@ void KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
     TBranch *b_run;   //!
     TBranch *b_rhID;   //!
     TBranch *b_rhTime;   //!
+    TBranch *b_rhCCTime;   //!
     TBranch *b_rhEnergy;   //!
     TBranch *b_rhisGS6;   //!
     TBranch *b_rhisGS1;   //!
@@ -3375,6 +3379,7 @@ void KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
         run = 0;
     	rhID = 0;
         rhTime = 0;
+		rhCCTime = 0;
 		rhEnergy = 0;
 		rhisGS6 = 0;
         rhisGS1 = 0;
@@ -3383,6 +3388,7 @@ void KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
         fInTree->SetBranchAddress( "run", &run, &b_run );   //!
         fInTree->SetBranchAddress( "rhID", &rhID, &b_rhID );   //!
         fInTree->SetBranchAddress( "rhRtTime", &rhTime, &b_rhTime);   //!
+        if( isCC ) fInTree->SetBranchAddress("rhCCTime", &rhCCTime, &b_rhCCTime);
         fInTree->SetBranchAddress( "rhEnergy", &rhEnergy, &b_rhEnergy );   //!
         fInTree->SetBranchAddress( "rhisGS6", &rhisGS6, &b_rhisGS6 );
         fInTree->SetBranchAddress( "rhisGS1", &rhisGS1, &b_rhisGS1 );
@@ -3409,6 +3415,7 @@ void KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
             b_run->GetEntry(entry);   //!
             b_rhID->GetEntry(entry);   //!
             b_rhTime->GetEntry(entry);   //!
+			if( isCC ) b_rhCCTime->GetEntry(entry);  
 			b_rhEnergy->GetEntry(entry);
             b_rhisGS6->GetEntry(entry);
             b_rhisGS1->GetEntry(entry);
@@ -3419,7 +3426,8 @@ void KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
 				for( int idx = 0; idx < nRecHits; idx++ ){
 
 					auto idinfo = DetIDMap[rhID->at(idx)];
-					double btime = rhTime->at(idx);
+					bool useUnCCTime = isCC && doUnCC;
+					double btime = useUnCCTime ? rhCCTime->at(idx) : rhTime->at(idx);
 					bool isEB = ( idinfo.ecal == ECAL::EB );
 
 					int gainId = ( ! rhisGS6->at(idx) && ! rhisGS1->at(idx) ) ? 1 : ( rhisGS6->at(idx) && ! rhisGS1->at(idx) ) ? 2 : 3;

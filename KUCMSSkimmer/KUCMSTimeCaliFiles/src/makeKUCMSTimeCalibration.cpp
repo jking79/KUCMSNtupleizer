@@ -54,21 +54,14 @@ int main ( int argc, char *argv[] ){
 
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCGjetsTFile.txt");
  
-    ////std::string inputfilename( "ecal_config/kucmsTimeCaliR18ULTFile.txt");
-    ////std::string inputfilename( "ecal_config/kucmsTimeCaliR17ULTFile.txt");
-    ////std::string inputfilename( "ecal_config/kucmsTimeCaliR16ULTFile.txt"); 
-
 	//std::string inputfilename( "ecal_config/kucmsTimeCaliR16ULv2TFile.txt"); 
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR17ULv2TFile.txt");
-    std::string inputfilename( "ecal_config/kucmsTimeCaliR18ULv2GT36TFile.txt");
+    //std::string inputfilename( "ecal_config/kucmsTimeCaliR18ULv2GT36TFile.txt");
 
 	//std::string inputfilename( "ecal_config/kucmsTimeCaliR22ReRecoTFile.txt"); 
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR23ReRecoTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR24ReRecoTFile.txt");
-
-    ////std::string inputfilename( "ecal_config/kucmsTimeCaliR23PrmptTFile.txt");
-    ////std::string inputfilename( "ecal_config/kucmsTimeCaliR24PrmptTFile.txt");
-    //std::string inputfilename( "ecal_config/kucmsTimeCaliR25PrmptTFile.txt");
+    std::string inputfilename( "ecal_config/kucmsTimeCaliR25PrmptTFile.txt");
 
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCQCDTFile.txt");
 
@@ -80,11 +73,12 @@ int main ( int argc, char *argv[] ){
     
 	//std::string indir("KUCMSNtuple/gammares_ul16v2/");
     //std::string indir("KUCMSNtuple/gammares_ul17v2/");
-    std::string indir("KUCMSNtuple/gammares_ul18v2gt36/");
+    //std::string indir("KUCMSNtuple/gammares_ul18v2gt36/");
 
 	//std::string indir("KUCMSNtuple/gammares_R22_22sept23/");
     //std::string indir("KUCMSNtuple/gammares_R23_22sept23/");
     //std::string indir("KUCMSNtuple/gammares_R24_m6n15/");
+    std::string indir("KUCMSNtuple/gammares_prmt25/");
 
     ///std::string indir("KUCMSNtuple/gammares_prmt25/");
 
@@ -106,17 +100,17 @@ int main ( int argc, char *argv[] ){
     //-----//////////  making tt cali  :
     theCali.SetupIovMaps();
 	// for PD R2UL
-    theCali.setTTIov( r2ulTag );
-    theCali.setXIov( xiovtag );
+    //theCali.setTTIov( r2ulTag );
+    //theCali.setXIov( xiovtag );
 	// for MC
     //theCali.setTTIov( mctag );
     //theCali.setXIov( mctag );
     // for PD R3
-	//theCali.setTTIov( r3TagTT );
-	//theCali.setXIov( r3TagX );
-    //theCali.setIsCC(true);
-	//theCali.setIsCC(false);
-	//theCali.setDoUnCC(true);
+	theCali.setTTIov( r3TagTT );
+	theCali.setXIov( r3TagX );
+    theCali.setIsCC(true);
+	////theCali.setIsCC(false); //-- defaults to false
+	theCali.setDoUnCC(true);
 
     //-----//////////  making trigtower cali :
 	//// makeCaliMapsEGR( std::string inputFileName, bool doTT, int GID,  bool small, bool doCali )
@@ -142,11 +136,11 @@ int main ( int argc, char *argv[] ){
 	//----///////////  make gainid 2 calibrations
     ////theCali.makeTTCaliMapEGR( inputfilename, 2, false, false ); // do gainID 2 no calibration step
     ////theCali.makeTTCaliMapEGR( inputfilename, 2, true ); // do gainID 2; true == run only subset of events 
-    //theCali.makeXCaliMapEGR( inputfilename, 2 ); // do gainID 2+
-	//theCali.makeCaliHists();
-    //theCali.SaveCaliHists();
-    //theCali.SaveTTRunFile();
-    //theCali.SaveCaliRunFile();
+    theCali.makeXCaliMapEGR( inputfilename, 2 ); // do gainID 2+
+	theCali.makeCaliHists();
+    theCali.SaveCaliHists();
+    theCali.SaveTTRunFile();
+    theCali.SaveCaliRunFile();
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
