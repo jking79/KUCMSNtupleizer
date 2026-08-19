@@ -91,8 +91,9 @@ int main ( int argc, char *argv[] ){
     ////std::string inputfilename( "ecal_config/kucmsTimeCaliR17EOYTFile.txt");
 
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCGjetsTFile.txt");
+    std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCQCDTFile.txt");
 
-    std::string inputfilename( "ecal_config/kucmsTimeCaliR25PrmptTFile.txt");
+    //std::string inputfilename( "ecal_config/kucmsTimeCaliR25PrmptTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR24ReRecoTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR23ReRecoTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR22ReRecoTFile.txt");
@@ -112,7 +113,8 @@ int main ( int argc, char *argv[] ){
     //std::string indir("KUCMSNtuple/gammares_R22_22sept23/");
     //std::string indir("KUCMSNtuple/gammares_R23_22sept23/");
     //std::string indir("KUCMSNtuple/gammares_R24_m6n15/");
-    std::string indir("KUCMSNtuple/gammares_prmt25/");
+    //std::string indir("KUCMSNtuple/gammares_prmt25/");
+    std::string indir("KUCMSNtuple/");
 
     ///std::string indir("KUCMSNtuple/gammares_prmt25/");
 
@@ -219,11 +221,11 @@ int main ( int argc, char *argv[] ){
     //theCali.setLowEnergy( false ); // true is default
     ////theCali.setUseEffEnergy( true );
 
-    //theCali.useGainSwitch( true, true ); // use gainid ? --  do all gians ? : all Gains (HG)
-    theCali.useGainSwitch( true, false ); // use gainid ? --  do all gians ? : only gainID1 (LG)
+    theCali.useGainSwitch( true, true ); // use gainid ? --  do all gians ? : all Gains (HG)
+    //theCali.useGainSwitch( true, false ); // use gainid ? --  do all gians ? : only gainID1 (LG)
 
-    theCali.setIsCC(true);
-    theCali.setDoUnCC(true);
+    //theCali.setIsCC(true);
+    //theCali.setDoUnCC(true);
     ////theCali.setIsCC(false);//default
 
 	////theCali.setDoEE( false ); depreciated - now do EB & EE at the same time
@@ -289,6 +291,7 @@ int main ( int argc, char *argv[] ){
     //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_23_22sept23_lg_xa_pm24b1200_v0805" );
 	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_24_miniAODv6_lg_xa_pm24b1200_v0808" );
 	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_25_prompt_lg_xa_pm24b1200_v0817" );
+	theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18MC_QCD_xa_pm24b1200_v0818" );
 
 	//theCali.setMCResTag("r2_ul16");
 	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18MC_xa_pm24b1200_v0204" );
@@ -501,7 +504,7 @@ int main ( int argc, char *argv[] ){
     //theCali.load2DResHist( histName );
 	//theCali.doResTimeFit( histName );
 
-
+/*
     theCali.load2DResHist( histName1 );
     theCali.doResTimeFit( histName1 );
     theCali.load2DResHist( histName2 );
@@ -510,7 +513,7 @@ int main ( int argc, char *argv[] ){
     theCali.doResTimeFit( histName3 );
     theCali.load2DResHist( histName4 );
     theCali.doResTimeFit( histName4 );	
-
+*/
 
 	////////////////////  use external file for fit ///////////////////////////////////////////////////////////////////////////
 
