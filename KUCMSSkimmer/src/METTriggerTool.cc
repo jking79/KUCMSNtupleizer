@@ -12,13 +12,13 @@ double METTriggerTool::GetEffWeight(double met, bool data, int year, double ht, 
 	    .at(_trigger)
 	    .at(year)
 	    .at(sys);
-	
 	for (const auto& bin : bins) {
 	    if (ht >= bin.htLow && ht < bin.htHigh) {
-		std::cout << "mu " << bin.mu << " sigma " << bin.sigma << " x " << met << std::endl;
+		//std::cout << "mu " << bin.mu << " sigma " << bin.sigma << " x " << met << std::endl;
 		return 0.5 * (1.0 + std::erf((met - bin.mu) / (bin.sigma * std::sqrt(2.0))));
 	    }
 	}
+	std::cerr << "HT " << ht << " not defined in bins for trigger " << _trigger << " year " << year << " sys " << sys << std::endl;
 	return -1;
 }
 
