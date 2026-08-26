@@ -818,10 +818,11 @@ void KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
 	for( auto filename : caliHistFileNames ){
 		if( useEosRootCali && not stayOpen ) califilepath = eosCaliPath + filename.second;
 	 	else califilepath = caliFileDir + filename.second; 
+		std::cout << " -- Cali file path : " << califilepath << " " << filename.first << std::endl;
         //if( not std::filesystem::exists(califilepath) ) continue; 
 		if( makeNew ) caliTFile[filename.first] = TFile::Open( califilepath.c_str(), "RECREATE" );
 		if( stayOpen && not makeNew ) caliTFile[filename.first] = TFile::Open( califilepath.c_str(), "UPDATE" );
-		if( not stayOpen && not makeNew ) caliTFile[filename.first] = TFile::Open( califilepath.c_str(), "UPDATE" );
+		if( not stayOpen && not makeNew ) caliTFile[filename.first] = TFile::Open( califilepath.c_str(), "READ" );
 		if( caliTFile[filename.first]->IsZombie() or !caliTFile[filename.first] ){ 
 				std::cout << "ERROR: failed to open ROOT file: " << califilepath << std::endl;
 		}//<<>>if( caliTFile[filename.first]->IsZombie() or !caliTFile[filename.first] )
@@ -2162,6 +2163,10 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
     bool small = false;
     //bool small = true;
 
+    //bool doMC = false;
+    bool doMC = true;
+	float fillwgt = 1;
+
     const std::string treename("tree/llpgtree");
 
     bool useAmp = not useEffEnergy;
@@ -2251,18 +2256,23 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
     	infilestr = infilestr.substr(first, last - first + 1);
 
     	// now comments with leading spaces are also skipped
-    	if( infilestr[0] == '#' ) continue;
-
 		if( infilestr.empty() || infilestr[0] == '#' ) continue;
 
         std::stringstream ss(infilestr);
         std::string subdir, matchstr, tag;
-        int srun(0), erun(0);
+        int srun(0), erun(0), wgt(1), dolast(0);
 
-    	if( !(ss >> subdir >> matchstr >> srun >> erun >> tag) ){
-        	std::cout << "Bad input-list entry, skipping: [" << infilestr << "]" << std::endl;
-        	continue;
-    	}//<<>>if( !(ss >> subdir >> matchstr >> srun >> erun >> tag) )
+
+    	//if( !(ss >> subdir >> matchstr >> srun >> erun >> tag) ){
+        //	std::cout << "Bad input-list entry, skipping: [" << infilestr << "]" << std::endl;
+        //	continue;
+    	//}//<<>>if( !(ss >> subdir >> matchstr >> srun >> erun >> tag) )
+
+        //if( !( ss >> infilename >> srun >> erun >> tag )) std::cout << "[WARN] Parse error in : " << infilestr << std::endl; continue;
+        if( doMC ) ss >> subdir >> matchstr >> srun >> erun >> tag >> dolast >> wgt;
+        else ss >> subdir >> matchstr >> srun >> erun >> tag >> dolast;
+        if( subdir[0] == '#' ){ std::cout << " -- skipping: " << subdir << " " << matchstr << std::endl; continue; }
+        if( doMC ) fillwgt = wgt;
 
         if( subdir == "None" ) subdir = "";
         if( matchstr == "None" ) matchstr = "";
@@ -2651,16 +2661,20 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 									std::cout << " -- IC0g: " << seedTimeIC01 << " IC1g: " << seedTimeIC11 << std::endl;
 								}//<<>>if( gevent_good && debug )
                                 if( levent_good && isd_cut ){
-                                    if( leta_cut_eb ){ CaliHists[lsfnameeb].h2f->Fill(lxfill,lyfill); CaliHists[efnameeb].h2f->Fill(lxfill,lxfille); }
-                                    if( leta_cut_ee ){ CaliHists[lsfnameee].h2f->Fill(lxfill,lyfill); CaliHists[efnameee].h2f->Fill(lxfill,lxfille); }
+                                    if( leta_cut_eb ){ 
+										CaliHists[lsfnameeb].h2f->Fill(lxfill,lyfill,fillwgt); 
+										CaliHists[efnameeb].h2f->Fill(lxfill,lxfille,fillwgt); }
+                                    if( leta_cut_ee ){ 
+										CaliHists[lsfnameee].h2f->Fill(lxfill,lyfill,fillwgt); 
+										CaliHists[efnameee].h2f->Fill(lxfill,lxfille,fillwgt); }
                                 }//<<>>if( levent_good && isd_cut )
                                 if( gevent_good ){ 
-									if( leta_cut_eb ) CaliHists[gbfnameeb].h2f->Fill(gxfill,gyfill); 
-                                    if( leta_cut_ee ) CaliHists[gbfnameee].h2f->Fill(gxfill,gyfill); 
+									if( leta_cut_eb ) CaliHists[gbfnameeb].h2f->Fill(gxfill,gyfill,fillwgt); 
+                                    if( leta_cut_ee ) CaliHists[gbfnameee].h2f->Fill(gxfill,gyfill,fillwgt); 
 								}//<<>>if( gevent_good )
                                 if( levent_good && not isd_cut ){ 
-									if( leta_cut_eb ) CaliHists[ldfnameeb].h2f->Fill(lxfill,lyfill); 
-                                    if( leta_cut_ee ) CaliHists[ldfnameee].h2f->Fill(lxfill,lyfill); 
+									if( leta_cut_eb ) CaliHists[ldfnameeb].h2f->Fill(lxfill,lyfill,fillwgt); 
+                                    if( leta_cut_ee ) CaliHists[ldfnameee].h2f->Fill(lxfill,lyfill,fillwgt); 
 								}//<<>>if( levent_good && not isd_cut )
                                 if(debug) std::cout << " - Fill hists done" << std::endl;
 
