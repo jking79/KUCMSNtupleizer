@@ -48,8 +48,10 @@ void KUCMSAodSkimmer::processSV(){
   bool anyHadMassGeq15{false}, anyHadMassGeq15DxySigGeq800{false}, anyHadDxySigGeq800{false};
   bool anyLepMassGeq15{false}, anyLepMassGeq10{false}, anyLepMassGeq10DxySigGeq500{false}, anyLepDxySigGeq500{false};
   //Validation region accumulators
-  bool anyHadMassGeq15DxySigLt100{false}, anyHadMassGeq15DxySigGeq100Lt800{false}, anyHadDxySigLt200{false};
-  bool anyLepMassGeq10DxySigLt100{false}, anyLepMassGeq10DxySigGeq100Lt500{false}, anyLepDxySigLt50{false};
+  bool anyHadMassGeq15DxySigLt100{false}, anyHadMassGeq15DxySigGeq100Lt800{false};
+  bool anyHadDxySigLt200{false}, anyHadDxySigGeq200Lt800{false};
+  bool anyLepMassGeq10DxySigLt100{false}, anyLepMassGeq10DxySigGeq100Lt500{false};
+  bool anyLepDxySigLt50{false}, anyLepDxySigGeq50Lt500{false};
 
   if( doEVSVs ){
     for( int svit = 0; svit < nSVs; svit++ ){
@@ -90,6 +92,7 @@ void KUCMSAodSkimmer::processSV(){
 	  if(mass >= 10 && dxySig < 100)  anyLepMassGeq10DxySigLt100 = true;
 	  if(mass >= 10 && dxySig >= 100 && dxySig < 500) anyLepMassGeq10DxySigGeq100Lt500 = true;
 	  if(dxySig < 50)                 anyLepDxySigLt50 = true;
+	  if(dxySig >= 50 && dxySig < 500) anyLepDxySigGeq50Lt500 = true;
 	}
 	if(peleid)
 	  selSV.fillBranch("LeptonicSV_electronIndex", int(svit));
@@ -112,6 +115,7 @@ void KUCMSAodSkimmer::processSV(){
 	  if(mass >= 15 && dxySig < 100)  anyHadMassGeq15DxySigLt100 = true;
 	  if(mass >= 15 && dxySig >= 100 && dxySig < 800) anyHadMassGeq15DxySigGeq100Lt800 = true;
 	  if(dxySig < 200)                anyHadDxySigLt200 = true;
+	  if(dxySig >= 200 && dxySig < 800) anyHadDxySigGeq200Lt800 = true;
 	}
 
 	selSV.fillBranch("HadronicSV_massOverNtracks", massOverNtracks);
@@ -172,9 +176,14 @@ void KUCMSAodSkimmer::processSV(){
            && !anyHadMassGeq15DxySigGeq800 && !anyLepMassGeq10DxySigGeq500));
   //Analysis channel flags — BigGuy non-compressed validation regions
   selSV.fillBranch("passNLepGe1SelectionLowDxySigValCR",
-      bool(nLsv >= 1 && anyLepDxySigLt50));
+      bool(nLsv >= 1 && anyLepDxySigLt50 && !anyLepDxySigGeq50Lt500 && !anyLepDxySigGeq500));
+  selSV.fillBranch("passNLepGe1SelectionMidDxySigValSR",
+      bool(nLsv >= 1 && anyLepDxySigGeq50Lt500 && !anyLepDxySigGeq500));
   selSV.fillBranch("passNHadGe1SelectionLowDxySigValCR",
-      bool(nLsv == 0 && nHsvPassID >= 1 && anyHadDxySigLt200));
+      bool(nLsv == 0 && nHsvPassID >= 1 && anyHadDxySigLt200
+           && !anyHadDxySigGeq200Lt800 && !anyHadDxySigGeq800));
+  selSV.fillBranch("passNHadGe1SelectionMidDxySigValSR",
+      bool(nLsv == 0 && nHsvPassID >= 1 && anyHadDxySigGeq200Lt800 && !anyHadDxySigGeq800));
 
   geVars.set("nSVLep", nLsv);
   geVars.set("nSVHad", nHsvPassID);
@@ -229,7 +238,9 @@ void KUCMSAodSkimmer::setSVBranches( TTree* fOutTree ){
   selSV.makeBranch("passNSVGe1SelectionLowDxySigValCR",  BOOL);
   selSV.makeBranch("passNSVGe1SelectionMidDxySigValSR",  BOOL);
   selSV.makeBranch("passNLepGe1SelectionLowDxySigValCR", BOOL);
+  selSV.makeBranch("passNLepGe1SelectionMidDxySigValSR", BOOL);
   selSV.makeBranch("passNHadGe1SelectionLowDxySigValCR", BOOL);
+  selSV.makeBranch("passNHadGe1SelectionMidDxySigValSR", BOOL);
 
   if( hasGenInfoFlag ){
     selSV.makeBranch("HadronicSV_matchRatio", VFLOAT);
