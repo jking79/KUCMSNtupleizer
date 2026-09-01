@@ -16,6 +16,7 @@ Example:
 """
 
 import argparse
+import fnmatch
 import json
 import os
 import re
@@ -116,6 +117,9 @@ TIMECALI = {
 
 DATA_KEYWORDS  = {'MET', 'JetMET', 'JetMET0', 'JetMET1', 'JetHT', 'EGamma', 'EGamma0', 'EGamma1', 'EGamma2', 'DisJet'}
 SIGNAL_KEYWORDS = {'SMS', 'gogoG', 'gogoZ', 'gogoGZ', 'sqsqG', 'GlGl'}
+BRANCH_MASKS = {
+    'llpCombineSkim': 'config/branch_masks/llpcombine_analysis_exact.txt',
+}
 
 SANDBOX_DEFAULT  = "/uscms/home/mlazarov/nobackup/sandboxes/sandbox-CMSSW_13_3_3.tar.bz2"
 EOS_SKIMS_BASE   = "/store/group/lpcsusylep/malazaro/KUCMSSkims"
@@ -218,6 +222,30 @@ def normalize_branch_mask_path(mask_path):
 
     rel = os.path.relpath(resolved, SKIMMER_DIR)
     return rel.replace(os.sep, '/')
+
+
+def branch_mask_mapping_text():
+    if not BRANCH_MASKS:
+        return 'Available branch mask aliases: [none configured]'
+    lines = ['Available branch mask aliases:']
+    for alias in sorted(BRANCH_MASKS):
+        lines.append('  {} -> {}'.format(alias, BRANCH_MASKS[alias]))
+    return '\n'.join(lines)
+
+
+def resolve_branch_mask(mask):
+    """Resolve a branch mask alias or path.
+
+    Returns (worker_side_path, alias). alias is None when the user supplied an
+    explicit path instead of a known mask name.
+    """
+    alias_path = BRANCH_MASKS.get(mask)
+    if alias_path:
+        return normalize_branch_mask_path(alias_path), mask
+    try:
+        return normalize_branch_mask_path(mask), None
+    except ValueError as exc:
+        raise ValueError(str(exc) + '\n' + branch_mask_mapping_text())
 
 
 def lookup_bg_meta(subfolder):
@@ -610,6 +638,8 @@ def make_sample_tag(raw_task_suffix):
         sample = sample[len('SMS-'):]
     elif sample.startswith('SMS_'):
         sample = sample[len('SMS_'):]
+    if sample == 'GlGl-GZ' or sample.startswith('GlGl-GZ_'):
+        sample = 'gogoGZ' + sample[len('GlGl-GZ'):]
     return sample
 
 
@@ -629,6 +659,15 @@ def make_ntuple_tag(collection_name):
 
 def final_merged_filename(sample_tag, ntuple_tag, skim_tag):
     return sample_tag + '__' + ntuple_tag + '__' + skim_tag + '.root'
+
+
+def normalize_skim_version(version):
+    if not version:
+        return None
+    version = version.strip().rstrip('/')
+    if version.startswith('skims_v'):
+        return version
+    return 'skims_v' + version.lstrip('v')
 
 
 def find_enclosing_collection(path):
@@ -1383,6 +1422,48 @@ def check_status_text(status):
     return status
 
 
+def print_job_completion_summary(history, classified, expected_indices):
+    n_total = len(expected_indices)
+    completed = set(classified.output_for_index)
+    n_missing = len(expected_indices - completed)
+    status = 'OK' if n_missing == 0 else 'INCOMPLETE'
+
+    print('  Original jobs:', history.original_count)
+    print('  Added jobs:   ', n_total - history.original_count)
+    print('  Expected jobs:', n_total)
+    print('  Missing jobs: ', '{}/{} [{}]'.format(
+        n_missing, n_total, check_status_text(status)))
+    if classified.unexpected_indices:
+        print('  unexpected jobs:', classified.unexpected_indices)
+    if classified.duplicate_indices:
+        print('  duplicate jobs:', classified.duplicate_indices)
+
+
+def transfer_version_for_check(path_info, version=None):
+    explicit_version = normalize_skim_version(version)
+    if explicit_version:
+        return explicit_version
+    match = re.search(r'_v(\d+)$', path_info['tag'])
+    if match:
+        return 'skims_v' + match.group(1)
+    return None
+
+
+def print_transfer_check_summary(path_info, version=None, verbose=False):
+    skim_version = transfer_version_for_check(path_info, version=version)
+    if not skim_version:
+        print('  Transfer:      UNKNOWN (no --version and tag has no _vN suffix)')
+        return
+
+    merged_name = merged_output_name(path_info)
+    dest_path = EOS_SKIMS_BASE.rstrip('/') + '/' + skim_version + '/' + merged_name
+    if xrdfs_stat(dest_path, verbose=verbose):
+        status = blue_text('TRANSFERRED')
+    else:
+        status = red_text('NOT TRANSFERRED')
+    print('  Transfer:      {} ({})'.format(status, eos_xrootd_url(dest_path)))
+
+
 def branch_mask_display(mask_path):
     text = mask_path if mask_path else '[None]'
     return blue_text(text) if mask_path else red_text(text)
@@ -1392,6 +1473,14 @@ def submit_label_from_parts(path_info):
     return path_info['canonical_base'] + ' [' + path_info['tag'] + ']'
 
 
+def label_matches_filter(label, name_filter):
+    if not name_filter:
+        return True
+    if any(char in name_filter for char in '*?[]'):
+        return fnmatch.fnmatchcase(label, name_filter)
+    return name_filter in label
+
+
 def filter_submit_files(submit_files, name_filter=None, tag_filter=None):
     matches = []
     name_skipped = []
@@ -1399,7 +1488,7 @@ def filter_submit_files(submit_files, name_filter=None, tag_filter=None):
     for submit_path in sorted(submit_files):
         path_info = submit_path_parts(submit_path)
         label = submit_label_from_parts(path_info)
-        if name_filter and name_filter not in label:
+        if not label_matches_filter(label, name_filter):
             name_skipped.append((submit_path, label))
             continue
         if tag_filter and path_info['tag'] != tag_filter:
@@ -1416,7 +1505,7 @@ def filter_submit_files_by_label(submit_files, name_filter):
 
 
 def check_jobs(output_dir, verbose=False, test_job=None, name_filter=None,
-               tag_filter=None):
+               tag_filter=None, version=None):
     """Scan output_dir for submit.sh files, report completeness, and write
     resubmission files for any subfolders with missing output."""
 
@@ -1459,7 +1548,6 @@ def check_jobs(output_dir, verbose=False, test_job=None, name_filter=None,
         header_lines = history.header_lines
         eos_out_dir = history.eos_out_dir
         expected_indices = history_expected_indices(history)
-        n_total = len(expected_indices)
 
         # List output files from EOS or local
         if eos_out_dir:
@@ -1480,21 +1568,13 @@ def check_jobs(output_dir, verbose=False, test_job=None, name_filter=None,
         classified = classify_transfer_outputs(output_files, expected_prefix,
                                                expected_indices)
         completed = set(classified.output_for_index)
-        n_done = len(completed)
         incomplete_indices = sorted(expected_indices - completed)
         n_missing = len(incomplete_indices)
-        status     = 'OK' if n_missing == 0 else 'INCOMPLETE'
 
         print('{}:'.format(label))
-        print('  Original jobs:', history.original_count)
-        print('  Added jobs:   ', n_total - history.original_count)
-        print('  Expected jobs:', n_total)
-        print('  Missing jobs: ', '{}/{} [{}]'.format(
-            n_missing, n_total, check_status_text(status)))
-        if classified.unexpected_indices:
-            print('  unexpected jobs:', classified.unexpected_indices)
-        if classified.duplicate_indices:
-            print('  duplicate jobs:', classified.duplicate_indices)
+        print_job_completion_summary(history, classified, expected_indices)
+        if n_missing == 0 and not classified.unexpected_indices and not classified.duplicate_indices:
+            print_transfer_check_summary(path_info, version=version, verbose=verbose)
 
         if n_missing > 0:
             missing_indices = incomplete_indices
@@ -1876,16 +1956,7 @@ def transfer_jobs(args, name_filter=None):
             if index in classified.output_for_index
         ]
 
-        print('  Original jobs:', history.original_count)
-        print('  Added jobs:   ', len(expected_indices) - history.original_count)
-        print('  Expected jobs:', len(expected_indices))
-        print('  Completed expected jobs:', len(root_files))
-        if classified.missing_indices:
-            print('  Missing indices:', classified.missing_indices)
-        if classified.unexpected_indices:
-            print('  Unexpected indices:', classified.unexpected_indices)
-        if classified.duplicate_indices:
-            print('  Duplicate indices:', classified.duplicate_indices)
+        print_job_completion_summary(history, classified, expected_indices)
         if classified.unrelated_root_files:
             print('  Ignoring unrelated ROOT files:', len(classified.unrelated_root_files))
 
@@ -1999,7 +2070,8 @@ def main():
     parser.add_argument('--no-sv',   action='store_true', help='Pass --noSV to skimmer')
     parser.add_argument('--hlt-off', action='store_true', help='Pass --HLTPathsOff to skimmer')
     parser.add_argument('--branch-mask', dest='branch_mask', default='',
-        help='Branch mask file passed to skimmer, e.g. config/branch_masks/sv_analysis_core.txt')
+        help='Branch mask alias or file passed to skimmer, e.g. llpCombineSkim '
+             'or config/branch_masks/llpcombine_analysis_exact.txt')
     parser.add_argument('--psiche',  action='store_true', help='Enable PSICHE jets (default: off)')
     parser.add_argument('--eos-out', dest='eos_out', default='/eos/uscms/store/user/$USER/LLPSkims',
         help='Write output directly to this EOS path (default: /eos/uscms/store/user/$USER/LLPSkims)')
@@ -2014,17 +2086,19 @@ def main():
     if args.branch_mask:
         try:
             original_branch_mask = args.branch_mask
-            args.branch_mask = normalize_branch_mask_path(args.branch_mask)
+            args.branch_mask, args.branch_mask_alias = resolve_branch_mask(args.branch_mask)
             if args.branch_mask != original_branch_mask:
                 print('Branch mask:', original_branch_mask, '->', args.branch_mask)
         except ValueError as exc:
             parser.error(str(exc))
+    else:
+        args.branch_mask_alias = None
 
     if args.new_inputs:
         if not args.eos_path:
             parser.error('--new-inputs requires --eos-path')
         if args.tag is None:
-            args.tag = 'rjrskim'
+            args.tag = args.branch_mask_alias or 'rjrskim'
         if args.version:
             args.tag = args.tag + '_v' + args.version.lstrip('v')
         new_inputs_mode(args)
@@ -2032,7 +2106,8 @@ def main():
 
     if args.check is not None:
         check_jobs(args.output, verbose=args.verbose, test_job=args.test_job,
-                   name_filter=args.check, tag_filter=args.tag)
+                   name_filter=args.check, tag_filter=args.tag,
+                   version=args.version)
         return
 
     if args.transfer is not None:
@@ -2063,7 +2138,7 @@ def main():
         parser.error('--eos-path is required unless --check or --transfer is specified')
 
     if args.tag is None:
-        args.tag = 'rjrskim'
+        args.tag = args.branch_mask_alias or 'rjrskim'
 
     if args.version:
         args.tag = args.tag + '_v' + args.version.lstrip('v')

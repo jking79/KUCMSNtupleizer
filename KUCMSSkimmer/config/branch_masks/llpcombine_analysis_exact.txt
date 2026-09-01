@@ -4,44 +4,91 @@
 #
 # Lines are branch-name patterns consumed by --branchMask/--branch-mask.
 
+#Event weights / sample metadata
+evtFillWgt
+nTotEvts
+sCrossSection
+Xa_ctau
+Xb_ctau
+
+#Event truth category
+Evt_isZZ
+Evt_isGZ
+Evt_isGG
+
+#Baseline Selection Variables
+selCMet
+Flag_hemVeto
 Flag_MetFilters
 Trigger_PFMET120_PFMHT120_IDTight
 Trigger_PFMET120_PFMHT120_IDTight_PFHT60
 Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight
 Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60
+
+#Photon counts / timing
 nBaseLinePhotons
 nblBHPhotons
 nblNonpromptPhotons
-passNHadGe1SelectionHighDxySigSR
-passNHadGe1SelectionLowDxySigCR
-passNLepGe1SelectionHighDxySigSR
-passNLepGe1SelectionLowDxySigCR
-passNPhoEq1SelectionPromptMedIsoCR
-passNPhoEq1SelectionPromptTightIsoSR
-passNPhoEq2SelectionPromptMedIsoCR
-passNPhoEq2SelectionPromptTightIsoSR
+baseLinePhoton_WTimeSig
+
+#Delayed photon / beam halo flags
+passNPhoGe1SelectionBeamHaloCR
 passNPhoGe1SelectionEarlyBeamHaloCR
-passNPhoGe1SelectionEarlyMedIso0NotBHCR
-passNPhoGe1SelectionEarlyMedIsoCR
-passNPhoGe1SelectionEarlyNotBHCR
-passNPhoGe1SelectionEarlyTightIso0NotBHCR
-passNPhoGe1SelectionEarlyTightIsoCR
 passNPhoGe1SelectionLateBeamHaloCR
-passNPhoGe1SelectionLateMedIso0NotBHCR
+passNPhoGe1SelectionEarlyNotBHCR
+passNPhoGe1SelectionEarlyMedIsoCR
 passNPhoGe1SelectionLateMedIsoCR
-passNPhoGe1SelectionLateNotBHSR
+passNPhoGe1SelectionEarlyTightIsoCR
 passNPhoGe1SelectionLateNotBHTightIsoSR
 passNPhoGe1SelectionLateSignal
-passNPhoGe1SelectionLateTightIso0NotBHSR
+
+#Prompt photon flags
+passNPhoEq1SelectionPromptMedIsoCR
+passNPhoEq2SelectionPromptMedIsoCR
+passNPhoEq2SelectionCompPromptMedIsoCR
+passNPhoEq1SelectionPromptTightIsoSR
+passNPhoEq2SelectionPromptTightIsoSR
+passNPhoEq2SelectionCompPromptTightIsoSR
+
+#Shared / zero-SV selection
 passNSVEq0Selection
+
+#LittleGuy compressed analysis flags
+passNSVGe1Selection
 passNSVGe1SelectionHighDxySigSR
 passNSVGe1SelectionLowDxySigCR
+passNHadEq1SelectionLowDxySigCR
+
+#Hadronic BigGuy analysis flags
+passNHadGe1SelectionHighDxySigSR
+passNHadGe1SelectionLowDxySigCR
+
+#Leptonic BigGuy analysis flags
+passNLepGe1SelectionHighDxySigSR
+passNLepGe1SelectionLowDxySigCR
+
+#LittleGuy compressed validation flags
+passNSVGe1SelectionLowDxySigValCR
+passNSVGe1SelectionMidDxySigValSR
+
+#Leptonic BigGuy Validation
+passNLepGe1SelectionLowDxySigValCR
+passNLepGe1SelectionMidDxySigValSR
+
+#Hadronic BigGuy Validation
+passNHadGe1SelectionLowDxySigValCR
+passNHadGe1SelectionMidDxySigValSR
+
+#RJR ISR variables
 rjrIsr_PtIsr
 rjrIsr_RIsr
 rjrIsr_nSVisObjects
+
+#RJR BigGuy variables
 rjrNJetsJa
 rjrNJetsJb
 rjrPTS
 rjr_Ms
 rjr_Rs
-selCMet
+rjrCleaningVeto0
+
