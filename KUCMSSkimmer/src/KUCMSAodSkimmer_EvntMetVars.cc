@@ -92,10 +92,10 @@ void KUCMSAodSkimmer::processEvntVars(){
   selEvtVars.fillBranch( "Flag_hfNoisyHitsFilter", hfNoisyHitsFilter );//optional
   selEvtVars.fillBranch( "Flag_MetFilters", metFlags );//optional 
 
-  bool PFMET120_PFMHT120_IDTight = true;
-  bool PFMETNoMu120_PFMHTNoMu120_IDTight = true;
-  bool PFMET120_PFMHT120_IDTight_PFHT60 = true;
-  bool PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60 = true;
+  bool PFMET120_PFMHT120_IDTight = false;
+  bool PFMETNoMu120_PFMHTNoMu120_IDTight = false;
+  bool PFMET120_PFMHT120_IDTight_PFHT60 = false;
+  bool PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60 = false;
 
   if( doHTLPathsBase ){
 

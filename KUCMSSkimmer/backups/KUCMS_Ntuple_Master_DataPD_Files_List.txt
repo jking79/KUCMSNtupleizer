@@ -46,13 +46,13 @@
 #kucmsntuple_JetMET_R24_SVHPM100_MiniAOD_v34/JetMET0/ Run2024I-MINIv6NANOv15-v2 JetMet0R24I1 1 0 0 0 1 r3_p24
 #kucmsntuple_JetMET_R24_SVHPM100_MiniAOD_v34/JetMET0/ Run2024I-MINIv6NANOv15_v2-v1 JetMet0R24I2 1 0 0 0 1 r3_p24
 
-kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET0 Run2025C JetMet0R25C 1 0 0 0 1 r3_p25unc
-kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET0 Run2025Cv2 JetMet0R25C2 1 0 0 0 1 r3_p25unc
-kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET0 Run2025D JetMet0R25D 1 0 0 0 1 r3_p25unc
-kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET0 Run2025E JetMet0R25E 1 0 0 0 1 r3_p25unc
-kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET0 Run2025F JetMet0R25F 1 0 0 0 1 r3_p25unc
-kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET0 Run2025Fv2 JetMet0R25F2 1 0 0 0 1 r3_p25unc
-kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET0 Run2025G JetMet0R25G 1 0 0 0 1 r3_p25unc
+#kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET0 Run2025C JetMet0R25C 1 0 0 0 1 r3_p25unc
+#kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET0 Run2025Cv2 JetMet0R25C2 1 0 0 0 1 r3_p25unc
+#kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET0 Run2025D JetMet0R25D 1 0 0 0 1 r3_p25unc
+#kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET0 Run2025E JetMet0R25E 1 0 0 0 1 r3_p25unc
+#kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET0 Run2025F JetMet0R25F 1 0 0 0 1 r3_p25unc
+#kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET0 Run2025Fv2 JetMet0R25F2 1 0 0 0 1 r3_p25unc
+#kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET0 Run2025G JetMet0R25G 1 0 0 0 1 r3_p25unc
 
 #---------------------------------------------------------------------------------------
 
@@ -88,6 +88,8 @@ kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET0 Run2025G JetMet0R25G 1 0 0 0
 #kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET0/ JetMET0_MINIAOD_Run2025G JetMet0R25G 1 0 0 0 1 r3_p25unc
 
 ########################## testing ###########################
+
+kucmsntuple_EGamma_R24_SVHPM100_MiniAOD_v34/EGamma0/ Run2024C EGammaRun2024C 1 0 0 0 1 r3_p24
 
 #kucmsntuple_EGamma_R22_InvMetPho30_v31/EGamma/ EGamma_R22 1 0 0 0 1 r3_p22
 #kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET1/ Run2025E JetMet1R25E 1 0 0 0 1 r3_p25
