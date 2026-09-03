@@ -96,9 +96,16 @@ void KUCMSAodSkimmer::processEvntVars(){
   bool PFMETNoMu120_PFMHTNoMu120_IDTight = true;
   bool PFMET120_PFMHT120_IDTight_PFHT60 = true;
   bool PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60 = true;
-
+  bool Ele35_WPTight_Gsf = true;
+  bool Mu55 = true;
+  bool IsoMu27 = true;
+  bool IsoMu20 = true;
   if( doHTLPathsBase ){
-
+  	//Ele35_WPTight_Gsf = HLT_Ele35_WPTight_Gsf_v;
+  	//Mu55 = HLT_Mu55_v;
+  	//IsoMu27 = HLT_IsoMu27_v;
+  	//IsoMu20 = HLT_IsoMu20_v;
+	
 	PFMET120_PFMHT120_IDTight = HLT_PFMET120_PFMHT120_IDTight_v;
 	PFMETNoMu120_PFMHTNoMu120_IDTight = HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_v;
 	PFMET120_PFMHT120_IDTight_PFHT60 = HLT_PFMET120_PFMHT120_IDTight_PFHT60_v;
@@ -110,6 +117,11 @@ void KUCMSAodSkimmer::processEvntVars(){
   selEvtVars.fillBranch( "Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight", PFMETNoMu120_PFMHTNoMu120_IDTight );
   selEvtVars.fillBranch( "Trigger_PFMET120_PFMHT120_IDTight_PFHT60", PFMET120_PFMHT120_IDTight_PFHT60 );
   selEvtVars.fillBranch( "Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60", PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60 );
+  
+  //selEvtVars.fillBranch( "Trigger_Ele35_WPTight_Gsf", Ele35_WPTight_Gsf);
+  //selEvtVars.fillBranch( "Trigger_Mu55", Mu55 );
+  //selEvtVars.fillBranch( "Trigger_IsoMu27", IsoMu27 );
+  //selEvtVars.fillBranch( "Trigger_IsoMu20", IsoMu20 );
 
   bool hemRun = ( ( Evt_run > 319076 ) && ( Evt_run < 326635 ) ) ? true : false;
   bool eLHem( hemBits("el1hvl") );
@@ -207,6 +219,13 @@ void KUCMSAodSkimmer::setEvtVarMetBranches( TTree* fOutTree ){
   selEvtVars.makeBranch( "Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight", BOOL );
   selEvtVars.makeBranch( "Trigger_PFMET120_PFMHT120_IDTight_PFHT60", BOOL );
   selEvtVars.makeBranch( "Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60", BOOL );
+  selEvtVars.makeBranch( "Trigger_Ele35_WPTight_Gsf", BOOL );
+  selEvtVars.makeBranch( "Trigger_Photon20", BOOL );
+  selEvtVars.makeBranch( "Trigger_Mu55", BOOL );
+  selEvtVars.makeBranch( "Trigger_Mu12", BOOL );
+  selEvtVars.makeBranch( "Trigger_IsoMu27", BOOL );
+  selEvtVars.makeBranch( "Trigger_IsoMu20", BOOL );
+  selEvtVars.makeBranch( "Trigger_Ele27_WPTight_Gsf", BOOL );
 
   selEvtVars.attachBranches( fOutTree );
 
