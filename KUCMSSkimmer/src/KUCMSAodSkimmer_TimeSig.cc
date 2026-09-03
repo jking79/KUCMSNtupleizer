@@ -110,7 +110,7 @@ float KUCMSAodSkimmer::getTimeSig( int scIndex, float& num, float& denom, int sy
                 double cor_cms000 = hypo(erx,ery,erz)/SOL;
                 double cor_tofPVtoRH = hypo(erx-PV_x,ery-PV_y,erz-PV_z)/SOL;
                 double ertoftime = erhct + cor_cms000 - cor_tofPVtoRH;
-				if( syst != 0 ) ertoftime += syst*std::sqrt(ertres); // systimatic variation inserted here
+				if( syst != 0 ) ertoftime += 0.1*syst*std::sqrt(ertres); // systimatic variation inserted here
 
                 bool isEE = fabs((*ECALRecHit_eta)[erhiter]) > 1.479;
                 bool isValid = true;

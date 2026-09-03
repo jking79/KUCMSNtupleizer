@@ -2,7 +2,37 @@
 # Master Filelist : Private Sig MC v23
 # -------------------------------------
 
-kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p5 test .000413 1300 1000 1 2 r2_ul18_mc
+#######kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p5 test .000413 1300 1000 1 2 r2_ul18_mc
+
+kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p1 sms .000413 1300 1000 1 2 r2_ul18_mc
+kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p5 sms .000413 1300 1000 1 2 r2_ul18_mc
+kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p1 sms .000413 1600 1000 1 2 r2_ul18_mc
+kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5 sms .000413 1600 1000 1 2 r2_ul18_mc
+kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2300_mN2-1600_mN1-500_GZ_N2ctau-0p1 sms .000413 1600 500 1 2 r2_ul18_mc
+kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2300_mN2-1600_mN1-500_GZ_N2ctau-0p5 sms .000413 1600 500 1 2 r2_ul18_mc
+kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p1 sms .000413 2200 2100 1 2 r2_ul18_mc
+kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p5 sms .000413 2200 2100 1 2 r2_ul18_mc
+kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2300_mN2-2200_mN1-2150_GZ_N2ctau-0p1 sms .000413 2200 2150 1 2 r2_ul18_mc
+kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2300_mN2-2200_mN1-2150_GZ_N2ctau-0p5 sms .000413 2200 2150 1 2 r2_ul18_mc
+kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2300_mN2-2250_mN1-2150_GZ_N2ctau-0p1 sms .000413 2250 2150 1 2 r2_ul18_mc
+kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2300_mN2-2250_mN1-2150_GZ_N2ctau-0p5 sms .000413 2250 2150 1 2 r2_ul18_mc
+kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2300_mN2-2250_mN1-2200_GZ_N2ctau-0p1 sms .000413 2250 2200 1 2 r2_ul18_mc
+kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2300_mN2-2250_mN1-2200_GZ_N2ctau-0p5 sms .000413 2250 2200 1 2 r2_ul18_mc
+
+kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2500_mN2-1200_mN1-500_GZ_N2ctau-0p1 sms 0.0001687 1200 500 1 2 r2_ul18_mc
+kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2500_mN2-1200_mN1-500_GZ_N2ctau-0p5 sms 0.0001687 1200 500 1 2 r2_ul18_mc
+kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2500_mN2-2000_mN1-1000_GZ_N2ctau-0p1 sms 0.0001687 2000 1000 1 2 r2_ul18_mc
+kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2500_mN2-2000_mN1-1000_GZ_N2ctau-0p5 sms 0.0001687 2000 1000 1 2 r2_ul18_mc
+kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2500_mN2-2000_mN1-1500_GZ_N2ctau-0p1 sms 0.0001687 2000 1500 1 2 r2_ul18_mc
+kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2500_mN2-2000_mN1-1500_GZ_N2ctau-0p5 sms 0.0001687 2000 1500 1 2 r2_ul18_mc
+kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2500_mN2-2400_mN1-2300_GZ_N2ctau-0p1 sms 0.0001687 2400 2300 1 2 r2_ul18_mc
+kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2500_mN2-2400_mN1-2300_GZ_N2ctau-0p5 sms 0.0001687 2400 2300 1 2 r2_ul18_mc
+kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2500_mN2-2400_mN1-2350_GZ_N2ctau-0p1 sms 0.0001687 2400 2350 1 2 r2_ul18_mc
+kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2500_mN2-2400_mN1-2350_GZ_N2ctau-0p5 sms 0.0001687 2400 2350 1 2 r2_ul18_mc
+kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2500_mN2-2450_mN1-2350_GZ_N2ctau-0p1 sms 0.0001687 2450 2350 1 2 r2_ul18_mc
+kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2500_mN2-2450_mN1-2350_GZ_N2ctau-0p5 sms 0.0001687 2450 2350 1 2 r2_ul18_mc
+kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2500_mN2-2450_mN1-2400_GZ_N2ctau-0p1 sms 0.0001687 2450 2400 1 2 r2_ul18_mc
+kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2500_mN2-2450_mN1-2400_GZ_N2ctau-0p5 sms 0.0001687 2450 2400 1 2 r2_ul18_mc
 
 #L:################################################################
 ###KUCMSNtuple/kucmsntuple_SMS_GZ_SVHPM100_FullMini_v34/CRAB_UserFiles/ SMS_SVIPM100_v34_SMS-GlGl-GZ_FULLMINI_mGl-2300_mN2-1300_mN1-1000_ct0p1.txt GlGl-GZ_FULLMINI_mGl-2300_mN2-1300_mN1-1000_ct0p1 0.0004130 1300 1000 1 0 r2_ul18_qcdmc

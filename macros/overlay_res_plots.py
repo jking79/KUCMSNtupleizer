@@ -598,6 +598,16 @@ dro18Dlgee = 'ResMap_306461_327238_DRO_Data_Hist_eg_18UL_D_miniAODv2_lg_xa_pm24b
 sro18Dlgeb = 'ResMap_306461_327238_SRO_Data_Hist_eg_18UL_D_miniAODv2_lg_xa_pm24b1200_v0802_EB' 
 sro18Dlgee = 'ResMap_306461_327238_SRO_Data_Hist_eg_18UL_D_miniAODv2_lg_xa_pm24b1200_v0802_EE' 
 
+dro18MClgeb = 'ResMap_0_999999_DRO_Data_Hist_eg_18MC_QCD_lg_xa_pm24b1200_v0818_EB'
+dro18MClgee = 'ResMap_0_999999_DRO_Data_Hist_eg_18MC_QCD_lg_xa_pm24b1200_v0818_EE'
+dro18MCeb = 'ResMap_0_999999_DRO_Data_Hist_eg_18MC_QCD_xa_pm24b1200_v0818_EB'
+dro18MCee = 'ResMap_0_999999_DRO_Data_Hist_eg_18MC_QCD_xa_pm24b1200_v0818_EE'
+
+sro18MClgeb = 'ResMap_0_999999_SRO_Data_Hist_eg_18MC_QCD_lg_xa_pm24b1200_v0818_EB'
+sro18MClgee = 'ResMap_0_999999_SRO_Data_Hist_eg_18MC_QCD_lg_xa_pm24b1200_v0818_EE'
+sro18DMCeb = 'ResMap_0_999999_SRO_Data_Hist_eg_18MC_QCD_xa_pm24b1200_v0818_EB'
+sro18DMCee = 'ResMap_0_999999_SRO_Data_Hist_eg_18MC_QCD_xa_pm24b1200_v0818_EE'
+
 dro22eb = 'ResMap_352319_362760_DRO_Data_Hist_eg_22_22sept23_xa_pm24b1200_v0805_EB' 
 dro22ee = 'ResMap_352319_362760_DRO_Data_Hist_eg_22_22sept23_xa_pm24b1200_v0805_EE' 
 sro22eb = 'ResMap_352319_362760_SRO_Data_Hist_eg_22_22sept23_xa_pm24b1200_v0805_EB' 
@@ -679,6 +689,17 @@ hl_r2_18D_v2_ebee = [
     #[dro18ABClgeb+shend,"",indir+dro18ABClgeb+rfend,"DRO LG EB"],   
     #[dro18ABClgee+shend,"",indir+dro18ABClgee+rfend,"DRO LG EE"],
 
+]
+
+hl_r2_18_mc_ebee = [ 
+    #[sro18MCeb+shend,"",indir+sro18MCeb+rfend,"SRO EB"], 
+    #[sro18MCee+shend,"",indir+sro18MCee+rfend,"SRO EE"], 
+    [dro18MCeb+shend,"",indir+dro18MCeb+rfend,"DRO EB"],   
+    [dro18MCee+shend,"",indir+dro18MCee+rfend,"DRO EE"],   
+    #[sro18MClgeb+shend,"",indir+sro18MClgeb+rfend,"SRO LG EB"], 
+    #[sro18MClgee+shend,"",indir+sro18MClgee+rfend,"SRO LG EE"], 
+    [dro18MClgeb+shend,"",indir+dro18MClgeb+rfend,"DRO LG EB"],    
+    [dro18MClgee+shend,"",indir+dro18MClgee+rfend,"DRO LG EE"],    
 ]
 
 hl_r3_22_v2_ebee = [
@@ -1230,6 +1251,7 @@ hl_r3_25b = [
 #ptitle=['','Run 2 (13 TeV)','#splitline{Chronus Calibration}{2017 UL v2}'] #{}'
 #ptitle=['','Run 2 (13 TeV)','#splitline{Chronus Calibration}{2018D UL v2}'] #{}'
 #ptitle=['','Run 2 (13 TeV)','#splitline{Chronus Calibration}{2018ABC UL v2}'] #{}'
+ptitle=['','Run 2 (13 TeV)','#splitline{Chronus Calibration}{2018 MC QCD}'] #{}'
 
 #ptitle=['','Run 3 (13.6 TeV)','#splitline{Online Calibration}{2025 Prompt}'] #{}'
 #ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2025 Prompt}'] #{}'
@@ -1253,7 +1275,7 @@ hl_r3_25b = [
 #ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2022 22Sept2023}'] #{}' 
 #ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2023 22Sept2023}'] #{}' 
 #ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2024 miniAODv6}'] #{}' 
-ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2025 Prompt Uncorr}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2025 Prompt Uncorr}'] #{}'
 
 #y = [ 0.4, 0.04 ]
 #y = [ 0.7, -0.05 ]
@@ -1280,7 +1302,7 @@ t = [0.325,0.85,0.1,0.175,0.285]#adjsuting lumi-sqrt(s) in title bar
 #outname = 'downloads/tr_hl_r3_24d_part_trvcc_ccgt_v7'
 #outname = 'downloads/tr_hl_r3_25c2'
 #outname = 'downloads/tr_hl_r3_25bc_xa'
-outname = 'hl_r3_25_v2_ebee'
-dostack(hl_r3_25_v2_ebee, outname, date, Ic_layout, ptitle,  y, x, l, t)
+outname = 'hl_r2_18_mc_ebee'
+dostack(hl_r2_18_mc_ebee, outname, date, Ic_layout, ptitle,  y, x, l, t)
 #outname = 'tr_hl_r2_16v2'
 #dostack(hl_r2_16_ebee, outname, date, Ic_layout, ptitle,  y, x, l, t)
