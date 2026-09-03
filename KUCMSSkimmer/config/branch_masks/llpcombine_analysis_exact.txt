@@ -79,6 +79,17 @@ passNLepGe1SelectionMidDxySigValSR
 passNHadGe1SelectionLowDxySigValCR
 passNHadGe1SelectionMidDxySigValSR
 
+#Photon Validation Flags
+passNPhoEq2SelectionPromptMedIsoValCR # in Eq2 med Iso CR
+passNPhoEq1SelectionPromptMedIsoValCR # in Eq1 med Iso CR
+passNPhoGe1SelectionEarlyTightIsoValCR # in BH CR + non-prompt med Iso CR
+passNPhoGe1SelectionLateMedIsoValCR # in BH CR + non-prompt med Iso CR
+passNPhoGe1SelectionEarlyMedIsoValCR # in BH CR + non-prompt med Iso CR
+passNPhoGe1SelectionEarlyTightIsoValCR # in BH CR + non-prompt med Iso CR
+passNPhoGe1SelectionEarlyNotBHValCR # in BH CR + non-prompt med Iso CR
+passNPhoGe1SelectionLateBeamHaloValCR # in BH CR + non-prompt med Iso CR
+passNPhoGe1SelectionEarlyBeamHaloValCR # in BH CR + non-prompt med Iso CR
+
 #RJR ISR variables
 rjrIsr_PtIsr
 rjrIsr_RIsr
