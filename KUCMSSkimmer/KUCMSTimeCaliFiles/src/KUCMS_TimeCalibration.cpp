@@ -67,7 +67,7 @@ KUCMS_TimeCalibration::KUCMS_TimeCalibration( bool stayOpen, bool makeNew, bool 
 	curLumiTag = "r2ul";
 
 	//resTag = "default";  // NOTE: resolution used for PDs in set in master file lists, this is targ resoltion of MC for smearing
-    resTag = "r2_ul18";
+    resTag = "r2_ul18D";
 
 	eosDir = "root://cmseos.fnal.gov//store/user/jaking/";
 	inDir = "";
@@ -1614,6 +1614,10 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
     }//<<>>if( mctype == 0 )
     else if( mctype == 0 or mctype == 2 ){ // data or MC   --- resTag is the target resolution for smearing
 		std::string themctag = ( resTag == "None" ) ? dataSetKey : resTag;
+        if( resTag == "default"){ 
+			if( dataSetKey.substr(1,2) == "r2" ){ themctag = "r2_ul18D"; }//<<>>if( dataSetKey.substr(1,2) == "r2" )
+        	else if( dataSetKey.substr(1,2) == "r3" ){ themctag = "r2_ul18D"; }//<<>>if( dataSetKey.substr(1,2) == "r3" )
+		}//<<>>if( resTag == "default")
         if( ResTagSet.find(themctag) != ResTagSet.end() ){
             float noise = isEB ? ResTagSet[themctag].ebnoise : ResTagSet[themctag].eenoise;
             float stoch = isEB ? ResTagSet[themctag].ebstoch : ResTagSet[themctag].eestoch;
@@ -1663,7 +1667,7 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
 		double tarvar = 0;
 		double sorvar = 0;
 
-		if( dataSetKey == "r2_ul18_mc" ) dataSetKey = "r2_ul18_qcdmc";
+		if( dataSetKey == "r2_ul18_mc" ) dataSetKey = "r2_ul18_sqmc";
 		if( CaliRunMapSet.find(dataSetKey) != CaliRunMapSet.end() ) ctime = time - getCalibration(rechitID,Evt_run,dataSetKey,gainID);
         else{ ctime = time; }
 		//std::cout << " Pre Check amplitude : " << amplitude << std::endl;
@@ -1696,6 +1700,7 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
 
 			std::string tag = dataSetKey;
             if( dataSetKey == "r2_ul18_qcdmc" ) tag = "RunIISummer20UL18RECO";
+            if( dataSetKey == "r2_ul18_sqmc" ) tag = "RunIISummer20UL18RECO";
             if( dataSetKey == "r3_mc" ) tag = "theRun3MC_campain";
 			sorvar = getTimeResoltuion( amplitude, rechitID, Evt_run, tag, mctype, gainID );
 
