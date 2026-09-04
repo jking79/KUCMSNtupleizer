@@ -965,6 +965,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
     inFileName = instrs[1];
 
     auto key = instrs[2];
+	if( key == "sms" ) key = inFileName;
     auto crossSection = std::stof( instrs[3] );
     auto gmsbgm = std::stof( instrs[4] );
     auto gmsbxm = std::stof( instrs[5] );

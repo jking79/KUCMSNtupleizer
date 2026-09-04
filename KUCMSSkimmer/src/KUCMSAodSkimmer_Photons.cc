@@ -325,8 +325,8 @@ void KUCMSAodSkimmer::processPhotons(){
 
     float phoWTime, phoWRes;
     int sysvar = 0;
-    if( systematicName == "wPhoTimeSig_up" ) sysvar = 1;
-    if( systematicName == "wPhoTimeSig_down" ) sysvar = -1;
+    if( systematicName == "wPhoTimeSig_up" ) sysvar = 0.1;
+    if( systematicName == "wPhoTimeSig_down" ) sysvar = -0.1;
 	float phoWTimeSig = getTimeSig( scIndx, phoWTime, phoWRes, sysvar );
     allphowtime.push_back( phoWTime );
 
@@ -417,19 +417,21 @@ void KUCMSAodSkimmer::processPhotons(){
         cor_gtofPVtoSC = hypo(scx-PV_x,scy-PV_y,scz-PV_z);
         //distMom = hypo( genVx - PV_x, genVy - PV_y, genVz - PV_z );
 
+        float sqrtvar = phoWRes*std::sqrt(2);
 		float cor_gtofPVtoSCSOL = cor_gtofPVtoSC/SOL;
         //labtime = ( distPho + distMom/betamom + distMomPv )/SOL;
-		labtime = ( distPho + disGenMom )/SOL;
-		gentime = timeCali->getSmearedTime( labtime, phoWRes );
+		labtime = ( distPho + disGenMom/betamom )/SOL;
 		labtime = labtime - cor_gtofPVtoSCSOL;
-		gentime = gentime - cor_gtofPVtoSCSOL;
-		labtimesig = labtime/phoWRes;
-		gentimesig = gentime/phoWRes;		
+        //gentime = timeCali->getSmearedTime( labtime, phoWRes );
+		float adjsqrtvar = ( sqrtvar < 0.2125 ) ? 2*sqrtvar : sqrtvar;
+        gentime = timeCali->getSmearedTime( labtime, adjsqrtvar );
+		labtimesig = labtime/adjsqrtvar;
+		gentimesig = gentime/adjsqrtvar;
 
 		if( susId == 22 && isfastsim ){
 
-			phoWTime = gentime;
-			phoWTimeSig = gentimesig;
+			phoWTime = gentime + sysvar*adjsqrtvar;
+			phoWTimeSig = gentimesig + sysvar;
 
 		}//<<>>if( susId == 22 )
 

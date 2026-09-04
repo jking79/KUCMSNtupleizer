@@ -102,7 +102,7 @@ float KUCMSAodSkimmer::getTimeSig( int scIndex, float& num, float& denom, int sy
                 float erx = (*ECALRecHit_rhx)[erhiter];
                 float ery = (*ECALRecHit_rhy)[erhiter];
                 float erz = (*ECALRecHit_rhz)[erhiter];
-                double ertres = erh_timeRes[erhiter];
+                double ertres = erh_timeRes[erhiter];//this is the full variance ( = (N/A)^2 + (S^2)/A + 2C^2 )
 				float terror = (*ECALRecHit_timeError)[erhiter];
 				float eta = (*ECALRecHit_eta)[erhiter];
 				bool hasGainSwitch = (*ECALRecHit_hasGS1)[erhiter] || (*ECALRecHit_hasGS6)[erhiter];
@@ -110,7 +110,7 @@ float KUCMSAodSkimmer::getTimeSig( int scIndex, float& num, float& denom, int sy
                 double cor_cms000 = hypo(erx,ery,erz)/SOL;
                 double cor_tofPVtoRH = hypo(erx-PV_x,ery-PV_y,erz-PV_z)/SOL;
                 double ertoftime = erhct + cor_cms000 - cor_tofPVtoRH;
-				if( syst != 0 ) ertoftime += 0.1*syst*std::sqrt(ertres); // systimatic variation inserted here
+				if( syst != 0 ) ertoftime += syst*std::sqrt(ertres/2); // systimatic variation inserted here
 
                 bool isEE = fabs((*ECALRecHit_eta)[erhiter]) > 1.479;
                 bool isValid = true;
