@@ -443,7 +443,7 @@ void KUCMSAodSkimmer::processPhotons(){
 		labtime = ( distPho + disGenMom/betamom )/SOL;
 		labtime = labtime - cor_gtofPVtoSCSOL;
         //gentime = timeCali->getSmearedTime( labtime, phoWRes );
-		float adjsqrtvar = ( sqrtvar < 0.2125 ) ? 2*sqrtvar : sqrtvar;
+		float adjsqrtvar = sqrtvar; //( sqrtvar < 0.2125 ) ? 2*sqrtvar : sqrtvar;
         gentime = timeCali->getSmearedTime( labtime, adjsqrtvar );
 		labtimesig = labtime/adjsqrtvar;
 		gentimesig = gentime/adjsqrtvar;
