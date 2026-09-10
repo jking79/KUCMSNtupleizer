@@ -73,6 +73,9 @@ class HistMaker : public skimtuple_v36 {
     std::map< std::string, float > cutflowInfo;
 	int cfbin;
 
+    float effc[20];
+    float effnc[20];
+
 	std::vector<std::string> bkglist, siglist, datalist, bkgleg, sigleg, dataleg, title, varsel;
 	float lumi, maxy, miny, maxr;
 
