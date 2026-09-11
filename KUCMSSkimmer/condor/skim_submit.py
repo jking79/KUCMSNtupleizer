@@ -119,6 +119,7 @@ DATA_KEYWORDS  = {'MET', 'JetMET', 'JetMET0', 'JetMET1', 'JetHT', 'EGamma', 'EGa
 SIGNAL_KEYWORDS = {'SMS', 'gogoG', 'gogoZ', 'gogoGZ', 'sqsqG', 'GlGl'}
 BRANCH_MASKS = {
     'llpCombineSkim': 'config/branch_masks/llpcombine_analysis_exact.txt',
+    'svSkim': 'config/branch_masks/sv_analysis_core.txt',
 }
 
 SANDBOX_DEFAULT  = "/uscms/home/mlazarov/nobackup/sandboxes/sandbox-CMSSW_13_3_3.tar.bz2"
