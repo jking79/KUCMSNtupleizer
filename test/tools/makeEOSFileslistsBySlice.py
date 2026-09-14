@@ -75,9 +75,10 @@ def relative_to_start(full_path: str, start_dir: str) -> str:
     start_prefix = start_n.rstrip("/") + "/"
 
     if full_n.startswith(start_prefix):
-        return full_n[len(start_prefix):]
+        relative_path = full_n[len(start_prefix):]
+        return f"{EOS_MGM}/{start_prefix}{relative_path}"
 
-    return full_n
+    return f"{EOS_MGM}/{full_n}"
 
 
 def safe_filename(s: str) -> str:
@@ -97,12 +98,12 @@ def main():
     if len(sys.argv) > 2:
         campaign_pattern = sys.argv[2]
     else:
-        campaign_pattern = ""
+        campaign_pattern = "gogoGZ_2022_Fast_PUlib1"
 
     if len(sys.argv) > 3:
         ht_pattern = sys.argv[3]
     else:
-        ht_pattern = ""
+        ht_pattern = "SMS-GlGl"
 
     start_dir = start_dir.rstrip("/")
 

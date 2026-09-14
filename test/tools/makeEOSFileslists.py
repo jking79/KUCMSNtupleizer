@@ -93,7 +93,7 @@ def main():
     if len(sys.argv) > 2:
         dir_pattern = sys.argv[2]
     else:
-        dir_pattern = "gammares_prmt25"
+        dir_pattern = "gogoGZ_2022_Fast_PUlib1"
 
     start_dir = start_dir.rstrip("/")
 

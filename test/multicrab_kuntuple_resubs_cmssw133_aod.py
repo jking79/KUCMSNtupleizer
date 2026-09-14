@@ -66,6 +66,7 @@ def docrab( dataset ):
         ##inputJSON    = 'Cert_314472-325175_13TeV_PromptReco_Collisions18_JSON.txt'
         #inputJSON    = 'Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt'
         #inputJSON    = 'Cert_Collisions2022_355100_362760_Golden.json'	
+        inputJSON    = 'None'
 
         #--------------------------------------------------------
         # This is the base config:
@@ -77,16 +78,16 @@ def docrab( dataset ):
         config.General.requestName = None
 
         config.JobType.pluginName  = 'Analysis'
-        config.JobType.psetName    = 'llpgana_mc_aod.py'
+        config.JobType.psetName    = 'llpgana_miniaod.py'
         config.JobType.pyCfgParams = None
 
         config.Data.partialDataset = True
         config.Data.inputDataset   = None
         #config.Data.lumiMask       = inputJSON    # Comment out for MC only set for data !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         #config.Data.splitting     = 'Automatic' # data
-        #config.Data.splitting = 'FileBased' # Justin
+        config.Data.splitting = 'FileBased' # Justin
         config.Data.unitsPerJob  =  1
-        config.Data.splitting    = 'EventAwareLumiBased' # MC&Data Set unitsperjob correctly for dataset !!!!!!!!!!!!!!!!!!!!!!!!!!
+        #config.Data.splitting    = 'EventAwareLumiBased' # MC&Data Set unitsperjob correctly for dataset !!!!!!!!!!!!!!!!!!!!!!!!!!
         #config.Data.unitsPerJob   = 45000 # data  !!!!!! lumimask ?
         #config.Data.unitsPerJob  =  1500 # MC GMSB
         #config.Data.unitsPerJob  =  10000 # MC GJet
@@ -95,8 +96,8 @@ def docrab( dataset ):
         #config.Data.unitsPerJob  =  750 # MC DiPhoBox (DPB)
 
         config.section_("Site")
-        #config.Site.whitelist = ['T1_*','T2_US_*','T2_IT_*','T2_DE_*','T2_ES_*','T2_FR_*','T2_UK_*']
-        config.Site.blacklist = ['T2_CH_CSCS','T2_ES_CIEMAT']
+        config.Site.whitelist = ['T1_*','T2_US_*','T2_IT_*','T2_DE_*','T2_ES_*','T2_FR_*','T2_UK_*']
+        #config.Site.blacklist = ['T2_CH_CSCS','T2_ES_CIEMAT']
 
         config.JobType.allowUndistributedCMSSW = True
         config.Data.publication    = False
@@ -120,15 +121,18 @@ def docrab( dataset ):
             #primaryDataset = (inDO[0].split('/')[1]).split('_13T')[0]
             #primaryDataset = (inDO[0].split('/')[1]).split('_Tune')[0]
             print( primaryDataset )
-            runEra         = (inDO[0].split('/')[2]) # justin
+            #runEra         = (inDO[0].split('/')[2]) # justin
             #runEra         = (inDO[0].split('/')[2]).split('-')[0]
             #runEra         = (inDO[0].split('/')[2]).split('RECO')[0]
+            runEra         = (inDO[0].split('/')[2]).split('RECO')[0]
             print( runEra )
             dataset        = inDO[0].split('/')[3]
             print( dataset )
 
             print( 'with : ',inDO[1] )
-            print( 'current KUCMSNtuple version : 31' )            
+
+            print( 'current KUCMSNtuple version : 34' )
+            version = '_v34'
 
             #trial          = "kucmsntuple_gogoG_Sig_IPM100_v26" #
             #trial          = "kucmsntuple_gogoZ_Sig_IPM100_v27" # 
@@ -136,7 +140,8 @@ def docrab( dataset ):
             #trial          = "kucmsntuple_sqsqG_Sig_SVIPM100_v27" #
             #trial          = "kucmsntuple_SMS_Sig_SVIPM100_v31" #
             #trial          = "kucmsntuple_resubmits_missing_D_v31"
-            trial          = "kucmsntuple_resubmits_missing_noSV_D_v31"
+            #trial          = "kucmsntuple_resubmits_missing_noSV_D_v31"
+            #trial          = "kucmsntuple_MET_R18D_SVHPM100_MiniAODv2" + version # 
 
             # set trial name - used in output path ?
 
@@ -147,25 +152,39 @@ def docrab( dataset ):
             config.General.requestName   = trial+"_"+primaryDataset+"_"+dataset+"_"+runEra+"_request"
             config.Data.outputDatasetTag = trial+"_"+primaryDataset+"_"+dataset+"_"+runEra
 
-            fSVIPM100 = 'eventFilter=SVIPMet100'
+            fSVHPM100 = 'eventFilter=SVHPMet100'
+            #fSVHPM150 = 'eventFilter=SVHPMet150'
+            #fSVIPM125 = 'eventFilter=SVIPMet125'
+            #fSVIPM100 = 'eventFilter=SVIPMet100'
             fM100 = 'eventFilter=MET100'
+            fM150 = 'eventFilter=MET150'
             fAL1P = 'eventFilter=AL1IsoPho'
             fIPM100 = 'eventFilter=IsoPhoMet100'
             fNone = 'eventFilter=None'
             fAL1E = 'eventFilter=AL1SelEle'
+            fNpSC = 'eventFilter=AL1NpSC'
+            fInvMetALP = 'eventFilter=InvMet100IP'
+            fInvMetPho30 = 'eventFilter=InvMetPho30'
 
             geninfo = 'hasGenInfo=True'
+            nogeninfo = 'hasGenInfo=False'
             mcrab = 'multicrab=True'
 
-            runinfo = 'runera=Run3'
+            mNoSV = 'doSV=False'
+            mDoDEle = 'doDisEle=true'
+            mDoETOnly = 'doECALTrackOnly=true'
 
-            nosv = 'doSV=False'
-
-            #efilter = fIPM100
-            efilter = fSVIPM100 #!!!!!!!!!!!!!!!!!!!!!11
+            efilter = fSVHPM100
+            #efilter = fNpSC
+            ##efilter = fM100
+            ##efilter = fIPM100
+            ##efilter = fAL1E
+            ##efilter = fSVIPM100 #!!!!!!!!!!!!!!!!
+            #efilter = fNone # for EXO Jet Met
             print( 'using :', efilter )
-            print( 'using :', geninfo )
-
+            print( 'using :', inputJSON )
+            #####print( 'using :', geninfo )
+            #print( 'with files/job :', filespjob )
 
 #  -------  selsect PD/MC dependent paramters
 #-----------------------------------------------------------------------------------------------------------------------------
@@ -179,6 +198,11 @@ def docrab( dataset ):
             #config.JobType.pyCfgParams   = [gt,mcrab,skimAL1P]
             #config.JobType.pyCfgParams   = [gt,mcrab,skimNone]
             #config.JobType.pyCfgParams   = [gt,mcrab,skimAL1E]
+#>>>>>>>>>>>>>>>>>>>     #2018UL #globalTag=106X_dataRun2_v37
+            gt = 'globalTag=106X_dataRun2_v37' ## for MiniAODv2
+            isrun2 = 'runera=Run2_2018'
+            config.JobType.pyCfgParams   = [gt,mcrab,efilter,isrun2]
+
 #>>>>>>>>>>>>>>>>>>>        #2022 #globalTag=124X_dataRun3_v15
             #config.JobType.pyCfgParams   = ['globalTag=124X_dataRun3_v15','multicrab=True']
 
@@ -240,7 +264,8 @@ def run_multi():
         #['/Resubmits/2018UL_MET/AODSIM','resublist.txt'],
         #['/Resubmits/2018UL_MET/AODSIM','met_18A_missing_resubmissions.txt'],
         #['/Resubmits/2018UL_MET/AODSIM','met_18B_missing_resubmissions.txt'],
-        ['/Resubmits/2018UL_MET/AODSIM','met_18D_missing_resubmissions.txt'],
+        #['/Resubmits/2018UL_MET/AODSIM','met_18D_missing_resubmissions.txt'],
+        ['/MET/Run2018D-UL2018_MiniAODv2_GT36-v1/MINIAOD','failedFiles_2018D_miniV2.txt'],
 
     ] 
 

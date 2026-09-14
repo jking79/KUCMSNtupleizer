@@ -274,10 +274,10 @@ void KUCMSPhotonObjectMini::LoadEvent( const edm::Event& iEvent, const edm::Even
     phoIsOotPho.clear();
 	phoIds.clear();
 
-    if( PhotonDEBUG ) std::cout << "Collecting Photons/OOTPhotons" << std::endl;
     std::vector<pat::Photon> fphotons_temp;
     std::vector<bool> phoExcluded_temp;
     std::vector<bool> phoIsOotPho_temp;
+    //if( PhotonDEBUG ) std::cout << "Collecting OOTPhotons" << std::endl;
     //std::vector<int> phoIds_temp;// indexed by pho index ( 0,1,2 ) * number of ids ( 1 current, 6? possible ) + index of ID wanted
     for (edm::View<pat::Photon>::const_iterator itPhoton = ootPhotons_->begin(); itPhoton != ootPhotons_->end(); itPhoton++) {
         //auto idx = itPhoton - ootPhotons_->begin();//unsigned int
@@ -322,6 +322,7 @@ void KUCMSPhotonObjectMini::LoadEvent( const edm::Event& iEvent, const edm::Even
 		phoExcluded_temp.push_back(false);
 		///////////////////////////////////
     }//<<>>for( int io = 0; io < nOotPhotons; io++ )
+	//if( PhotonDEBUG ) std::cout << "Collecting Photons" << std::endl;
     for (edm::View<pat::Photon>::const_iterator itPhoton = gedPhotons_->begin(); itPhoton != gedPhotons_->end(); itPhoton++) {
         //auto idx = itPhoton - gedPhotons_->begin();//unsigned int
         //auto gedPhoRef = gedPhotons_->refAt(idx);//edm::RefToBase<reco::GsfElectron> 
@@ -376,6 +377,7 @@ void KUCMSPhotonObjectMini::LoadEvent( const edm::Event& iEvent, const edm::Even
 
     }//<<>>for( int io = 0; io < nOotPhotons; io++ )
 
+    //if( PhotonDEBUG ) std::cout << "Sorting All Photons" << std::endl;
 	// Build index list
 	std::vector<int> phoOrderIndx;
 	phoOrderIndx.reserve(fphotons_temp.size());
@@ -427,7 +429,7 @@ void KUCMSPhotonObjectMini::LoadEvent( const edm::Event& iEvent, const edm::Even
 	}//<<>>for( auto phoptit = phoOrderIndx.crbegin(); phoptit != phoOrderIndx.crend(); phoptit++ )
 */
 
-    if( PhotonDEBUG ) std::cout << "Finished collecting Photons/OOTPhotons" << std::endl;
+    //if( PhotonDEBUG ) std::cout << "Finished collecting Photons/OOTPhotons" << std::endl;
 
 }//<<>>void KUCMSPhoton::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
 

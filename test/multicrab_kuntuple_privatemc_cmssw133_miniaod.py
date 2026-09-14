@@ -113,22 +113,28 @@ def docrab( dataset ):
             config.Data.userInputFiles = open(inDO[1]).readlines()
 
             print( '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>' )
+            #sms_fullpath_filelist/filelist_gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p1_MINI.txt
+            #sms_fullpath_filelist/filelist_full_mini_SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p1_MINI.txt
             print( 'Input dataset for Crab Job : ' )
             #print( inDO )
             # inDO[0] is of the form /A/B/C. Since A+B is unique for each inDS, use this in the CRAB request name.
-            primaryDataset = (inDO[0].split('/')[1])
+            fileSetName = ((inDO[1].split('/')[1]).split('PUlib1__')[1]).split('_MINI.')[0]
+            primaryDataset = (fileSetName.split('_mGl')[0])
             #primaryDataset = (inDO[0].split('/')[1]).split('_13T')[0]
             #primaryDataset = (inDO[0].split('/')[1]).split('_Tune')[0]
+
             print( primaryDataset )
-            runEra         = (inDO[0].split('/')[2]) # justin
+            runEra         =  (fileSetName.split('GlGl_')[1])
+            #runEra         = (inDO[1].split('/')[2]) # justin
             #runEra         = (inDO[0].split('/')[2]).split('-')[0]
             #runEra         = (inDO[0].split('/')[2]).split('RECO')[0]
             print( runEra )
-            dataset        = inDO[0].split('/')[3]
+            #dataset        = inDO[1].split('/')[3]
+            dataset        = ''
             print( dataset )
 
             print( 'with : ',inDO[1] )
-            print( 'current KUCMSNtuple version : 34' )            
+            print( 'current KUCMSNtuple version : 37' )            
 
             #trial          = "kucmsntuple_gogoG_Sig_IPM100_v26" #
             #trial          = "kucmsntuple_gogoZ_Sig_IPM100_v27" # 
@@ -137,8 +143,9 @@ def docrab( dataset ):
             #trial          = "kucmsntuple_SMS_Sig_SVIPM100_v31" #
             #trial          = "kucmsntuple_MET_R17_SVIPM100_p9_v31"# 
             #trial          = "kucmsntuple_SMS_test_SVHPM100_Mini_v33" #
-            #trial          = "kucmsntuple_SMS_GZ_SVHPM100_FullMini_v34" #
-            trial          = "kucmsntuple_SMS_GZ_SVHPM100_Full_v34p1" #
+            #trial          = "kucmsntuple_SMS_GZ_SVHPM100_FullMini_v36" #
+            #trial          = "kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36"
+            trial          = "kucmsntuple_SMS_GZ_SVHPM100_FullMini_v37" #
 
             ######trial          = "kucmsntuple_SMS_GZ_SVHPM100_Full_noGPK" #
 
@@ -148,8 +155,8 @@ def docrab( dataset ):
 
             # !!!!!!!!!!!!!!!!!    Set output paths !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1!1
             config.Data.outLFNDirBase  = "/store/group/lpcsusylep/jaking/KUCMSNtuple/"+trial+"/"
-            config.General.requestName   = trial+"_"+primaryDataset+"_"+dataset+"_"+runEra+"_request"
-            config.Data.outputDatasetTag = trial+"_"+primaryDataset+"_"+dataset+"_"+runEra
+            config.General.requestName   = trial+"_"+primaryDataset+"_"+runEra+"_request"
+            config.Data.outputDatasetTag = trial+"_"+primaryDataset+"_"+runEra
 
             fSVHPM100 = 'eventFilter=SVHPMet100'
             fSVIPM100 = 'eventFilter=SVIPMet100'
@@ -211,9 +218,7 @@ def docrab( dataset ):
 
             # Submit.
             try:
-                print( "Submitting for input dataset %s" % primaryDataset + '_' + runEra + '_' + dataset )
-                print("config",config)
-                exit()
+                print( "Submitting for input dataset %s" % primaryDataset + '_' + runEra )
                 crabCommand(options.crabCmd, config = config, *options.crabCmdOpts.split())
                 os.system("rm -rf %s/crab_%s/inputs" % (config.General.workArea, config.General.requestName))
             #except HTTPException as hte:
@@ -234,7 +239,8 @@ def docrab( dataset ):
             print( msg )
             print( "-"*len(msg) )
             try:
-                crabCommand(options.crabCmd, dir = projDir, *options.crabCmdOpts.split())
+                print( "Submitting for input dataset %s" % primaryDataset + '_' + runEra  )
+                #crabCommand(options.crabCmd, dir = projDir, *options.crabCmdOpts.split())
             except HTTPException as hte:
                 print( "Failed executing command %s for task %s: %s" % (options.crabCmd, projDir, hte.headers) )
             except ClientException as cle:
@@ -287,8 +293,41 @@ def run_multi():
         #['/SMS-GlGl-GZ/mGl-2500_mN2-2450_mN1-2350_ct5/MINI',inlist2+'SMS-GlGl_mGl-2500_mN2-2450_mN1-2350_GZ_N2ctau-0p5_MINI.txt'],
         #['/SMS-GlGl-GZ/mGl-2500_mN2-2450_mN1-2400_ct1/MINI',inlist2+'SMS-GlGl_mGl-2500_mN2-2450_mN1-2400_GZ_N2ctau-0p1_MINI.txt'],
         #['/SMS-GlGl-GZ/mGl-2500_mN2-2450_mN1-2400_ct5/MINI',inlist2+'SMS-GlGl_mGl-2500_mN2-2450_mN1-2400_GZ_N2ctau-0p5_MINI.txt'],
-
+        #['/SMS-GlGl-GZ/mGl-2300_mN2-1300_mN1-1000_ct-3p0/MINI',inlist2+'SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-3p0_MINI_v24b.txt'], 
+        #['/SMS-GlGl-GZ/mGl-2300_mN2-1300_mN1-1000_ct-0p5/MINI',inlist2+'SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p5_MINI.txt'],
+        #['/SMS-GlGl-GZ/mGl-2300_mN2-1300_mN1-1000_ct-0p1/MINI',inlist2+'SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p1_MINI.txt'],
+        #['/SMS-GlGl-GZ/mGl-2300_mN2-1300_mN1-1000_ct-0p01/MINI',inlist2+'SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p01_MINI_v24b.txt'],
+        #['/SMS-GlGl-GZ/mGl-2300_mN2-1300_mN1-1000_ct-0p001/MINI',inlist2+'SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p001_MINI_v24b.txt'],
         #['/SMS-GlGl-GZ/mGl-2500_mN2-2450_mN1-2400_ct1/FULLMINI','specail_resubmit.txt'],
+
+        ['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p1_MINI.txt'],
+        ['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p5_MINI.txt'],
+        ['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p1_MINI.txt'],
+        ['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_MINI.txt'],
+        ['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2300_mN2-1600_mN1-500_GZ_N2ctau-0p1_MINI.txt'],
+        ['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2300_mN2-1600_mN1-500_GZ_N2ctau-0p5_MINI.txt'],
+        ['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p1_MINI.txt'],
+        ['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p5_MINI.txt'],
+        ['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2300_mN2-2200_mN1-2150_GZ_N2ctau-0p1_MINI.txt'],
+        ['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2300_mN2-2200_mN1-2150_GZ_N2ctau-0p5_MINI.txt'],
+        ['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2300_mN2-2250_mN1-2150_GZ_N2ctau-0p1_MINI.txt'],
+        ['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2300_mN2-2250_mN1-2150_GZ_N2ctau-0p5_MINI.txt'],
+        ['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2300_mN2-2250_mN1-2200_GZ_N2ctau-0p1_MINI.txt'],
+        ['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2300_mN2-2250_mN1-2200_GZ_N2ctau-0p5_MINI.txt'],
+        ['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2500_mN2-1200_mN1-500_GZ_N2ctau-0p1_MINI.txt'],
+        ['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2500_mN2-1200_mN1-500_GZ_N2ctau-0p5_MINI.txt'],
+        ['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2500_mN2-2000_mN1-1000_GZ_N2ctau-0p1_MINI.txt'],
+        ['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2500_mN2-2000_mN1-1000_GZ_N2ctau-0p5_MINI.txt'],
+        ['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2500_mN2-2000_mN1-1500_GZ_N2ctau-0p1_MINI.txt'],
+        ['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2500_mN2-2000_mN1-1500_GZ_N2ctau-0p5_MINI.txt'],
+        ['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2500_mN2-2400_mN1-2300_GZ_N2ctau-0p1_MINI.txt'],
+        ['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2500_mN2-2400_mN1-2300_GZ_N2ctau-0p5_MINI.txt'],
+        ['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2500_mN2-2400_mN1-2350_GZ_N2ctau-0p1_MINI.txt'],
+        ['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2500_mN2-2400_mN1-2350_GZ_N2ctau-0p5_MINI.txt'],
+        ['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2500_mN2-2450_mN1-2350_GZ_N2ctau-0p1_MINI.txt'],
+        ['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2500_mN2-2450_mN1-2350_GZ_N2ctau-0p5_MINI.txt'],
+        ['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2500_mN2-2450_mN1-2400_GZ_N2ctau-0p1_MINI.txt'],
+        ['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2500_mN2-2450_mN1-2400_GZ_N2ctau-0p5_MINI.txt'],
 
     ] 
 
