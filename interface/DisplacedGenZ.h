@@ -79,6 +79,9 @@ class DisplacedGenZ {
   reco::TrackCollection getTracks() const;
 
   // --- Vertex quality (mirrors GenVertex::isBronze/isSilver/isGold) ---
+  // A matched track only counts toward these tiers if its gen match has
+  // deltaR < 0.02 (see nMatchedInVertex); tracks matched with a poorer deltaR
+  // are treated as unmatched for quality purposes.
   // Gold:   all matched tracks are in the vertex and it has exactly that many tracks
   // Silver: all matched tracks are in the vertex but it has extra tracks
   // Bronze: at least one but not all matched tracks are in the vertex

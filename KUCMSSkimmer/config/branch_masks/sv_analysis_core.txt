@@ -36,3 +36,14 @@ LeptonicSV_*
 passNSV*
 passNHad*
 passNLep*
+
+# Gen-level LLP (chi_2^0) kinematics for FullSim/FastSim SV comparison studies.
+# Per-event scalars for the two LLPs (Xa, Xb): real decay length (Displacment),
+# beta*gamma (mislabeled Xa_beta -> actually p/mass = betagamma), realized ctau,
+# and decay-vertex position (vx/vy/vz), directly comparable to reco SV positions.
+Xa_*
+Xb_*
+Evt_isGG
+Evt_isGZ
+Evt_isZZ
+Evt_nXs
