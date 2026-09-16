@@ -54,7 +54,7 @@ int main ( int argc, char *argv[] ){
 
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCGjetsTFile.txt");
  
-	//std::string inputfilename( "ecal_config/kucmsTimeCaliR16ULv2TFile.txt"); 
+	std::string inputfilename( "ecal_config/kucmsTimeCaliR16ULv2TFile.txt"); 
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR17ULv2TFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR18ULv2GT36TFile.txt");
 
@@ -63,15 +63,15 @@ int main ( int argc, char *argv[] ){
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR24ReRecoTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR25PrmptTFile.txt");
 
-    std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCQCDTFile.txt");
+    //std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCQCDTFile.txt");
 
 	//std::string eosdir("root://cmseos.fnal.gov//store/user/jaking/");// input parameter!
     //std::string eosdir("root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/");
 	std::string eosdir("/store/user/lpcsusylep/jaking/");
 
-    std::string indir("KUCMSNtuple/");
+    //std::string indir("KUCMSNtuple/");
     
-	//std::string indir("KUCMSNtuple/gammares_ul16v2/");
+	std::string indir("KUCMSNtuple/gammares_ul16v2/");
     //std::string indir("KUCMSNtuple/gammares_ul17v2/");
     //std::string indir("KUCMSNtuple/gammares_ul18v2gt36/");
 
@@ -79,8 +79,6 @@ int main ( int argc, char *argv[] ){
     //std::string indir("KUCMSNtuple/gammares_R23_22sept23/");
     //std::string indir("KUCMSNtuple/gammares_R24_m6n15/");
     //std::string indir("KUCMSNtuple/gammares_prmt25/");
-
-    ///std::string indir("KUCMSNtuple/gammares_prmt25/");
 
     //std::string indir("KUCMSNtuple/gammares_QCD18/");
 
@@ -100,11 +98,11 @@ int main ( int argc, char *argv[] ){
     //-----//////////  making tt cali  :
     theCali.SetupIovMaps();
 	// for PD R2UL
-    //theCali.setTTIov( r2ulTag );
-    //theCali.setXIov( xiovtag );
+    theCali.setTTIov( r2ulTag );
+    theCali.setXIov( xiovtag );
 	// for MC
-    theCali.setTTIov( mctag );
-    theCali.setXIov( mctag );
+    //theCali.setTTIov( mctag );
+    //theCali.setXIov( mctag );
     // for PD R3
 	//theCali.setTTIov( r3TagTT );
 	//theCali.setXIov( r3TagX );
