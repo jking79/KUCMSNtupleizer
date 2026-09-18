@@ -1439,7 +1439,9 @@ void KUCMSAodSkimmer::fillConfigTree( TTree* fConfigTree ){
 
   for( auto item : configCnts ){
     //std::cout << " -- configCnts : " << item.first << " local " << isLocal << std::endl;
-    if( item.first == "nTotEvts" && not isLocal ){
+    // mctype != 1: data dataSetKeys are never in EventCount.txt (see the same guard
+    // in processEvntVars()), so only look it up for MC.
+    if( item.first == "nTotEvts" && not isLocal && mctype != 1 ){
       int nTotEvtsKey = lookupConfigData( dataSetKey ).first;
       //std::cout << " -- Filling nTotEvts : " << dataSetKey << " " << nTotEvtsKey << " for " << item.first << std::endl;
       TBranch *cfBranch = fConfigTree->Branch( "nTotEvts", &nTotEvtsKey );
@@ -1453,7 +1455,7 @@ void KUCMSAodSkimmer::fillConfigTree( TTree* fConfigTree ){
 
   for( auto item : configWgts ){
     //std::cout << " -- configWgts : " << item.first << " local " << isLocal << std::endl;
-    if( item.first == "sumEvtWgt" && not isLocal ){
+    if( item.first == "sumEvtWgt" && not isLocal && mctype != 1 ){
       const auto& cfgEntry = lookupConfigData( dataSetKey );
       float sumEvtWgtKey = useEvtGenWgtFlag ? cfgEntry.second : cfgEntry.first;
       //std::cout << " -- Filling sumEvtWgt : " << dataSetKey << " " << sumEvtWgtKey << " for " << item.first << std::endl;
