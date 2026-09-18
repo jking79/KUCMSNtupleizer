@@ -284,6 +284,15 @@ def signal_process_key(name):
         return 'gogoZ'
     if 'GlGl-G' in name or 'GlGlG' in name or 'gogoG' in name:
         return 'gogoG'
+    # Some naming schemes carry the decay mode as its own '_'-delimited token
+    # instead of hyphenated onto the base (e.g. "SMS-GlGl_mGl-.._mN1-.._GZ_ct..").
+    # Check GZ before Z/G so a "_GZ_" token isn't mistaken for a bare Z or G one.
+    if re.search(r'(?:^|_)GZ(?:_|$)', name):
+        return 'gogoGZ'
+    if re.search(r'(?:^|_)Z(?:_|$)', name):
+        return 'gogoZ'
+    if re.search(r'(?:^|_)G(?:_|$)', name):
+        return 'gogoG'
     return 'gogoGZ'
 
 
@@ -347,20 +356,43 @@ def signal_event_count_key(name):
     )
 
 
+_SIGNAL_TIER_TAG_RE = re.compile(
+    r'(?:FASTSIM|FASTSIMAOD|FASTMINI|FASTAOD|Fast1|FastSim'
+    r'|FULLMINI|MINIAOD|MINI|MiniAOD|Mini|AODSIM)'
+)
+
+
 def signal_metadata_name(subfolder, eos_path):
-    """Choose the best available name for signal xsec/EventCount parsing."""
+    """Choose the best available name for signal xsec/EventCount parsing.
+
+    Some naming schemes (e.g. ".../kucmsntuple_SMS_GZ_SVHPM100_Fast1_v37/...")
+    only encode the production tier (Fast1/AODSIM/MINI/...) in the collection
+    name, not in the per-mass-point task suffix -- even though the task suffix
+    alone already has mGl/mN2/mN1/ctau and would otherwise be picked first.
+    Prefer a candidate that carries both the mass point *and* a tier tag;
+    fall back to the first mass-point-complete candidate if none do (tier
+    classification will then fail loudly in signal_event_count_tier()
+    instead of silently guessing).
+    """
     candidates = [
         subfolder,
         os.path.basename(eos_path.rstrip('/')),
         os.path.basename(os.path.dirname(eos_path.rstrip('/'))),
     ]
-    for name in candidates:
-        if (re.search(r'mGl-\d+', name)
+
+    def has_mass_point(name):
+        return (re.search(r'mGl-\d+', name)
                 and re.search(r'mN2-\d+', name)
                 and re.search(r'mN1-\d+', name)
-                and re.search(r'(?:ct|\dctau-)(?:-?[0-9]+p[0-9]+|-?[0-9]+)', name)):
+                and re.search(r'(?:ct|\dctau-)(?:-?[0-9]+p[0-9]+|-?[0-9]+)', name))
+
+    complete = [name for name in candidates if has_mass_point(name)]
+    if not complete:
+        return subfolder
+    for name in complete:
+        if _SIGNAL_TIER_TAG_RE.search(name):
             return name
-    return subfolder
+    return complete[0]
 
 
 def make_data_key(subfolder, sample_type_kw):
