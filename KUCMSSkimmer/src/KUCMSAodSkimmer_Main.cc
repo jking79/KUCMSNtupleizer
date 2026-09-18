@@ -1392,6 +1392,23 @@ void KUCMSAodSkimmer::endJobs(){
 
 }//void KUCMSAodSkimmer::endJobs()
 
+// configData[dataSetKey] via operator[] would silently default-construct
+// {0.0, 0.0} for a missing key, turning a missing EventCount.txt entry into
+// N_gen=0 and an inf/nan evtFillWgt (the actual weight computation is in
+// KUCMSAodSkimmer_EvntMetVars.cc, not just this file's config-tree dump)
+// instead of failing the skim job where the problem actually is.
+const std::pair<float,float>& KUCMSAodSkimmer::lookupConfigData( const std::string& dataSetKey ){
+  auto it = configData.find( dataSetKey );
+  if( it == configData.end() ){
+    std::cerr << "  -- FATAL: dataSetKey '" << dataSetKey << "' not found in "
+              << "config/EventCount.txt. Refusing to silently normalize with "
+              << "N_gen=0 (would produce inf/nan evtFillWgt) -- add this key "
+              << "to EventCount.txt before running." << std::endl;
+    exit(1);
+  }//<<>>if( it == configData.end() )
+  return it->second;
+}//<<>>KUCMSAodSkimmer::lookupConfigData()
+
 void KUCMSAodSkimmer::fillConfigTree( TTree* fConfigTree ){
 
   std::cout << "Filling ConfigTree." << std::endl;
@@ -1423,7 +1440,7 @@ void KUCMSAodSkimmer::fillConfigTree( TTree* fConfigTree ){
   for( auto item : configCnts ){
     //std::cout << " -- configCnts : " << item.first << " local " << isLocal << std::endl;
     if( item.first == "nTotEvts" && not isLocal ){
-      int nTotEvtsKey = configData[dataSetKey].first;
+      int nTotEvtsKey = lookupConfigData( dataSetKey ).first;
       //std::cout << " -- Filling nTotEvts : " << dataSetKey << " " << nTotEvtsKey << " for " << item.first << std::endl;
       TBranch *cfBranch = fConfigTree->Branch( "nTotEvts", &nTotEvtsKey );
       cfBranch->Fill();
@@ -1437,7 +1454,8 @@ void KUCMSAodSkimmer::fillConfigTree( TTree* fConfigTree ){
   for( auto item : configWgts ){
     //std::cout << " -- configWgts : " << item.first << " local " << isLocal << std::endl;
     if( item.first == "sumEvtWgt" && not isLocal ){
-      float sumEvtWgtKey = useEvtGenWgtFlag ? configData[dataSetKey].second : configData[dataSetKey].first;
+      const auto& cfgEntry = lookupConfigData( dataSetKey );
+      float sumEvtWgtKey = useEvtGenWgtFlag ? cfgEntry.second : cfgEntry.first;
       //std::cout << " -- Filling sumEvtWgt : " << dataSetKey << " " << sumEvtWgtKey << " for " << item.first << std::endl;
       TBranch *cfBranch = fConfigTree->Branch( "sumEvtWgt", &sumEvtWgtKey );
       cfBranch->Fill();

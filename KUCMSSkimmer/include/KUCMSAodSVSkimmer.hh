@@ -81,6 +81,7 @@ public:
   void ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree );
   void ProcessConfigTree( TChain* fInConfigTree );
   void ProcessConfigFile();
+  const std::pair<float,float>& lookupConfigData( const std::string& dataSetKey );
   void fillConfigTree( TTree* fOutTree );
   void loadBranchMaskFile();
   void applyBranchMask();

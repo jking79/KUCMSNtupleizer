@@ -120,6 +120,7 @@ SIGNAL_KEYWORDS = {'SMS', 'gogoG', 'gogoZ', 'gogoGZ', 'sqsqG', 'GlGl'}
 BRANCH_MASKS = {
     'llpCombineSkim': 'config/branch_masks/llpcombine_analysis_exact.txt',
     'svSkim': 'config/branch_masks/sv_analysis_core.txt',
+    'svFullFastValidation': 'config/branch_masks/sv_fullfast_validation.txt',
 }
 
 SANDBOX_DEFAULT  = "/uscms/home/mlazarov/nobackup/sandboxes/sandbox-CMSSW_13_3_3.tar.bz2"
@@ -287,14 +288,28 @@ def signal_process_key(name):
 
 
 def signal_event_count_tier(name):
+    # Order matters: check Fast* patterns before the Mini* check, since
+    # some FastSim tags (e.g. 'FASTMINI') contain 'MINI' as a substring
+    # and would otherwise be misclassified as FullSim.
+    if re.search(r'(?:FASTSIM|FASTSIMAOD|FASTMINI|FASTAOD|Fast1|FastSim)', name):
+        return 'FASTSIM'
     if re.search(r'(?:FULLMINI|MINIAOD|MINI|MiniAOD|Mini)', name):
         return 'FULLMINI'
-    return 'AODSIM'
+    if 'AODSIM' in name:
+        return 'AODSIM'
+    # No silent default: FullSim and FastSim samples are separate productions
+    # with separate EventCount.txt entries (see EventCount.txt tier tags
+    # FULLMINI/FASTSIM/AODSIM). Guessing here previously caused FastSim
+    # samples to be silently normalized against an unrelated AODSIM campaign.
+    raise ValueError(
+        "could not classify signal EventCount tier (matched none of "
+        "Fast*/Mini*/AODSIM) from: " + name
+    )
 
 
 def normalize_signal_ctau(raw_ctau, tier):
     value = raw_ctau.lstrip('-')
-    if tier == 'AODSIM' and value.startswith('0p') and len(value) == 3:
+    if tier in ('AODSIM', 'FASTSIM') and value.startswith('0p') and len(value) == 3:
         return value[-1]
     if tier == 'FULLMINI' and value in {'1', '5'}:
         return '0p' + value
@@ -309,12 +324,14 @@ def signal_event_count_key(name):
 
     if not (mgl and mn2 and mn1 and ctau):
         match = re.search(
-            r'((?:gogoGZ|gogoG|gogoZ|sqsqG)_(?:AODSIM|FULLMINI|MINIAOD|MINI|AOD)_.*)',
+            r'((?:gogoGZ|gogoG|gogoZ|sqsqG)_'
+            r'(?:AODSIM|FASTSIM|FASTSIMAOD|FASTMINI|FASTAOD|FULLMINI|MINIAOD|MINI|AOD)_.*)',
             name,
         )
         if match:
             key = re.sub(r'_(MINIAOD|MINI)_', '_FULLMINI_', match.group(1))
-            if '_AODSIM_' in key:
+            key = re.sub(r'_(FASTSIMAOD|FASTMINI|FASTAOD)_', '_FASTSIM_', key)
+            if '_AODSIM_' in key or '_FASTSIM_' in key:
                 return re.sub(r'_ct0p([15])$', r'_ct\1', key)
             if '_FULLMINI_' in key:
                 return re.sub(r'_ct([15])$', r'_ct0p\1', key)
@@ -450,6 +467,10 @@ def resolve_dataset_metadata(subfolder, eos_path, sample_type, data_kw):
             print('  WARNING: no xsec found for', metadata_name, '- using 0')
             xsec = '0'
         key = signal_event_count_key(metadata_name)
+        # dataSetKey's tier is the source of truth for FastSim vs FullSim: it is
+        # what EventCount.txt was actually keyed and counted under.
+        if '_FASTSIM_' in key:
+            mctype = 2
     else:
         meta = lookup_bg_meta(subfolder)
         if meta:
@@ -480,7 +501,7 @@ def build_skimmer_flags(metadata, args, timecali):
         + ' --MCweight '   + metadata['mc_wt']
         + ' --MCtype '     + str(metadata['mctype'])
     )
-    if metadata['mctype'] == 0:
+    if metadata['mctype'] != 1:
         flags += ' --hasGenInfo'
     if not args.psiche:
         flags += ' --noBHC'
@@ -529,6 +550,147 @@ def warn_missing_event_count_key(metadata, event_count_keys):
     if metadata['mctype'] != 1 and event_count_keys and metadata['key'] not in event_count_keys:
         print('  WARNING: key not found in config/EventCount.txt:', metadata['key'])
         print('           This job will likely get inf evtFillWgt.')
+
+
+# ---------------------------------------------------------------------------
+# EventCount.txt: reading/writing the full table, and counting straight from
+# the EOS ntuples themselves (no ntuple_master_lists dependency). ROOT is only
+# imported lazily, on first use, so plain job-generation/--check/--transfer
+# runs never need it.
+# ---------------------------------------------------------------------------
+
+_ROOT = None
+_ROOT_CONFIGURED = False
+
+
+def _setup_root(root_threads=1):
+    global _ROOT, _ROOT_CONFIGURED
+    if _ROOT is None:
+        import ROOT as ROOT_MODULE
+        _ROOT = ROOT_MODULE
+    if _ROOT_CONFIGURED:
+        return
+    if root_threads > 1:
+        _ROOT.EnableImplicitMT(root_threads)
+    _ROOT.gEnv.SetValue('TFile.AsyncPrefetching', 1)
+    _ROOT.gEnv.SetValue('TFile.MaxCacheSize', 100000000)
+    _ROOT.gEnv.SetValue('TFile.ReadBufferSize', 1048576)
+    _ROOT_CONFIGURED = True
+
+
+def sum_event_weights(root_files, root_threads=1):
+    """Sum nTotEvts/sumEvtWgt out of the configtree of root_files (bare EOS
+    paths, as stored on DatasetInfo.root_files) directly from EOS."""
+    _setup_root(root_threads)
+    urls = [eos_xrootd_url(path) for path in root_files]
+    tree_name = 'tree/configtree'
+    if len(urls) == 1:
+        df = _ROOT.RDataFrame(tree_name, urls[0])
+    else:
+        chain = _ROOT.TChain(tree_name)
+        for url in urls:
+            chain.Add(url)
+        df = _ROOT.RDataFrame(chain)
+    ntot = df.Sum('nTotEvts').GetValue()
+    sumw = df.Sum('sumEvtWgt').GetValue()
+    return ntot, sumw
+
+
+def read_event_count_file(path=None):
+    """Full key -> (nTotEvts_str, sumEvtWgt_str) table from EventCount.txt."""
+    if path is None:
+        path = default_event_count_path()
+    data = {}
+    try:
+        with open(path) as handle:
+            for line in handle:
+                parts = line.split()
+                if len(parts) >= 3:
+                    data[parts[0]] = (parts[1], parts[2])
+    except OSError:
+        pass
+    return data
+
+
+def write_event_count_file(path, data):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, 'w') as handle:
+        for key in sorted(data):
+            ntot, sumw = data[key]
+            handle.write('{} {} {}\n'.format(key, ntot, sumw))
+
+
+def missing_event_count_entries(datasets, sample_type, data_kw, event_count_keys):
+    """(dataset, key) pairs for datasets whose EventCount.txt key doesn't exist
+    yet. One entry per distinct missing key (HT slices etc. can share a key)."""
+    missing = []
+    seen_keys = set()
+    for dataset in datasets:
+        if not dataset.root_files:
+            continue
+        dataset_data_kw = data_keyword(dataset.raw_task_suffix) if sample_type == 'data' else data_kw
+        metadata = resolve_dataset_metadata(dataset.raw_task_suffix, dataset.task_name,
+                                            sample_type, dataset_data_kw)
+        key = metadata['key']
+        if metadata['mctype'] == 1 or key in event_count_keys or key in seen_keys:
+            continue
+        seen_keys.add(key)
+        missing.append((dataset, key))
+    return missing
+
+
+def fill_missing_event_counts(datasets, sample_type, data_kw, event_count_keys, args):
+    """Find EventCount.txt keys this submission needs but doesn't have, and
+    optionally count them directly from the EOS ntuples' configtree instead of
+    requiring a hand-maintained master list. Returns the updated key set."""
+    missing = missing_event_count_entries(datasets, sample_type, data_kw, event_count_keys)
+    if not missing:
+        return event_count_keys
+
+    print()
+    print('EventCount.txt is missing', len(missing), 'key(s) needed by this submission:')
+    for dataset, key in missing:
+        print('  -', key, '(' + str(len(dataset.root_files)) + ' files, ' +
+              dataset.sample_tag + ')')
+
+    if args.auto_count_events:
+        do_count = True
+    else:
+        ans = input('\nCount these now from the EOS ntuples and add them to '
+                     'config/EventCount.txt? [y/N] ').strip().lower()
+        do_count = ans in ('y', 'yes')
+
+    if not do_count:
+        print('Skipping. These jobs will FAIL at runtime (missing dataSetKey) until '
+              'config/EventCount.txt is updated.')
+        return event_count_keys
+
+    event_count_path = default_event_count_path()
+    counted = read_event_count_file(event_count_path)
+    for dataset, key in missing:
+        print('Counting', key, '(' + str(len(dataset.root_files)), 'files)...')
+        ntot, sumw = sum_event_weights(dataset.root_files)
+        print('  nTotEvts =', ntot, ' sumEvtWgt =', sumw)
+        counted[key] = (str(ntot), str(sumw))
+    write_event_count_file(event_count_path, counted)
+    print('Wrote', len(missing), 'new key(s) to', event_count_path)
+
+    print()
+    print('NOTE: config.tgz is now stale and must be rebuilt before submitting '
+          '(EventCount.txt changed).')
+    if args.auto_configtar:
+        do_tar = True
+    else:
+        ans = input('Run `make configtar` now from ' + SKIMMER_DIR + '? [y/N] ').strip().lower()
+        do_tar = ans in ('y', 'yes')
+    if do_tar:
+        print('Running `make configtar` in', SKIMMER_DIR, '...')
+        subprocess.run(['make', 'configtar'], cwd=SKIMMER_DIR, check=True)
+        print('config.tgz rebuilt.')
+    else:
+        print('Remember to run `make configtar` from', SKIMMER_DIR, 'before submitting.')
+
+    return event_count_keys | {key for _, key in missing}
 
 
 def weight_record(metadata, timecali, root_files, subfolder):
@@ -631,6 +793,38 @@ def task_suffix_from_name(collection_name, task_name):
     return task_name
 
 
+def normalize_signal_process_tag(sample):
+    """Collapse a 'GlGl'/'SqSq' base plus its decay-mode token (bare 'G',
+    'Z', or 'GZ' -- whether hyphenated onto the base or left as its own
+    '_'-delimited token further down the name, e.g. from mass-point tokens
+    sitting in between) into the single canonical process tag ('gogoG',
+    'gogoZ', 'gogoGZ', 'sqsqG') that downstream skim readers key off of.
+    Leaves non-signal sample names untouched.
+    """
+    hyphen_combos = (
+        ('GlGl-GZ', 'gogoGZ'), ('GlGl-Z', 'gogoZ'), ('GlGl-G', 'gogoG'),
+        ('SqSq-G', 'sqsqG'),
+    )
+    for combo, canon in hyphen_combos:
+        if sample == combo or sample.startswith(combo + '_'):
+            return canon + sample[len(combo):]
+
+    tokens = sample.split('_')
+    base_map = {'GlGl': 'gogo', 'SqSq': 'sqsq'}
+    proc = base_map.get(tokens[0])
+    if proc is None:
+        return sample
+
+    valid_decays = {'GZ', 'Z', 'G'} if proc == 'gogo' else {'G'}
+    for i, tok in enumerate(tokens[1:], start=1):
+        if tok in valid_decays:
+            remaining = tokens[1:i] + tokens[i + 1:]
+            return '_'.join([proc + tok] + remaining)
+
+    default_decay = 'GZ' if proc == 'gogo' else 'G'
+    return '_'.join([proc + default_decay] + tokens[1:])
+
+
 def make_sample_tag(raw_task_suffix):
     tier_tokens = {'MiniAOD', 'MINIAOD', 'AODSIM', 'MINI', 'MIN'}
     tokens = [token for token in raw_task_suffix.split('_') if token not in tier_tokens]
@@ -639,9 +833,7 @@ def make_sample_tag(raw_task_suffix):
         sample = sample[len('SMS-'):]
     elif sample.startswith('SMS_'):
         sample = sample[len('SMS_'):]
-    if sample == 'GlGl-GZ' or sample.startswith('GlGl-GZ_'):
-        sample = 'gogoGZ' + sample[len('GlGl-GZ'):]
-    return sample
+    return normalize_signal_process_tag(sample)
 
 
 def make_ntuple_tag(collection_name):
@@ -2078,6 +2270,11 @@ def main():
         help='Write output directly to this EOS path (default: /eos/uscms/store/user/$USER/LLPSkims)')
     parser.add_argument('--dry-run', action='store_true', help='Print plan, write nothing')
     parser.add_argument('--verbose', '-v', action='store_true', help='Print xrdfs commands')
+    parser.add_argument('--auto-count-events', dest='auto_count_events', action='store_true',
+        help='If EventCount.txt is missing a needed key, count it from the EOS ntuples '
+             'and add it without prompting')
+    parser.add_argument('--auto-configtar', dest='auto_configtar', action='store_true',
+        help='After adding EventCount.txt keys, run `make configtar` without prompting')
     args = parser.parse_args()
     args._eos_out_supplied = any(
         item == '--eos-out' or item.startswith('--eos-out=')
@@ -2162,6 +2359,10 @@ def main():
 
     print('Datasets found:', len(datasets))
     event_count_keys = read_event_count_keys() if sample_type != 'data' else set()
+
+    if sample_type != 'data' and not args.dry_run:
+        event_count_keys = fill_missing_event_counts(datasets, sample_type, data_kw,
+                                                      event_count_keys, args)
 
     # -----------------------------------------------------------------------
     # Process each dataset
