@@ -117,6 +117,7 @@ public:
   void SetDoLocalTimeCali( bool f ){ useLocalTimeCali = f; }
   void SetBranchMaskFile( std::string f ){ branchMaskFile = f; useBranchMask = !f.empty(); }
   void SetSystematic( std::string f ){ systematicName = f; }
+  void SetDxySigScale( std::string mode, float deltaM );
 
   // set branches
 
@@ -305,6 +306,13 @@ public:
   std::string eosDirPath;
   std::string outFileName;
   std::string systematicName;
+
+  // FastSim dxySig correction (SV branches): s(deltaM) applied to dxySig = dxy/dxyError.
+  // deltaM is mN2-mN1 (LLP-LSP splitting), passed in from skim_submit.py which already
+  // parses it from the sample name. See SetDxySigScale() for the calibration itself.
+  std::string dxySigScaleMode;
+  float dxySigScaleDeltaM;
+  float dxySigScaleFactor;
 
   // event varibles
 

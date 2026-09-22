@@ -300,7 +300,7 @@ def signal_event_count_tier(name):
     # Order matters: check Fast* patterns before the Mini* check, since
     # some FastSim tags (e.g. 'FASTMINI') contain 'MINI' as a substring
     # and would otherwise be misclassified as FullSim.
-    if re.search(r'(?:FASTSIM|FASTSIMAOD|FASTMINI|FASTAOD|Fast1|FastSim)', name):
+    if re.search(r'fast', name, re.IGNORECASE):
         return 'FASTSIM'
     if re.search(r'(?:FULLMINI|MINIAOD|MINI|MiniAOD|Mini)', name):
         return 'FULLMINI'
@@ -325,7 +325,21 @@ def normalize_signal_ctau(raw_ctau, tier):
     return value
 
 
-def signal_event_count_key(name):
+def signal_tier_from_collection(collection_name):
+    """EventCount tier from the kucmsntuple_* collection name (e.g.
+    'kucmsntuple_SMS_GZ_SVHPM100_Fast1_v37'). This is the single source of
+    truth: the collection is one production, whereas task suffixes carry CRAB
+    noise (a stray 'AODSIM' token) that must never decide FastSim vs FullSim.
+    Returns None if the collection carries no tier tag."""
+    if not collection_name:
+        return None
+    try:
+        return signal_event_count_tier(collection_name)
+    except ValueError:
+        return None
+
+
+def signal_event_count_key(name, tier=None):
     mgl = re.search(r'mGl-(\d+)', name)
     mn2 = re.search(r'mN2-(\d+)', name)
     mn1 = re.search(r'mN1-(\d+)', name)
@@ -340,6 +354,8 @@ def signal_event_count_key(name):
         if match:
             key = re.sub(r'_(MINIAOD|MINI)_', '_FULLMINI_', match.group(1))
             key = re.sub(r'_(FASTSIMAOD|FASTMINI|FASTAOD)_', '_FASTSIM_', key)
+            if tier is not None and '_' + tier + '_' not in key:
+                raise ValueError('EventCount key %s contradicts tier %s' % (key, tier))
             if '_AODSIM_' in key or '_FASTSIM_' in key:
                 return re.sub(r'_ct0p([15])$', r'_ct\1', key)
             if '_FULLMINI_' in key:
@@ -348,7 +364,8 @@ def signal_event_count_key(name):
         raise ValueError('could not derive signal EventCount key from: ' + name)
 
     process = signal_process_key(name)
-    tier = signal_event_count_tier(name)
+    if tier is None:
+        tier = signal_event_count_tier(name)
     ct_key = normalize_signal_ctau(ctau.group(1), tier)
     return (
         f'{process}_{tier}_mGl-{mgl.group(1)}'
@@ -478,7 +495,7 @@ def print_sample_context(eos_path, sample_type, year, timecali):
     print()
 
 
-def resolve_dataset_metadata(subfolder, eos_path, sample_type, data_kw):
+def resolve_dataset_metadata(subfolder, eos_path, sample_type, data_kw, collection_name=None):
     xsec       = '1'
     key        = subfolder[:subfolder.index('_')] if '_' in subfolder else subfolder
     gluinomass = '0'
@@ -498,7 +515,21 @@ def resolve_dataset_metadata(subfolder, eos_path, sample_type, data_kw):
         else:
             print('  WARNING: no xsec found for', metadata_name, '- using 0')
             xsec = '0'
-        key = signal_event_count_key(metadata_name)
+        tier = signal_tier_from_collection(collection_name)
+        if tier is None:
+            # No tier in the collection name: fall back to the task names, but
+            # refuse to guess if they disagree.
+            tiers = set()
+            for candidate in (subfolder, eos_path):
+                try:
+                    tiers.add(signal_event_count_tier(candidate))
+                except ValueError:
+                    pass
+            if len(tiers) > 1:
+                raise ValueError('conflicting signal tiers %s in %r / %r and no tier '
+                                 'in collection %r' % (sorted(tiers), subfolder,
+                                                       eos_path, collection_name))
+        key = signal_event_count_key(metadata_name, tier=tier)
         # dataSetKey's tier is the source of truth for FastSim vs FullSim: it is
         # what EventCount.txt was actually keyed and counted under.
         if '_FASTSIM_' in key:
@@ -523,6 +554,51 @@ def resolve_dataset_metadata(subfolder, eos_path, sample_type, data_kw):
     }
 
 
+def dataset_metadata(dataset, sample_type, data_kw):
+    """The one place datasets are resolved to metadata, so every caller gets
+    the collection name (the authoritative source of the signal tier)."""
+    dataset_data_kw = data_keyword(dataset.raw_task_suffix) if sample_type == 'data' else data_kw
+    return resolve_dataset_metadata(dataset.raw_task_suffix, dataset.task_name,
+                                    sample_type, dataset_data_kw,
+                                    collection_name=dataset.collection_name)
+
+
+def resolve_dxy_scale(metadata, dxy_scale):
+    """The --dxy-scale value actually applied to this dataset, mirroring the
+    gating in build_skimmer_flags exactly (single source of truth so the
+    skimmer command line and the on-disk ntuple_tag naming never disagree).
+    Returns (applied, warning): applied is 'off' unless this dataset is
+    FastSim with usable mN2/mN1; warning is a printable message or None."""
+    if dxy_scale == 'off':
+        return 'off', None
+    if metadata['mctype'] != 2:
+        return 'off', ('  WARNING: --dxy-scale requested but ' + metadata['key']
+                        + ' is not a FastSim sample - skimmer dxySig scaling not applied')
+    if metadata['n2mass'] == '0' and metadata['n1mass'] == '0':
+        return 'off', ('  WARNING: --dxy-scale requested but mN2/mN1 unavailable for '
+                        + metadata['key'] + ' - skimmer dxySig scaling not applied')
+    return dxy_scale, None
+
+
+def insert_sxy_scale_tag(ntuple_tag, dxy_scale):
+    """Insert the SxyScale{Nominal,Up,Down} variant marker into ntuple_tag
+    immediately after its FastSim reco-tier token (Fast1/FASTSIM/FastSim/...),
+    so nominal/up/down dxySig-scale submissions of the same FastSim ntuple
+    never collide on disk and the variant is visible right next to the tier
+    it modifies (Sxy = the dxy significance this scales). No-op for 'off'.
+    Only ever called with a non-'off' dxy_scale for FastSim datasets (see
+    resolve_dxy_scale), so a Fast* token should always be present; falls back
+    to appending at the end if one somehow isn't."""
+    if dxy_scale == 'off':
+        return ntuple_tag
+    suffix = 'SxyScale' + dxy_scale.capitalize()
+    tokens = ntuple_tag.split('_')
+    for i, token in enumerate(tokens):
+        if re.search(r'fast', token, re.IGNORECASE):
+            return '_'.join(tokens[:i + 1] + [suffix] + tokens[i + 1:])
+    return ntuple_tag + '_' + suffix
+
+
 def build_skimmer_flags(metadata, args, timecali):
     flags = (
         ' --xsec '        + metadata['xsec']
@@ -543,15 +619,22 @@ def build_skimmer_flags(metadata, args, timecali):
         flags += ' --HLTPathsOff'
     if args.branch_mask:
         flags += ' --branchMask ' + args.branch_mask
-    return flags
+    applied_dxy_scale, warning = resolve_dxy_scale(metadata, args.dxy_scale)
+    if warning:
+        print(warning)
+    elif applied_dxy_scale != 'off':
+        delta_m = float(metadata['n2mass']) - float(metadata['n1mass'])
+        flags += ' --dxySigScale ' + applied_dxy_scale + ' --svDxyDeltaM ' + str(delta_m)
+    return flags, applied_dxy_scale
 
 
-def dataset_paths(output_dir, dataset, tag):
-    odir     = output_dir.rstrip('/') + '/'
-    work_dir = odir + dataset.ntuple_tag + '/' + dataset.sample_tag + '/' + tag
+def dataset_paths(output_dir, dataset, tag, dxy_scale='off'):
+    odir       = output_dir.rstrip('/') + '/'
+    ntuple_tag = insert_sxy_scale_tag(dataset.ntuple_tag, dxy_scale)
+    work_dir   = odir + ntuple_tag + '/' + dataset.sample_tag + '/' + tag
     return DatasetPaths(
         sample_tag=dataset.sample_tag,
-        ntuple_tag=dataset.ntuple_tag,
+        ntuple_tag=ntuple_tag,
         canonical_base=dataset.canonical_base,
         work_dir=work_dir,
         src_dir=work_dir + '/src',
@@ -660,9 +743,7 @@ def missing_event_count_entries(datasets, sample_type, data_kw, event_count_keys
     for dataset in datasets:
         if not dataset.root_files:
             continue
-        dataset_data_kw = data_keyword(dataset.raw_task_suffix) if sample_type == 'data' else data_kw
-        metadata = resolve_dataset_metadata(dataset.raw_task_suffix, dataset.task_name,
-                                            sample_type, dataset_data_kw)
+        metadata = dataset_metadata(dataset, sample_type, data_kw)
         key = metadata['key']
         if metadata['mctype'] == 1 or key in event_count_keys or key in seen_keys:
             continue
@@ -857,6 +938,16 @@ def normalize_signal_process_tag(sample):
     return '_'.join([proc + default_decay] + tokens[1:])
 
 
+_N2CTAU_TOKEN_RE = re.compile(r'(?<![^_])N2ctau-(\d+p\d+)(?![^_])')
+
+
+def normalize_signal_ctau_tag(sample):
+    """Rewrite the raw CRAB-task lifetime token 'N2ctau-0p5' (meters) to the
+    'ct0p5' spelling that LLPCombine's BFTool::NormalizeCtauToken parses
+    (ct0p1 -> process key _10, ct0p5 -> _50).  Other names are untouched."""
+    return _N2CTAU_TOKEN_RE.sub(r'ct\1', sample)
+
+
 def make_sample_tag(raw_task_suffix):
     tier_tokens = {'MiniAOD', 'MINIAOD', 'AODSIM', 'MINI', 'MIN'}
     tokens = [token for token in raw_task_suffix.split('_') if token not in tier_tokens]
@@ -865,7 +956,7 @@ def make_sample_tag(raw_task_suffix):
         sample = sample[len('SMS-'):]
     elif sample.startswith('SMS_'):
         sample = sample[len('SMS_'):]
-    return normalize_signal_process_tag(sample)
+    return normalize_signal_ctau_tag(normalize_signal_process_tag(sample))
 
 
 def make_ntuple_tag(collection_name):
@@ -1857,10 +1948,15 @@ def new_inputs_mode(args):
     new_submit_files = []
 
     for dataset in datasets:
-        paths = dataset_paths(args.output, dataset, args.tag)
         root_files = dataset.root_files
 
         print('\nDataset:', dataset.sample_tag)
+
+        metadata = dataset_metadata(dataset, sample_type, data_kw)
+        applied_dxy_scale, warning = resolve_dxy_scale(metadata, args.dxy_scale)
+        if warning:
+            print(warning)
+        paths = dataset_paths(args.output, dataset, args.tag, applied_dxy_scale)
 
         if not os.path.exists(paths.submit_path):
             print('  No existing submit.sh found — run without --new-inputs first, skipping.')
@@ -2298,6 +2394,15 @@ def main():
         help='Branch mask alias or file passed to skimmer, e.g. llpCombineSkim '
              'or config/branch_masks/llpcombine_analysis_exact.txt')
     parser.add_argument('--psiche',  action='store_true', help='Enable PSICHE jets (default: off)')
+    parser.add_argument('--dxy-scale', dest='dxy_scale', default='off',
+        choices=['off', 'nominal', 'up', 'down'],
+        help='FastSim SV dxySig ("Sxy") scale correction (hadronic tailfrac calibration, '
+             'propagated in deltaM=mN2-mN1) passed to the skimmer as --dxySigScale/'
+             '--svDxyDeltaM. Only applied to signal samples with a FastSim dataSetKey; '
+             'ignored (with a warning) for FullSim/data samples. When applied, the '
+             'variant (SxyScaleNominal/Up/Down) is inserted into the ntuple_tag right '
+             'after the Fast* token, so nominal/up/down submissions never collide on '
+             'disk; the skim tag (--branch-mask/--tag) is left untouched. Default: off.')
     parser.add_argument('--eos-out', dest='eos_out', default='/eos/uscms/store/user/$USER/LLPSkims',
         help='Write output directly to this EOS path (default: /eos/uscms/store/user/$USER/LLPSkims)')
     parser.add_argument('--dry-run', action='store_true', help='Print plan, write nothing')
@@ -2404,10 +2509,6 @@ def main():
 
     for dataset in datasets:
         root_files = dataset.root_files
-        paths = dataset_paths(args.output, dataset, args.tag)
-        eos_out_dir = eos_output_dir(args, paths)
-        final_skim = final_merged_filename(dataset.sample_tag, dataset.ntuple_tag,
-                                           args.tag)
 
         print('\nDataset:', dataset.sample_tag)
 
@@ -2415,14 +2516,19 @@ def main():
             print('  No .root files found, skipping.')
             continue
 
-        dataset_data_kw = data_keyword(dataset.raw_task_suffix) if sample_type == 'data' else data_kw
-        metadata = resolve_dataset_metadata(dataset.raw_task_suffix, dataset.task_name,
-                                            sample_type, dataset_data_kw)
-        flags    = build_skimmer_flags(metadata, args, timecali)
+        metadata = dataset_metadata(dataset, sample_type, data_kw)
+        flags, applied_dxy_scale = build_skimmer_flags(metadata, args, timecali)
 
-        print('  Ntuple tag:     ', dataset.ntuple_tag)
+        paths = dataset_paths(args.output, dataset, args.tag, applied_dxy_scale)
+        eos_out_dir = eos_output_dir(args, paths)
+        final_skim = final_merged_filename(dataset.sample_tag, paths.ntuple_tag,
+                                           args.tag)
+
+        print('  Ntuple tag:     ', paths.ntuple_tag)
         print('  Skim tag:       ', args.tag)
         print('  Branch mask:    ', branch_mask_display(args.branch_mask))
+        if applied_dxy_scale != 'off':
+            print('  dxySig scale:   ', applied_dxy_scale)
         print('  Input files:    ', len(root_files))
         print('  Jobs:           ', len(root_files))
         print()
