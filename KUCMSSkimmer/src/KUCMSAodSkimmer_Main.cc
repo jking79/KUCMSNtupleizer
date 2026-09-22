@@ -340,6 +340,10 @@ KUCMSAodSkimmer::KUCMSAodSkimmer( bool doLocal ){
   mctype = 0;  // what type of input PD :  0 MC (AODSIM), 1 DATA (AOD), if we need fastSim ( 2 ) ect, add new enrty here
   tctag = "none";
 
+  dxySigScaleMode = "off";
+  dxySigScaleDeltaM = 0.f;
+  dxySigScaleFactor = 1.f;
+
   // input tree names
 
   disphoTreeName = "tree/llpgtree";

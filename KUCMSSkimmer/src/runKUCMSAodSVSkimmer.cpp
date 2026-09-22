@@ -46,6 +46,8 @@ int main ( int argc, char *argv[] ){
   bool noSV = false;
   bool hltpaths = true;
   string branchMaskFile = "";
+  string dxySigScaleMode = "off";
+  float dxySigScaleDeltaM = 0.f;
   for(int i = 0; i < argc; i++){
 
     if(strncmp(argv[i],"--help", 6) == 0) 			{ hprint = true; }
@@ -71,6 +73,8 @@ int main ( int argc, char *argv[] ){
     if(strncmp(argv[i],"--HLTPathsOff", 11) == 0)	{ hltpaths = false; }
     if(strncmp(argv[i],"--branchMask", 12) == 0)	{ i++; branchMaskFile = string(argv[i]); }
     if(strncmp(argv[i],"--branch-mask", 13) == 0)	{ i++; branchMaskFile = string(argv[i]); }
+    if(strcmp(argv[i],"--dxySigScale") == 0)		{ i++; dxySigScaleMode = string(argv[i]); }
+    if(strcmp(argv[i],"--svDxyDeltaM") == 0)		{ i++; dxySigScaleDeltaM = std::stof(argv[i]); }
   }
 
   if(hprint){
@@ -94,6 +98,8 @@ int main ( int argc, char *argv[] ){
     cout << "   --timeCaliTag                        set time calibration tag (default = r2_ul18(_mc))" << endl;
     cout << "   --MCweight                           set MC weight (default = 0)" << endl;
     cout << "   --MCtype [type]			 set MC type (default = 0)" << endl;
+    cout << "   --dxySigScale [off|nominal|up|down]  FastSim SV dxySig scale correction (default = off)" << endl;
+    cout << "   --svDxyDeltaM [GeV]                  mN2-mN1 for --dxySigScale, required unless off" << endl;
     return 0;
   }
 
@@ -121,6 +127,7 @@ int main ( int argc, char *argv[] ){
     llpgana.SetTimeCalibrationTag(ttag);
     llpgana.SetMCWeight(mcw);
     llpgana.SetBranchMaskFile(branchMaskFile);
+    llpgana.SetDxySigScale(dxySigScaleMode, dxySigScaleDeltaM);
     bool sigbase = false;
     if(in_file.find("_v33_") != string::npos && in_file.find("SMS") != string::npos)
       sigbase = true;

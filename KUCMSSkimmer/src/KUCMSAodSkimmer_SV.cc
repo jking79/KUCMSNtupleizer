@@ -30,6 +30,49 @@
 //
 //}//<<>>void KUCMSAodSkimmer::processTemplate()
 
+//------------------------------------------------------------------------------------------------------------
+// FastSim dxySig scale correction: s(deltaM) = a + b*deltaM, calibrated from the hadronic
+// FullSim-vs-FastSim SV dxySig tail-fraction line fit (tailfrac calibration,
+// fastsim_scale_uncertainty_tailfrac/fit_results/fit_params.json in the sv_fullfast_comparison
+// study). deltaM = mN2-mN1 (LLP-LSP mass splitting) is passed in from skim_submit.py, which
+// already parses it per-sample from the dataset name. up/down = s_nom +/- sigma_pred(deltaM),
+// where sigma_pred combines the fit's (a,b) covariance propagated to s(deltaM) with tau, the
+// profiled intrinsic scatter beyond the parametric fit uncertainty. Applied to both Hadronic
+// and Leptonic SV dxySig (single shared dxySig calculation in processSV()).
+//------------------------------------------------------------------------------------------------------------
+
+void KUCMSAodSkimmer::SetDxySigScale( std::string mode, float deltaM ){
+
+  dxySigScaleMode = mode;
+  dxySigScaleDeltaM = deltaM;
+
+  if( mode == "off" || mode.empty() ){ dxySigScaleFactor = 1.f; return; }
+
+  static constexpr double a      = 2.9630325397453534;
+  static constexpr double b      = -0.0005483488413419286;
+  static constexpr double covAA  = 0.002321082310481431;
+  static constexpr double covAB  = -3.1615257253700697e-06;
+  static constexpr double covBB  = 8.80622226713272e-09;
+  static constexpr double tau    = 0.16439378940286264;
+
+  const double dm = deltaM;
+  const double sNom = a + b*dm;
+
+  if( mode == "nominal" ){ dxySigScaleFactor = float(sNom); return; }
+
+  const double varMean = covAA + 2.0*dm*covAB + dm*dm*covBB;
+  const double sigmaPred = std::sqrt(std::max(varMean, 0.0) + tau*tau);
+
+  if( mode == "up" )   { dxySigScaleFactor = float(sNom + sigmaPred); return; }
+  if( mode == "down" ) { dxySigScaleFactor = float(sNom - sigmaPred); return; }
+
+  std::cout << "!! Unknown --dxySigScale mode '" << mode << "' (expected off|nominal|up|down)"
+            << " -- disabling dxySig scaling." << std::endl;
+  dxySigScaleMode = "off";
+  dxySigScaleFactor = 1.f;
+
+}//<<>>void KUCMSAodSkimmer::SetDxySigScale( std::string mode, float deltaM )
+
 void KUCMSAodSkimmer::processSV(){
 
   bool doEVSVs = true;
@@ -60,7 +103,7 @@ void KUCMSAodSkimmer::processSV(){
       const float dxy((*Vertex_dxy)[svit]);
       const float dxyError((*Vertex_dxyError)[svit]);
       if (!std::isfinite(dxyError) || dxyError <= 0.0f) continue;
-      const float dxySig(dxy/dxyError);
+      const float dxySig((dxy/dxyError) * dxySigScaleFactor);
       const float x((*Vertex_x)[svit]),  y((*Vertex_y)[svit]), z((*Vertex_z)[svit]);
       const float cosTheta((*Vertex_cosTheta)[svit]);
       const uInt ntracks((*Vertex_nTracks)[svit]);
@@ -136,7 +179,7 @@ void KUCMSAodSkimmer::processSV(){
       selSV.fillBranch(svType+"SV_y",                    y);
       selSV.fillBranch(svType+"SV_z",                    z);
       selSV.fillBranch(svType+"SV_dxy",                  dxy);
-      selSV.fillBranch(svType+"SV_dxySig",               dxy/dxyError);
+      selSV.fillBranch(svType+"SV_dxySig",               dxySig);
       selSV.fillBranch(svType+"SV_passMaterialVeto",     vetoTool.PassVeto(x, y));
       selSV.fillBranch(svType+"SV_tightZWindowSelection",tightOnZSelection);
     }//<<>>for( svit = 0; svit < nSVs; svit++ )
