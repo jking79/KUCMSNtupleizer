@@ -24,6 +24,8 @@
 #include "TMatrixDSymEigen.h"
 #include "TGraph.h"
 #include "TMathBase.h"
+#include <filesystem>
+#include <system_error>
 
 #ifndef KUCMSRootHelperFunctionsH2
 #define KUCMSRootHelperFunctionsH2 
@@ -615,7 +617,9 @@ inline std::vector<std::string> findEOSRootFiles( const std::string& eosHost, co
 
             nDirs++;
 
-			const std::string cmd = "eos root://" + eosHost + " ls " + thisDir;
+			std::string cmd;
+			if( eosHost == "none" ){ cmd = "ls -1 " + thisDir; } 
+			else { cmd = "eos root://" + eosHost + " ls " + thisDir; }
 			//std::cout << " -- cmd checked : " << cmd << std::endl;
             std::vector<std::string> lines = runCommandLines(cmd);
 
@@ -642,16 +646,14 @@ inline std::vector<std::string> findEOSRootFiles( const std::string& eosHost, co
                         continue;
                     }//<<>>if( !matchString.empty() && path.find(matchString) == std::string::npos )
 
-                    const std::string fullXrdPath = "root://" + eosHost + "/" + path;
+					const std::string acceptedPath = ( eosHost == "none" ) ? path : "root://" + eosHost + "/" + path;
+					rootFiles.push_back(acceptedPath);
 
-                    //std::cout << " -- file accepted : " << fullXrdPath << std::endl;
-
-                    rootFiles.push_back(fullXrdPath);
                     nAccepted++;
 
                 } else {
 
-                    dirs.push_back(path);
+        			if( eosHost != "none" ){ dirs.push_back(path); }
 
                 }//<<>>if( endsWith( path, ".root" ) )
 

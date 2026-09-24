@@ -1015,12 +1015,13 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
     int nAdded = 0;
     int nBadFiles = 0;
 
-    std::string eosHost = "cmseos.fnal.gov";
+    //std::string eosHost = "cmseos.fnal.gov";
+    std::string eosHost = "none";
     std::string scanDir = eosdir + inFilePath;
     std::cout << "Finding ROOT files under EOS directory: " << scanDir << std::endl;
     std::vector<std::string> files = findEOSRootFiles(eosHost, scanDir, inFileName);
     std::cout << "Found " << files.size() << " candidate ROOT files." << std::endl;
-
+	
     std::cout << "Adding files to TChain." << std::endl;
     //while (std::getline(infile,instr)){
     for (const auto& tfilename : files) {
