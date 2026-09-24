@@ -970,7 +970,6 @@ void KUCMSAodSkimmer::processPhotons(){
     selPhotons.fillBranch( "baseLinePhoton_GenTimeSig", gentimesig );
 
     selPhotons.fillBranch( "baseLinePhoton_PhoIsoDr", phoPhoIsoDr );
-    selPhotons.fillBranch( "baseLinePhoton_GenIdx", genIdx );
     selPhotons.fillBranch( "baseLinePhoton_GenSigMomEnergy", momEnergy  );   //!
     selPhotons.fillBranch( "baseLinePhoton_GenSigMomEta", momEta  );   //!
     selPhotons.fillBranch( "baseLinePhoton_GenSigMomMass", momMass  );   //!
@@ -1869,7 +1868,6 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
 
   selPhotons.makeBranch( "baseLinePhoton_GenPt", VFLOAT );
   selPhotons.makeBranch( "baseLinePhoton_PhoIsoDr", VFLOAT );
-  selPhotons.makeBranch( "baseLinePhoton_GenIdx", VINT );
 
   selPhotons.makeBranch( "baseLinePhoton_GenLabTime", VFLOAT );
   selPhotons.makeBranch( "baseLinePhoton_GenLabTimeSig", VFLOAT );

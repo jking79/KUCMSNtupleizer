@@ -146,7 +146,6 @@ void KUCMSAodSkimmer::processGenParticles(){
     selGenPart.fillBranch( "genPartPt", pt );
     selGenPart.fillBranch( "genPartPdgId", pdgId );
     selGenPart.fillBranch( "genPartSusId", susId );
-    selGenPart.fillBranch( "genPartMomIdx", momIndx );
     selGenPart.fillBranch( "genMomCTau", ctau );
     selGenPart.fillBranch( "genCharge", charge );
     selGenPart.fillBranch( "genMass", mass );
@@ -272,7 +271,6 @@ void KUCMSAodSkimmer::setGenBranches( TTree* fOutTree ){
   selGenPart.makeBranch( "genPartPt", VFLOAT );
   selGenPart.makeBranch( "genPartPdgId", VUINT );
   selGenPart.makeBranch( "genPartSusId", VINT );
-  selGenPart.makeBranch( "genPartMomIdx", VINT );
   selGenPart.makeBranch( "genXMomCTau", VFLOAT );
   selGenPart.makeBranch( "genMomCTau", VFLOAT );
   selGenPart.makeBranch( "genCharge", VINT );   //!
