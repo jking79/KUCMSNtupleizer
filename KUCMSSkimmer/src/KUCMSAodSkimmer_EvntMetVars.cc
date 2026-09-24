@@ -54,10 +54,22 @@ void KUCMSAodSkimmer::processEvntVars(){
   selEvtVars.fillBranch( "evtXSection", xsctn );
  
   float fillWgt = 1;
-  //if( !isLocal ) std::cout << " -- ECT : key " << dataSetKey << " " << configData[dataSetKey].first << " " << configData[dataSetKey].second << std::endl;
-  float configSumEvtWgt = isLocal ? configWgts["sumEvtWgt"] : useSMSWgts ? configData[dataSetKey].first : configData[dataSetKey].second;
   //if( !isLocal ) std::cout << " -- ECT : isLocal " << isLocal << " useSMSWgts : " << useSMSWgts << " use: " << useEvtGenWgtFlag << std::endl;
-  if( mctype == 0 ) fillWgt = ( ( xsctn * 1000 ) * evtGenWgt  ) / configSumEvtWgt;
+  // mctype != 1 (not data): both FullSim (0) and FastSim (2) MC get normalized the
+  // same way, against whichever tier-specific EventCount.txt entry dataSetKey points at.
+  // Only look up EventCount.txt for MC: data dataSetKeys (e.g. "MET18A") are never
+  // added to EventCount.txt (skim_submit.py only tracks/checks it for non-data
+  // samples), so calling lookupConfigData() unconditionally here would hard-exit
+  // every real data job on a "missing" key that was never meant to exist.
+  if( mctype != 1 ){
+    // Not isLocal (real condor/grid production): configData[dataSetKey] via operator[]
+    // would silently default-construct {0.0, 0.0} for a missing key, producing an
+    // inf/nan evtFillWgt instead of failing the job where the actual problem is.
+    float configSumEvtWgt = isLocal ? configWgts["sumEvtWgt"]
+                          : useSMSWgts ? lookupConfigData( dataSetKey ).first
+                                       : lookupConfigData( dataSetKey ).second;
+    fillWgt = ( ( xsctn * 1000 ) * evtGenWgt  ) / configSumEvtWgt;
+  }
   //if( !isLocal ) std::cout << " -- ECT : fillWgt " << fillWgt << " " << xsctn << " " << evtGenWgt << " " << configSumEvtWgt << std::endl;
 
   selEvtVars.fillBranch( "evtFillWgt", fillWgt );
