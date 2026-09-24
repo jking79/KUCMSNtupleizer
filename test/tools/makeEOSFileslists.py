@@ -93,7 +93,8 @@ def main():
     if len(sys.argv) > 2:
         dir_pattern = sys.argv[2]
     else:
-        dir_pattern = "gogoGZ_2022_Fast_PUlib1"
+        #dir_pattern = "gogoGZ_2022_Fast_PUlib1"
+        dir_pattern = "gogoGZ_FullSim_Mini"
 
     start_dir = start_dir.rstrip("/")
 
