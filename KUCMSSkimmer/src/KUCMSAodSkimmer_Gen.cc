@@ -136,7 +136,6 @@ void KUCMSAodSkimmer::processGenParticles(){
     if( zee ) nZfX++;
     if( hasX234 ) nX234++;
     if( lept && fromZ && momFromX ) nLZX++;
-    if( quark && fromSqk ) nQfSqk++;
     if( quark && fromZ && momFromX ) nQfZ++;
     if( N0 && fromSqk ) nN0fsqk++;
     if( N0 && fromSg ) nN0fsg++;

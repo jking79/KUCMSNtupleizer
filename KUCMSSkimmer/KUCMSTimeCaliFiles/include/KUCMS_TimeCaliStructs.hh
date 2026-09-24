@@ -40,10 +40,10 @@ struct kucms_resTagStruct {
         float teeg1he1res, float teeg1he2res, float teeg1he3res,
         float teehg1res, float teehg2res, float teehg3res )
         : ebnoise(tebnoise), ebstoch(tebstoch), ebstant(tebstant), 
-		ebg1he1res(tebg1he1res), ebg1he2res(tebg1he2res), ebg1he3res(ebg1he3res),
+		ebg1he1res(tebg1he1res), ebg1he2res(tebg1he2res), ebg1he3res(tebg1he3res),
 		ebhg1res(tebhg1res), ebhg2res(tebhg2res), ebhg3res(tebhg3res),
         eenoise(teenoise), eestoch(teestoch), eestant(teestant), 
-        eeg1he1res(teeg1he1res), eeg1he2res(teeg1he2res), eeg1he3res(eeg1he3res),
+        eeg1he1res(teeg1he1res), eeg1he2res(teeg1he2res), eeg1he3res(teeg1he3res),
         eehg1res(teehg1res), eehg2res(teehg2res), eehg3res(teehg3res) {}
  
     float ebnoise; 
