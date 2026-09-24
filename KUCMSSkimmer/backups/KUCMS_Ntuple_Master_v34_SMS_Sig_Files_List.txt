@@ -36,6 +36,9 @@ kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2500_mN2-1200_mN1-500_
 #kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2500_mN2-2450_mN1-2400_GZ_N2ctau-0p1 sms 0.0001687 2450 2400 1 2 r2_ul18_mc
 #kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2500_mN2-2450_mN1-2400_GZ_N2ctau-0p5 sms 0.0001687 2450 2400 1 2 r2_ul18_mc
 
+#####  fast base #########
+#kucmsntuple_SMS_GZ_SVHPM100_Fast1_v36/CRAB_UserFiles/ mGl-2500_mN2-1200_mN1-500_GZ_N2ctau-0p5 sms 0.0001687 1200 500 1 0 r2_ul18_mc
+
 ####  FULL  #####
 
 

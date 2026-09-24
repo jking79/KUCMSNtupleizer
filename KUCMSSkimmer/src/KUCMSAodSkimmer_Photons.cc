@@ -362,6 +362,8 @@ void KUCMSAodSkimmer::processPhotons(){
     int momIdx = -1;
     float susId = -1;
 
+	uInt genPdgID = 0;
+
     float genEnergy = -10;   //!
     float genpt = -10;
     float genPt = -10;   //!
@@ -372,6 +374,7 @@ void KUCMSAodSkimmer::processPhotons(){
     float genVy = -100;   //!
     float genVz = -100;   //!
 
+    uInt genMomPdgID = 0;
     float momEnergy = -10;   //!
     float momEta = -4;   //!
     float momMass = -10;   //!
@@ -402,6 +405,8 @@ void KUCMSAodSkimmer::processPhotons(){
 
         momIdx = (*Gen_motherIdx)[genIdx];
         susId = (*Gen_susId)[genIdx];
+		genPdgID = (*Gen_pdgId)[genIdx];
+		if( momIdx > -1.0 ) genMomPdgID = (*Gen_pdgId)[momIdx];
 
         genEnergy = (*Gen_energy)[genIdx];   //!
         genPt = (*Gen_pt)[genIdx];   //!
@@ -412,8 +417,14 @@ void KUCMSAodSkimmer::processPhotons(){
         genVy = (*Gen_vy)[genIdx];   //!
         genVz = (*Gen_vz)[genIdx];   //!
 
-        if( momIdx > -1.0 ){
+		while( ( genMomPdgID > 0 ) && ( genMomPdgID < 1000022 || genMomPdgID > 1000037 ) ){ 
+			momIdx = (*Gen_motherIdx)[momIdx];
+			if( momIdx > -1.0 ) genMomPdgID = (*Gen_pdgId)[momIdx];
+			else genMomPdgID = 0;
+		}//<<>>while( genMomPdgID > 0 && genMomPdgID < 1000000 && momIdx > -1.0 )
 
+        if( momIdx > -1.0 ){
+			
             momEnergy = (*Gen_energy)[momIdx];   //!
             momEta = (*Gen_eta)[momIdx];   //!
             momMass = (*Gen_mass)[momIdx];   //!
@@ -432,23 +443,26 @@ void KUCMSAodSkimmer::processPhotons(){
 
         }//<<>>if( momIdx > -1.0 )
 
-		float disGenMom = (*Gen_momDisplacment)[genIdx];
+		//float disGenMom = (*Gen_momDisplacment)[genIdx];
         distPho = hypo( scx - genVx, scy - genVy, scz - genVz );
         cor_gtofPVtoSC = hypo(scx-PV_x,scy-PV_y,scz-PV_z);
         //distMom = hypo( genVx - PV_x, genVy - PV_y, genVz - PV_z );
 
         float sqrtvar = phoWRes*std::sqrt(2);
 		float cor_gtofPVtoSCSOL = cor_gtofPVtoSC/SOL;
-        //labtime = ( distPho + distMom/betamom + distMomPv )/SOL;
-		labtime = ( distPho + disGenMom/betamom )/SOL;
+        labtime = ( distPho + distMom/betamom + distMomPv )/SOL;
+		//labtime = ( distPho + disGenMom/betamom )/SOL;
 		labtime = labtime - cor_gtofPVtoSCSOL;
         //gentime = timeCali->getSmearedTime( labtime, phoWRes );
-		float adjsqrtvar = sqrtvar; //( sqrtvar < 0.2125 ) ? 2*sqrtvar : sqrtvar;
+		//float adjsqrtvar = sqrtvar; //( sqrtvar < 0.2125 ) ? 2*sqrtvar : sqrtvar;
+		float adjsqrtvar = sqrtvar;
         gentime = timeCali->getSmearedTime( labtime, adjsqrtvar );
 		labtimesig = labtime/adjsqrtvar;
 		gentimesig = gentime/adjsqrtvar;
 
-		if( susId == 22 && isfastsim ){
+		//if( isfastsim && ( susId == 22 || susId == 33 || susId == 34 || susId == 35 ) ){
+		//if( isfastsim && susId == 22 ){
+		if( isfastsim ){
 
 			phoWTime = gentime + sysvar*adjsqrtvar;
 			phoWTimeSig = gentimesig + sysvar;
@@ -460,6 +474,14 @@ void KUCMSAodSkimmer::processPhotons(){
 		hist1d[32]->Fill(cor_gtofPVtoSCSOL);
 
 		}//<<>>if( genIdx > -1 )
+		else if( isfastsim ){
+			float cor_gtofPVtoSC = hypo(scx-PV_x,scy-PV_y,scz-PV_z);
+			float cor_gtofPVtoSCSOL = cor_gtofPVtoSC/SOL;
+			float sqrtvar = phoWRes*std::sqrt(2);			
+			float gentime = timeCali->getSmearedTime( cor_gtofPVtoSCSOL, sqrtvar );
+			phoWTime = gentime - cor_gtofPVtoSCSOL;			
+			phoWTimeSig = phoWTime/sqrtvar;
+		}//<<>>else//<<>>if( genIdx > -1 )
     }//if( doGenInfo )
 
     //---------------------------------------------------

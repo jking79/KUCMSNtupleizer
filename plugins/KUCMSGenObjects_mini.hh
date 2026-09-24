@@ -1994,7 +1994,7 @@ int KUCMSGenObjectMini::llpGenChaseP( const pat::PackedGenParticle & kid, int de
 
     int genPartSusID = 100;
     int nMoms = kid.numberOfMothers();
-    if( nMoms == 1 && kid.pdgId() == kid.mother(0)->pdgId() ) return 101;
+    //if( nMoms == 1 && kid.pdgId() == kid.mother(0)->pdgId() ) return 101;
     int genPartId = std::abs(kid.pdgId());
     //if( GenDEBUG ) std::cout << "Genpart motherCase for : " << genPartId << std::endl;
     for( int gmit(0); gmit < nMoms; gmit++ ){
