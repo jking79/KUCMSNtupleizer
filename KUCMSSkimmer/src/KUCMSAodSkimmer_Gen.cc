@@ -74,20 +74,22 @@ void KUCMSAodSkimmer::processGenParticles(){
     float py = (*Gen_py)[it];
     float pz = (*Gen_pz)[it];
 
+    const bool hasMom = momIndx >= 0 && momIndx < nGenParts;
+
     //if( status != 1 ) continue;
     if( pdgId > 40 && pdgId < 1000000 ) continue;
 
-    float mommass = ( momIndx > -1 ) ? (*Gen_mass)[momIndx] : -1;
-    uInt mompdg = ( momIndx > -1 ) ? (*Gen_pdgId)[momIndx] : 0;
-    float mompx = ( momIndx > -1 ) ? (*Gen_px)[momIndx] : -1;
-    float mompy = ( momIndx > -1 ) ? (*Gen_py)[momIndx] : -1;
-    float mompz = ( momIndx > -1 ) ? (*Gen_pz)[momIndx] : -1;
+    float mommass = hasMom ? (*Gen_mass)[momIndx] : -1;
+    uInt mompdg = hasMom ? (*Gen_pdgId)[momIndx] : 0;
+    float mompx = hasMom ? (*Gen_px)[momIndx] : -1;
+    float mompy = hasMom ? (*Gen_py)[momIndx] : -1;
+    float mompz = hasMom ? (*Gen_pz)[momIndx] : -1;
     float genmomp = hypo( mompx, mompy, mompz );
     //float beta = ( mommass > 0 ) ? genmomp/mommass : -1;
     //float gama = ( beta >= 0 ) ? 1/std::sqrt( 1 - beta*beta ) : -1; 
     float gbeta = ( mommass > 0 ) ? genmomp/mommass : -1;
     //float gbeta = ( gama >= 0 && beta >= 0 ) ? gama*beta : -1;
-    float ctau = ( ( gbeta >= 0 ) && ( displacment >= 0 ) ) ? displacment/gbeta : -1;
+    float ctau = ( ( gbeta > 0 ) && ( displacment >= 0 ) ) ? displacment/gbeta : -1;
     if( mompdg == 1000023 ){ selGenPart.fillBranch( "genXMomCTau", ctau ); }
     //if( mompdg != 0 ){
     if( false ){
@@ -103,9 +105,8 @@ void KUCMSAodSkimmer::processGenParticles(){
     if( pdgId == 1000039 ){ selGenPart.fillBranch( "genGrvtinoMass", mass ); }
 
     //if( pdgId < 7 ) continue;
-    bool hasMom( ( momIndx < nGenParts ) && ( momIndx > -1 ) );
     int gMomIndx = hasMom ? Gen_motherIdx->at(momIndx) : -1;
-    bool hasGrandMom( gMomIndx > -1 );
+    bool hasGrandMom( gMomIndx >= 0 && gMomIndx < nGenParts );
     bool lsp( ( pdgId == 1000039 ) || ( ( pdgId == 1000022 ) && ( status == 1 ) ) );
     bool hasX234( ( pdgId > 1000022 ) && ( pdgId < 1000038 ) );
     bool fromX( hasMom && ( ( Gen_pdgId->at(momIndx) == 1000022 ) || ( Gen_pdgId->at(momIndx) == 1000023 ) ) );
