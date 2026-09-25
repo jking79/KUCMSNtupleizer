@@ -10,6 +10,8 @@
 
 #include "KUCMSAodSVSkimmer.hh"
 #include "KUCMSHelperFunctions.hh"
+#include <cmath>
+#include <cstdlib>
 
 //#define DEBUG true
 #define DEBUG false
@@ -68,7 +70,18 @@ void KUCMSAodSkimmer::processEvntVars(){
     float configSumEvtWgt = isLocal ? configWgts["sumEvtWgt"]
                           : useSMSWgts ? lookupConfigData( dataSetKey ).first
                                        : lookupConfigData( dataSetKey ).second;
+    if( !std::isfinite(configSumEvtWgt) || configSumEvtWgt == 0.f ){
+      std::cerr << "ERROR: invalid sum of event weights for dataset '" << dataSetKey
+                << "': " << configSumEvtWgt << std::endl;
+      std::exit(EXIT_FAILURE);
+    }
     fillWgt = ( ( xsctn * 1000 ) * evtGenWgt  ) / configSumEvtWgt;
+    if( !std::isfinite(fillWgt) ){
+      std::cerr << "ERROR: non-finite event fill weight for dataset '" << dataSetKey
+                << "' (xsec=" << xsctn << ", evtGenWgt=" << evtGenWgt
+                << ", sumEvtWgt=" << configSumEvtWgt << ")." << std::endl;
+      std::exit(EXIT_FAILURE);
+    }
   }
   //if( !isLocal ) std::cout << " -- ECT : fillWgt " << fillWgt << " " << xsctn << " " << evtGenWgt << " " << configSumEvtWgt << std::endl;
 
@@ -249,4 +262,3 @@ void KUCMSAodSkimmer::setEvtVarMetBranches( TTree* fOutTree ){
   selMet.attachBranches( fOutTree );
 
 }//<<>>void KUCMSAodSkimmer::setBranches( TTree& fOutTree )
-

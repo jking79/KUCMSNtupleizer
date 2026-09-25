@@ -8,6 +8,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "KUCMSAodSVSkimmer.hh"
+#include <stdexcept>
 //#include "KUCMSAodSkimmer_sv_cc.hh"
 //#include "KUCMSAodSkimmer_cc_probe.hh"
 //#include "KUCMSAodSkimmer_rh_cc.hh"
@@ -48,33 +49,58 @@ int main ( int argc, char *argv[] ){
   string branchMaskFile = "";
   string dxySigScaleMode = "off";
   float dxySigScaleDeltaM = 0.f;
-  for(int i = 0; i < argc; i++){
+  try {
+    for( int i = 1; i < argc; i++ ){
 
-    if(strncmp(argv[i],"--help", 6) == 0) 			{ hprint = true; }
-    if(strncmp(argv[i],"-h", 2) == 0)     			{ hprint = true; }
-    if(strncmp(argv[i],"-i", 2) == 0)     			{ i++; in_file = string(argv[i]); }
-    if(strncmp(argv[i],"--input", 7) == 0)			{ i++; in_file = string(argv[i]); }
-    if(strncmp(argv[i],"--output", 8) == 0)			{ i++; outfilename = string(argv[i]); }
-    if(strncmp(argv[i],"-o", 2) == 0)				{ i++; outfilename = string(argv[i]); }
-    if(strncmp(argv[i],"--evtFirst", 6) == 0)		{ i++; evti = std::atoi(argv[i]); }
-    if(strncmp(argv[i],"--evtLast", 6) == 0)		{ i++; evtj = std::atoi(argv[i]); }
-    if(strncmp(argv[i],"--hasGenInfo", 12) == 0)	{ hasGenInfo = true; }
-    if(strncmp(argv[i],"--genSigPerfect", 15) == 0)	{ genSigPerfect = true; }
-    if(strncmp(argv[i],"--noSVorPho", 11) == 0)		{ noSVorPho = true; }
-    if(strncmp(argv[i],"--noBHC", 7) == 0)		{ noBHC = true; }
-    if(strncmp(argv[i],"--noSV", 6) == 0)		{ noSV = true; }
-    if(strncmp(argv[i],"--dataSetKey", 12) == 0)	{ i++; key = string(argv[i]); }
-    if(strncmp(argv[i],"--xsec", 6) == 0)			{ i++; xsec = std::stof(argv[i]); }
-    if(strncmp(argv[i],"--gluinoMass", 12) == 0)	{ i++; glumass = std::stof(argv[i]); }
-    if(strncmp(argv[i],"--N2Mass", 8) == 0)			{ i++; n2mass = std::stof(argv[i]); }
-    if(strncmp(argv[i],"--timeCaliTag", 13) == 0)	{ i++; ttag = string(argv[i]); }
-    if(strncmp(argv[i],"--MCweight", 10) == 0)		{ i++; mcw = std::stof(argv[i]); }
-    if(strncmp(argv[i],"--MCtype", 8) == 0)		{ i++; mctype = std::stoi(argv[i]); }
-    if(strncmp(argv[i],"--HLTPathsOff", 11) == 0)	{ hltpaths = false; }
-    if(strncmp(argv[i],"--branchMask", 12) == 0)	{ i++; branchMaskFile = string(argv[i]); }
-    if(strncmp(argv[i],"--branch-mask", 13) == 0)	{ i++; branchMaskFile = string(argv[i]); }
-    if(strcmp(argv[i],"--dxySigScale") == 0)		{ i++; dxySigScaleMode = string(argv[i]); }
-    if(strcmp(argv[i],"--svDxyDeltaM") == 0)		{ i++; dxySigScaleDeltaM = std::stof(argv[i]); }
+      const std::string option(argv[i]);
+      auto nextValue = [&]() -> const char* {
+        if( i + 1 >= argc ){
+          throw std::invalid_argument("missing value for " + option);
+        }
+        return argv[++i];
+      };
+      auto parseInt = [&]( const char* value ){
+        const std::string text(value);
+        std::size_t parsed = 0;
+        const int result = std::stoi(text, &parsed);
+        if( parsed != text.size() ) throw std::invalid_argument("invalid integer for " + option + ": " + text);
+        return result;
+      };
+      auto parseFloat = [&]( const char* value ){
+        const std::string text(value);
+        std::size_t parsed = 0;
+        const float result = std::stof(text, &parsed);
+        if( parsed != text.size() ) throw std::invalid_argument("invalid number for " + option + ": " + text);
+        return result;
+      };
+
+      if( option == "--help" || option == "-h" ) hprint = true;
+      else if( option == "-i" || option == "--input" ) in_file = nextValue();
+      else if( option == "-o" || option == "--output" ) outfilename = nextValue();
+      else if( option == "--evtFirst" ) evti = parseInt(nextValue());
+      else if( option == "--evtLast" ) evtj = parseInt(nextValue());
+      else if( option == "--hasGenInfo" ) hasGenInfo = true;
+      else if( option == "--genSigPerfect" ) genSigPerfect = true;
+      else if( option == "--noSVorPho" ) noSVorPho = true;
+      else if( option == "--noBHC" ) noBHC = true;
+      else if( option == "--noSV" ) noSV = true;
+      else if( option == "--dataSetKey" ) key = nextValue();
+      else if( option == "--xsec" ) xsec = parseFloat(nextValue());
+      else if( option == "--gluinoMass" ) glumass = parseFloat(nextValue());
+      else if( option == "--N2Mass" ) n2mass = parseFloat(nextValue());
+      else if( option == "--timeCaliTag" ) ttag = nextValue();
+      else if( option == "--MCweight" ) mcw = parseFloat(nextValue());
+      else if( option == "--MCtype" ) mctype = parseInt(nextValue());
+      else if( option == "--HLTPathsOff" ) hltpaths = false;
+      else if( option == "--branchMask" || option == "--branch-mask" ) branchMaskFile = nextValue();
+      else if( option == "--dxySigScale" ) dxySigScaleMode = nextValue();
+      else if( option == "--svDxyDeltaM" ) dxySigScaleDeltaM = parseFloat(nextValue());
+      else throw std::invalid_argument("unknown option: " + option);
+    }
+  } catch( const std::exception& error ){
+    std::cerr << "ERROR: " << error.what() << std::endl;
+    std::cerr << "Run '" << argv[0] << " --help' for usage." << std::endl;
+    return 1;
   }
 
   if(hprint){
@@ -101,6 +127,11 @@ int main ( int argc, char *argv[] ){
     cout << "   --dxySigScale [off|nominal|up|down]  FastSim SV dxySig scale correction (default = off)" << endl;
     cout << "   --svDxyDeltaM [GeV]                  mN2-mN1 for --dxySigScale, required unless off" << endl;
     return 0;
+  }
+
+  if( in_file.empty() ){
+    std::cerr << "ERROR: no input file was specified. Use --input or -i." << std::endl;
+    return 1;
   }
 
   cout << "outfile tag " << outfilename << endl;
@@ -139,7 +170,7 @@ int main ( int argc, char *argv[] ){
     if(in_file.find("://") == string::npos)
       in_file = eosdir+in_file;
     llpgana.kucmsAodSkimmer( in_file, outfilename);
-    return 1;
+    return 0;
 
 
 }//<<>>int main ( int argc, char *argv[] )

@@ -96,6 +96,6 @@ int main ( int argc, char *argv[] ){
 	llpgana.SetUseEvtGenWgtFlag(useEvtGenWgt);
     llpgana.kucmsAodSkimmer_local( listdir, eosdir, infilename, outfilename );
  
-    return 1;
+    return 0;
 
 }//<<>>int main ( int argc, char *argv[] )
