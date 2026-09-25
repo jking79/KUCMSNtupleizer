@@ -10,6 +10,7 @@
 
 #include "KUCMSAodSVSkimmer.hh"
 #include "KUCMSHelperFunctions.hh"
+#include <cmath>
 
 //#define DEBUG true
 #define DEBUG false
@@ -172,10 +173,30 @@ void KUCMSAodSkimmer::processJets(){
 	//std::cout << " - Finding Jet Time." << std::endl;
 
 
-    auto rhenergies = getRhGrpEnergies( rhids );
-    auto rhtimes = getRhGrpTimes( rhids );
-    auto timedist = getDistStats( rhtimes, rhenergies );
-    auto time = timedist[6];
+    // Legacy selJetTime is retained for downstream histogram makers, but compute
+    // it directly from aligned rechit IDs so missing hits, nonfinite values, or
+    // zero total weight cannot turn the branch into NaN.
+    float time = -29.25f;
+    double weightedTime = 0.;
+    double totalEnergy = 0.;
+    if( ECALRecHit_energy && ECALRecHit_time && ECALRecHit_0TOF && ECALRecHit_pvTOF ){
+      for( const auto rhid : rhids ){
+        const int rhIdx = getRhIdx(rhid);
+        if( rhIdx < 0 ) continue;
+        const std::size_t idx = static_cast<std::size_t>(rhIdx);
+        if( idx >= ECALRecHit_energy->size() || idx >= ECALRecHit_time->size() ||
+            idx >= ECALRecHit_0TOF->size() || idx >= ECALRecHit_pvTOF->size() ) continue;
+        const float rhEnergy = (*ECALRecHit_energy)[idx];
+        const float rhTime = (*ECALRecHit_time)[idx] + (*ECALRecHit_0TOF)[idx] - (*ECALRecHit_pvTOF)[idx];
+        if( !std::isfinite(rhEnergy) || rhEnergy <= 0.f || !std::isfinite(rhTime) ) continue;
+        weightedTime += static_cast<double>(rhEnergy)*rhTime;
+        totalEnergy += rhEnergy;
+      }
+    }
+    if( totalEnergy > 0. ){
+      const double candidateTime = weightedTime/totalEnergy;
+      if( std::isfinite(candidateTime) ) time = static_cast<float>(candidateTime);
+    }
 
     float sumwte = 0;
     float sumpixwte = 0;
@@ -678,4 +699,3 @@ int KUCMSAodSkimmer::getJetQuality( int it ){
   return -1; // should not happen
 
 }//<<>>int KUCMSAodSkimmer::getJetQuality( int iter )
-

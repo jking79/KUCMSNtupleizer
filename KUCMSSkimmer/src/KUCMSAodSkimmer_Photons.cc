@@ -781,15 +781,24 @@ void KUCMSAodSkimmer::processPhotons(){
 	float tofcor = calcor - pvtof;
     float crtime = rtime - tofcor;
     float tmeasured = rtime*SOL;
-    float m1 = std::sqrt(sq2(tofPVtoRH)+8*sq2(tmeasured));
-    float m2 = (tofPVtoRH+m1)*(tofPVtoRH/(4*sq2(tmeasured)));
-    float m3 = tofPVtoRH/tmeasured;
-    float m2_phys = ( m2 > 1 ) ? 1 : m2;
-    float m3_phys = ( m3 > 1 ) ? 1 : m3;
-    float MBetaEqual = 2*ce*std::sqrt(1-sq2(m2_phys));
-    //float MBetaEqual = 2*ce*m2_phys;
-    float MBetaPrompt = 2*ce*std::sqrt(1-sq2(m3_phys));
-    //float MBetaPrompt = 2*ce*m3_phys;
+    float MBetaEqual = -999.f;
+    float MBetaPrompt = -999.f;
+    if( std::isfinite(tmeasured) && tmeasured != 0.f &&
+        std::isfinite(tofPVtoRH) && std::isfinite(ce) ){
+      float m1 = std::sqrt(sq2(tofPVtoRH)+8*sq2(tmeasured));
+      float m2 = (tofPVtoRH+m1)*(tofPVtoRH/(4*sq2(tmeasured)));
+      float m3 = tofPVtoRH/tmeasured;
+      if( std::isfinite(m2) ){
+        float m2_phys = std::max(-1.f, std::min(1.f, m2));
+        MBetaEqual = 2*ce*std::sqrt(std::max(0.f, 1-sq2(m2_phys)));
+        if( !std::isfinite(MBetaEqual) ) MBetaEqual = -999.f;
+      }
+      if( std::isfinite(m3) ){
+        float m3_phys = std::max(-1.f, std::min(1.f, m3));
+        MBetaPrompt = 2*ce*std::sqrt(std::max(0.f, 1-sq2(m3_phys)));
+        if( !std::isfinite(MBetaPrompt) ) MBetaPrompt = -999.f;
+      }
+    }
 
     //---------------------------------------------------------------------------
     //  Fill Photon branch time and sc information
@@ -2201,5 +2210,4 @@ int KUCMSAodSkimmer::getPhoQuality( int it ){
   return phoClass;
 
 }//<<>>int KUCMSAodSkimmer::getPhoQuality( int iter )
-
 

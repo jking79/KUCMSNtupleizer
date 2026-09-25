@@ -10,6 +10,23 @@
 
 #include "KUCMSAodSVSkimmer.hh"
 #include "KUCMSHelperFunctions.hh"
+#include <cmath>
+
+namespace {
+
+constexpr float undefinedRjrRatio = -999.f;
+
+float safeRjrRatio( float numerator, float denominator ){
+
+  if( !std::isfinite(numerator) || !std::isfinite(denominator) || denominator == 0.f ){
+    return undefinedRjrRatio;
+  }
+  const float ratio = numerator/denominator;
+  return std::isfinite(ratio) ? ratio : undefinedRjrRatio;
+
+}//<<>>float safeRjrRatio(float numerator,float denominator)
+
+}//<<>>namespace
 
 //#define RJRDEBUG true
 #define RJRDEBUG false
@@ -377,7 +394,7 @@ void KUCMSAodSkimmer::processRJRISR(){
 	float msperp = -1;
 	float m_PISR = -1;
     float m_PTISR = -1;
-	float m_RISR = -1;
+	float m_RISR = undefinedRjrRatio;
 	if( nJetsJa > 0 || nJetsJb > 0 ){ // must have jets in ja or jb 
 
         TVector3 vPISR = S_c->GetFourVector(*CM_c).Vect();
@@ -386,7 +403,9 @@ void KUCMSAodSkimmer::processRJRISR(){
         m_PISR = vPISR.Mag();
 
 		m_PTISR = vPTISR.Mag();
-		m_RISR = std::fabs(vPINV.Dot(vPISR.Unit())) / vPISR.Mag();
+		if( std::isfinite(m_PISR) && m_PISR > 0.f ){
+			m_RISR = safeRjrRatio(std::fabs(vPINV.Dot(vPISR.Unit())), m_PISR);
+		}
 
 		TLorentzVector j1as =  S_c->GetFourVector(pJetSideSum4Vec[0]);
 		TLorentzVector j2as =  S_c->GetFourVector(pJetSideSum4Vec[1]);
@@ -604,10 +623,14 @@ void KUCMSAodSkimmer::processRJRISR(){
 	float pHts22 = pHJas + pHJbs + pHX1as + pHX1bs;
 	float pHts11 = pHJs + pHX1s;
 
-	float Rs = (phxa11+phxb11)/pHs22;
-	float Rxa = phxa11/phxa21;
-    float Rxb = phxb11/phxb21;
-	float Rx = hypo(phxa11/phxa21,phxb11/phxb21);
+	float Rs = safeRjrRatio(phxa11+phxb11, pHs22);
+	float Rxa = safeRjrRatio(phxa11, phxa21);
+    float Rxb = safeRjrRatio(phxb11, phxb21);
+	float Rx = undefinedRjrRatio;
+	if( Rxa != undefinedRjrRatio && Rxb != undefinedRjrRatio ){
+		const float ratioMagnitude = std::hypot(Rxa,Rxb);
+		if( std::isfinite(ratioMagnitude) ) Rx = ratioMagnitude;
+	}
 
     selRjrIsrVars.fillBranch( "rjrIsr_pHs22", pHs22 );
     selRjrIsrVars.fillBranch( "rjrIsr_pHs11", pHs11 );
@@ -631,8 +654,8 @@ void KUCMSAodSkimmer::processRJRISR(){
 	float a_MS = ( p4[0] + p4[2] + p4[1] + p4[3] ).M();// -- !! Mr	
 
     float AX2QSum = std::sqrt((sq2(a_MX2a)+sq2(a_MX2b))/2);
-    float AX2NQSum = 2*AX2QSum/a_MS;//*2 -- !! R
-    float AX2Diff = abDiffSide*(a_MX2a-a_MX2b)/(a_MX2a+a_MX2b);
+    float AX2NQSum = safeRjrRatio(2*AX2QSum, a_MS);//*2 -- !! R
+    float AX2Diff = safeRjrRatio(abDiffSide*(a_MX2a-a_MX2b), a_MX2a+a_MX2b);
 
     float pf_pX2a = X2a_c->GetMomentum(*S_c);
     float pf_pX2b = X2b_c->GetMomentum(*S_c);
@@ -672,8 +695,8 @@ void KUCMSAodSkimmer::processRJRISR(){
     float m_MVb = Jb_c->GetMass();
 
     float m_MVSum = std::sqrt((sq2(m_MVa)+sq2(m_MVb))/2);
-	float m_MVNSum = 2*m_MVSum/a_MS;// -- !! Rv
-    float m_MVab = std::sqrt(sq2(m_MVa)+sq2(m_MVb))/phs40;
+	float m_MVNSum = safeRjrRatio(2*m_MVSum, a_MS);// -- !! Rv
+    float m_MVab = safeRjrRatio(std::sqrt(sq2(m_MVa)+sq2(m_MVb)), phs40);
 
     selRjrIsrVars.fillBranch( "rjrIsr_Rv", m_MVNSum );
     selRjrIsrVars.fillBranch( "rjrIsr_Mva", m_MVa );
