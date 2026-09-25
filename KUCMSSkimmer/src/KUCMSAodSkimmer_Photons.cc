@@ -563,8 +563,8 @@ void KUCMSAodSkimmer::processPhotons(){
     bool hemEligible2 = pt > 30 && not isExcluded && not hasPixSeed;
 
     bool isInHemRegion = inHEMRegion( eta, phi );
-    hemBits.set( "pho1hvl", isInHemRegion && hemEligible1 );
-    hemBits.set( "pho2hvm", isInHemRegion && hemEligible2 );
+    hemBits.set( "pho1hvl", hemBits("pho1hvl") || (isInHemRegion && hemEligible1) );
+    hemBits.set( "pho2hvm", hemBits("pho2hvm") || (isInHemRegion && hemEligible2) );
 
     //---------------------------------------------------
     ///////////  pho disriminate ids ////////////////////////////////////////////////////////////////////
@@ -2138,6 +2138,7 @@ bool KUCMSAodSkimmer::GetGJetsSel(int phoidx){
     if( dphi_objjet < PI - 0.3 ) return false;
     float ptasym = std::min(pho_pt,(*Jet_pt)[0]) / std::max(pho_pt,(*Jet_pt)[0]);
     if(ptasym < 0.6) return false;
+    // R&D convention: slot 1 intentionally records the jet multiplicity, not a jet index.
     if( gammaJetIndex[0] < 0 ){ gammaJetIndex[0] = phoidx; gammaJetIndex[1] = nJets; }
     return true;
 
@@ -2200,6 +2201,5 @@ int KUCMSAodSkimmer::getPhoQuality( int it ){
   return phoClass;
 
 }//<<>>int KUCMSAodSkimmer::getPhoQuality( int iter )
-
 
 

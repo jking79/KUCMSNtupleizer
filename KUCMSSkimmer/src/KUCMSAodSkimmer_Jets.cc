@@ -279,26 +279,26 @@ void KUCMSAodSkimmer::processJets(){
     float jpull2 = -50;
     float jpull3 = -50;
 	if( nSCIndexs > 1 ){
-		int index0 = scIndexs[0];
-        int index1 = scIndexs[1];
+		const int index0 = 0;
+	    const int index1 = 1;
 		float dtime = selsubjettime[index0]-selsubjettime[index1];
 		float sqres = hypo( selsubjettimedev[index0], selsubjettimedev[index1] );
-		jpull = dtime/sqres;
-		if( selsubjettimedev[index0] < 0 || selsubjettimedev[index1] < 0 ) jpull = -50; 
+		if( selsubjettimedev[index0] >= 0 && selsubjettimedev[index1] >= 0 &&
+		    std::isfinite(sqres) && sqres > 0 ) jpull = dtime/sqres;
 	}//<<>>if( selsubjettime > 1 )
 	alljetwtimepull.push_back( jpull );
     if( nSCIndexs > 2 ){
-        int index0 = scIndexs[0];
-        int index1 = scIndexs[1];
-        int index2 = scIndexs[2];
-        float dtime2 = selsubjettime[index0]-selsubjettime[index2];
-        float sqres2 = hypo( selsubjettimedev[index0], selsubjettimedev[index2] );
-        jpull2 = dtime2/sqres2;
-        if( selsubjettimedev[index0] < 0 || selsubjettimedev[index2] < 0 ) jpull2 = -50;
-        float dtime3 = selsubjettime[index1]-selsubjettime[index2];
-        float sqres3 = hypo( selsubjettimedev[index1], selsubjettimedev[index2] );
-        jpull3 = dtime3/sqres3;
-        if( selsubjettimedev[index1] < 0 || selsubjettimedev[index2] < 0 ) jpull3 = -50;
+	    const int index0 = 0;
+	    const int index1 = 1;
+	    const int index2 = 2;
+	    float dtime2 = selsubjettime[index0]-selsubjettime[index2];
+	    float sqres2 = hypo( selsubjettimedev[index0], selsubjettimedev[index2] );
+	    if( selsubjettimedev[index0] >= 0 && selsubjettimedev[index2] >= 0 &&
+	        std::isfinite(sqres2) && sqres2 > 0 ) jpull2 = dtime2/sqres2;
+	    float dtime3 = selsubjettime[index1]-selsubjettime[index2];
+	    float sqres3 = hypo( selsubjettimedev[index1], selsubjettimedev[index2] );
+	    if( selsubjettimedev[index1] >= 0 && selsubjettimedev[index2] >= 0 &&
+	        std::isfinite(sqres3) && sqres3 > 0 ) jpull3 = dtime3/sqres3;
     }//<<>>if( selsubjettime > 1 )
 
     int nPixSCIndexs = scPixIndexs.size();
@@ -324,8 +324,8 @@ void KUCMSAodSkimmer::processJets(){
     bool hemEligible1( pt > 10.0 );
     bool hemEligible2( pt > 20.0 );
 	bool isInHemRegion = inHEMRegion( eta, phi );
-    hemBits.set( "jet1hvl", isInHemRegion && hemEligible1 );
-    hemBits.set( "jet2hvm", isInHemRegion && hemEligible2 );
+	hemBits.set( "jet1hvl", hemBits("jet1hvl") || (isInHemRegion && hemEligible1) );
+	hemBits.set( "jet2hvm", hemBits("jet2hvm") || (isInHemRegion && hemEligible2) );
     //if( hemEligible && inHEMRegion( eta, phi ) ) hasHemObj = true;
 
     std::vector<uInt> allJetSCIndexs;
@@ -495,6 +495,7 @@ void KUCMSAodSkimmer::processJets(){
   float dijet1time = ( diJetIndex[1] > -1 ) ? alljetwtime[diJetIndex[1]] : -50;
 
   selJets.fillBranch( "pv_gjGammaTime", gammatime );
+  // R&D convention: gammaJetIndex[1] intentionally stores nJets rather than a jet index.
   selJets.fillBranch( "pv_gjJetTime", float(gammaJetIndex[1]) );
   float digjettime = ( gammatime > -20 && pvTime > -20 ) ? gammatime - pvTime : -50;
   selJets.fillBranch( "pv_dGJTime", digjettime );
@@ -677,5 +678,4 @@ int KUCMSAodSkimmer::getJetQuality( int it ){
   return -1; // should not happen
 
 }//<<>>int KUCMSAodSkimmer::getJetQuality( int iter )
-
 

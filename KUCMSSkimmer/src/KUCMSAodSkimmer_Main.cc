@@ -544,6 +544,10 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
     geCnts.clear();
     geVars.clear();
     hemBits.clear();
+    for( const std::string& hemKey : {"el1hvl", "el2hvm", "jet1hvl", "jet2hvm",
+                                     "pho1hvl", "pho2hvm", "mu1hvl", "mu2hvm"} ){
+      hemBits.set( hemKey, false );
+    }
     hasHemObj = false;
 
     if( genSigPerfectFlag ) geVars.set( "genSigPerfect", 1 ); else geVars.set( "genSigPerfect", 0 );

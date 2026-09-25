@@ -932,7 +932,7 @@ void KUCMSAodSkimmer::setRJRISRBranches( TTree* fOutTree ){
     selRjrIsrVars.makeBranch( "rjrIsr_p2Pxa", FLOAT );
     selRjrIsrVars.makeBranch( "rjrIsr_p2Pxb", FLOAT );
 
-    selRjrIsrVars.makeBranch( "rjrIsrAX2Diff","rjr_Rdiff", FLOAT );
+    selRjrIsrVars.makeBranch( "rjrIsrAX2Diff","rjrIsr_Rdiff", FLOAT );
 
     selRjrIsrVars.makeBranch( "rjrIsr_Mr", FLOAT );
     selRjrIsrVars.makeBranch( "rjrIsr_R", FLOAT );
@@ -979,4 +979,3 @@ void KUCMSAodSkimmer::setRJRISRBranches( TTree* fOutTree ){
     selRjrIsrVars.attachBranches( fOutTree );
 
 }//<<>>void KUCMSAodSkimmer::setBranches( TTree& fOutTree )
-

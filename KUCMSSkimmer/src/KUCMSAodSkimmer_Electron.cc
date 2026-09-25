@@ -84,13 +84,16 @@ void KUCMSAodSkimmer::processElectrons(){
       //std::cout << " -- scRh1 : " << rhIds[0] << std::endl;
       auto psid = getLeadRhID(rhIds);
       //std::cout << " -- psid : " << psid << std::endl;
-      if( esid == psid ){ if( epSeedIdMatch == true ) epsidsolo = false ; epSeedIdMatch = true; }
+      if( esid != 0 && psid != 0 && esid == psid ){
+        if( epSeedIdMatch == true ) epsidsolo = false;
+        epSeedIdMatch = true;
+      }
     }//for( uInt pit2 = 0; pit2 < nPhotons; pit2++ )
     //std::cout << " ---- next electrons: " << std::endl;
     elePhoIsoMinDr = elePhoIsoDr;
     bool epDrMatch = ( elePhoIsoDr < 0.2  ) ? true : false;
     bool eleminpt = (*Electron_pt)[itr] > 10;
-    if( not epDrMatch & eleminpt ) nSelIsoElectrons++;
+    if( not epDrMatch && eleminpt ) nSelIsoElectrons++;
 
     if( epDrMatch ) nEpDrMatch++;
     if( epSeedIdMatch ) nEpSeedIdMatch++;
@@ -104,9 +107,9 @@ void KUCMSAodSkimmer::processElectrons(){
 
 	bool hemEligible1 = (*Electron_pt)[itr] > 20;
     bool hemEligible2 = (*Electron_pt)[itr] > 30;
-    bool isInHemRegion = inHEMRegion( eta, phi );
-    hemBits.set( "el1hvl", isInHemRegion && hemEligible1 );
-    hemBits.set( "el2hvm", isInHemRegion && hemEligible2 );
+	bool isInHemRegion = inHEMRegion( eta, phi );
+    hemBits.set( "el1hvl", hemBits("el1hvl") || (isInHemRegion && hemEligible1) );
+    hemBits.set( "el2hvm", hemBits("el2hvm") || (isInHemRegion && hemEligible2) );
 
     //if( hemEligible && inHEMRegion( eta, phi ) ) hasHemObj = true;	
 
@@ -129,7 +132,7 @@ void KUCMSAodSkimmer::processElectrons(){
   //std::cout << " -- Finish New looping electrons " << std::endl;
   selElectrons.fillBranch( "nSelElectrons", Electron_nSelElectrons );
   selElectrons.fillBranch( "nEleSVMatched", Electron_nSVMatched );
-  selElectrons.fillBranch( "nSelIsoElectrons", nLooseEle );
+  selElectrons.fillBranch( "nSelIsoElectrons", nSelIsoElectrons );
 
 }//<<>>void KUCMSAodSkimmer::processElectrons
 
@@ -154,4 +157,3 @@ void KUCMSAodSkimmer::setElectronBranches( TTree* fOutTree ){
   selElectrons.attachBranches( fOutTree );
 
 }//<<>>void KUCMSAodSkimmer::setBranches( TTree& fOutTree )
-
