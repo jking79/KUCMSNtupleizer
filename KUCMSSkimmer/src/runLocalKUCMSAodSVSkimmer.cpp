@@ -73,7 +73,7 @@ int main ( int argc, char *argv[] ){
     //const std::string outfilename = "_rjrskim_qcdmc_Test.root"; //
     //const std::string outfilename = "_rjrskim_calirestest_Test.root"; //
     //const std::string outfilename = "_rjrskim_rd_v52.root"; //
-    const std::string outfilename = "_rjrskim_geofast_xpwz_v2_Test.root"; //
+    const std::string outfilename = "_rjrskim_geofast_xpwz_v3_Test.root"; //
     //const std::string outfilename = "_rjrskim_basefast_Test.root"; //
     //const std::string outfilename = "_rjrskim_geofull_xpwz_v2_Test.root"; //
     //const std::string outfilename = "_rjrskim_basefull_Test.root"; //
