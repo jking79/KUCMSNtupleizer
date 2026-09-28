@@ -84,10 +84,12 @@ BG_DB = {
     'WZ_Tune':  {'xsec': 23.43,   'key': 'WZ_UL18'},
 }
 
-# Signal xsec by (process_prefix, gluino_mass_string)
-# process_prefix: 'gogo' matches gogoG, gogoZ, gogoGZ; 'sqsq' matches sqsqG
+# Signal xsec [pb] by (process_prefix, gluino_mass_string)
+# process_prefix: 'gogo' matches gogoG, gogoZ, gogoGZ (and T5Zg); 'sqsq' matches sqsqG
+# Run 3 (13.6 TeV). Signal samples without an explicit year in their name are Run 3.
 SIGNAL_XSEC = {
     ('gogo', '1500'): 0.02209,
+    ('gogo', '1800'): 4.524e-03,
     ('gogo', '2000'): 0.001684,
     ('gogo', '2300'): 0.0004130,
     ('gogo', '2500'): 0.0001687,
@@ -96,6 +98,13 @@ SIGNAL_XSEC = {
     ('sqsq', '2000'): 0.0002654,
     ('sqsq', '2150'): 0.0001267,
 }
+
+# Run 2 (13 TeV) signal xsec [pb], used only for samples explicitly tagged
+# with a Run 2 year (e.g. '_2018').
+SIGNAL_XSEC_RUN2 = {
+    ('gogo', '1800'): 3.349e-03,
+}
+RUN2_YEARS = {'R16', 'R17', 'R18'}
 
 # Timecali tag by year, for data vs MC
 TIMECALI = {
@@ -116,7 +125,7 @@ TIMECALI = {
 }
 
 DATA_KEYWORDS  = {'MET', 'JetMET', 'JetMET0', 'JetMET1', 'JetHT', 'EGamma', 'EGamma0', 'EGamma1', 'EGamma2', 'DisJet'}
-SIGNAL_KEYWORDS = {'SMS', 'gogoG', 'gogoZ', 'gogoGZ', 'sqsqG', 'GlGl'}
+SIGNAL_KEYWORDS = {'SMS', 'gogoG', 'gogoZ', 'gogoGZ', 'sqsqG', 'GlGl', 'T5Zg'}
 BRANCH_MASKS = {
     'llpCombineSkim': 'config/branch_masks/llpcombine_analysis_exact.txt',
     'svSkim': 'config/branch_masks/sv_analysis_core.txt',
@@ -260,14 +269,16 @@ def lookup_bg_meta(subfolder):
     return None
 
 
-def lookup_signal_xsec(subfolder):
-    """Extract process prefix and gluino mass from subfolder, look up xsec."""
-    proc = 'gogo' if any(p in subfolder for p in ['gogoG', 'gogoZ', 'gogoGZ', 'GlGl']) else 'sqsq'
+def lookup_signal_xsec(subfolder, year=''):
+    """Extract process prefix and gluino mass from subfolder, look up xsec.
+    Samples explicitly tagged with a Run 2 year use the 13 TeV table."""
+    proc = 'gogo' if any(p in subfolder for p in ['gogoG', 'gogoZ', 'gogoGZ', 'GlGl', 'T5Zg']) else 'sqsq'
     m = re.search(r'mGl-(\d+)', subfolder)
     if not m:
         return None, '0', '0', '0'
     mgl = m.group(1)
-    xsec = SIGNAL_XSEC.get((proc, mgl), None)
+    table = SIGNAL_XSEC_RUN2 if year in RUN2_YEARS else SIGNAL_XSEC
+    xsec = table.get((proc, mgl), None)
     mn2 = re.search(r'mN2-(\d+)', subfolder)
     mn1 = re.search(r'mN1-(\d+)', subfolder)
     n2 = mn2.group(1) if mn2 else '0'
@@ -278,6 +289,8 @@ def lookup_signal_xsec(subfolder):
 def signal_process_key(name):
     if 'SqSq' in name or 'sqsq' in name:
         return 'sqsqG'
+    if 'T5Zg' in name:
+        return 'gogoGZ'
     if 'GlGl-GZ' in name or 'GlGlGZ' in name or 'gogoGZ' in name:
         return 'gogoGZ'
     if 'GlGl-Z' in name or 'GlGlZ' in name or 'gogoZ' in name:
@@ -339,7 +352,31 @@ def signal_tier_from_collection(collection_name):
         return None
 
 
-def signal_event_count_key(name, tier=None):
+_SIGNAL_YEAR_RE = re.compile(r'(?:^|_)20(16|17|18|22|23|24|25)(?=_|$)')
+
+
+def signal_year(*names):
+    """Era code ('R22', 'R18', ...) from an explicit '_20YY' token in the signal
+    dataset names, or '' if none carries one. Only an explicit year counts:
+    pre-existing signal samples are Run 3 with no year in their names and must
+    keep their unsuffixed EventCount keys. The token must be '_'-delimited so
+    masses like 'mGo-2022' are never mistaken for a year."""
+    years = {'R' + yy for name in names if name for yy in _SIGNAL_YEAR_RE.findall(name)}
+    if len(years) > 1:
+        raise ValueError('conflicting signal years %s in %r' % (sorted(years), names))
+    return years.pop() if years else ''
+
+
+def canonical_signal_name(name):
+    """Normalize gluino-mass spellings to the 'mGl-' form every parser expects
+    (e.g. T5Zg samples use 'mGo-1800')."""
+    return re.sub(r'mGo-(?=\d)', 'mGl-', name)
+
+
+def signal_event_count_key(name, tier=None, year=''):
+    """EventCount key for a signal sample. A non-empty year (e.g. 'R22') is
+    appended as '_R22'; samples without an explicit year keep the unsuffixed key."""
+    suffix = '_' + year if year else ''
     mgl = re.search(r'mGl-(\d+)', name)
     mn2 = re.search(r'mN2-(\d+)', name)
     mn1 = re.search(r'mN1-(\d+)', name)
@@ -356,11 +393,19 @@ def signal_event_count_key(name, tier=None):
             key = re.sub(r'_(FASTSIMAOD|FASTMINI|FASTAOD)_', '_FASTSIM_', key)
             if tier is not None and '_' + tier + '_' not in key:
                 raise ValueError('EventCount key %s contradicts tier %s' % (key, tier))
+            # An already-formatted key may carry its year suffix; strip it so the
+            # end-anchored ctau normalization below still applies.
+            key_year = re.search(r'_(R\d\d)$', key)
+            if key_year:
+                if year and key_year.group(1) != year:
+                    raise ValueError('EventCount key %s contradicts year %s' % (key, year))
+                suffix = '_' + key_year.group(1)
+                key = key[:key_year.start()]
             if '_AODSIM_' in key or '_FASTSIM_' in key:
-                return re.sub(r'_ct0p([15])$', r'_ct\1', key)
-            if '_FULLMINI_' in key:
-                return re.sub(r'_ct([15])$', r'_ct0p\1', key)
-            return key
+                key = re.sub(r'_ct0p([15])$', r'_ct\1', key)
+            elif '_FULLMINI_' in key:
+                key = re.sub(r'_ct([15])$', r'_ct0p\1', key)
+            return key + suffix
         raise ValueError('could not derive signal EventCount key from: ' + name)
 
     process = signal_process_key(name)
@@ -369,7 +414,7 @@ def signal_event_count_key(name, tier=None):
     ct_key = normalize_signal_ctau(ctau.group(1), tier)
     return (
         f'{process}_{tier}_mGl-{mgl.group(1)}'
-        f'_mN2-{mn2.group(1)}_mN1-{mn1.group(1)}_ct{ct_key}'
+        f'_mN2-{mn2.group(1)}_mN1-{mn1.group(1)}_ct{ct_key}{suffix}'
     )
 
 
@@ -398,7 +443,7 @@ def signal_metadata_name(subfolder, eos_path):
     ]
 
     def has_mass_point(name):
-        return (re.search(r'mGl-\d+', name)
+        return (re.search(r'mG[lo]-\d+', name)
                 and re.search(r'mN2-\d+', name)
                 and re.search(r'mN1-\d+', name)
                 and re.search(r'(?:ct|\dctau-)(?:-?[0-9]+p[0-9]+|-?[0-9]+)', name))
@@ -487,6 +532,14 @@ def sample_context(eos_path):
     return sample_type, year, timecali, data_keyword(eos_path)
 
 
+def dataset_timecali(metadata, sample_type, timecali):
+    """Timecali for one dataset: a year found in the dataset's own name
+    (signal only, see signal_year) overrides the collection-level one."""
+    if metadata.get('year'):
+        return get_timecali(metadata['year'], sample_type) or timecali
+    return timecali
+
+
 def print_sample_context(eos_path, sample_type, year, timecali):
     print('EOS path:    ', eos_path)
     print('Sample type: ', sample_type)
@@ -503,13 +556,15 @@ def resolve_dataset_metadata(subfolder, eos_path, sample_type, data_kw, collecti
     n1mass     = '0'
     mctype     = 0
     mc_wt      = '1'
+    year       = ''
 
     if sample_type == 'data':
         mctype = 1
         key    = make_data_key(subfolder, data_kw)
     elif sample_type == 'signal':
-        metadata_name = signal_metadata_name(subfolder, eos_path)
-        sig_xsec, gluinomass, n2mass, n1mass = lookup_signal_xsec(metadata_name)
+        metadata_name = canonical_signal_name(signal_metadata_name(subfolder, eos_path))
+        year = signal_year(subfolder, eos_path, collection_name)
+        sig_xsec, gluinomass, n2mass, n1mass = lookup_signal_xsec(metadata_name, year)
         if sig_xsec is not None:
             xsec = str(sig_xsec)
         else:
@@ -529,7 +584,7 @@ def resolve_dataset_metadata(subfolder, eos_path, sample_type, data_kw, collecti
                 raise ValueError('conflicting signal tiers %s in %r / %r and no tier '
                                  'in collection %r' % (sorted(tiers), subfolder,
                                                        eos_path, collection_name))
-        key = signal_event_count_key(metadata_name, tier=tier)
+        key = signal_event_count_key(metadata_name, tier=tier, year=year)
         # dataSetKey's tier is the source of truth for FastSim vs FullSim: it is
         # what EventCount.txt was actually keyed and counted under.
         if '_FASTSIM_' in key:
@@ -551,6 +606,7 @@ def resolve_dataset_metadata(subfolder, eos_path, sample_type, data_kw, collecti
         'n1mass': n1mass,
         'mctype': mctype,
         'mc_wt': mc_wt,
+        'year': year,
     }
 
 
@@ -597,6 +653,15 @@ def insert_sxy_scale_tag(ntuple_tag, dxy_scale):
         if re.search(r'fast', token, re.IGNORECASE):
             return '_'.join(tokens[:i + 1] + [suffix] + tokens[i + 1:])
     return ntuple_tag + '_' + suffix
+
+
+def remove_sxy_scale_tag(ntuple_tag):
+    """Inverse of insert_sxy_scale_tag. Job output names (-o) are built from
+    dataset.canonical_base, which never carries the SxyScale marker, so
+    anything that re-derives the job prefix from an on-disk ntuple_tag must
+    strip it first. The variant stays in the directory and merged-file names."""
+    return '_'.join(token for token in ntuple_tag.split('_')
+                    if not re.match(r'^SxyScale(Nominal|Up|Down)$', token))
 
 
 def build_skimmer_flags(metadata, args, timecali):
@@ -1621,16 +1686,18 @@ def submit_path_parts(submit_path):
     parts = submit_path.replace('\\', '/').split('/')
     ntuple_tag = parts[-5] if len(parts) >= 5 else ''
     sample_tag = parts[-4] if len(parts) >= 4 else submit_path
+    job_ntuple_tag = remove_sxy_scale_tag(ntuple_tag)
     return {
         'ntuple_tag': ntuple_tag,
         'sample_tag': sample_tag,
         'canonical_base': sample_tag + '__' + ntuple_tag if ntuple_tag else sample_tag,
+        'job_base': sample_tag + '__' + job_ntuple_tag if job_ntuple_tag else sample_tag,
         'tag': parts[-3] if len(parts) >= 3 else 'rjrskim',
     }
 
 
 def expected_submit_prefix(path_info):
-    return 'condor_' + path_info['canonical_base'] + '__' + path_info['tag']
+    return 'condor_' + path_info['job_base'] + '__' + path_info['tag']
 
 
 def write_multi_submit_script(path, submit_files, action='Submitting', blank_lines=True):
@@ -2517,7 +2584,8 @@ def main():
             continue
 
         metadata = dataset_metadata(dataset, sample_type, data_kw)
-        flags, applied_dxy_scale = build_skimmer_flags(metadata, args, timecali)
+        ds_timecali = dataset_timecali(metadata, sample_type, timecali)
+        flags, applied_dxy_scale = build_skimmer_flags(metadata, args, ds_timecali)
 
         paths = dataset_paths(args.output, dataset, args.tag, applied_dxy_scale)
         eos_out_dir = eos_output_dir(args, paths)
@@ -2541,6 +2609,8 @@ def main():
         print('  Final skim:     ', final_skim)
         print()
         print('  Metadata:       ', 'xsec=' + metadata['xsec'] + ', key=' + metadata['key'])
+        if metadata.get('year'):
+            print('  Year:           ', metadata['year'] + ' (timecali ' + ds_timecali + ')')
         warn_missing_event_count_key(metadata, event_count_keys)
 
         if args.verbose:
@@ -2553,7 +2623,7 @@ def main():
             print('  Work directory: ', paths.work_dir)
 
         # --- record weights ---
-        weights[metadata['key']] = weight_record(metadata, timecali, root_files,
+        weights[metadata['key']] = weight_record(metadata, ds_timecali, root_files,
                                                  dataset.raw_task_suffix)
 
         submit_files.append(paths.submit_path)
