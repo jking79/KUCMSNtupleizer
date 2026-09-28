@@ -130,6 +130,7 @@ BRANCH_MASKS = {
     'llpCombineSkim': 'config/branch_masks/llpcombine_analysis_exact.txt',
     'svSkim': 'config/branch_masks/sv_analysis_core.txt',
     'svFullFastValidation': 'config/branch_masks/sv_fullfast_validation.txt',
+    'llpStandardPlots': 'config/branch_masks/llpstandardplots_min.txt',
 }
 
 SANDBOX_DEFAULT  = "/uscms/home/mlazarov/nobackup/sandboxes/sandbox-CMSSW_13_3_3.tar.bz2"
