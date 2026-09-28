@@ -85,7 +85,7 @@ void KUCMSAodSkimmer::setTSBranches( TTree* fOutTree ){
 //}//<<>>void KUCMSAodSkimmer::getTimeSig
 
 //float KUCMSAodSkimmer::getTimeSig( vector<vector<unsigned int>> rhids ){
-float KUCMSAodSkimmer::getTimeSig( int scIndex, float& num, float& denom, int syst, const map<unsigned int, float>& rhIdToBHCw){
+float KUCMSAodSkimmer::getTimeSig( int scIndex, float& num, float& denom, float syst, const map<unsigned int, float>& rhIdToBHCw){
 
 		auto rhids = (*SuperCluster_rhIds)[scIndex];
 
@@ -110,7 +110,7 @@ float KUCMSAodSkimmer::getTimeSig( int scIndex, float& num, float& denom, int sy
                 double cor_cms000 = hypo(erx,ery,erz)/SOL;
                 double cor_tofPVtoRH = hypo(erx-PV_x,ery-PV_y,erz-PV_z)/SOL;
                 double ertoftime = erhct + cor_cms000 - cor_tofPVtoRH;
-				if( syst != 0 ) ertoftime += syst*std::sqrt(ertres/2); // systimatic variation inserted here
+				if( syst != 0.f ) ertoftime += syst*std::sqrt(ertres/2); // fractional sigma variation inserted here
 
                 bool isEE = fabs((*ECALRecHit_eta)[erhiter]) > 1.479;
                 bool isValid = true;

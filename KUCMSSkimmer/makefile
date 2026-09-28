@@ -1,11 +1,23 @@
 # Compiler and flags
 
 CC = g++
-CXXFLAGS_COMMON = -O3 -march=native -ffast-math -fno-finite-math-only -funroll-loops -flto -fno-trapping-math -funsafe-math-optimizations -fomit-frame-pointer -fno-math-errno
-CXXFLAGS_COMMON += -std=c++17
-CXXFLAGS_DEBUG = -g -O0 -Wall -Wextra
-CXXFLAGS_RELEASE = $(CXXFLAGS_COMMON)
-CXXFLAGS ?= $(CXXFLAGS_RELEASE)
+BUILD ?= release
+
+CXXFLAGS_RELEASE = -O3 -march=native -ffast-math -fno-finite-math-only -funroll-loops -flto -fno-trapping-math -funsafe-math-optimizations -fomit-frame-pointer -fno-math-errno -std=c++17
+CXXFLAGS_DEBUG = -g -O0 -Wall -Wextra -fno-finite-math-only -std=c++17
+
+ifeq ($(BUILD),release)
+CXXFLAGS_DEFAULT = $(CXXFLAGS_RELEASE)
+BUILD_SUFFIX =
+else ifeq ($(BUILD),debug)
+CXXFLAGS_DEFAULT = $(CXXFLAGS_DEBUG)
+BUILD_SUFFIX = .debug
+else
+$(error Unsupported BUILD '$(BUILD)'; expected 'release' or 'debug')
+endif
+
+# A command-line CXXFLAGS override remains supported and is used as-is.
+CXXFLAGS ?= $(CXXFLAGS_DEFAULT)
 
 # Root and RestFrames
 
@@ -31,9 +43,11 @@ BCGLIBS = -L/uscms/home/mlazarov/nobackup/CMSSW_13_3_3/src/BayesianClustering/li
 # Project include and object directories
 
 INCDIR = ./include
-OBJDIR = ./obj
+OBJROOT = ./obj
+OBJDIR = $(OBJROOT)/$(BUILD)
 $(shell mkdir -p $(OBJDIR))
-MAINOBJDIR = ./mainobj
+MAINOBJROOT = ./mainobj
+MAINOBJDIR = $(MAINOBJROOT)/$(BUILD)
 $(shell mkdir -p $(MAINOBJDIR))
 
 IFLAGS = -I../interface
@@ -57,11 +71,11 @@ OBJ_FILES := $(OBJ_FILES:.cc=.o) # handle .cc extension
 
 # Default target
 
-EXE_MAIN = runKUCMSAodSVSkimmer.obj
-EXE_LOCAL = runLocalKUCMSAodSVSkimmer.obj
-EXE_CALI = makeKUCMSTimeCalibration.obj
-EXE_RES = makeKUCMSTimeResolution.obj
-EXE_RJR = rjr_plotting.obj
+EXE_MAIN = runKUCMSAodSVSkimmer$(BUILD_SUFFIX).obj
+EXE_LOCAL = runLocalKUCMSAodSVSkimmer$(BUILD_SUFFIX).obj
+EXE_CALI = makeKUCMSTimeCalibration$(BUILD_SUFFIX).obj
+EXE_RES = makeKUCMSTimeResolution$(BUILD_SUFFIX).obj
+EXE_RJR = rjr_plotting$(BUILD_SUFFIX).obj
 RJR_OBJ = $(MAINOBJDIR)/rjr_plotting.o
 
 # Colored output
@@ -75,19 +89,19 @@ COLOR_RESET = \033[0m
 
 $(MAINOBJDIR)/%.o: $(SRCDIR)/%.cpp
 	@echo -e "$(COLOR_YELLOW)Compiling main file $<$(COLOR_RESET)"
-	$(CC) $(CXXFLAGS) $(CXXFLAGS_COMMON) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS) $(BCGLIBS) -I$(INCDIR) -I$(TCALI_INCDIR) $(IFLAGS) -c $< -o $@
+	$(CC) $(CXXFLAGS) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS) $(BCGLIBS) -I$(INCDIR) -I$(TCALI_INCDIR) $(IFLAGS) -c $< -o $@
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cc
 	@echo -e "$(COLOR_YELLOW)Compiling $<$(COLOR_RESET)"
-	$(CC) $(CXXFLAGS) $(CXXFLAGS_COMMON) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS) $(BCGLIBS) -I$(INCDIR) -I$(TCALI_INCDIR) $(IFLAGS) -c $< -o $@
+	$(CC) $(CXXFLAGS) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS) $(BCGLIBS) -I$(INCDIR) -I$(TCALI_INCDIR) $(IFLAGS) -c $< -o $@
 
 $(OBJDIR)/%.o: $(TCALI_SRCDIR)/%.cpp
 	@echo -e "$(COLOR_YELLOW)Compiling $<$(COLOR_RESET)"
-	$(CC) $(CXXFLAGS) $(CXXFLAGS_COMMON) -I$(TCALI_INCDIR) -I$(INCDIR) $(RTCFLAGS) $(RTGLIBS) -c $< -o $@
+	$(CC) $(CXXFLAGS) -I$(TCALI_INCDIR) -I$(INCDIR) $(RTCFLAGS) $(RTGLIBS) -c $< -o $@
 
 $(MAINOBJDIR)/%.o: $(TCALI_SRCDIR)/%.cpp
 	@echo -e "$(COLOR_YELLOW)Compiling $<$(COLOR_RESET)"
-	$(CC) $(CXXFLAGS) $(CXXFLAGS_COMMON) -I$(TCALI_INCDIR) -I$(INCDIR) $(RTCFLAGS) $(RTGLIBS) -c $< -o $@
+	$(CC) $(CXXFLAGS) -I$(TCALI_INCDIR) -I$(INCDIR) $(RTCFLAGS) $(RTGLIBS) -c $< -o $@
 
 
 MAIN_OBJ := $(MAINOBJDIR)/runKUCMSAodSVSkimmer.o
@@ -104,25 +118,31 @@ cali: $(EXE_CALI)
 res: $(EXE_RES)
 rjr_plotting: $(EXE_RJR)
 
+debug:
+	$(MAKE) BUILD=debug remote
+
+debug-local:
+	$(MAKE) BUILD=debug local
+
 $(EXE_MAIN): $(OBJ_FILES) $(MAIN_OBJ)
 	@echo -e "$(COLOR_GREEN)Linking $@$(COLOR_RESET)"
-	$(CC) -o $@ $(OBJ_FILES) $(MAIN_OBJ) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCGLIBS) -pthread
+	$(CC) $(CXXFLAGS) -o $@ $(OBJ_FILES) $(MAIN_OBJ) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCGLIBS) -pthread
 
 $(EXE_LOCAL): $(OBJ_FILES) $(LOCAL_OBJ)
 	@echo -e "$(COLOR_GREEN)Linking $@$(COLOR_RESET)"
-	$(CC) -o $@ $(OBJ_FILES) $(LOCAL_OBJ) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCGLIBS) -pthread
+	$(CC) $(CXXFLAGS) -o $@ $(OBJ_FILES) $(LOCAL_OBJ) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCGLIBS) -pthread
 
 $(EXE_RJR): $(RJR_OBJ)
 	@echo -e "$(COLOR_GREEN)Linking $@$(COLOR_RESET)"
-	$(CC) -o $@ $(RJR_OBJ) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) -pthread
+	$(CC) $(CXXFLAGS) -o $@ $(RJR_OBJ) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) -pthread
 
 $(EXE_CALI): $(TCALI_OBJ) $(OBJDIR)/KUCMS_TimeCalibration.o
 	@echo -e "$(COLOR_GREEN)Linking $@$(COLOR_RESET)"
-	$(CC) -o $@ $(TCALI_OBJ) $(OBJDIR)/KUCMS_TimeCalibration.o $(CXXFLAGS_COMMON) $(RTCFLAGS) $(RTGLIBS) -pthread
+	$(CC) $(CXXFLAGS) -o $@ $(TCALI_OBJ) $(OBJDIR)/KUCMS_TimeCalibration.o $(RTCFLAGS) $(RTGLIBS) -pthread
 
 $(EXE_RES): $(TRES_OBJ) $(OBJDIR)/KUCMS_TimeCalibration.o
 	@echo -e "$(COLOR_GREEN)Linking $@$(COLOR_RESET)"
-	$(CC) -o $@ $(TRES_OBJ) $(OBJDIR)/KUCMS_TimeCalibration.o $(CXXFLAGS_COMMON) $(RTCFLAGS) $(RTGLIBS) -pthread
+	$(CC) $(CXXFLAGS) -o $@ $(TRES_OBJ) $(OBJDIR)/KUCMS_TimeCalibration.o $(RTCFLAGS) $(RTGLIBS) -pthread
 
 
 # Condor tarball
@@ -163,11 +183,10 @@ print-main:
 
 clean:
 	@echo -e "$(COLOR_RED)Cleaning objects and executables$(COLOR_RESET)"
-	rm -rf $(OBJDIR)/*.o *.obj
+	rm -rf $(OBJROOT) $(MAINOBJROOT) *.obj
 	rm -rf condor/config.tgz
 	rm -rf .cache */*.pcm */*.o */*.so */*.d #purge all build artifacts
 
 # Phony targets
 
-.PHONY: all clean configtar rjr_plotting
-
+.PHONY: all clean configtar rjr_plotting debug debug-local

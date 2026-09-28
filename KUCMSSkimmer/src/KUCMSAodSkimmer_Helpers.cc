@@ -11,6 +11,7 @@
 #include "KUCMSAodSVSkimmer.hh"
 #include "KUCMSHelperFunctions.hh"
 #include "nlohmann_json.hpp"
+#include <limits>
 #include <vector>
 
 using json = nlohmann::json;
@@ -95,6 +96,7 @@ bool KUCMSAodSkimmer::isValidLumisection( int run, int lumi ){
 
 int KUCMSAodSkimmer::getRhIdx( uInt rhDetID ){
 
+  if( ECALRecHit_ID == nullptr ) return -1;
   for( int idx = 0; idx < ECALRecHit_ID->size(); idx++ ){ if( rhDetID == (*ECALRecHit_ID)[idx] ) return idx; }
   //std::cout << " -- !! no rhDetID to (*rhID)[idx] match !! ---------------------- " << std::endl;
   return -1;
@@ -103,11 +105,13 @@ int KUCMSAodSkimmer::getRhIdx( uInt rhDetID ){
 
 uInt KUCMSAodSkimmer::getLeadRhID( std::vector<uInt> recHitIds ){
 
-  uInt result;
-  float enr(0.0);
-  if( recHitIds.size() < 1 || ECALRecHit_ID->size() < 1 ){ return 0; }
+  uInt result(0);
+  float enr(-std::numeric_limits<float>::infinity());
+  if( recHitIds.size() < 1 || ECALRecHit_ID == nullptr || ECALRecHit_energy == nullptr || ECALRecHit_ID->size() < 1 ){ return 0; }
   for( auto id : recHitIds ){
-    auto rhenr = (*ECALRecHit_energy)[getRhIdx(id)];
+    const int rhIdx = getRhIdx(id);
+    if( rhIdx < 0 || static_cast<std::size_t>(rhIdx) >= ECALRecHit_energy->size() ) continue;
+    auto rhenr = (*ECALRecHit_energy)[rhIdx];
     if( rhenr > enr ){ enr = rhenr; result = id; }
   }//<<>>for (const auto recHit : recHits )
 
@@ -117,12 +121,17 @@ uInt KUCMSAodSkimmer::getLeadRhID( std::vector<uInt> recHitIds ){
 
 float KUCMSAodSkimmer::clstrR9( std::vector<uInt> recHitIds ){
 
-  if( recHitIds.size() < 1 || ECALRecHit_ID->size() < 1 ){ return -2.0; }
+  if( recHitIds.size() < 1 || ECALRecHit_ID == nullptr || ECALRecHit_energy == nullptr || ECALRecHit_ID->size() < 1 ){ return -2.0; }
   auto leadRhID = getLeadRhID( recHitIds );
-  auto leadRhEn = (*ECALRecHit_energy)[getRhIdx(leadRhID)];
+  const int leadRhIdx = getRhIdx(leadRhID);
+  if( leadRhIdx < 0 || static_cast<std::size_t>(leadRhIdx) >= ECALRecHit_energy->size() ) return -2.0;
+  auto leadRhEn = (*ECALRecHit_energy)[leadRhIdx];
   float sumRhEn(0);
-  if( recHitIds.size() < 1 ){ return -99.0; }
-  for ( auto id : recHitIds ){ sumRhEn +=  (*ECALRecHit_energy)[getRhIdx(id)]; }
+  for( auto id : recHitIds ){
+    const int rhIdx = getRhIdx(id);
+    if( rhIdx < 0 || static_cast<std::size_t>(rhIdx) >= ECALRecHit_energy->size() ) continue;
+    sumRhEn += (*ECALRecHit_energy)[rhIdx];
+  }
   return sumRhEn > 0 ? leadRhEn/sumRhEn  : - 1.0;
 
 }//<<>>float KUCMSAodSkimmer::clstrR9( vector<uInt> recHitIds )
@@ -130,8 +139,13 @@ float KUCMSAodSkimmer::clstrR9( std::vector<uInt> recHitIds ){
 std::vector<float> KUCMSAodSkimmer::getRhGrpEnergies( std::vector<uInt> rechitids ){
 
   std::vector<float> result;
-  if( rechitids.size() < 1 || ECALRecHit_ID->size() < 1 ){ result.push_back(-9.0); return result; }
-  for ( auto id : rechitids ){ result.push_back((*ECALRecHit_energy)[getRhIdx(id)]); }
+  if( rechitids.size() < 1 || ECALRecHit_ID == nullptr || ECALRecHit_energy == nullptr || ECALRecHit_ID->size() < 1 ){ result.push_back(-9.0); return result; }
+  for( auto id : rechitids ){
+    const int rhIdx = getRhIdx(id);
+    if( rhIdx < 0 || static_cast<std::size_t>(rhIdx) >= ECALRecHit_energy->size() ) continue;
+    result.push_back((*ECALRecHit_energy)[rhIdx]);
+  }
+  if( result.empty() ) result.push_back(-9.0);
   return result;
 
 };//<<>>std::vector<float> KUCMSAodSkimmer::getRhGrpEnergies( std::vector<uInt> rechitids )
@@ -139,13 +153,22 @@ std::vector<float> KUCMSAodSkimmer::getRhGrpEnergies( std::vector<uInt> rechitid
 std::vector<float> KUCMSAodSkimmer::getRhGrpTimes( std::vector<uInt> rechitids ){
 
   std::vector<float> result;
-  if( rechitids.size() < 1 || ECALRecHit_ID->size() < 1 ){ result.push_back(-99.0); return result; }
+  if( rechitids.size() < 1 || ECALRecHit_ID == nullptr || ECALRecHit_time == nullptr ||
+      ECALRecHit_0TOF == nullptr || ECALRecHit_pvTOF == nullptr || ECALRecHit_ID->size() < 1 ){
+    result.push_back(-99.0);
+    return result;
+  }
   for ( auto id : rechitids ){
-    auto rhtime = (*ECALRecHit_time)[getRhIdx(id)];
-    auto rh0tof = (*ECALRecHit_0TOF)[getRhIdx(id)];
-    auto rhpvtof = (*ECALRecHit_pvTOF)[getRhIdx(id)];
+    const int rhIdx = getRhIdx(id);
+    if( rhIdx < 0 || static_cast<std::size_t>(rhIdx) >= ECALRecHit_time->size() ||
+        static_cast<std::size_t>(rhIdx) >= ECALRecHit_0TOF->size() ||
+        static_cast<std::size_t>(rhIdx) >= ECALRecHit_pvTOF->size() ) continue;
+    auto rhtime = (*ECALRecHit_time)[rhIdx];
+    auto rh0tof = (*ECALRecHit_0TOF)[rhIdx];
+    auto rhpvtof = (*ECALRecHit_pvTOF)[rhIdx];
     result.push_back(rhtime+rh0tof-rhpvtof); 
   }//<<>>for ( auto id : recHitIds )
+  if( result.empty() ) result.push_back(-99.0);
   return result;
 
 };//<<>>std::vector<float> KUCMSAodSkimmer::getRhGrpTimes( std::vector<uInt> rechitids )
@@ -162,9 +185,13 @@ std::vector<float> KUCMSAodSkimmer::getRhGrpEigenFromAngles( std::vector<uInt> r
   std::vector<float> rhetas, rhphis;
   std::vector<float> logwtvec, tresvec;
   auto nRecHits = rechitids.size();
-  if( nRecHits < 5 || ECALRecHit_ID->size() < 1 ){ if( verbose ) std::cout << " ----  rechit collection has too few rechits" << std::endl; return emptyReturn; }
+  if( nRecHits < 5 || ECALRecHit_ID == nullptr || ECALRecHit_energy == nullptr || ECALRecHit_ID->size() < 1 ){ if( verbose ) std::cout << " ----  rechit collection has too few rechits" << std::endl; return emptyReturn; }
   float sumRhEn(0);
-  for ( auto id : rechitids ){ sumRhEn +=  (*ECALRecHit_energy)[getRhIdx(id)]; }
+  for( auto id : rechitids ){
+    const int rhIdx = getRhIdx(id);
+    if( rhIdx < 0 || static_cast<std::size_t>(rhIdx) >= ECALRecHit_energy->size() ) return emptyReturn;
+    sumRhEn += (*ECALRecHit_energy)[rhIdx];
+  }
   if( verbose ) std::cout << " --- EigenAngles sumRhEn : " << sumRhEn << std::endl;
   if( sumRhEn <= 0 ){ if( verbose ) std::cout << " ----  rechit collection has no energy" << std::endl; return emptyReturn; }
   if( DEBUG ) std::cout << "1a, ";
@@ -239,9 +266,20 @@ std::vector<float> KUCMSAodSkimmer::getRhGrpEigenFromAngles( std::vector<uInt> r
 std::vector<float> KUCMSAodSkimmer::getLeadTofRhTime( std::vector<uInt> recHitIds, double vtxX, double vtxY, double vtxZ ){
 
   std::vector<float> result;
-  if( ( recHitIds.size() < 1 ) || ( ECALRecHit_ID->size() < 1 ) ){ result.push_back(-99); return result; }
+  if( recHitIds.size() < 1 || ECALRecHit_ID == nullptr || ECALRecHit_rhx == nullptr ||
+      ECALRecHit_rhy == nullptr || ECALRecHit_rhz == nullptr || ECALRecHit_time == nullptr ||
+      ECALRecHit_ID->size() < 1 ){
+    result.push_back(-99);
+    return result;
+  }
   auto lrhid = getLeadRhID(recHitIds);
   auto lrhidx = getRhIdx(lrhid);
+  if( lrhidx < 0 || static_cast<std::size_t>(lrhidx) >= ECALRecHit_rhx->size() ||
+      static_cast<std::size_t>(lrhidx) >= ECALRecHit_rhy->size() ||
+      static_cast<std::size_t>(lrhidx) >= ECALRecHit_rhz->size() ){
+    result.push_back(-99);
+    return result;
+  }
   auto X = (*ECALRecHit_rhx)[lrhidx];
   auto Y = (*ECALRecHit_rhy)[lrhidx];
   auto Z = (*ECALRecHit_rhz)[lrhidx];
@@ -330,4 +368,3 @@ void KUCMSAodSkimmer::BinaryMergeInPlace( std::vector<TLorentzVector>& jets, int
     }//while( (int)jets.size() > Nmax )
 
 }//<<>>BinaryMergeInPlace(std::vector<TLorentzVector>& jets, int Nmax)
-
