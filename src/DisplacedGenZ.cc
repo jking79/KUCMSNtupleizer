@@ -64,6 +64,7 @@ reco::TrackCollection DisplacedGenZ::getTracks() const {
 int DisplacedGenZ::nMatchedInVertex(const reco::Vertex& vtx) const {
   int count(0);
   for(const auto& pair : matchedTracks_) {
+    if(pair.GetDeltaR() >= 0.02) continue;
     if(VertexHelper::isInVertex(vtx, pair.GetObjectA().track()))
       count++;
   }

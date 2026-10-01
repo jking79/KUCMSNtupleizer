@@ -370,6 +370,13 @@ public :
    std::vector<float>   *rjr_pHxb20;
    std::vector<float>   *rjr_pHxb21;
 
+   std::vector<float>   *rjrDPhiSI;
+   float   rjrIsrPTS;
+   float   rjrIsrDPhiSI;
+   float   rjrIsr_RIsr;
+   float   rjrIsr_PtIsr;
+
+
    // List of branches
    TBranch        *b_Flag_BadChargedCandidateFilter;   //!
    TBranch        *b_Flag_BadPFMuonDzFilter;   //!
@@ -713,6 +720,12 @@ public :
    TBranch        *b_rjr_pHxb11;   //!
    TBranch        *b_rjr_pHxb20;   //!
    TBranch        *b_rjr_pHxb21;   //!
+
+   TBranch        *b_rjrDPhiSI;
+   TBranch        *b_rjrIsrPTS;
+   TBranch        *b_rjrIsrDPhiSI;
+   TBranch        *b_rjrIsr_RIsr;
+   TBranch        *b_rjrIsr_PtIsr;
 
    //skimtuple_v36(TTree *tree=0);
    //virtual ~skimtuple_v36();
@@ -1060,6 +1073,8 @@ void skimtuple_v36::Init( TChain *tree, bool doGenInfo ){
    rjr_pHxb11 = 0;
    rjr_pHxb20 = 0;
    rjr_pHxb21 = 0;
+
+   rjrDPhiSI = 0;
 
    selPhoObjId = 0;
    rjrCleaningVeto0 = 0;
@@ -1414,6 +1429,12 @@ void skimtuple_v36::Init( TChain *tree, bool doGenInfo ){
    fChain->SetBranchAddress("rjr_pHxb21", &rjr_pHxb21, &b_rjr_pHxb21);
    //Notify();
 
+   fChain->SetBranchAddress("rjrDPhiSI", &rjrDPhiSI, &b_rjrDPhiSI);
+   fChain->SetBranchAddress("rjrIsrPTS", &rjrIsrPTS, &b_rjrIsrPTS);
+   fChain->SetBranchAddress("rjrIsrDPhiSI", &rjrIsrDPhiSI, &b_rjrIsrDPhiSI);
+   fChain->SetBranchAddress("rjrIsr_RIsr", &rjrIsr_RIsr, &b_rjrIsr_RIsr);
+   fChain->SetBranchAddress("rjrIsr_PtIsr", &rjrIsr_PtIsr, &b_rjrIsr_PtIsr);
+
 }//<<>>void llpgtree::Init( TTree *tree, bool doGenInfo )
 
 void skimtuple_v36::getBranches( Long64_t entry, bool doGenInfo ){
@@ -1762,6 +1783,14 @@ void skimtuple_v36::getBranches( Long64_t entry, bool doGenInfo ){
    b_rjr_pHxb11->GetEntry(entry);  //   rjr_pHxb11, &b_rjr_pHxb11);
    b_rjr_pHxb20->GetEntry(entry);  //   rjr_pHxb20, &b_rjr_pHxb20);
    b_rjr_pHxb21->GetEntry(entry);  //   rjr_pHxb21, &b_rjr_pHxb21);
+
+   b_rjrDPhiSI->GetEntry(entry);  // 
+   b_rjrIsrPTS->GetEntry(entry);  // 
+   b_rjrIsrDPhiSI->GetEntry(entry);  // 
+   b_rjrIsr_RIsr->GetEntry(entry);  // 
+   b_rjrIsr_PtIsr->GetEntry(entry);  // 
+
+
 
 }//<<>>void root_base::getBranches(Long64_t entry)
 

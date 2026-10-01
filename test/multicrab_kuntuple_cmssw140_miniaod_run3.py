@@ -85,7 +85,8 @@ def docrab( dataset ):
 
         #config.Data.partialDataset = True
         config.Data.inputDataset   = None
-        config.Data.lumiMask       = inputJSON    # Comment out for MC only set for data !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        #config.Data.lumiMask       = inputJSON    # Comment out for MC only set for data !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        #config.Data.lumiMask       = 'run_2018D_missinglumi.txt'
         #config.Data.lumiMask       = 'lumis_in_failed_files_25E0.json'
         #config.Data.splitting     = 'Automatic' # data
         config.Data.splitting = 'FileBased' # Justin
@@ -176,6 +177,7 @@ def docrab( dataset ):
             #trial          = "kucmsntuple_ZJets_Ext_R23_SVHPM100_MiniAOD" + version
             #trial          = "kucmsntuple_WJets_R23_SVHPM100_MiniAOD" + version
             
+            #trial          = "kucmsntuple_EGAMMA_R18_InvMetPho30_MiniAODv2" + version # 
 
             print( 'processing for : ',trial )
 
@@ -187,9 +189,9 @@ def docrab( dataset ):
             config.Data.outputDatasetTag = trial+"_"+primaryDataset+"_"+runEra 
 
             fSVHPM100 = 'eventFilter=SVHPMet100'
-            fSVHPM150 = 'eventFilter=SVHPMet150'
-            fSVIPM125 = 'eventFilter=SVIPMet125'
-            fSVIPM100 = 'eventFilter=SVIPMet100'
+            #fSVHPM150 = 'eventFilter=SVHPMet150'
+            #fSVIPM125 = 'eventFilter=SVIPMet125'
+            #fSVIPM100 = 'eventFilter=SVIPMet100'
             fM100 = 'eventFilter=MET100'
             fM150 = 'eventFilter=MET150'
             fAL1P = 'eventFilter=AL1IsoPho'
@@ -209,6 +211,7 @@ def docrab( dataset ):
             mDoETOnly = 'doECALTrackOnly=true'
 
             efilter = fSVHPM100
+            #efilter = fInvMetPho30
             #efilter = fNpSC
             ##efilter = fM100
             ##efilter = fIPM100
@@ -348,6 +351,8 @@ def run_multi():
         #["/MET/Run2018B-UL2018_MiniAODv2_GT36-v1/MINIAOD",1],
         #["/MET/Run2018C-UL2018_MiniAODv2_GT36-v1/MINIAOD",1],
         ["/MET/Run2018D-UL2018_MiniAODv2_GT36-v1/MINIAOD",1],
+
+        #["/EGamma/Run2018C-UL2018_MiniAODv2_GT36-v1/MINIAOD",1],
 
         #["/JetMET/Run2022C-19Dec2023-v1/MINIAOD",1],
         #["/JetMET/Run2022D-19Dec2023-v1/MINIAOD",2],

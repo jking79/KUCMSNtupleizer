@@ -9,7 +9,9 @@
 
 #include "KUCMSHelperFunctions.hh"
 #include <ctime>
+#include <cstdlib>
 #include <fstream>
+#include <memory>
 #include <set>
 
 #include "KUCMSAodSVSkimmer.hh"
@@ -340,6 +342,10 @@ KUCMSAodSkimmer::KUCMSAodSkimmer( bool doLocal ){
   mctype = 0;  // what type of input PD :  0 MC (AODSIM), 1 DATA (AOD), if we need fastSim ( 2 ) ect, add new enrty here
   tctag = "none";
 
+  dxySigScaleMode = "off";
+  dxySigScaleDeltaM = 0.f;
+  dxySigScaleFactor = 1.f;
+
   // input tree names
 
   disphoTreeName = "tree/llpgtree";
@@ -476,6 +482,10 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
     if( _evtj > nEntries ){ _evtj = nEntries; } //cap at max number of entries
     if( _evti > nEntries ){ 
       cout << "Starting event " << _evti << " above # of entries in tree " << nEntries << " returning." << endl;
+      delete fInTree;
+      delete fInConfigTree;
+      delete fOutTree;
+      delete fConfigTree;
       return; 
     }//<<>>if( _evti > nEntries )
   }//<<>> if( _evti < 0 ) else
@@ -517,6 +527,11 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
       std::cout << "Proccessed " << centry << " of " << nEntries << " entries at " << curtime << std::endl;
     }//<<>>if( centry%loopCounter == 0 )
     auto entry = fInTree->LoadTree(centry);
+    if( entry < 0 ){
+      std::cerr << "ERROR: failed to load event " << centry
+                << " from the input chain (LoadTree returned " << entry << ")." << std::endl;
+      std::exit(EXIT_FAILURE);
+    }
     if(DEBUG){ 
       std::cout << " -- Getting Branches " << std::endl;
       TTree* currentTree = fChain->GetTree();
@@ -540,6 +555,10 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
     geCnts.clear();
     geVars.clear();
     hemBits.clear();
+    for( const std::string& hemKey : {"el1hvl", "el2hvm", "jet1hvl", "jet2hvm",
+                                     "pho1hvl", "pho2hvm", "mu1hvl", "mu2hvm"} ){
+      hemBits.set( hemKey, false );
+    }
     hasHemObj = false;
 
     if( genSigPerfectFlag ) geVars.set( "genSigPerfect", 1 ); else geVars.set( "genSigPerfect", 0 );
@@ -588,6 +607,7 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
   fOutFile->Close();
 
   delete fInTree;
+  delete fInConfigTree;
   delete fOutTree;
   delete fConfigTree;
   delete fOutFile;
@@ -752,6 +772,11 @@ int KUCMSAodSkimmer::ProcessFilelistOfLists(string eosdir, vector<string> proces
 
 void KUCMSAodSkimmer::ProcessConfigTree( TChain* fInConfigTree ){
 
+  if( !fInConfigTree ){
+    std::cerr << "ERROR: null input config chain." << std::endl;
+    std::exit(EXIT_FAILURE);
+  }
+
   int nTotEvts;
   int nFltrdEvts;
   float sumEvtWgt;
@@ -759,22 +784,46 @@ void KUCMSAodSkimmer::ProcessConfigTree( TChain* fInConfigTree ){
   int nMetFltrdEvts;
   int nPhoFltrdEvts;
    
-  TBranch *b_nTotEvts;
-  TBranch *b_nFltrdEvts;
-  TBranch *b_sumEvtWgt;
-  TBranch *b_sumFltrdEvtWgt;
-  TBranch *b_nMetFltrdEvts;
-  TBranch *b_nPhoFltrdEvts;
-
-  fInConfigTree->SetBranchAddress("nTotEvts", &nTotEvts, &b_nTotEvts);
-  fInConfigTree->SetBranchAddress("nFltrdEvts", &nFltrdEvts, &b_nFltrdEvts);
-  fInConfigTree->SetBranchAddress("sumEvtWgt", &sumEvtWgt, &b_sumEvtWgt);
-  fInConfigTree->SetBranchAddress("sumFltrdEvtWgt", &sumFltrdEvtWgt, &b_sumFltrdEvtWgt);
-  fInConfigTree->SetBranchAddress("nMetFltrdEvts", &nMetFltrdEvts, &b_nMetFltrdEvts);
-  fInConfigTree->SetBranchAddress("nPhoFltrdEvts", &nPhoFltrdEvts, &b_nPhoFltrdEvts);
+  TBranch *b_nTotEvts = nullptr;
+  TBranch *b_nFltrdEvts = nullptr;
+  TBranch *b_sumEvtWgt = nullptr;
+  TBranch *b_sumFltrdEvtWgt = nullptr;
+  TBranch *b_nMetFltrdEvts = nullptr;
+  TBranch *b_nPhoFltrdEvts = nullptr;
 
   auto nConfigEntries = fInConfigTree->GetEntries();
   std::cout << "Proccessing " << nConfigEntries << " config entries." << std::endl;
+  if( nConfigEntries <= 0 ){
+    std::cerr << "ERROR: input config chain contains no entries." << std::endl;
+    std::exit(EXIT_FAILURE);
+  }
+  const auto firstConfigEntry = fInConfigTree->LoadTree(0);
+  if( firstConfigEntry < 0 ){
+    std::cerr << "ERROR: failed to load the first config entry (LoadTree returned "
+              << firstConfigEntry << ")." << std::endl;
+    std::exit(EXIT_FAILURE);
+  }
+
+  auto bindConfigBranch = [&]( const char* name, auto* value, TBranch** branch ){
+    if( !fInConfigTree->GetBranch(name) ){
+      std::cerr << "ERROR: required config branch '" << name << "' is missing." << std::endl;
+      std::exit(EXIT_FAILURE);
+    }
+    const int status = fInConfigTree->SetBranchAddress(name, value, branch);
+    if( status < 0 || !*branch ){
+      std::cerr << "ERROR: could not bind required config branch '" << name
+                << "' (SetBranchAddress returned " << status << ")." << std::endl;
+      std::exit(EXIT_FAILURE);
+    }
+  };
+
+  bindConfigBranch("nTotEvts", &nTotEvts, &b_nTotEvts);
+  bindConfigBranch("nFltrdEvts", &nFltrdEvts, &b_nFltrdEvts);
+  bindConfigBranch("sumEvtWgt", &sumEvtWgt, &b_sumEvtWgt);
+  bindConfigBranch("sumFltrdEvtWgt", &sumFltrdEvtWgt, &b_sumFltrdEvtWgt);
+  bindConfigBranch("nMetFltrdEvts", &nMetFltrdEvts, &b_nMetFltrdEvts);
+  bindConfigBranch("nPhoFltrdEvts", &nPhoFltrdEvts, &b_nPhoFltrdEvts);
+
   configCnts.clear();
   configWgts.clear();
 
@@ -783,6 +832,11 @@ void KUCMSAodSkimmer::ProcessConfigTree( TChain* fInConfigTree ){
     for (Long64_t centry = 0; centry < nConfigEntries; centry++){
 
       auto entry = fInConfigTree->LoadTree(centry);
+      if( entry < 0 ){
+        std::cerr << "ERROR: failed to load config entry " << centry
+                  << " (LoadTree returned " << entry << ")." << std::endl;
+        std::exit(EXIT_FAILURE);
+      }
 
       b_nTotEvts->GetEntry(entry);   //!
       b_nFltrdEvts->GetEntry(entry);   //!
@@ -865,7 +919,11 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string infile, std::string outfilena
   TChain* fInTree = nullptr;
   TChain* fInConfigTree = nullptr;
   int ret = ProcessFile( infile, fInTree, fInConfigTree);
-  if(ret < 0) return;
+  if(ret < 0){
+    delete fInTree;
+    delete fInConfigTree;
+    return;
+  }
 
   SetOutFileName(outfilename);
   ProcessMainLoop(fInTree, fInConfigTree);
@@ -884,7 +942,11 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_Filelist( std::string eosdir, std::string 
   TChain* fInTree = nullptr;
   TChain* fInConfigTree = nullptr;
   int ret = ProcessFilelist(eosdir, infilelist, fInTree, fInConfigTree);
-  if(ret < 0) return;
+  if(ret < 0){
+    delete fInTree;
+    delete fInConfigTree;
+    return;
+  }
 
   SetOutFileName(outfilename);
   cout << "is in tree null " << (fInTree == nullptr) << endl; 
@@ -902,24 +964,32 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_listsOfLists( std::string eosdir, std::str
   //float crossSection, gmsblam, gmsbct, mcw;
   std::cout << "Processing Input Lists for : " << infilelist << std::endl;
   std::ifstream masterInfile(infilelist);
+
+  if( !masterInfile.is_open() ){
+    std::cerr << "ERROR: could not open input file list: " << infilelist << std::endl;
+    return;
+  }
 	
   string listdir = infilelist.substr(0,infilelist.find("/")+1); 
   while( std::getline( masterInfile, masterstr ) ){
-	
+
+    const auto first = masterstr.find_first_not_of(" \t\r\n");
+    if( first == std::string::npos || masterstr[first] == '#' ) continue;
+    masterstr = masterstr.substr(first);
     if( DEBUG ) std:: cout << masterstr << std::endl;
-    if( masterstr[0] == '#' ) continue;
-    if( masterstr == " " ) continue;
     auto instrs = splitString( masterstr, " " );
     if( DEBUG ) std:: cout << instrs.size() << std::endl;
     if( instrs.size() < 9 ) continue;
     //add path to input file
     instrs[1] = listdir+instrs[1];
-    TTree* fOutTree = new TTree("kuSkimTree","output root file for kUCMSSkimmer");
-    TTree* fConfigTree = new TTree("kuSkimConfigTree","config root file for kUCMSSkimmer");
     TChain* fInTree = nullptr;
     TChain* fInConfigTree = nullptr;
     int ret = ProcessFilelistOfLists(eosdir, instrs, fInTree, fInConfigTree);
-    if(ret < 0) return;
+    if(ret < 0){
+      delete fInTree;
+      delete fInConfigTree;
+      continue;
+    }
     SetOutFileName(outfilename);
     ProcessMainLoop(fInTree, fInConfigTree);	
     std::cout << "Finished processing events for : " << instrs[1] << std::endl;
@@ -953,9 +1023,10 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
 
     // ---- parse input params
 
+    const auto first = masterstr.find_first_not_of(" \t\r\n");
+    if( first == std::string::npos || masterstr[first] == '#' ) continue;
+    masterstr = masterstr.substr(first);
     //if( DEBUG ) std:: cout << masterstr << std::endl;
-    if( masterstr[0] == '#' ) continue;
-    if( masterstr == "" ) continue;
     std:: cout << masterstr << std::endl;
     auto instrs = splitString( masterstr, " " );
     if( DEBUG ) std::cout << instrs.size() << std::endl;
@@ -965,6 +1036,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
     inFileName = instrs[1];
 
     auto key = instrs[2];
+	if( key == "sms" ) key = inFileName;
     auto crossSection = std::stof( instrs[3] );
     auto gmsbgm = std::stof( instrs[4] );
     auto gmsbxm = std::stof( instrs[5] );
@@ -1010,12 +1082,13 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
     int nAdded = 0;
     int nBadFiles = 0;
 
-    std::string eosHost = "cmseos.fnal.gov";
+    //std::string eosHost = "cmseos.fnal.gov";
+    std::string eosHost = "none";
     std::string scanDir = eosdir + inFilePath;
     std::cout << "Finding ROOT files under EOS directory: " << scanDir << std::endl;
     std::vector<std::string> files = findEOSRootFiles(eosHost, scanDir, inFileName);
     std::cout << "Found " << files.size() << " candidate ROOT files." << std::endl;
-
+	
     std::cout << "Adding files to TChain." << std::endl;
     //while (std::getline(infile,instr)){
     for (const auto& tfilename : files) {
@@ -1027,11 +1100,10 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
       //if( fileskipcnt%10 != 0 ) continue;
       //auto tfilename = eosDir + inDir + instr;
 
-      TFile* testFile = TFile::Open(tfilename.c_str(), "READ");
+      std::unique_ptr<TFile> testFile(TFile::Open(tfilename.c_str(), "READ"));
 
       if( !testFile || testFile->IsZombie() || !testFile->IsOpen() ){
 	std::cerr << "\nERROR: bad ROOT file, skipping: " << tfilename << std::endl;
-	if( testFile ) testFile->Close();
 	nBadFiles++;
 	std::cout << "Z";
 	continue;
@@ -1085,10 +1157,16 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
     */
 
     if( not DEBUG ) std::cout << std::endl;
-    if( nfiles == 0 ){ std::cout << " !!!!! no input files !!!!! " << std::endl; return; }
+    if( nAdded == 0 ){
+      std::cout << " !!!!! no usable input files were added ("
+                << nfiles << " candidates checked) !!!!! " << std::endl;
+      delete fInTree;
+      delete fInConfigTree;
+      continue;
+    }
 
     // ------ Do Main Loop
-    _evti = -1; _evti = -1;
+    _evti = -1; _evtj = -1;
     auto ext = splitString( inFileName, "." );
     std::string extOutFileName( ext[0] + outfilename );
     SetOutFileName( extOutFileName );
@@ -1391,6 +1469,23 @@ void KUCMSAodSkimmer::endJobs(){
 
 }//void KUCMSAodSkimmer::endJobs()
 
+// configData[dataSetKey] via operator[] would silently default-construct
+// {0.0, 0.0} for a missing key, turning a missing EventCount.txt entry into
+// N_gen=0 and an inf/nan evtFillWgt (the actual weight computation is in
+// KUCMSAodSkimmer_EvntMetVars.cc, not just this file's config-tree dump)
+// instead of failing the skim job where the problem actually is.
+const std::pair<float,float>& KUCMSAodSkimmer::lookupConfigData( const std::string& dataSetKey ){
+  auto it = configData.find( dataSetKey );
+  if( it == configData.end() ){
+    std::cerr << "  -- FATAL: dataSetKey '" << dataSetKey << "' not found in "
+              << "config/EventCount.txt. Refusing to silently normalize with "
+              << "N_gen=0 (would produce inf/nan evtFillWgt) -- add this key "
+              << "to EventCount.txt before running." << std::endl;
+    exit(1);
+  }//<<>>if( it == configData.end() )
+  return it->second;
+}//<<>>KUCMSAodSkimmer::lookupConfigData()
+
 void KUCMSAodSkimmer::fillConfigTree( TTree* fConfigTree ){
 
   std::cout << "Filling ConfigTree." << std::endl;
@@ -1421,8 +1516,10 @@ void KUCMSAodSkimmer::fillConfigTree( TTree* fConfigTree ){
 
   for( auto item : configCnts ){
     //std::cout << " -- configCnts : " << item.first << " local " << isLocal << std::endl;
-    if( item.first == "nTotEvts" && not isLocal ){
-      int nTotEvtsKey = configData[dataSetKey].first;
+    // mctype != 1: data dataSetKeys are never in EventCount.txt (see the same guard
+    // in processEvntVars()), so only look it up for MC.
+    if( item.first == "nTotEvts" && not isLocal && mctype != 1 ){
+      int nTotEvtsKey = lookupConfigData( dataSetKey ).first;
       //std::cout << " -- Filling nTotEvts : " << dataSetKey << " " << nTotEvtsKey << " for " << item.first << std::endl;
       TBranch *cfBranch = fConfigTree->Branch( "nTotEvts", &nTotEvtsKey );
       cfBranch->Fill();
@@ -1435,8 +1532,9 @@ void KUCMSAodSkimmer::fillConfigTree( TTree* fConfigTree ){
 
   for( auto item : configWgts ){
     //std::cout << " -- configWgts : " << item.first << " local " << isLocal << std::endl;
-    if( item.first == "sumEvtWgt" && not isLocal ){
-      float sumEvtWgtKey = useEvtGenWgtFlag ? configData[dataSetKey].second : configData[dataSetKey].first;
+    if( item.first == "sumEvtWgt" && not isLocal && mctype != 1 ){
+      const auto& cfgEntry = lookupConfigData( dataSetKey );
+      float sumEvtWgtKey = useEvtGenWgtFlag ? cfgEntry.second : cfgEntry.first;
       //std::cout << " -- Filling sumEvtWgt : " << dataSetKey << " " << sumEvtWgtKey << " for " << item.first << std::endl;
       TBranch *cfBranch = fConfigTree->Branch( "sumEvtWgt", &sumEvtWgtKey );
       cfBranch->Fill();

@@ -32,8 +32,8 @@ void HistMaker::histMaker( std::string indir, std::string infilelist, std::strin
     const std::string disphotreename("kuSkimTree");
     const std::string configtreename("kuSkimConfigTree");
     //const std::string eosdir("root://cmseos.fnal.gov//store/user/lpcsusylep/malazaro/KUCMSSkims/skims_v49/");
-    //const std::string eosdir("root://cmseos.fnal.gov//store/user/lpcsusylep/malazaro/KUCMSSkims/skims_v50/");
-    const std::string eosdir("");
+    const std::string eosdir("root://cmseos.fnal.gov//store/user/lpcsusylep/malazaro/KUCMSSkims/skims_v50/");
+    //const std::string eosdir("");
     const std::string listdir("");
 	const std::string ofnending = "_RjrSkim_Hists.root";
 
@@ -332,7 +332,6 @@ void HistMaker::histMaker( std::string indir, std::string infilelist, std::strin
         }//<<>>for( auto line : item.second )
         std::cout << ")" << std::endl;   
 
- 
         std::cout << "<<<<<<<< Processing Event Loop <<<<<<<<<<<<<< " << std::endl;
     	int loopCounter(100000);
         //int loopCounter(1000);
@@ -663,7 +662,9 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 	float r = (*rjr_R)[cs];
 
 	float pts = (*rjrPTS)[cs];
-	float dphisi = (*rjrSdphiBV)[cs];
+	float dphisi = (*rjrDPhiSI)[cs]; //  (*rjrSdphiBV)[cs];
+    float isrpts = rjrIsrPTS;
+    float isrdphisi = rjrIsrDPhiSI; //  (*rjrSdphiBV)[cs];
 
     float ms = (*rjr_Ms)[cs]; // pHs41; NEW !!!!!!!
     float msq = (*rjr_pHs21)[cs]; // Ms for sqsq?
@@ -678,6 +679,8 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     float rxa = (*rjr_pHxa11)[cs]/(*rjr_pHxa21)[cs];
     float rxb = (*rjr_pHxb11)[cs]/(*rjr_pHxb21)[cs];
 
+	float risr = rjrIsr_RIsr;
+	float ptisr = rjrIsr_PtIsr;
 
 	float rx0 = std::sqrt( rx0a*rx0a + rx0b*rx0b)/std::sqrt(2); 
 	float rxmin = std::min( rxb, rxa );
@@ -751,7 +754,7 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
 	//if( not trigger ) continue;
     //if( hemVeto ) continue;
 
-    if( ms > 2000 ) continue;
+    //if( ms > 2000 ) continue;
 
 /*
 	// GGG cut sets
@@ -824,6 +827,70 @@ void HistMaker::eventLoop( Long64_t entry, std::vector<float> m_vec, std::vector
     if( nRjrPhos == 33 ){
     }//<<>>if( nRjrPhos == 13 )
 */
+
+/*
+	hist2d[120] = new TH2D("pts_v_dphisi_nch_sm", addstr(ht,"Sig-MetFilter;dPhi_{SI};Pt_{s}").c_str(), 160,0,3.2,150,0,1500);
+    hist2d[121] = new TH2D("pts_v_dphisi_ncl_sm", addstr(ht,"Sig-MetFilter;dPhi_{SI};Pt_{s}").c_str(), 160,0,3.2,50,0,500);
+    hist2d[122] = new TH2D("pts_v_dphisi_ch_sm", addstr(ht,"ISR-Sig-MetFilter;dPhi_{SI};Pt_{s}").c_str(), 160,0,3.2,60,0,300);
+    hist2d[123] = new TH2D("pts_v_dphisi_cl_sm", addstr(ht,"ISR-Sig-MetFilter;dPhi_{SI};Pt_{s}").c_str(), 160,0,3.2,20,0,100);
+    hist2d[124] = new TH2D("pts_v_dphisi_nch_cm", addstr(ht,"Ctrl-MetFilter;dPhi_{SI};Pt_{s}").c_str(), 160,0,3.2,150,0,1500);
+    hist2d[125] = new TH2D("pts_v_dphisi_ncl_cm", addstr(ht,"Ctrl-MetFilter;dPhi_{SI};Pt_{s}").c_str(), 160,0,3.2,50,0,500);
+    hist2d[126] = new TH2D("pts_v_dphisi_ch_cm", addstr(ht,"ISR-Ctrl-MetFilter;dPhi_{SI};Pt_{s}").c_str(), 160,0,3.2,60,0,300);
+    hist2d[127] = new TH2D("pts_v_dphisi_cl_cm", addstr(ht,"ISR-Ctrl-MetFilter;dPhi_{SI};Pt_{s}").c_str(), 160,0,3.2,20,0,100);
+    hist2d[128] = new TH2D("pts_v_dphisi_nch_sn", addstr(ht,"Sig-!MetFilter;dPhi_{SI};Pt_{s}").c_str(), 160,0,3.2,150,0,1500);
+    hist2d[129] = new TH2D("pts_v_dphisi_ncl_sn", addstr(ht,"Sig-!MetFilter;dPhi_{SI};Pt_{s}").c_str(), 160,0,3.2,50,0,500);
+    hist2d[130] = new TH2D("pts_v_dphisi_ch_sn", addstr(ht,"ISR-Sig-!MetFilter;dPhi_{SI};Pt_{s}").c_str(), 160,0,3.2,60,0,300);
+    hist2d[131] = new TH2D("pts_v_dphisi_cl_sn", addstr(ht,"ISR-Sig-!MetFilter;dPhi_{SI};Pt_{s}").c_str(), 160,0,3.2,20,0,100);
+    hist2d[132] = new TH2D("pts_v_dphisi_nch_cn", addstr(ht,"Ctrl-!MetFilter;dPhi_{SI};Pt_{s}").c_str(), 160,0,3.2,150,0,1500);
+    hist2d[133] = new TH2D("pts_v_dphisi_ncl_cn", addstr(ht,"Ctrl-!MetFilter;dPhi_{SI};Pt_{s}").c_str(), 160,0,3.2,50,0,500);
+    hist2d[134] = new TH2D("pts_v_dphisi_ch_cn", addstr(ht,"ISR-Ctrl-!MetFilter;dPhi_{SI};Pt_{s}").c_str(), 160,0,3.2,60,0,300);
+    hist2d[135] = new TH2D("pts_v_dphisi_cl_cn", addstr(ht,"ISR-Ctrl-!MetFilter;dPhi_{SI};Pt_{s}").c_str(), 160,0,3.2,20,0,100);
+*/
+
+
+	if( metCPt < 150 ) continue;	
+
+	if( ms > 1200 && rs > 0.1 && metFlag ){
+		hist2d[120]->Fill(dphisi,pts);
+		hist2d[121]->Fill(dphisi,pts);
+		//effnc[19]++;
+		//for( int i = 0; i < 19; i++ ){ if( pts < ( 50 + 25*i ) ) effnc[i]++; } 
+	}//<<>>if( ms > 1200 && rs > 0.1 && metFlag )
+    if( ptisr > 500 && risr > 0.4 && metFlag ){
+        hist2d[122]->Fill(isrdphisi,isrpts);
+        hist2d[123]->Fill(isrdphisi,isrpts);
+        //effc[19]++;
+        //for( int i = 0; i < 19; i++ ){ if( isrpts < ( 50 + 25*i ) ) effc[i]++; } 
+    }//<<>>if( ms > 1200 && rs > 0.1 && metFlag )
+    if( ms < 1200 && rs < 0.1 && metFlag ){
+        hist2d[124]->Fill(dphisi,pts);
+        hist2d[125]->Fill(dphisi,pts);
+        effnc[19]++;
+        for( int i = 0; i < 19; i++ ){ if( pts < ( 50 + 25*i ) ) effnc[i]++; }
+    }//<<>>if( ms > 1200 && rs > 0.1 && metFlag )
+    if( ptisr < 500 && risr < 0.4 && metFlag ){
+        hist2d[126]->Fill(isrdphisi,isrpts);
+        hist2d[127]->Fill(isrdphisi,isrpts);
+        effc[19]++;
+        for( int i = 0; i < 19; i++ ){ if( isrpts < ( 50 + 25*i ) ) effc[i]++; }
+    }//<<>>if( ms > 1200 && rs > 0.1 && metFlag )
+
+    if( ms > 1200 && rs > 0.1 && !metFlag ){
+        hist2d[128]->Fill(dphisi,pts);
+        hist2d[129]->Fill(dphisi,pts);
+    }//<<>>if( ms > 1200 && rs > 0.1 && metFlag )
+    if( ptisr > 500 && risr > 0.4 && !metFlag ){
+        hist2d[130]->Fill(isrdphisi,isrpts);
+        hist2d[131]->Fill(isrdphisi,isrpts);
+    }//<<>>if( ms > 1200 && rs > 0.1 && metFlag )
+    if( ms < 1200 && rs < 0.1 && !metFlag ){
+        hist2d[132]->Fill(dphisi,pts);
+        hist2d[133]->Fill(dphisi,pts);
+    }//<<>>if( ms > 1200 && rs > 0.1 && metFlag )
+    if( ptisr < 500 && risr < 0.4 && !metFlag ){
+        hist2d[134]->Fill(isrdphisi,isrpts);
+        hist2d[135]->Fill(isrdphisi,isrpts);
+    }//<<>>if( ms > 1200 && rs > 0.1 && metFlag )
 
 
 	if( gwtimeres > 0 && std::abs( gwtime ) < 2.0 && gweta > 1.5 ){
@@ -977,6 +1044,18 @@ void HistMaker::endJobs(){
 
     //for( int it = 10; it < 30; it++ ){ if(hist1d[it]) smoothTH1D_v2(hist1d[it]);}
 	//normTH2D(hist2d[220]);
+	float fnceff[19] = {0};
+    float fceff[19] = {0};
+	for( int i = 0; i < 19; i++ ){ 
+		if( effnc[19] > 0 ) fnceff[i] = effnc[i]/effnc[19]; 
+        if( effc[19] > 0 ) fceff[i] = effc[i]/effc[19]; 
+	}//<<>>for( int i = 0; i < 19; i++ )
+	std::cout << "RJR Cleaning Effs : " << std::endl;
+    for( int i = 0; i < 19; i++ ){
+		float val =  50 + 25*i; 
+		std::cout << " - For < " << val << " Non-Comp ( PtS ) " << fnceff[i] << " Comp ( ISR PtS ) " << fceff[i] << std::endl;
+	}//<<>>for( int i = 0; i < 19; i++ )
+	for( int i = 0; i < 20; i++ ){ effc[i] = 0; effnc[i] = 0; }
 
 }//<<>>void HistMaker::endJobs()
 
@@ -1033,6 +1112,8 @@ void HistMaker::endBatchJobs(){
 }//<<>>void HistMaker::endJobs()
 
 void HistMaker::initHists( std::string ht ){
+
+    for( int i = 0; i < 20; i++ ){ effc[i] = 0; effnc[i] = 0; }
 
 	for( int it = 0; it < n1dHists; it++ ){ hist1d[it] = NULL; }
     for( int it = 0; it < n2dHists; it++ ){ hist2d[it] = NULL; }
@@ -1178,6 +1259,25 @@ void HistMaker::initHists( std::string ht ){
     hist2d[109] = new TH2D("LTime_v_Sieie", addstr(ht," LTime_v_Sieie;selPhoLTime;selPhoSigmaIEtaIEta").c_str(), 400, -20, 20, 100, 0, 0.025);
     hist2d[110] = new TH2D("LTime_v_SSCross", addstr(ht," LTime_v_SSCross;selPhoLTime;selPhoSSCross").c_str(), 400, -20, 20, 200, -1, 1);
 
+
+	hist2d[120] = new TH2D("pts_v_dphisi_nch_sm", addstr(ht," Sig-MetFilter;dPhi_{SI};Pt_{s}").c_str(), 80,0,3.2,150,0,1500);
+    hist2d[121] = new TH2D("pts_v_dphisi_ncl_sm", addstr(ht," Sig-MetFilter;dPhi_{SI};Pt_{s}").c_str(), 80,0,3.2,100,0,500);
+    hist2d[122] = new TH2D("pts_v_dphisi_ch_sm", addstr(ht," ISR-Sig-MetFilter;dPhi_{SI};Pt_{s}").c_str(), 80,0,3.2,150,0,1500);
+    hist2d[123] = new TH2D("pts_v_dphisi_cl_sm", addstr(ht," ISR-Sig-MetFilter;dPhi_{SI};Pt_{s}").c_str(), 80,0,3.2,100,0,500);
+    hist2d[124] = new TH2D("pts_v_dphisi_nch_cm", addstr(ht," Ctrl-MetFilter;dPhi_{SI};Pt_{s}").c_str(), 80,0,3.2,150,0,1500);
+    hist2d[125] = new TH2D("pts_v_dphisi_ncl_cm", addstr(ht," Ctrl-MetFilter;dPhi_{SI};Pt_{s}").c_str(), 80,0,3.2,100,0,500);
+    hist2d[126] = new TH2D("pts_v_dphisi_ch_cm", addstr(ht," ISR-Ctrl-MetFilter;dPhi_{SI};Pt_{s}").c_str(), 80,0,3.2,150,0,1500);
+    hist2d[127] = new TH2D("pts_v_dphisi_cl_cm", addstr(ht," ISR-Ctrl-MetFilter;dPhi_{SI};Pt_{s}").c_str(), 80,0,3.2,100,0,500);
+    hist2d[128] = new TH2D("pts_v_dphisi_nch_sn", addstr(ht," Sig-!MetFilter;dPhi_{SI};Pt_{s}").c_str(), 80,0,3.2,150,0,1500);
+    hist2d[129] = new TH2D("pts_v_dphisi_ncl_sn", addstr(ht," Sig-!MetFilter;dPhi_{SI};Pt_{s}").c_str(), 80,0,3.2,100,0,500);
+    hist2d[130] = new TH2D("pts_v_dphisi_ch_sn", addstr(ht," ISR-Sig-!MetFilter;dPhi_{SI};Pt_{s}").c_str(), 80,0,3.2,150,0,1500);
+    hist2d[131] = new TH2D("pts_v_dphisi_cl_sn", addstr(ht," ISR-Sig-!MetFilter;dPhi_{SI};Pt_{s}").c_str(), 80,0,3.2,100,0,500);
+    hist2d[132] = new TH2D("pts_v_dphisi_nch_cn", addstr(ht," Ctrl-!MetFilter;dPhi_{SI};Pt_{s}").c_str(), 80,0,3.2,150,0,1500);
+    hist2d[133] = new TH2D("pts_v_dphisi_ncl_cn", addstr(ht," Ctrl-!MetFilter;dPhi_{SI};Pt_{s}").c_str(), 80,0,3.2,100,0,500);
+    hist2d[134] = new TH2D("pts_v_dphisi_ch_cn", addstr(ht," ISR-Ctrl-!MetFilter;dPhi_{SI};Pt_{s}").c_str(), 80,0,3.2,150,0,1500);
+    hist2d[135] = new TH2D("pts_v_dphisi_cl_cn", addstr(ht," ISR-Ctrl-!MetFilter;dPhi_{SI};Pt_{s}").c_str(), 80,0,3.2,100,0,500);
+
+
     hist2d[200] = new TH2D("STime_v_PhoEnergy", addstr(ht," STime_v_PhoEnergy;selPhoSTime;selPhoEnergy").c_str(), 400, -20, 20, 200, 0, 2000);
     hist2d[201] = new TH2D("STime_v_LSCross", addstr(ht," STime_v_LSCross;selPhoSTime;selPhoLSCross").c_str(), 400, -20, 20, 200, -1, 1);
     hist2d[202] = new TH2D("STime_v_STime", addstr(ht," STime_v_STime;selPhoSTime;selPhoSTime").c_str(), 400, -20, 20, 400, -20, 20);
@@ -1245,11 +1345,11 @@ int main ( int argc, char *argv[] ){
                 
 				//std::string listdir = "../KUCMSSkimmer/condor/";
 				//std::string listdir = "/uscms/home/jaking/nobackup/llpana_skims/";
-				//std::string listdir = "";
+				std::string listdir = "";
 				//std::string listdir = "/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/tsig_skims/"; 
                 //std::string listdir = "/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/";
 
-				std::string listdir = "/uscms/home/jaking/nobackup/el9/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/";
+				//std::string listdir = "/uscms/home/jaking/nobackup/el9/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/";
 
 				//std::string infilenameJ = "rjr_skim_files/KUCMS_RJR_GIGI_ootmet_Skim_List.txt";
                 //std::string infilenameJ = "rjr_skim_files/KUCMS_RJR_SMS_ootmet_Skim_List.txt";
@@ -1261,8 +1361,8 @@ int main ( int argc, char *argv[] ){
                 //std::string infilenameD = "rjr_skim_files/KUCMS_RJR_DATA_v40_Skim_List.txt";
                 std::string infilenameD = "rjr_skim_files/KUCMS_RJR_Test_v50_Skim_List.txt";
 
-				std::string version = "v50_";
-				std::string sigtype = "llpana_";
+				std::string version = "v52_";
+				std::string sigtype = "SMS_";
 				std::string ofnstart = "KUCMS_";
 
                 std::string htitleBG = "BG_"+sigtype+version;
@@ -1288,19 +1388,20 @@ int main ( int argc, char *argv[] ){
                 //std::vector<float> rv_vec{31.69};
                 std::string outdir = "";
 
-                std::string isoline = "PVtime_Res_SkV50_";
+                std::string isoline = "RJR_Cleaning_";
+                //std::string isoline = "PVtime_Res_SkV50_";
                 //std::string isoline = "P1TrMfHeHa_RJR0_"; // Tv = time valid, Mf = metfilters, Ha = halofilters, Tr = trigger, He = hemfilter;
 				//std::string isoline = "P1TrMfHeHa_TSig_GS1_"; // Tv = time valid, Mf = metfilters, Ha = halofilters, Tr = trigger, He = hemfilter;
-				isoline += "cv" + std::to_string( np ) + "_";
+				//isoline += "cv" + std::to_string( np ) + "_";
                 std::string outfilenameJ = outdir + ofnstart + htitleJ + isoline;
 				std::string htitlefullJ =  htitleJ + isoline;
-				//base.histMaker( listdir, infilenameJ, outfilenameJ, htitlefullJ, 0, nj, rv_vec, r_vec, rv_vec );
+				base.histMaker( listdir, infilenameJ, outfilenameJ, htitlefullJ, 0, nj, rv_vec, r_vec, rv_vec );
                 std::string outfilenameBG = outdir + ofnstart + htitleBG + isoline;
                 std::string htitlefullBG =  htitleBG + isoline;
                 //base.histMaker( listdir, infilenameBG, outfilenameBG, htitlefullBG, 0, nj, r_vec, r_vec, rv_vec );
                 std::string outfilenameD = outdir + ofnstart + htitleD + isoline;
                 std::string htitlefullD =  htitleD + isoline;
-                base.histMaker( listdir, infilenameD, outfilenameD, htitlefullD, 1, nj, r_vec, r_vec, rv_vec );
+                //base.histMaker( listdir, infilenameD, outfilenameD, htitlefullD, 1, nj, r_vec, r_vec, rv_vec );
 
 				}}
 

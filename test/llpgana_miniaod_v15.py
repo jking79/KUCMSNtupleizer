@@ -1,0 +1,576 @@
+import os, re
+import FWCore.ParameterSet.Config as cms
+  
+### CMSSW command line parameter parser
+from FWCore.ParameterSet.VarParsing import VarParsing
+options = VarParsing('python')
+
+## Flags
+
+options.register('multicrab',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'swtich to use muticrab paramters');
+options.register('hasGenInfo',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to get pcalo in mc');
+options.register('eventFilter','SVHPMet100',VarParsing.multiplicity.singleton,VarParsing.varType.string,'filter to use in processing');
+options.register('doSV',True,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to run displaced SVs');
+options.register('doDisEle',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag ro run displaced electrons');
+options.register('doECALTrackOnly',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to run ECAL Tracks only');
+options.register('runera','Run2_2018',VarParsing.multiplicity.singleton,VarParsing.varType.string,'filter to use in event processing');
+options.register('runMETFilters',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to run Met Filters');
+
+## object prep cuts
+#options.register('jetpTmin',15.0,VarParsing.multiplicity.singleton,VarParsing.varType.float,'jet pT minimum cut');
+#options.register('jetEtamax',3.0,VarParsing.multiplicity.singleton,VarParsing.varType.float,'jet eta maximum cut');
+#options.register('jetIDmin',1,VarParsing.multiplicity.singleton,VarParsing.varType.int,'jet ID minimum cut');
+#options.register('rhEmin',1.0,VarParsing.multiplicity.singleton,VarParsing.varType.float,'recHit energy minimum cut');
+#options.register('phpTmin',20.0,VarParsing.multiplicity.singleton,VarParsing.varType.float,'photon pT minimum cut');
+#options.register('phIDmin','none',VarParsing.multiplicity.singleton,VarParsing.varType.string,'photon ID minimum cut');
+
+## lepton prep cuts
+#options.register('ellowpTmin',20.0,VarParsing.multiplicity.singleton,VarParsing.varType.float,'electron low pT min cut');
+#options.register('elhighpTmin',50.0,VarParsing.multiplicity.singleton,VarParsing.varType.float,'electron high pT min cut');
+#options.register('mulowpTmin',20.0,VarParsing.multiplicity.singleton,VarParsing.varType.float,'muon low pT minimum cut');
+#options.register('muhighpTmin',50.0,VarParsing.multiplicity.singleton,VarParsing.varType.float,'muon high pT minimum cut');
+
+## GT to be used
+##------------------ mc gt
+#options.register('globalTag','106X_mc2017_realistic_v6',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
+#options.register('globalTag','106X_upgrade2018_realistic_v15_L1v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
+###options.register('globalTag','94X_mc2017_realistic_v11',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
+#options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for sig22 MC');
+options.register('globalTag','124X_mcRun3_2022_realistic_v12',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for sig22 MC');
+#options.register('globalTag','130X_mcRun3_2023_realistic_v14',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
+#options.register('globalTag','133X_mcRun3_2024_realistic_v10',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
+#options.register('globalTag','94X_mc2017_realistic_v14',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for GMSB MC');
+##options.register('globalTag','112X_mcRun3_2021_realistic_v16',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
+#options.register('globalTag','140X_dataRun3_v17',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for R3 22');
+#options.register('globalTag','130X_mcRun3_2023_realistic_postBPix_v2',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for R3 23');
+##------------------ data gt  
+#options.register('globalTag','106X_dataRun2_v37',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
+#options.register('globalTag','150X_dataRun3_v2',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
+##options.register('globalTag','106X_dataRun2_v28',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
+#options.register('globalTag','124X_dataRun3_v15',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2022');
+#options.register('globalTag','140X_dataRun3_v17',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
+##options.register('globalTag','106X_dataRun2_v24',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2018UL');
+#112X_mcRun3_2021_realistic_v16
+# DATA 2025
+#options.register('globalTag','150X_dataRun3_Prompt_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag for 2025');
+
+## processName
+options.register('processName','TREE',VarParsing.multiplicity.singleton,VarParsing.varType.string,'process name to be considered');
+
+outfilename = 'kucmsntuple_localtest.root'
+if options.multicrab == True : 
+    outfilename = 'kucmsntuple.root'
+
+options.register('outputFileName',outfilename,VarParsing.multiplicity.singleton,VarParsing.varType.string,'output file name created by cmsRun');
+
+## parsing command line arguments
+options.parseArguments()
+
+## Define the CMSSW process
+#runera = "Run2" 
+#runera = "Run3"  # current siganl model   !!!!!!!!  Run3 must be in CMSSW 14 or 15
+#runera = "Run3_2025"
+runera = "Run3_2022"
+#runera = "Run3_2024"
+#runera = "Run2_2018" # BG models
+#runera = "Run2_2017"
+if options.multicrab == True : runera = options.runera
+
+from Configuration.StandardSequences.Eras import eras
+era_map = {
+    "Run2_2016": eras.Run2_2016,
+    "Run2_2017": eras.Run2_2017,
+    "Run2_2018": eras.Run2_2018,
+    "Run2": eras.Run2_2018,
+    "Run3_2022": eras.Run3,
+    "Run3_2023": eras.Run3,
+    "Run3_2024": eras.Run3,
+    "Run3_2025": eras.Run3,
+    "Run3_2026": eras.Run3,
+    "Run3": eras.Run3
+}
+era = era_map[options.runera]
+process = cms.Process(options.processName, era )
+
+## Load the standard set of configuration modules
+process.load('Configuration.StandardSequences.Services_cff')
+process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
+process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')
+
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+process.load('TrackingTools.TransientTrack.TransientTrackBuilder_cfi')
+process.load("TrackingTools.TrackAssociator.DetIdAssociatorESProducer_cff")
+process.load('Configuration.StandardSequences.EndOfProcess_cff')
+
+process.load('PhysicsTools.PatAlgos.triggerLayer1.triggerProducer_cfi')
+
+## Message Logger settings
+process.load("FWCore.MessageService.MessageLogger_cfi")
+#process.MessageLogger.destinations = ['cout', 'cerr']
+#process.MessageLogger.cerr.FwkReport.reportEvery = 1
+#process.MessageLogger.cerr.FwkReport.reportEvery = 2
+#process.MessageLogger.cerr.FwkReport.reportEvery = 10
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
+#process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+if options.multicrab == True : process.MessageLogger.cerr.FwkReport.reportEvery = 100000
+
+from KUCMSNtupleizer.KUCMSNtupleizer.TrackAssociator_mini_cfi import tkAssocParamBlock
+
+process.load('KUCMSNtupleizer.KUCMSNtupleizer.ECALTracks_mini_cfi')
+from KUCMSNtupleizer.KUCMSNtupleizer.ECALTracks_mini_cfi import *
+
+process.load('KUCMSNtupleizer.KUCMSNtupleizer.MuonEnhancedTracks_cfi')
+from KUCMSNtupleizer.KUCMSNtupleizer.MuonEnhancedTracks_cfi import *
+
+process.load('KUCMSNtupleizer.KUCMSNtupleizer.miniAODTrackProducer_cfi')
+from KUCMSNtupleizer.KUCMSNtupleizer.miniAODTrackProducer_cfi import *
+
+process.load('KUCMSNtupleizer.KUCMSNtupleizer.miniAODMuonEnhancedTracksProducer_cfi')
+from KUCMSNtupleizer.KUCMSNtupleizer.miniAODMuonEnhancedTracksProducer_cfi import *
+
+process.load('KUCMSNtupleizer.KUCMSNtupleizer.hyddra_cfi')
+from KUCMSNtupleizer.KUCMSNtupleizer.hyddra_cfi import *
+
+# Set the global tag depending on the sample type
+from Configuration.AlCa.GlobalTag import GlobalTag
+process.GlobalTag.globaltag = options.globalTag
+
+## Create output file
+## Setup the service to make a ROOT TTree
+process.TFileService = cms.Service("TFileService", fileName = cms.string(options.outputFileName))
+
+## Define the input source
+
+#filelist_path = "met_18D_missing_resubmissions.txt"
+#with open(filelist_path) as f:
+#    readFiles = cms.untracked.vstring(line.strip() for line in f if line.strip() and not line.startswith("#"))
+
+process.source = cms.Source("PoolSource",
+    #fileNames=readFiles,
+    fileNames = cms.untracked.vstring(
+
+        #root://cmsxrootd.fnal.gov/
+        #root://cmseos.fnal.gov/
+        #root://cms-xrd-global.cern.ch/
+
+        #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_2022_Fast_PUlib1/SMS-GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p1_MINI/260812_195205/0000/SMS-GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p1_MiniAODv4_16.root'
+
+        'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p1_MINI/260317_213805/0000/SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p1_MiniAODv4_12.root'
+
+        #'root://cmsxrootd.fnal.gov//store/data/Run2018D/MET/MINIAOD/UL2018_MiniAODv2_GT36-v1/40000/00803A6B-68D2-1B4A-A014-9CF5E6FE5614.root',
+        #'root://cmsxrootd.fnal.gov//store/data/Run2018D/MET/MINIAOD/UL2018_MiniAODv2_GT36-v1/40000/3C77E5CD-7E39-EA48-9E28-0632856A1A1A.root',
+        #file:
+        #'root://cmsxrootd.fnal.gov//store/data/Run2016F/MET/MINIAOD/UL2016_MiniAODv2-v2/120000/0022C307-4BA7-1F4E-8588-CCDCEFAA7D12.root',    
+        #'root://cmsxrootd.fnal.gov//store/data/Run2017B/MET/MINIAOD/UL2017_MiniAODv2-v1/100000/9B53ACB7-C063-1D44-A564-42435C24DE7B.root',
+        #'root://cmsxrootd.fnal.gov//store/data/Run2024D/JetMET0/MINIAOD/MINIv6NANOv15-v1/2530000/0015790c-a12b-4936-bc66-1abc66dfdbdb.root',
+        #### AOD Run3   MUST BE IN CMSSW  14 or 15 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        # Data
+        #'root://cmsxrootd.fnal.gov//store/data/Run2024C/JetMET0/MINIAOD/PromptReco-v1/000/379/415/00000/f41372ad-bc84-47c3-9c74-49f96cf26866.root',
+        #'file:root_files/R23C_JetMet_mini_4a8e9a72-a9af-4448-acbd-bafa6cd684b4.root',
+        #######'file:root_files/Met_UL18B_AOD_973EEF0C-44AB-E94A-8591-04DCD00D8B4B.root',
+        ##'file:root_files/R22D_JetMet_mini_1f4a97f7-de76-4ee1-a380-0d9d7a5914d2.root',
+        # MiniAOD 2018UL MET
+        #'file:root_files/UL18_mini_MET_76190182-C845-2B40-A3F1-FA9FDAB9F7EC.root',
+        ######'file:root_files/WJets_72B9C618-FE23-1E41-872E-57314D7CB454.root',
+        #'root://cmsxrootd.fnal.gov//store/data/Run2016G/MET/MINIAOD/UL2016_MiniAODv2-v2/120000/020ADD62-87D5-4B43-BAAD-C77C83D5FF8F.root',
+        #'root://cmsxrootd.fnal.gov//store/data/Run2018B/JetHT/MINIAOD/15Feb2022_UL2018-v1/2820000/84DEEA91-CF7B-C24B-831D-7D993EB56D8D.root',
+        #'root://cms-xrd-global.cern.ch//store/data/Run2018D/MET/MINIAOD/15Feb2022_UL2018-v1/510000/F5E0C00B-109F-5C4D-92F9-6D9F57EBE8C5.root',
+        #'root://cms-xrd-global.cern.ch//store/data/Run2018A/MET/MINIAOD/UL2018_MiniAODv2_GT36-v1/2430000/008D956B-CE88-0B4F-8432-069471D1AA15.root',
+        #'root://cms-xrd-global.cern.ch//store/data/Run2017D/DoubleEG/MINIAOD/09Aug2019_UL2017-v1/260000/3879D624-EAFF-C34B-8C0E-D4D7E23EB25C.root',
+        #'root://cms-xrd-global.cern.ch//store/data/Run2018D/EGamma/MINIAOD/UL2018_MiniAODv2-v2/2810000/D5E0889C-D687-6242-8105-A147939E99C4.root',
+        #'root://cmsxrootd.fnal.gov//store/data/Run2018B/JetHT/MINIAOD/15Feb2022_UL2018-v1/2820000/84DEEA91-CF7B-C24B-831D-7D993EB56D8D.root',
+        #'root://cmsxrootd.fnal.gov//store/data/Run2025F/JetMET0/MINIAOD/PromptReco-v1/000/396/733/00000/40cf55f8-5609-44a7-b73b-c74f4ae04076.root',
+
+        # MC - Sig
+        #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_2022_Fast_PUlib1/SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p1_MINI/260812_195128/0000/SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p1_MiniAODv4_1.root'
+        #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FastSim_Mini/SMS-GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p5_FASTAOD_MINI/260210_032208/0000/SMS-GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p5_FASTAOD_MiniAODv4_99.root'
+        #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p01_MINI/260615_154328/0000/SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p01_MiniAODv4_99.root'
+        #'file:gjets_100to200_mini_18UL.root',
+        #'root://cmsxrootd.fnal.gov//store/mc/RunIISummer20UL18MiniAODv2/GJets_HT-200To400_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/2550000/02DB3B2A-F2FE-4041-AA6F-45D8732CB5A8.root',    
+        #'root://cmsxrootd.fnal.gov//store/mc/Run3Summer23BPixMiniAODv4/QCD-4Jets_HT-1000to1200_TuneCP5_13p6TeV_madgraphMLM-pythia8/MINIAODSIM/130X_mcRun3_2023_realistic_postBPix_v2-v4/2550000/095a8ffe-1d09-4d04-bb7e-56903d510c3e.root',
+        #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_MINI/260203_235322/0000/SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_MiniAODv4_99.root',
+        #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p5_MINI/260317_213825/0000/SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p5_MiniAODv4_18.root',
+        #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2500_mN2-1200_mN1-500_GZ_N2ctau-0p5_MINI/260317_214117/0000/SMS-GlGl_mGl-2500_mN2-1200_mN1-500_GZ_N2ctau-0p5_MiniAODv4_22.root',
+        #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2500_mN2-2450_mN1-2350_GZ_N2ctau-0p5_MINI/260317_214430/0000/SMS-GlGl_mGl-2500_mN2-2450_mN1-2350_GZ_N2ctau-0p5_MiniAODv4_54.root',
+        #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2300_mN2-2250_mN1-2200_GZ_N2ctau-0p5_MINI/260203_235206/0000/SMS-GlGl_mGl-2300_mN2-2250_mN1-2200_GZ_N2ctau-0p5_MiniAODv4_82.root',
+        #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2300_mN2-2200_mN1-2150_GZ_N2ctau-0p5_MINI/260317_213954/0000/SMS-GlGl_mGl-2300_mN2-2200_mN1-2150_GZ_N2ctau-0p5_MiniAODv4_108.root',
+        #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2500_mN2-2450_mN1-2350_GZ_N2ctau-0p5_MINI/260317_214430/0000/SMS-GlGl_mGl-2500_mN2-2450_mN1-2350_GZ_N2ctau-0p5_MiniAODv4_54.root',
+        ),##<<>>fileNames = cms.untracked.vstring
+        secondaryFileNames=cms.untracked.vstring()
+        #skipEvents=cms.untracked.uint32(300),
+)##<<>>process.source = cms.Source("PoolSource",
+
+# Override hardcoded source file(s) when inputFiles is passed on the command line
+# (e.g. cmsRun llpgana_miniaod.py inputFiles=root://... maxEvents=100)
+# Read sys.argv directly to avoid VarParsing list-default quirks.
+#import sys as _sys
+#_cmdInputFiles = [a.split('=', 1)[1] for a in _sys.argv if a.startswith('inputFiles=')]
+#if _cmdInputFiles:
+#    process.source.fileNames = cms.untracked.vstring(_cmdInputFiles)
+
+## How many events to process
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))#ONE
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#ST
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))#TT
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(250))#KT
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(500))
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))#KT
+#process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))#FL
+
+# Override hardcoded source file(s) when inputFiles is passed on the command line
+#_cmdMaxEvents = [a.split('=', 1)[1] for a in _sys.argv if a.startswith('maxEvents=')]
+#if _cmdMaxEvents:
+#    process.maxEvents.input = cms.untracked.int32(int(_cmdMaxEvents[-1]))
+
+genInfo = True
+#genInfo = False
+if options.multicrab == True : genInfo = options.hasGenInfo		   
+
+ecalIsoInputsF17 = 'RecoEgamma/ElectronIdentification/data/Fall17/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_94X.txt'
+ecalruneraIsoInputsW22 = 'RecoEgamma/ElectronIdentification/data/Run3_Winter22/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_122X.txt'
+
+#filterselect = 'none'
+filterselect = 'SVHPMet100'
+#filterselect = 'InvMet100IP'
+####filterselect = 'AL1NpSC'
+####filterselect = 'AL1DisSV'
+####3#filterselect = 'SVIPMet100'
+#filterselect = 'MET100'
+#filterselect = 'InvMET100'
+####filterselect = 'AL1IsoPho'
+####filterselect = 'IsoPhoMet100'
+#####filterselect = 'AL1SelEle'
+if options.multicrab == True : filterselect = options.eventFilter
+
+dosv = True
+#dosv = False # with v30 this is the only SV flag that matters, doDisEle and doECALTrackOnly are depreciated
+if options.multicrab == True : dosv = options.doSV
+############dode = True
+dode = False # removed - only false with v30
+#if options.multicrab == True : dode = options.doDisEle
+doet = True ## with v30 no longer optional when using ( "ecalTracks", "displacedElectronSCs" ) for SCs collection
+#####doet = False  ## leave true always for now
+
+#runMETFilters = True
+runMETFilters = False
+if options.multicrab == True : runMETFilters = options.runMETFilters
+
+#probeout = True
+probeout = False
+if options.multicrab == True : probeout = False
+
+isCC = False
+flagSet = "RECO"
+triggerSet = "HLT" # ? SIM, HLT, RECO, PAT
+convSet = "PAT"
+ecalIsoInputs = ecalIsoInputsF17
+
+if "Run2" in runera and genInfo is True :
+    convSet = "PAT"
+    flagSet = "PAT"
+
+if "Run2_2016" in runera :
+    convSet = "PAT"
+
+#if "Run2_2018" in runera :
+#    convSet = "RECO"
+
+if "Run3" in runera :
+    flagSet = "PAT"
+    convSet = "PAT"
+    ecalIsoInputs = ecalruneraIsoInputsW22
+    if 'CASTOR' in process.CaloGeometryBuilder.SelectedCalos : 
+        print(" -- Removing CASTOR from CaloGeometryBuilder SelectedCalos" )
+        process.CaloGeometryBuilder.SelectedCalos.remove('CASTOR') 
+
+if "Run3_2022" in runera :
+    convSet = "PAT"
+    flagSet = "PAT"
+
+if "Run3_2024" in runera :
+    #convSet = "RECO"
+    convSet = "PAT" 
+    flagSet = "RECO"
+
+if "Run3_2025" in runera :
+    convSet = "RECO"
+    flagSet = "RECO"
+    isCC = True
+
+if "Run3" in runera and genInfo is True :
+    convSet = "PAT"
+    flagSet = "PAT"
+    #triggerSet = "PAT" # needed for fast sim only
+
+if runMETFilters == True : flagSet = ""  # ?  "SIM" for MC
+
+#genMomChase = True
+genMomChase = False
+if options.multicrab == True : genMomChase = False
+#makeTrigList = True
+makeTrigList = False
+if options.multicrab == True : makeTrigList = False
+
+print( "Using options : mutlicrab = ",options.multicrab," geninfo = ",genInfo," filter = ",filterselect )
+print( "Using options : momChase = ",genMomChase," trgiList = ",makeTrigList," probeout = ",probeout ) 
+print( "Using options : conv/flag = ",convSet,"/",flagSet," doSVs = ",dosv," runEra = ",runera )
+print( "Using options : globalTag = ",options.globalTag," trigger set = ",triggerSet, " and ", flagSet )
+print( "With output file name : ",options.outputFileName )
+
+#test = cms.vstring( "hltPFMET100", "hltMETClean100", "hltHIPhoton20Eta3p1" )
+
+process.eventCounter = cms.EDAnalyzer("KUCMSCounter")
+
+# Make the tree 
+process.tree = cms.EDAnalyzer("KUCMSNtupilizerMini",
+
+                              ## default ?  paramter
+                              tkAssocParamBlock,
+
+                              ## flags
+                              hasGenInfo = cms.bool(genInfo),
+                              doGenMotherChase = cms.bool(genMomChase),
+                              makeTriggerList =  cms.bool(makeTrigList),
+                              doProbeOut = cms.bool(probeout),
+                              doSVModule = cms.bool(dosv),
+                              doDisEleModule = cms.bool(dode),
+                              doECALTrackOnly = cms.bool(doet),
+                              RunEra = cms.string(runera),
+
+                              doUnCC = cms.bool(isCC),
+
+                              ##skim type selectuon 
+                              fltrSelection = cms.string(filterselect),
+
+                              triggerList = cms.vstring(),
+
+                              #MetFilters
+                              metFilters = cms.vstring(),
+
+                              ## set rechit energy limits
+                              minRHEi = cms.double(0.5),
+                              minRHEf = cms.double(0.5),
+
+                              ## additional collections
+                              ## tracks
+                              ogGeneralTracks = cms.InputTag("miniAODTrackProducer","merged"),
+                              ##ogGeneralTracks = cms.InputTag("displacedTracks"),
+                              ogGsfTracks = cms.InputTag("reducedEgamma","reducedGsfTracks"),
+
+                              #ecalTracks = cms.InputTag("ecalTracks", "ecalTracks"),
+                              #tracks = cms.InputTag("ecalTracks", "ecalGeneralTracks"),
+                              #gsfTracksSrc = cms.InputTag("ecalTracks", "ecalGsfTracks"),
+                              displacedSCs = cms.InputTag("ecalTracks", "displacedElectronSCs"),
+                              #displacedTracks = cms.InputTag("displacedElectrons", "displacedCandidateTracks"),
+                              #muonEnhancedTracks = cms.InputTag("muonEnhancedTracks", "muonEnhancedTracks"),
+
+                              sip2DMuonEnhancedTracks = cms.InputTag("miniAODTrackProducer", "mergedMuonSip2D"),
+ 
+                              ## vertices
+                              vertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
+                              timedSVs = cms.InputTag("timedSVs", "timedSecondaryVertices"),
+                              leptonicSVs = cms.InputTag("hyddraSVs", "leptonicVertices"),
+                              hadronicSVs = cms.InputTag("hyddraSVs", "hadronicVertices"),
+                              ## pfcandidates
+                              pfcandidates = cms.InputTag("packedPFCandidates"),
+                              #particleflow = cms.InputTag("particleFlow",""),
+                              #pfcanphomap = cms.InputTag("particleFlow","photons"),
+                              #pfcanootphomap = cms.InputTag("particleFlow","photons"),
+                              #pfcanelemap = cms.InputTag("particleFlow","electrons"),
+                              ## rho
+                              #rho = cms.InputTag("fixedGridRhoFastjetAll"), #fixedGridRhoAll
+                              rho = cms.InputTag("fixedGridRhoAll"),
+                              ## conversions
+                              conversions = cms.InputTag("reducedEgamma","reducedConversions",convSet ),
+                              ## beamSpot
+                              beamSpot = cms.InputTag("offlineBeamSpot"),
+                              ## trigger
+                              #triggerFlagResults = cms.InputTag("TriggerResults","","RECO"),
+                              triggerFlagResults = cms.InputTag("TriggerResults","",flagSet),
+                              #triggerFlagResults = cms.InputTag("TriggerResults"),
+                              triggerHLTResults = cms.InputTag("TriggerResults","",triggerSet),
+                              triggerEvent = cms.InputTag(""),
+                              ## METs
+                              mets = cms.InputTag("slimmedMETs"),
+                              ## jets
+                              #Charge Hadron Subtracted : charged particles from non-primary vertices (pileup) are removed before clustering.
+                              #jets = cms.InputTag("updatedPatJetsUpdatedJEC"),
+                              jets = cms.InputTag("slimmedJets"),
+                              calojets = cms.InputTag("slimmedCaloJets"),
+                              ## electrons
+                              electrons = cms.InputTag("slimmedElectrons"),
+                              #displacedElectrons = cms.InputTag("displacedElectrons", "displacedElectrons"),
+                              #signalDisplacedElectrons = cms.InputTag("displacedElectrons", "signalDisplacedElectrons"),
+                              eleMVAIDLooseMap = cms.InputTag("PhotonIDProdGED", "PhotonCutBasedIDLooseEM"),
+                              effAreasConfigFile = cms.FileInPath( ecalIsoInputs ),
+                              ## muons
+                              muons = cms.InputTag("slimmedMuons"),
+                              ## photons
+                              gedPhotons = cms.InputTag("slimmedPhotons"),
+                              phoCBIDLooseMap = cms.InputTag("PhotonIDProd", "PhotonCutBasedIDLooseEM"),
+                              ootPhotons = cms.InputTag("slimmedOOTPhotons"),
+                              ## ecal recHits
+                              recHitsEB = cms.InputTag("reducedEgamma", "reducedEBRecHits"),
+                              recHitsEE = cms.InputTag("reducedEgamma", "reducedEERecHits"),
+                              ## superclusters
+                              superClusters = cms.InputTag("ecalTracks", "displacedElectronSCs"),
+                              #superClusters = cms.InputTag("reducedEgamma", "reducedSuperClusters"),
+                              otherSuperClusters = cms.InputTag("reducedEgamma", "reducedSuperClusters"),
+                              ootSuperClusters = cms.InputTag("reducedEgamma", "reducedOOTSuperClusters"),
+                              ## caloclusters
+                              caloClusters = cms.InputTag("reducedEgamma", "reducedEBEEClusters"),
+                              ## gen info
+                              genEvt = cms.InputTag("generator", ""),
+                              gent0 = cms.InputTag("genParticles", "t0"),
+                              genxyz0 = cms.InputTag("genParticles", "xyz0"),
+                              pileups = cms.InputTag("slimmedAddPileupInfo", ""),
+                              #Phoronpileups = cms.InputTag("mixData", ""),
+                              genParticles = cms.InputTag("packedGenParticles",""),
+                              genPartPruned = cms.InputTag("prunedGenParticles","","PAT"),
+                              genjets = cms.InputTag("slimmedGenJets","")
+                              
+)##<<>>process.tree = cms.EDAnalyzer("LLPgammaAnalyzer_aod"
+
+## Trigger path list
+process.tree.triggerList = cms.vstring(  #"hltPFMET100", "hltMETClean100", "hltHIPhoton20Eta3p1" ),   
+
+    "HLT_Photon20_v",
+    "HLT_PFMET90_PFMHT90_IDTight_v",
+    "HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_v",
+    "HLT_PFMET100_PFMHT100_IDTight_v",
+    "HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_v",
+    "HLT_PFMET120_PFMHT120_IDTight_v",
+    "HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_v",
+    "HLT_PFMET120_PFMHT120_IDTight_PFHT60_v",
+    "HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60_v",
+    "HLT_PFMET130_PFMHT130_IDTight_v",
+    "HLT_PFMETNoMu130_PFMHTNoMu130_IDTight_v",
+    "HLT_PFMET140_PFMHT140_IDTight_v",
+    "HLT_PFMETNoMu140_PFMHTNoMu140_IDTight_v",
+
+)#triglist0 = cms.vstring(
+
+## Metfilters
+
+process.tree.metFilters = cms.vstring( #"bla" )
+
+    "Flag_BadChargedCandidateFilter", # 16 - 17 - 18 ?
+    "Flag_BadChargedCandidateSummer16Filter",
+    "Flag_BadPFMuonDzFilter", # all
+    "Flag_BadPFMuonFilter", # all
+    "Flag_BadPFMuonSummer16Filter",
+    "Flag_CSCTightHalo2015Filter",
+    "Flag_CSCTightHaloFilter",
+    "Flag_CSCTightHaloTrkMuUnvetoFilter",
+    "Flag_EcalDeadCellBoundaryEnergyFilter",
+    "Flag_EcalDeadCellTriggerPrimitiveFilter", # all
+    "Flag_HBHENoiseFilter", # 16 - 17 - 18
+    "Flag_HBHENoiseIsoFilter", # 16 - 17 - 18
+    "Flag_HcalStripHaloFilter",
+    "Flag_METFilters",
+    "Flag_chargedHadronTrackResolutionFilter",
+    "Flag_ecalBadCalibFilter", # all but not good in 22 - 23 - 24
+    "Flag_ecalLaserCorrFilter",
+    "Flag_eeBadScFilter", # all
+    "Flag_globalSuperTightHalo2016Filter", # all
+    "Flag_globalTightHalo2016Filter",
+    "Flag_goodVertices", # all
+    "Flag_hcalLaserEventFilter",
+    "Flag_hfNoisyHitsFilter", # all
+    "Flag_muonBadTrackFilter",
+    "Flag_trkPOGFilters",
+    "Flag_trkPOG_logErrorTooManyClusters",
+    "Flag_trkPOG_manystripclus53X",
+    "Flag_trkPOG_toomanystripclus53X"
+
+
+)##<<>>process.tree.metFilters = cms.vstring(
+
+process.load('RecoMET.METFilters.metFilters_cff')
+
+process.myGlobalSuperTightHalo2016Filter = process.globalSuperTightHalo2016Filter.clone( taggingMode = True ) 
+process.Flag_goodVertices = cms.Path( process.goodVertices )
+process.Flag_globalSuperTightHalo2016Filter = cms.Path( process.globalSuperTightHalo2016Filter )
+process.hbheSequence = cms.Sequence( process.HBHENoiseFilterResultProducer * process.HBHENoiseFilter )
+process.Flag_HBHENoiseFilter = cms.Path( process.hbheSequence )
+process.Flag_HBHENoiseIsoFilter = cms.Path( process.HBHENoiseIsoFilter )
+process.Flag_EcalDeadCellTriggerPrimitiveFilter = cms.Path( process.EcalDeadCellTriggerPrimitiveFilter )
+process.Flag_BadPFMuonFilter = cms.Path( process.BadPFMuonFilter )
+process.Flag_BadPFMuonDzFilter = cms.Path( process.BadPFMuonDzFilter )
+process.Flag_hfNoisyHitsFilter = cms.Path( process.hfNoisyHitsFilter )
+process.Flag_BadChargedCandidateFilter = cms.Path( process.BadChargedCandidateFilter )
+process.Flag_eeBadScFilter = cms.Path( process.eeBadScFilter )
+process.Flag_ecalBadCalibFilter = cms.Path( process.ecalBadCalibFilter )
+
+process.pattriger = cms.Path( process.patTrigger )
+
+
+metFilterPaths = [
+
+    process.Flag_goodVertices,
+    process.Flag_globalSuperTightHalo2016Filter,
+    process.Flag_EcalDeadCellTriggerPrimitiveFilter,
+    process.Flag_BadPFMuonFilter,
+    process.Flag_BadPFMuonDzFilter,
+    process.Flag_hfNoisyHitsFilter,
+    process.Flag_eeBadScFilter
+
+]
+
+# Run 2 only except Flag_ecalBadCalibFilter ( Run 2 & 3 ) but is bad in Run 3
+metFilterPaths += [
+
+    process.Flag_HBHENoiseFilter,
+    process.Flag_HBHENoiseIsoFilter,
+    process.Flag_BadChargedCandidateFilter,
+    process.Flag_ecalBadCalibFilter
+
+]
+
+
+# SVs & ecaltracks aka merged SC collection
+process.kuEcalTracks = cms.Sequence( ecalTracks )
+process.kuSV = cms.Sequence( miniAODTrackProducer + hyddraSVs )
+
+#process.kuDisplaced_path = cms.Path()
+process.kuDisplaced_path = cms.Path( process.kuEcalTracks )
+if ( dosv ) : process.kuDisplaced_path = cms.Path( process.kuEcalTracks + process.kuSV )
+
+## Set final paths and schedule
+
+#############3process.setFlags_path = cms.Path(process.setFlags)
+process.eventcount_path = cms.Path(process.eventCounter)
+process.tree_step = cms.EndPath(process.tree)
+process.endjob_step = cms.EndPath(process.endOfProcess)
+
+#########process.schedule = cms.Schedule( process.kuDisplaced_path, process.setFlags_path, process.tree_step, process.endjob_step )
+# Flags must be run as a path in the Schedule in order to appear in the trigger results for KUCMSEventInfo 
+# the Flag should return 1 if the event passed the filter and 0 if it failed the filter
+process.schedule = cms.Schedule(    
+    process.eventcount_path,                            
+    process.kuDisplaced_path,
+    process.tree_step,
+    process.endjob_step, 
+)#process.schedule
+
+if runMETFilters:
+    process.schedule.extend(metFilterPaths)
+
+#process.options = cms.untracked.PSet()
+#do not add changes to your config after this point (unless you know what you are doing)
+#from FWCore.ParameterSet.Utilities import convertToUnscheduled
+#process=convertToUnscheduled(process)
+
+# customisation of the process.
+#call to customisation function miniAOD_customizeAllData imported from PhysicsTools.PatAlgos.slimming.miniAOD_tools
+#process = miniAOD_customizeAllData(process)
+# End of customisation functions
+
+process.options = cms.untracked.PSet( 
+    #numberOfThreads = cms.untracked.uint32(4), 
+    #numberOfStreams = cms.untracked.uint32(4), 
+    #TryToContinue = cms.untracked.vstring('ProductNotFound'), 
+    #wantSummary = cms.untracked.bool(True)
+    #SkipEvent = cms.untracked.vstring('ProductNotFound'),
+)#process.options
+

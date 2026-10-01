@@ -16,11 +16,14 @@ int main ( int argc, char *argv[] ){
     const std::string listdir = "ntuple_master_lists/";
     //const string eosdir = "root://cmseos.fnal.gov//store/user/jaking/";
     //const std::string eosdir = "root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/";
-	const std::string eosdir = "/store/user/lpcsusylep/jaking/KUCMSNtuple/";
+	//const std::string eosdir = "/store/user/lpcsusylep/jaking/KUCMSNtuple/";
     //const std::string eosdir = "/store/user/anovo/";
     //const std::string eosdir = "root://cmseos.fnal.gov//store/user/lpcsusylep/anazario/";
     //const std::string eosdir = "root://cmseos.fnal.gov//store/user/janguian/";
 	//const std::string eosdir = "/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/";				
+
+	//const std::string eosdir = "";
+	const std::string eosdir = "/uscms/home/jaking/nobackup/el9/CMSSW_15_1_1/src/KUCMSNtupleizer/KUCMSNtupleizer/";
 
 	// set below //  bool noSVorPho = true; // only base selection - will not load phos in rjr
 	// set below //  bool noSVorPho = false; // ( flase = must have a sig pho or a sv ) + base selection - loads photons in rjr ( defaults false )
@@ -37,11 +40,11 @@ int main ( int argc, char *argv[] ){
 
 	//const std::string infilename = "KUCMS_Ntuple_Master_NtupleTest_Files_List.txt"; hasGenInfo = false;
 
-    //const std::string infilename = "../backups/KUCMS_Ntuple_Master_v34_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
+    const std::string infilename = "../backups/KUCMS_Ntuple_Master_v34_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
     ////const std::string infilename = "../backups/KUCMS_Ntuple_Test_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
     ////const std::string infilename = "../backups/KUCMS_Ntuple_Master_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
     //const std::string infilename = "../backups/KUCMS_Ntuple_Master_BG_SVIPM100_Files_List.txt";
-    const std::string infilename = "../backups/KUCMS_Ntuple_Master_DataPD_Files_List.txt"; hasGenInfo = false;
+    //const std::string infilename = "../backups/KUCMS_Ntuple_Master_DataPD_Files_List.txt"; hasGenInfo = false;
 
     //const std::string outfilename = "_LLPGskim_v21_rjrvars.root"; // skim v21 use new process_name tags 
     //const std::string outfilename = "_LLPGskim_v22_rjrvars.root"; // skim v22 keeps 0 pho events 
@@ -63,16 +66,22 @@ int main ( int argc, char *argv[] ){
     //const std::string outfilename = "_rjrskim_v44.root"; // added jet merging to non copressed, new photon IDs
 	//const std::string outfilename = "_rjrskim_v52.root";	 
 
+	//const std::string outfilename = "_rjrskim_fasttime_v9.root"; //
+    //const std::string outfilename = "_rjrskim_fast_act_v9.root"; //
+	//const std::string outfilename = "_rjrskim_full_part.root"; //
     //const std::string outfilename = "_rjrskim_pvtime_phoSCv3.root"; //
     //const std::string outfilename = "_rjrskim_qcdmc_Test.root"; //
     //const std::string outfilename = "_rjrskim_calirestest_Test.root"; //
-    const std::string outfilename = "_rjrskim_rd_v52.root"; //
-    //const std::string outfilename = "_rjrskim_fastrsimtest_Test.root"; //
+    //const std::string outfilename = "_rjrskim_rd_v52.root"; //
+    const std::string outfilename = "_rjrskim_geofast_xpwz_v2_Test.root"; //
+    //const std::string outfilename = "_rjrskim_basefast_Test.root"; //
+    //const std::string outfilename = "_rjrskim_geofull_xpwz_v2_Test.root"; //
+    //const std::string outfilename = "_rjrskim_basefull_Test.root"; //
 
 	// !!!!!!!!!!!!!!!!!!!  alternate RJR setup with invis in comb split rule
-    KUCMSAodSkimmer llpgana( true ); // uses local calibration 
-    //KUCMSAodSkimmer llpgana; // uses eos calibration 
-	llpgana.SetLocalSkip( 100 );
+    //KUCMSAodSkimmer llpgana( true ); // uses local calibration 
+    KUCMSAodSkimmer llpgana; // uses eos calibration 
+	//llpgana.SetLocalSkip( 4 );
 
 	//llpgana.SetSystematic("wPhoTimeSig_up");
     //llpgana.SetSystematic("wPhoTimeSig_down");
@@ -87,6 +96,6 @@ int main ( int argc, char *argv[] ){
 	llpgana.SetUseEvtGenWgtFlag(useEvtGenWgt);
     llpgana.kucmsAodSkimmer_local( listdir, eosdir, infilename, outfilename );
  
-    return 1;
+    return 0;
 
 }//<<>>int main ( int argc, char *argv[] )

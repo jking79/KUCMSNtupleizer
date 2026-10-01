@@ -104,7 +104,6 @@ public :
    vector<float>   *genMomCTau;
    vector<float>   *genPartEnergy;
    vector<float>   *genPartEta;
-   vector<int>     *genPartMomIdx;
    vector<unsigned int> *genPartPdgId;
    vector<float>   *genPartPhi;
    vector<float>   *genPartPt;
@@ -148,7 +147,6 @@ public :
    vector<float>   *baseLinePhoton_Eta;
    vector<float>   *baseLinePhoton_EtaWidth;
    vector<bool>    *baseLinePhoton_GJetsCR;
-   vector<int>     *baseLinePhoton_GenIdx;
    vector<float>   *baseLinePhoton_GenLabTime;
    vector<float>   *baseLinePhoton_GenLabTimeSig;
    vector<float>   *baseLinePhoton_GenPt;
@@ -788,7 +786,6 @@ public :
    TBranch        *b_genMomCTau;   //!
    TBranch        *b_genPartEnergy;   //!
    TBranch        *b_genPartEta;   //!
-   TBranch        *b_genPartMomIdx;   //!
    TBranch        *b_genPartPdgId;   //!
    TBranch        *b_genPartPhi;   //!
    TBranch        *b_genPartPt;   //!
@@ -832,7 +829,6 @@ public :
    TBranch        *b_baseLinePhoton_Eta;   //!
    TBranch        *b_baseLinePhoton_EtaWidth;   //!
    TBranch        *b_baseLinePhoton_GJetsCR;   //!
-   TBranch        *b_baseLinePhoton_GenIdx;   //!
    TBranch        *b_baseLinePhoton_GenLabTime;   //!
    TBranch        *b_baseLinePhoton_GenLabTimeSig;   //!
    TBranch        *b_baseLinePhoton_GenPt;   //!
@@ -1469,7 +1465,6 @@ void ::Init(TTree *tree)
    genMomCTau = 0;
    genPartEnergy = 0;
    genPartEta = 0;
-   genPartMomIdx = 0;
    genPartPdgId = 0;
    genPartPhi = 0;
    genPartPt = 0;
@@ -1506,7 +1501,6 @@ void ::Init(TTree *tree)
    baseLinePhoton_Eta = 0;
    baseLinePhoton_EtaWidth = 0;
    baseLinePhoton_GJetsCR = 0;
-   baseLinePhoton_GenIdx = 0;
    baseLinePhoton_GenLabTime = 0;
    baseLinePhoton_GenLabTimeSig = 0;
    baseLinePhoton_GenPt = 0;
@@ -1929,7 +1923,6 @@ void ::Init(TTree *tree)
    fChain->SetBranchAddress("genMomCTau", &genMomCTau, &b_genMomCTau);
    fChain->SetBranchAddress("genPartEnergy", &genPartEnergy, &b_genPartEnergy);
    fChain->SetBranchAddress("genPartEta", &genPartEta, &b_genPartEta);
-   fChain->SetBranchAddress("genPartMomIdx", &genPartMomIdx, &b_genPartMomIdx);
    fChain->SetBranchAddress("genPartPdgId", &genPartPdgId, &b_genPartPdgId);
    fChain->SetBranchAddress("genPartPhi", &genPartPhi, &b_genPartPhi);
    fChain->SetBranchAddress("genPartPt", &genPartPt, &b_genPartPt);
@@ -1973,7 +1966,6 @@ void ::Init(TTree *tree)
    fChain->SetBranchAddress("baseLinePhoton_Eta", &baseLinePhoton_Eta, &b_baseLinePhoton_Eta);
    fChain->SetBranchAddress("baseLinePhoton_EtaWidth", &baseLinePhoton_EtaWidth, &b_baseLinePhoton_EtaWidth);
    fChain->SetBranchAddress("baseLinePhoton_GJetsCR", &baseLinePhoton_GJetsCR, &b_baseLinePhoton_GJetsCR);
-   fChain->SetBranchAddress("baseLinePhoton_GenIdx", &baseLinePhoton_GenIdx, &b_baseLinePhoton_GenIdx);
    fChain->SetBranchAddress("baseLinePhoton_GenLabTime", &baseLinePhoton_GenLabTime, &b_baseLinePhoton_GenLabTime);
    fChain->SetBranchAddress("baseLinePhoton_GenLabTimeSig", &baseLinePhoton_GenLabTimeSig, &b_baseLinePhoton_GenLabTimeSig);
    fChain->SetBranchAddress("baseLinePhoton_GenPt", &baseLinePhoton_GenPt, &b_baseLinePhoton_GenPt);

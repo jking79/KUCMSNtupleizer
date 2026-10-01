@@ -229,7 +229,6 @@ KUCMSNtupilizerMini::KUCMSNtupilizerMini(const edm::ParameterSet& iConfig):
         auto pileupInfosToken = consumes<std::vector<PileupSummaryInfo>>(iConfig.getParameter<edm::InputTag>("pileups"));
         genObjs->LoadGenPUInfosTokens( pileupInfosToken );
         auto genPartToken = consumes<std::vector<pat::PackedGenParticle>>(iConfig.getParameter<edm::InputTag>("genParticles"));
-        genObjs->LoadgTokens( genPartToken );
         auto genJetsToken = consumes<std::vector<reco::GenJet>>(iConfig.getParameter<edm::InputTag>("genjets"));
         genObjs->LoadGenJetsTokens( genJetsToken );
 		auto genPrunToken = consumes<std::vector<reco::GenParticle>>(iConfig.getParameter<edm::InputTag>("genPartPruned"));
@@ -260,4 +259,3 @@ KUCMSNtupilizerMini::KUCMSNtupilizerMini(const edm::ParameterSet& iConfig):
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 DEFINE_FWK_MODULE(KUCMSNtupilizerMini);
-
