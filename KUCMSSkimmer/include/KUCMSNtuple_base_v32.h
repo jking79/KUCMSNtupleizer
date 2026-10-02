@@ -275,6 +275,7 @@ public :
    Float_t         PV_z;
    Float_t         Xa_energy;
    Float_t         Xa_phi;
+   Float_t         Xa_eta;
    Float_t         Xa_mass;
    Float_t         Xa_Displacment;
    Float_t         Xa_p;
@@ -287,6 +288,7 @@ public :
    Float_t         Xa_ctau;
    Float_t         Xb_energy;
    Float_t         Xb_phi;
+   Float_t         Xb_eta;
    Float_t         Xb_mass;
    Float_t         Xb_Displacment;
    Float_t         Xb_p;
@@ -714,6 +716,7 @@ public :
    TBranch        *b_PV_z;   //!
    TBranch        *b_Xa_energy;   //!
    TBranch        *b_Xa_phi;   //!
+   TBranch        *b_Xa_eta;   //!
    TBranch        *b_Xa_mass;   //!
    TBranch        *b_Xa_Displacment;   //!
    TBranch        *b_Xa_p;   //!
@@ -730,6 +733,7 @@ public :
    TBranch        *b_Xb_p;   //!
    TBranch        *b_Xb_pdgId;   //!
    TBranch        *b_Xb_phi;   //!
+   TBranch        *b_Xb_eta;   //!
    TBranch        *b_Xb_pt;   //!
    TBranch        *b_Xb_vx;   //!
    TBranch        *b_Xb_vy;   //!
@@ -1552,7 +1556,7 @@ void Init(TTree *tree ){
    fChain->SetBranchAddress("Xa_Displacment", &Xa_Displacment, &b_Xa_Displacment);
    fChain->SetBranchAddress("Xa_p", &Xa_p, &b_Xa_p);
    fChain->SetBranchAddress("Xa_pdgId", &Xa_pdgId, &b_Xa_pdgId);
-   fChain->SetBranchAddress("Xa_phi", &Xa_phi, &b_Xa_phi);
+   fChain->SetBranchAddress("Xa_eta", &Xa_eta, &b_Xa_eta);
    fChain->SetBranchAddress("Xa_pt", &Xa_pt, &b_Xa_pt);
    fChain->SetBranchAddress("Xa_vx", &Xa_vx, &b_Xa_vx);
    fChain->SetBranchAddress("Xa_vy", &Xa_vy, &b_Xa_vy);
@@ -1560,7 +1564,7 @@ void Init(TTree *tree ){
    fChain->SetBranchAddress("Xa_beta", &Xa_beta, &b_Xa_beta);
    fChain->SetBranchAddress("Xa_ctau", &Xa_ctau, &b_Xa_ctau);
    fChain->SetBranchAddress("Xb_energy", &Xb_energy, &b_Xb_energy);
-   fChain->SetBranchAddress("Xb_phi", &Xb_phi, &b_Xb_phi);
+   fChain->SetBranchAddress("Xb_eta", &Xb_eta, &b_Xb_eta);
    fChain->SetBranchAddress("Xb_mass", &Xb_mass, &b_Xb_mass);
    fChain->SetBranchAddress("Xb_Displacment", &Xb_Displacment, &b_Xb_Displacment);
    fChain->SetBranchAddress("Xb_p", &Xb_p, &b_Xb_p);
