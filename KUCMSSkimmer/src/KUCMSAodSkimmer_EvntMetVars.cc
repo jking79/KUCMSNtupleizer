@@ -97,11 +97,15 @@ void KUCMSAodSkimmer::processEvntVars(){
   bool PFMET120_PFMHT120_IDTight_PFHT60 = false;
   bool PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60 = false;
 
+  bool Ele35_WPTight_Gsf = false;
+  bool Mu55 = false;
+  bool IsoMu27 = false;
+  bool IsoMu20 = false;
   if( doHTLPathsBase ){
-  	//Ele35_WPTight_Gsf = HLT_Ele35_WPTight_Gsf_v;
-  	//Mu55 = HLT_Mu55_v;
-  	//IsoMu27 = HLT_IsoMu27_v;
-  	//IsoMu20 = HLT_IsoMu20_v;
+  	Ele35_WPTight_Gsf = HLT_Ele35_WPTight_Gsf_v;
+  	Mu55 = HLT_Mu55_v;
+  	IsoMu27 = HLT_IsoMu27_v;
+  	IsoMu20 = HLT_IsoMu20_v;
 	
 	PFMET120_PFMHT120_IDTight = HLT_PFMET120_PFMHT120_IDTight_v;
 	PFMETNoMu120_PFMHTNoMu120_IDTight = HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_v;
@@ -115,10 +119,10 @@ void KUCMSAodSkimmer::processEvntVars(){
   selEvtVars.fillBranch( "Trigger_PFMET120_PFMHT120_IDTight_PFHT60", PFMET120_PFMHT120_IDTight_PFHT60 );
   selEvtVars.fillBranch( "Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60", PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60 );
   
-  //selEvtVars.fillBranch( "Trigger_Ele35_WPTight_Gsf", Ele35_WPTight_Gsf);
-  //selEvtVars.fillBranch( "Trigger_Mu55", Mu55 );
-  //selEvtVars.fillBranch( "Trigger_IsoMu27", IsoMu27 );
-  //selEvtVars.fillBranch( "Trigger_IsoMu20", IsoMu20 );
+  selEvtVars.fillBranch( "Trigger_Ele35_WPTight_Gsf", Ele35_WPTight_Gsf);
+  selEvtVars.fillBranch( "Trigger_Mu55", Mu55 );
+  selEvtVars.fillBranch( "Trigger_IsoMu27", IsoMu27 );
+  selEvtVars.fillBranch( "Trigger_IsoMu20", IsoMu20 );
 
   bool hemRun = ( ( Evt_run > 319076 ) && ( Evt_run < 326635 ) ) ? true : false;
   bool eLHem( hemBits("el1hvl") );
