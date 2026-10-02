@@ -230,6 +230,8 @@ void KUCMSAodSkimmer::processGenParticles(){
     float xagbeta = Xa_p/Xa_mass;
     float xactau = Xa_Displacment/xagbeta;
     selGenPart.fillBranch( "Xa_ctau", xactau );
+	std::vector<float> xa5vec = { Xa_vx, Xa_vy, Xa_vz, Xa_beta, Xa_Displacment, Xa_eta, Xa_phi };
+	geVects.set( "xa5vec", xa5vec );
 
     selGenPart.fillBranch( "Xb_energy", Xb_energy );
     selGenPart.fillBranch( "Xb_phi", Xb_phi );
@@ -245,6 +247,8 @@ void KUCMSAodSkimmer::processGenParticles(){
     float xbgbeta = Xb_p/Xb_mass;
     float xbctau = Xb_Displacment/xbgbeta;
     selGenPart.fillBranch( "Xb_ctau", xbctau );
+    std::vector<float> xb5vec = { Xb_vx, Xb_vy, Xb_vz, Xb_beta, Xb_Displacment, Xb_eta, Xb_phi };
+	geVects.set( "xb5vec", xb5vec );
 
     //selGenPart.fillBranch( "Evt_isGG", evtIsZZ );
     //selGenPart.fillBranch( "Evt_isGZ", evtIsZG );

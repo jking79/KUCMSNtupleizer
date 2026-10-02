@@ -14,16 +14,17 @@
 int main ( int argc, char *argv[] ){
 
     const std::string listdir = "ntuple_master_lists/";
-    //const string eosdir = "root://cmseos.fnal.gov//store/user/jaking/";
-    //const std::string eosdir = "root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/";
-	//const std::string eosdir = "/store/user/lpcsusylep/jaking/KUCMSNtuple/";
-    //const std::string eosdir = "/store/user/anovo/";
-    //const std::string eosdir = "root://cmseos.fnal.gov//store/user/lpcsusylep/anazario/";
-    //const std::string eosdir = "root://cmseos.fnal.gov//store/user/janguian/";
-	//const std::string eosdir = "/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/";				
+    ////const string eosdir = "root://cmseos.fnal.gov//store/user/jaking/";
+    ////const std::string eosdir = "root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/";
+    ////const std::string eosdir = "/store/user/anovo/";
+    ////const std::string eosdir = "root://cmseos.fnal.gov//store/user/lpcsusylep/anazario/";
+    ////const std::string eosdir = "root://cmseos.fnal.gov//store/user/janguian/";
+    ////const std::string eosdir = "/store/user/lpcsusylep/jaking/KUCMSNtuple/";
+	////const std::string eosdir = "/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/";				
 
-	//const std::string eosdir = "";
-	const std::string eosdir = "/uscms/home/jaking/nobackup/el9/CMSSW_15_1_1/src/KUCMSNtupleizer/KUCMSNtupleizer/";
+	////const std::string eosdir = "";
+    const std::string eosdir = "/store/user/lpcsusylep/jaking/KUCMSNtuple/";
+	//const std::string eosdir = "/uscms/home/jaking/nobackup/el9/CMSSW_15_1_1/src/KUCMSNtupleizer/KUCMSNtupleizer/";
 
 	// set below //  bool noSVorPho = true; // only base selection - will not load phos in rjr
 	// set below //  bool noSVorPho = false; // ( flase = must have a sig pho or a sv ) + base selection - loads photons in rjr ( defaults false )
@@ -73,15 +74,15 @@ int main ( int argc, char *argv[] ){
     //const std::string outfilename = "_rjrskim_qcdmc_Test.root"; //
     //const std::string outfilename = "_rjrskim_calirestest_Test.root"; //
     //const std::string outfilename = "_rjrskim_rd_v52.root"; //
-    const std::string outfilename = "_rjrskim_geofast_xpwz_v3_Test.root"; //
-    //const std::string outfilename = "_rjrskim_basefast_Test.root"; //
-    //const std::string outfilename = "_rjrskim_geofull_xpwz_v2_Test.root"; //
-    //const std::string outfilename = "_rjrskim_basefull_Test.root"; //
+    //const std::string outfilename = "_rjrskim_geofast_v38_xpwz_v8_Test.root"; //
+    //const std::string outfilename = "_rjrskim_basefast_v38_Test.root"; //
+    //const std::string outfilename = "_rjrskim_geofull_v38_xpwz_v8_Test.root"; //
+    const std::string outfilename = "_rjrskim_basefull_v38_Test.root"; //
 
 	// !!!!!!!!!!!!!!!!!!!  alternate RJR setup with invis in comb split rule
     //KUCMSAodSkimmer llpgana( true ); // uses local calibration 
     KUCMSAodSkimmer llpgana; // uses eos calibration 
-	//llpgana.SetLocalSkip( 4 );
+	//llpgana.SetLocalSkip( 3 );
 
 	//llpgana.SetSystematic("wPhoTimeSig_up");
     //llpgana.SetSystematic("wPhoTimeSig_down");
