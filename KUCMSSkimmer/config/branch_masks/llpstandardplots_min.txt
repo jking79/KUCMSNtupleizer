@@ -1,0 +1,66 @@
+# Minimal branch allowlist for LLPStandardPlots (main.py): SV and photon
+# data/MC stacks, 1D/2D/unrolled plots, in both analysis modes. Covers every
+# branch DataLoader reads, the baseline selection, and the helper branches the
+# BigGuy_NonCompressed / LittleGuy_Compressed FullRegions configs in
+# LLPCombineJustin/config_master cut on, so those regions can be written as
+# custom cuts.
+#
+# Lines are fnmatch patterns (blank lines and #-comments ignored).
+
+# Event weight
+evtFillWgt
+
+# Baseline: MET, filters, HEM veto, MET trigger OR
+selCMet
+Flag_MetFilters
+Flag_hemVeto
+Trigger_PFMET120_PFMHT120_IDTight
+Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight
+Trigger_PFMET120_PFMHT120_IDTight_PFHT60
+Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60
+
+# RJR, uncompressed mode (rjrPTS[0] < 150 is baseline)
+rjr_Ms
+rjr_Rs
+rjrPTS
+# BigGuy prompt-photon regions (balRJRJets)
+rjrNJetsJa
+rjrNJetsJb
+
+# RJR, compressed mode
+rjrIsr_*
+rjrIsrPTS
+rjrIsrSdphiBV
+
+# SV counts and data/MC variables
+SV_nHadronic
+SV_nLeptonic
+HadronicSV_mass
+HadronicSV_dxy
+HadronicSV_dxySig
+HadronicSV_pOverE
+HadronicSV_decayAngle
+HadronicSV_cosTheta
+HadronicSV_nTracks
+LeptonicSV_mass
+LeptonicSV_dxy
+LeptonicSV_dxySig
+LeptonicSV_pOverE
+LeptonicSV_decayAngle
+LeptonicSV_cosTheta
+
+# Photon counts and data/MC variables (Gen* are MC only)
+nBaseLinePhotons
+nblBHPhotons
+nblNonpromptPhotons
+nblPromptPhotons
+baseLinePhoton_WTimeSig
+baseLinePhoton_Pt
+baseLinePhoton_Eta
+baseLinePhoton_isoANNScore
+baseLinePhoton_beamHaloCNNScore
+baseLinePhoton_GenTimeSig
+baseLinePhoton_GenLabTimeSig
+
+# SV and photon selection flags (SR, CR, validation, inclusive)
+passN*
