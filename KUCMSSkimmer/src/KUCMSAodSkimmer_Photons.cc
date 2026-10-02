@@ -185,6 +185,10 @@ void KUCMSAodSkimmer::processPhotons(){
   float lateTimeCut = 2.5;
   if( DEBUG || verbose ) std::cout << " - Looping over for " << nPhotons << " photons" << std::endl;
 
+
+  auto xa5vec = geVects( "xa5vec");
+  auto xb5vec = geVects( "xb5vec");
+
   //-------------------------------------------------------------------------------------------
   ///////////  Loop over raw photons  /////////////////////////////////////////////////////////
   //-------------------------------------------------------------------------------------------
@@ -424,120 +428,162 @@ void KUCMSAodSkimmer::processPhotons(){
     if( hasGenInfoFlag ){
 
         genIdx = matchedGenIdx;
-			if( genIdx > -1 ){
+		if( genIdx >= 0 ){
 
-        susId = (*Gen_susId)[genIdx];
+        	susId = (*Gen_susId)[genIdx];
 			genPdgID = (*Gen_pdgId)[genIdx];
 
-        genEnergy = (*Gen_energy)[genIdx];   //!
-        genPt = (*Gen_pt)[genIdx];   //!
-        genPx = (*Gen_px)[genIdx];   //!
-        genPy = (*Gen_py)[genIdx];   //!
-        genPz = (*Gen_pz)[genIdx];   //!
-        genVx = (*Gen_vx)[genIdx];   //!
-        genVy = (*Gen_vy)[genIdx];   //!
-        genVz = (*Gen_vz)[genIdx];   //!
+        	genEnergy = (*Gen_energy)[genIdx];   //!
+        	genPt = (*Gen_pt)[genIdx];   //!
+        	genPx = (*Gen_px)[genIdx];   //!
+        	genPy = (*Gen_py)[genIdx];   //!
+        	genPz = (*Gen_pz)[genIdx];   //!
+        	genVx = (*Gen_vx)[genIdx];   //!
+        	genVy = (*Gen_vy)[genIdx];   //!
+        	genVz = (*Gen_vz)[genIdx];   //!
 
-        const int directMotherIndex = (*Gen_motherIdx)[genIdx];
-        if( validGenIndex(directMotherIndex) ){
-            momIdx = directMotherIndex;
-            genMomPdgID = (*Gen_pdgId)[momIdx];
-        }
+        	const int directMotherIndex = (*Gen_motherIdx)[genIdx];
+        	if( validGenIndex(directMotherIndex) ){
+            	momIdx = directMotherIndex;
+            	genMomPdgID = (*Gen_pdgId)[momIdx];
+        	}//<<>>if( validGenIndex(directMotherIndex) )
 
-        std::unordered_set<int> visitedMotherIndexes;
-        while( validGenIndex(momIdx) && genMomPdgID > 0 &&
-                ( genMomPdgID < 1000022 || genMomPdgID > 1000037 ) ){
-            if( !visitedMotherIndexes.insert(momIdx).second ){
-                momIdx = -1;
-                genMomPdgID = 0;
-                break;
-            }
+        	std::unordered_set<int> visitedMotherIndexes;
+        	while( validGenIndex(momIdx) && genMomPdgID > 0 && ( genMomPdgID < 1000022 || genMomPdgID > 1000037 ) ){
+            	if( !visitedMotherIndexes.insert(momIdx).second ){
+                	momIdx = -1;
+                	genMomPdgID = 0;
+                	break;
+            	}//<<>>if( !visitedMotherIndexes.insert(momIdx).second )
 
-            const int nextMotherIndex = (*Gen_motherIdx)[momIdx];
-            if( !validGenIndex(nextMotherIndex) ){
-                momIdx = -1;
-                genMomPdgID = 0;
-                break;
-            }
-            momIdx = nextMotherIndex;
-            genMomPdgID = (*Gen_pdgId)[momIdx];
-        }//<<>>while( valid non-SUSY mother )
+            	const int nextMotherIndex = (*Gen_motherIdx)[momIdx];
+            	if( !validGenIndex(nextMotherIndex) ){
+                	momIdx = -1;
+                	genMomPdgID = 0;
+                	break;
+            	}//<<>>if( !validGenIndex(nextMotherIndex) )
+            	momIdx = nextMotherIndex;
+            	genMomPdgID = (*Gen_pdgId)[momIdx];
+        	}//<<>>while( valid non-SUSY mother )
 
-        const bool foundSignalMother = validGenIndex(momIdx) &&
-            genMomPdgID >= 1000022 && genMomPdgID <= 1000037;
-        if( !foundSignalMother ) momIdx = -1;
+        	const bool foundSignalMother = validGenIndex(momIdx) && genMomPdgID >= 1000022 && genMomPdgID <= 1000037;
+        	if( !foundSignalMother ) momIdx = validGenIndex(directMotherIndex) ? directMotherIndex : -1;
+			if( momIdx >= 0 ){
 
-		if( foundSignalMother ){
-			validMotherFlight = false;
+				validMotherFlight = false;
 
-            momEnergy = (*Gen_energy)[momIdx];   //!
-            momEta = (*Gen_eta)[momIdx];   //!
-            momMass = (*Gen_mass)[momIdx];   //!
-            momPhi = (*Gen_phi)[momIdx];   //!
-            momPt = (*Gen_pt)[momIdx];   //!
-            momPx = (*Gen_px)[momIdx];   //!
-            momPy = (*Gen_py)[momIdx];   //!
-            momPz = (*Gen_pz)[momIdx];   //!
-            momVx = (*Gen_vx)[momIdx];   //!
-            momVy = (*Gen_vy)[momIdx];   //!
-            momVz = (*Gen_vz)[momIdx];   //!
+            	momEnergy = (*Gen_energy)[momIdx];   //!
+            	momEta = (*Gen_eta)[momIdx];   //!
+            	momMass = (*Gen_mass)[momIdx];   //!
+            	momPhi = (*Gen_phi)[momIdx];   //!
+            	momPt = (*Gen_pt)[momIdx];   //!
+            	momPx = (*Gen_px)[momIdx];   //!
+            	momPy = (*Gen_py)[momIdx];   //!
+            	momPz = (*Gen_pz)[momIdx];   //!
+            	momVx = (*Gen_vx)[momIdx];   //!
+            	momVy = (*Gen_vy)[momIdx];   //!
+            	momVz = (*Gen_vz)[momIdx];   //!
 
-			distMom = hypo( genVx - momVx, genVy - momVy, genVz - momVz );
-			distMomPv = hypo( momVx - PV_x, momVy - PV_y, momVz - PV_z );
-			const float momMomentum = hypo( momPx, momPy, momPz );
-            if( momEnergy > 0.f && std::isfinite(momMomentum) ){
-                const float candidateBeta = momMomentum/momEnergy;
-                if( candidateBeta > 0.f && std::isfinite(candidateBeta) ){
-                    momFlightDistance = distMom/candidateBeta;
-                    validMotherFlight = std::isfinite(momFlightDistance);
-                }
-            }
+				distMom = hypo( genVx - momVx, genVy - momVy, genVz - momVz );
+				distMomPv = hypo( momVx - PV_x, momVy - PV_y, momVz - PV_z );
+				const float momMomentum = hypo( momPx, momPy, momPz );
+            	if( momEnergy > 0.f && std::isfinite(momMomentum) ){
+                	const float candidateBeta = momMomentum/momEnergy;
+                	if( candidateBeta > 0.f && std::isfinite(candidateBeta) ){
+                    	momFlightDistance = distMom/candidateBeta;
+                    	validMotherFlight = std::isfinite(momFlightDistance);
+                	}//<<>>if( candidateBeta > 0.f && std::isfinite(candidateBeta) )
+            	}//<<>>if( momEnergy > 0.f && std::isfinite(momMomentum) )
 
-        }//<<>>if( momIdx > -1.0 )
+        	}//<<>>if( momIdx > -1.0 )
 
-		//float disGenMom = (*Gen_momDisplacment)[genIdx];
-        distPho = hypo( scx - genVx, scy - genVy, scz - genVz );
-        cor_gtofPVtoSC = hypo(scx-PV_x,scy-PV_y,scz-PV_z);
-        //distMom = hypo( genVx - PV_x, genVy - PV_y, genVz - PV_z );
+			//float disGenMom = (*Gen_momDisplacment)[genIdx];
+        	distPho = hypo( scx - genVx, scy - genVy, scz - genVz );
+        	cor_gtofPVtoSC = hypo(scx-PV_x,scy-PV_y,scz-PV_z);
+        	//distMom = hypo( genVx - PV_x, genVy - PV_y, genVz - PV_z );
 
-        float sqrtvar = phoWRes*std::sqrt(2.f);
+        	float sqrtvar = phoWRes*std::sqrt(2.f);
 			float cor_gtofPVtoSCSOL = cor_gtofPVtoSC/SOL;
-	        labtime = ( distPho + momFlightDistance + distMomPv )/SOL;
-			//labtime = ( distPho + disGenMom/betamom )/SOL;
-			labtime = labtime - cor_gtofPVtoSCSOL;
-        //gentime = timeCali->getSmearedTime( labtime, phoWRes );
-		//float adjsqrtvar = sqrtvar; //( sqrtvar < 0.2125 ) ? 2*sqrtvar : sqrtvar;
+	    	//labtime = ( distPho + momFlightDistance + distMomPv )/SOL;
+			labtime = ( distPho + momFlightDistance )/SOL;
+			labtime = labtime - cor_gtofPVtoSCSOL + 0.18;
+        	//gentime = timeCali->getSmearedTime( labtime, phoWRes );
+			//float adjsqrtvar = sqrtvar; //( sqrtvar < 0.2125 ) ? 2*sqrtvar : sqrtvar;
 			float adjsqrtvar = sqrtvar;
-            const bool validTiming = validMotherFlight && adjsqrtvar > 0.f && std::isfinite(adjsqrtvar) &&
-                std::isfinite(labtime) && std::isfinite(cor_gtofPVtoSCSOL);
-	        if( validTiming ){
-                gentime = timeCali->getSmearedTime( labtime, adjsqrtvar );
+            const bool validTiming = validMotherFlight && adjsqrtvar > 0.f; 
+			const bool tIsValid = validTiming && std::isfinite(adjsqrtvar) && std::isfinite(labtime) && std::isfinite(cor_gtofPVtoSCSOL);
+	        if( tIsValid ){
+                gentime = timeCali->getSmearedTime( labtime, adjsqrtvar*(1.2) );
 			    labtimesig = labtime/adjsqrtvar;
 			    gentimesig = gentime/adjsqrtvar;
-            }
+            }//<<>>if( validTiming )
 
-		//if( isfastsim && ( susId == 22 || susId == 33 || susId == 34 || susId == 35 ) ){
-		//if( isfastsim && susId == 22 ){
+			//if( isfastsim && ( susId == 22 || susId == 33 || susId == 34 || susId == 35 ) ){
+			//if( isfastsim && susId == 22 ){
 			if( isfastsim && validTiming ){
 
-			phoWTime = gentime + sysvar*adjsqrtvar;
-			phoWTimeSig = gentimesig + sysvar;
+				phoWTime = gentime + sysvar*adjsqrtvar;
+				phoWTimeSig = gentimesig + sysvar;
 
-		}//<<>>if( susId == 22 )
+			}//<<>>if( susId == 22 )
 
-		hist1d[30]->Fill(distPho/SOL); 
+			hist1d[30]->Fill(distPho/SOL); 
 			hist1d[31]->Fill(momFlightDistance/SOL);
-		hist1d[32]->Fill(cor_gtofPVtoSCSOL);
+			hist1d[32]->Fill(cor_gtofPVtoSCSOL);
 
 		}//<<>>if( genIdx > -1 )
-		else if( isfastsim ){
-			float cor_gtofPVtoSC = hypo(scx-PV_x,scy-PV_y,scz-PV_z);
-			float cor_gtofPVtoSCSOL = cor_gtofPVtoSC/SOL;
-			float sqrtvar = phoWRes*std::sqrt(2);			
-			float gentime = timeCali->getSmearedTime( cor_gtofPVtoSCSOL, sqrtvar );
-			phoWTime = gentime - cor_gtofPVtoSCSOL;			
-			phoWTimeSig = phoWTime/sqrtvar;
+		if( genIdx < 0 || ( genIdx >= 0 && momIdx < 0 ) ){
+			//std::cout << "Doing FastSim Pho Time :" << std::endl;
+			float lbeta = SOL;
+			float mdist = 0.f;
+            float xdist = 0.f;
+            float ydist = 0.f;
+            float zdist = 0.f;
+	        float prompttime = hypo(scx-PV_x,scy-PV_y,scz-PV_z)/SOL;
+			if( xa5vec.size() > 0 and xb5vec.size() > 0 ){
+			if( xa5vec[4] > 0 and xb5vec[4] < 0 ){
+				mdist = xa5vec[4];
+				xdist = mdist*cos(xa5vec[6])/cosh(xa5vec[5]);
+				ydist = mdist*sin(xa5vec[6])/cosh(xa5vec[5]);
+				zdist = mdist*tanh(xa5vec[5]);
+			} else if( xa5vec[4] < 0 and xb5vec[4] > 0 ){
+                mdist = xb5vec[4];
+                xdist = mdist*cos(xb5vec[6])/cosh(xb5vec[5]);
+                ydist = mdist*sin(xb5vec[6])/cosh(xb5vec[5]);
+                zdist = mdist*tanh(xb5vec[5]);
+			} else if( xa5vec[4] > 0 and xb5vec[4] > 0 ){
+				float adr = dR1( xa5vec[5], xa5vec[6], eta, phi );
+				float bdr = dR1( xb5vec[5], xb5vec[6], eta, phi );
+				if( adr <= bdr ){ 
+                	mdist = xa5vec[4];
+                	xdist = mdist*cos(xa5vec[6])/cosh(xa5vec[5]);
+                	ydist = mdist*sin(xa5vec[6])/cosh(xa5vec[5]);
+                	zdist = mdist*tanh(xa5vec[5]);
+				} else { 
+                	mdist = xb5vec[4];
+                	xdist = mdist*cos(xb5vec[6])/cosh(xb5vec[5]);
+                	ydist = mdist*sin(xb5vec[6])/cosh(xb5vec[5]);
+                	zdist = mdist*tanh(xb5vec[5]);
+				}//<<>>if( adr <= bdr )
+			}//<<>>if( xa5vec[4] > 0 and xb5vec[4] < 0 )
+			} else { std::cout << "Doing FastSim Pho Time :xa5vec && xb5vec are size 0 !!!!!!!!!!!1" << std::endl;  }//valid xa5vec xb5vec
+			float or_x = PV_x + xdist;
+            float or_y = PV_y + ydist;
+            float or_z = PV_z + zdist;
+			float ORtoSCtime = hypo(scx-or_x,scy-or_y,scz-or_z)/SOL;
+			float PVtoORtime =  mdist/lbeta;
+			float tot_gtofPVtoSC = ORtoSCtime + PVtoORtime - prompttime + 0.18;
+			float sqrtvar = phoWRes*std::sqrt(2);
+			gentime = timeCali->getSmearedTime( tot_gtofPVtoSC, sqrtvar*(1.4) );
+			labtime = tot_gtofPVtoSC;
+            labtimesig = labtime/sqrtvar;
+            gentimesig = gentime/sqrtvar;
+			if( isfastsim ){
+				phoWTime = gentime; // - prompttime;			
+				phoWTimeSig = gentimesig;
+			}//<<>>if( isfastsim )
 		}//<<>>else//<<>>if( genIdx > -1 )
+
     }//if( doGenInfo )
 
     //---------------------------------------------------

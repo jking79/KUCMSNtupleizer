@@ -555,10 +555,9 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
     geCnts.clear();
     geVars.clear();
     hemBits.clear();
-    for( const std::string& hemKey : {"el1hvl", "el2hvm", "jet1hvl", "jet2hvm",
-                                     "pho1hvl", "pho2hvm", "mu1hvl", "mu2hvm"} ){
+    for( const std::string& hemKey : {"el1hvl", "el2hvm", "jet1hvl", "jet2hvm", "pho1hvl", "pho2hvm", "mu1hvl", "mu2hvm"} ){
       hemBits.set( hemKey, false );
-    }
+    }//<<>>for( const std::string& hemKey :
     hasHemObj = false;
 
     if( genSigPerfectFlag ) geVars.set( "genSigPerfect", 1 ); else geVars.set( "genSigPerfect", 0 );
@@ -1007,7 +1006,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
   eosDirPath = eosdir;
   listDirPath = listdir;
 
-  //isLocal = true;
+  isLocal = true;
 
   // ----- parse input batch file ---------------------------------------------------------------------
 
@@ -1082,8 +1081,9 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
     int nAdded = 0;
     int nBadFiles = 0;
 
-    //std::string eosHost = "cmseos.fnal.gov";
-    std::string eosHost = "none";
+	bool doLocalFile = false;
+    std::string eosHost = "cmseos.fnal.gov";
+    if( doLocalFile )  eosHost = "none";
     std::string scanDir = eosdir + inFilePath;
     std::cout << "Finding ROOT files under EOS directory: " << scanDir << std::endl;
     std::vector<std::string> files = findEOSRootFiles(eosHost, scanDir, inFileName);
@@ -1103,21 +1103,21 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
       std::unique_ptr<TFile> testFile(TFile::Open(tfilename.c_str(), "READ"));
 
       if( !testFile || testFile->IsZombie() || !testFile->IsOpen() ){
-	std::cerr << "\nERROR: bad ROOT file, skipping: " << tfilename << std::endl;
-	nBadFiles++;
-	std::cout << "Z";
-	continue;
+		std::cerr << "\nERROR: bad ROOT file, skipping: " << tfilename << std::endl;
+		nBadFiles++;
+		std::cout << "Z";
+		continue;
       }//<<>>if( !testFile || testFile->IsZombie() || !testFile->IsOpen() )
 
       TTree* testTree = nullptr;
       testFile->GetObject(disphoTreeName.c_str(), testTree);
 
       if( !testTree ){
-	std::cerr << "\nERROR: missing tree " << disphoTreeName << ", skipping: " << tfilename << std::endl;
-	testFile->Close();
-	nBadFiles++;
-	std::cout << "T";
-	continue;
+		std::cerr << "\nERROR: missing tree " << disphoTreeName << ", skipping: " << tfilename << std::endl;
+		testFile->Close();
+		nBadFiles++;
+		std::cout << "T";
+		continue;
       }//<<>>if( !testTree )
 
       testFile->Close();
@@ -1344,7 +1344,10 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
   // --------------------------------------
 
   bool debugl1 = false;
-  
+
+   
+  if( debugl1 && hasGenInfoFlag ) std::cout << "KUCMSAodSkimmer : processGenParticles" << std::endl;
+  if( hasGenInfoFlag ){ processGenParticles(); }// process first for fast sim photon timing 
   if( debugl1 ) std::cout << "KUCMSAodSkimmer : processRechits" << std::endl;
   processRechits();// must be done before rechitID to Iter map used
   if( debugl1 ) std::cout << "KUCMSAodSkimmer : processMet" << std::endl;
@@ -1363,8 +1366,6 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
   if( doSVs ) processTracks();
   if( debugl1 ) std::cout << "KUCMSAodSkimmer : processEvntVars" << std::endl;
   processEvntVars();// process last to catch Hem issue
-  if( debugl1 && hasGenInfoFlag ) std::cout << "KUCMSAodSkimmer : processGenParticles" << std::endl;
-  if( hasGenInfoFlag ){ processGenParticles(); }
   
   // select events to process and store
   //--------------------------------------
