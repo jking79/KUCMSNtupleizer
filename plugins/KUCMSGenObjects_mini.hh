@@ -302,7 +302,9 @@ void KUCMSGenObjectMini::InitObject( TTree* fOutTree ){
     Branches.makeBranch("isZZ", "Evt_isZZ", BOOL);
     Branches.makeBranch("isGZ","Evt_isGZ", BOOL);
     Branches.makeBranch("fsType","Evt_fsType", INT);
-    Branches.makeBranch("nXs","Evt_nXs", INT);
+    Branches.makeBranch("nXs","Evt_nXs", INT, "raw count of retained X2 records" );
+    Branches.makeBranch("nValidXs","Evt_nValidXs", INT,
+        "count of terminal X2 records with a retained decay child and positive finite lifetime" );
 
     Branches.makeBranch("Xa_MomDisplacment","Xa_Displacment",FLOAT);
     Branches.makeBranch("Xa_PdgId","Xa_pdgId",UINT);
@@ -559,6 +561,7 @@ void KUCMSGenObjectMini::ProcessEvent( ItemManager<float>& geVar ){
     bool hasLWZQ = false;
 	int nLWZX = 0;
 	int nXs = 0;
+	int nValidXs = 0;
 
     int nGenParts = 0;
     const int nFgenParts = static_cast<int>(fpgenparts.size());
@@ -623,51 +626,94 @@ void KUCMSGenObjectMini::ProcessEvent( ItemManager<float>& geVar ){
         if( isLWZX ){ hasLWZX = true; nLWZX++; }
         if( isLWZQ ) hasLWZQ = true;
 
-        const int genKidIdx = fpgpKidIdx[nGenParts];
-        const int partKidIdx = genKidIdx;
-        const bool validKid = partKidIdx >= 0 && partKidIdx < nFgenParts;
-        int kidPdgId = validKid ? fpgenparts[partKidIdx].pdgId() : 0;
-        kidPdgId = std::abs( kidPdgId );
-
         //std::cout << "Part : " << nGenParts << " pdg " << genPdgId << " st " << genStatus; 
-		//std::cout << " v " << genVx << ", " << genVy << ", " << genVz;
-		//std::cout << " 4v e " << genEnergy << " eta " << genEta << " phi " << genPhi << " pt " << genPt << " mass " << genMass;
-        //std::cout << " mom " << genMomIdx << " gmom "  << genGMomIdx << " kid " << genKidIdx << std::endl;
+			//std::cout << " v " << genVx << ", " << genVy << ", " << genVz;
+			//std::cout << " 4v e " << genEnergy << " eta " << genEta << " phi " << genPhi << " pt " << genPt << " mass " << genMass;
+        //std::cout << " mom " << genMomIdx << " gmom "  << genGMomIdx << std::endl;
 
-		bool isX2 = ( genPdgId == 1000023 );
-        //bool isX = ( genPdgId > 1000021 ) and ( genPdgId < 1000038 );
-        //bool fsGZ = ( kidPdgId > 0 ) ? ( ( kidPdgId == 22 ) or ( kidPdgId == 23 ) ) : false;
-        //bool fsLSP = ( kidPdgId > 0 ) ? ( kidPdgId == 1000022 ) : false;
-        //if( isX and ( fsGZ or fsLSP ) ){
+		const bool isX2 = ( genPdgId == 1000023 );
         if( isX2 ){
+            // Keep nXs as the raw count of retained X2 records.  It is an
+            // event-consistency diagnostic and must not be redefined as the
+            // number of usable lifetime measurements.
             nXs++;
-            float kVx = -999; float kVy = -999; float kVz = -999;
-            if( validKid ){
-                kVx = fpgenparts[partKidIdx].vx();
-                kVy = fpgenparts[partKidIdx].vy();
-                kVz = fpgenparts[partKidIdx].vz();
-                if( kVx == 0 ){
-                    kVx = genVx; kVy = genVy; kVz = genVz;
-                    genVx = geVar("vtxX"); genVy = geVar("vtxY"); genVz = geVar("vtxZ");
-                }//<<>>if( kVx == 0 )
-            }//<<>>if( genKidIdx > -1 )
 
-        	//std::cout << "Part : " << nGenParts << " pdg " << genPdgId << " st " << genStatus; 
-        	//std::cout << " v " << genVx << ", " << genVy << ", " << genVz;
-			//std::cout << " k " << kVx << ", " << kVy << ", " << kVz;
-        	//std::cout << " 4v e " << genEnergy << " eta " << genEta << " phi " << genPhi << " pt " << genPt << " mass " << genMass;
-        	//std::cout << " mom " << genMomIdx << " gmom "  << genGMomIdx << " kid " << genKidIdx;
-			//std::cout << std::endl;
+            // Same-PDG copy links are collapsed in fpgpMomIdx.  Therefore a
+            // retained photon, Z, or LSP whose normalized mother is this X2
+            // identifies the terminal/decaying X2 copy.  Search all retained
+            // children instead of relying on fpgpKidIdx's first-child choice.
+            int decayKidIdx = -1;
+            float decayDis = -1.f;
+            float decayBeta = -1.f;
+            float decayCTau = -1.f;
+            float decayGenVx = genVx;
+            float decayGenVy = genVy;
+            float decayGenVz = genVz;
 
-            const float dis = validKid ? hypo( genVx-kVx, genVy-kVy, genVz-kVz ) : -10;
-            float xp = hypo( genPx, genPy, genPz );
-            float beta = genEnergy != 0.f ? xp/genEnergy : -1.f;
-            float gbeta = genMass != 0.f ? xp/genMass : -1.f;
-            float ct = gbeta > 0.f ? dis/gbeta : -1.f;
-            if( nXs == 1 ){
-                Branches.fillBranch("Xa_MomDisplacment",dis);
-                Branches.fillBranch("Xa_beta",beta);
-                Branches.fillBranch("Xa_ctau",ct);
+            const float xp = hypo( genPx, genPy, genPz );
+            const bool validKinematics = std::isfinite(xp) && xp > 0.f &&
+                std::isfinite(genMass) && genMass > 0.f &&
+                std::isfinite(genEnergy) && genEnergy > 0.f;
+
+            if( validKinematics ){
+                for( int childIdx = 0; childIdx < nFgenParts; childIdx++ ){
+                    if( fpgpMomIdx[childIdx] != nGenParts ) continue;
+
+                    const int childPdgId = std::abs(fpgenparts[childIdx].pdgId());
+                    const bool isDecayChild = childPdgId == 22 || childPdgId == 23 ||
+                        childPdgId == 1000022;
+                    if( !isDecayChild ) continue;
+
+                    float testGenVx = genVx;
+                    float testGenVy = genVy;
+                    float testGenVz = genVz;
+                    float testKidVx = fpgenparts[childIdx].vx();
+                    float testKidVy = fpgenparts[childIdx].vy();
+                    float testKidVz = fpgenparts[childIdx].vz();
+
+                    if( testKidVx == 0.f ){
+                        testKidVx = testGenVx;
+                        testKidVy = testGenVy;
+                        testKidVz = testGenVz;
+                        testGenVx = geVar("vtxX");
+                        testGenVy = geVar("vtxY");
+                        testGenVz = geVar("vtxZ");
+                    }
+
+                    const float testDis = hypo( testGenVx-testKidVx,
+                        testGenVy-testKidVy, testGenVz-testKidVz );
+                    const float testBeta = xp/genEnergy;
+                    const float testGBeta = xp/genMass;
+                    const float testCTau = testDis/testGBeta;
+                    const bool validLifetime = std::isfinite(testGenVx) &&
+                        std::isfinite(testGenVy) && std::isfinite(testGenVz) &&
+                        std::isfinite(testKidVx) && std::isfinite(testKidVy) &&
+                        std::isfinite(testKidVz) && std::isfinite(testDis) &&
+                        testDis > 0.f && std::isfinite(testBeta) &&
+                        std::isfinite(testCTau) && testCTau > 0.f;
+                    if( !validLifetime ) continue;
+
+                    decayKidIdx = childIdx;
+                    decayDis = testDis;
+                    decayBeta = testBeta;
+                    decayCTau = testCTau;
+                    decayGenVx = testGenVx;
+                    decayGenVy = testGenVy;
+                    decayGenVz = testGenVz;
+                    break;
+                }
+            }
+
+            if( decayKidIdx >= 0 ){
+                nValidXs++;
+                genVx = decayGenVx;
+                genVy = decayGenVy;
+                genVz = decayGenVz;
+            }
+            if( nValidXs == 1 && decayKidIdx >= 0 ){
+                Branches.fillBranch("Xa_MomDisplacment",decayDis);
+                Branches.fillBranch("Xa_beta",decayBeta);
+                Branches.fillBranch("Xa_ctau",decayCTau);
                 Branches.fillBranch("Xa_PdgId",genPdgId);
                 Branches.fillBranch("Xa_Vx",genVx);
                 Branches.fillBranch("Xa_Vy",genVy);
@@ -678,23 +724,23 @@ void KUCMSGenObjectMini::ProcessEvent( ItemManager<float>& geVar ){
                 Branches.fillBranch("Xa_Phi",genPhi);
                 Branches.fillBranch("Xa_Eta",genEta);
                 Branches.fillBranch("Xa_Energy",genEnergy);
-            }//<<>>if( nXs == 1 )
-            if( nXs == 2 ){
-                Branches.fillBranch("Xb_MomDisplacment",dis);
+            }//<<>>if( nValidXs == 1 )
+            if( nValidXs == 2 && decayKidIdx >= 0 ){
+                Branches.fillBranch("Xb_MomDisplacment",decayDis);
                 Branches.fillBranch("Xb_PdgId",genPdgId);
                 Branches.fillBranch("Xb_Vx",genVx);
                 Branches.fillBranch("Xb_Vy",genVy);
                 Branches.fillBranch("Xb_Vz",genVz);
                 Branches.fillBranch("Xb_Pt",genPt);
                 Branches.fillBranch("Xb_P",xp);
-                Branches.fillBranch("Xb_beta",beta);
-                Branches.fillBranch("Xb_ctau",ct);
+                Branches.fillBranch("Xb_beta",decayBeta);
+                Branches.fillBranch("Xb_ctau",decayCTau);
                 Branches.fillBranch("Xb_Mass",genMass);
                 Branches.fillBranch("Xb_Phi",genPhi);
                 Branches.fillBranch("Xb_Eta",genEta);
                 Branches.fillBranch("Xb_Energy",genEnergy);
-            }//<<>>if( nXs == 2 )
-        }//<<>>if( genPdgId > 1000021 and genPdgId < 1000038 )
+            }//<<>>if( nValidXs == 2 )
+        }//<<>>if( isX2 )
 
         //if( GenDEBUG ) std::cout << "GenPart : genSusId = " << genSusId << std::endl;
         Branches.fillBranch("genPt",genPt);
@@ -771,7 +817,8 @@ void KUCMSGenObjectMini::ProcessEvent( ItemManager<float>& geVar ){
     Branches.fillBranch("isZZ", isZZ);
     Branches.fillBranch("isGZ",isGZ);
     Branches.fillBranch("fsType",fsType);
-	Branches.fillBranch("nXs",nXs);
+    Branches.fillBranch("nXs",nXs);
+    Branches.fillBranch("nValidXs",nValidXs);
 
 	geVar.fill("genWgt",wgt);
     if( GenDEBUG ) std::cout << "GenPart : Done " << std::endl;
