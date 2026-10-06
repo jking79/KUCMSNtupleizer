@@ -82,6 +82,9 @@ passNHadGe1SelectionMidDxySigValSR
 #Photon Validation Flags
 passNPhoEq2SelectionPromptMedIsoValCR # in Eq2 med Iso CR
 passNPhoEq1SelectionPromptMedIsoValCR # in Eq1 med Iso CR
+passNPhoEq2SelectionPromptTightIsoValSR # in Eq2 tight Iso SR
+passNPhoEq2SelectionCompPromptTightIsoValSR # in Eq2 tight Iso SR compressed
+passNPhoEq1SelectionPromptTightIsoValSR # in Eq1 tight Iso SR
 passNPhoGe1SelectionLateMedIsoValCR # in BH CR + non-prompt med Iso CR
 passNPhoGe1SelectionEarlyMedIsoValCR # in BH CR + non-prompt med Iso CR
 passNPhoGe1SelectionEarlyTightIsoValCR # in BH CR + non-prompt med Iso CR
