@@ -11,6 +11,10 @@
 #include "KUCMSAodSVSkimmer.hh"
 #include "KUCMSHelperFunctions.hh"
 
+#include <algorithm>
+#include <cmath>
+#include <vector>
+
 //#define DEBUG true
 #define DEBUG false
 
@@ -52,8 +56,27 @@ void KUCMSAodSkimmer::processGenParticles(){
   int nN0fsqk = 0;
   int nN0fsg = 0;
 
+  struct X2LifetimeInfo {
+    int genIndex;
+    float energy;
+    float eta;
+    float phi;
+    float mass;
+    float displacement;
+    float momentum;
+    uInt pdgId;
+    float pt;
+    float vx;
+    float vy;
+    float vz;
+    float beta;
+    float ctau;
+  };
+
   //std::cout << "New Event ----------------------------------" << std::endl;
   int nGenParts = Gen_pdgId->size();
+  std::vector<X2LifetimeInfo> validX2Lifetimes;
+  std::vector<bool> hasValidLifetimeForMother(nGenParts, false);
   for( int it = 0; it < nGenParts; it++ ){
 
     float displacment = (*Gen_momDisplacment)[it];
@@ -91,6 +114,41 @@ void KUCMSAodSkimmer::processGenParticles(){
     //float gbeta = ( gama >= 0 && beta >= 0 ) ? gama*beta : -1;
     float ctau = ( ( gbeta > 0 ) && ( displacment >= 0 ) ) ? displacment/gbeta : -1;
     if( mompdg == 1000023 ){ selGenPart.fillBranch( "genXMomCTau", ctau ); }
+
+    // Reconstruct each physical X2 once from a retained decay child.  The
+    // ntuplizer's normalized mother index skips same-PDG copies, so a photon,
+    // Z, or LSP with an X2 mother identifies the terminal/decaying X2 copy.
+    const bool isX2DecayChild = pdgId == 22 || pdgId == 23 || pdgId == 1000022;
+    if( hasMom && mompdg == 1000023 && isX2DecayChild &&
+        !hasValidLifetimeForMother[momIndx] ){
+      const float momenergy = (*Gen_energy)[momIndx];
+      const float mometa = (*Gen_eta)[momIndx];
+      const float momphi = (*Gen_phi)[momIndx];
+      const float mompt = (*Gen_pt)[momIndx];
+      const float momvx = (*Gen_vx)[momIndx];
+      const float momvy = (*Gen_vy)[momIndx];
+      const float momvz = (*Gen_vz)[momIndx];
+      const float mombeta = momenergy > 0.f ? genmomp/momenergy : -1.f;
+      const float momctau = ( genmomp > 0.f && mommass > 0.f ) ?
+        displacment*mommass/genmomp : -1.f;
+
+      const bool validLifetime = std::isfinite(displacment) && displacment > 0.f &&
+        std::isfinite(genmomp) && genmomp > 0.f &&
+        std::isfinite(mommass) && mommass > 0.f &&
+        std::isfinite(momenergy) && momenergy > 0.f &&
+        std::isfinite(mometa) && std::isfinite(momphi) && std::isfinite(mompt) &&
+        std::isfinite(momvx) && std::isfinite(momvy) && std::isfinite(momvz) &&
+        std::isfinite(mombeta) && mombeta > 0.f &&
+        std::isfinite(momctau) && momctau > 0.f;
+
+      if( validLifetime ){
+        validX2Lifetimes.push_back({
+          momIndx, momenergy, mometa, momphi, mommass, displacment, genmomp,
+          mompdg, mompt, momvx, momvy, momvz, mombeta, momctau
+        });
+        hasValidLifetimeForMother[momIndx] = true;
+      }
+    }
     //if( mompdg != 0 ){
     if( false ){
       std::cout << " ctau for : " << pdgId << " mother: " << mompdg << " with mommass " << mommass;
@@ -159,6 +217,12 @@ void KUCMSAodSkimmer::processGenParticles(){
 
   }//<<>>for( int it = 0; it < nGenParts; it++ )
 
+  std::sort(validX2Lifetimes.begin(), validX2Lifetimes.end(),
+    []( const X2LifetimeInfo& lhs, const X2LifetimeInfo& rhs ){
+      return lhs.genIndex < rhs.genIndex;
+    });
+  const int nValidXs = static_cast<int>(validX2Lifetimes.size());
+
   //bool hasLSP( nLSPfXfSg > 0 );
   bool hasLSP( true );
   bool noX234( nX234 == 0 );
@@ -215,40 +279,27 @@ void KUCMSAodSkimmer::processGenParticles(){
 
   if( doNewSigBase ){
 
-	//selGenPart.fillBranch( "", 
-    selGenPart.fillBranch( "Xa_energy", Xa_energy );
-    selGenPart.fillBranch( "Xa_phi", Xa_phi ); // opps -> missed eta : actually did phi twice :(
-    selGenPart.fillBranch( "Xa_mass", Xa_mass );
-    selGenPart.fillBranch( "Xa_Displacment", Xa_Displacment );
-    selGenPart.fillBranch( "Xa_p", Xa_p );
-    selGenPart.fillBranch( "Xa_pdgId", Xa_pdgId );
-    selGenPart.fillBranch( "Xa_pt", Xa_pt );
-    selGenPart.fillBranch( "Xa_vx", Xa_vx );
-    selGenPart.fillBranch( "Xa_vy", Xa_vy );
-    selGenPart.fillBranch( "Xa_vz", Xa_vz );
-    selGenPart.fillBranch( "Xa_beta", Xa_beta );
-    float xagbeta = Xa_p/Xa_mass;
-    float xactau = Xa_Displacment/xagbeta;
-    selGenPart.fillBranch( "Xa_ctau", xactau );
-	std::vector<float> xa5vec = { Xa_vx, Xa_vy, Xa_vz, Xa_beta, Xa_Displacment, Xa_eta, Xa_phi };
-	geVects.set( "xa5vec", xa5vec );
+    const auto fillX2Lifetime = [&]( const X2LifetimeInfo& x2, const std::string& label ){
+      selGenPart.fillBranch( label + "_energy", x2.energy );
+      selGenPart.fillBranch( label + "_phi", x2.phi );
+      selGenPart.fillBranch( label + "_mass", x2.mass );
+      selGenPart.fillBranch( label + "_Displacment", x2.displacement );
+      selGenPart.fillBranch( label + "_p", x2.momentum );
+      selGenPart.fillBranch( label + "_pdgId", x2.pdgId );
+      selGenPart.fillBranch( label + "_pt", x2.pt );
+      selGenPart.fillBranch( label + "_vx", x2.vx );
+      selGenPart.fillBranch( label + "_vy", x2.vy );
+      selGenPart.fillBranch( label + "_vz", x2.vz );
+      selGenPart.fillBranch( label + "_beta", x2.beta );
+      selGenPart.fillBranch( label + "_ctau", x2.ctau );
+      geVects.set( label == "Xa" ? "xa5vec" : "xb5vec",
+        { x2.vx, x2.vy, x2.vz, x2.beta, x2.displacement, x2.eta, x2.phi } );
+    };
 
-    selGenPart.fillBranch( "Xb_energy", Xb_energy );
-    selGenPart.fillBranch( "Xb_phi", Xb_phi );
-    selGenPart.fillBranch( "Xb_mass", Xb_mass );
-    selGenPart.fillBranch( "Xb_Displacment", Xb_Displacment );
-    selGenPart.fillBranch( "Xb_p", Xb_p );
-    selGenPart.fillBranch( "Xb_pdgId", Xb_pdgId );
-    selGenPart.fillBranch( "Xb_pt", Xb_pt );
-    selGenPart.fillBranch( "Xb_vx", Xb_vx );
-    selGenPart.fillBranch( "Xb_vy", Xb_vy );
-    selGenPart.fillBranch( "Xb_vz", Xb_vz );
-    selGenPart.fillBranch( "Xb_beta", Xb_beta );
-    float xbgbeta = Xb_p/Xb_mass;
-    float xbctau = Xb_Displacment/xbgbeta;
-    selGenPart.fillBranch( "Xb_ctau", xbctau );
-    std::vector<float> xb5vec = { Xb_vx, Xb_vy, Xb_vz, Xb_beta, Xb_Displacment, Xb_eta, Xb_phi };
-	geVects.set( "xb5vec", xb5vec );
+    geVects.set( "xa5vec", std::vector<float>(7, -1.f) );
+    geVects.set( "xb5vec", std::vector<float>(7, -1.f) );
+    if( nValidXs > 0 ) fillX2Lifetime(validX2Lifetimes[0], "Xa");
+    if( nValidXs > 1 ) fillX2Lifetime(validX2Lifetimes[1], "Xb");
 
     //selGenPart.fillBranch( "Evt_isGG", evtIsZZ );
     //selGenPart.fillBranch( "Evt_isGZ", evtIsZG );
@@ -256,7 +307,9 @@ void KUCMSAodSkimmer::processGenParticles(){
     selGenPart.fillBranch( "Evt_isGG", Evt_isGG );
     selGenPart.fillBranch( "Evt_isGZ", Evt_isGZ );
     selGenPart.fillBranch( "Evt_isZZ", Evt_isZZ );
+    // Preserve the ntuplizer's raw X2-record count as the reconstruction flag.
     selGenPart.fillBranch( "Evt_nXs", Evt_nXs );
+    selGenPart.fillBranch( "Evt_nValidXs", nValidXs );
 
   }//<<>>if( doNewSigBase )
 
@@ -328,8 +381,9 @@ void KUCMSAodSkimmer::setGenBranches( TTree* fOutTree ){
   selGenPart.makeBranch( "Evt_isGZ", BOOL );
   selGenPart.makeBranch( "Evt_isZZ", BOOL );
   selGenPart.makeBranch( "Evt_nXs", INT );
+  selGenPart.makeBranch( "Evt_nValidXs", INT,
+    "unique terminal X2 mothers with a positive finite reconstructed lifetime" );
 
   selGenPart.attachBranches( fOutTree );
 
 }//<<>>void KUCMSAodSkimmer::setBranches( TTree& fOutTree )
-
