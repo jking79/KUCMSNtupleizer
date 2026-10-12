@@ -116,12 +116,21 @@ int main ( int argc, char *argv[] ){
 	//// bool makeCaliMapsEGR( std::string inputFileName, bool doTT, int GID, bool small, bool doCali )
 	//// bool makeTTCaliMapEGR( std::string inputFileName, int GID = 1, bool small = false, bool doCali = true );
 	//// bool makeXCaliMapEGR( std::string inputFileName, int GID = 1, bool small = false, bool doCali = true );
+	//// Preferred gain-1 path: make TT and crystal maps in one event loop.
+	//// The final non-comment input row must set dolast=1 because the intermediate
+	//// TT-partitioned crystal moments exist only for this process invocation.
+	//if( not theCali.makeGain1CaliMapsEGR( inputfilename ) ) return EXIT_FAILURE;
+	//theCali.makeCaliHists();
+	//if( not theCali.SaveCaliHists() ) return EXIT_FAILURE;
+	//if( not theCali.SaveTTRunFile() ) return EXIT_FAILURE;
+	//if( not theCali.SaveCaliRunFile() ) return EXIT_FAILURE;
+
+	//// Legacy two-pass gain-1 path:
     ////theCali.makeTTCaliMapEGR( inputfilename, 1, true ); // true == run only subset of events ( only change doCali for testing, ever )
 	//if( not theCali.makeTTCaliMapEGR( inputfilename ) ) return EXIT_FAILURE;
 	//theCali.makeCaliHists();
 	//if( not theCali.SaveCaliHists() ) return EXIT_FAILURE;
 	//if( not theCali.SaveTTRunFile() ) return EXIT_FAILURE;
-
     //-----//////////  making xtal cali :
     ////theCali.makeXCaliMapEGR( inputfilename, true ); // true == run only subset of events
 	////theCali.makeXCaliMapEGR( inputfilename, 1, true ); // true == run only subset of events

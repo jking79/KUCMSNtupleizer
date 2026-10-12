@@ -112,18 +112,19 @@ class kucms_CaliRunClass : public KUCMS_RootHelperBaseClass {
                 invalidBins++;
             }//<<>>if( not binValid )
             //std::cout << " - calc: " << entry.first << " = " << mean << " +/- " << err << " occ: " << cnt << std::endl; 
-			if( binValid && filter && ( cnt > 10 ) ){
+            auto hist = detIdHists.find(entry.first);
+            if( binValid && filter && ( cnt > 10 ) && hist != detIdHists.end() && hist->second ){
 				double high = mean + 3*err;
                 double low = mean - 3*err;
                 auto fitFunc  = new TF1("gfit","gaus",low,high); 
-                auto thefit = detIdHists[entry.first]->Fit("gfit","QNRL"); 
+				auto thefit = hist->second->Fit("gfit","QNRL");
                 double fmean = fitFunc->GetParameter(1); 
                 double ferr = fitFunc->GetParError(1); 
                 //std::cout << " --- fit: result " << thefit << " mean " << fmean << " +/- " << ferr << std::endl; 
                 if( thefit != 4 && ferr != 0 && ferr < err ){ mean = fmean; err = ferr; } 
                 delete fitFunc; 
-            }//<<>>if( filter ) 
-            delete detIdHists[entry.first]; 
+            }//<<>>if( filter )
+			if( hist != detIdHists.end() ) delete hist->second;
             meanMap[entry.first] = mean; 
             errMap[entry.first] = err;  
             //std::cout << " - mmm: " << entry.first << " = " << mean << " +/- " << err << " occ: " << cnt << std::endl; 
@@ -137,7 +138,7 @@ class kucms_CaliRunClass : public KUCMS_RootHelperBaseClass {
 	}//<<>>bool CaliRunClass::makeMeanMap()
      
     //inline void kucms_CaliRunClass::fillSumCnt( uInt detid, float val, int cnt ){ 
-	bool fillSumCnt( uInt detid, double val, double cnt = 1 ){
+	bool fillSumCnt( uInt detid, double val, double cnt = 1, bool fillHist = false ){
     
 		//std::cout << "Cecking " << detid << " with " << endRun << " " << lastRun <<  " " << hasGID2 << " " << doGID2  << std::endl; 
         if( endRun == lastRun ){ 
@@ -153,17 +154,15 @@ class kucms_CaliRunClass : public KUCMS_RootHelperBaseClass {
         updated = true; 
         double wval = val*cnt;
 		double wvalsqr = val*val*cnt;
-        if( sumCntMap.find(detid) != sumCntMap.end() ){ 
-            sumCntMap[detid].sum += wval; 
-			sumCntMap[detid].sumsqr += wvalsqr;
-            sumCntMap[detid].cnt += cnt;  
-        } else { 
-			sumCntMap[detid] = { wval, wvalsqr, cnt };
-        }//<<>>if( sumCntMap.find(detid) != sumCntMap.end() ) 
+		auto result = sumCntMap.try_emplace(detid, 0.0, 0.0, 0.0);
+		auto& sums = result.first->second;
+		sums.sum += wval;
+		sums.sumsqr += wvalsqr;
+		sums.cnt += cnt;
     
     	//std::cout << " -- hist Fill " << detid << " with " << val << std::endl; } 
-        if( detIdHists.find(detid) != detIdHists.end() ){ detIdHists[detid]->Fill(val,cnt); } 
-        else { 
+		if( fillHist && detIdHists.find(detid) != detIdHists.end() ){ detIdHists[detid]->Fill(val,cnt); }
+		else if( fillHist ){
             //std::cout << " -- hist Make " << detid << " with " << val << std::endl; 
             std::string histname = histMapName + "_SumCntHist_" + std::to_string( startRun ) + "_" + std::to_string(detid) ; 
             detIdHists[detid] = new TH1F(histname.c_str(),"AveXtalTimeDist;XtalTime [ns]",200,-5,5); 
@@ -173,6 +172,20 @@ class kucms_CaliRunClass : public KUCMS_RootHelperBaseClass {
 		return true;
 
 	}//<<>>bool CaliRunClass::fillSumCnt( uInt detID, float sum, int cnt )
+
+	bool mergeSumCnt( uInt detid, double sum, double sumsqr, double cnt ){
+		if( not std::isfinite(sum) || not std::isfinite(sumsqr) || not std::isfinite(cnt) || cnt <= 0 ){
+			std::cerr << "ERROR: refusing invalid aggregate for detID " << detid << std::endl;
+			return false;
+		}//<<>>if( invalid aggregate )
+		updated = true;
+		auto result = sumCntMap.try_emplace(detid, 0.0, 0.0, 0.0);
+		auto& totals = result.first->second;
+		totals.sum += sum;
+		totals.sumsqr += sumsqr;
+		totals.cnt += cnt;
+		return true;
+	}//<<>>bool mergeSumCnt( uInt detID, double sum, double sumsqr, double cnt )
 
 };//<<>>TimeCaliTagStruct 
 

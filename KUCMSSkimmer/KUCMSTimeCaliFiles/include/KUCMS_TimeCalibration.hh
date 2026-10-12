@@ -184,7 +184,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 			std::string dataSetKey, int mctype, bool gs6, bool gs1 )
 			{ int gid = ( gs6 || gs1 ) ? 2 : 1; return getTimeResoltuion( amplitude, rechitID, Evt_run, dataSetKey, mctype, gid ); };
 
-	float getCalibration( uInt rhid, int run, std::string tag, int gainID = 1 ); // tag indicates which calibration set to use
+	float getCalibration( uInt rhid, int run, const std::string& tag, int gainID = 1 ); // tag indicates which calibration set to use
     float getCalibration( uInt rhid, int run, int gainID = 1 )
 			{ return getCalibration( rhid, run, curTag, gainID ); };
     float getCalibration( uInt rhid, int run, bool gs6, bool gs1 ) 
@@ -207,7 +207,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 	// accessor function for use in fillTimeCali - Setup and processing functions
 	// --------------------------------------------------------------------------
 
-	float getTTCali( uInt rhid, int run, std::string tag, int gainID = 1 );
+	float getTTCali( uInt rhid, int run, const std::string& tag, int gainID = 1 );
 
 	kucms_DetIDStruct& getDetIdInfo( uInt rhid );
 	std::map<int,std::map<int,std::map<int,uInt>>> getInvDetIDMap();
@@ -241,6 +241,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 			{ return makeCaliMapsEGR( inputFileName, true, GID, small, doCali ); };
 	bool makeXCaliMapEGR( std::string inputFileName, int GID = 1, bool small = false, bool doCali = true )
 			{ return makeCaliMapsEGR( inputFileName, false, GID, small, doCali ); };
+	bool makeGain1CaliMapsEGR( std::string inputFileName, bool small = false );
 
 	void plot2dResolutionEGR( std::string inputFileName, bool scale = true, bool usecali = true, bool smear = false, std::string ext = "" );
     void plot2dResbyIovForEGR( std::string inputFileName, bool scale = true, bool usecali = true, bool smear = false, std::string ext = "" );
