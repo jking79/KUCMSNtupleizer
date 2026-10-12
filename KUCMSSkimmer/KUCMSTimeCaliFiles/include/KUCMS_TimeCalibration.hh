@@ -142,9 +142,9 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
     void SetupIovMap( std::string tag, float lumiMin );
 
 	void ReadCaliRunFile();
-    void SaveCaliRunFile();
+	bool SaveCaliRunFile();
     void ReadTTRunFile();
-    void SaveTTRunFile();
+	bool SaveTTRunFile();
 	void ReadResFile();
     void SaveResFile();
 	void SetResParamters( std::string tag, float ebnoise, float ebstoch, float ebstant, float ebg1he1res, float ebg1he2res, 
@@ -153,7 +153,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 	void ReadLumiFile( std::string lumifile, std::string tag );// only need to create caliRunMap entries - made with brilcalc
 
     void LoadCaliHists( bool stayOpen = false, bool makeNew = false );// loads up all starting info
-    void SaveCaliHists();// save existing calimaphists to root TFile -- used if CaliHits left open
+	bool SaveCaliHists();// save existing calimaphists to root TFile -- used if CaliHits left open
 	void LoadExtCali( std::string calihist, std::string mapname, std::string tag, int startr, int endr );
 
 	// use to create calibration files and add to DB
@@ -236,11 +236,11 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 
 	// function to create calibration and smear information 
 	// make TT maps from egamma res ntuple from lpc/jwk space
-	void makeCaliMapsEGR( std::string inputFileName, bool doTT, int GID = 1, bool small = false, bool doCali = true );
-	void makeTTCaliMapEGR( std::string inputFileName, int GID = 1, bool small = false, bool doCali = true ) 
-			{ makeCaliMapsEGR( inputFileName, true, GID, small, doCali ); }; 
-	void makeXCaliMapEGR( std::string inputFileName, int GID = 1, bool small = false, bool doCali = true )
-			{ makeCaliMapsEGR( inputFileName, false, GID, small, doCali ); };
+	bool makeCaliMapsEGR( std::string inputFileName, bool doTT, int GID = 1, bool small = false, bool doCali = true );
+	bool makeTTCaliMapEGR( std::string inputFileName, int GID = 1, bool small = false, bool doCali = true )
+			{ return makeCaliMapsEGR( inputFileName, true, GID, small, doCali ); };
+	bool makeXCaliMapEGR( std::string inputFileName, int GID = 1, bool small = false, bool doCali = true )
+			{ return makeCaliMapsEGR( inputFileName, false, GID, small, doCali ); };
 
 	void plot2dResolutionEGR( std::string inputFileName, bool scale = true, bool usecali = true, bool smear = false, std::string ext = "" );
     void plot2dResbyIovForEGR( std::string inputFileName, bool scale = true, bool usecali = true, bool smear = false, std::string ext = "" );

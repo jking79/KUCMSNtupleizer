@@ -638,11 +638,14 @@ void KUCMS_TimeCalibration::ReadCaliRunFile(){
 
 }//<<>>void ReadTimeCaliTagFile()
 
-void KUCMS_TimeCalibration::SaveCaliRunFile(){
+bool KUCMS_TimeCalibration::SaveCaliRunFile(){
 
     std::cout << " - Saving CaliRunFile " << std::endl;
     std::ofstream outfile( caliRunConfig, std::ios::out | std::ios::trunc );
-    if( not outfile.is_open() ){ std::cout << " -- " << caliRunConfig << " not opened. "  << std::endl; return; }
+	if( not outfile.is_open() ){
+		std::cerr << "ERROR: " << caliRunConfig << " not opened for writing." << std::endl;
+		return false;
+	}//<<>>if( not outfile.is_open() )
 	for( auto& calirunmap : CaliRunMapSet ){
 
 		std::string tag = calirunmap.first;
@@ -668,7 +671,13 @@ void KUCMS_TimeCalibration::SaveCaliRunFile(){
 		}//<<>>for( auto& calirunsct : calirunmap[tag] )
 
 	}//<<>>for( auto& calirunmap : CaliRunMapSet )
+	bool success = outfile.good();
 	outfile.close();
+	if( not success || outfile.fail() ){
+		std::cerr << "ERROR: failed while writing " << caliRunConfig << std::endl;
+		return false;
+	}//<<>>if( write failed )
+	return true;
 
 }//<<>>void ReadTimeCaliTagFile()
 
@@ -693,11 +702,14 @@ void KUCMS_TimeCalibration::ReadTTRunFile(){
 
 //std::map<std::string,std::map<int,CaliRunStruct>> CaliRunMapSet;
 
-void KUCMS_TimeCalibration::SaveTTRunFile(){
+bool KUCMS_TimeCalibration::SaveTTRunFile(){
     
 	std::cout << " - Saving TTCaliRunFile " << std::endl;
     std::ofstream outfile( caliTTConfig, std::ios::out | std::ios::trunc );
-    if( not outfile.is_open() ){ std::cout << "Failed to open file !!! " << std::endl; return; }
+	if( not outfile.is_open() ){
+		std::cerr << "ERROR: " << caliTTConfig << " not opened for writing." << std::endl;
+		return false;
+	}//<<>>if( not outfile.is_open() )
     for( auto& calirunmap : TTCaliRunMapSet ){
         
         std::string tag = calirunmap.first;
@@ -715,7 +727,13 @@ void KUCMS_TimeCalibration::SaveTTRunFile(){
 		}//<<>>for( auto& calirunsct : calirunmap )
 
     }//<<>>for( auto& calirunmap : CaliRunMapSet )
+	bool success = outfile.good();
 	outfile.close();
+	if( not success || outfile.fail() ){
+		std::cerr << "ERROR: failed while writing " << caliTTConfig << std::endl;
+		return false;
+	}//<<>>if( write failed )
+	return true;
 
 }//<<>>void ReadTimeCaliTagFile()
 
@@ -823,8 +841,8 @@ void KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
 		if( makeNew ) caliTFile[filename.first] = TFile::Open( califilepath.c_str(), "RECREATE" );
 		if( stayOpen && not makeNew ) caliTFile[filename.first] = TFile::Open( califilepath.c_str(), "UPDATE" );
 		if( not stayOpen && not makeNew ) caliTFile[filename.first] = TFile::Open( califilepath.c_str(), "READ" );
-		if( caliTFile[filename.first]->IsZombie() or !caliTFile[filename.first] ){ 
-				std::cout << "ERROR: failed to open ROOT file: " << califilepath << std::endl;
+		if( not caliTFile[filename.first] || caliTFile[filename.first]->IsZombie() || not caliTFile[filename.first]->IsOpen() ){
+			std::cerr << "ERROR: failed to open ROOT file: " << califilepath << std::endl;
 		}//<<>>if( caliTFile[filename.first]->IsZombie() or !caliTFile[filename.first] )
 	}//<<>>for( auto filename : caliHistFileNames )
 
@@ -834,13 +852,18 @@ void KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
         std::string prefix = getPrefix(calirunmap.first);
 		for( auto& calirunsct : calirunmap.second ){
 			std::string ttfilename( calirunsct.second.histMapName );
-			caliTFile[prefix]->cd();
+			auto file = caliTFile.find(prefix);
+			if( file == caliTFile.end() || not file->second || file->second->IsZombie() || not file->second->IsOpen() ){
+				std::cerr << "ERROR: cannot load TT calibration histograms for prefix " << prefix << std::endl;
+				continue;
+			}//<<>>if( input file is unavailable )
+			file->second->cd();
 			for( auto mapname : maptypes ){
 			for( auto ebeehist : ebeemap ){
 				std::string filename = ttfilename + ebeehist + mapname;
 				//std::cout << " -- loading : " << filename << " ( " << prefix << " ) ";
 				if( ttfilename != "none" && CaliHists.find(filename) == CaliHists.end() ){
-					TH2F* hist = (TH2F*)caliTFile[prefix]->Get(filename.c_str());
+					TH2F* hist = (TH2F*)file->second->Get(filename.c_str());
 					if( hist != NULL) hist->SetDirectory(nullptr);
                     else { std::cout << " Not Found " << filename << std::endl; }
                     //std::cout << " Found " << hist << std::endl;
@@ -856,15 +879,20 @@ void KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
     for( auto& calirunmap : CaliRunMapSet ){
 		//std::string prefix = oldstyle ? calirunmap.first.substr(0,2) : getPrefix(calirunmap.first);
         std::string prefix = getPrefix(calirunmap.first);
-        for( auto& calirunsct : calirunmap.second ){
+		for( auto& calirunsct : calirunmap.second ){
         	std::string xtfilename( calirunsct.second.histMapName );
-			caliTFile[prefix]->cd();
+			auto file = caliTFile.find(prefix);
+			if( file == caliTFile.end() || not file->second || file->second->IsZombie() || not file->second->IsOpen() ){
+				std::cerr << "ERROR: cannot load crystal calibration histograms for prefix " << prefix << std::endl;
+				continue;
+			}//<<>>if( input file is unavailable )
+			file->second->cd();
             for( auto mapname : maptypes ){
             for( auto ebeehist : ebeemap ){
                 std::string filename = xtfilename + ebeehist + mapname;
                 //std::cout << " -- loading : " << filename << " ( " << xtfilename << " ) ";
                 if( xtfilename != "none" && CaliHists.find(filename) == CaliHists.end() ){
-                    TH2F* hist = (TH2F*)caliTFile[prefix]->Get(filename.c_str());
+					TH2F* hist = (TH2F*)file->second->Get(filename.c_str());
                     if( hist != NULL) hist->SetDirectory(nullptr); 
 					else { std::cout << " Not Found " << filename << std::endl; }
                     //std::cout << " Found " << hist << std::endl;
@@ -898,9 +926,10 @@ void KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
 //    bool isNew;
 
 // for updating and/or adding new info to califiles - do last - saving closes TCalifile and clears CaliHists
-void KUCMS_TimeCalibration::SaveCaliHists(){
+bool KUCMS_TimeCalibration::SaveCaliHists(){
 
     std::cout << " - Saving CaliHists " << std::endl;
+	bool success = true;
 	//caliTFile->cd();
     //caliTFile->Delete("*;1");
 	for( auto& calihist : CaliHists ){
@@ -920,8 +949,17 @@ void KUCMS_TimeCalibration::SaveCaliHists(){
             //if( prefix == "r2_" ) caliTFile->cd();
             //else if( prefix == "r3_" ) caliR3TFile->cd();
             //else continue;
-            caliTFile[prefix]->cd();
-			if( notResHist ) calihist.second.h2f->Write( calihist.second.h2f->GetName(), TObject::kOverwrite );
+			auto file = caliTFile.find(prefix);
+			if( file == caliTFile.end() || not file->second || file->second->IsZombie() || not file->second->IsOpen() ){
+				std::cerr << "ERROR: no writable calibration ROOT file for prefix " << prefix << std::endl;
+				success = false;
+			} else if( not file->second->cd() ){
+				std::cerr << "ERROR: could not select calibration ROOT file for prefix " << prefix << std::endl;
+				success = false;
+			} else if( notResHist && calihist.second.h2f->Write( calihist.second.h2f->GetName(), TObject::kOverwrite ) <= 0 ){
+				std::cerr << "ERROR: failed to write histogram " << calihist.second.h2f->GetName() << std::endl;
+				success = false;
+			}//<<>>if( output file is valid )
             //if( notResHist ) calihist.second.h2f->Write();
 			//std::cout << " -- deleting : " << calihist.second.h2f << std::endl;	
 		}//<<>>if( calihist.second.h2f != NULL )
@@ -934,8 +972,17 @@ void KUCMS_TimeCalibration::SaveCaliHists(){
             //if( prefix == "r2_" ) caliTFile->cd();
             //else if( prefix == "r3_" ) caliR3TFile->cd();
             //else continue;
-            caliTFile[prefix]->cd();
-            calihist.second.h1f->Write( calihist.second.h1f->GetName(), TObject::kOverwrite );
+			auto file = caliTFile.find(prefix);
+			if( file == caliTFile.end() || not file->second || file->second->IsZombie() || not file->second->IsOpen() ){
+				std::cerr << "ERROR: no writable calibration ROOT file for prefix " << prefix << std::endl;
+				success = false;
+			} else if( not file->second->cd() ){
+				std::cerr << "ERROR: could not select calibration ROOT file for prefix " << prefix << std::endl;
+				success = false;
+			} else if( calihist.second.h1f->Write( calihist.second.h1f->GetName(), TObject::kOverwrite ) <= 0 ){
+				std::cerr << "ERROR: failed to write histogram " << calihist.second.h1f->GetName() << std::endl;
+				success = false;
+			}//<<>>if( output file is valid )
             //calihist.second.h1f->Write();
         }//<<>>if( calihist.second.h2f != NULL )
 		//std::cout << " -- saved " << std::endl;
@@ -948,7 +995,14 @@ void KUCMS_TimeCalibration::SaveCaliHists(){
 	CaliHists.clear();
     //caliTFile->Close();
 	//caliR3TFile->Close();
-	for( auto califile : caliTFile ){ if( califile.second ) califile.second->Close(); }
+	for( auto califile : caliTFile ){
+		if( califile.second ){
+			if( califile.second->TestBit(TFile::kWriteError) ) success = false;
+			califile.second->Close();
+			if( califile.second->TestBit(TFile::kWriteError) ) success = false;
+		}//<<>>if( califile.second )
+	}//<<>>for( auto califile : caliTFile )
+	return success;
 
 }///<<>>void KUCMS_TimeCalibration::SaveCaliMaps()
 
@@ -1741,7 +1795,7 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
 //	- if started but not complete - is run needed ( lastrun )
 //	- if not started - start new cali map
 
-void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doTT, int GID,  bool small, bool doCali ){
+bool KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doTT, int GID,  bool small, bool doCali ){
 
 	std::string whichstring = ( doTT ) ? "for TT " : "for Xtal ";
 	std::cout << "Creating calibration files from EgammaRes Ntuples " << whichstring << std::endl; 
@@ -1770,14 +1824,14 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 	//std::vector<float> *rhAmp = 0;
 
     // List of branches
-    TBranch *b_run;   //!
-    TBranch *b_rhID;   //!
-    TBranch *b_rhRtTime;   //!
-    TBranch *b_rhCCTime;   //!
-    TBranch *b_rhEnergy;   //!
-    TBranch *b_rhisGS6;   //!
-    TBranch *b_rhisGS1;   //!
-    TBranch *b_rhTimeError;
+	TBranch *b_run = nullptr;   //!
+	TBranch *b_rhID = nullptr;   //!
+	TBranch *b_rhRtTime = nullptr;   //!
+	TBranch *b_rhCCTime = nullptr;   //!
+	TBranch *b_rhEnergy = nullptr;   //!
+	TBranch *b_rhisGS6 = nullptr;   //!
+	TBranch *b_rhisGS1 = nullptr;   //!
+	TBranch *b_rhTimeError = nullptr;
     //TBranch *b_rhAmp; // base for resolutions 
 
 	//Set current IOV tag to corrcet version for this gain
@@ -1788,11 +1842,14 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
     //else if( GID == 4 ){ setTTIov( curTTIov + "_gs4" ); setXIov( curXIov + "_gs4" ); }
 
 	// make sure iov maps exist for cali maps we are making
-	if( doTT && iovMaps.find(curTTIov) == iovMaps.end() ){ std::cout << " TT Iov not valid !!" << std::endl; return; }
-    if( not doTT && iovMaps.find(curXIov) == iovMaps.end() ){ std::cout << " X Iov not valid !!" << std::endl; return; }
+	if( doTT && iovMaps.find(curTTIov) == iovMaps.end() ){ std::cerr << "ERROR: TT IOV is not valid." << std::endl; return false; }
+	if( not doTT && iovMaps.find(curXIov) == iovMaps.end() ){ std::cerr << "ERROR: X IOV is not valid." << std::endl; return false; }
 
 	// basicly a bool (0,1) switch to indicate if we should close processing with this file or more input is coming ( false = not done ) 
 	int doLastRun = 0;
+	unsigned long long rejectedSentinelTimes = 0;
+	unsigned long long rejectedNonFiniteTimes = 0;
+	unsigned int inputSetsProcessed = 0;
 
 
     std::cout << "open input files list : " << inputFileName << std::endl;
@@ -1800,7 +1857,7 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
     std::ifstream infilelist(inputFileName);
     if( !infilelist.is_open() ){
         std::cerr << "ERROR: could not open input file list: " << inputFileName << std::endl;
-        return;
+		return false;
     }//<<>>if( !infilelist.is_open() )
     std::string infilestr;
 	int finalRun = 0;
@@ -1811,11 +1868,14 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 		std::cout << std::endl;
         std::stringstream ss(infilestr);
         std::string subdir, matchstr, tag;
-        int srun, erun, dolast, wgt;
+        int srun = 0, erun = 0, dolast = 0, wgt = 1;
 
-        //if( !( ss >> infilename >> srun >> erun >> tag )) std::cout << "[WARN] Parse error in : " << infilestr << std::endl; continue;
-		if( doMC ) ss >> subdir >> matchstr >> srun >> erun >> tag >> dolast >> wgt;
-		else ss >> subdir >> matchstr >> srun >> erun >> tag >> dolast;
+		bool parsed = doMC ? bool( ss >> subdir >> matchstr >> srun >> erun >> tag >> dolast >> wgt )
+		                   : bool( ss >> subdir >> matchstr >> srun >> erun >> tag >> dolast );
+		if( not parsed || subdir.empty() || matchstr.empty() || tag.empty() || srun > erun || ( dolast != 0 && dolast != 1 ) ){
+			std::cerr << "ERROR: malformed calibration input row: " << infilestr << std::endl;
+			return false;
+		}//<<>>if( malformed row )
 		if( subdir[0] == '#' ){ std::cout << " -- skipping: " << subdir << " " << matchstr << std::endl; continue; }
 		std::string wichtype = doTT ? "TT" : "X";
 
@@ -1830,23 +1890,26 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 		// insure we have TTCalimaps if we are doing Xtal calibration maps
 		if( not doTT && TTCaliRunMapSet.find(tag) == TTCaliRunMapSet.end() ){ 
 			std::cout << " No TT maps for this tag !!" << std::endl; 
-			return; 
+			return false;
 		}//<<>>if( not doTT && TTCaliRunMapSet.find(tag) == TTCaliRunMapSet.end() )
 
 		// insure we have TTCalimaps and XCalimaps if we are doing high gain calibration maps
         if( GID > 1 && doCali ){ 
 			if( TTCaliRunMapSet.find(tag) == TTCaliRunMapSet.end() ){ 
 				std::cout << " No TT for this tag in High Gain Calibration!!" << std::endl; 
-				return; 
+				return false;
 			}//<<>>if( TTCaliRunMapSet.find(tag) == TTCaliRunMapSet.end() )
 			if( CaliRunMapSet.find(tag) == CaliRunMapSet.end() ){ 
 				std::cout << " No X maps for this tag in High Gain Calibration!!" << std::endl;
-            	return;
+					return false;
 			}//<<>>if( CaliRunMapSet.find(tag) == CaliRunMapSet.end() )
         }//<<>>if( not doTT && TTCaliRunMapSet.find(tag) == TTCaliRunMapSet.end() )
 
 		// ID 10 T error checking
-		if( GID > 1 && doTT ){ std::cout << " In TT for High Gain Cali ?" << std::endl; return; }
+		if( GID > 1 && doTT ){
+			std::cerr << "ERROR: high-gain calibration cannot create TT maps." << std::endl;
+			return false;
+		}//<<>>if( GID > 1 && doTT )
 
 		int nAdded = 0;
         int nLines = 0;
@@ -1893,8 +1956,13 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
             else std::cout << "0";
 
         }//<<>>while (std::getline(infile,str))
-        std::cout << std::endl;
-        std::cout << " -- [INFO] lines=" << nLines << " filesAdded=" << nAdded << " badFiles=" << nBadFiles << std::endl;
+		std::cout << std::endl;
+		std::cout << " -- [INFO] lines=" << nLines << " filesAdded=" << nAdded << " badFiles=" << nBadFiles << std::endl;
+		if( nAdded == 0 ){
+			std::cerr << "ERROR: no valid ROOT files were added for " << subdir << " " << matchstr << std::endl;
+			delete fInTree;
+			return false;
+		}//<<>>if( nAdded == 0 )
 
        	run = 0;
         rhID = 0;
@@ -1904,17 +1972,38 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 		rhisGS6 = 0;
 		rhisGS1 = 0;
 
-		// use special calibration rh set?
-        fInTree->SetBranchAddress("run", &run, &b_run);
-        fInTree->SetBranchAddress("rhCaliID", &rhID, &b_rhID);
-        fInTree->SetBranchAddress("rhCaliRtTime", &rhRtTime, &b_rhRtTime);
-        if( isCC ) fInTree->SetBranchAddress("rhCaliCCTime", &rhCCTime, &b_rhCCTime);
-        fInTree->SetBranchAddress("rhCaliEnergy", &rhEnergy, &b_rhEnergy);
-   		fInTree->SetBranchAddress("rhisGS6", &rhisGS6, &b_rhisGS6);
-   		fInTree->SetBranchAddress("rhisGS1", &rhisGS1, &b_rhisGS1);
-        fInTree->SetBranchAddress("rhTimeError", &rhTimeError, &b_rhTimeError);
+		// Use one internally aligned rechit collection for IDs, times, energies, flags, and errors.
+		bool branchesValid = true;
+		auto requireBranch = [&]( const char* name, auto* address, TBranch** branch ){
+			if( not fInTree->GetBranch(name) ){
+				std::cerr << "ERROR: required input branch is missing: " << name << std::endl;
+				branchesValid = false;
+				return;
+			}//<<>>if( branch missing )
+			if( fInTree->SetBranchAddress(name, address, branch) < 0 ){
+				std::cerr << "ERROR: failed to bind input branch: " << name << std::endl;
+				branchesValid = false;
+			}//<<>>if( branch binding failed )
+		};
+		requireBranch("run", &run, &b_run);
+		requireBranch("rhID", &rhID, &b_rhID);
+		requireBranch("rhRtTime", &rhRtTime, &b_rhRtTime);
+		if( isCC ) requireBranch("rhCCTime", &rhCCTime, &b_rhCCTime);
+		requireBranch("rhEnergy", &rhEnergy, &b_rhEnergy);
+		requireBranch("rhisGS6", &rhisGS6, &b_rhisGS6);
+		requireBranch("rhisGS1", &rhisGS1, &b_rhisGS1);
+		requireBranch("rhTimeError", &rhTimeError, &b_rhTimeError);
+		if( not branchesValid ){
+			delete fInTree;
+			return false;
+		}//<<>>if( not branchesValid )
 
-        auto treeEntries = fInTree->GetEntries();
+		auto treeEntries = fInTree->GetEntries();
+		if( treeEntries <= 0 ){
+			std::cerr << "ERROR: calibration input chain has no entries." << std::endl;
+			delete fInTree;
+			return false;
+		}//<<>>if( treeEntries <= 0 )
 		auto nEntries = small ? ( treeEntries < 10000000 ) ? treeEntries : 10000000  : treeEntries;
         std::cout << "Starting entry loops for " << nEntries << " Entries" <<  std::endl;
         //if( debug ) nEntries = 10000;
@@ -1930,18 +2019,42 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
                 std::cout << " (" << static_cast<float>((10000*centry)/nEntries)/(100) << "%)" << std::endl;
             }//<<>>if( centry%1000000 == 0 or centry == 0)
 
-            auto entry = fInTree->LoadTree(centry);
-			if (entry < 0) { std::cout << "[WARN] LoadTree failed at centry=" << centry << std::endl; continue; }
-
-
-            b_run->GetEntry(entry);   //!
-            b_rhID->GetEntry(entry);   //!
-            b_rhRtTime->GetEntry(entry);   //!
-			if( isCC ) b_rhCCTime->GetEntry(entry);   //!
-            b_rhEnergy->GetEntry(entry);
-            b_rhisGS6->GetEntry(entry);
-            b_rhisGS1->GetEntry(entry);
-			b_rhTimeError->GetEntry(entry);
+			auto entry = fInTree->LoadTree(centry);
+			if( entry < 0 ){
+				std::cerr << "ERROR: failed to load calibration entry " << centry << std::endl;
+				delete fInTree;
+				return false;
+			}//<<>>if( entry load failed )
+			bool entryRead = b_run->GetEntry(entry) > 0 && b_rhID->GetEntry(entry) > 0 &&
+			                 b_rhRtTime->GetEntry(entry) > 0 && b_rhEnergy->GetEntry(entry) > 0 &&
+			                 b_rhisGS6->GetEntry(entry) > 0 && b_rhisGS1->GetEntry(entry) > 0 &&
+			                 b_rhTimeError->GetEntry(entry) > 0;
+			if( isCC ) entryRead = entryRead && b_rhCCTime->GetEntry(entry) > 0;
+			if( not entryRead ){
+				std::cerr << "ERROR: failed to read one or more required branches at calibration entry " << centry << std::endl;
+				delete fInTree;
+				return false;
+			}//<<>>if( branch read failed )
+			if( not rhID || not rhRtTime || not rhEnergy || not rhisGS6 || not rhisGS1 || not rhTimeError || ( isCC && not rhCCTime ) ){
+				std::cerr << "ERROR: null rechit vector at calibration entry " << centry << std::endl;
+				delete fInTree;
+				return false;
+			}//<<>>if( null vector )
+			const auto nRecHitsSize = rhID->size();
+			bool vectorSizesMatch = rhRtTime->size() == nRecHitsSize && rhEnergy->size() == nRecHitsSize &&
+			                        rhisGS6->size() == nRecHitsSize && rhisGS1->size() == nRecHitsSize &&
+			                        rhTimeError->size() == nRecHitsSize && ( not isCC || rhCCTime->size() == nRecHitsSize );
+			if( not vectorSizesMatch ){
+				std::cerr << "ERROR: rechit branch size mismatch at calibration entry " << centry
+				          << ": rhID=" << nRecHitsSize << " rhRtTime=" << rhRtTime->size()
+				          << " rhEnergy=" << rhEnergy->size() << " rhisGS6=" << rhisGS6->size()
+				          << " rhisGS1=" << rhisGS1->size() << " rhTimeError=" << rhTimeError->size();
+				if( isCC ) std::cerr << " rhCCTime=" << rhCCTime->size();
+				std::cerr << std::endl;
+				delete fInTree;
+				return false;
+			}//<<>>if( not vectorSizesMatch )
+			const int nRecHits = static_cast<int>(nRecHitsSize);
 
 			//if( debug) std::cout << " processing " << run;
             //if( debug) std::cout << " in " << srun << " to " << erun;
@@ -1952,8 +2065,7 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
             if( finalRun < run ) finalRun = run; 
 			//if( debug) std::cout << " eval w/ final : " << finalRun << std::endl;
 
-			int nRecHits = rhID->size();
-            //if( debug) std::cout << " - looping over nRecHits: " << nRecHits << std::endl;
+			//if( debug) std::cout << " - looping over nRecHits: " << nRecHits << std::endl;
 			bool tagNotFound( true );
             bool runNotFound( true );
 			auto& calirunset = doTT ? TTCaliRunMapSet : CaliRunMapSet;
@@ -2008,7 +2120,15 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 
 								// old branch names ( with online prodution post 2024 rhRtTime is cor CC, rhCCTime is uncorr CC )
 								float time = ( isCC and doUnCC ) ? rhCCTime->at(idx) : rhRtTime->at(idx);
-           						uInt crsid = doTT ? getTTId( id, whichGS ) : id;
+								if( not std::isfinite(time) ){
+									rejectedNonFiniteTimes++;
+									continue;
+								}//<<>>if( not finite time )
+								if( isCC && doUnCC && time <= -29.0f ){
+									rejectedSentinelTimes++;
+									continue;
+								}//<<>>if( invalid uncorrected CC sentinel )
+								uInt crsid = doTT ? getTTId( id, whichGS ) : id;
                         		float bcrstime = ( not doTT && doCali ) ? time - getTTCali( id, run, tag ) : time;
 
                         		uInt hgcrsid = 0;
@@ -2027,7 +2147,10 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 
                         		uInt fcrsid = doHgGs ? hgcrsid : crsid;
                         		float fcrstime = doHgGs ? hgcrstime : bcrstime;
-								range.fillSumCnt( fcrsid, fcrstime, fillwgt ); // lastrun valid?????
+								if( not range.fillSumCnt( fcrsid, fcrstime, fillwgt ) ){
+									delete fInTree;
+									return false;
+								}//<<>>if( fill failed )
 
 							}//<<>>for( int idx = 0; idx < nRecHits; idx++ )
 
@@ -2048,9 +2171,10 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 				float tlumi = 0;
 				auto& iovset = doTT ? iovMaps[curTTIov] : iovMaps[curXIov];
 				// ID 10 T check
-				if( not doCali && GID > 1 ){ 
-					std::cout << " -- New IOV range for this run/tag in High Gain w/ doCali False" << std::endl; 
-					return; 
+				if( not doCali && GID > 1 ){
+					std::cerr << "ERROR: new IOV range encountered for high-gain calibration with doCali false." << std::endl;
+					delete fInTree;
+					return false;
 				}//<<>>if( not doCali && GID > 1 )
 
 				for( auto& iovmap : iovset ){
@@ -2098,7 +2222,15 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
                         if( skiprechit ) continue;
 
 						float time = ( isCC and doUnCC ) ? rhCCTime->at(idx) : rhRtTime->at(idx);
-                        uInt crsid = doTT ? getTTId( id, whichGS ) : id;
+						if( not std::isfinite(time) ){
+							rejectedNonFiniteTimes++;
+							continue;
+						}//<<>>if( not finite time )
+						if( isCC && doUnCC && time <= -29.0f ){
+							rejectedSentinelTimes++;
+							continue;
+						}//<<>>if( invalid uncorrected CC sentinel )
+						uInt crsid = doTT ? getTTId( id, whichGS ) : id;
                         float bcrstime = ( not doTT && doCali ) ? time - getTTCali( id, run, tag ) : time;
 
                         uInt hgcrsid = 0;
@@ -2117,22 +2249,36 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 
                         uInt fcrsid = doHgGs ? hgcrsid : crsid;
 						float fcrstime = doHgGs ? hgcrstime : bcrstime;
-						calirunset[tag][tstart].fillSumCnt( fcrsid, fcrstime, fillwgt );
+						if( not calirunset[tag][tstart].fillSumCnt( fcrsid, fcrstime, fillwgt ) ){
+							delete fInTree;
+							return false;
+						}//<<>>if( fill failed )
 
                     }//<<>>for( int idx = 0; idx < nRecHits; idx++ )
-				} // else { std::cout << "No IOV for this run/tag " << run << " - " << tag << " ? !!!!!!! " << std::endl; }
+					} else {
+						std::cerr << "ERROR: no configured IOV contains run " << run << " for tag " << tag << std::endl;
+						delete fInTree;
+						return false;
+					}//<<>>if( configured IOV found )
 
 			}//<<>>if( not tagfound )
 
 		}//<<>>for (Long64_t centry = 0; centry < nEntries; cnentry++)
 
         // Finished processing this batch
-        std::cout << "[INFO] Finished batch for " << subdir << " " << matchstr << " entries=" << nEntries << std::endl;
-        delete fInTree;
+		std::cout << "[INFO] Finished batch for " << subdir << " " << matchstr << " entries=" << nEntries << std::endl;
+		inputSetsProcessed++;
+		delete fInTree;
         fInTree = nullptr;
 
 	}//<<>>while (std::getline(infilelist,infilestr))
 
+	if( inputSetsProcessed == 0 ){
+		std::cerr << "ERROR: input list contains no calibration data sets." << std::endl;
+		return false;
+	}//<<>>if( inputSetsProcessed == 0 )
+	std::cout << "Rejected invalid raw times: sentinel=" << rejectedSentinelTimes
+	          << " non-finite=" << rejectedNonFiniteTimes << std::endl;
 	std::cout << "Making Mean Maps from input data : doTT? " << doTT << std::endl;
 	// fill map hist -----------------------------------------------
 	//int count = 0;
@@ -2147,7 +2293,7 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 					if( finalRun > 100000 ) range.lastRun = ( finalRun < range.endRun ) ? finalRun : range.endRun;
 					else range.lastRun = 999999;
 				}//<<>>if( range.lastRun != range.endRun )
-				range.makeMeanMap( false );
+				if( not range.makeMeanMap( false ) ) return false;
 				range.updated = false;
 				if( GID > 1 && ( range.lastRun == range.endRun ) ){ range.hasGID2 = true; range.doGID2 = false; }
 			}//<<>>if( range.updated )
@@ -2155,7 +2301,9 @@ void KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 	}//<<>>for( auto& calirun : calirunset )
 	}//<<>>if( dolast == 1 )
 
-}//<<>>void KUCMS_TimeCalibration::makeTTCaliMap( std::string inputFileName )
+	return true;
+
+}//<<>>bool KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName )
 
 void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool scale, bool usecali, bool smear, std::string ext ){
 
@@ -3816,4 +3964,3 @@ void KUCMS_TimeCalibration::makeTTDriftMaps( std::string tag, int srun, int erun
 
 #endif
 //-------------------------------------------------------------------------------------------------------------------
-

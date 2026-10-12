@@ -8,6 +8,8 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "KUCMS_TimeCalibration.hh"
+
+#include <cstdlib>
 // ------------------------------------------- main function ------------------------------------------------------------
 int main ( int argc, char *argv[] ){
 
@@ -111,34 +113,31 @@ int main ( int argc, char *argv[] ){
 	//theCali.setDoUnCC(true);
 
     //-----//////////  making trigtower cali :
-	//// makeCaliMapsEGR( std::string inputFileName, bool doTT, int GID,  bool small, bool doCali )
-    ////void makeCaliMapsEGR( std::string inputFileName, bool doTT, int GID = 1, bool small = false, bool doCali = true );
-    ////void makeTTCaliMapEGR( std::string inputFileName, int GID = 1, bool small = false, bool doCali = true )
-    ////        { makeCaliMapsEGR( inputFileName, true, GID, small, doCali ); };
-    ////void makeXCaliMapEGR( std::string inputFileName, int GID = 1, bool small = false, bool doCali = true )
-    ////        { makeCaliMapsEGR( inputFileName, false, GID, small, doCali ); };
+	//// bool makeCaliMapsEGR( std::string inputFileName, bool doTT, int GID, bool small, bool doCali )
+	//// bool makeTTCaliMapEGR( std::string inputFileName, int GID = 1, bool small = false, bool doCali = true );
+	//// bool makeXCaliMapEGR( std::string inputFileName, int GID = 1, bool small = false, bool doCali = true );
     ////theCali.makeTTCaliMapEGR( inputfilename, 1, true ); // true == run only subset of events ( only change doCali for testing, ever )
-	//theCali.makeTTCaliMapEGR( inputfilename );
-    //theCali.makeCaliHists();
-    //theCali.SaveCaliHists();
-    //theCali.SaveTTRunFile();
+	//if( not theCali.makeTTCaliMapEGR( inputfilename ) ) return EXIT_FAILURE;
+	//theCali.makeCaliHists();
+	//if( not theCali.SaveCaliHists() ) return EXIT_FAILURE;
+	//if( not theCali.SaveTTRunFile() ) return EXIT_FAILURE;
 
     //-----//////////  making xtal cali :
     ////theCali.makeXCaliMapEGR( inputfilename, true ); // true == run only subset of events
 	////theCali.makeXCaliMapEGR( inputfilename, 1, true ); // true == run only subset of events
-    //theCali.makeXCaliMapEGR( inputfilename );
-    //theCali.makeCaliHists();
-	//theCali.SaveCaliHists();
-	//theCali.SaveCaliRunFile();
+	//if( not theCali.makeXCaliMapEGR( inputfilename ) ) return EXIT_FAILURE;
+	//theCali.makeCaliHists();
+	//if( not theCali.SaveCaliHists() ) return EXIT_FAILURE;
+	//if( not theCali.SaveCaliRunFile() ) return EXIT_FAILURE;
 
 	//----///////////  make gainid 2 calibrations
     ////theCali.makeTTCaliMapEGR( inputfilename, 2, false, false ); // do gainID 2 no calibration step
     ////theCali.makeTTCaliMapEGR( inputfilename, 2, true ); // do gainID 2; true == run only subset of events 
-    theCali.makeXCaliMapEGR( inputfilename, 2 ); // do gainID 2+
+	if( not theCali.makeXCaliMapEGR( inputfilename, 2 ) ) return EXIT_FAILURE; // do gainID 2+
 	theCali.makeCaliHists();
-    theCali.SaveCaliHists();
-    theCali.SaveTTRunFile();
-    theCali.SaveCaliRunFile();
+	if( not theCali.SaveCaliHists() ) return EXIT_FAILURE;
+	if( not theCali.SaveTTRunFile() ) return EXIT_FAILURE;
+	if( not theCali.SaveCaliRunFile() ) return EXIT_FAILURE;
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -330,6 +329,6 @@ int main ( int argc, char *argv[] ){
 	
 	std::cout << " -- Thats All Folks !!!!!!!!! " << std::endl;
 
-    return 1;
+	return EXIT_SUCCESS;
 
 }//<<>>int main ( int argc, char *argv[] )

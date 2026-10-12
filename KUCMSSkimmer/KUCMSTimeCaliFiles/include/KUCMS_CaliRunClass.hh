@@ -15,6 +15,10 @@
 #include "TChain.h" 
 #include "TGraphErrors.h" 
 #include "TMultiGraph.h" 
+
+#include <algorithm>
+#include <cmath>
+#include <iostream>
  
 #ifndef KUCMS_CaliRunClass 
 #define KUCMS_CaliRunClass 
@@ -73,20 +77,42 @@ class kucms_CaliRunClass : public KUCMS_RootHelperBaseClass {
           has2DResMap = false; hasResParams = false; noise = 0; stoch = 0; stant = 0; } 
     
     //inline void kucms_CaliRunClass::makeMeanMap( bool filter ){ 
-	void makeMeanMap( bool filter = false ){
+	bool makeMeanMap( bool filter = false ){
      
         meanMap.clear(); 
         errMap.clear(); 
+        bool valid = true;
+        unsigned int invalidBins = 0;
         //std::cout << " make mean maps: " << std::endl; 
         for( auto& entry : sumCntMap ){ 
      
             double cnt = double( entry.second.cnt ); 
-            if( cnt == 0 ) cnt = 1; 
-            double mean = entry.second.sum / cnt;  
-            double err = sqrt( (entry.second.sumsqr/cnt - mean*mean)/cnt ); 
-            if( err == 0 ){ err = 9; mean = 0; } 
+            double mean = 0;
+            double err = 9;
+            bool binValid = cnt > 0 && std::isfinite(cnt) && std::isfinite(entry.second.sum) &&
+                            std::isfinite(entry.second.sumsqr);
+            if( binValid ){
+                mean = entry.second.sum / cnt;
+				double secondMoment = entry.second.sumsqr/cnt;
+				double meanSquared = mean*mean;
+				double variance = secondMoment - meanSquared;
+                // Roundoff can make a non-negative variance very slightly negative.
+				double varianceTolerance = 1.e-12*std::max({1.0, std::abs(secondMoment), std::abs(meanSquared)});
+				if( variance < 0 && variance > -varianceTolerance ) variance = 0;
+                binValid = std::isfinite(mean) && mean > -29.0 && std::isfinite(variance) && variance >= 0;
+                if( binValid ){
+                    err = std::sqrt(variance/cnt);
+                    binValid = std::isfinite(err);
+                }//<<>>if( binValid )
+            }//<<>>if( binValid )
+            if( not binValid ){
+                mean = 0;
+                err = 9;
+                valid = false;
+                invalidBins++;
+            }//<<>>if( not binValid )
             //std::cout << " - calc: " << entry.first << " = " << mean << " +/- " << err << " occ: " << cnt << std::endl; 
-            if( filter && ( cnt > 10 ) ){ 
+			if( binValid && filter && ( cnt > 10 ) ){
 				double high = mean + 3*err;
                 double low = mean - 3*err;
                 auto fitFunc  = new TF1("gfit","gaus",low,high); 
@@ -102,26 +128,37 @@ class kucms_CaliRunClass : public KUCMS_RootHelperBaseClass {
             errMap[entry.first] = err;  
             //std::cout << " - mmm: " << entry.first << " = " << mean << " +/- " << err << " occ: " << cnt << std::endl; 
         }//<<>>for( auto& entry : sumCntMap ) 
-     
-    }//<<>>void CaliRunClass::makeMeanMap() 
+		detIdHists.clear();
+		if( invalidBins > 0 ){
+			std::cerr << "ERROR: makeMeanMap found " << invalidBins << " invalid calibration bins." << std::endl;
+		}//<<>>if( invalidBins > 0 )
+		return valid;
+
+	}//<<>>bool CaliRunClass::makeMeanMap()
      
     //inline void kucms_CaliRunClass::fillSumCnt( uInt detid, float val, int cnt ){ 
-	void fillSumCnt( uInt detid, double val, double cnt = 1 ){
+	bool fillSumCnt( uInt detid, double val, double cnt = 1 ){
     
 		//std::cout << "Cecking " << detid << " with " << endRun << " " << lastRun <<  " " << hasGID2 << " " << doGID2  << std::endl; 
         if( endRun == lastRun ){ 
-			if( hasGID2 == true ) return; 
-			if( doGID2 == false ) return;
+			if( hasGID2 == true ) return true;
+			if( doGID2 == false ) return true;
 		}//<<>>if( ( endRun == lastRun )
+		if( not std::isfinite(val) || val <= -29.0 || not std::isfinite(cnt) || cnt <= 0 ){
+			std::cerr << "ERROR: refusing invalid calibration value for detID " << detid
+			          << ": value=" << val << " weight=" << cnt << std::endl;
+			return false;
+		}//<<>>if( invalid value or weight )
         //std::cout << "Filling " << detid << " with " << val << " " << cnt << std::endl; 
         updated = true; 
         double wval = val*cnt;
+		double wvalsqr = val*val*cnt;
         if( sumCntMap.find(detid) != sumCntMap.end() ){ 
             sumCntMap[detid].sum += wval; 
-            sumCntMap[detid].sumsqr += wval*wval;  
+			sumCntMap[detid].sumsqr += wvalsqr;
             sumCntMap[detid].cnt += cnt;  
         } else { 
-            sumCntMap[detid] = { wval, wval*wval, cnt };  
+			sumCntMap[detid] = { wval, wvalsqr, cnt };
         }//<<>>if( sumCntMap.find(detid) != sumCntMap.end() ) 
     
     	//std::cout << " -- hist Fill " << detid << " with " << val << std::endl; } 
@@ -133,8 +170,9 @@ class kucms_CaliRunClass : public KUCMS_RootHelperBaseClass {
             detIdHists[detid]->Sumw2(); 
             detIdHists[detid]->Fill(val,cnt); 
         }//<<>>if( detIdHists.find(detid) != detIdHists.end() ) 
-    
-    }//<<>>void CaliRunClass::fillSumCnt( uInt detID, float sum, int cnt ) 
+		return true;
+
+	}//<<>>bool CaliRunClass::fillSumCnt( uInt detID, float sum, int cnt )
 
 };//<<>>TimeCaliTagStruct 
 
