@@ -365,8 +365,8 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
     promptIovMap[390937] = 391260;
     promptIovMap[391261] = 391530;
     promptIovMap[391531] = 392158;
-    promptIovMap[392159] = 392905;
-    promptIovMap[391906] = 392485;
+    promptIovMap[392159] = 392405;
+    promptIovMap[392406] = 392485;
     promptIovMap[392486] = 393110;
     promptIovMap[393111] = 393146;
     promptIovMap[393147] = 393609;
