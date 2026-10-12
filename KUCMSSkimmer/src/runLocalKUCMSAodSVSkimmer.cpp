@@ -65,7 +65,7 @@ int main ( int argc, char *argv[] ){
     //const std::string outfilename = "_rjrskim_v43.root"; // added EE photons to RJR, set looser id reqs for jets to include photons
     //const std::string outfilename = "_rjrskim_v44.root"; // added photon object id and tsig counting
     //const std::string outfilename = "_rjrskim_v44.root"; // added jet merging to non copressed, new photon IDs
-	//const std::string outfilename = "_rjrskim_v52.root";	 
+	const std::string outfilename = "_rjrskim_v52.root";	 
 
 	//const std::string outfilename = "_rjrskim_fasttime_v9.root"; //
     //const std::string outfilename = "_rjrskim_fast_act_v9.root"; //
@@ -77,7 +77,7 @@ int main ( int argc, char *argv[] ){
     //const std::string outfilename = "_rjrskim_geofast_v38_xpwz_v8_Test.root"; //
     //const std::string outfilename = "_rjrskim_basefast_v38_Test.root"; //
     //const std::string outfilename = "_rjrskim_geofull_v38_xpwz_v8_Test.root"; //
-    const std::string outfilename = "_rjrskim_basefull_v38_Test.root"; //
+    //const std::string outfilename = "_rjrskim_basefull_v38_Test.root"; //
 
 	// !!!!!!!!!!!!!!!!!!!  alternate RJR setup with invis in comb split rule
     //KUCMSAodSkimmer llpgana( true ); // uses local calibration 
