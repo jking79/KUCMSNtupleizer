@@ -180,15 +180,15 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
     // --------------------------------------------------------------------------
 
 	float getCorrectedTime( float time, float amplitude, unsigned int rechitID, 
-			unsigned int Evt_run, std::string dataSetKey, int mctype, int gainID = 1,
+			unsigned int Evt_run, const std::string& dataSetKey, int mctype, int gainID = 1,
 			bool applyCalibration = true );
 	float getCorrectedTime( float time, float amplitude, unsigned int rechitID, 
-			unsigned int Evt_run, std::string dataSetKey, int mctype, bool gs6, bool gs1 )
+			unsigned int Evt_run, const std::string& dataSetKey, int mctype, bool gs6, bool gs1 )
 			{ int gid = ( gs6 || gs1 ) ? 2 : 1; return getCorrectedTime( time, amplitude, rechitID, Evt_run, dataSetKey, mctype, gid ); };
     float getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, 
-			std::string dataSetKey, int mctype, int gainID = 1 );
+			const std::string& dataSetKey, int mctype, int gainID = 1 );
     float getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, 
-			std::string dataSetKey, int mctype, bool gs6, bool gs1 )
+			const std::string& dataSetKey, int mctype, bool gs6, bool gs1 )
 			{ int gid = ( gs6 || gs1 ) ? 2 : 1; return getTimeResoltuion( amplitude, rechitID, Evt_run, dataSetKey, mctype, gid ); };
 
 	float getCalibration( uInt rhid, int run, const std::string& tag, int gainID = 1 ); // tag indicates which calibration set to use
@@ -230,7 +230,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
     void setTTIov( std::string tag ){ curTTIov = tag; };
     void setLumiTag( std::string tag ){ curLumiTag = tag; };
 
-    void setMCResTag( std::string tag ){ resTag = tag; }; // NOTE: resolution for PDs set in master file lists,this is resoltion of MC for smearing
+    void setMCResTag( const std::string& tag ){ resTag = tag; }; // NOTE: resolution for PDs set in master file lists,this is resoltion of MC for smearing
 
     void SetXBinStr( std::string xbins ){ xBinStr = xbins; };
     void SetYBinStr( std::string ybins ){ yBinStr = ybins; };

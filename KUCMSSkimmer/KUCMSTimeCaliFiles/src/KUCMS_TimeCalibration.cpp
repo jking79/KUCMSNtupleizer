@@ -1772,7 +1772,7 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
 }//<<>>float getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey )
 */
 
-float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey, int mctype, int gianID ){
+float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, const std::string& dataSetKey, int mctype, int gianID ){
 
 	if( amplitude == 0 ) return 100.f;
 	auto det = DetIDMap.find(rechitID);
@@ -1790,8 +1790,11 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
 	};
     float var = ( dataSetKey == "None" ) ? -1 : -99;
     if( mctype == 1 ){ // data or MC
-		if( dataSetKey == "r2_ul18" ){ if( Evt_run > 320672 ) dataSetKey = "r2_ul18D"; else dataSetKey = "r2_ul18ABC"; }
-		auto resolvedTag = ResTagSet.find(dataSetKey);
+		static const std::string r2UL18ABCTag = "r2_ul18ABC";
+		static const std::string r2UL18DTag = "r2_ul18D";
+		const std::string* resolvedTagName = &dataSetKey;
+		if( dataSetKey == "r2_ul18" ) resolvedTagName = ( Evt_run > 320672 ) ? &r2UL18DTag : &r2UL18ABCTag;
+		auto resolvedTag = ResTagSet.find(*resolvedTagName);
 		if( resolvedTag != ResTagSet.end() ){
 			const auto& parameters = resolvedTag->second;
 			if( amplitude > 400 ){ 
@@ -1818,24 +1821,25 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
 				var = sq2(noise/amplitude) + sq2(stoch)/amplitude + 2*sq2(stant);
 
 			}//<<>>if( amplitude > 400 )
-		} else if( dataSetKey != "None" ) reportInvalidTag(dataSetKey);
+		} else if( *resolvedTagName != "None" ) reportInvalidTag(*resolvedTagName);
     }//<<>>if( mctype == 0 )
     else if( mctype == 0 or mctype == 2 ){ // data or MC   --- resTag is the target resolution for smearing
-		std::string themctag = ( resTag == "None" ) ? dataSetKey : resTag;
+		static const std::string r2UL18DTag = "r2_ul18D";
+		const std::string* themctag = ( resTag == "None" ) ? &dataSetKey : &resTag;
         if( resTag == "default"){ 
-			if( dataSetKey.substr(0,2) == "r2" ){ themctag = "r2_ul18D"; }//<<>>if( Run 2 key )
-			else if( dataSetKey.substr(0,2) == "r3" ){ themctag = "r2_ul18D"; }//<<>>if( Run 3 key )
+			if( dataSetKey.substr(0,2) == "r2" ){ themctag = &r2UL18DTag; }//<<>>if( Run 2 key )
+			else if( dataSetKey.substr(0,2) == "r3" ){ themctag = &r2UL18DTag; }//<<>>if( Run 3 key )
 		}//<<>>if( resTag == "default")
-        auto resolvedTag = ResTagSet.find(themctag);
+        auto resolvedTag = ResTagSet.find(*themctag);
         if( resolvedTag != ResTagSet.end() ){
 			const auto& parameters = resolvedTag->second;
             float noise = isEB ? parameters.ebnoise : parameters.eenoise;
             float stoch = isEB ? parameters.ebstoch : parameters.eestoch;
             float stant = isEB ? parameters.ebstant : parameters.eestant;
             var = sq2(noise/amplitude) + sq2(stoch)/amplitude + 2*sq2(stant);
-			//std::cout << " --- getting MC res for : " << themctag << " " << noise << " " << stoch;
+			//std::cout << " --- getting MC res for : " << *themctag << " " << noise << " " << stoch;
 			//std::cout << " " << stant << " " << var << std::endl;
-        } else if( themctag != "None" ) reportInvalidTag(themctag);
+        } else if( *themctag != "None" ) reportInvalidTag(*themctag);
     }//<<>>if( mctype == 0 )
 	else {
 		var = -9;
@@ -1861,7 +1865,7 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
 }//<<>>float getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey )
 
 float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsigned int rechitID, 
-											unsigned int Evt_run, std::string dataSetKey, int mctype, int gainID,
+											unsigned int Evt_run, const std::string& dataSetKey, int mctype, int gainID,
 											bool applyCalibration ){
 
 	//getTimeResoltuion( amplitude, rechitID, Evt_run, dataSetKey, mctype, gianID )
@@ -1880,15 +1884,16 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
 		double tarvar = 0;
 		double sorvar = 0;
 
-		if( dataSetKey == "r2_ul18_mc" ) dataSetKey = "r2_ul18_sqmc";
+		static const std::string r2UL18SqmcTag = "r2_ul18_sqmc";
+		const std::string& resolvedDataSetKey = ( dataSetKey == "r2_ul18_mc" ) ? r2UL18SqmcTag : dataSetKey;
 		if( applyCalibration )
-			ctime = time - getCalibration(rechitID,Evt_run,dataSetKey,gainID);
+			ctime = time - getCalibration(rechitID,Evt_run,resolvedDataSetKey,gainID);
 		else{ ctime = time; }
 		//std::cout << " Pre Check amplitude : " << amplitude << std::endl;
 		//if( amplitude < 1 ) return ctime;
-        //if( time == 0 ) return ctime;
+		//if( time == 0 ) return ctime;
 		if( resTag == "None" ) return ctime; // --- resTag is the target resolution for smearing
-		if( dataSetKey == "None" ) return ctime; // dataSetKey is the calibration used && source resolution for smearing
+		if( resolvedDataSetKey == "None" ) return ctime; // dataSetKey is the calibration used && source resolution for smearing
 		//std::cout << " Post Check amplitude : " << amplitude << std::endl;
 
 		if( resTag != "default" ){  // TARGET RESOLUTION
@@ -1896,30 +1901,31 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
 			tarvar = getTimeResoltuion( amplitude, rechitID, Evt_run, resTag, mctype, gainID );
 			
 		}//<<>>if( resTag != "default" )
-		else if( resTag == "default" || dataSetKey.substr(0,2) == "r2" ){ // use smear tag?  -- check first for set tag !
+		else if( resTag == "default" || resolvedDataSetKey.substr(0,2) == "r2" ){ // use smear tag?  -- check first for set tag !
 
-            std::string tag= "r2_ul18D";
+			static const std::string tag = "r2_ul18D";
 			tarvar = getTimeResoltuion( amplitude, rechitID, Evt_run, tag, mctype, gainID );
 
 		}//<<>>if( Run 2 key or default target )
-		else if( dataSetKey.substr(0,2) == "r3" ){
+		else if( resolvedDataSetKey.substr(0,2) == "r3" ){
 
-            std::string tag= "r2_ul18D";
+			static const std::string tag = "r2_ul18D";
             tarvar = getTimeResoltuion( amplitude, rechitID, Evt_run, tag, mctype, gainID );
 
 		}//<<>>if( Run 3 key )
 
-		if( ResTagSet.find(dataSetKey) != ResTagSet.end() ){ // SOURCE RESOLTUION
+		if( ResTagSet.find(resolvedDataSetKey) != ResTagSet.end() ){ // SOURCE RESOLTUION
 
-			std::string tag = dataSetKey;
-            if( dataSetKey == "r2_ul18_qcdmc" ) tag = "RunIISummer20UL18RECO";
-            if( dataSetKey == "r2_ul18_sqmc" ) tag = "RunIISummer20UL18RECO";
-            if( dataSetKey == "r3_mc" ) tag = "theRun3MC_campain";
-			sorvar = getTimeResoltuion( amplitude, rechitID, Evt_run, tag, mctype, gainID );
+			static const std::string runIIUL18RecoTag = "RunIISummer20UL18RECO";
+			static const std::string run3MCTag = "theRun3MC_campain";
+			const std::string* sourceTag = &resolvedDataSetKey;
+			if( resolvedDataSetKey == "r2_ul18_qcdmc" or resolvedDataSetKey == "r2_ul18_sqmc" ) sourceTag = &runIIUL18RecoTag;
+			if( resolvedDataSetKey == "r3_mc" ) sourceTag = &run3MCTag;
+			sorvar = getTimeResoltuion( amplitude, rechitID, Evt_run, *sourceTag, mctype, gainID );
 
 		} else { // 2018 MC Resoltion values
 
-			std::string tag = "default";
+			static const std::string tag = "default";
 			sorvar = getTimeResoltuion( amplitude, rechitID, Evt_run, tag, mctype, gainID );
 
 		}//<<>>if( ResTagSet.find(tag) != ResTagSet.end() )
@@ -1932,7 +1938,7 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
         rtime = getRandom->Gaus( ctime, resolution );
     	//if( tresv - sresv < 0.0 ){ 
         if( false ){
-			std::cout << "No smearing values set for this tag : " << dataSetKey << " time " << time << " c " << ctime << std::endl;
+			std::cout << "No smearing values set for this tag : " << resolvedDataSetKey << " time " << time << " c " << ctime << std::endl;
 			std::cout << " smearing parameters: t " << tresv << " s " << sresv << " amp " << amplitude << std::endl;
         	std::cout << " getSmeared Res: " << resolution << " rtime " << rtime << std::endl;
 		}//<<>>if( resolution <= 0 )
