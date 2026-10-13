@@ -6,7 +6,6 @@
 //         Created:  Fri, 20 Dec 2024
 //
 //////////////////////////////////////////////////////////////////////
-
 #include "KUCMS_TimeCalibration.hh"
 
 #include <cstdlib>
@@ -116,9 +115,9 @@ int main ( int argc, char *argv[] ){
 	//theCali.setDoUnCC(true);
 
     //-----//////////  making trigtower cali :
-	//// bool makeCaliMapsEGR( std::string inputFileName, bool doTT, int GID, bool small, bool doCali )
-	//// bool makeTTCaliMapEGR( std::string inputFileName, int GID = 1, bool small = false, bool doCali = true );
-	//// bool makeXCaliMapEGR( std::string inputFileName, int GID = 1, bool small = false, bool doCali = true );
+	////// bool makeCaliMapsEGR( std::string inputFileName, bool doTT, int GID, bool small, bool doCali )
+	////// bool makeTTCaliMapEGR( std::string inputFileName, int GID = 1, bool small = false, bool doCali = true );
+	////// bool makeXCaliMapEGR( std::string inputFileName, int GID = 1, bool small = false, bool doCali = true );
 	//// Preferred gain-1 path: make TT and crystal maps in one event loop.
 	//// The final non-comment input row must set dolast=1 because the intermediate
 	//// TT-partitioned crystal moments exist only for this process invocation.
@@ -143,8 +142,8 @@ int main ( int argc, char *argv[] ){
 	//if( not theCali.SaveCaliRunFile() ) return EXIT_FAILURE;
 
 	//----///////////  make gainid 2 calibrations
-    ////theCali.makeTTCaliMapEGR( inputfilename, 2, false, false ); // do gainID 2 no calibration step
-    ////theCali.makeTTCaliMapEGR( inputfilename, 2, true ); // do gainID 2; true == run only subset of events 
+    //////theCali.makeTTCaliMapEGR( inputfilename, 2, false, false ); // do gainID 2 no calibration step
+    //////theCali.makeTTCaliMapEGR( inputfilename, 2, true ); // do gainID 2; true == run only subset of events 
 	if( not theCali.makeXCaliMapEGR( inputfilename, 2 ) ) return EXIT_FAILURE; // do gainID 2+
 	theCali.makeCaliHists();
 	if( not theCali.SaveCaliHists() ) return EXIT_FAILURE;
