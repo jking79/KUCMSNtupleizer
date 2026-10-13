@@ -56,7 +56,8 @@ KUCMS_TimeCalibration::KUCMS_TimeCalibration( bool stayOpen, bool makeNew, bool 
     caliHistFileNames["r3_p25unc"] = "cali_p25_UnCor_HistsTFile.root";
     caliHistFileNames["r3_p26"] = "cali_p26_HistsTFile.root";
 
-    useEosRootCali =  doLocalCali ? false : true;
+	useEosRootCali =  doLocalCali ? false : true;
+	caliMapsValid = true;
 	////////useEosRootCali = false;
     eosCaliPath = "root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/caliconfig/";
 
@@ -105,7 +106,7 @@ KUCMS_TimeCalibration::KUCMS_TimeCalibration( bool stayOpen, bool makeNew, bool 
 	ReadResFile();
 
     //std::cout << " - loading cali hists " << std::endl;
-	LoadCaliHists( stayOpen, makeNew );
+	caliMapsValid = LoadCaliHists( stayOpen, makeNew );
 
 }//<<>>KUCMS_TimeCalibration()   
 
@@ -829,7 +830,7 @@ void KUCMS_TimeCalibration::SaveResFile(){
 //            std::string mfilename = tfilename + "MeanMap";
 //            std::string efilename = tfilename + "ErrMap";
 
-void KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
+bool KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
 
 	//bool oldstyle = false;
 
@@ -911,7 +912,7 @@ void KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
         }//<<>>for( auto& calirunsct : calirunmap )
     }//<<>>for( auto& calirunmap : CaliRunMapSet )
 
-	makeCaliMaps();
+	bool success = makeCaliMaps();
 
 	if( not stayOpen ){
 
@@ -925,6 +926,8 @@ void KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
 		for( auto califile : caliTFile ){ if( califile.second ) califile.second->Close(); }
 
 	}//<<>>if( not stayOpen )
+	caliMapsValid = success;
+	return success;
 
 }//<<>>void KUCMS_TimeCalibration::SetupCaliHists()
 
@@ -1253,9 +1256,20 @@ void KUCMS_TimeCalibration::makeCaliHists(){
 
 }//<<>>void KUCMS_TimeCalibration::makeCaliHists()
 
-void KUCMS_TimeCalibration::makeCaliMaps(){
+bool KUCMS_TimeCalibration::makeCaliMaps(){
 
     std::cout << " - Making CaliMaps " << std::endl;
+	bool valid = true;
+	auto findConfiguredDetId = [&]( int first, int second, int ecal, uInt& detid ){
+		auto firstCoord = InvDetIDMap.find(first);
+		if( firstCoord == InvDetIDMap.end() ) return false;
+		auto secondCoord = firstCoord->second.find(second);
+		if( secondCoord == firstCoord->second.end() ) return false;
+		auto ecalCoord = secondCoord->second.find(ecal);
+		if( ecalCoord == secondCoord->second.end() ) return false;
+		detid = ecalCoord->second;
+		return DetIDMap.find(detid) != DetIDMap.end();
+	};
 	//TH2F* hist = new TH2F(filename.c_str(),filename.c_str(),171,-85.5,85.5,360,0.5,360.5);
     for( auto& calirunmap : CaliRunMapSet ){
         for( auto& calirunsct : calirunmap.second ){
@@ -1285,11 +1299,26 @@ void KUCMS_TimeCalibration::makeCaliMaps(){
                         int i1 = isEB ? ieta - 86 : std::abs(tti1);
 						int ec = isEB ? 0 : ( tti1 < 0 ) ? 1 : 2; 
 						if( i1 == 0 ) continue;
-						uInt detid = InvDetIDMap[iphi][i1][ec];
 						float sum = CaliHists[sfilename].h2f->GetBinContent(ieta,iphi);
 						float sum2 = CaliHists[s2filename].h2f->GetBinContent(ieta,iphi);
                 		float occ = CaliHists[ofilename].h2f->GetBinContent(ieta,iphi);
-						//if( occ == 0 ) continue;
+						if( not std::isfinite(occ) || not std::isfinite(sum) || not std::isfinite(sum2) ||
+						    occ < 0 || sum2 < 0 || ( occ == 0 && ( sum != 0 || sum2 != 0 ) ) ){
+							std::cerr << "ERROR: invalid stored crystal moments in " << tfilename << side
+							          << " at histogram bin (" << ieta << "," << iphi << "): sum=" << sum
+							          << " sum2=" << sum2 << " occ=" << occ << std::endl;
+							valid = false;
+							continue;
+						}//<<>>if( invalid stored moments )
+						if( occ == 0 ) continue;
+						uInt detid = 0;
+						if( not findConfiguredDetId(iphi,i1,ec,detid) ){
+							std::cerr << "ERROR: positive-occupancy crystal bin has no configured detector or gain ID in "
+							          << tfilename << side << " at histogram bin (" << ieta << "," << iphi
+							          << "), occ=" << occ << std::endl;
+							valid = false;
+							continue;
+						}//<<>>if( detector ID missing )
 						//std::cout << " " << detid << " " << sum << " " << sum2;
 						calirunsct.second.sumCntMap[detid] = { sum, sum2, occ };
                         float mean  = CaliHists[mfilename].h2f->GetBinContent(ieta,iphi);
@@ -1336,8 +1365,22 @@ void KUCMS_TimeCalibration::makeCaliMaps(){
                         float sum = CaliHists[sfilename].h2f->GetBinContent(ieta,iphi);
                         float sum2 = CaliHists[s2filename].h2f->GetBinContent(ieta,iphi);
                         float occ = CaliHists[ofilename].h2f->GetBinContent(ieta,iphi);
-						//if( occ == 0 ) std::cout << " Empty " << std::endl;
+						if( not std::isfinite(occ) || not std::isfinite(sum) || not std::isfinite(sum2) ||
+						    occ < 0 || sum2 < 0 || ( occ == 0 && ( sum != 0 || sum2 != 0 ) ) ){
+							std::cerr << "ERROR: invalid stored TT moments in " << tfilename << side
+							          << " at histogram bin (" << ieta << "," << iphi << "): sum=" << sum
+							          << " sum2=" << sum2 << " occ=" << occ << std::endl;
+							valid = false;
+							continue;
+						}//<<>>if( invalid stored moments )
                         if( occ == 0 ) continue;
+						if( detid == 0 ){
+							std::cerr << "ERROR: positive-occupancy TT bin has no configured tower ID in "
+							          << tfilename << side << " at histogram bin (" << ieta << "," << iphi
+							          << "), occ=" << occ << std::endl;
+							valid = false;
+							continue;
+						}//<<>>if( TT ID missing )
                         //std::cout << " " << detid << " " << sum << " " << sum2;
                         calirunsct.second.sumCntMap[detid] = { sum, sum2, occ };
                         float mean  = CaliHists[mfilename].h2f->GetBinContent(ieta,iphi);
@@ -1353,7 +1396,9 @@ void KUCMS_TimeCalibration::makeCaliMaps(){
         }//<<>>for( auto& calirunsct : calirunmap )
     }//<<>>for( auto& calirunmap : CaliRunMapSet )
 
-}//<<>>void KUCMS_TimeCalibration::makeCaliMaps()
+	return valid;
+
+}//<<>>bool KUCMS_TimeCalibration::makeCaliMaps()
 
 //  LoadExtCali is EB only right now -- update !!!!
 void KUCMS_TimeCalibration::LoadExtCali( std::string calihist, std::string mapname, std::string tag, int startr, int endr ){
@@ -1816,6 +1861,10 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
 bool KUCMS_TimeCalibration::makeGain1CaliMapsEGR( std::string inputFileName, bool small ){
 
 	std::cout << "Creating gain-1 TT and crystal calibration maps in one event pass" << std::endl;
+	if( not caliMapsValid ){
+		std::cerr << "ERROR: cannot process calibration input because stored calibration maps are invalid." << std::endl;
+		return false;
+	}//<<>>if( stored maps invalid )
 	if( iovMaps.find(curTTIov) == iovMaps.end() ){
 		std::cerr << "ERROR: TT IOV is not valid: " << curTTIov << std::endl;
 		return false;
@@ -1845,6 +1894,7 @@ bool KUCMS_TimeCalibration::makeGain1CaliMapsEGR( std::string inputFileName, boo
 	std::map<std::string,std::map<int,std::map<int,RawAccumulator>>> rawCrystalByTTIov;
 	std::map<std::string,std::map<int,int>> maxTTRun;
 	std::map<std::string,std::map<int,int>> maxCrystalRun;
+	std::map<std::string,int> maxRunSeenByTag;
 	unsigned long long rejectedSentinelTimes = 0;
 	unsigned long long rejectedNonFiniteTimes = 0;
 	unsigned int inputSetsProcessed = 0;
@@ -2028,6 +2078,7 @@ bool KUCMS_TimeCalibration::makeGain1CaliMapsEGR( std::string inputFileName, boo
 				}//<<>>if( range setup failed )
 				cachedRun = run;
 			}//<<>>if( run changed )
+			maxRunSeenByTag[tag] = std::max(maxRunSeenByTag[tag],static_cast<int>(run));
 			const bool fillTT = run > static_cast<UInt_t>(ttRange->lastRun);
 			const bool fillCrystal = run > static_cast<UInt_t>(crystalRange->lastRun);
 			if( not fillTT && not fillCrystal ) continue;
@@ -2118,10 +2169,22 @@ bool KUCMS_TimeCalibration::makeGain1CaliMapsEGR( std::string inputFileName, boo
 		return false;
 	}//<<>>if( input is incomplete )
 
-	for( auto& tagEntry : maxTTRun ){
-		for( auto& runEntry : tagEntry.second ){
-			auto& range = TTCaliRunMapSet[tagEntry.first].at(runEntry.first);
-			range.lastRun = std::min(runEntry.second,range.endRun);
+	for( const auto& tagEntry : maxRunSeenByTag ){
+		auto& runSet = TTCaliRunMapSet[tagEntry.first];
+		for( auto& runEntry : runSet ){
+			auto& range = runEntry.second;
+			bool rangeObserved = false;
+			int maximumRangeRun = 0;
+			auto observedTag = maxTTRun.find(tagEntry.first);
+			if( observedTag != maxTTRun.end() ){
+				auto observedRun = observedTag->second.find(runEntry.first);
+				if( observedRun != observedTag->second.end() ){
+					rangeObserved = true;
+					maximumRangeRun = observedRun->second;
+				}//<<>>if( range observed )
+			}//<<>>if( tag observed )
+			if( tagEntry.second >= range.endRun ) range.lastRun = range.endRun;
+			else if( rangeObserved ) range.lastRun = std::min(maximumRangeRun,range.endRun);
 			if( range.updated && not range.makeMeanMap(false) ) return false;
 			range.updated = false;
 		}//<<>>for( TT ranges )
@@ -2154,10 +2217,22 @@ bool KUCMS_TimeCalibration::makeGain1CaliMapsEGR( std::string inputFileName, boo
 		}//<<>>for( crystal IOV ranges )
 	}//<<>>for( tags )
 
-	for( auto& tagEntry : maxCrystalRun ){
-		for( auto& runEntry : tagEntry.second ){
-			auto& range = CaliRunMapSet[tagEntry.first].at(runEntry.first);
-			range.lastRun = std::min(runEntry.second,range.endRun);
+	for( const auto& tagEntry : maxRunSeenByTag ){
+		auto& runSet = CaliRunMapSet[tagEntry.first];
+		for( auto& runEntry : runSet ){
+			auto& range = runEntry.second;
+			bool rangeObserved = false;
+			int maximumRangeRun = 0;
+			auto observedTag = maxCrystalRun.find(tagEntry.first);
+			if( observedTag != maxCrystalRun.end() ){
+				auto observedRun = observedTag->second.find(runEntry.first);
+				if( observedRun != observedTag->second.end() ){
+					rangeObserved = true;
+					maximumRangeRun = observedRun->second;
+				}//<<>>if( range observed )
+			}//<<>>if( tag observed )
+			if( tagEntry.second >= range.endRun ) range.lastRun = range.endRun;
+			else if( rangeObserved ) range.lastRun = std::min(maximumRangeRun,range.endRun);
 			if( range.updated && not range.makeMeanMap(false) ) return false;
 			range.updated = false;
 		}//<<>>for( crystal ranges )
@@ -2173,6 +2248,10 @@ bool KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 
 	std::string whichstring = ( doTT ) ? "for TT " : "for Xtal ";
 	std::cout << "Creating calibration files from EgammaRes Ntuples " << whichstring << std::endl; 
+	if( not caliMapsValid ){
+		std::cerr << "ERROR: cannot process calibration input because stored calibration maps are invalid." << std::endl;
+		return false;
+	}//<<>>if( stored maps invalid )
 
 	bool debug = false;
     //bool debug = true;

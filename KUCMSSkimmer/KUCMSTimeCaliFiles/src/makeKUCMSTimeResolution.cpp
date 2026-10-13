@@ -142,6 +142,7 @@ int main ( int argc, char *argv[] ){
 
     //KUCMS_TimeCalibration theCali;
     KUCMS_TimeCalibration theCali( true );// true allows for run local condition
+	if( not theCali.HasValidCaliMaps() ) return EXIT_FAILURE;
     theCali.setUseLocalCali();
     theCali.SetEosDir(eosdir);
     theCali.SetInDir(indir);

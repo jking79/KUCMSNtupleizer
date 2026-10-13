@@ -125,6 +125,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 
     std::string eosCaliPath;
 	bool useEosRootCali;
+	bool caliMapsValid;
 
     TRandom* getRandom;
 
@@ -152,9 +153,10 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 			float eeg1he1res, float eeg1he2res, float eeg1he3res, float eehg1res, float eehg2res, float eehg3res );
 	void ReadLumiFile( std::string lumifile, std::string tag );// only need to create caliRunMap entries - made with brilcalc
 
-    void LoadCaliHists( bool stayOpen = false, bool makeNew = false );// loads up all starting info
+	bool LoadCaliHists( bool stayOpen = false, bool makeNew = false );// loads up all starting info
 	bool SaveCaliHists();// save existing calimaphists to root TFile -- used if CaliHits left open
 	void LoadExtCali( std::string calihist, std::string mapname, std::string tag, int startr, int endr );
+	bool HasValidCaliMaps() const { return caliMapsValid; };
 
 	// use to create calibration files and add to DB
 	// work in progress - still thinking this area trhough
@@ -164,7 +166,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 	// 		when finshed update hists from maps then save hist to tfile
 	//			will delete old tfile and recreate tfile every pass
 	//
-	void makeCaliMaps(); // make maps from hists
+	bool makeCaliMaps(); // make maps from hists
 	void makeCaliHists(); // make hists from updated maps
 	// ? void makeSmearMaps();
 
