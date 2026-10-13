@@ -1,6 +1,7 @@
 #include "../include/KUCMS_TimeCalibration.hh"
 
 #include <unordered_map>
+#include <unordered_set>
 
 namespace {
 
@@ -3849,426 +3850,375 @@ void KUCMS_TimeCalibration::makeSmearTag( std::string sourceName, std::string de
 
 }//<<>>void KUCMS_TimeCalibration::makeSmearTag( std::string histName )
 
-void KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int srun, int erun, bool usecali ){
 
-    std::cout << "Creating Mean Run Time Hist from EgammaRes Ntuples " << std::endl;
+bool KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int srun, int erun ){
 
-    bool debug = false;
-    //bool debug = true;
+	std::cout << "Creating calibrated and uncalibrated TT mean-by-run histograms from EgammaRes Ntuples"
+	          << std::endl;
+	if( erun < srun ){
+		std::cerr << "ERROR: invalid requested run range " << srun << " to " << erun << std::endl;
+		return false;
+	}//<<>>if( invalid requested range )
 
-    //bool etaMod = true;
-    //int etaModFac = 6;
-    //bool phiMod = true;
-    //int phiModFac = 12;
+	struct InputSpec {
+		std::string subdir;
+		std::string matchstr;
+		int startRun;
+		int endRun;
+		std::string tag;
+	};
+	std::vector<InputSpec> inputs;
+	std::ifstream infilelist(inputFileName);
+	if( not infilelist.is_open() ){
+		std::cerr << "ERROR: could not open input file list: " << inputFileName << std::endl;
+		return false;
+	}//<<>>if( input list unavailable )
+	std::string infilestr;
+	unsigned int lineNumber = 0;
+	while( std::getline(infilelist,infilestr) ){
+		lineNumber++;
+		std::stringstream ss(infilestr);
+		std::string subdir;
+		if( not (ss >> subdir) ) continue;
+		if( subdir[0] == '#' ) continue;
+		InputSpec input;
+		input.subdir = subdir;
+		if( not (ss >> input.matchstr >> input.startRun >> input.endRun >> input.tag) ){
+			std::cerr << "ERROR: malformed mean-run input row " << lineNumber << ": " << infilestr << std::endl;
+			return false;
+		}//<<>>if( malformed input row )
+		if( input.endRun < input.startRun ){
+			std::cerr << "ERROR: invalid run range on input row " << lineNumber << std::endl;
+			return false;
+		}//<<>>if( invalid input range )
+		if( input.endRun < srun || input.startRun > erun ) continue;
+		inputs.push_back(input);
+	}//<<>>while( input rows )
+	if( inputs.empty() ){
+		std::cerr << "ERROR: input list contains no rows overlapping the requested run range." << std::endl;
+		return false;
+	}//<<>>if( no relevant input rows )
 
-	std::string calistr = usecali ? "_cali" : "_nocali";
-	std::string hname = "meanRunTime_" + std::to_string(srun) + "_to_" + std::to_string(erun)+calistr;
-    std::string outfilename = caliFileDir + hname+ "_Hist.root";
-    TFile* mrTFile = TFile::Open( outfilename.c_str(), "RECREATE" );
-    mrTFile->cd();
+	bool makeCalibrated = caliMapsValid;
+	if( not makeCalibrated )
+		std::cout << "WARNING: stored calibration maps are invalid; producing uncalibrated histograms only."
+		          << std::endl;
+	for( const auto& input : inputs ){
+		if( CaliRunMapSet.find(input.tag) == CaliRunMapSet.end() ||
+		    TTCaliRunMapSet.find(input.tag) == TTCaliRunMapSet.end() ){
+			std::cout << "WARNING: no complete crystal/TT calibration for tag " << input.tag
+			          << "; producing uncalibrated histograms only." << std::endl;
+			makeCalibrated = false;
+		}//<<>>if( calibration tag missing )
+	}//<<>>for( input rows )
 
-    std::cout << " - output filename : " << outfilename << std::endl;
-    
-	int n1dHists = 128;
-    int n2dHists = 128;
-	TH1D *hist1d[n1dHists];
-    TH2D *hist2d[n2dHists];
-    //TH3D *hist3d[n3dHists];
+	struct FastDetInfo { uInt ttId; bool isEB; };
+	std::unordered_map<uInt,FastDetInfo> fastDetInfo;
+	fastDetInfo.reserve(DetIDMap.size());
+	for( const auto& det : DetIDMap ){
+		const auto& info = det.second;
+		uInt ttId = 0;
+		if( info.ecal == ECAL::EB ){
+			const int ttPhi = 1 + (info.i1 - 1)/5;
+			const int ttEta = 1 + (std::abs(info.i2) - 1)/5;
+			ttId = info.i2 < 0 ? (ttPhi + ttEta*100) + 2000 : ttPhi + ttEta*100;
+		} else ttId = 1000*(info.ecal + 3) + info.mod;
+		fastDetInfo.emplace(det.first,FastDetInfo{ttId,info.ecal == ECAL::EB});
+	}//<<>>for( detector IDs )
 
-    for( int it = 0; it < n1dHists; it++ ){ hist1d[it] = NULL; }
-    for( int it = 0; it < n2dHists; it++ ){ hist2d[it] = NULL; }
-    //for( int it = 0; it < n3dHists; it++ ){ hist3d[it] = NULL; }
+	struct TTMoments {
+		double rawSum = 0.0;
+		double calibratedSum = 0.0;
+		unsigned long long count = 0;
+	};
+	using TTAccumulator = std::unordered_map<unsigned long long,TTMoments>;
+	TTAccumulator ebMoments;
+	TTAccumulator eeMoments;
+	auto makeTTKey = []( uInt run, uInt ttId ){
+		return (static_cast<unsigned long long>(run) << 32) | static_cast<unsigned long long>(ttId);
+	};
+	auto findRange = []( const auto& mapSet, const std::string& tag, int run )
+		-> const kucms_CaliRunClass* {
+		auto tagSet = mapSet.find(tag);
+		if( tagSet == mapSet.end() ) return nullptr;
+		auto range = tagSet->second.upper_bound(run);
+		if( range == tagSet->second.begin() ) return nullptr;
+		--range;
+		return run <= range->second.endRun ? &range->second : nullptr;
+	};
 
-    for( int it = 0; it < n1dHists; it++ ){ if(hist1d[it]) hist1d[it]->Sumw2();}
+	const std::string treename("tree/llpgtree");
+	const std::string timeBranchName = isCC && doUnCC ? "rhCCTime" : "rhRtTime";
+	const std::string eosHost("cmseos.fnal.gov");
+	std::map<std::string,std::vector<std::string>> eosFileCache;
+	std::unordered_set<std::string> claimedFiles;
+	unsigned long long rejectedSentinelTimes = 0;
+	unsigned long long rejectedNonFiniteTimes = 0;
+	unsigned long long selectedRechits = 0;
+	unsigned int inputSetsProcessed = 0;
 
-    hist2d[0] = new TH2D("EnergyVRtTime_gid1",addstr(hname,"EnergyVTime;E [GeV] gid1;Time [ns]").c_str(),250,0,1000,600,-30,30);
-    hist2d[1] = new TH2D("EnergyVRtTime_gid1c",addstr(hname,"EnergyVTime;E [GeV] gid1c;Time [ns]").c_str(),250,0,1000,600,-30,30);
-    hist2d[2] = new TH2D("EnergyVRtTime_gid2",addstr(hname,"EnergyVTime;E [GeV] gid2;Time [ns]").c_str(),250,0,1000,600,-30,30);
-    hist2d[3] = new TH2D("EnergyVRtTime_gid2c",addstr(hname,"EnergyVTime;E [GeV] gid2c;Time [ns]").c_str(),250,0,1000,600,-30,30);
-    hist2d[4] = new TH2D("EnergyVRtTime_gid3",addstr(hname,"EnergyVTime;E [GeV] gid3;Time [ns]").c_str(),250,0,1000,600,-30,30);
-    hist2d[5] = new TH2D("EnergyVRtTime_gid3c",addstr(hname,"EnergyVTime;E [GeV] gid3c;Time [ns]").c_str(),250,0,1000,600,-30,30);
+	for( const auto& input : inputs ){
+		std::cout << "Processing mean-run input: " << input.subdir << " " << input.matchstr
+		          << " runs " << input.startRun << " to " << input.endRun << std::endl;
+		const std::string scanDir = eosDir + inDir + input.subdir;
+		auto cachedFiles = eosFileCache.find(scanDir);
+		if( cachedFiles == eosFileCache.end() ){
+			std::cout << "Finding ROOT files under EOS directory: " << scanDir << std::endl;
+			cachedFiles = eosFileCache.emplace(scanDir,findEOSRootFiles(eosHost,scanDir)).first;
+		} else std::cout << "Using cached EOS listing for: " << scanDir << std::endl;
+		std::vector<std::string> files;
+		for( const auto& path : cachedFiles->second )
+			if( input.matchstr.empty() || path.find(input.matchstr) != std::string::npos ) files.push_back(path);
+		std::cout << "Found " << files.size() << " candidate ROOT files." << std::endl;
 
-	hist2d[10] = new TH2D("EnergyVRtTime106",addstr(hname,"EnergyVTime;E [GeV] 106;Time [ns]").c_str(),250,0,1000,600,-30,30);
-    hist2d[11] = new TH2D("EnergyVRtTime101",addstr(hname,"EnergyVTime;E [GeV] 101;Time [ns]").c_str(),250,0,1000,600,-30,30);
-    hist2d[12] = new TH2D("EnergyVRtTime206",addstr(hname,"EnergyVTime;E [GeV] 206;Time [ns]").c_str(),250,0,1000,600,-30,30);
-    hist2d[13] = new TH2D("EnergyVRtTime201",addstr(hname,"EnergyVTime;E [GeV] 201;Time [ns]").c_str(),250,0,1000,600,-30,30);
-    hist2d[14] = new TH2D("EnergyVRtTime116",addstr(hname,"EnergyVTime;E [GeV] 116;Time [ns]").c_str(),250,0,1000,600,-30,30);
-    hist2d[15] = new TH2D("EnergyVRtTime111",addstr(hname,"EnergyVTime;E [GeV] 111;Time [ns]").c_str(),250,0,1000,600,-30,30);
-    hist2d[16] = new TH2D("EnergyVRtTime226",addstr(hname,"EnergyVTime;E [GeV] 226;Time [ns]").c_str(),250,0,1000,600,-30,30);
-    hist2d[17] = new TH2D("EnergyVRtTime221",addstr(hname,"EnergyVTime;E [GeV] 221;Time [ns]").c_str(),250,0,1000,600,-30,30);
+		TChain fInTree(treename.c_str());
+		int filesAdded = 0;
+		int badFiles = 0;
+		for( const auto& tfilename : files ){
+			TFile* testFile = TFile::Open(tfilename.c_str(),"READ");
+			if( not testFile || testFile->IsZombie() || not testFile->IsOpen() ){
+				std::cerr << "ERROR: bad ROOT file, skipping: " << tfilename << std::endl;
+				if( testFile ){ testFile->Close(); delete testFile; }
+				badFiles++;
+				continue;
+			}//<<>>if( bad ROOT file )
+			TTree* testTree = nullptr;
+			testFile->GetObject(treename.c_str(),testTree);
+			if( not testTree ){
+				std::cerr << "ERROR: missing tree " << treename << ", skipping: " << tfilename << std::endl;
+				testFile->Close();
+				delete testFile;
+				badFiles++;
+				continue;
+			}//<<>>if( tree missing )
+			testFile->Close();
+			delete testFile;
+			if( not claimedFiles.insert(tfilename).second ){
+				std::cerr << "ERROR: input ROOT file matched more than one row: " << tfilename << std::endl;
+				return false;
+			}//<<>>if( duplicate input file )
+			if( fInTree.Add(tfilename.c_str()) > 0 ) filesAdded++;
+			else{
+				std::cerr << "ERROR: failed to add ROOT file to TChain: " << tfilename << std::endl;
+				badFiles++;
+			}//<<>>if( chain add failed )
+		}//<<>>for( candidate files )
+		std::cout << "[INFO] filesAdded=" << filesAdded << " badFiles=" << badFiles << std::endl;
+		if( filesAdded == 0 ){
+			std::cerr << "ERROR: no valid ROOT files for " << input.subdir << " " << input.matchstr << std::endl;
+			return false;
+		}//<<>>if( no input files )
+		const Long64_t nEntries = fInTree.GetEntries();
+		if( nEntries <= 0 ){
+			std::cerr << "ERROR: mean-run input chain has no entries." << std::endl;
+			return false;
+		}//<<>>if( empty input chain )
 
-    int rrange = erun - srun;
-	std::string title_eb = hname + ";Run;EB Mean Time [ns]";
-	std::string hname_eb = hname + "_eb";
-    std::string title_ee = hname + ";Run;EE Mean Time [ns]";
-    std::string hname_ee = hname + "_ee";
-	hist1d[100] = new TH1D(hname_eb.c_str(),title_eb.c_str(),rrange,srun,erun);
-    hist1d[101] = new TH1D(hname_ee.c_str(),title_ee.c_str(),rrange,srun,erun);
-    std::string title_all_eb = hname + "_allTT_eb;Run;EB Mean TT Time [ns]";
-    std::string hname_all_eb = hname + "_allTT_eb";
-    std::string title_all_ee = hname + "_allTT_ee;Run;EE Mean TT Time [ns]";
-    std::string hname_all_ee = hname + "_allTT_ee";
-    hist2d[110] = new TH2D(hname_all_eb.c_str(),title_all_eb.c_str(),rrange,srun,erun,500,-5.0,5.0);
-    hist2d[111] = new TH2D(hname_all_ee.c_str(),title_all_ee.c_str(),rrange,srun,erun,500,-5.0,5.0);
+		const std::vector<std::string> requiredBranches = {
+			"run","rhID",timeBranchName,"rhEnergy","rhisGS6","rhisGS1"
+		};
+		for( const auto& branch : requiredBranches ){
+			if( not fInTree.GetBranch(branch.c_str()) ){
+				std::cerr << "ERROR: required branch is missing: " << branch << std::endl;
+				return false;
+			}//<<>>if( branch missing )
+		}//<<>>for( required branches )
+		if( not isCC && not fInTree.GetBranch("rhTimeError") ){
+			std::cerr << "ERROR: required branch is missing: rhTimeError" << std::endl;
+			return false;
+		}//<<>>if( time error branch missing )
 
- 	//    ebtt_ranges = {35,-17,18,72,1,73};
-/*
-	std::map< uInt, TH1D* > ttHistMap;
-    for( int ieta = 1; ieta < 36; ieta++ ){
-        //if( etaMod && ieta%etaModFac != 0 ) continue;
-        for( int iphi = 1; iphi < 73; iphi++ ){
-			//if( phiMod && iphi%phiModFac != 0 ) continue;
-            int i1 = ieta - 18;
-            if( i1 == 0 ) continue;
-            uInt detid = getInvTTId( iphi, i1, true );
-            int index = ieta*100 + iphi;
-			std::string indexstr = std::to_string(index);
-    		std::string title_tt = hname + ";Run;TT " + indexstr + " Mean Time [ns]";//ttid==1525
-    		std::string hname_tt = hname + "_tt" + indexstr;
-    		ttHistMap[detid] = new TH1D(hname_tt.c_str(),title_eb.c_str(),rrange,srun,erun);
-        }//<<>>for( int iphi = 1; iphi < 361; iphi++ )
-    }//<<>>for( int ieta = 1; ieta < 172; ieta++ )
-*/
+		uInt run = 0;
+		std::vector<unsigned int>* rhID = nullptr;
+		std::vector<float>* rhTime = nullptr;
+		std::vector<float>* rhEnergy = nullptr;
+		std::vector<bool>* rhisGS6 = nullptr;
+		std::vector<bool>* rhisGS1 = nullptr;
+		std::vector<float>* rhTimeError = nullptr;
+		fInTree.SetBranchStatus("*",0);
+		fInTree.SetBranchStatus("run",1);
+		fInTree.SetBranchStatus("rhID",1);
+		fInTree.SetBranchStatus(timeBranchName.c_str(),1);
+		fInTree.SetBranchStatus("rhEnergy",1);
+		fInTree.SetBranchStatus("rhisGS6",1);
+		fInTree.SetBranchStatus("rhisGS1",1);
+		if( not isCC ) fInTree.SetBranchStatus("rhTimeError",1);
+		if( fInTree.SetBranchAddress("run",&run) < 0 ||
+		    fInTree.SetBranchAddress("rhID",&rhID) < 0 ||
+		    fInTree.SetBranchAddress(timeBranchName.c_str(),&rhTime) < 0 ||
+		    fInTree.SetBranchAddress("rhEnergy",&rhEnergy) < 0 ||
+		    fInTree.SetBranchAddress("rhisGS6",&rhisGS6) < 0 ||
+		    fInTree.SetBranchAddress("rhisGS1",&rhisGS1) < 0 ||
+		    (not isCC && fInTree.SetBranchAddress("rhTimeError",&rhTimeError) < 0) ){
+			std::cerr << "ERROR: failed to bind one or more mean-run branches." << std::endl;
+			return false;
+		}//<<>>if( branch binding failed )
+		fInTree.SetCacheSize(100LL*1024LL*1024LL);
+		for( const auto& branch : requiredBranches ) fInTree.AddBranchToCache(branch.c_str(),true);
+		if( not isCC ) fInTree.AddBranchToCache("rhTimeError",true);
+		fInTree.StopCacheLearningPhase();
 
-	std::map<int,double> sum;
-    std::map<int,double> sum2;
-    std::map<int,long int> occ;
-    std::map< uInt, std::map<int,double> > ttsum;
-    std::map< uInt, std::map<int,double> > ttsum2;
-    std::map< uInt, std::map<int,long int> > ttocc;
+		std::cout << "Starting mean-run entry loop for " << nEntries << " entries" << std::endl;
+		int nextProgressPercent = 0;
+		Long64_t nextProgressEntry = 0;
+		int cachedRun = -1;
+		const kucms_CaliRunClass* crystalRange = nullptr;
+		const kucms_CaliRunClass* ttRange = nullptr;
+		for( Long64_t centry = 0; centry < nEntries; centry++ ){
+			if( centry >= nextProgressEntry ){
+				const int completedPercent = static_cast<int>(100.0L*centry/nEntries);
+				const int reportPercent = std::min(90,(completedPercent/10)*10);
+				reportEventLoopProgress(centry,nEntries,reportPercent);
+				nextProgressPercent = reportPercent + 10;
+				nextProgressEntry = progressEntryForPercent(nEntries,nextProgressPercent);
+			}//<<>>if( progress update )
+			if( fInTree.GetEntry(centry) <= 0 ){
+				std::cerr << "ERROR: failed to read mean-run entry " << centry << std::endl;
+				return false;
+			}//<<>>if( entry read failed )
+			if( run < static_cast<uInt>(srun) || run > static_cast<uInt>(erun) ||
+			    run < static_cast<uInt>(input.startRun) || run > static_cast<uInt>(input.endRun) ) continue;
+			if( not rhID || not rhTime || not rhEnergy || not rhisGS6 || not rhisGS1 ||
+			    (not isCC && not rhTimeError) ){
+				std::cerr << "ERROR: null rechit vector at mean-run entry " << centry << std::endl;
+				return false;
+			}//<<>>if( null branch vector )
+			const std::size_t nRecHits = rhID->size();
+			if( rhTime->size() != nRecHits || rhEnergy->size() != nRecHits ||
+			    rhisGS6->size() != nRecHits || rhisGS1->size() != nRecHits ||
+			    (not isCC && rhTimeError->size() != nRecHits) ){
+				std::cerr << "ERROR: rechit branch size mismatch at mean-run entry " << centry << std::endl;
+				return false;
+			}//<<>>if( vector size mismatch )
 
-    std::map<int,double> esum;
-    std::map<int,double> esum2;
-    std::map<int,long int> eocc;
-    std::map< uInt, std::map<int,double> > ettsum;
-    std::map< uInt, std::map<int,double> > ettsum2;
-    std::map< uInt, std::map<int,long int> > ettocc;
+			if( cachedRun != static_cast<int>(run) ){
+				cachedRun = run;
+				crystalRange = makeCalibrated ? findRange(CaliRunMapSet,input.tag,run) : nullptr;
+				ttRange = makeCalibrated ? findRange(TTCaliRunMapSet,input.tag,run) : nullptr;
+				if( makeCalibrated && (not crystalRange || not ttRange || crystalRange->meanMap.empty() ||
+				                       ttRange->meanMap.empty()) ){
+					std::cout << "WARNING: complete calibration maps are unavailable for tag " << input.tag
+					          << " run " << run
+					          << "; calibrated histograms will not be produced." << std::endl;
+					makeCalibrated = false;
+					crystalRange = nullptr;
+					ttRange = nullptr;
+				}//<<>>if( calibration IOV missing )
+			}//<<>>if( run changed )
 
-    const std::string treename("tree/llpgtree");
+			for( std::size_t idx = 0; idx < nRecHits; idx++ ){
+				if( (*rhisGS6)[idx] || (*rhisGS1)[idx] ) continue;
+				const float energy = (*rhEnergy)[idx];
+				if( not std::isfinite(energy) || energy < 5.0f ) continue;
+				const uInt id = (*rhID)[idx];
+				auto det = fastDetInfo.find(id);
+				if( det == fastDetInfo.end() ){
+					std::cerr << "ERROR: unknown ECAL detID in mean-run input: " << id << std::endl;
+					return false;
+				}//<<>>if( unknown detector ID )
+				if( not isCC ){
+					const float timeError = (*rhTimeError)[idx];
+					const float errorThreshold = det->second.isEB ? 0.61f : 1.01f;
+					if( not std::isfinite(timeError) || timeError <= errorThreshold || timeError > 900.0f ) continue;
+				}//<<>>if( time-error selection enabled )
+				const float rawTime = (*rhTime)[idx];
+				if( not std::isfinite(rawTime) ){
+					rejectedNonFiniteTimes++;
+					continue;
+				}//<<>>if( non-finite raw time )
+				if( rawTime <= -29.0f ){
+					rejectedSentinelTimes++;
+					continue;
+				}//<<>>if( sentinel raw time )
 
-    // Declaration of leaf types
-    uInt run;
-    std::vector<unsigned int> *rhID;
-    std::vector<float> *rhTime;
-    std::vector<float> *rhCCTime;
-    std::vector<float> *rhEnergy;
-    std::vector<bool> *rhisGS6;
-    std::vector<bool> *rhisGS1;
-    std::vector<float> *rhTimeError;
+				double calibratedTime = rawTime;
+				if( makeCalibrated ){
+					double correction = 0.0;
+					auto crystalMean = crystalRange->meanMap.find(id);
+					if( crystalMean != crystalRange->meanMap.end() ) correction += crystalMean->second;
+					auto ttMean = ttRange->meanMap.find(det->second.ttId);
+					if( ttMean != ttRange->meanMap.end() ) correction += ttMean->second;
+					if( not std::isfinite(correction) ){
+						std::cerr << "ERROR: non-finite calibration for detID " << id << " run " << run << std::endl;
+						return false;
+					}//<<>>if( invalid correction )
+					calibratedTime -= correction;
+				}//<<>>if( calibrated output enabled )
+				auto& accumulator = det->second.isEB ? ebMoments : eeMoments;
+				auto& moments = accumulator[makeTTKey(run,det->second.ttId)];
+				moments.rawSum += rawTime;
+				if( makeCalibrated ) moments.calibratedSum += calibratedTime;
+				moments.count++;
+				selectedRechits++;
+			}//<<>>for( rechits )
+		}//<<>>for( entries )
+		reportEventLoopProgress(nEntries,nEntries,100);
+		std::cout << "[INFO] Finished mean-run batch for " << input.subdir << " " << input.matchstr
+		          << " entries=" << nEntries << std::endl;
+		inputSetsProcessed++;
+	}//<<>>for( input rows )
 
-    // List of branches
-    TBranch *b_run;   //!
-    TBranch *b_rhID;   //!
-    TBranch *b_rhTime;   //!
-    TBranch *b_rhCCTime;   //!
-    TBranch *b_rhEnergy;   //!
-    TBranch *b_rhisGS6;   //!
-    TBranch *b_rhisGS1;   //!
-    TBranch *b_rhTimeError;
+	if( inputSetsProcessed == 0 ){
+		std::cerr << "ERROR: no mean-run input sets were processed." << std::endl;
+		return false;
+	}//<<>>if( no processed inputs )
+	std::cout << "Rejected invalid raw times: sentinel=" << rejectedSentinelTimes
+	          << " non-finite=" << rejectedNonFiniteTimes << std::endl;
+	std::cout << "Selected gain-1 rechits for TT means: " << selectedRechits << std::endl;
 
-    std::cout << "open input files list : " << inputFileName << std::endl;
+	const int nRunBins = erun - srun + 1;
+	const double runLowEdge = static_cast<double>(srun) - 0.5;
+	const double runHighEdge = static_cast<double>(erun) + 0.5;
+	constexpr unsigned long long minimumTTCount = 100;
+	auto writeMeanHistograms = [&]( bool calibrated ){
+		const std::string suffix = calibrated ? "_cali" : "_nocali";
+		const std::string baseName = "meanRunTime_" + std::to_string(srun) + "_to_" +
+		                             std::to_string(erun) + suffix;
+		const std::string ebName = baseName + "_allTT_eb";
+		const std::string eeName = baseName + "_allTT_ee";
+		TH2F ebHist(ebName.c_str(),(ebName + ";Run;EB Mean TT Time [ns];TT count").c_str(),
+		            nRunBins,runLowEdge,runHighEdge,500,-5.0,5.0);
+		TH2F eeHist(eeName.c_str(),(eeName + ";Run;EE Mean TT Time [ns];TT count").c_str(),
+		            nRunBins,runLowEdge,runHighEdge,500,-5.0,5.0);
+		ebHist.SetDirectory(nullptr);
+		eeHist.SetDirectory(nullptr);
+		auto fill = [&]( const TTAccumulator& accumulator, TH2F& hist ){
+			for( const auto& entry : accumulator ){
+				const auto& moments = entry.second;
+				// More than 100 selected rechits are required to suppress low-statistics TT means.
+				if( moments.count <= minimumTTCount ) continue;
+				const uInt run = static_cast<uInt>(entry.first >> 32);
+				const double sum = calibrated ? moments.calibratedSum : moments.rawSum;
+				const double mean = sum/static_cast<double>(moments.count);
+				if( std::isfinite(mean) ) hist.Fill(run,mean);
+			}//<<>>for( TT/run accumulators )
+		};
+		fill(ebMoments,ebHist);
+		fill(eeMoments,eeHist);
+		const std::string outputName = caliFileDir + baseName + "_Hist.root";
+		TFile* output = TFile::Open(outputName.c_str(),"RECREATE");
+		if( not output || output->IsZombie() || not output->IsOpen() ){
+			std::cerr << "ERROR: could not create mean-run output file: " << outputName << std::endl;
+			if( output ){ output->Close(); delete output; }
+			return false;
+		}//<<>>if( output unavailable )
+		output->cd();
+		ebHist.Write();
+		eeHist.Write();
+		output->Close();
+		delete output;
+		std::cout << "Wrote mean-run histograms: " << outputName << std::endl;
+		return true;
+	};
 
-    std::ifstream infilelist(inputFileName);
-    std::string infilestr;
-    while( std::getline( infilelist, infilestr ) ) {
+	if( not writeMeanHistograms(false) ) return false;
+	if( makeCalibrated ){
+		if( not writeMeanHistograms(true) ) return false;
+	} else std::cout << "Calibrated mean-run histograms were not produced because complete calibration was unavailable."
+	                 << std::endl;
+	return true;
 
-        std::stringstream ss(infilestr);
-        std::string subdir, matchstr, tag;
-        int srun, erun;
-
-        ss >> subdir >> matchstr >> srun >> erun >> tag;
-        if( subdir[0] == '#' ) continue;
-        std::cout << "open input file : " << subdir << " " << matchstr << std::endl;
-        std::cout << "For Run " << srun << " to Run " << erun << std::endl;
-        std::cout << "Producing Mean Run Time Hist " << std::endl;
-
-        // insure we have Calimaps if we are doing Xtal calibration maps
-        if( usecali && CaliRunMapSet.find(tag) == CaliRunMapSet.end() ){
-            std::cout << " No Cali maps for this tag !! ( " << tag << " ) " << std::endl;
-            continue;
-        }//<<>>if( CaliRunMapSet.find(tag) == TTCaliRunMapSet.end() )
-
-        int nAdded = 0; 
-        int nLines = 0; 
-        int nBadFiles = 0; 
-        auto fInTree = new TChain( treename.c_str() ); 
-        std::cout << "Adding files to TChain." << std::endl; 
- 
-        std::string eosHost = "cmseos.fnal.gov"; 
-        std::string scanDir = eosDir + inDir + subdir; 
-        std::cout << "Finding ROOT files under EOS directory: " << scanDir << std::endl; 
-        std::vector<std::string> files = findEOSRootFiles(eosHost, scanDir, matchstr); 
-        std::cout << "Found " << files.size() << " candidate ROOT files." << std::endl; 
-
-        for (const auto& tfilename : files) { 
- 
-            nLines++; 
-            TFile* testFile = TFile::Open(tfilename.c_str(), "READ"); 
- 
-            if( !testFile || testFile->IsZombie() || !testFile->IsOpen() ){ 
-                std::cerr << "\nERROR: bad ROOT file, skipping: " << tfilename << std::endl; 
-                if( testFile ) testFile->Close(); 
-                nBadFiles++; 
-                std::cout << "Z"; 
-                continue; 
-            }//<<>>if( !testFile || testFile->IsZombie() || !testFile->IsOpen() ) 
- 
-            TTree* testTree = nullptr; 
-            testFile->GetObject(treename.c_str(), testTree); 
- 
-            if( !testTree ){ 
-                std::cerr << "\nERROR: missing tree " << treename << ", skipping: " << tfilename << std::endl; 
-                testFile->Close(); 
-                nBadFiles++; 
-                std::cout << "T"; 
-                continue; 
-            }//<<>>if( !testTree ) 
- 
-            testFile->Close(); 
-            std::cout << "-"; 
-            int result = fInTree->Add(tfilename.c_str()); 
- 
-            if( result > 0 ){ std::cout << "-"; nAdded++; } 
-            else std::cout << "0"; 
- 
-        }//<<>>while (std::getline(infile,str)) 
-        std::cout << std::endl; 
-        std::cout << " -- [INFO] lines=" << nLines << " filesAdded=" << nAdded << " badFiles=" << nBadFiles << std::endl; 
-		if( nAdded == 0 ){ 
-			std::cout << " -- No Files Added to TChian !!!!!!!! "; 
-    		//if( hist_eb ) delete hist_eb; 
-            //if( hist_all_eb ) delete hist_all_eb;
-    		//for ( auto & thismap : ttHistMap ){ if( thismap.second ) delete thismap.second; }//<<>>for ( auto & thismap : ttHistMap )
-			//return; 
-		}//<<>>if( nAdded == 0 )
-
-/*
-        std::ifstream infile(infilename);
-        std::string instr;
-        auto fInTree = new TChain( treename.c_str() );
-        std::cout << "Adding files to TChain." << std::endl;
-        while (std::getline(infile,instr)){
-            auto tfilename = eosDir + inDir + instr;
-            std::cout << "-";
-            fInTree->Add(tfilename.c_str());
-        }//<<>>while (std::getline(infile,str))
-        std::cout << std::endl;
-*/
-
-        run = 0;
-    	rhID = 0;
-        rhTime = 0;
-		rhCCTime = 0;
-		rhEnergy = 0;
-		rhisGS6 = 0;
-        rhisGS1 = 0;
-		rhTimeError = 0;
-
-        fInTree->SetBranchAddress( "run", &run, &b_run );   //!
-        fInTree->SetBranchAddress( "rhID", &rhID, &b_rhID );   //!
-        fInTree->SetBranchAddress( "rhRtTime", &rhTime, &b_rhTime);   //!
-        if( isCC ) fInTree->SetBranchAddress("rhCCTime", &rhCCTime, &b_rhCCTime);
-        fInTree->SetBranchAddress( "rhEnergy", &rhEnergy, &b_rhEnergy );   //!
-        fInTree->SetBranchAddress( "rhisGS6", &rhisGS6, &b_rhisGS6 );
-        fInTree->SetBranchAddress( "rhisGS1", &rhisGS1, &b_rhisGS1 );
-        fInTree->SetBranchAddress( "rhTimeError", &rhTimeError, &b_rhTimeError );
-
-        std::cout << " Getting calibration values and plotting" << std::endl;
-
-        auto nEntries = fInTree->GetEntries();
-        //if( nEntries > 1000000 ) nEntries = 1000000;
-        if( debug ) nEntries = ( nEntries < 1000 ) ? nEntries : 1000;
-        if( debug ) std::cout << "Mf2d Proccessing " << nEntries << " entries : " << std::endl;
-        int report = nEntries/20;
-        for (auto centry = 0U; centry < nEntries; centry++){
-
-            if( centry%report == 0 or centry == 0){
-                std::cout << "Proccessed " << centry << " of " << nEntries;
-                std::cout << " " << (1000.0*static_cast<float>(centry)/static_cast<float>(nEntries))/10.0 << "%" << std::endl;
-            }//<<>>if( centry%10000000 == 0 or centry == 0)
-
-            auto entry = fInTree->LoadTree(centry);
-
-            if(debug) std::cout << " - Start loop " << std::endl;
-
-            b_run->GetEntry(entry);   //!
-            b_rhID->GetEntry(entry);   //!
-            b_rhTime->GetEntry(entry);   //!
-			if( isCC ) b_rhCCTime->GetEntry(entry);  
-			b_rhEnergy->GetEntry(entry);
-            b_rhisGS6->GetEntry(entry);
-            b_rhisGS1->GetEntry(entry);
-            b_rhTimeError->GetEntry(entry);
-
-			if( run > srun && run <= erun ){
-				int nRecHits = rhID->size();		
-				for( int idx = 0; idx < nRecHits; idx++ ){
-
-					auto idinfo = DetIDMap[rhID->at(idx)];
-					bool useUnCCTime = isCC && doUnCC;
-					double btime = useUnCCTime ? rhCCTime->at(idx) : rhTime->at(idx);
-					bool isEB = ( idinfo.ecal == ECAL::EB );
-
-					int gainId = ( ! rhisGS6->at(idx) && ! rhisGS1->at(idx) ) ? 1 : ( rhisGS6->at(idx) && ! rhisGS1->at(idx) ) ? 2 : 3;
-					double fcali = usecali ? getCalibration( rhID->at(idx), run, tag, gainId ) : 0;
-					double lgcali = usecali ? getCalibration( rhID->at(idx), run, tag, 1 ) : 0;
-					double time =  btime - fcali;
-					double lgtime = btime - lgcali;
-					double time2 = time*time;
-                    //std::cout << " getCalibration : " << rhID->at(idx) << " " << run << " " << tag; 
-                    //std::cout << " cali: " << getCalibration( rhID->at(idx), run, tag );
-                    //std::cout << " time : " << btime << " caliTime: " << time << std::endl; 
-
-                    bool skiprechit = false;
-                    if( not isCC ){
-                        float errorThres = ( gainId == 1 ) ? 0.61 : 0.6;
-                        if( idinfo.ecal != ECAL::EB ) errorThres = ( gainId == 1 ) ? 1.01 : 1.0;
-                        if( rhTimeError->at(idx) <= errorThres ) skiprechit = true;
-                        if( rhTimeError->at(idx) > 900 ) skiprechit = true;
-                    };//<<>>if( isCC ) skiprechit = false;
-
-					if( isEB && not skiprechit ){ ///  EB only for now
-
-						if( gainId == 1 ){ hist2d[0]->Fill( rhEnergy->at(idx), btime ); hist2d[1]->Fill( rhEnergy->at(idx), time ); }
-						else if( gainId == 2 ){ hist2d[2]->Fill( rhEnergy->at(idx), lgtime ); hist2d[3]->Fill( rhEnergy->at(idx), time ); }
-                    	else { hist2d[4]->Fill( rhEnergy->at(idx), lgtime ); hist2d[5]->Fill( rhEnergy->at(idx), time ); }
-
-                    }//<<>>if( isEB )
-
-					if( gainId > 1 && not skiprechit ){
-
-						int crsid = getGSRhId( rhID->at(idx), gainId );
-						double plottime = lgtime;
-						if( crsid == 106 ){ hist2d[10]->Fill( rhEnergy->at(idx), plottime ); }
-                        if( crsid == 101 ){ hist2d[11]->Fill( rhEnergy->at(idx), plottime ); }
-                        if( crsid == 206 ){ hist2d[12]->Fill( rhEnergy->at(idx), plottime ); }
-                        if( crsid == 201 ){ hist2d[13]->Fill( rhEnergy->at(idx), plottime ); }
-                        if( crsid == 116 ){ hist2d[14]->Fill( rhEnergy->at(idx), plottime ); }
-                        if( crsid == 111 ){ hist2d[15]->Fill( rhEnergy->at(idx), plottime ); }
-                        if( crsid == 226 ){ hist2d[16]->Fill( rhEnergy->at(idx), plottime ); }
-                        if( crsid == 221 ){ hist2d[17]->Fill( rhEnergy->at(idx), plottime ); }
-
-					}//<<>>if( gainId > 1 )
-				
-					//}//<<>>if( isEB )
-
-					bool isGS0 = not rhisGS6->at(idx) && not rhisGS1->at(idx);
-                    //if( ( rhEnergy->at(idx) < 20.0 ) || ( rhEnergy->at(idx) > 250.0 ) ) continue;
-                    if( ( rhEnergy->at(idx) < 5.0 ) || not isGS0 ) continue;
-
-					if( sum.find(run) != sum.end() ){
-						if( isEB ){ sum[run] += time; sum2[run] += time2; occ[run] += 1; }
-                        else{ esum[run] += time; esum2[run] += time2; eocc[run] += 1; }
-					} else {
-                        if( isEB ){ sum[run] = time; sum2[run] = time2; occ[run] = 1; }
-                        else{ esum[run] = time; esum2[run] = time2; eocc[run] = 1; }
-					}//<<>>if( sum.find(run) != sum.end() )
-
-					auto ttindx = getTTId(rhID->at(idx));
-					if( isEB ){
-						if( ( ttsum.find(ttindx) != ttsum.end() )  && ( ttsum[ttindx].find(run) != ttsum[ttindx].end() ) ){
-							ttsum[ttindx][run] += time; ttsum2[ttindx][run] += time2; ttocc[ttindx][run] += 1;
-						} else {
-                        	ttsum[ttindx][run] = time; ttsum2[ttindx][run] = time2; ttocc[ttindx][run] = 1;
-						}//<<>>if( DetIDMap[rhID->at(idx)].i1 == && DetIDMap[rhID->at(idx)].i2 == )
-					} else {
-                    	if( ( ettsum.find(ttindx) != ettsum.end() )  && ( ettsum[ttindx].find(run) != ettsum[ttindx].end() ) ){
-                        	ettsum[ttindx][run] += time; ettsum2[ttindx][run] += time2; ettocc[ttindx][run] += 1;
-                    	} else {
-                        	ettsum[ttindx][run] = time; ettsum2[ttindx][run] = time2; ettocc[ttindx][run] = 1;
-                    	}//<<>>if( DetIDMap[rhID->at(idx)].i1 == && DetIDMap[rhID->at(idx)].i2 == )
-					}//<<>>if( isEB )
-
-				}//<<>>for( int idx = 0; idx < nRecHits; idx++ )
-			}//<>>if( run > srun && run <= erun )
-        } // for (auto entry = 0U; entry < nEntries; entry++
-
-        if(debug) std::cout << " -------- Next Input file " << std::endl;
-
-    } // while (std::getline(infilelist,infiles))
-
-	for( auto & runsum : sum ){
-
-		int run = runsum.first;
-		int bin = 1 + run - srun;
-		double mean = occ[run] > 100 ? sum[run] / occ[run] : -99;
-		double err = occ[run] > 100 ? sqrt( (sum2[run]/occ[run] - mean*mean)/occ[run] ) : -99;	
-		std::cout << " EB mean by Run : " << run << " sum: " << sum[run] << " occ: " << occ[run]; 
-        std::cout << " mean: " << mean << " +/- " << err << std::endl;			
-		if( mean > -25 ){
-			hist1d[100]->SetBinContent( bin, mean ); hist1d[100]->SetBinError( bin, err );
-		}//<<>>if( mean > -50 )
-        double emean = eocc[run] > 100 ? esum[run] / eocc[run] : -99;
-        double eerr = eocc[run] > 100 ? sqrt( (esum2[run]/eocc[run] - emean*emean)/eocc[run] ) : -99;
-        std::cout << " EE mean by Run : " << run << " sum: " << esum[run] << " occ: " << eocc[run];
-        std::cout << " mean: " << emean << " +/- " << eerr << std::endl;
-        if( emean > -25 ){
-            hist1d[101]->SetBinContent( bin, emean ); hist1d[101]->SetBinError( bin, eerr );
-        }//<<>>if( mean > -50 )
-
-		for( int ieta = 1; ieta < 36; ieta++ ){
-			//if( etaMod && ieta%etaModFac != 0 ) continue;
-            for( int iphi = 1; iphi < 73; iphi++ ){
-				//if( phiMod && iphi%phiModFac != 0 ) continue;
-                int i1 = ieta - 18;
-                if( i1 == 0 ) continue;
-                uInt detid = getInvTTId( iphi, i1, true );
-				if( (ttsum.find(detid) == ttsum.end()) or (ttsum[detid].find(run) == ttsum[detid].end()) ) continue;
-				double ttmean = ttocc[detid][run] > 100 ? ttsum[detid][run] / ttocc[detid][run] : -99;
-				double ttedenom = (ttocc[detid][run]-1);
-				double tms = ttmean*ttmean;
-				double tterr = ttocc[detid][run] > 100 ? sqrt( ( (ttsum2[detid][run]/ttocc[detid][run]) - tms ) / ttedenom ) : -99;
-				if( ttmean > -25 ){
-					//ttHistMap[detid]->SetBinContent( bin, ttmean );
-					//ttHistMap[detid]->SetBinError( bin, tterr );
-					hist2d[110]->Fill( run, ttmean );
-				}//<<>>if( ttmean > -99 and tterr < 5.f )
-            }//<<>>for( int iphi = 1; iphi < 361; iphi++ )
-        }//<<>>for( int ieta = 1; ieta < 172; ieta++ )
-
-        for( int ieta = 1; ieta < 24; ieta++ ){
-            //if( etaMod && ieta%etaModFac != 0 ) continue;
-            for( int iphi = 1; iphi < 35; iphi++ ){
-                //if( phiMod && iphi%phiModFac != 0 ) continue;
-                int i1 = ieta - 12;
-                if( i1 == 0 ) continue;
-                uInt detid = getInvTTId( iphi, i1, false );
-                if( (ettsum.find(detid) == ettsum.end()) or (ettsum[detid].find(run) == ettsum[detid].end()) ) continue;
-                double ttmean = ettocc[detid][run] > 100 ? ettsum[detid][run] / ettocc[detid][run] : -99;
-                double ttedenom = (ettocc[detid][run]-1);
-                double tms = ttmean*ttmean;
-                double tterr = ettocc[detid][run] > 100 ? sqrt( ( (ettsum2[detid][run]/ettocc[detid][run]) - tms ) / ttedenom ) : -99;
-                if( ttmean > -25 ){
-                    //ttHistMap[detid]->SetBinContent( bin, ttmean );
-                    //ttHistMap[detid]->SetBinError( bin, tterr );
-                    hist2d[111]->Fill( run, ttmean );
-                }//<<>>if( ttmean > -99 and tterr < 5.f )
-            }//<<>>for( int iphi = 1; iphi < 361; iphi++ )
-        }//<<>>for( int ieta = 1; ieta < 172; ieta++ )
-
-
-	}//<<>>for( auto & runsum : sum )
-
-    mrTFile->cd();
-
-    for( int it = 0; it < n1dHists; it++ ){ if(hist1d[it]){ hist1d[it]->Write(); delete hist1d[it]; } }
-    for( int it = 0; it < n2dHists; it++ ){ if(hist2d[it]){ hist2d[it]->Write(); delete hist2d[it]; } }
-    //for( int it = 0; it < n3dHists; it++ ){ if(hist3d[it]){ hist3d[it]->Write(); delete hist3d[it]; } }
-
-	//for ( auto & thismap : ttHistMap ){ thismap.second->Write( thismap.second->GetName(), TObject::kOverwrite ); delete thismap.second; }
-    //for( int ieta = 1; ieta < 37; ieta++ ){
-    //    for( int iphi = 1; iphi < 74; iphi++ ){
-    //        int i1 = ieta - 18;
-    //        if( i1 == 0 ) continue;
-    //        uInt detid = getInvTTId( iphi, i1, true );
-	//		ttHistMap[detid]->Write( ttHistMap[detid]->GetName(), TObject::kOverwrite );
-	//		delete ttHistMap[detid];
-    //    }//<<>>for( int iphi = 1; iphi < 361; iphi++ )
-    //}//<<>>for( int ieta = 1; ieta < 172; ieta++ )
-
-	mrTFile->Close();
-
-}//<<>> void plotMeanRunTimeEGR( std::string indir, std::string infilelistname, 
+}//<<>>bool KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int srun, int erun )
 
 void KUCMS_TimeCalibration::makeTTDiffMaps( int srun, int erun ){
 

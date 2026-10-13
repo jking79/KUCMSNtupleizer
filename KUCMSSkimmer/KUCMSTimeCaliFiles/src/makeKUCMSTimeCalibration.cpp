@@ -317,14 +317,12 @@ int main ( int argc, char *argv[] ){
 
 	//  ---------- the below is done in re stuff now ------------------------
 
-	// plotting of mean time by run with calibraton : filename, start run, end run, usecali
-	// usecali ( defaults to usecali true )
+	// Plot mean TT time by run. One pass always produces uncalibrated EB/EE histograms and
+	// also produces calibrated EB/EE histograms when complete calibration maps are available.
 	//KUCMS_TimeCalibration theCali;
     //theCali.SetEosDir(eosdir);
     //theCali.SetInDir(indir);
-    //theCali.plotMeanRunTimeEGR( inputfilename, 315257, 325172 ); // R2 2018 UL 315257_325172 // R2 2017 UL 296399_306460
-    //theCali.plotMeanRunTimeEGR( inputfilename, 315257, 325172, false );
-    ////theCali.plotMeanRunTimeEGR( inputfilename, 296399, 307554, true );	
+    //if( not theCali.plotMeanRunTimeEGR(inputfilename,315257,325172) ) return EXIT_FAILURE;
 	
 	/////////////////////////////////////////////////////////////////////
 

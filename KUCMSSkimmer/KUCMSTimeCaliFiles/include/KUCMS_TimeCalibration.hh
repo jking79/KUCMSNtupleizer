@@ -257,7 +257,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 
     void makeSmearTag( std::string sourceName, std::string destName, std::string smearTag );
 
-	void plotMeanRunTimeEGR( std::string inputFileName, int srun, int erun, bool usecali = true );
+	bool plotMeanRunTimeEGR( std::string inputFileName, int srun, int erun );
     void makeTTDiffMaps( int srun, int erun );
     void makeTTDriftMaps( std::string tag, int srun, int erun );
 
