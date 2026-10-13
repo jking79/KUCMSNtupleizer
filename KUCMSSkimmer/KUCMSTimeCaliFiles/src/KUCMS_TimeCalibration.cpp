@@ -854,6 +854,21 @@ bool KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
 	//bool oldstyle = false;
 
     std::cout << " - Loading CaliHists " << std::endl;
+	bool success = true;
+	std::unordered_set<std::string> requiredPrefixes;
+	if( not makeNew ){
+		for( const auto& tagEntry : TTCaliRunMapSet ){
+			for( const auto& range : tagEntry.second ){
+				if( range.second.histMapName != "none" ) requiredPrefixes.insert(getPrefix(tagEntry.first));
+			}//<<>>for( TT ranges )
+		}//<<>>for( TT tags )
+		for( const auto& tagEntry : CaliRunMapSet ){
+			for( const auto& range : tagEntry.second ){
+				if( not range.second.isExternal && range.second.histMapName != "none" )
+					requiredPrefixes.insert(getPrefix(tagEntry.first));
+			}//<<>>for( crystal ranges )
+		}//<<>>for( crystal tags )
+	}//<<>>if( existing maps are expected )
 	//caliHistFileNames  caliFileDir
 
     //std::cout << " - opening caliHist Files " << std::endl;
@@ -870,6 +885,7 @@ bool KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
 		if( not stayOpen && not makeNew ) caliTFile[filename.first] = TFile::Open( califilepath.c_str(), "READ" );
 		if( not caliTFile[filename.first] || caliTFile[filename.first]->IsZombie() || not caliTFile[filename.first]->IsOpen() ){
 			std::cerr << "ERROR: failed to open ROOT file: " << califilepath << std::endl;
+			if( makeNew || requiredPrefixes.find(filename.first) != requiredPrefixes.end() ) success = false;
 		}//<<>>if( caliTFile[filename.first]->IsZombie() or !caliTFile[filename.first] )
 	}//<<>>for( auto filename : caliHistFileNames )
 
@@ -882,6 +898,7 @@ bool KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
 			auto file = caliTFile.find(prefix);
 			if( file == caliTFile.end() || not file->second || file->second->IsZombie() || not file->second->IsOpen() ){
 				std::cerr << "ERROR: cannot load TT calibration histograms for prefix " << prefix << std::endl;
+				if( not makeNew && ttfilename != "none" ) success = false;
 				continue;
 			}//<<>>if( input file is unavailable )
 			file->second->cd();
@@ -892,7 +909,10 @@ bool KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
 				if( ttfilename != "none" && CaliHists.find(filename) == CaliHists.end() ){
 					TH2F* hist = (TH2F*)file->second->Get(filename.c_str());
 					if( hist != NULL) hist->SetDirectory(nullptr);
-                    else { std::cout << " Not Found " << filename << std::endl; }
+					else if( not makeNew ){
+						std::cerr << "ERROR: required TT calibration histogram not found: " << filename << std::endl;
+						success = false;
+					}
                     //std::cout << " Found " << hist << std::endl;
 					if( hist ) CaliHists[filename] = { hist, filename, false, false }; // histfile histname isnew isreshist
 				}//<<>>if( TTMaps.find(calirunmap.second.TTCaliMapName) == TTMaps.end() )
@@ -911,6 +931,7 @@ bool KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
 			auto file = caliTFile.find(prefix);
 			if( file == caliTFile.end() || not file->second || file->second->IsZombie() || not file->second->IsOpen() ){
 				std::cerr << "ERROR: cannot load crystal calibration histograms for prefix " << prefix << std::endl;
+				if( not makeNew && not calirunsct.second.isExternal && xtfilename != "none" ) success = false;
 				continue;
 			}//<<>>if( input file is unavailable )
 			file->second->cd();
@@ -920,8 +941,11 @@ bool KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
                 //std::cout << " -- loading : " << filename << " ( " << xtfilename << " ) ";
                 if( xtfilename != "none" && CaliHists.find(filename) == CaliHists.end() ){
 					TH2F* hist = (TH2F*)file->second->Get(filename.c_str());
-                    if( hist != NULL) hist->SetDirectory(nullptr); 
-					else { std::cout << " Not Found " << filename << std::endl; }
+					if( hist != NULL) hist->SetDirectory(nullptr);
+					else if( not makeNew ){
+						std::cerr << "ERROR: required crystal calibration histogram not found: " << filename << std::endl;
+						success = false;
+					}
                     //std::cout << " Found " << hist << std::endl;
                     if( hist ) CaliHists[filename] = { hist, filename, false, false }; // histfile histname isnew isreshist
                 }//<<>>if( TTMaps.find(calirunmap.second.TTCaliMapName) == TTMaps.end() )
@@ -931,7 +955,7 @@ bool KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
         }//<<>>for( auto& calirunsct : calirunmap )
     }//<<>>for( auto& calirunmap : CaliRunMapSet )
 
-	bool success = makeCaliMaps();
+	if( success ) success = makeCaliMaps();
 
 	if( not stayOpen ){
 
@@ -942,7 +966,13 @@ bool KUCMS_TimeCalibration::LoadCaliHists( bool stayOpen, bool makeNew ){
 		CaliHists.clear();
         //caliTFile->Close();
         //caliR3TFile->Close();
-		for( auto califile : caliTFile ){ if( califile.second ) califile.second->Close(); }
+		for( auto& califile : caliTFile ){
+			if( califile.second ){
+				califile.second->Close();
+				delete califile.second;
+				califile.second = nullptr;
+			}//<<>>if( file exists )
+		}//<<>>for( calibration files )
 
 	}//<<>>if( not stayOpen )
 	caliMapsValid = success;
@@ -1142,9 +1172,11 @@ void KUCMS_TimeCalibration::makeCaliHists(){
 			for( auto& entry : calirunsct.second.sumCntMap ){
 				//if( entry.first < 10000 ) std::cout << " -- HG id : " << entry.first << " with " << entry.second.cnt;
 				if( DetIDMap.find(entry.first) == DetIDMap.end() ){ 
-					std::cout << " -- " << entry.first << " not found in DetIDMap !!!!" << std::endl;
+					std::cerr << "ERROR: " << entry.first << " not found in DetIDMap while saving crystal maps."
+					          << std::endl;
+					continue;
 				}//<<>>if( DetIDMap.find(entry.first) == DetIDMap.end() )
-				kucms_DetIDStruct idinfo = DetIDMap[entry.first];
+				const kucms_DetIDStruct& idinfo = DetIDMap.at(entry.first);
                 //if( entry.first < 10000 ) std::cout << " ecal " << idinfo.ecal << " i1 " << idinfo.i1 << " i2 " << idinfo.i2 << std::endl;
 				if( idinfo.ecal == 0 ){
 					CaliHists[sfilename_eb].h2f->Fill( idinfo.i2, idinfo.i1, entry.second.sum );
@@ -1157,8 +1189,14 @@ void KUCMS_TimeCalibration::makeCaliHists(){
                 	CaliHists[ofilename_ee].h2f->Fill( mi2, idinfo.i1, entry.second.cnt );
 				}//<<>>if( idinfo.ecal == 0 )
 			}//<<>>for( auto& entry : calirunsct.second.sumCntMap )
-            for( auto& entry : calirunsct.second.meanMap ){
-                kucms_DetIDStruct idinfo = DetIDMap[entry.first];
+			for( auto& entry : calirunsct.second.meanMap ){
+				auto det = DetIDMap.find(entry.first);
+				if( det == DetIDMap.end() ){
+					std::cerr << "ERROR: " << entry.first << " not found in DetIDMap while saving crystal means."
+					          << std::endl;
+					continue;
+				}//<<>>if( detector ID missing )
+				const kucms_DetIDStruct& idinfo = det->second;
                 if( idinfo.ecal == 0 ){
                 	CaliHists[mfilename_eb].h2f->Fill( idinfo.i2, idinfo.i1, entry.second );
                 	CaliHists[mdfilename_eb].h1f->Fill( entry.second );
@@ -1168,8 +1206,14 @@ void KUCMS_TimeCalibration::makeCaliHists(){
                 	CaliHists[mdfilename_ee].h1f->Fill( entry.second );
                 }//<<>>if( idinfo.ecal == 0 )
 			}//<<>>for( auto& entry : calirunsct.second.meanMap )
-            for( auto& entry : calirunsct.second.errMap ){
-                kucms_DetIDStruct idinfo = DetIDMap[entry.first];
+			for( auto& entry : calirunsct.second.errMap ){
+				auto det = DetIDMap.find(entry.first);
+				if( det == DetIDMap.end() ){
+					std::cerr << "ERROR: " << entry.first << " not found in DetIDMap while saving crystal errors."
+					          << std::endl;
+					continue;
+				}//<<>>if( detector ID missing )
+				const kucms_DetIDStruct& idinfo = det->second;
 				int mi2 = ( idinfo.ecal == 1 ) ? -1*idinfo.i2 : idinfo.i2;
 				if( idinfo.ecal == 0 ) CaliHists[efilename_eb].h2f->Fill( idinfo.i2, idinfo.i1, entry.second );
 				else CaliHists[efilename_ee].h2f->Fill( mi2, idinfo.i1, entry.second );
@@ -1449,7 +1493,8 @@ void KUCMS_TimeCalibration::LoadExtCali( std::string calihist, std::string mapna
         	//std::cout << " -- Processing : " << ieta << " " << iphi;
             int i1 = ieta - 86;
             if( i1 == 0 ) continue;
-            uInt detid = InvDetIDMap[iphi][i1][ECAL::EB];
+			uInt detid = getDetIdInfo(iphi,i1,ECAL::EB);
+			if( detid == 0 ) continue;
          	float occ = ohist->GetBinContent(ieta,iphi);
             if( occ == 0 ) continue;
             //std::cout << " " << detid << " " << sum << " " << sum2;
@@ -1535,15 +1580,29 @@ uInt KUCMS_TimeCalibration::getInvTTId( int i1, int i2, bool isEB ){
 
 }//<<>>std::pair<int,int> KUCMS_TimeCalibration::getTTInfo( uInt ttid )
 
-kucms_DetIDStruct& KUCMS_TimeCalibration::getDetIdInfo( uInt rhid ){
+const kucms_DetIDStruct& KUCMS_TimeCalibration::getDetIdInfo( uInt rhid ){
 
-	return DetIDMap[rhid];
+	auto det = DetIDMap.find(rhid);
+	if( det != DetIDMap.end() ) return det->second;
+	std::cerr << "ERROR: unknown ECAL detID requested: " << rhid << std::endl;
+	static const kucms_DetIDStruct invalidDetID;
+	return invalidDetID;
 
 }//<<>>DetIDStruct KUCMS_TimeCalibration::getDetIdInfo( uInt rhid )
 
 uInt KUCMS_TimeCalibration::getDetIdInfo( int i1, int i2, int ecal ){
 
-	return InvDetIDMap[i1][i2][ecal];
+	auto first = InvDetIDMap.find(i1);
+	if( first != InvDetIDMap.end() ){
+		auto second = first->second.find(i2);
+		if( second != first->second.end() ){
+			auto region = second->second.find(ecal);
+			if( region != second->second.end() ) return region->second;
+		}//<<>>if( second coordinate exists )
+	}//<<>>if( first coordinate exists )
+	std::cerr << "ERROR: no ECAL detID for coordinates (" << i1 << "," << i2
+	          << ") in region " << ecal << std::endl;
+	return 0;
 
 }//<<>>DetIDStruct KUCMS_TimeCalibration::getDetIdInfo( uInt rhid )
 
@@ -1705,8 +1764,13 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
 
 float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey, int mctype, int gianID ){
 
-    if( amplitude == 0 ) return 100.f;
-    bool isEB( DetIDMap[rechitID].ecal == ECAL::EB );
+	if( amplitude == 0 ) return 100.f;
+	auto det = DetIDMap.find(rechitID);
+	if( det == DetIDMap.end() ){
+		std::cerr << "ERROR: unknown ECAL detID in getTimeResoltuion: " << rechitID << std::endl;
+		return 100.f;
+	}//<<>>if( detector ID missing )
+	bool isEB( det->second.ecal == ECAL::EB );
     float var = ( dataSetKey == "None" ) ? -1 : -99;
     if( mctype == 1 ){ // data or MC
 		if( dataSetKey == "r2_ul18" ){ if( Evt_run > 320672 ) dataSetKey = "r2_ul18D"; else dataSetKey = "r2_ul18ABC"; }
@@ -1780,14 +1844,16 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
 }//<<>>float getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, std::string dataSetKey )
 
 float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsigned int rechitID, 
-												unsigned int Evt_run, std::string dataSetKey, int mctype, int gainID ){
+											unsigned int Evt_run, std::string dataSetKey, int mctype, int gainID,
+											bool applyCalibration ){
 
 	//getTimeResoltuion( amplitude, rechitID, Evt_run, dataSetKey, mctype, gianID )
 	// NOTE :: dataSetKey is the tctag in this function!!!!    named wring here - please correct
 	double rtime = 0;
     //if( Evt_run > 388000 || Evt_run < 253984 ) return time; // within calibrated run range check
 
-    if( mctype == 1 ){ // data
+	if( mctype == 1 ){ // data
+		if( not applyCalibration ) return time;
 		
 		std::string theKey = dataSetKey;
 		if( theKey == "r2_ul18D" or theKey == "r2_ul18ABC") theKey = "r2_ul18";
@@ -1804,8 +1870,9 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
 		double sorvar = 0;
 
 		if( dataSetKey == "r2_ul18_mc" ) dataSetKey = "r2_ul18_sqmc";
-		if( CaliRunMapSet.find(dataSetKey) != CaliRunMapSet.end() ) ctime = time - getCalibration(rechitID,Evt_run,dataSetKey,gainID);
-        else{ ctime = time; }
+		if( applyCalibration && CaliRunMapSet.find(dataSetKey) != CaliRunMapSet.end() )
+			ctime = time - getCalibration(rechitID,Evt_run,dataSetKey,gainID);
+		else{ ctime = time; }
 		//std::cout << " Pre Check amplitude : " << amplitude << std::endl;
 		//if( amplitude < 1 ) return ctime;
         //if( time == 0 ) return ctime;
@@ -2404,28 +2471,30 @@ bool KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
         for (const auto& tfilename : files) {
 
             nLines++;
-            TFile* testFile = TFile::Open(tfilename.c_str(), "READ");
+			TFile* testFile = TFile::Open(tfilename.c_str(), "READ");
 
-            if( !testFile || testFile->IsZombie() || !testFile->IsOpen() ){
-                std::cerr << "\nERROR: bad ROOT file, skipping: " << tfilename << std::endl;
-                if( testFile ) testFile->Close();
-                nBadFiles++;
-                std::cout << "Z";
-                continue;
-            }//<<>>if( !testFile || testFile->IsZombie() || !testFile->IsOpen() )
+			if( !testFile || testFile->IsZombie() || !testFile->IsOpen() ){
+				std::cerr << "\nERROR: bad ROOT file, skipping: " << tfilename << std::endl;
+				if( testFile ){ testFile->Close(); delete testFile; }
+				nBadFiles++;
+				std::cout << "Z";
+				continue;
+			}//<<>>if( !testFile || testFile->IsZombie() || !testFile->IsOpen() )
 
-            TTree* testTree = nullptr;
-            testFile->GetObject(treename.c_str(), testTree);
+			TTree* testTree = nullptr;
+			testFile->GetObject(treename.c_str(), testTree);
 
-            if( !testTree ){
-                std::cerr << "\nERROR: missing tree " << treename << ", skipping: " << tfilename << std::endl;
-                testFile->Close();
-                nBadFiles++;
-                std::cout << "T";
-                continue;
-            }//<<>>if( !testTree )
+			if( !testTree ){
+				std::cerr << "\nERROR: missing tree " << treename << ", skipping: " << tfilename << std::endl;
+				testFile->Close();
+				delete testFile;
+				nBadFiles++;
+				std::cout << "T";
+				continue;
+			}//<<>>if( !testTree )
 
-            testFile->Close();
+			testFile->Close();
+			delete testFile;
             //std::cout << "opening tfile : " << tfilename << std::endl;
             std::cout << "-";
             int result = fInTree->Add(tfilename.c_str());
@@ -2818,7 +2887,7 @@ bool KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 
 }//<<>>bool KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName )
 
-void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool scale, bool usecali, bool smear, std::string ext ){
+bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool scale, bool usecali, bool smear, std::string ext ){
 
     std::cout << "Creating 2D Resolution Hist from EgammaRes Ntuples " << std::endl;
     if( not usecali ) std::cout << " -- NoCali " << std::endl;
@@ -2848,30 +2917,30 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
     else std::cout << " -- upper energy bound : " << uB << " lower energy bound : " << lB << std::endl;
 
     // Declaration of leaf types
-    UInt_t          run;
-    std::vector<unsigned int> *resRhID;
-    std::vector<float>   *resAmp;
-    std::vector<float>   *resE;
-    std::vector<float>   *resRtTime;
-    std::vector<float>   *resCCTime;
-    std::vector<float>   *resTOF;
+    UInt_t          run = 0;
+    std::vector<unsigned int> *resRhID = nullptr;
+    std::vector<float>   *resAmp = nullptr;
+    std::vector<float>   *resE = nullptr;
+    std::vector<float>   *resRtTime = nullptr;
+    std::vector<float>   *resCCTime = nullptr;
+    std::vector<float>   *resTOF = nullptr;
 
-    std::vector<unsigned int> *rhID;
-    std::vector<bool>    *rhisGS6;
-    std::vector<bool>    *rhisGS1;
+    std::vector<unsigned int> *rhID = nullptr;
+    std::vector<bool>    *rhisGS6 = nullptr;
+    std::vector<bool>    *rhisGS1 = nullptr;
 
     // List of branches
-    TBranch        *b_run;   //!
-    TBranch        *b_resRhID;   //!
-    TBranch        *b_resAmp;   //!
-    TBranch        *b_resE;   //!
-    TBranch        *b_resRtTime;   //!
-    TBranch        *b_resCCTime;   //!
-    TBranch        *b_resTOF;   //!
+    TBranch        *b_run = nullptr;   //!
+    TBranch        *b_resRhID = nullptr;   //!
+    TBranch        *b_resAmp = nullptr;   //!
+    TBranch        *b_resE = nullptr;   //!
+    TBranch        *b_resRtTime = nullptr;   //!
+    TBranch        *b_resCCTime = nullptr;   //!
+    TBranch        *b_resTOF = nullptr;   //!
 
-    TBranch        *b_rhID;   //!
-    TBranch        *b_rhisGS6;   //!
-    TBranch        *b_rhisGS1;   //!
+    TBranch        *b_rhID = nullptr;   //!
+    TBranch        *b_rhisGS6 = nullptr;   //!
+    TBranch        *b_rhisGS1 = nullptr;   //!
 
     std::string nocalistr("_NoCali");
     std::string uncorstr("_UnCorr");
@@ -2894,6 +2963,10 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
     std::vector<float> fYBins;
     setBins(xBinStr,fXBins);
     setBins(yBinStr,fYBins);
+	if( fXBins.size() < 2 || fYBins.size() < 2 ){
+		std::cerr << "ERROR: invalid resolution histogram bin configuration." << std::endl;
+		return false;
+	}//<<>>if( invalid bins )
     const auto xbins = &fXBins[0];
     const auto ybins = &fYBins[0];
     int nMyBins = fXBins.size()-1;
@@ -2909,7 +2982,7 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
     std::ifstream infilelist(inputFileName);
 	if( !infilelist.is_open() ){
     	std::cerr << "ERROR: could not open input file list: " << inputFileName << std::endl;
-    	return;
+		return false;
 	}//<<>>if( !infilelist.is_open() )
     std::string infilestr;
     while( std::getline( infilelist, infilestr ) ) {
@@ -2935,9 +3008,13 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
     	//}//<<>>if( !(ss >> subdir >> matchstr >> srun >> erun >> tag) )
 
         //if( !( ss >> infilename >> srun >> erun >> tag )) std::cout << "[WARN] Parse error in : " << infilestr << std::endl; continue;
-        if( doMC ) ss >> subdir >> matchstr >> srun >> erun >> tag >> dolast >> wgt;
-        else ss >> subdir >> matchstr >> srun >> erun >> tag >> dolast;
-        if( subdir[0] == '#' ){ std::cout << " -- skipping: " << subdir << " " << matchstr << std::endl; continue; }
+        const bool parsed = doMC ? bool(ss >> subdir >> matchstr >> srun >> erun >> tag >> dolast >> wgt)
+                                 : bool(ss >> subdir >> matchstr >> srun >> erun >> tag >> dolast);
+		if( not parsed || subdir.empty() || matchstr.empty() || tag.empty() || srun > erun ||
+		    (dolast != 0 && dolast != 1) ){
+			std::cerr << "ERROR: malformed resolution input row: " << infilestr << std::endl;
+			return false;
+		}//<<>>if( malformed row )
         if( doMC ) fillwgt = wgt;
 
         if( subdir == "None" ) subdir = "";
@@ -2957,7 +3034,7 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 		if( isCC && doUnCC ){ 
 			if( tag == "r3_p25" ) tag = "r3_p25unc";
             else if( tag == "r3_p26" ) tag = "r3_p26unc";
-			else { std::cout << "Bad tag found for doCC and use UnCC times " << std::endl; return; }
+			else { std::cerr << "ERROR: bad tag for uncorrected CC times: " << tag << std::endl; return false; }
 		}//<<>>if( isCC && doUnCC )
 
     	if( smear ) std::cout << "with tags : " << tag << " and smearing " << resTag << std::endl;
@@ -2967,8 +3044,8 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 
         // insure we have Calimaps if we are doing Xtal calibration maps
         if( usecali && CaliRunMapSet.find(tag) == CaliRunMapSet.end() ){
-            std::cout << " No Cali maps for this tag !!" << std::endl;
-            return;
+			std::cerr << "ERROR: no calibration maps for tag " << tag << std::endl;
+			return false;
         }//<<>>if( CaliRunMapSet.find(tag) == TTCaliRunMapSet.end() )
 
         //if( smear && ( SmearTagSet.find(smearTag) == SmearTagSet.end() ) ){
@@ -3009,110 +3086,135 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 
         std::cout << "Adding files to TChain." << std::endl;
         //while (std::getline(infile,instr)){
-		for (const auto& tfilename : files) {
+		for( const auto& tfilename : files ){
 
-			//if( instr.empty() || instr[0] == '#' ) continue;
-            nLines++;
-            //fileskipcnt++;
-            //if( fileskipcnt%10 != 0 ) continue;
-            //auto tfilename = eosDir + inDir + instr;
+			nLines++;
+			TFile* testFile = TFile::Open(tfilename.c_str(),"READ");
+			if( !testFile || testFile->IsZombie() || !testFile->IsOpen() ){
+				std::cerr << "\nERROR: bad ROOT file, skipping: " << tfilename << std::endl;
+				if( testFile ){ testFile->Close(); delete testFile; }
+				nBadFiles++;
+				std::cout << "Z";
+				continue;
+			}//<<>>if( bad ROOT file )
 
-    		TFile* testFile = TFile::Open(tfilename.c_str(), "READ");
+			TTree* testTree = nullptr;
+			testFile->GetObject(treename.c_str(),testTree);
+			if( !testTree ){
+				std::cerr << "\nERROR: missing tree " << treename << ", skipping: " << tfilename << std::endl;
+				testFile->Close();
+				delete testFile;
+				nBadFiles++;
+				std::cout << "T";
+				continue;
+			}//<<>>if( tree missing )
 
-    		if( !testFile || testFile->IsZombie() || !testFile->IsOpen() ){
-        		std::cerr << "\nERROR: bad ROOT file, skipping: " << tfilename << std::endl;
-        		if( testFile ) testFile->Close();
-        		nBadFiles++;
-        		std::cout << "Z";
-        		continue;
-    		}//<<>>if( !testFile || testFile->IsZombie() || !testFile->IsOpen() )
+			testFile->Close();
+			delete testFile;
+			std::cout << "-";
+			const int result = fInTree->Add(tfilename.c_str());
+			if( result > 0 ){ std::cout << "-"; nAdded++; }
+			else std::cout << "0";
 
-    		TTree* testTree = nullptr;
-    		testFile->GetObject(treename.c_str(), testTree);
-
-    		if( !testTree ){
-        		std::cerr << "\nERROR: missing tree " << treename << ", skipping: " << tfilename << std::endl;
-        		testFile->Close();
-        		nBadFiles++;
-        		std::cout << "T";
-        		continue;
-    		}//<<>>if( !testTree )
-
-		    testFile->Close();
-            //std::cout << "opening tfile : " << tfilename << std::endl;
-            std::cout << "-";
-            int result = fInTree->Add(tfilename.c_str());
-
-
-            if( result > 0 ){ std::cout << "-"; nAdded++; }
-            else std::cout << "0";
-
-
-        }//<<>>while (std::getline(infile,str))
+		}//<<>>for( candidate ROOT files )
         std::cout << std::endl;
 		std::cout << " -- [INFO] lines=" << nLines << " filesAdded=" << nAdded << " badFiles=" << nBadFiles << std::endl;
+		if( nAdded == 0 ){
+			std::cerr << "ERROR: no valid ROOT files were added for input row: " << infilestr << std::endl;
+			delete fInTree;
+			return false;
+		}//<<>>if( nAdded == 0 )
 
-        run = 0;
-        resRhID = 0;
-        resAmp = 0;
-        resE = 0;
-        resRtTime = 0;
-		resCCTime = 0;
-        resTOF = 0;
-
-        rhID = 0;
-        rhisGS6 = 0;
-        rhisGS1 = 0;
-
-        fInTree->SetBranchAddress( "run", &run, &b_run );   //!
-        fInTree->SetBranchAddress( "resRhID", &resRhID, &b_resRhID );   //!
-        fInTree->SetBranchAddress( "resAmp", &resAmp, &b_resAmp);   //!
-        fInTree->SetBranchAddress( "resE", &resE, &b_resE);   //!
-        fInTree->SetBranchAddress( "resRtTime", &resRtTime, &b_resRtTime);   //!
-		if( isCC ) fInTree->SetBranchAddress("resCCTime", &resCCTime, &b_resCCTime);
-        fInTree->SetBranchAddress( "resTOF" , &resTOF, &b_resTOF);   //!
-
-        fInTree->SetBranchAddress("rhID", &rhID, &b_rhID);
-        fInTree->SetBranchAddress("rhisGS6", &rhisGS6, &b_rhisGS6);
-        fInTree->SetBranchAddress("rhisGS1", &rhisGS1, &b_rhisGS1);
+		const bool useUnCCTime = isCC && doUnCC;
+		fInTree->SetBranchStatus("*",0);
+		bool branchesValid = true;
+		auto requireBranch = [&]( const char* name, auto* address, TBranch** branch ){
+			if( not fInTree->GetBranch(name) ){
+				std::cerr << "ERROR: required resolution input branch is missing: " << name << std::endl;
+				branchesValid = false;
+				return;
+			}//<<>>if( branch missing )
+			fInTree->SetBranchStatus(name,1);
+			if( fInTree->SetBranchAddress(name,address,branch) < 0 ){
+				std::cerr << "ERROR: failed to bind resolution input branch: " << name << std::endl;
+				branchesValid = false;
+			}//<<>>if( branch binding failed )
+		};
+		requireBranch("run",&run,&b_run);
+		requireBranch("resRhID",&resRhID,&b_resRhID);
+		requireBranch("resAmp",&resAmp,&b_resAmp);
+		requireBranch("resE",&resE,&b_resE);
+		requireBranch("resRtTime",&resRtTime,&b_resRtTime);
+		if( useUnCCTime ) requireBranch("resCCTime",&resCCTime,&b_resCCTime);
+		requireBranch("resTOF",&resTOF,&b_resTOF);
+		requireBranch("rhID",&rhID,&b_rhID);
+		requireBranch("rhisGS6",&rhisGS6,&b_rhisGS6);
+		requireBranch("rhisGS1",&rhisGS1,&b_rhisGS1);
+		if( not branchesValid ){
+			delete fInTree;
+			return false;
+		}//<<>>if( not branchesValid )
+		fInTree->SetCacheSize(100LL*1024LL*1024LL);
+		for( const auto& branch : {"run","resRhID","resAmp","resE","resRtTime","resTOF","rhID","rhisGS6","rhisGS1"} )
+			fInTree->AddBranchToCache(branch,true);
+		if( useUnCCTime ) fInTree->AddBranchToCache("resCCTime",true);
+		fInTree->StopCacheLearningPhase();
 
         std::cout << " Getting calibration values and plotting" << std::endl;
 
-        auto nEntries = fInTree->GetEntries();
-        if( small && nEntries > 1000000 ) nEntries = 1000000;
-        if( debug ) nEntries = ( nEntries < 10000 ) ? nEntries : 10000;
-        //if( debug )
+	        auto nEntries = fInTree->GetEntries();
+		if( nEntries <= 0 ){
+			std::cerr << "ERROR: resolution input chain has no entries." << std::endl;
+			delete fInTree;
+			return false;
+		}//<<>>if( nEntries <= 0 )
+	        if( small && nEntries > 1000000 ) nEntries = 1000000;
+	        if( debug ) nEntries = ( nEntries < 10000 ) ? nEntries : 10000;
+	        //if( debug )
 		std::cout << "Mf2d Proccessing " << nEntries << " entries : " << std::endl;
-        int report = nEntries/20;
-        for (auto centry = 0U; centry < nEntries; centry++){
+		int nextProgressPercent = 0;
+		Long64_t nextProgressEntry = 0;
+	        for( Long64_t centry = 0; centry < nEntries; centry++ ){
 
-            if( centry%report == 0 or centry == 0){
-                std::time_t now = std::time(nullptr);
-                std::string curtime = std::ctime(&now);
-                curtime.pop_back();
-                std::cout << "Proccessed " << centry << " of " << nEntries;
-                std::cout << " " << curtime;
-                std::cout << " " << (1000.0*static_cast<float>(centry)/static_cast<float>(nEntries))/10.0 << "%" << std::endl;
-            }//<<>>if( centry%10000000 == 0 or centry == 0)
+			if( centry >= nextProgressEntry ){
+				const int completedPercent = static_cast<int>(100.0L*centry/nEntries);
+				const int reportPercent = std::min(90,(completedPercent/10)*10);
+				reportEventLoopProgress(centry,nEntries,reportPercent);
+				nextProgressPercent = reportPercent + 10;
+				nextProgressEntry = progressEntryForPercent(nEntries,nextProgressPercent);
+			}//<<>>if( progress update )
 
-            auto entry = fInTree->LoadTree(centry);
+	            auto entry = fInTree->LoadTree(centry);
+			if( entry < 0 || fInTree->GetEntry(centry) <= 0 ){
+				std::cerr << "ERROR: failed to read resolution input entry " << centry << std::endl;
+				delete fInTree;
+				return false;
+			}//<<>>if( entry read failed )
 
             if(debug) std::cout << "Start loop ----------------------------------- " << std::endl;
 
             gevents++;
 
-            b_run->GetEntry(entry);   //!
-            b_resRhID->GetEntry(entry);   //!
-            b_resAmp->GetEntry(entry);   //!
-            b_resE->GetEntry(entry);   //!
-            b_resRtTime->GetEntry(entry);   //!
-			if( isCC ) b_resCCTime->GetEntry(entry);   //!
-            b_resTOF->GetEntry(entry);   //!
-
-            b_rhisGS6->GetEntry(entry);   //!
-            b_rhisGS1->GetEntry(entry);   //!
-            b_rhID->GetEntry(entry);   //!
-            int nRecHits = rhID->size();
+			if( not resRhID || not resAmp || not resE || not resRtTime || not resTOF ||
+			    not rhID || not rhisGS6 || not rhisGS1 || (useUnCCTime && not resCCTime) ){
+				std::cerr << "ERROR: null vector in resolution input entry " << centry << std::endl;
+				delete fInTree;
+				return false;
+			}//<<>>if( null input vector )
+			const auto nResolutionHits = resRhID->size();
+			if( nResolutionHits < 4 || resAmp->size() != nResolutionHits || resE->size() != nResolutionHits ||
+			    resRtTime->size() != nResolutionHits || resTOF->size() != nResolutionHits ||
+			    (useUnCCTime && resCCTime->size() != nResolutionHits) ){
+				std::cerr << "ERROR: misaligned resolution vectors in entry " << centry << std::endl;
+				delete fInTree;
+				return false;
+			}//<<>>if( malformed resolution vectors )
+			if( rhisGS6->size() != rhID->size() || rhisGS1->size() != rhID->size() ){
+				std::cerr << "ERROR: misaligned rechit gain vectors in entry " << centry << std::endl;
+				delete fInTree;
+				return false;
+			}//<<>>if( malformed gain vectors )
+	            const auto nRecHits = rhID->size();
 
             if( ( ((*resRhID)[0]) == 0 ) && ( ((*resRhID)[3]) == 0 ) ) continue;
 
@@ -3200,18 +3302,34 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 
                                 // ----  fill res hist
 
-                                auto idinfoL0 = DetIDMap[(*resRhID)[0]];
-                                auto idinfoL1 = DetIDMap[(*resRhID)[1]];
-                                auto idinfoG0 = DetIDMap[(*resRhID)[2]];
-                                auto idinfoG1 = DetIDMap[(*resRhID)[3]];
+								kucms_DetIDStruct invalidDetID;
+								std::vector<const kucms_DetIDStruct*> idinfo(4,&invalidDetID);
+								for( std::size_t idx = 0; idx < idinfo.size(); idx++ ){
+									const auto detID = (*resRhID)[idx];
+									if( detID == 0 ) continue;
+									const auto detIt = DetIDMap.find(detID);
+									if( detIt == DetIDMap.end() ){
+										std::cerr << "ERROR: unknown resolution rechit DetID " << detID
+										          << " in entry " << centry << std::endl;
+										delete fInTree;
+										return false;
+									}//<<>>if( DetID missing )
+									idinfo[idx] = &detIt->second;
+								}//<<>>for( resolution DetIDs )
+								const auto& idinfoL0 = *idinfo[0];
+								const auto& idinfoL1 = *idinfo[1];
+								const auto& idinfoG0 = *idinfo[2];
+								const auto& idinfoG1 = *idinfo[3];
 
 								// set gain level in this block ---------------------------------------------------------------
-                                std::vector<bool> isGainId1 = {true,true,true,true};
-                                std::vector<int> rhGainId = {0,0,0,0};
-                                if( useGSwitch ){
-                                    for( int resrhit = 0; resrhit < 4; resrhit++ ){
-                                        for( int rhit = 0; rhit < nRecHits; rhit++ ){
-                                            if( (*resRhID)[resrhit] == (*rhID)[rhit] ){
+	                                std::vector<bool> isGainId1 = {true,true,true,true};
+	                                std::vector<int> rhGainId = {0,0,0,0};
+	                                if( useGSwitch ){
+									std::vector<bool> gainMatchFound = {false,false,false,false};
+	                                    for( int resrhit = 0; resrhit < 4; resrhit++ ){
+	                                        for( std::size_t rhit = 0; rhit < nRecHits; rhit++ ){
+	                                            if( (*resRhID)[resrhit] == (*rhID)[rhit] ){
+											gainMatchFound[resrhit] = true;
                                                 if( useGain == 1 ) isGainId1[resrhit] = not ( (*rhisGS1)[rhit] || (*rhisGS6)[rhit] );
 												else if ( useGain == 2 ) isGainId1[resrhit] = not (*rhisGS1)[rhit] && (*rhisGS6)[rhit];
                                                 else if ( useGain == 3 ) isGainId1[resrhit] = (*rhisGS1)[rhit] && not (*rhisGS6)[rhit];
@@ -3220,15 +3338,23 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 												rhGainId[resrhit] = useGain;
                                                 break;
                                             }//<>if( (*resRhID)[rhit] == (*resRhID)[resrhit] )
-                                        }//<<>>for( int resrhit = 0; resrhit < nResRecHits; resrhi++ )
-                                    }//<<>>for( int rhit = 0; rhit < 4; rhit++ )
-                                }//<<>>if( useGSwitch )
+	                                        }//<<>>for( int resrhit = 0; resrhit < nResRecHits; resrhi++ )
+	                                    }//<<>>for( int rhit = 0; rhit < 4; rhit++ )
+									for( std::size_t idx = 0; idx < gainMatchFound.size(); idx++ ){
+										if( (*resRhID)[idx] != 0 && not gainMatchFound[idx] ){
+											std::cerr << "ERROR: resolution rechit " << (*resRhID)[idx]
+											          << " has no matching gain record in entry " << centry << std::endl;
+											delete fInTree;
+											return false;
+										}//<<>>if( gain match missing )
+									}//<<>>for( gain matches )
+	                                }//<<>>if( useGSwitch )
 
 								//if( rhGainId[0] == 0 or rhGainId[1] == 0 or rhGainId[2] == 0 or rhGainId[3] == 0 ) continue;
-                                float seedTimeIC00 = ( usecali ) ? getCalibration( (*resRhID)[0], run, tag, rhGainId[0] ) : 0;
-                                float seedTimeIC10 = ( usecali ) ? getCalibration( (*resRhID)[1], run, tag, rhGainId[1] ) : 0;
-                                float seedTimeIC01 = ( usecali ) ? getCalibration( (*resRhID)[2], run, tag, rhGainId[2] ) : 0;
-                                float seedTimeIC11 = ( usecali ) ? getCalibration( (*resRhID)[3], run, tag, rhGainId[3] ) : 0;
+	                                float seedTimeIC00 = ( usecali && (*resRhID)[0] != 0 ) ? getCalibration( (*resRhID)[0], run, tag, rhGainId[0] ) : 0;
+	                                float seedTimeIC10 = ( usecali && (*resRhID)[1] != 0 ) ? getCalibration( (*resRhID)[1], run, tag, rhGainId[1] ) : 0;
+	                                float seedTimeIC01 = ( usecali && (*resRhID)[2] != 0 ) ? getCalibration( (*resRhID)[2], run, tag, rhGainId[2] ) : 0;
+	                                float seedTimeIC11 = ( usecali && (*resRhID)[3] != 0 ) ? getCalibration( (*resRhID)[3], run, tag, rhGainId[3] ) : 0;
                                 //if(debug) std::cout << " -- IC0l: " << seedTimeIC00 << " IC1l: " << seedTimeIC10;
                                 //if(debug) std::cout << " IC0g: " << seedTimeIC01 << " IC1g: " << seedTimeIC11 << std::endl;
 								
@@ -3249,7 +3375,6 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
                                 double gxfill = (geffa0*geffa1)/sqrt(pow(geffa0,2)+pow(geffa1,2));
                                 double gxfille = (geffe0*geffe1)/sqrt(pow(geffe0,2)+pow(geffe1,2));
 
-								bool useUnCCTime = isCC && doUnCC;
 								double Time0 = ( useUnCCTime ) ? (*resCCTime)[0] : (*resRtTime)[0];
                                 double Time1 = ( useUnCCTime ) ? (*resCCTime)[1] : (*resRtTime)[1];
                                 double Time2 = ( useUnCCTime ) ? (*resCCTime)[2] : (*resRtTime)[2];
@@ -3259,12 +3384,22 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
                                 double gdTOF = (*resTOF)[2]-(*resTOF)[3]; //phoseedTOF_0-phoseedTOF_1;
                                 double lyf0 = Time0-seedTimeIC00;
                                 double lyf1 = Time1-seedTimeIC10;
-                                double gyf0 = Time2-seedTimeIC01;
-                                double gyf1 = Time3-seedTimeIC11;
+								double gyf0 = Time2-seedTimeIC01;
+								double gyf1 = Time3-seedTimeIC11;
+									const bool validLocTime = std::isfinite(Time0) && std::isfinite(Time1) &&
+									                          Time0 != -30.0 && Time1 != -30.0;
+								const bool validGloTime = std::isfinite(Time2) && std::isfinite(Time3) &&
+								                          Time2 != -30.0 && Time3 != -30.0;
+								const bool validLocInputs = std::isfinite((*resAmp)[0]) && std::isfinite((*resAmp)[1]) &&
+								                            std::isfinite((*resE)[0]) && std::isfinite((*resE)[1]) &&
+								                            std::isfinite((*resTOF)[0]) && std::isfinite((*resTOF)[1]);
+								const bool validGloInputs = std::isfinite((*resAmp)[2]) && std::isfinite((*resAmp)[3]) &&
+								                            std::isfinite((*resE)[2]) && std::isfinite((*resE)[3]) &&
+								                            std::isfinite((*resTOF)[2]) && std::isfinite((*resTOF)[3]);
 								//std::cout << " -- : " << Time0 << " - " << seedTimeIC00 << " " << usecali << " " << doEE;
 								//std::cout << " " << (*resRhID)[0] << std::endl;
 
-                                if( smear ){
+								if( smear ){
                                     //std::cout << "Times are smeared !!!!!" << std::endl;
 
 									float amp0 = ( (*resRhID)[0] > 0 ) ? (*resAmp)[0] : -999;
@@ -3273,10 +3408,14 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
                                     float amp3 = ( (*resRhID)[3] > 0 ) ? (*resAmp)[3] : -999;
 
                                     //getCorrectedTime( time, amplitude, rechitID, Evt_run, dataSetKey, mctype, gainID )
-									lyf0 = getCorrectedTime( lyf0, amp0, (*resRhID)[0], run, tag, 0, rhGainId[0] );
-                                    lyf1 = getCorrectedTime( lyf1, amp1, (*resRhID)[1], run, tag, 0, rhGainId[1] );
-                                    gyf0 = getCorrectedTime( gyf0, amp2, (*resRhID)[2], run, tag, 0, rhGainId[2] );
-                                    gyf1 = getCorrectedTime( gyf1, amp3, (*resRhID)[3], run, tag, 0, rhGainId[3] );
+									if( validLocTime && validLocInputs && (*resRhID)[0] != 0 && (*resRhID)[1] != 0 ){
+										lyf0 = getCorrectedTime( lyf0, amp0, (*resRhID)[0], run, tag, 0, rhGainId[0], false );
+									lyf1 = getCorrectedTime( lyf1, amp1, (*resRhID)[1], run, tag, 0, rhGainId[1], false );
+									}//<<>>if( valid local times )
+									if( validGloTime && validGloInputs && (*resRhID)[2] != 0 && (*resRhID)[3] != 0 ){
+									gyf0 = getCorrectedTime( gyf0, amp2, (*resRhID)[2], run, tag, 0, rhGainId[2], false );
+									gyf1 = getCorrectedTime( gyf1, amp3, (*resRhID)[3], run, tag, 0, rhGainId[3], false );
+									}//<<>>if( valid global times )
 
 
                                 }//<<>>if( smear )
@@ -3298,14 +3437,14 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
                                 bool geta_cut_eb = (idinfoG0.ecal == ECAL::EB)&&(idinfoG1.ecal == ECAL::EB);
                                 bool leta_cut_ee = (idinfoL0.ecal != ECAL::EB)&&(idinfoL1.ecal != ECAL::EB);
                                 bool geta_cut_ee = (idinfoG0.ecal != ECAL::EB)&&(idinfoG1.ecal != ECAL::EB);
-                                bool goodLocTime = Time0 != 0 && Time1 != 0 && Time0 != Time1;
-                                bool goodGloTime = Time2 != 0 && Time3 != 0 && Time2 != Time3;
+								bool goodLocTime = validLocTime && Time0 != 0 && Time1 != 0 && Time0 != Time1;
+								bool goodGloTime = validGloTime && Time2 != 0 && Time3 != 0 && Time2 != Time3;
                                 bool goodLocRHs = (*resRhID)[0] != 0 && (*resRhID)[1] != 0;
                                 bool goodGloRHs = (*resRhID)[2] != 0 && (*resRhID)[3] != 0;
 
                                 bool isd_cut = idinfoL0.TT == idinfoL1.TT; // true = same, fasle = different
-                                bool levent_good = le_cut && goodLocRHs && goodLocTime;
-                                bool gevent_good = ge_cut && goodGloRHs && goodGloTime;
+	                                bool levent_good = le_cut && goodLocRHs && goodLocTime && validLocInputs;
+	                                bool gevent_good = ge_cut && goodGloRHs && goodGloTime && validGloInputs;
 
                                 if(debug) std::cout << " - Fill 2D Hist" << std::endl;
 								
@@ -3334,9 +3473,9 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 										CaliHists[lsfnameee].h2f->Fill(lxfill,lyfill,fillwgt); 
 										CaliHists[efnameee].h2f->Fill(lxfill,lxfille,fillwgt); }
                                 }//<<>>if( levent_good && isd_cut )
-                                if( gevent_good ){ 
-									if( leta_cut_eb ) CaliHists[gbfnameeb].h2f->Fill(gxfill,gyfill,fillwgt); 
-                                    if( leta_cut_ee ) CaliHists[gbfnameee].h2f->Fill(gxfill,gyfill,fillwgt); 
+								if( gevent_good ){
+										if( geta_cut_eb ) CaliHists[gbfnameeb].h2f->Fill(gxfill,gyfill,fillwgt);
+									if( geta_cut_ee ) CaliHists[gbfnameee].h2f->Fill(gxfill,gyfill,fillwgt);
 								}//<<>>if( gevent_good )
                                 if( levent_good && not isd_cut ){ 
 									if( leta_cut_eb ) CaliHists[ldfnameeb].h2f->Fill(lxfill,lyfill,fillwgt); 
@@ -3368,8 +3507,8 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 	if( isCondorJob ) cali2DResTFile = TFile::Open( cali2dfile_condor.c_str(), "RECREATE" );
     else cali2DResTFile = TFile::Open( cali2DResPlotsTFileName.c_str(), "UPDATE" );
 	if( !cali2DResTFile || cali2DResTFile->IsZombie() ){
-    	std::cerr << "ERROR: could not open output ROOT file" << std::endl;
-    	return;
+		std::cerr << "ERROR: could not open output ROOT file" << std::endl;
+		return false;
 	}//<<>>if( !cali2DResTFile || cali2DResTFile->IsZombie() )
     cali2DResTFile->cd();
     for( auto& hists : CaliHists ){
@@ -3383,11 +3522,14 @@ void KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
         }//<<>>if( hists.second.isResHist && hists.second.isNew )
 
     }//<<>>for( auto& hists : CaliHists )
-    cali2DResTFile->Close();
+	cali2DResTFile->Close();
+	delete cali2DResTFile;
+	cali2DResTFile = nullptr;
 
-    std::cout << "Finished making 2D delta t v eff amp plots" << std::endl;
+	std::cout << "Finished making 2D delta t v eff amp plots" << std::endl;
+	return true;
 
-}//<<>> void plot2dResolution( std::string indir, std::string infilelistname, 
+}//<<>> bool plot2dResolutionEGR( std::string inputFileName, bool scale, bool usecali, bool smear, std::string ext )
 
 kucms_SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D ){
 

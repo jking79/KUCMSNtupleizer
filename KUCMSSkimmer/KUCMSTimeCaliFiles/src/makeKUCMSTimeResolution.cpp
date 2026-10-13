@@ -294,7 +294,8 @@ int main ( int argc, char *argv[] ){
 	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_25_prompt_lg_xa_pm24b1200_v0817" );
 	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18MC_QCD_xa_pm24b1200_v0818" );
     //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18MC_QCD_lg_xa_pm24b1200_v0818" );
-    theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18MC_SQCD_xa_pm24b1200_v0822" );
+	if( not theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18MC_SQCD_xa_pm24b1200_v0822" ) )
+		return EXIT_FAILURE;
 
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

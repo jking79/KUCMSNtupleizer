@@ -176,7 +176,8 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
     // --------------------------------------------------------------------------
 
 	float getCorrectedTime( float time, float amplitude, unsigned int rechitID, 
-			unsigned int Evt_run, std::string dataSetKey, int mctype, int gainID = 1 ); 
+			unsigned int Evt_run, std::string dataSetKey, int mctype, int gainID = 1,
+			bool applyCalibration = true );
 	float getCorrectedTime( float time, float amplitude, unsigned int rechitID, 
 			unsigned int Evt_run, std::string dataSetKey, int mctype, bool gs6, bool gs1 )
 			{ int gid = ( gs6 || gs1 ) ? 2 : 1; return getCorrectedTime( time, amplitude, rechitID, Evt_run, dataSetKey, mctype, gid ); };
@@ -211,7 +212,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 
 	float getTTCali( uInt rhid, int run, const std::string& tag, int gainID = 1 );
 
-	kucms_DetIDStruct& getDetIdInfo( uInt rhid );
+	const kucms_DetIDStruct& getDetIdInfo( uInt rhid );
 	std::map<int,std::map<int,std::map<int,uInt>>> getInvDetIDMap();
     std::map<UInt_t,kucms_DetIDStruct> getDetIDMap(); // map of information by detid for each crystal
 	uInt getDetIdInfo( int i1, int i2, int ecal );
@@ -245,7 +246,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 			{ return makeCaliMapsEGR( inputFileName, false, GID, small, doCali ); };
 	bool makeGain1CaliMapsEGR( std::string inputFileName, bool small = false );
 
-	void plot2dResolutionEGR( std::string inputFileName, bool scale = true, bool usecali = true, bool smear = false, std::string ext = "" );
+	bool plot2dResolutionEGR( std::string inputFileName, bool scale = true, bool usecali = true, bool smear = false, std::string ext = "" );
     void plot2dResbyIovForEGR( std::string inputFileName, bool scale = true, bool usecali = true, bool smear = false, std::string ext = "" );
     kucms_SigmaFitResult runTimeFitter( TH2F* hist2D );
 	void doResTimeFits( bool doLocal = false );
