@@ -1627,29 +1627,39 @@ float KUCMS_TimeCalibration::getCalibration( uInt rhid, int run, const std::stri
 	//if( not isEB ){ std::cout << "XCalibration for EE is not supported." << std::endl; return 0.f; }
     //if( not validCurrentTag ){ std::cout << "No current tag set." << std::endl; return 0.f; }
     //if( DetIDMap[rhid].ecal != ECAL::EB ) return 0.f;
-	if( tag != "None" ) externalCali = false;
+	if( tag == "None" ) return 0.f;
+	externalCali = false;
 	if( externalCali ){ return 0.f; std::cout << " Called getCalibration() while using external cali? " << std::endl; }
+	auto tagSet = CaliRunMapSet.find(tag);
+	auto ttTagSet = TTCaliRunMapSet.find(tag);
+	if( tagSet == CaliRunMapSet.end() or ttTagSet == TTCaliRunMapSet.end() ){
+		if( reportedInvalidCalibrationTags.insert(tag).second ){
+			std::cerr << "ERROR: calibration tag '" << tag << "' is not available in "
+					  << ( tagSet == CaliRunMapSet.end() ? "the crystal map" : "" )
+					  << ( tagSet == CaliRunMapSet.end() and ttTagSet == TTCaliRunMapSet.end() ? " or " : "" )
+					  << ( ttTagSet == TTCaliRunMapSet.end() ? "the trigger-tower map" : "" )
+					  << "; no calibration will be applied." << std::endl;
+		}//<<>>if( first report for this tag )
+		return 0.f;
+	}//<<>>if( invalid calibration tag )
     double xtaltime = -1000.f;
 	//////float hgcali = ( externalCali ) ? 0.f : ( gainID == 1 ) ? 0.f : getTTCali( rhid, run, tag, 2 );
 	double hgcali = 0;
 	uInt gsid = ( gainID > 1 ) ? getGSRhId( rhid, gainID ) : 0;
 	if( gainID > 1 and ( gsid < 99 or gsid > 300 ) ) std::cout << " Bad GS Id with " << rhid << " gid " << gainID << std::endl;
 	double ttcali = getTTCali( rhid, run, tag, 1 );
-	auto tagSet = CaliRunMapSet.find(tag);
-	if( tagSet != CaliRunMapSet.end() ){
-		auto range = tagSet->second.upper_bound(run);
-		if( range != tagSet->second.begin() ){
-			--range;
-			if( run <= range->second.endRun ){
-				auto xtalMean = range->second.meanMap.find(rhid);
-				xtaltime = xtalMean == range->second.meanMap.end() ? 0.0 : xtalMean->second;
-				if( gsid > 0 ){
-					auto hgMean = range->second.meanMap.find(gsid);
-					if( hgMean != range->second.meanMap.end() ) hgcali = hgMean->second;
-				}//<<>>if( high-gain ID )
-			}//<<>>if( run in range )
-		}//<<>>if( candidate range exists )
-	}//<<>>if( tag exists )
+	auto range = tagSet->second.upper_bound(run);
+	if( range != tagSet->second.begin() ){
+		--range;
+		if( run <= range->second.endRun ){
+			auto xtalMean = range->second.meanMap.find(rhid);
+			xtaltime = xtalMean == range->second.meanMap.end() ? 0.0 : xtalMean->second;
+			if( gsid > 0 ){
+				auto hgMean = range->second.meanMap.find(gsid);
+				if( hgMean != range->second.meanMap.end() ) hgcali = hgMean->second;
+			}//<<>>if( high-gain ID )
+		}//<<>>if( run in range )
+	}//<<>>if( candidate range exists )
 	if( xtaltime == -1000.f ){ std::cout << "XCalibration period not found for run " << run << std::endl; return 0.f; }
 	//std::cout << " -- For " << rhid << " in " << run << " gainID " << gainID; 
     //std::cout << " Found: " << xtaltime << " + " << ttcali << " + " << hgcali << std::endl;
@@ -1771,71 +1781,78 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
 		return 100.f;
 	}//<<>>if( detector ID missing )
 	bool isEB( det->second.ecal == ECAL::EB );
+	auto reportInvalidTag = [this]( const std::string& tag ){
+		if( reportedInvalidResolutionTags.insert(tag).second ){
+			std::cerr << "ERROR: resolution tag '" << tag << "' is not configured; "
+					  << ( tag == "default" ? "returning fallback variance 100."
+										: "using the default resolution." ) << std::endl;
+		}//<<>>if( first report for this tag )
+	};
     float var = ( dataSetKey == "None" ) ? -1 : -99;
     if( mctype == 1 ){ // data or MC
 		if( dataSetKey == "r2_ul18" ){ if( Evt_run > 320672 ) dataSetKey = "r2_ul18D"; else dataSetKey = "r2_ul18ABC"; }
-		if( ResTagSet.find(dataSetKey) != ResTagSet.end() ){
+		auto resolvedTag = ResTagSet.find(dataSetKey);
+		if( resolvedTag != ResTagSet.end() ){
+			const auto& parameters = resolvedTag->second;
 			if( amplitude > 400 ){ 
 
 				float res = 0;
 				if( amplitude > 900 ){ 
-					if( isEB ) res = ( gianID == 1 ) ? ResTagSet[dataSetKey].ebg1he3res : ResTagSet[dataSetKey].ebhg3res;
-					else res = ( gianID == 1 ) ? ResTagSet[dataSetKey].eeg1he3res : ResTagSet[dataSetKey].eehg3res;
+					if( isEB ) res = ( gianID == 1 ) ? parameters.ebg1he3res : parameters.ebhg3res;
+					else res = ( gianID == 1 ) ? parameters.eeg1he3res : parameters.eehg3res;
 				} else if( amplitude > 600 ){ 
-					if( isEB ) res = ( gianID == 1 ) ? ResTagSet[dataSetKey].ebg1he2res : ResTagSet[dataSetKey].ebhg2res;
-					else res = ( gianID == 1 ) ? ResTagSet[dataSetKey].eeg1he2res : ResTagSet[dataSetKey].eehg2res;
+					if( isEB ) res = ( gianID == 1 ) ? parameters.ebg1he2res : parameters.ebhg2res;
+					else res = ( gianID == 1 ) ? parameters.eeg1he2res : parameters.eehg2res;
 				} else { 
-					if( isEB ) res = ( gianID == 1 ) ? ResTagSet[dataSetKey].ebg1he1res : ResTagSet[dataSetKey].ebhg1res;
-					else res = ( gianID == 1 ) ? ResTagSet[dataSetKey].eeg1he1res : ResTagSet[dataSetKey].eehg1res;
+					if( isEB ) res = ( gianID == 1 ) ? parameters.ebg1he1res : parameters.ebhg1res;
+					else res = ( gianID == 1 ) ? parameters.eeg1he1res : parameters.eehg1res;
 				}//<<>>if( amplitude > 900 )
 				var = sq2( res );
 
 			}//<<>>if( amplitude > 400 )
 			if( amplitude <= 400 or var == 0 ){
 			
-				float noise = isEB ? ResTagSet[dataSetKey].ebnoise : ResTagSet[dataSetKey].eenoise;
-            	float stoch = isEB ? ResTagSet[dataSetKey].ebstoch : ResTagSet[dataSetKey].eestoch;
-            	float stant = isEB ? ResTagSet[dataSetKey].ebstant : ResTagSet[dataSetKey].eestant;
+				float noise = isEB ? parameters.ebnoise : parameters.eenoise;
+				float stoch = isEB ? parameters.ebstoch : parameters.eestoch;
+				float stant = isEB ? parameters.ebstant : parameters.eestant;
 				var = sq2(noise/amplitude) + sq2(stoch)/amplitude + 2*sq2(stant);
 
 			}//<<>>if( amplitude > 400 )
-/* 
- 			// test to see if photon wtsig in 24C-E was impacted by incorrect resolutions -  nope 
-			if( dataSetKey == "r3_p24" and Evt_run > 379411 and Evt_run < 381943 ){
-				std::cout << " -- Resolution swtich to r3_p25 for r3_p24 C-E !!!!!!" << std::endl;
-				std::string key = "r3_p25";
-				float noise = isEB ? ResTagSet[key].ebnoise : ResTagSet[key].eenoise;
-            	float stoch = isEB ? ResTagSet[key].ebstoch : ResTagSet[key].eestoch;
-            	float stant = isEB ? ResTagSet[key].ebstant : ResTagSet[key].eestant;
-            	var = sq2(noise/amplitude) + sq2(stoch)/amplitude + 2*sq2(stant);
-			}//<<>>if( dataSetKey == "run3_24p" and Evt_run > 380253 and Evt_run < 380947 )
-*/
-		}//<<>>if( ResTagSet.find(tag) != ResTagSet.end() )
+		} else if( dataSetKey != "None" ) reportInvalidTag(dataSetKey);
     }//<<>>if( mctype == 0 )
     else if( mctype == 0 or mctype == 2 ){ // data or MC   --- resTag is the target resolution for smearing
 		std::string themctag = ( resTag == "None" ) ? dataSetKey : resTag;
         if( resTag == "default"){ 
-			if( dataSetKey.substr(1,2) == "r2" ){ themctag = "r2_ul18D"; }//<<>>if( dataSetKey.substr(1,2) == "r2" )
-        	else if( dataSetKey.substr(1,2) == "r3" ){ themctag = "r2_ul18D"; }//<<>>if( dataSetKey.substr(1,2) == "r3" )
+			if( dataSetKey.substr(0,2) == "r2" ){ themctag = "r2_ul18D"; }//<<>>if( Run 2 key )
+			else if( dataSetKey.substr(0,2) == "r3" ){ themctag = "r2_ul18D"; }//<<>>if( Run 3 key )
 		}//<<>>if( resTag == "default")
-        if( ResTagSet.find(themctag) != ResTagSet.end() ){
-            float noise = isEB ? ResTagSet[themctag].ebnoise : ResTagSet[themctag].eenoise;
-            float stoch = isEB ? ResTagSet[themctag].ebstoch : ResTagSet[themctag].eestoch;
-            float stant = isEB ? ResTagSet[themctag].ebstant : ResTagSet[themctag].eestant;
+        auto resolvedTag = ResTagSet.find(themctag);
+        if( resolvedTag != ResTagSet.end() ){
+			const auto& parameters = resolvedTag->second;
+            float noise = isEB ? parameters.ebnoise : parameters.eenoise;
+            float stoch = isEB ? parameters.ebstoch : parameters.eestoch;
+            float stant = isEB ? parameters.ebstant : parameters.eestant;
             var = sq2(noise/amplitude) + sq2(stoch)/amplitude + 2*sq2(stant);
 			//std::cout << " --- getting MC res for : " << themctag << " " << noise << " " << stoch;
 			//std::cout << " " << stant << " " << var << std::endl;
-        }//<<>>if( ResTagSet.find(tag) != ResTagSet.end() )
+        } else if( themctag != "None" ) reportInvalidTag(themctag);
     }//<<>>if( mctype == 0 )
-	else var = -9;
-    if( var < -10 ) std::cout << " -- Resolution for ResTag : " << dataSetKey << " -- not found !!!!!!" << std::endl;
-    if( var < -5 ) std::cout << " -- var < -5 ? MC Type set to : " << mctype << " -- not a valid type ? !!!!!!" << std::endl;
+	else {
+		var = -9;
+		if( reportedInvalidMCTypes.insert(mctype).second ){
+			std::cerr << "ERROR: MC type " << mctype << " is not valid; using the default resolution." << std::endl;
+		}//<<>>if( first report for this type )
+	}//<<>>if( invalid MC type )
     if( var < 0 ){
-		std::cout << " -- Setting resolution to default values !!!!! " << std::endl;
-		std::string tag = "default";
-        float noise = isEB ? ResTagSet[tag].ebnoise : ResTagSet[tag].eenoise;
-        float stoch = isEB ? ResTagSet[tag].ebstoch : ResTagSet[tag].eestoch;
-        float stant = isEB ? ResTagSet[tag].ebstant : ResTagSet[tag].eestant;
+		auto defaultTag = ResTagSet.find("default");
+		if( defaultTag == ResTagSet.end() ){
+			reportInvalidTag("default");
+			return 100.f;
+		}//<<>>if( default resolution missing )
+		const auto& parameters = defaultTag->second;
+        float noise = isEB ? parameters.ebnoise : parameters.eenoise;
+        float stoch = isEB ? parameters.ebstoch : parameters.eestoch;
+        float stant = isEB ? parameters.ebstant : parameters.eestant;
         var = sq2(noise/amplitude) + sq2(stoch)/amplitude + 2*sq2(stant);
 		//var = isEB ? sq2(26.0/amplitude) + sq2(0.6)/amplitude + 2*sq2(0.094) : sq2(42.2/amplitude) + sq2(1.2)/amplitude + 2*sq2(0.298); 
 	}//<<>>if( var == -1 )
@@ -1854,14 +1871,8 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
 
 	if( mctype == 1 ){ // data
 		if( not applyCalibration ) return time;
-		
-		std::string theKey = dataSetKey;
-		if( theKey == "r2_ul18D" or theKey == "r2_ul18ABC") theKey = "r2_ul18";
-        if( CaliRunMapSet.find(theKey) != CaliRunMapSet.end() ){ 
-			//std::cout << " ----- cali : " << getCalibration(rechitID,Evt_run,dataSetKey,gainID) << std::endl;
-			rtime = time - getCalibration(rechitID,Evt_run,dataSetKey,gainID);
-			return rtime;
-		} else { std::cout << "GetCorrectedTime for Data dataSetKey not found : " << dataSetKey << std::endl; return time; }    
+		rtime = time - getCalibration(rechitID,Evt_run,dataSetKey,gainID);
+		return rtime;
 
     } else { // MC
 
@@ -1870,7 +1881,7 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
 		double sorvar = 0;
 
 		if( dataSetKey == "r2_ul18_mc" ) dataSetKey = "r2_ul18_sqmc";
-		if( applyCalibration && CaliRunMapSet.find(dataSetKey) != CaliRunMapSet.end() )
+		if( applyCalibration )
 			ctime = time - getCalibration(rechitID,Evt_run,dataSetKey,gainID);
 		else{ ctime = time; }
 		//std::cout << " Pre Check amplitude : " << amplitude << std::endl;
@@ -1880,24 +1891,23 @@ float KUCMS_TimeCalibration::getCorrectedTime( float time, float amplitude, unsi
 		if( dataSetKey == "None" ) return ctime; // dataSetKey is the calibration used && source resolution for smearing
 		//std::cout << " Post Check amplitude : " << amplitude << std::endl;
 
-        std::string theKey = dataSetKey;
-		if( resTag != "default" && ResTagSet.find(theKey) != ResTagSet.end() ){  // TARGET RESOLUTION
+		if( resTag != "default" ){  // TARGET RESOLUTION
 
 			tarvar = getTimeResoltuion( amplitude, rechitID, Evt_run, resTag, mctype, gainID );
 			
 		}//<<>>if( resTag != "default" )
-		else if( resTag == "default" || dataSetKey.substr(1,2) == "r2" ){ // use smear tag?  -- check first for set tag ! 
+		else if( resTag == "default" || dataSetKey.substr(0,2) == "r2" ){ // use smear tag?  -- check first for set tag !
 
             std::string tag= "r2_ul18D";
 			tarvar = getTimeResoltuion( amplitude, rechitID, Evt_run, tag, mctype, gainID );
 
-		}//<<>>if( dataSetKey.substr(1,2) == "r2" )
-        else if( dataSetKey.substr(1,2) == "r3" ){ 
+		}//<<>>if( Run 2 key or default target )
+		else if( dataSetKey.substr(0,2) == "r3" ){
 
             std::string tag= "r2_ul18D";
             tarvar = getTimeResoltuion( amplitude, rechitID, Evt_run, tag, mctype, gainID );
 
-		}//<<>>if( dataSetKey.substr(1,2) == "r3" )
+		}//<<>>if( Run 3 key )
 
 		if( ResTagSet.find(dataSetKey) != ResTagSet.end() ){ // SOURCE RESOLTUION
 

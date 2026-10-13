@@ -21,6 +21,7 @@
 #include <cmath>
 #include <ctime>
 #include <filesystem>
+#include <set>
 
 #ifndef KUCMS_TimeCalibrationClass_hh
 #define KUCMS_TimeCalibrationClass_hh
@@ -109,6 +110,9 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 
     std::map<std::string,kucms_resTagStruct> ResTagSet;
     std::map<std::string,std::string> caliHistFileNames;
+	std::set<std::string> reportedInvalidCalibrationTags;
+	std::set<std::string> reportedInvalidResolutionTags;
+	std::set<int> reportedInvalidMCTypes;
 
 	std::vector<int> ebx_ranges, ebtt_ranges, epmx_ranges, epmtt_ranges;
 
