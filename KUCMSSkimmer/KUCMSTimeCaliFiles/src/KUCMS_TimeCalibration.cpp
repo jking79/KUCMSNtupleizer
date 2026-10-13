@@ -2,6 +2,24 @@
 
 #include <unordered_map>
 
+namespace {
+
+Long64_t progressEntryForPercent( Long64_t totalEntries, int percent ){
+	const Long64_t whole = totalEntries/100;
+	const Long64_t remainder = totalEntries%100;
+	return whole*percent + ( remainder*percent + 99 )/100;
+}
+
+void reportEventLoopProgress( Long64_t processed, Long64_t totalEntries, int percent ){
+	std::time_t now = std::time(nullptr);
+	std::string curtime = std::ctime(&now);
+	if( not curtime.empty() ) curtime.pop_back();
+	std::cout << "Processed " << processed << " of " << totalEntries << " entries ("
+	          << percent << "%) at " << curtime << std::endl;
+}
+
+}//<<>>namespace
+
 #ifndef KUCMS_TimeCalibrationClass_cc
 #define KUCMS_TimeCalibrationClass_cc
 
@@ -2056,10 +2074,15 @@ bool KUCMS_TimeCalibration::makeGain1CaliMapsEGR( std::string inputFileName, boo
 		int cachedRun = -1;
 		kucms_CaliRunClass* ttRange = nullptr;
 		kucms_CaliRunClass* crystalRange = nullptr;
+		int nextProgressPercent = 0;
+		Long64_t nextProgressEntry = 0;
 		for( Long64_t centry = 0; centry < nEntries; centry++ ){
-			if( centry % 1000000 == 0 ){
-				std::cout << "Processed " << centry << " of " << nEntries << " ("
-				          << static_cast<double>(centry)*100.0/static_cast<double>(nEntries) << "%)" << std::endl;
+			if( centry >= nextProgressEntry ){
+				const int completedPercent = static_cast<int>(100.0L*centry/nEntries);
+				const int reportPercent = std::min(90,(completedPercent/10)*10);
+				reportEventLoopProgress(centry,nEntries,reportPercent);
+				nextProgressPercent = reportPercent + 10;
+				nextProgressEntry = progressEntryForPercent(nEntries,nextProgressPercent);
 			}//<<>>if( progress update )
 			auto entry = fInTree->LoadTree(centry);
 			if( entry < 0 || b_run->GetEntry(entry) <= 0 ){
@@ -2152,6 +2175,7 @@ bool KUCMS_TimeCalibration::makeGain1CaliMapsEGR( std::string inputFileName, boo
 				}//<<>>if( crystal fill enabled )
 			}//<<>>for( rechits )
 		}//<<>>for( entries )
+		reportEventLoopProgress(nEntries,nEntries,100);
 
 		std::cout << "[INFO] Finished combined batch for " << subdir << " " << matchstr
 		          << " entries=" << nEntries << std::endl;
@@ -2474,17 +2498,17 @@ bool KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 		auto nEntries = small ? ( treeEntries < 10000000 ) ? treeEntries : 10000000  : treeEntries;
         std::cout << "Starting entry loops for " << nEntries << " Entries" <<  std::endl;
         //if( debug ) nEntries = 10000;
-		int modbreak = debug ? 1000 : 1000000;
+		int nextProgressPercent = 0;
+		Long64_t nextProgressEntry = 0;
         for (Long64_t centry = 0; centry < nEntries; centry++){
 
-            if( centry%modbreak == 0 or centry == 0){
-           		std::time_t now = std::time(nullptr);
-            	std::string curtime = std::ctime(&now);
-            	curtime.pop_back();
-                std::cout << "Proccessed " << centry << " of " << nEntries;
-                std::cout << " " << curtime;
-                std::cout << " (" << static_cast<float>((10000*centry)/nEntries)/(100) << "%)" << std::endl;
-            }//<<>>if( centry%1000000 == 0 or centry == 0)
+			if( centry >= nextProgressEntry ){
+				const int completedPercent = static_cast<int>(100.0L*centry/nEntries);
+				const int reportPercent = std::min(90,(completedPercent/10)*10);
+				reportEventLoopProgress(centry,nEntries,reportPercent);
+				nextProgressPercent = reportPercent + 10;
+				nextProgressEntry = progressEntryForPercent(nEntries,nextProgressPercent);
+			}//<<>>if( progress update )
 
 			auto entry = fInTree->LoadTree(centry);
 			if( entry < 0 ){
@@ -2751,6 +2775,7 @@ bool KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 			}//<<>>if( not tagfound )
 
 		}//<<>>for (Long64_t centry = 0; centry < nEntries; cnentry++)
+		reportEventLoopProgress(nEntries,nEntries,100);
 
         // Finished processing this batch
 		std::cout << "[INFO] Finished batch for " << subdir << " " << matchstr << " entries=" << nEntries << std::endl;
