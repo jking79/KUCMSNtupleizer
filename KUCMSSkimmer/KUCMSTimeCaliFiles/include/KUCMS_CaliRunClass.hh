@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <limits>
  
 #ifndef KUCMS_CaliRunClass 
 #define KUCMS_CaliRunClass 
@@ -96,9 +97,14 @@ class kucms_CaliRunClass : public KUCMS_RootHelperBaseClass {
 				double secondMoment = entry.second.sumsqr/cnt;
 				double meanSquared = mean*mean;
 				double variance = secondMoment - meanSquared;
-                // Roundoff can make a non-negative variance very slightly negative.
-				double varianceTolerance = 1.e-12*std::max({1.0, std::abs(secondMoment), std::abs(meanSquared)});
-				if( variance < 0 && variance > -varianceTolerance ) variance = 0;
+				// Sum and sum-of-squares are persisted independently in TH2F bins. Their
+				// float rounding can make a truly zero variance slightly negative after reload.
+				const double momentScale = std::max({1.0,std::abs(secondMoment),std::abs(meanSquared)});
+				const double doubleTolerance = 1.e-12*momentScale;
+				const double floatStorageTolerance =
+					8.0*std::numeric_limits<float>::epsilon()*momentScale;
+				const double varianceTolerance = std::max(doubleTolerance,floatStorageTolerance);
+				if( variance < 0 && variance >= -varianceTolerance ) variance = 0;
                 binValid = std::isfinite(mean) && mean > -29.0 && std::isfinite(variance) && variance >= 0;
                 if( binValid ){
                     err = std::sqrt(variance/cnt);
