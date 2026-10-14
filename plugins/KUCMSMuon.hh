@@ -237,6 +237,7 @@ void KUCMSMuonObject::ProcessEvent( ItemManager<float>& geVar ){
     std::vector<v3fPoint> scvertex;
     std::vector<float> scptres;
 	std::vector<reco::TransientTrack> sctrks;
+    std::vector<int> trackMuonIndices;
     if( MuonDEBUG ) std::cout << "Processing Muons" << std::endl;
     for( const auto &muon : fmuons ){
 
@@ -256,8 +257,7 @@ void KUCMSMuonObject::ProcessEvent( ItemManager<float>& geVar ){
 		//const auto & primevtx = vertices_->front();
 		//const bool isTight = muon::isTightMuon( muon, primevtx );
         //const bool isTight = muon.passed( reco::Muon::TkIsoTight );
-		const bool isTight = muon.passed( reco::Muon::PFIsoVeryVeryTight );
-        //const bool isTight = muon.passed( reco::Muon::CutBasedIdTight );
+		const bool isTight = muon.passed( reco::Muon::CutBasedIdTight );
 		//const bool isGlobal = muon.isGlobalMuon();
 
 		if( MuonDEBUG ) std::cout << " -- " << muPt << " - " << muEta << " - " << isLoose << " - " << isMedium << std::endl;	
@@ -302,6 +302,7 @@ void KUCMSMuonObject::ProcessEvent( ItemManager<float>& geVar ){
 
 		//std::cout << " -- Muon getting sc : " << std::endl;
         const auto btptr = muon.bestTrack();
+        if( !btptr ) continue;
         auto ttrack = ttBuilder.build( *btptr );
 
         // GenParticle Info for muon  -------------------------------------------------------------------
@@ -310,6 +311,7 @@ void KUCMSMuonObject::ProcessEvent( ItemManager<float>& geVar ){
             //std::cout << " -- Muon sc : " << itptr->vx() << " - " << itptr->vy() << " - " << itptr->vz() << std::endl;
             //v3fPoint itv( itloc.x(), itloc.y(), itloc.z() );
 			sctrks.push_back( ttrack );
+			trackMuonIndices.push_back( muIndx - 1 );
 			v3fPoint itv( muEta, muPhi, 0.f );
             scvertex.push_back( itv );
             scptres.push_back( muEnergy );
@@ -326,7 +328,11 @@ void KUCMSMuonObject::ProcessEvent( ItemManager<float>& geVar ){
     int nGenMatched = 0;
     if( cfFlag("hasGenInfo") ){
         auto genInfo = genObjs->getGenMuonMatch( scvertex, scptres, sctrks );
-        for( auto genidx : genInfo ){
+        std::vector<int> alignedGenInfo( muIndx, -1 );
+        for( std::size_t trackIdx = 0; trackIdx < genInfo.size(); ++trackIdx ){
+            alignedGenInfo[trackMuonIndices[trackIdx]] = genInfo[trackIdx];
+        }
+        for( auto genidx : alignedGenInfo ){
             Branches.fillBranch("GenIdx",genidx);
 			bool hasGenMatch = ( genidx > -1 );
 			Branches.fillBranch("hasGenIdx", hasGenMatch );

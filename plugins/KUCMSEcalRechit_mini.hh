@@ -1072,8 +1072,8 @@ bool KUCMSEcalRecHitObjectMini::reduceRhGrps( std::vector<rhGroup> & x ){
 void KUCMSEcalRecHitObjectMini::mrgRhGrp( rhGroup & x, rhGroup & y ){
 
     //std::cout << " --- In mrgRhGrp " << std::endl;
-    bool matched(false);
     for(const auto rhy : y ){
+        bool matched(false);
         for(const auto rhx : x ){ if( rhMatch(rhx,rhy) ) matched = true; }
         if( not matched ) x.push_back(rhy);
     }//<<>>for(const auto rhx : y )
@@ -1120,7 +1120,7 @@ float KUCMSEcalRecHitObjectMini::getSeedTofTime( reco::SuperCluster sprclstr, do
     const auto d_rh = hypo(rhPosX,rhPosY,rhPosZ);
     const auto d_pv = hypo(rhPosX-vtxX,rhPosY-vtxY,rhPosZ-vtxZ);
     const auto tof = (d_rh-d_pv)/SOL;
-    const auto seedTofTime = rhTime - tof;
+    const auto seedTofTime = rhTime + tof;
     return seedTofTime;
 
 }//>>>>float  KUCMSEcalRecHitObjectMini::getSeedTofTime( rhGroup recHits, double vtxX, double vtxY, double vtxZ )
@@ -1283,7 +1283,10 @@ rhGroup KUCMSEcalRecHitObjectMini::getRHGroup( const scGroup superClusterGroup, 
             for (const auto &recHit : frechits ){
                 const auto recHitId = recHit.detid();
                 const uInt rhRawId = recHitId.rawId();
-                if( rhRawId == rawId ){ result.push_back(recHit); break; } //std::cout << " ---- Found " <<  std::endl; break; }
+                if( rhRawId == rawId ){
+                    if( minenr <= 0.f || recHit.energy() > minenr ) result.push_back(recHit);
+                    break;
+                }
             }//<<>>for (const auto &recHit : recHits ){
         }//<<>>for( uInt iHAF = 0; iHAF < nHAF; iHAF++ )
     }//<<>>for ( const auto superCluster : superClusterGroup )
