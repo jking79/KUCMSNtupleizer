@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "include": [
+    ".style-review.json",
+    "BuildFile.xml",
+    "tools/**",
+    "interface/**",
+    "src/**",
+    "plugins/**",
+    "python/**",
+    "scripts/**",
+    "KUCMSSkimmer/makefile",
+    "KUCMSSkimmer/include/**",
+    "KUCMSSkimmer/src/**",
+    "KUCMSSkimmer/python/**",
+    "KUCMSSkimmer/tools/**"
+  ],
+  "exclude": [
+    "**/backups/**",
+    "**/*.bak",
+    "**/*.bakbak",
+    "**/*.new",
+    "**/*.old",
+    "**/*.root",
+    "**/*.gz",
+    "**/*.requestcache",
+    "**/temp/**",
+    "KUCMSSkimmer/include/KUCMSNtuple_base_v*.h",
+    "**/__pycache__/**"
+  ]
+}

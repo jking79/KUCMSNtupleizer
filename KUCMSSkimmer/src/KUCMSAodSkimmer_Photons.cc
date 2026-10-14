@@ -55,7 +55,7 @@ void KUCMSAodSkimmer::processPhotons(){
   std::vector<bool> isRJRPho;
   std::vector<int> phoExcIndx;
   uInt nBaseLinePhotons = 0; 
-  uInt nPhotons = Photon_excluded->size();
+  uInt nPhotons = correctedPhotonExcluded.size();
 
   auto validGenIndex = [&]( int index ) -> bool {
     if( index < 0 || Gen_energy == nullptr || Gen_eta == nullptr || Gen_mass == nullptr ||
@@ -204,7 +204,7 @@ void KUCMSAodSkimmer::processPhotons(){
     //---------------------------------------------------
 
     if( DEBUG ) std::cout << " -- looping photons : getting pho isEB, has min pt, not excluded, electron veto " << std::endl;
-    bool isExcluded = (*Photon_excluded)[it];
+    bool isExcluded = correctedPhotonExcluded[it];
     int scIndx = (*Photon_scIndex)[it];
     bool isEB = (*SuperCluster_seedIsEB)[scIndx];
     bool hasEleVeto = (*Photon_electronVeto)[it];
@@ -929,7 +929,7 @@ void KUCMSAodSkimmer::processPhotons(){
 	if( (*Photon_isOot)[it] ){
     for( uInt it2 = 0; it2 < nPhotons; it2++ ){
     	if( it == it2 ) continue;
-		if( not (*Photon_excluded)[it2] ) continue; 
+		if( not correctedPhotonExcluded[it2] ) continue;
       	float eta2 = (*Photon_eta)[it2];
       	float phi2 = (*Photon_phi)[it2];
       	auto dphi12 = dPhi( phi, phi2 );
@@ -2261,4 +2261,3 @@ int KUCMSAodSkimmer::getPhoQuality( int it ){
   return phoClass;
 
 }//<<>>int KUCMSAodSkimmer::getPhoQuality( int iter )
-

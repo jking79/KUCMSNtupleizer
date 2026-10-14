@@ -177,19 +177,67 @@ void KUCMSAodSkimmer::processMet(){
   //intilize
   selMet.clearBranches(); // <<<<<<<   must do
 
-  //calc
-  //auto met = std::sqrt(sq2(Met_Cpx)+sq2(Met_Cpy));
+  // Rebuild the GED/OOT overlap decision from the photons retained in the
+  // ntuple.  The input Photon_excluded branch can reflect the last raw OOT
+  // candidate rather than an overlap with any retained OOT photon.
+  if( Photon_pt == nullptr || Photon_eta == nullptr || Photon_phi == nullptr || Photon_isOot == nullptr ){
+    std::cerr << "ERROR: missing photon input needed to rebuild corrected MET." << std::endl;
+    std::exit(EXIT_FAILURE);
+  }
 
-  geVars.set("metPx", Met_Cpx );
-  geVars.set("metPy", Met_Cpy );
+  const std::size_t nPhotons = Photon_pt->size();
+  if( Photon_eta->size() != nPhotons || Photon_phi->size() != nPhotons || Photon_isOot->size() != nPhotons ){
+    std::cerr << "ERROR: inconsistent photon input sizes while rebuilding corrected MET." << std::endl;
+    std::exit(EXIT_FAILURE);
+  }
+
+  correctedPhotonExcluded.assign( nPhotons, false );
+  for( std::size_t gedIdx = 0; gedIdx < nPhotons; gedIdx++ ){
+    if( (*Photon_isOot)[gedIdx] ) continue;
+    for( std::size_t ootIdx = 0; ootIdx < nPhotons; ootIdx++ ){
+      if( not (*Photon_isOot)[ootIdx] ) continue;
+      if( dR1( (*Photon_eta)[gedIdx], (*Photon_phi)[gedIdx],
+               (*Photon_eta)[ootIdx], (*Photon_phi)[ootIdx] ) < 0.3 ){
+        correctedPhotonExcluded[gedIdx] = true;
+        break;
+      }
+    }
+  }
+
+  double correctedMetPx = Met_px;
+  double correctedMetPy = Met_py;
+  double correctedMetSumEt = Met_sumEt;
+  for( std::size_t phoIdx = 0; phoIdx < nPhotons; phoIdx++ ){
+    const double pt = (*Photon_pt)[phoIdx];
+    const double phi = (*Photon_phi)[phoIdx];
+    if( (*Photon_isOot)[phoIdx] ){
+      correctedMetPx -= pt * std::cos(phi);
+      correctedMetPy -= pt * std::sin(phi);
+      correctedMetSumEt += pt;
+    } else if( correctedPhotonExcluded[phoIdx] ){
+      correctedMetPx += pt * std::cos(phi);
+      correctedMetPy += pt * std::sin(phi);
+      correctedMetSumEt -= pt;
+    }
+  }
+  const double correctedMet = std::hypot( correctedMetPx, correctedMetPy );
+
+  if( DEBUG ){
+    std::cout << "Rebuilt corrected MET: pt=" << correctedMet
+              << " px=" << correctedMetPx << " py=" << correctedMetPy
+              << " sumEt=" << correctedMetSumEt << std::endl;
+  }
+
+  geVars.set("metPx", correctedMetPx );
+  geVars.set("metPy", correctedMetPy );
   geVars.set("metBPx", Met_px );
   geVars.set("metBPy", Met_py );
-  geVars.set("cmet", Met_CPt );
+  geVars.set("cmet", correctedMet );
 
   //fill
-  selMet.fillBranch( "cmet", Met_CPt );
-  selMet.fillBranch( "cmetPx", Met_Cpx );
-  selMet.fillBranch( "cmetPy", Met_Cpy );
+  selMet.fillBranch( "cmet", correctedMet );
+  selMet.fillBranch( "cmetPx", correctedMetPx );
+  selMet.fillBranch( "cmetPy", correctedMetPy );
   selMet.fillBranch( "met", Met_pt );
   selMet.fillBranch( "metPx", Met_px );
   selMet.fillBranch( "metPy", Met_py );

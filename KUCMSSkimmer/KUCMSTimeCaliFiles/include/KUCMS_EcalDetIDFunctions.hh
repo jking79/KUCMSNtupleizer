@@ -37,7 +37,8 @@ struct kucms_DetIDStruct {
 
 	enum ECAL {EB, EM, EP, NONE};
 
-    kucms_DetIDStruct() {}
+    kucms_DetIDStruct()
+        : i1(0), i2(0), TT(0), ecal(NONE), phi(0.f), eta(0.f), sect(0), mod(0) {}
     kucms_DetIDStruct( const int ni1, const int ni2, const int nTT, const int & necal, const float nphi, const float neta, const int nSC, const int nMd ) 
 		: i1(ni1), i2(ni2), TT(nTT), ecal(necal), phi(nphi), eta(neta), sect(nSC), mod(nMd) {}
 
@@ -96,4 +97,3 @@ inline void SetupDetIDsEE( std::map<UInt_t,DetIDStruct> &DetIDMap ){
 
 #endif
 //-------------------------------------------------------------------------------------------------------------------
-

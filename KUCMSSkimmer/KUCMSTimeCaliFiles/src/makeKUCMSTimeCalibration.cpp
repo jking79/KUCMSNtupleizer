@@ -94,14 +94,17 @@ int main ( int argc, char *argv[] ){
 
 	////KUCMS_TimeCalibration theCali; // open tfile in read only then close after setup
 	KUCMS_TimeCalibration theCali( true );// true allows for run local condition
+	if( not theCali.HasValidCaliMaps() ) return EXIT_FAILURE;
 	theCali.SetEosDir(eosdir);
 	theCali.SetInDir(indir);
 	//
     //-----//////////  making tt cali  :
     theCali.SetupIovMaps();
-	// for PD R2UL
-    theCali.setTTIov( r2ulTag );
-    theCali.setXIov( xiovtag );
+	// The combined gain-1 path selects the TT/X IOV family from each input tag by default.
+	// For an R&D override, disable automatic selection before setting these manually:
+	// theCali.setAutoSelectGain1Iovs(false);
+	// theCali.setTTIov(r2ulTag);
+	// theCali.setXIov(xiovtag);
 	// for MC
     //theCali.setTTIov( mctag );
     //theCali.setXIov( mctag );
@@ -116,12 +119,21 @@ int main ( int argc, char *argv[] ){
 	//// bool makeCaliMapsEGR( std::string inputFileName, bool doTT, int GID, bool small, bool doCali )
 	//// bool makeTTCaliMapEGR( std::string inputFileName, int GID = 1, bool small = false, bool doCali = true );
 	//// bool makeXCaliMapEGR( std::string inputFileName, int GID = 1, bool small = false, bool doCali = true );
+	//// Preferred gain-1 path: make TT and crystal maps in one event loop.
+	//// The final non-comment input row must set dolast=1 because the intermediate
+	//// TT-partitioned crystal moments exist only for this process invocation.
+	//if( not theCali.makeGain1CaliMapsEGR( inputfilename ) ) return EXIT_FAILURE;
+	//theCali.makeCaliHists();
+	//if( not theCali.SaveCaliHists() ) return EXIT_FAILURE;
+	//if( not theCali.SaveTTRunFile() ) return EXIT_FAILURE;
+	//if( not theCali.SaveCaliRunFile() ) return EXIT_FAILURE;
+
+	//// Legacy two-pass gain-1 path:
     ////theCali.makeTTCaliMapEGR( inputfilename, 1, true ); // true == run only subset of events ( only change doCali for testing, ever )
 	//if( not theCali.makeTTCaliMapEGR( inputfilename ) ) return EXIT_FAILURE;
 	//theCali.makeCaliHists();
 	//if( not theCali.SaveCaliHists() ) return EXIT_FAILURE;
 	//if( not theCali.SaveTTRunFile() ) return EXIT_FAILURE;
-
     //-----//////////  making xtal cali :
     ////theCali.makeXCaliMapEGR( inputfilename, true ); // true == run only subset of events
 	////theCali.makeXCaliMapEGR( inputfilename, 1, true ); // true == run only subset of events
@@ -307,14 +319,12 @@ int main ( int argc, char *argv[] ){
 
 	//  ---------- the below is done in re stuff now ------------------------
 
-	// plotting of mean time by run with calibraton : filename, start run, end run, usecali
-	// usecali ( defaults to usecali true )
+	// Plot mean TT time by run. One pass always produces uncalibrated EB/EE histograms and
+	// also produces calibrated EB/EE histograms when complete calibration maps are available.
 	//KUCMS_TimeCalibration theCali;
     //theCali.SetEosDir(eosdir);
     //theCali.SetInDir(indir);
-    //theCali.plotMeanRunTimeEGR( inputfilename, 315257, 325172 ); // R2 2018 UL 315257_325172 // R2 2017 UL 296399_306460
-    //theCali.plotMeanRunTimeEGR( inputfilename, 315257, 325172, false );
-    ////theCali.plotMeanRunTimeEGR( inputfilename, 296399, 307554, true );	
+    //if( not theCali.plotMeanRunTimeEGR(inputfilename,315257,325172) ) return EXIT_FAILURE;
 	
 	/////////////////////////////////////////////////////////////////////
 

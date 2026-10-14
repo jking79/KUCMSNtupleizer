@@ -142,6 +142,7 @@ int main ( int argc, char *argv[] ){
 
     //KUCMS_TimeCalibration theCali;
     KUCMS_TimeCalibration theCali( true );// true allows for run local condition
+	if( not theCali.HasValidCaliMaps() ) return EXIT_FAILURE;
     theCali.setUseLocalCali();
     theCali.SetEosDir(eosdir);
     theCali.SetInDir(indir);
@@ -293,7 +294,8 @@ int main ( int argc, char *argv[] ){
 	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_25_prompt_lg_xa_pm24b1200_v0817" );
 	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18MC_QCD_xa_pm24b1200_v0818" );
     //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18MC_QCD_lg_xa_pm24b1200_v0818" );
-    theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18MC_SQCD_xa_pm24b1200_v0822" );
+	if( not theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18MC_SQCD_xa_pm24b1200_v0822" ) )
+		return EXIT_FAILURE;
 
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -544,26 +546,9 @@ int main ( int argc, char *argv[] ){
     //theCali.setIsCC(true);
     //theCali.setDoUnCC(true);
     
-	// plotting of mean time by run with calibraton : filename, start run, end run, usecali ( defaults to usecali true )
-	//theCali.plotMeanRunTimeEGR( inputfilename, 315257, 325172 ); // R2 2018 UL 315257_325172 // R2 2017 UL 296399_306460
-    //theCali.plotMeanRunTimeEGR( inputfilename, 315257, 325172, false );
-    //352319_362760 // 2022  full
-	//theCali.plotMeanRunTimeEGR( inputfilename, 357487, 358000, true );//22C
-	//theCali.plotMeanRunTimeEGR( inputfilename, 355794, 362180, true );//22C-22F
-    //theCali.plotMeanRunTimeEGR( inputfilename, 392159, 398903, false );
-    //theCali.plotMeanRunTimeEGR( inputfilename, 379412, 380947, false );//24CD 
-    //theCali.plotMeanRunTimeEGR( inputfilename, 394286, 395967, false );//25D
-
-    //theCali.plotMeanRunTimeEGR( inputfilename, 273158, 284044, true );//16
-	//theCali.plotMeanRunTimeEGR( inputfilename, 297050, 306460, true );//17
-	//theCali.plotMeanRunTimeEGR( inputfilename, 315257, 320672, true );//18
-
-	//theCali.plotMeanRunTimeEGR( inputfilename, 366365, 372415, true );//23
-	//theCali.plotMeanRunTimeEGR( inputfilename, 378985, 386951, false );//24
-	//theCali.plotMeanRunTimeEGR( inputfilename, 390735, 398903, false );//25
-
-
-    ////theCali.plotMeanRunTimeEGR( inputfilename, 296399, 307554, true );
+	// One pass always produces uncalibrated EB/EE TT-mean histograms and also produces
+	// calibrated EB/EE histograms when complete calibration maps are available.
+	//if( not theCali.plotMeanRunTimeEGR(inputfilename,315257,325172) ) return EXIT_FAILURE;
 	////theCali.makeTTDiffMaps();// make trigger tower diffrence maps
 	
 	/////////////////////// TT drift maps //////////////////////////////
