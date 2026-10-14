@@ -344,6 +344,7 @@ public:
   ItemManager<bool> hemBits;
 
   std::vector<bool> allphoBaseline;
+  std::vector<bool> correctedPhotonExcluded;
   std::vector<float> allphowtime;
   std::vector<float> allphominjetdr;
   std::vector<float> alljetwtime;
