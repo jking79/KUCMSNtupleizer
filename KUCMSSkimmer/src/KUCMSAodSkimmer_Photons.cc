@@ -629,10 +629,11 @@ void KUCMSAodSkimmer::processPhotons(){
     vector<float> photonIDscores;
     map<string, double> isomap;
     MakePhotonIsoMap(it, isomap);
+    map<string, double> nn_inputs;
 	if(overMaxEta){ //endcap
-		phoobj.CalculateEndcapPhotonIDScores(pt, isomap);
+		nn_inputs = phoobj.CalculateEndcapPhotonIDScores(pt, isomap);
 	} else { //barrel
-		phoobj.CalculateBarrelPhotonIDScores(pt, isomap);
+		nn_inputs = phoobj.CalculateBarrelPhotonIDScores(pt, isomap);
 	}//<<>>if(overMaxEta)
 	phoobj.GetPhotonIDScores(photonIDscores);
     isobkg_score = photonIDscores[0];
@@ -658,6 +659,11 @@ void KUCMSAodSkimmer::processPhotons(){
     auto tspscdr4 = (*Photon_trkSumPtSolidConeDR04)[it];
     auto erhsecdr4 = (*Photon_ecalRHSumEtConeDR04)[it];
     auto htoem = (*Photon_hadTowOverEM)[it];
+    float EtaSig = (float)nn_inputs["EtaSig"];
+    float PhiSig = (float)nn_inputs["PhiSig"];
+    float EtaPhiCov = (float)nn_inputs["EtaPhiCov"];
+    float majorLength = (float)nn_inputs["majorLength"];
+    float minorLength = (float)nn_inputs["minorLength"];
     bool isoPho;
     if(overMaxEta){ //endcap
     	if(isobkg_score >= EEVeryLooseIsoCutVal) isoPho = true;
@@ -751,6 +757,12 @@ void KUCMSAodSkimmer::processPhotons(){
     selPhotons.fillBranch( "photon_isoANNScore", isobkg_score );
     selPhotons.fillBranch( "photon_beamHaloCNNScore", bh_score );
     selPhotons.fillBranch( "photon_minJetDr", minJetDr );
+  
+    selPhotons.fillBranch( "photon_EtaSig", EtaSig );
+    selPhotons.fillBranch( "photon_PhiSig", PhiSig );
+    selPhotons.fillBranch( "photon_EtaPhiCov", EtaPhiCov );
+    selPhotons.fillBranch( "photon_majorLength", majorLength );
+    selPhotons.fillBranch( "photon_minorLength", minorLength );
 	//GetGJetsSel(it);
 
     ///////////  Very Loose Base Photon selection ////////////////////////////////////////////////////////////////////
@@ -1018,6 +1030,11 @@ void KUCMSAodSkimmer::processPhotons(){
     selPhotons.fillBranch( "baseLinePhoton_PfPhoIso03", pfphoisso  );   //!
     selPhotons.fillBranch( "baseLinePhoton_PfRelIso03_all_quadratic", pfriso3aq  );   //!
     selPhotons.fillBranch( "baseLinePhoton_PfRelIso03_chg_quadratic", pfrtso3cq  );   //!
+    selPhotons.fillBranch( "baseLinePhoton_EtaSig", EtaSig );
+    selPhotons.fillBranch( "baseLinePhoton_PhiSig", PhiSig );
+    selPhotons.fillBranch( "baseLinePhoton_EtaPhiCov", EtaPhiCov );
+    selPhotons.fillBranch( "baseLinePhoton_majorLength", majorLength );
+    selPhotons.fillBranch( "baseLinePhoton_minorLength", minorLength );
 
     selPhotons.fillBranch( "baseLinePhoton_GenLabTime", labtime );
     selPhotons.fillBranch( "baseLinePhoton_GenLabTimeSig", labtimesig );
@@ -1792,6 +1809,16 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch( "baseLinePhoton_PfPhoIso03", VFLOAT );   //!
   selPhotons.makeBranch( "baseLinePhoton_PfRelIso03_all_quadratic", VFLOAT );   //!
   selPhotons.makeBranch( "baseLinePhoton_PfRelIso03_chg_quadratic", VFLOAT );   //!
+  selPhotons.makeBranch( "baseLinePhoton_EtaSig", VFLOAT );
+  selPhotons.makeBranch( "baseLinePhoton_PhiSig", VFLOAT );
+  selPhotons.makeBranch( "baseLinePhoton_EtaPhiCov", VFLOAT );
+  selPhotons.makeBranch( "baseLinePhoton_majorLength", VFLOAT );
+  selPhotons.makeBranch( "baseLinePhoton_minorLength", VFLOAT );
+  selPhotons.makeBranch( "photon_EtaSig",  VFLOAT  );
+  selPhotons.makeBranch( "photon_PhiSig",  VFLOAT  );
+  selPhotons.makeBranch( "photon_EtaPhiCov", VFLOAT );
+  selPhotons.makeBranch( "photon_majorLength", VFLOAT );
+  selPhotons.makeBranch( "photon_minorLength", VFLOAT );
 
   selPhotons.makeBranch( "baseLinePhoton_SMaj", VFLOAT );
   selPhotons.makeBranch( "baseLinePhoton_SMin", VFLOAT );
