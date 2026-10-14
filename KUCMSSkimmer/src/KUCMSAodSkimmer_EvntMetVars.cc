@@ -235,9 +235,9 @@ void KUCMSAodSkimmer::processMet(){
   geVars.set("cmet", correctedMet );
 
   //fill
-  selMet.fillBranch( "cmet", correctedMet );
-  selMet.fillBranch( "cmetPx", correctedMetPx );
-  selMet.fillBranch( "cmetPy", correctedMetPy );
+  selMet.fillBranch( "cmet", static_cast<float>(correctedMet) );
+  selMet.fillBranch( "cmetPx", static_cast<float>(correctedMetPx) );
+  selMet.fillBranch( "cmetPy", static_cast<float>(correctedMetPy) );
   selMet.fillBranch( "met", Met_pt );
   selMet.fillBranch( "metPx", Met_px );
   selMet.fillBranch( "metPy", Met_py );
