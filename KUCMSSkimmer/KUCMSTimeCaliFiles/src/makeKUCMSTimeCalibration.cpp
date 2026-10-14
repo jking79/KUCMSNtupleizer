@@ -100,9 +100,11 @@ int main ( int argc, char *argv[] ){
 	//
     //-----//////////  making tt cali  :
     theCali.SetupIovMaps();
-	// for PD R2UL
-    theCali.setTTIov( r2ulTag );
-    theCali.setXIov( xiovtag );
+	// The combined gain-1 path selects the TT/X IOV family from each input tag by default.
+	// For an R&D override, disable automatic selection before setting these manually:
+	// theCali.setAutoSelectGain1Iovs(false);
+	// theCali.setTTIov(r2ulTag);
+	// theCali.setXIov(xiovtag);
 	// for MC
     //theCali.setTTIov( mctag );
     //theCali.setXIov( mctag );

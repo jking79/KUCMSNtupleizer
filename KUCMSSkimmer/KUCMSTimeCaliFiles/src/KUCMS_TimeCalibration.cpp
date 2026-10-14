@@ -86,6 +86,7 @@ KUCMS_TimeCalibration::KUCMS_TimeCalibration( bool stayOpen, bool makeNew, bool 
 	// PD: EG_EOY_MINI    MC: RunIIFall17DRPremix 
 	curTTIov = "r2ul";
     curXIov = "prompt";
+	autoSelectGain1Iovs = true;
 	curLumiTag = "r2ul";
 
 	//resTag = "default";  // NOTE: resolution used for PDs in set in master file lists, this is targ resoltion of MC for smearing
@@ -1967,11 +1968,11 @@ bool KUCMS_TimeCalibration::makeGain1CaliMapsEGR( std::string inputFileName, boo
 		std::cerr << "ERROR: cannot process calibration input because stored calibration maps are invalid." << std::endl;
 		return false;
 	}//<<>>if( stored maps invalid )
-	if( iovMaps.find(curTTIov) == iovMaps.end() ){
+	if( not autoSelectGain1Iovs && iovMaps.find(curTTIov) == iovMaps.end() ){
 		std::cerr << "ERROR: TT IOV is not valid: " << curTTIov << std::endl;
 		return false;
 	}//<<>>if( invalid TT IOV )
-	if( iovMaps.find(curXIov) == iovMaps.end() ){
+	if( not autoSelectGain1Iovs && iovMaps.find(curXIov) == iovMaps.end() ){
 		std::cerr << "ERROR: crystal IOV is not valid: " << curXIov << std::endl;
 		return false;
 	}//<<>>if( invalid crystal IOV )
@@ -2055,6 +2056,40 @@ bool KUCMS_TimeCalibration::makeGain1CaliMapsEGR( std::string inputFileName, boo
 		}//<<>>if( malformed row )
 		doLastRun = dolast;
 		if( isCC && doUnCC ) tag += "unc";
+
+		std::string ttIovTag = curTTIov;
+		std::string xIovTag = curXIov;
+		if( autoSelectGain1Iovs ){
+			const bool isMCTag = tag == "mc" ||
+				( tag.size() >= 2 && tag.compare(tag.size()-2,2,"mc") == 0 );
+			if( isMCTag ){
+				ttIovTag = "mc";
+				xIovTag = "mc";
+			} else if( tag.rfind("r2_",0) == 0 ){
+				ttIovTag = "r2ultt";
+				xIovTag = "prompt";
+			} else if( tag.rfind("r3_",0) == 0 ){
+				ttIovTag = "r3tt";
+				xIovTag = "r3x";
+			} else {
+				std::cerr << "ERROR: cannot automatically select gain-1 IOV maps for calibration tag "
+				          << tag << "; call setAutoSelectGain1Iovs(false), setTTIov(...), and "
+				          << "setXIov(...) for an R&D override." << std::endl;
+				return false;
+			}//<<>>if( recognized calibration tag family )
+		}//<<>>if( automatic gain-1 IOV selection )
+		if( iovMaps.find(ttIovTag) == iovMaps.end() ){
+			std::cerr << "ERROR: TT IOV is not valid: " << ttIovTag << " for calibration tag " << tag << std::endl;
+			return false;
+		}//<<>>if( invalid TT IOV )
+		if( iovMaps.find(xIovTag) == iovMaps.end() ){
+			std::cerr << "ERROR: crystal IOV is not valid: " << xIovTag << " for calibration tag " << tag << std::endl;
+			return false;
+		}//<<>>if( invalid crystal IOV )
+		const auto& ttIovs = iovMaps.at(ttIovTag);
+		const auto& crystalIovs = iovMaps.at(xIovTag);
+		std::cout << "Using gain-1 IOV maps TT=" << ttIovTag << " X=" << xIovTag
+		          << " for calibration tag " << tag << std::endl;
 
 		auto fInTree = new TChain(treename.c_str());
 		std::string eosHost = "cmseos.fnal.gov";
@@ -2177,8 +2212,8 @@ bool KUCMS_TimeCalibration::makeGain1CaliMapsEGR( std::string inputFileName, boo
 			if( run < static_cast<UInt_t>(srun) || run > static_cast<UInt_t>(erun) ) continue;
 
 			if( cachedRun != static_cast<int>(run) ){
-				ttRange = findOrCreateRange(TTCaliRunMapSet,tag,iovMaps[curTTIov],run,"TT");
-				crystalRange = findOrCreateRange(CaliRunMapSet,tag,iovMaps[curXIov],run,"X");
+				ttRange = findOrCreateRange(TTCaliRunMapSet,tag,ttIovs,run,"TT");
+				crystalRange = findOrCreateRange(CaliRunMapSet,tag,crystalIovs,run,"X");
 				if( not ttRange || not crystalRange ){
 					delete fInTree;
 					return false;

@@ -85,6 +85,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 
     std::string curTTIov;
     std::string curXIov;
+	bool autoSelectGain1Iovs;
 	std::string curTag; // used to change rereco version or campaian calibrations are for
     std::string curLumiTag;
 
@@ -226,8 +227,9 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 	uInt getGSRhId( uInt detID, int gianID );
 
 	void setTag( std::string tag ){ curTag = tag; }; // used to change rereco version or campaian calibrations are for
-    void setXIov( std::string tag ){ curXIov = tag; };
-    void setTTIov( std::string tag ){ curTTIov = tag; };
+	void setXIov( std::string tag ){ curXIov = tag; };
+	void setTTIov( std::string tag ){ curTTIov = tag; };
+	void setAutoSelectGain1Iovs( bool automatic ){ autoSelectGain1Iovs = automatic; };
     void setLumiTag( std::string tag ){ curLumiTag = tag; };
 
     void setMCResTag( const std::string& tag ){ resTag = tag; }; // NOTE: resolution for PDs set in master file lists,this is resoltion of MC for smearing
