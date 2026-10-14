@@ -1112,7 +1112,8 @@ float KUCMSEcalRecHitObjectMini::getSeedTofTime( reco::SuperCluster sprclstr, do
         if( rawId == seedRawId ){ rhTime = rechit.time(); continue; }
     }//<<>>for (const auto recHit : *recHitsEE_ ) 
 
-    const auto recHitPos = barrelGeometry->getGeometry(seedDetId)->getPosition();
+    const auto seedGeometry = isEB ? barrelGeometry : endcapGeometry;
+    const auto recHitPos = seedGeometry->getGeometry(seedDetId)->getPosition();
     const auto rhPosX = recHitPos.x();
     const auto rhPosY = recHitPos.y();
     const auto rhPosZ = recHitPos.z();
