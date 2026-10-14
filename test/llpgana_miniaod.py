@@ -303,7 +303,8 @@ if "Run3" in runera and genInfo is True :
     flagSet = "PAT"
     #triggerSet = "PAT" # needed for fast sim only
 
-doFastSim = False
+#doFastSim = False
+doFastSim = True
 if options.multicrab == True : doFastSim = options.doFastSim
 if doFastSim == True : triggerSet = "PAT"
 if runMETFilters == True : flagSet = ""  # ?  "SIM" for MC

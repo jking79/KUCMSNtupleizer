@@ -260,7 +260,16 @@ dl2016v2 = [
     "/MET/Run2016H-UL2016_MiniAODv2-v2/MINIAOD",
 ]
 
-datalist = dl2016v2    # <-- set the list you actually want
+dl2026 = [
+    "/JetMET0/Run2026A-PromptReco-v1/MINIAOD",
+    "/JetMET0/Run2026B-PromptReco-v1/MINIAOD",
+    "/JetMET0/Run2026D-PromptReco-v1/MINIAOD",
+    "/JetMET1/Run2026A-PromptReco-v1/MINIAOD",
+    "/JetMET1/Run2026B-PromptReco-v1/MINIAOD",
+    "/JetMET1/Run2026D-PromptReco-v1/MINIAOD",
+]
+
+datalist = dl2026    # <-- set the list you actually want
 
 # -------------------------
 # TSV output (paste into Sheets/Excel)
