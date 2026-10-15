@@ -1,5 +1,6 @@
 #include "../include/KUCMS_TimeCalibration.hh"
 
+#include <array>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -3020,14 +3021,9 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 	}//<<>>if( invalid bins )
     const auto xbins = &fXBins[0];
     const auto ybins = &fYBins[0];
-    int nMyBins = fXBins.size()-1;
-
-    double goodlev(0);
-    double goodlin(0);
-    double goodgev(0);
-    double goodgin(0);
-    double gevents(0);
-
+	std::unordered_map<uInt,const kucms_DetIDStruct*> fastDetInfo;
+	fastDetInfo.reserve(DetIDMap.size());
+	for( const auto& det : DetIDMap ) fastDetInfo.emplace(det.first,&det.second);
     std::cout << "open input files list : " << inputFileName << std::endl;
 
     std::ifstream infilelist(inputFileName);
@@ -3094,10 +3090,11 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
         std::cout << "Producing 2D Resolution Map " << std::endl;
 
         // insure we have Calimaps if we are doing Xtal calibration maps
-        if( usecali && CaliRunMapSet.find(tag) == CaliRunMapSet.end() ){
-			std::cerr << "ERROR: no calibration maps for tag " << tag << std::endl;
+	        if( usecali && (CaliRunMapSet.find(tag) == CaliRunMapSet.end() ||
+	                         TTCaliRunMapSet.find(tag) == TTCaliRunMapSet.end()) ){
+			std::cerr << "ERROR: incomplete calibration maps for tag " << tag << std::endl;
 			return false;
-        }//<<>>if( CaliRunMapSet.find(tag) == TTCaliRunMapSet.end() )
+	        }//<<>>if( calibration tag is incomplete )
 
         //if( smear && ( SmearTagSet.find(smearTag) == SmearTagSet.end() ) ){
         //    std::cout << " No Smear tag found !!" << std::endl;
@@ -3177,6 +3174,7 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 		}//<<>>if( nAdded == 0 )
 
 		const bool useUnCCTime = isCC && doUnCC;
+		const bool needGainInfo = useGSwitch && (not doAllGain || usecali || smear);
 		fInTree->SetBranchStatus("*",0);
 		bool branchesValid = true;
 		auto requireBranch = [&]( const char* name, auto* address, TBranch** branch ){
@@ -3198,17 +3196,23 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 		requireBranch("resRtTime",&resRtTime,&b_resRtTime);
 		if( useUnCCTime ) requireBranch("resCCTime",&resCCTime,&b_resCCTime);
 		requireBranch("resTOF",&resTOF,&b_resTOF);
-		requireBranch("rhID",&rhID,&b_rhID);
-		requireBranch("rhisGS6",&rhisGS6,&b_rhisGS6);
-		requireBranch("rhisGS1",&rhisGS1,&b_rhisGS1);
+		if( needGainInfo ){
+			requireBranch("rhID",&rhID,&b_rhID);
+			requireBranch("rhisGS6",&rhisGS6,&b_rhisGS6);
+			requireBranch("rhisGS1",&rhisGS1,&b_rhisGS1);
+		}//<<>>if( gain information is required )
 		if( not branchesValid ){
 			delete fInTree;
 			return false;
 		}//<<>>if( not branchesValid )
 		fInTree->SetCacheSize(100LL*1024LL*1024LL);
-		for( const auto& branch : {"run","resRhID","resAmp","resE","resRtTime","resTOF","rhID","rhisGS6","rhisGS1"} )
+		for( const auto& branch : {"run","resRhID","resAmp","resE","resRtTime","resTOF"} )
 			fInTree->AddBranchToCache(branch,true);
 		if( useUnCCTime ) fInTree->AddBranchToCache("resCCTime",true);
+		if( needGainInfo ){
+			for( const auto& branch : {"rhID","rhisGS6","rhisGS1"} )
+				fInTree->AddBranchToCache(branch,true);
+		}//<<>>if( gain information is required )
 		fInTree->StopCacheLearningPhase();
 
         std::cout << " Getting calibration values and plotting" << std::endl;
@@ -3222,6 +3226,86 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 	        if( small && nEntries > 1000000 ) nEntries = 1000000;
 	        if( debug ) nEntries = ( nEntries < 10000 ) ? nEntries : 10000;
 	        //if( debug )
+
+		std::string caliend = usecali ? "" : nocalistr;
+		if( doUnCC ) caliend += uncorstr;
+		if( smear ) caliend += smearstr;
+		caliend += ext;
+		const std::string histMapName = "ResMap_" + std::to_string(srun) + "_" + std::to_string(erun);
+		const std::string lsfnameeb = histMapName + lochist + caliend + eb_hist;
+		const std::string ldfnameeb = histMapName + druhist + caliend + eb_hist;
+		const std::string gbfnameeb = histMapName + globhist + caliend + eb_hist;
+		const std::string efnameeb = histMapName + ehist + caliend + eb_hist;
+		const std::string lsfnameee = histMapName + lochist + caliend + ee_hist;
+		const std::string ldfnameee = histMapName + druhist + caliend + ee_hist;
+		const std::string gbfnameee = histMapName + globhist + caliend + ee_hist;
+		const std::string efnameee = histMapName + ehist + caliend + ee_hist;
+		auto getOrCreateResolutionHist = [&]( const std::string& name, bool amplitudeVsEnergy ){
+			auto existing = CaliHists.find(name);
+			if( existing != CaliHists.end() ) return existing->second.h2f;
+			TH2F* hist = amplitudeVsEnergy
+				? new TH2F(name.c_str(),name.c_str(),500,0,1000,100,0,200)
+				: new TH2F(name.c_str(),name.c_str(),fXBins.size()-1,xbins,fYBins.size()-1,ybins);
+			hist->GetXaxis()->SetTitle(fXTitle.c_str());
+			hist->GetYaxis()->SetTitle(( amplitudeVsEnergy ? fEYTitle : fYTitle ).c_str());
+			hist->GetZaxis()->SetTitle(fZTitle.c_str());
+			CaliHists[name] = { hist, name, true, true };
+			return hist;
+		};
+		TH2F* localSameEB = getOrCreateResolutionHist(lsfnameeb,false);
+		TH2F* localDifferentEB = getOrCreateResolutionHist(ldfnameeb,false);
+		TH2F* globalEB = getOrCreateResolutionHist(gbfnameeb,false);
+		TH2F* amplitudeEnergyEB = getOrCreateResolutionHist(efnameeb,true);
+		TH2F* localSameEE = getOrCreateResolutionHist(lsfnameee,false);
+		TH2F* localDifferentEE = getOrCreateResolutionHist(ldfnameee,false);
+		TH2F* globalEE = getOrCreateResolutionHist(gbfnameee,false);
+		TH2F* amplitudeEnergyEE = getOrCreateResolutionHist(efnameee,true);
+		const bool fillResolutionHists = CaliHists.find(lsfnameeb)->second.isNew;
+		auto findCalibrationRange = []( const auto& mapSet, const std::string& calibrationTag, int eventRun )
+			-> const kucms_CaliRunClass* {
+			auto tagSet = mapSet.find(calibrationTag);
+			if( tagSet == mapSet.end() ) return nullptr;
+			auto range = tagSet->second.upper_bound(eventRun);
+			if( range == tagSet->second.begin() ) return nullptr;
+			--range;
+			return eventRun <= range->second.endRun ? &range->second : nullptr;
+		};
+		int cachedCalibrationRun = -1;
+		const kucms_CaliRunClass* cachedCrystalRange = nullptr;
+		const kucms_CaliRunClass* cachedTTRange = nullptr;
+		auto getCachedCalibration = [&]( uInt rechitID, int gainID, const kucms_DetIDStruct& detInfo ){
+			if( not usecali ) return 0.f;
+			if( cachedCalibrationRun != static_cast<int>(run) ){
+				cachedCalibrationRun = run;
+				cachedCrystalRange = findCalibrationRange(CaliRunMapSet,tag,run);
+				cachedTTRange = findCalibrationRange(TTCaliRunMapSet,tag,run);
+			}//<<>>if( run changed )
+			if( not cachedCrystalRange ) return 0.f;
+			double correction = 0.0;
+			auto crystalMean = cachedCrystalRange->meanMap.find(rechitID);
+			if( crystalMean != cachedCrystalRange->meanMap.end() ) correction += crystalMean->second;
+			if( cachedTTRange ){
+				uInt ttID = 0;
+				if( detInfo.ecal == ECAL::EB ){
+					const int ttPhi = 1 + (detInfo.i1 - 1)/5;
+					const int ttEta = 1 + (std::abs(detInfo.i2) - 1)/5;
+					ttID = detInfo.i2 < 0 ? (ttPhi + ttEta*100) + 2000 : ttPhi + ttEta*100;
+				} else ttID = 1000*(detInfo.ecal + 3) + detInfo.mod;
+				auto ttMean = cachedTTRange->meanMap.find(ttID);
+				if( ttMean != cachedTTRange->meanMap.end() ) correction += ttMean->second;
+			}//<<>>if( TT calibration range exists )
+			if( gainID > 1 ){
+				uInt gainSwitchID = 0;
+				if( detInfo.ecal == ECAL::EB ) gainSwitchID = detInfo.i2 < 0
+					? ( gainID == 2 ? 206 : 201 ) : ( gainID == 2 ? 106 : 101 );
+				else if( detInfo.ecal == ECAL::EM ) gainSwitchID = gainID == 2 ? 116 : 111;
+				else if( detInfo.ecal == ECAL::EP ) gainSwitchID = gainID == 2 ? 226 : 221;
+				auto gainMean = cachedCrystalRange->meanMap.find(gainSwitchID);
+				if( gainMean != cachedCrystalRange->meanMap.end() ) correction += gainMean->second;
+			}//<<>>if( gain-switched rechit )
+			return static_cast<float>(correction);
+		};
+
 		std::cout << "Mf2d Proccessing " << nEntries << " entries : " << std::endl;
 		int nextProgressPercent = 0;
 		Long64_t nextProgressEntry = 0;
@@ -3235,8 +3319,7 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 				nextProgressEntry = progressEntryForPercent(nEntries,nextProgressPercent);
 			}//<<>>if( progress update )
 
-	            auto entry = fInTree->LoadTree(centry);
-			if( entry < 0 || fInTree->GetEntry(centry) <= 0 ){
+			if( fInTree->GetEntry(centry) <= 0 ){
 				std::cerr << "ERROR: failed to read resolution input entry " << centry << std::endl;
 				delete fInTree;
 				return false;
@@ -3244,10 +3327,9 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 
             if(debug) std::cout << "Start loop ----------------------------------- " << std::endl;
 
-            gevents++;
-
 			if( not resRhID || not resAmp || not resE || not resRtTime || not resTOF ||
-			    not rhID || not rhisGS6 || not rhisGS1 || (useUnCCTime && not resCCTime) ){
+			    (needGainInfo && (not rhID || not rhisGS6 || not rhisGS1)) ||
+			    (useUnCCTime && not resCCTime) ){
 				std::cerr << "ERROR: null vector in resolution input entry " << centry << std::endl;
 				delete fInTree;
 				return false;
@@ -3260,12 +3342,12 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 				delete fInTree;
 				return false;
 			}//<<>>if( malformed resolution vectors )
-			if( rhisGS6->size() != rhID->size() || rhisGS1->size() != rhID->size() ){
+			if( needGainInfo && (rhisGS6->size() != rhID->size() || rhisGS1->size() != rhID->size()) ){
 				std::cerr << "ERROR: misaligned rechit gain vectors in entry " << centry << std::endl;
 				delete fInTree;
 				return false;
 			}//<<>>if( malformed gain vectors )
-	            const auto nRecHits = rhID->size();
+	            const auto nRecHits = needGainInfo ? rhID->size() : 0;
 
             if( ( ((*resRhID)[0]) == 0 ) && ( ((*resRhID)[3]) == 0 ) ) continue;
 
@@ -3289,83 +3371,25 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
                         //if( debug) std::cout << " - check lastRun : " << run << " last " << range.lastRun << std::endl;
                         // if end == last : all runs in range completed, if run > last : run in range already filled
                         //if( range.lastRun >= range.endRun ){ // caliRunRange is ready for 2d res plot
-                            std::string caliend = usecali ? "" : nocalistr;
-							if( doUnCC ) caliend = caliend + uncorstr;
-                            if( smear ) caliend = caliend + smearstr;
-                            caliend = caliend + ext;
-							std::string histMapName = "ResMap_" + std::to_string(srun) + "_" + std::to_string(erun);
-                            std::string lsfname = histMapName+lochist+caliend;
-                            std::string ldfname = histMapName+druhist+caliend;
-                            std::string gbfname = histMapName+globhist+caliend;
-                            std::string efname = histMapName+ehist+caliend;
-                            std::string lsfnameeb = lsfname + eb_hist;
-                            std::string ldfnameeb = ldfname + eb_hist;
-                            std::string gbfnameeb = gbfname + eb_hist;
-                            std::string efnameeb = efname + eb_hist;
-                            std::string lsfnameee = lsfname + ee_hist;
-                            std::string ldfnameee = ldfname + ee_hist;
-                            std::string gbfnameee = gbfname + ee_hist;
-                            std::string efnameee = efname + ee_hist;
-                            if( CaliHists.find(lsfnameeb) == CaliHists.end() ){ // 2D hist already made? 
-                                TH2F* theHistLS = new TH2F(lsfnameeb.c_str(),lsfnameeb.c_str(),fXBins.size()-1,xbins,fYBins.size()-1,ybins);
-                                theHistLS->GetXaxis()->SetTitle(fXTitle.c_str());
-                                theHistLS->GetYaxis()->SetTitle(fYTitle.c_str());
-                                theHistLS->GetZaxis()->SetTitle(fZTitle.c_str());
-                                CaliHists[lsfnameeb] = { theHistLS, lsfnameeb, true, true }; // histfile histname isnew isres
-                                TH2F* theHistGB = new TH2F(gbfnameeb.c_str(),gbfnameeb.c_str(),fXBins.size()-1,xbins,fYBins.size()-1,ybins);
-                                theHistGB->GetXaxis()->SetTitle(fXTitle.c_str());
-                                theHistGB->GetYaxis()->SetTitle(fYTitle.c_str());
-                                theHistGB->GetZaxis()->SetTitle(fZTitle.c_str());
-                                CaliHists[gbfnameeb] = { theHistGB, gbfnameeb, true, true }; // histfile histname isnew isres
-                                TH2F* theHistLD = new TH2F(ldfnameeb.c_str(),ldfnameeb.c_str(),fXBins.size()-1,xbins,fYBins.size()-1,ybins);
-                                theHistLD->GetXaxis()->SetTitle(fXTitle.c_str());
-                                theHistLD->GetYaxis()->SetTitle(fYTitle.c_str());
-                                theHistLD->GetZaxis()->SetTitle(fZTitle.c_str());
-                                CaliHists[ldfnameeb] = { theHistLD, ldfnameeb, true, true }; // histfile histname isnew isres
-                                TH2F* theHistAE = new TH2F(efnameeb.c_str(),efnameeb.c_str(),500,0,1000,100,0,200);
-                                theHistAE->GetXaxis()->SetTitle(fXTitle.c_str());
-                                theHistAE->GetYaxis()->SetTitle(fEYTitle.c_str());
-                                theHistAE->GetZaxis()->SetTitle(fZTitle.c_str());
-                                CaliHists[efnameeb] = { theHistAE, efnameeb, true, true }; // histfile histname isnew isres
-                                //range.has2DResMap = true;
-                                TH2F* theHistLSEE = new TH2F(lsfnameee.c_str(),lsfnameee.c_str(),fXBins.size()-1,xbins,fYBins.size()-1,ybins);
-                                theHistLS->GetXaxis()->SetTitle(fXTitle.c_str());
-                                theHistLS->GetYaxis()->SetTitle(fYTitle.c_str());
-                                theHistLS->GetZaxis()->SetTitle(fZTitle.c_str());
-                                CaliHists[lsfnameee] = { theHistLSEE, lsfnameee, true, true }; // histfile histname isnew isres
-                                TH2F* theHistGBEE = new TH2F(gbfnameee.c_str(),gbfnameee.c_str(),fXBins.size()-1,xbins,fYBins.size()-1,ybins);
-                                theHistGB->GetXaxis()->SetTitle(fXTitle.c_str());
-                                theHistGB->GetYaxis()->SetTitle(fYTitle.c_str());
-                                theHistGB->GetZaxis()->SetTitle(fZTitle.c_str());
-                                CaliHists[gbfnameee] = { theHistGBEE, gbfnameee, true, true }; // histfile histname isnew isres
-                                TH2F* theHistLDEE = new TH2F(ldfnameee.c_str(),ldfnameee.c_str(),fXBins.size()-1,xbins,fYBins.size()-1,ybins);
-                                theHistLD->GetXaxis()->SetTitle(fXTitle.c_str());
-                                theHistLD->GetYaxis()->SetTitle(fYTitle.c_str());
-                                theHistLD->GetZaxis()->SetTitle(fZTitle.c_str());
-                                CaliHists[ldfnameee] = { theHistLDEE, ldfnameee, true, true }; // histfile histname isnew isres
-                                TH2F* theHistAEEE = new TH2F(efnameee.c_str(),efnameee.c_str(),500,0,1000,100,0,200);
-                                theHistAEEE->GetXaxis()->SetTitle(fXTitle.c_str());
-                                theHistAEEE->GetYaxis()->SetTitle(fEYTitle.c_str());
-                                theHistAEEE->GetZaxis()->SetTitle(fZTitle.c_str());
-                                CaliHists[efnameee] = { theHistAEEE, efnameee, true, true }; // histfile histname isnew isres
-                            }//if( CaliHists.find(lsfname) == CaliHists.end() ){ 
-                            if( CaliHists[lsfnameeb].isNew ){
+                            if( fillResolutionHists ){
 
                                 // ----  fill res hist
 
 								kucms_DetIDStruct invalidDetID;
-								std::vector<const kucms_DetIDStruct*> idinfo(4,&invalidDetID);
+								std::array<const kucms_DetIDStruct*,4> idinfo = {
+									&invalidDetID,&invalidDetID,&invalidDetID,&invalidDetID
+								};
 								for( std::size_t idx = 0; idx < idinfo.size(); idx++ ){
 									const auto detID = (*resRhID)[idx];
 									if( detID == 0 ) continue;
-									const auto detIt = DetIDMap.find(detID);
-									if( detIt == DetIDMap.end() ){
+									const auto detIt = fastDetInfo.find(detID);
+									if( detIt == fastDetInfo.end() ){
 										std::cerr << "ERROR: unknown resolution rechit DetID " << detID
 										          << " in entry " << centry << std::endl;
 										delete fInTree;
 										return false;
 									}//<<>>if( DetID missing )
-									idinfo[idx] = &detIt->second;
+									idinfo[idx] = detIt->second;
 								}//<<>>for( resolution DetIDs )
 								const auto& idinfoL0 = *idinfo[0];
 								const auto& idinfoL1 = *idinfo[1];
@@ -3373,24 +3397,28 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 								const auto& idinfoG1 = *idinfo[3];
 
 								// set gain level in this block ---------------------------------------------------------------
-	                                std::vector<bool> isGainId1 = {true,true,true,true};
-	                                std::vector<int> rhGainId = {0,0,0,0};
-	                                if( useGSwitch ){
-									std::vector<bool> gainMatchFound = {false,false,false,false};
-	                                    for( int resrhit = 0; resrhit < 4; resrhit++ ){
-	                                        for( std::size_t rhit = 0; rhit < nRecHits; rhit++ ){
-	                                            if( (*resRhID)[resrhit] == (*rhID)[rhit] ){
-											gainMatchFound[resrhit] = true;
-                                                if( useGain == 1 ) isGainId1[resrhit] = not ( (*rhisGS1)[rhit] || (*rhisGS6)[rhit] );
-												else if ( useGain == 2 ) isGainId1[resrhit] = not (*rhisGS1)[rhit] && (*rhisGS6)[rhit];
-                                                else if ( useGain == 3 ) isGainId1[resrhit] = (*rhisGS1)[rhit] && not (*rhisGS6)[rhit];
-                                                else if ( useGain == 4 ) isGainId1[resrhit] = (*rhisGS1)[rhit] && (*rhisGS6)[rhit];
-												else isGainId1[resrhit] = false;
-												rhGainId[resrhit] = useGain;
-                                                break;
-                                            }//<>if( (*resRhID)[rhit] == (*resRhID)[resrhit] )
-	                                        }//<<>>for( int resrhit = 0; resrhit < nResRecHits; resrhi++ )
-	                                    }//<<>>for( int rhit = 0; rhit < 4; rhit++ )
+	                                std::array<bool,4> isSelectedGain = {true,true,true,true};
+	                                std::array<int,4> rhGainId = {0,0,0,0};
+	                                if( needGainInfo ){
+								std::array<bool,4> gainMatchFound = {false,false,false,false};
+								std::size_t gainsNeeded = 0;
+								for( std::size_t idx = 0; idx < gainMatchFound.size(); idx++ )
+									if( (*resRhID)[idx] != 0 ) gainsNeeded++;
+								std::size_t gainsFound = 0;
+								for( std::size_t rhit = 0; rhit < nRecHits && gainsFound < gainsNeeded; rhit++ ){
+									const auto rechitID = (*rhID)[rhit];
+									for( std::size_t resrhit = 0; resrhit < gainMatchFound.size(); resrhit++ ){
+										if( gainMatchFound[resrhit] || (*resRhID)[resrhit] == 0 ||
+										    (*resRhID)[resrhit] != rechitID ) continue;
+										gainMatchFound[resrhit] = true;
+										gainsFound++;
+										const bool isGS1 = (*rhisGS1)[rhit];
+										const bool isGS6 = (*rhisGS6)[rhit];
+										const int actualGainId = not isGS1 ? ( isGS6 ? 2 : 1 ) : ( isGS6 ? 4 : 3 );
+										isSelectedGain[resrhit] = actualGainId == useGain;
+										rhGainId[resrhit] = actualGainId;
+									}//<<>>for( resolution rechits )
+								}//<<>>for( full rechits )
 									for( std::size_t idx = 0; idx < gainMatchFound.size(); idx++ ){
 										if( (*resRhID)[idx] != 0 && not gainMatchFound[idx] ){
 											std::cerr << "ERROR: resolution rechit " << (*resRhID)[idx]
@@ -3401,44 +3429,12 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 									}//<<>>for( gain matches )
 	                                }//<<>>if( useGSwitch )
 
-								//if( rhGainId[0] == 0 or rhGainId[1] == 0 or rhGainId[2] == 0 or rhGainId[3] == 0 ) continue;
-	                                float seedTimeIC00 = ( usecali && (*resRhID)[0] != 0 ) ? getCalibration( (*resRhID)[0], run, tag, rhGainId[0] ) : 0;
-	                                float seedTimeIC10 = ( usecali && (*resRhID)[1] != 0 ) ? getCalibration( (*resRhID)[1], run, tag, rhGainId[1] ) : 0;
-	                                float seedTimeIC01 = ( usecali && (*resRhID)[2] != 0 ) ? getCalibration( (*resRhID)[2], run, tag, rhGainId[2] ) : 0;
-	                                float seedTimeIC11 = ( usecali && (*resRhID)[3] != 0 ) ? getCalibration( (*resRhID)[3], run, tag, rhGainId[3] ) : 0;
-                                //if(debug) std::cout << " -- IC0l: " << seedTimeIC00 << " IC1l: " << seedTimeIC10;
-                                //if(debug) std::cout << " IC0g: " << seedTimeIC01 << " IC1g: " << seedTimeIC11 << std::endl;
-								
-                                //-------------------set for local, repo calcs for global --------------------------------
-
-                                if(debug) std::cout << " - Calc 2D Hist" << std::endl;
-
-                                double leffa0 = useAmp ? (*resAmp)[0] : (*resE)[0]; //(phoseedE_0/phoseedadcToGeV_0)/phoseedpedrms12_0;
-                                double leffa1 = useAmp ? (*resAmp)[1] : (*resE)[1]; //(phoseedE_1/phoseedadcToGeV_1)/phoseedpedrms12_1;
-                                double geffa0 = useAmp ? (*resAmp)[2] : (*resE)[2]; //(phoseedE_0/phoseedadcToGeV_0)/phoseedpedrms12_0;
-                                double geffa1 = useAmp ? (*resAmp)[3] : (*resE)[3]; //(phoseedE_1/phoseedadcToGeV_1)/phoseedpedrms12_1;
-                                double leffe0 = (*resE)[0]; //(phoseedE_0/phoseedadcToGeV_0)/phoseedpedrms12_0;
-                                double leffe1 = (*resE)[1]; //(phoseedE_1/phoseedadcToGeV_1)/phoseedpedrms12_1;
-                                double geffe0 = (*resE)[2]; //(phoseedE_0/phoseedadcToGeV_0)/phoseedpedrms12_0;
-                                double geffe1 = (*resE)[3]; //(phoseedE_1/phoseedadcToGeV_1)/phoseedpedrms12_1;
-                                double lxfill = (leffa0*leffa1)/sqrt(pow(leffa0,2)+pow(leffa1,2));
-                                double lxfille = (leffe0*leffe1)/sqrt(pow(leffe0,2)+pow(leffe1,2));
-                                double gxfill = (geffa0*geffa1)/sqrt(pow(geffa0,2)+pow(geffa1,2));
-                                double gxfille = (geffe0*geffe1)/sqrt(pow(geffe0,2)+pow(geffe1,2));
-
-								double Time0 = ( useUnCCTime ) ? (*resCCTime)[0] : (*resRtTime)[0];
-                                double Time1 = ( useUnCCTime ) ? (*resCCTime)[1] : (*resRtTime)[1];
-                                double Time2 = ( useUnCCTime ) ? (*resCCTime)[2] : (*resRtTime)[2];
-                                double Time3 = ( useUnCCTime ) ? (*resCCTime)[3] : (*resRtTime)[3];
-
-                                double ldTOF = (*resTOF)[0]-(*resTOF)[1]; //phoseedTOF_0-phoseedTOF_1;
-                                double gdTOF = (*resTOF)[2]-(*resTOF)[3]; //phoseedTOF_0-phoseedTOF_1;
-                                double lyf0 = Time0-seedTimeIC00;
-                                double lyf1 = Time1-seedTimeIC10;
-								double gyf0 = Time2-seedTimeIC01;
-								double gyf1 = Time3-seedTimeIC11;
-									const bool validLocTime = std::isfinite(Time0) && std::isfinite(Time1) &&
-									                          Time0 != -30.0 && Time1 != -30.0;
+								const double Time0 = useUnCCTime ? (*resCCTime)[0] : (*resRtTime)[0];
+                                const double Time1 = useUnCCTime ? (*resCCTime)[1] : (*resRtTime)[1];
+                                const double Time2 = useUnCCTime ? (*resCCTime)[2] : (*resRtTime)[2];
+                                const double Time3 = useUnCCTime ? (*resCCTime)[3] : (*resRtTime)[3];
+								const bool validLocTime = std::isfinite(Time0) && std::isfinite(Time1) &&
+								                          Time0 != -30.0 && Time1 != -30.0;
 								const bool validGloTime = std::isfinite(Time2) && std::isfinite(Time3) &&
 								                          Time2 != -30.0 && Time3 != -30.0;
 								const bool validLocInputs = std::isfinite((*resAmp)[0]) && std::isfinite((*resAmp)[1]) &&
@@ -3447,8 +3443,33 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 								const bool validGloInputs = std::isfinite((*resAmp)[2]) && std::isfinite((*resAmp)[3]) &&
 								                            std::isfinite((*resE)[2]) && std::isfinite((*resE)[3]) &&
 								                            std::isfinite((*resTOF)[2]) && std::isfinite((*resTOF)[3]);
-								//std::cout << " -- : " << Time0 << " - " << seedTimeIC00 << " " << usecali << " " << doEE;
-								//std::cout << " " << (*resRhID)[0] << std::endl;
+                                const bool goodLocRHs = (*resRhID)[0] != 0 && (*resRhID)[1] != 0;
+                                const bool goodGloRHs = (*resRhID)[2] != 0 && (*resRhID)[3] != 0;
+                                const bool goodLocTime = validLocTime && Time0 != 0 && Time1 != 0 && Time0 != Time1;
+                                const bool goodGloTime = validGloTime && Time2 != 0 && Time3 != 0 && Time2 != Time3;
+
+                                bool le_cut = ((*resE)[0]>=lB)&&((*resE)[0]<=uB)&&((*resE)[1]>=lB)&&((*resE)[1]<=uB);
+                                bool ge_cut = ((*resE)[2]>=lB)&&((*resE)[2]<=uB)&&((*resE)[3]>=lB)&&((*resE)[3]<=uB);
+                                if( useGSwitch ){
+									if( doAllGain ){
+                                        le_cut = (*resE)[0] >= lB && (*resE)[1] >= lB;
+                                        ge_cut = (*resE)[2] >= lB && (*resE)[3] >= lB;
+									} else {
+										le_cut = isSelectedGain[0] && isSelectedGain[1] && (*resE)[0] >= lB && (*resE)[1] >= lB;
+										ge_cut = isSelectedGain[2] && isSelectedGain[3] && (*resE)[2] >= lB && (*resE)[3] >= lB;
+									}//<<>>if( all gains )
+                                }//<<>>if( gain selection enabled )
+	                                const bool levent_good = le_cut && goodLocRHs && goodLocTime && validLocInputs;
+	                                const bool gevent_good = ge_cut && goodGloRHs && goodGloTime && validGloInputs;
+
+	                                const float seedTimeIC00 = usecali && levent_good ? getCachedCalibration((*resRhID)[0],rhGainId[0],idinfoL0) : 0;
+	                                const float seedTimeIC10 = usecali && levent_good ? getCachedCalibration((*resRhID)[1],rhGainId[1],idinfoL1) : 0;
+	                                const float seedTimeIC01 = usecali && gevent_good ? getCachedCalibration((*resRhID)[2],rhGainId[2],idinfoG0) : 0;
+	                                const float seedTimeIC11 = usecali && gevent_good ? getCachedCalibration((*resRhID)[3],rhGainId[3],idinfoG1) : 0;
+								double lyf0 = Time0-seedTimeIC00;
+								double lyf1 = Time1-seedTimeIC10;
+								double gyf0 = Time2-seedTimeIC01;
+								double gyf1 = Time3-seedTimeIC11;
 
 								if( smear ){
                                     //std::cout << "Times are smeared !!!!!" << std::endl;
@@ -3470,32 +3491,23 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 
 
                                 }//<<>>if( smear )
-                                double lyfill = lyf0-lyf1+ldTOF;
-                                double gyfill = gyf0-gyf1+gdTOF;
-
-                                bool le_cut = ((*resE)[0]>=lB)&&((*resE)[0]<=uB)&&((*resE)[1]>=lB)&&((*resE)[1]<=uB);
-                                bool ge_cut = ((*resE)[2]>=lB)&&((*resE)[2]<=uB)&&((*resE)[3]>=lB)&&((*resE)[3]<=uB);
-                                if( useGSwitch ){
-									if( doAllGain ){
-                                        le_cut = (*resE)[0] >= lB && (*resE)[1] >= lB;
-                                        ge_cut = (*resE)[2] >= lB && (*resE)[3] >= lB;
-									} else {
-                                    	le_cut = isGainId1[0] && isGainId1[1] && (*resE)[0] >= lB && (*resE)[1] >= lB;
-                                    	ge_cut = isGainId1[2] && isGainId1[3] && (*resE)[2] >= lB && (*resE)[3] >= lB;
-									}//<<>>if( doAllGain )
-                                }//<<>>if( useGSwitch )
-                                bool leta_cut_eb = (idinfoL0.ecal == ECAL::EB)&&(idinfoL1.ecal == ECAL::EB);
-                                bool geta_cut_eb = (idinfoG0.ecal == ECAL::EB)&&(idinfoG1.ecal == ECAL::EB);
-                                bool leta_cut_ee = (idinfoL0.ecal != ECAL::EB)&&(idinfoL1.ecal != ECAL::EB);
-                                bool geta_cut_ee = (idinfoG0.ecal != ECAL::EB)&&(idinfoG1.ecal != ECAL::EB);
-								bool goodLocTime = validLocTime && Time0 != 0 && Time1 != 0 && Time0 != Time1;
-								bool goodGloTime = validGloTime && Time2 != 0 && Time3 != 0 && Time2 != Time3;
-                                bool goodLocRHs = (*resRhID)[0] != 0 && (*resRhID)[1] != 0;
-                                bool goodGloRHs = (*resRhID)[2] != 0 && (*resRhID)[3] != 0;
-
-                                bool isd_cut = idinfoL0.TT == idinfoL1.TT; // true = same, fasle = different
-	                                bool levent_good = le_cut && goodLocRHs && goodLocTime && validLocInputs;
-	                                bool gevent_good = ge_cut && goodGloRHs && goodGloTime && validGloInputs;
+								if( not levent_good && not gevent_good ) continue;
+								const double leffa0 = useAmp ? (*resAmp)[0] : (*resE)[0];
+                                const double leffa1 = useAmp ? (*resAmp)[1] : (*resE)[1];
+                                const double geffa0 = useAmp ? (*resAmp)[2] : (*resE)[2];
+                                const double geffa1 = useAmp ? (*resAmp)[3] : (*resE)[3];
+                                const double leffe0 = (*resE)[0];
+                                const double leffe1 = (*resE)[1];
+                                const double lxfill = (leffa0*leffa1)/sqrt(leffa0*leffa0+leffa1*leffa1);
+                                const double lxfille = (leffe0*leffe1)/sqrt(leffe0*leffe0+leffe1*leffe1);
+                                const double gxfill = (geffa0*geffa1)/sqrt(geffa0*geffa0+geffa1*geffa1);
+                                const double lyfill = lyf0-lyf1+(*resTOF)[0]-(*resTOF)[1];
+                                const double gyfill = gyf0-gyf1+(*resTOF)[2]-(*resTOF)[3];
+                                const bool leta_cut_eb = idinfoL0.ecal == ECAL::EB && idinfoL1.ecal == ECAL::EB;
+                                const bool geta_cut_eb = idinfoG0.ecal == ECAL::EB && idinfoG1.ecal == ECAL::EB;
+                                const bool leta_cut_ee = idinfoL0.ecal != ECAL::EB && idinfoL1.ecal != ECAL::EB;
+                                const bool geta_cut_ee = idinfoG0.ecal != ECAL::EB && idinfoG1.ecal != ECAL::EB;
+                                const bool isd_cut = idinfoL0.TT == idinfoL1.TT; // true = same, false = different
 
                                 if(debug) std::cout << " - Fill 2D Hist" << std::endl;
 								
@@ -3504,9 +3516,9 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
                 					std::cout << "Run " << run << " id " << (*resRhID)[didx]; 
                                     std::cout << " Amp " << (*resAmp)[didx] << " E " << (*resE)[didx];
                 					std::cout << " Rt " << (*resRtTime)[didx]  << " TOF " << (*resTOF)[didx] << std::endl;
-                                    std::cout << "GSL: " << isGainId1[0] << " " << isGainId1[1] << " ";
+                                    std::cout << "GSL: " << isSelectedGain[0] << " " << isSelectedGain[1] << " ";
                                     std::cout << (*resE)[0] << " " << (*resE)[1] << " " << le_cut << std::endl;
-                                    std::cout << "GSZ: " << isGainId1[2] << " " << isGainId1[3] << " ";
+                                    std::cout << "GSZ: " << isSelectedGain[2] << " " << isSelectedGain[3] << " ";
                                     std::cout << (*resE)[2] << " " << (*resE)[3] << " " << ge_cut << std::endl;
             					}}//<<>>for( int didx = 0; didx < 4; didx++ ){
 
@@ -3518,19 +3530,19 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 								}//<<>>if( gevent_good && debug )
                                 if( levent_good && isd_cut ){
                                     if( leta_cut_eb ){ 
-										CaliHists[lsfnameeb].h2f->Fill(lxfill,lyfill,fillwgt); 
-										CaliHists[efnameeb].h2f->Fill(lxfill,lxfille,fillwgt); }
+										localSameEB->Fill(lxfill,lyfill,fillwgt);
+										amplitudeEnergyEB->Fill(lxfill,lxfille,fillwgt); }
                                     if( leta_cut_ee ){ 
-										CaliHists[lsfnameee].h2f->Fill(lxfill,lyfill,fillwgt); 
-										CaliHists[efnameee].h2f->Fill(lxfill,lxfille,fillwgt); }
+										localSameEE->Fill(lxfill,lyfill,fillwgt);
+										amplitudeEnergyEE->Fill(lxfill,lxfille,fillwgt); }
                                 }//<<>>if( levent_good && isd_cut )
 								if( gevent_good ){
-										if( geta_cut_eb ) CaliHists[gbfnameeb].h2f->Fill(gxfill,gyfill,fillwgt);
-									if( geta_cut_ee ) CaliHists[gbfnameee].h2f->Fill(gxfill,gyfill,fillwgt);
+										if( geta_cut_eb ) globalEB->Fill(gxfill,gyfill,fillwgt);
+									if( geta_cut_ee ) globalEE->Fill(gxfill,gyfill,fillwgt);
 								}//<<>>if( gevent_good )
                                 if( levent_good && not isd_cut ){ 
-									if( leta_cut_eb ) CaliHists[ldfnameeb].h2f->Fill(lxfill,lyfill,fillwgt); 
-                                    if( leta_cut_ee ) CaliHists[ldfnameee].h2f->Fill(lxfill,lyfill,fillwgt); 
+									if( leta_cut_eb ) localDifferentEB->Fill(lxfill,lyfill,fillwgt);
+                                    if( leta_cut_ee ) localDifferentEE->Fill(lxfill,lyfill,fillwgt);
 								}//<<>>if( levent_good && not isd_cut )
                                 if(debug) std::cout << " - Fill hists done" << std::endl;
 

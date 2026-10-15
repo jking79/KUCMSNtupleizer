@@ -222,8 +222,25 @@ int main ( int argc, char *argv[] ){
     //theCali.setLowEnergy( false ); // true is default
     ////theCali.setUseEffEnergy( true );
 
-    theCali.useGainSwitch( true, true ); // use gainid ? --  do all gians ? : all Gains (HG)
-    //theCali.useGainSwitch( true, false ); // use gainid ? --  do all gians ? : only gainID1 (LG)
+    // Gain selection for plot2dResolutionEGR():
+    //   useGainSwitch(true,true) accepts gain IDs 1, 2, 3, and 4.  When calibration is
+    //   enabled, each rechit receives the correction for its actual gain ID.
+    //   useGainSwitch(true,false) accepts only pairs whose two rechits both match
+    //   setUseGainID(): 1=no switch, 2=GS6 only, 3=GS1 only, 4=both flags set.
+    //   setUseGainID() defaults to 1 and only controls selection when the second
+    //   useGainSwitch argument is false; it does not override per-rechit calibration.
+    //   Do not use useGainSwitch(false,...) for calibrated mixed-gain plots because
+    //   the full-rechit gain flags will not be consulted.
+    // Choose one mode:
+    theCali.useGainSwitch( true, true ); // all gain categories
+    //theCali.setUseGainID( 1 );
+    //theCali.useGainSwitch( true, false ); // gain 1 only
+    //theCali.setUseGainID( 2 );
+    //theCali.useGainSwitch( true, false ); // gain 2 only
+    //theCali.setUseGainID( 3 );
+    //theCali.useGainSwitch( true, false ); // gain 3 only
+    //theCali.setUseGainID( 4 );
+    //theCali.useGainSwitch( true, false ); // both GS1 and GS6 flags set
 
     //theCali.setIsCC(true);
     //theCali.setDoUnCC(true);
@@ -231,7 +248,6 @@ int main ( int argc, char *argv[] ){
 
 	////theCali.setDoEE( false ); depreciated - now do EB & EE at the same time
     ////theCali.setDoEE( true ); depreciated - now do EB & EE at the same time
-	////theCali.setUseGainID( 1 ); depreciated - now set by useGainSwitch
 	////theCali.SetXBinStr( "VARIABLE 10 15 20 25 30 40 50 60 80 100 125 150 175 200 225 250 300 400 600" ); // : xr
     ////theCali.SetXBinStr( "VARIABLE 5 15 20 25 30 40 50 75 100 125 150 175 200 225 250 300 400 600 800 1600" ); // : xlg  llpana LG resfit ( old xa )
 
