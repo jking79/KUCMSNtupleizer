@@ -4537,7 +4537,7 @@ void KUCMS_TimeCalibration::makeTTDriftMaps( std::string tag, int srun, int erun
 
 		std::cout << " -- Filling TH1F and TGraphErrors " << std::endl;
         std::map<int,float> normrun;
-		float maxtime = 0;
+		//float maxtime = 0;
         for( auto& calirunsct : calirunmap ){
 
 			first = calirunsct.first;
@@ -4557,7 +4557,7 @@ void KUCMS_TimeCalibration::makeTTDriftMaps( std::string tag, int srun, int erun
                     float error = calirunsct.second.errMap[detid];
                     if( bin == 1 ) normrun[index] = mean;
 					if( mean == 0 ) continue;
-					if( std::abs(mean) > maxtime ) maxtime == std::abs(mean);
+					//if( std::abs(mean) > maxtime ) maxtime == std::abs(mean);
                     //std::cout << " -- Filling : " << ieta << " " << iphi << " " << index << " " << first << " ";
 					//std::cout << bin << " " << mean << " " << error << " " << normrun[index] << std::endl;
 					histmap[index]->SetBinContent( bin, mean );
