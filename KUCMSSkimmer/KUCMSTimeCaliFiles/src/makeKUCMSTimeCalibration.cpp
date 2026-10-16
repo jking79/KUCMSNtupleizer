@@ -60,9 +60,9 @@ int main ( int argc, char *argv[] ){
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR18ULv2GT36TFile.txt");
 
 	//std::string inputfilename( "ecal_config/kucmsTimeCaliR22ReRecoTFile.txt"); 
-    std::string inputfilename( "ecal_config/kucmsTimeCaliR23ReRecoTFile.txt");
+    //std::string inputfilename( "ecal_config/kucmsTimeCaliR23ReRecoTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR24ReRecoTFile.txt");
-    //std::string inputfilename( "ecal_config/kucmsTimeCaliR25PrmptTFile.txt");
+    std::string inputfilename( "ecal_config/kucmsTimeCaliR25PrmptTFile.txt");
 
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCQCDTFile.txt");
 
@@ -77,9 +77,9 @@ int main ( int argc, char *argv[] ){
     //std::string indir("KUCMSNtuple/gammares_ul18v2gt36/");
 
 	//std::string indir("KUCMSNtuple/gammares_R22_22sept23/");
-    std::string indir("KUCMSNtuple/gammares_R23_22sept23/");
+    //std::string indir("KUCMSNtuple/gammares_R23_22sept23/");
     //std::string indir("KUCMSNtuple/gammares_R24_m6n15/");
-    //std::string indir("KUCMSNtuple/gammares_prmt25/");
+    std::string indir("KUCMSNtuple/gammares_prmt25/");
 
     //std::string indir("KUCMSNtuple/gammares_QCD18/");
 
@@ -92,7 +92,7 @@ int main ( int argc, char *argv[] ){
 	// KUCMS_TimeCalibration( bool stayOpen = false, bool makeNew = false  ); are defaults
 
 	////KUCMS_TimeCalibration theCali; // open tfile in read only then close after setup
-	KUCMS_TimeCalibration theCali( true );// true allows for run local condition
+	KUCMS_TimeCalibration theCali( true );// true allows for run local condition // Open local ecal_config ROOT files in UPDATE mode.
 	if( not theCali.HasValidCaliMaps() ) return EXIT_FAILURE;
 	theCali.SetEosDir(eosdir);
 	theCali.SetInDir(indir);
@@ -111,9 +111,9 @@ int main ( int argc, char *argv[] ){
     // for PD R3
 	theCali.setTTIov( r3TagTT );
 	theCali.setXIov( r3TagX );
-    //theCali.setIsCC(true);
+    theCali.setIsCC(true);
 	////theCali.setIsCC(false); //-- defaults to false
-	//theCali.setDoUnCC(true);
+	theCali.setDoUnCC(true);
 
     //-----//////////  making trigtower cali :
 	////// bool makeCaliMapsEGR( std::string inputFileName, bool doTT, int GID, bool small, bool doCali )
