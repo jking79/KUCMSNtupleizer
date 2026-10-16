@@ -75,6 +75,7 @@ KUCMS_TimeCalibration::KUCMS_TimeCalibration( bool stayOpen, bool makeNew, bool 
     caliHistFileNames["r3_p25"] = "cali_p25_HistsTFile.root";
     caliHistFileNames["r3_p25unc"] = "cali_p25_UnCor_HistsTFile.root";
     caliHistFileNames["r3_p26"] = "cali_p26_HistsTFile.root";
+	caliHistFileNames["r3_p26unc"] = "cali_p26_UnCor_HistsTFile.root";
 
 	useEosRootCali =  doLocalCali ? false : true;
 	caliMapsValid = true;
@@ -561,8 +562,8 @@ void KUCMS_TimeCalibration::SetupIovMap( std::string tag, float minLumi ){
 		int yendrun = 0;
 		// ::check if current run has past the start of a hard IOV boundary while in a range that started before that boundary
 		// the Hard IOV boundary must be the start run of an IOV ( the run listed here must always trigger an IOV jump ) 
-		std::vector<int> tthardruns{ 284045, 306461, 325173, 357501, 359001, 359560, 359567, 359574, 359690, 359775, 359870, 359871, 359880, 359895, 359902, 360129, 360131, 360260, 360331, 362761, 373862, 387742, 398904 };
-		std::vector<int> xhardruns{ 253984, 284045, 306461, 327239, 362761, 373862, 387742, 398904 };
+		std::vector<int> tthardruns{ 284045, 306461, 325173, 357501, 359001, 359560, 359567, 359574, 359690, 359775, 359870, 359871, 359880, 359895, 359902, 360129, 360131, 360260, 360331, 362761, 373862, 387742, 398904, 401630, 402514, 403868 };
+		std::vector<int> xhardruns{ 253984, 284045, 306461, 327239, 362761, 373862, 387742, 398904, 401630, 402514, 403868 };
 		if( minLumi < 3.f ) { for( auto hardrun : tthardruns ){ if( currentrun >= hardrun && start < hardrun ){ yearend = true; yendrun = hardrun; } } }
 		else { for( auto hardrun : xhardruns ){ if( currentrun >= hardrun && start < hardrun ){ yearend = true; yendrun = hardrun; } } }
 		//if( yearend ) std::cout << " --- END OF YEAR : " << currentrun << " start " << start << std::endl; 
