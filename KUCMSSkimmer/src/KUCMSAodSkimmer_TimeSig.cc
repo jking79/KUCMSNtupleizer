@@ -38,7 +38,7 @@ void KUCMSAodSkimmer::processTimeSig(){
 
     int selPhoIndex = -1;
 
-	uInt nPhotons = Photon_excluded->size();
+	uInt nPhotons = correctedPhotonExcluded.size();
 	if( DEBUG ) std::cout << " - Looping over for " << nPhotons << " photons to get BC info" << std::endl;
 	int selPhoBHCIdx = 0;
 	for( uInt it = 0; it < nPhotons; it++ ){
@@ -399,4 +399,3 @@ double KUCMSAodSkimmer::CalcGenDeltaT(const Jet& pho){
 *
 *   --------------------------------------------------------------
 */
-

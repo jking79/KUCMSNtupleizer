@@ -95,8 +95,9 @@ def docrab( dataset ):
         #config.Data.unitsPerJob  =  750 # MC DiPhoBox (DPB)
 
         #config.section_("Site")
-        config.Site.whitelist = ['T1_*','T2_US_*','T2_IT_*','T2_DE_*','T2_FR_*','T2_UK_*']
-        config.Site.blacklist = ['T2_CH_CSCS','T2_ES_CIEMAT']
+        #config.Site.whitelist = ['T1_*','T2_US_*','T2_IT_*','T2_DE_*','T2_FR_*','T2_UK_*']
+        config.Site.whitelist = ['T3_US_FNALLPC']
+        #config.Site.blacklist = ['T2_CH_CSCS','T2_ES_CIEMAT']
 
         config.JobType.allowUndistributedCMSSW = True
         config.Data.publication    = False
@@ -117,17 +118,22 @@ def docrab( dataset ):
             #sms_fullpath_filelist/filelist_full_mini_SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p1_MINI.txt
             #gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2500_mN2-2400_mN1-2300_GZ_N2ctau-0p5_MINI.txt
             #gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p001_MINI.txt
+            #T5Zg_FullSim_Mini_2018__T5Zg_mGo-2300_mN2-1200_mN1-1000_N2ctau-300cm_2018_MINI.txt
             print( 'Input dataset for Crab Job : ' )
             #print( inDO )
             # inDO[0] is of the form /A/B/C. Since A+B is unique for each inDS, use this in the CRAB request name.
-            #fileSetName = ((inDO[1].split('/')[1]).split('PUlib1__')[1]).split('_MINI.')[0]
-            fileSetName = ((inDO[1].split('/')[1]).split('Mini__')[1]).split('_MINI.')[0]
+            fileSetName = ((inDO[1].split('/')[1]).split('PUlib1__')[1]).split('_MINI.')[0]
+            #fileSetName = ((inDO[1].split('/')[1]).split('Mini__')[1]).split('_MINI.')[0]
+            #fileSetName = ((inDO[1].split('/')[1]).split('Mini_2018__')[1]).split('_MINI.')[0]
+            #fileSetName = ((inDO[1].split('/')[1]).split('Mini_2022__')[1]).split('_MINI.')[0]
             primaryDataset = (fileSetName.split('_mGl')[0])
+            #primaryDataset = (fileSetName.split('_mGo')[0])
             #primaryDataset = (inDO[0].split('/')[1]).split('_13T')[0]
             #primaryDataset = (inDO[0].split('/')[1]).split('_Tune')[0]
 
             print( primaryDataset )
             runEra         =  (fileSetName.split('GlGl_')[1])
+            #runEra         =  (fileSetName.split('T5Zg_')[1])
             #runEra         = (inDO[1].split('/')[2]) # justin
             #runEra         = (inDO[0].split('/')[2]).split('-')[0]
             #runEra         = (inDO[0].split('/')[2]).split('RECO')[0]
@@ -137,7 +143,7 @@ def docrab( dataset ):
             print( dataset )
 
             print( 'with : ',inDO[1] )
-            print( 'current KUCMSNtuple version : 37' )            
+            print( 'current KUCMSNtuple version : 38' )            
 
             #trial          = "kucmsntuple_gogoG_Sig_IPM100_v26" #
             #trial          = "kucmsntuple_gogoZ_Sig_IPM100_v27" # 
@@ -147,8 +153,9 @@ def docrab( dataset ):
             #trial          = "kucmsntuple_MET_R17_SVIPM100_p9_v31"# 
             #trial          = "kucmsntuple_SMS_test_SVHPM100_Mini_v33" #
             #trial          = "kucmsntuple_SMS_GZ_SVHPM100_FullMini_v36" #
-            #trial          = "kucmsntuple_SMS_GZ_SVHPM100_Fast1_v37"
-            trial          = "kucmsntuple_SMS_GZ_SVHPM100_FullMini_v37" #
+            trial          = "kucmsntuple_SMS_GZ_SVHPM100_Fast1_v38"
+            #trial          = "kucmsntuple_SMS_GZ_SVHPM100_FullMini_v38" #
+            #trial          = "kucmsntuple_SMS_T5Zg_SVHPM100_FullMini_v38"
 
             ######trial          = "kucmsntuple_SMS_GZ_SVHPM100_Full_noGPK" #
 
@@ -214,9 +221,14 @@ def docrab( dataset ):
             #config.JobType.pyCfgParams   = ['globalTag=94X_mc2017_realistic_v11','multicrab=True','hasGenInfo=True','eventSkim=AL1IsoPho']
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>>>>>      #MC Justin
+            #gt = 'globalTag=106X_upgrade2018_realistic_v11_L1v1'
+            #runinfo = 'runera=Run2_2018'
             gt = 'globalTag=124X_mcRun3_2022_realistic_v12'
-            #gt = 'globalTag=124X_mcRun3_2022_realistic_postEE_v1'
-            config.JobType.pyCfgParams   = [gt,mcrab,geninfo,efilter,runinfo]
+            runinfo = 'runera=Run3_2022'
+            ##gt = 'globalTag=124X_mcRun3_2022_realistic_postEE_v1'
+            #config.JobType.pyCfgParams   = [gt,mcrab,geninfo,efilter,runinfo]
+            isFast = 'doFastSim=True'
+            config.JobType.pyCfgParams   = [gt,mcrab,geninfo,efilter,runinfo,isFast]
 #-----------------------------------------------------------------------------------------------------------------------------
 
             # Submit.
@@ -256,10 +268,11 @@ def run_multi():
 
     inlist = 'sig_aod_lists/filelist_SMS-'
     inlist2 = 'sms_fullpath_filelist/filelist_'
+    inlist3 = 'sms_fullpath_filelist/filelist_lpc_'
     runDataset = [
 
         ## Fast Sim
-        #['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p1_MINI.txt'],
+        ['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p1_MINI.txt'],
         #['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p5_MINI.txt'],
         #['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p1_MINI.txt'],
         #['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_MINI.txt'],
@@ -288,37 +301,45 @@ def run_multi():
         #['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2500_mN2-2450_mN1-2400_GZ_N2ctau-0p1_MINI.txt'],
         #['',inlist2+'gogoGZ_2022_Fast_PUlib1__SMS-GlGl_mGl-2500_mN2-2450_mN1-2400_GZ_N2ctau-0p5_MINI.txt'],
 
-        ['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p001_MINI.txt'],
-        ['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p01_MINI.txt'],
-        ['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p1_MINI.txt'],
-        ['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p5_MINI.txt'],
-        ['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-3p0_MINI.txt'],
-        ['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p1_MINI.txt'],
-        ['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_MINI.txt'],
-        ['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-1600_mN1-500_GZ_N2ctau-0p1_MINI.txt'],
-        ['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-1600_mN1-500_GZ_N2ctau-0p5_MINI.txt'],
-        ['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p1_MINI.txt'],
-        ['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p5_MINI.txt'],
-        ['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-2200_mN1-2150_GZ_N2ctau-0p1_MINI.txt'],
-        ['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-2200_mN1-2150_GZ_N2ctau-0p5_MINI.txt'],
-        ['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-2250_mN1-2150_GZ_N2ctau-0p1_MINI.txt'],
-        ['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-2250_mN1-2150_GZ_N2ctau-0p5_MINI.txt'],
-        ['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-2250_mN1-2200_GZ_N2ctau-0p1_MINI.txt'],
-        ['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-2250_mN1-2200_GZ_N2ctau-0p5_MINI.txt'],
-        ['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2500_mN2-1200_mN1-500_GZ_N2ctau-0p1_MINI.txt'],
-        ['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2500_mN2-1200_mN1-500_GZ_N2ctau-0p5_MINI.txt'],
-        ['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2500_mN2-2000_mN1-1000_GZ_N2ctau-0p1_MINI.txt'],
-        ['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2500_mN2-2000_mN1-1000_GZ_N2ctau-0p5_MINI.txt'],
-        ['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2500_mN2-2000_mN1-1500_GZ_N2ctau-0p1_MINI.txt'],
-        ['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2500_mN2-2000_mN1-1500_GZ_N2ctau-0p5_MINI.txt'],
-        ['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2500_mN2-2400_mN1-2300_GZ_N2ctau-0p1_MINI.txt'],
-        ['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2500_mN2-2400_mN1-2300_GZ_N2ctau-0p5_MINI.txt'],
-        ['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2500_mN2-2400_mN1-2350_GZ_N2ctau-0p1_MINI.txt'],
-        ['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2500_mN2-2400_mN1-2350_GZ_N2ctau-0p5_MINI.txt'],
-        ['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2500_mN2-2450_mN1-2350_GZ_N2ctau-0p1_MINI.txt'],
-        ['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2500_mN2-2450_mN1-2350_GZ_N2ctau-0p5_MINI.txt'],
-        ['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2500_mN2-2450_mN1-2400_GZ_N2ctau-0p1_MINI.txt'],
-        ['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2500_mN2-2450_mN1-2400_GZ_N2ctau-0p5_MINI.txt'],
+        #['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p001_MINI.txt'],
+        #['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p01_MINI.txt'],
+        #['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p1_MINI.txt'],
+        #['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p5_MINI.txt'],
+        #['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-3p0_MINI.txt'],
+        #['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p1_MINI.txt'],
+        #['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5_MINI.txt'],
+        #['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-1600_mN1-500_GZ_N2ctau-0p1_MINI.txt'],
+        #['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-1600_mN1-500_GZ_N2ctau-0p5_MINI.txt'],
+        #['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p1_MINI.txt'],
+        #['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p5_MINI.txt'],
+        #['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-2200_mN1-2150_GZ_N2ctau-0p1_MINI.txt'],
+        #['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-2200_mN1-2150_GZ_N2ctau-0p5_MINI.txt'],
+        #['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-2250_mN1-2150_GZ_N2ctau-0p1_MINI.txt'],
+        #['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-2250_mN1-2150_GZ_N2ctau-0p5_MINI.txt'],
+        #['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-2250_mN1-2200_GZ_N2ctau-0p1_MINI.txt'],
+        #['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2300_mN2-2250_mN1-2200_GZ_N2ctau-0p5_MINI.txt'],
+        #['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2500_mN2-1200_mN1-500_GZ_N2ctau-0p1_MINI.txt'],
+        #['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2500_mN2-1200_mN1-500_GZ_N2ctau-0p5_MINI.txt'],
+        #['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2500_mN2-2000_mN1-1000_GZ_N2ctau-0p1_MINI.txt'],
+        #['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2500_mN2-2000_mN1-1000_GZ_N2ctau-0p5_MINI.txt'],
+        #['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2500_mN2-2000_mN1-1500_GZ_N2ctau-0p1_MINI.txt'],
+        #['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2500_mN2-2000_mN1-1500_GZ_N2ctau-0p5_MINI.txt'],
+        #['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2500_mN2-2400_mN1-2300_GZ_N2ctau-0p1_MINI.txt'],
+        #['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2500_mN2-2400_mN1-2300_GZ_N2ctau-0p5_MINI.txt'],
+        #['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2500_mN2-2400_mN1-2350_GZ_N2ctau-0p1_MINI.txt'],
+        #['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2500_mN2-2400_mN1-2350_GZ_N2ctau-0p5_MINI.txt'],
+        #['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2500_mN2-2450_mN1-2350_GZ_N2ctau-0p1_MINI.txt'],
+        #['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2500_mN2-2450_mN1-2350_GZ_N2ctau-0p5_MINI.txt'],
+        #['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2500_mN2-2450_mN1-2400_GZ_N2ctau-0p1_MINI.txt'],
+        #['',inlist2+'gogoGZ_FullSim_Mini__SMS-GlGl_mGl-2500_mN2-2450_mN1-2400_GZ_N2ctau-0p5_MINI.txt'],
+
+        #['',inlist2+'T5Zg_FullSim_Mini_2018__T5Zg_mGo-2300_mN2-1200_mN1-1000_N2ctau-300cm_2018_MINI.txt'],
+
+        #['',inlist3+'T5Zg_FullSim_Mini_2022__T5Zg_mGo-1800_mN2-1750_mN1-1700_N2ctau-0p1cm_2022_MINI.txt'],
+        #['',inlist3+'T5Zg_FullSim_Mini_2022__T5Zg_mGo-1800_mN2-1750_mN1-1700_N2ctau-20cm_2022_MINI.txt'],
+        #['',inlist3+'T5Zg_FullSim_Mini_2022__T5Zg_mGo-1800_mN2-1750_mN1-1700_N2ctau-300cm_2022_MINI.txt'],
+        #['',inlist3+'T5Zg_FullSim_Mini_2022__T5Zg_mGo-2300_mN2-1200_mN1-1000_N2ctau-300cm_2022_MINI.txt'],
+        
     ] 
 
     for dataset in runDataset :

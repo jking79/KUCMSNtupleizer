@@ -277,6 +277,7 @@ void KUCMSPhotonObjectMini::LoadEvent( const edm::Event& iEvent, const edm::Even
     std::vector<pat::Photon> fphotons_temp;
     std::vector<bool> phoExcluded_temp;
     std::vector<bool> phoIsOotPho_temp;
+    std::vector<const pat::Photon*> selectedOotPhotons;
     //if( PhotonDEBUG ) std::cout << "Collecting OOTPhotons" << std::endl;
     //std::vector<int> phoIds_temp;// indexed by pho index ( 0,1,2 ) * number of ids ( 1 current, 6? possible ) + index of ID wanted
     for (edm::View<pat::Photon>::const_iterator itPhoton = ootPhotons_->begin(); itPhoton != ootPhotons_->end(); itPhoton++) {
@@ -291,6 +292,7 @@ void KUCMSPhotonObjectMini::LoadEvent( const edm::Event& iEvent, const edm::Even
         if( minPhoPt || minTime || minEnergy ) continue;
         fphotons_temp.push_back(ootPho);
         phoIsOotPho_temp.push_back(true);
+        selectedOotPhotons.push_back(&ootPho);
         //phoIdBools.push_back((*phoCBIDLooseMap_)[ootPhoRef]);// not implimented 
 /*
 		// Set photon excluded via dr and pt critera
@@ -359,20 +361,19 @@ void KUCMSPhotonObjectMini::LoadEvent( const edm::Event& iEvent, const edm::Even
 */
         // Set photon excluded if dr match to oot photon
         //
-        double minDr(1.0);
-        double dRmatch(10.0);
-        //float matchpt(0);
+        bool overlapsSelectedOot = false;
         auto pEta = gedPho.eta();
         auto pPhi = gedPho.phi();
-        for( const auto &ootPho : *ootPhotons_ ){
-            //if( cfFlag("onlyEB") && ootPho.isEE() ) continue;
-            auto oEta = ootPho.eta();
-            auto oPhi = ootPho.phi();
-            dRmatch = std::sqrt(reco::deltaR2( pEta, pPhi, oEta, oPhi ));
-            if( dRmatch < minDr ){ minDr = dRmatch; }
+        for( const auto *ootPho : selectedOotPhotons ){
+            auto oEta = ootPho->eta();
+            auto oPhi = ootPho->phi();
+            const auto dRmatch = std::sqrt(reco::deltaR2( pEta, pPhi, oEta, oPhi ));
+            if( dRmatch < 0.3 ){
+                overlapsSelectedOot = true;
+                break;
+            }
         }//<<>>for( int ip; ip < nPhotons; ip++ )
-        if( dRmatch < 0.3 ) phoExcluded_temp.push_back(true);
-        else phoExcluded_temp.push_back(false);
+        phoExcluded_temp.push_back(overlapsSelectedOot);
 		///////////////////////////////////////
 
     }//<<>>for( int io = 0; io < nOotPhotons; io++ )
@@ -871,12 +872,12 @@ void KUCMSPhotonObjectMini::correctMet( float & CSumEt, float & CPx, float & CPy
         if( phoIsOotPho[phidx] && not phoExcluded[phidx] ){
             CPx -= ((photon.pt())*std::cos(photon.phi()));
             CPy -= ((photon.pt())*std::sin(photon.phi()));
-            CSumEt -= photon.et();
+            CSumEt += photon.et();
         }//<<>>if( phoIsOotPho[phidx] && not phoExcluded[phidx] )
         if( not phoIsOotPho[phidx] && phoExcluded[phidx] ){
             CPx += ((photon.pt())*std::cos(photon.phi()));
             CPy += ((photon.pt())*std::sin(photon.phi()));
-            CSumEt += photon.et();
+            CSumEt -= photon.et();
         }//<<>>if( phoIsOotPho[phidx] && not phoExcluded[phidx] )   
 
     }//<<>>for( auto phidx = 0; phidx < fphotons.size(); phidx++ )

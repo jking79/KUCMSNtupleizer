@@ -33,10 +33,10 @@ options.register('runMETFilters',False,VarParsing.multiplicity.singleton,VarPars
 ## GT to be used
 ##------------------ mc gt
 #options.register('globalTag','106X_mc2017_realistic_v6',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
-#options.register('globalTag','106X_upgrade2018_realistic_v15_L1v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
+options.register('globalTag','106X_upgrade2018_realistic_v15_L1v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 ###options.register('globalTag','94X_mc2017_realistic_v11',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','124X_mcRun3_2022_realistic_postEE_v1',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for sig22 MC');
-options.register('globalTag','124X_mcRun3_2022_realistic_v12',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for sig22 MC');
+#options.register('globalTag','124X_mcRun3_2022_realistic_v12',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for sig22 MC');
 #options.register('globalTag','130X_mcRun3_2023_realistic_v14',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','133X_mcRun3_2024_realistic_v10',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for QCD MC');
 #options.register('globalTag','94X_mc2017_realistic_v14',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for GMSB MC');
@@ -70,9 +70,9 @@ options.parseArguments()
 #runera = "Run2" 
 #runera = "Run3"  # current siganl model   !!!!!!!!  Run3 must be in CMSSW 14 or 15
 #runera = "Run3_2025"
-runera = "Run3_2022"
+#runera = "Run3_2022"
 #runera = "Run3_2024"
-#runera = "Run2_2018" # BG models
+runera = "Run2_2018" # BG models
 #runera = "Run2_2017"
 if options.multicrab == True : runera = options.runera
 
@@ -155,7 +155,9 @@ process.source = cms.Source("PoolSource",
 
         #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_2022_Fast_PUlib1/SMS-GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p1_MINI/260812_195205/0000/SMS-GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p1_MiniAODv4_16.root'
 
-        'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p1_MINI/260317_213805/0000/SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p1_MiniAODv4_12.root'
+        #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p1_MINI/260317_213805/0000/SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p1_MiniAODv4_12.root'
+
+        'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/T5Zg_FullSim_Mini_2018/T5Zg_mGo-2300_mN2-1200_mN1-1000_N2ctau-300cm_2018/MINI/260925_035220/0000/T5Zg_mGo-2300_mN2-1200_mN1-1000_N2ctau-300cm_TuneCP5_13TeV_madgraph-pythia8_MINI_12.root',
 
         #'root://cmsxrootd.fnal.gov//store/data/Run2018D/MET/MINIAOD/UL2018_MiniAODv2_GT36-v1/40000/00803A6B-68D2-1B4A-A014-9CF5E6FE5614.root',
         #'root://cmsxrootd.fnal.gov//store/data/Run2018D/MET/MINIAOD/UL2018_MiniAODv2_GT36-v1/40000/3C77E5CD-7E39-EA48-9E28-0632856A1A1A.root',

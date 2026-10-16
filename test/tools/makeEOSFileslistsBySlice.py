@@ -99,7 +99,8 @@ def main():
         campaign_pattern = sys.argv[2]
     else:
         #campaign_pattern = "gogoGZ_2022_Fast_PUlib1"
-        campaign_pattern = "gogoGZ_FullSim_Mini"
+        #campaign_pattern = "gogoGZ_FullSim_Mini"
+        campaign_pattern = "T5Zg_FullSim_Mini_2018"
 
     if len(sys.argv) > 3:
         ht_pattern = sys.argv[3]

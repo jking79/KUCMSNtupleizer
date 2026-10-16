@@ -1042,8 +1042,8 @@ bool KUCMSEcalRecHitObject::reduceRhGrps( std::vector<rhGroup> & x ){
 void KUCMSEcalRecHitObject::mrgRhGrp( rhGroup & x, rhGroup & y ){
 
     //std::cout << " --- In mrgRhGrp " << std::endl;
-    bool matched(false);
     for(const auto rhy : y ){
+        bool matched(false);
         for(const auto rhx : x ){ if( rhMatch(rhx,rhy) ) matched = true; }
         if( not matched ) x.push_back(rhy);
     }//<<>>for(const auto rhx : y )
@@ -1082,14 +1082,15 @@ float KUCMSEcalRecHitObject::getSeedTofTime( reco::SuperCluster sprclstr, double
         if( rawId == seedRawId ){ rhTime = rechit.time(); continue; }
     }//<<>>for (const auto recHit : *recHitsEE_ ) 
 
-    const auto recHitPos = barrelGeometry->getGeometry(seedDetId)->getPosition();
+    const auto seedGeometry = isEB ? barrelGeometry : endcapGeometry;
+    const auto recHitPos = seedGeometry->getGeometry(seedDetId)->getPosition();
     const auto rhPosX = recHitPos.x();
     const auto rhPosY = recHitPos.y();
     const auto rhPosZ = recHitPos.z();
     const auto d_rh = hypo(rhPosX,rhPosY,rhPosZ);
     const auto d_pv = hypo(rhPosX-vtxX,rhPosY-vtxY,rhPosZ-vtxZ);
     const auto tof = (d_rh-d_pv)/SOL;
-    const auto seedTofTime = rhTime - tof;
+    const auto seedTofTime = rhTime + tof;
     return seedTofTime;
 
 }//>>>>float  KUCMSEcalRecHitObject::getSeedTofTime( rhGroup recHits, double vtxX, double vtxY, double vtxZ )
@@ -1252,7 +1253,10 @@ rhGroup KUCMSEcalRecHitObject::getRHGroup( const scGroup superClusterGroup, floa
             for (const auto &recHit : frechits ){
                 const auto recHitId = recHit.detid();
                 const uInt rhRawId = recHitId.rawId();
-                if( rhRawId == rawId ){ result.push_back(recHit); break; } //std::cout << " ---- Found " <<  std::endl; break; }
+                if( rhRawId == rawId ){
+                    if( minenr <= 0.f || recHit.energy() > minenr ) result.push_back(recHit);
+                    break;
+                }
             }//<<>>for (const auto &recHit : recHits ){
         }//<<>>for( uInt iHAF = 0; iHAF < nHAF; iHAF++ )
     }//<<>>for ( const auto superCluster : superClusterGroup )

@@ -831,12 +831,12 @@ void KUCMSPhotonObject::correctMet( float & CSumEt, float & CPx, float & CPy ){
         if( phoIsOotPho[phidx] && not phoExcluded[phidx] ){
             CPx -= ((photon.pt())*std::cos(photon.phi()));
             CPy -= ((photon.pt())*std::sin(photon.phi()));
-            CSumEt -= photon.et();
+            CSumEt += photon.et();
         }//<<>>if( phoIsOotPho[phidx] && not phoExcluded[phidx] )
         if( not phoIsOotPho[phidx] && phoExcluded[phidx] ){
             CPx += ((photon.pt())*std::cos(photon.phi()));
             CPy += ((photon.pt())*std::sin(photon.phi()));
-            CSumEt += photon.et();
+            CSumEt -= photon.et();
         }//<<>>if( phoIsOotPho[phidx] && not phoExcluded[phidx] )   
 
     }//<<>>for( auto phidx = 0; phidx < fphotons.size(); phidx++ )

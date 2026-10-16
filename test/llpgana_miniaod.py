@@ -15,6 +15,7 @@ options.register('doDisEle',False,VarParsing.multiplicity.singleton,VarParsing.v
 options.register('doECALTrackOnly',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to run ECAL Tracks only');
 options.register('runera','Run2_2018',VarParsing.multiplicity.singleton,VarParsing.varType.string,'filter to use in event processing');
 options.register('runMETFilters',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to run Met Filters');
+options.register('doFastSim',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to run fastsim MC');
 
 ## object prep cuts
 #options.register('jetpTmin',15.0,VarParsing.multiplicity.singleton,VarParsing.varType.float,'jet pT minimum cut');
@@ -153,9 +154,9 @@ process.source = cms.Source("PoolSource",
         #root://cmseos.fnal.gov/
         #root://cms-xrd-global.cern.ch/
 
-        #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_2022_Fast_PUlib1/SMS-GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p1_MINI/260812_195205/0000/SMS-GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p1_MiniAODv4_16.root'
+        'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_2022_Fast_PUlib1/SMS-GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p1_MINI/260812_195205/0000/SMS-GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p1_MiniAODv4_16.root'
 
-        'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p1_MINI/260317_213805/0000/SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p1_MiniAODv4_12.root'
+        #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p1_MINI/260317_213805/0000/SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p1_MiniAODv4_12.root'
 
         #'root://cmsxrootd.fnal.gov//store/data/Run2018D/MET/MINIAOD/UL2018_MiniAODv2_GT36-v1/40000/00803A6B-68D2-1B4A-A014-9CF5E6FE5614.root',
         #'root://cmsxrootd.fnal.gov//store/data/Run2018D/MET/MINIAOD/UL2018_MiniAODv2_GT36-v1/40000/3C77E5CD-7E39-EA48-9E28-0632856A1A1A.root',
@@ -302,6 +303,10 @@ if "Run3" in runera and genInfo is True :
     flagSet = "PAT"
     #triggerSet = "PAT" # needed for fast sim only
 
+#doFastSim = False
+doFastSim = True
+if options.multicrab == True : doFastSim = options.doFastSim
+if doFastSim == True : triggerSet = "PAT"
 if runMETFilters == True : flagSet = ""  # ?  "SIM" for MC
 
 #genMomChase = True

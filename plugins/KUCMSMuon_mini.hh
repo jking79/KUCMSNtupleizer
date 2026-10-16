@@ -239,6 +239,7 @@ void KUCMSMuonObjectMini::ProcessEvent( ItemManager<float>& geVar ){
     std::vector<v3fPoint> scvertex;
     std::vector<float> scptres;
 	std::vector<reco::TransientTrack> sctrks;
+    std::vector<int> trackMuonIndices;
     if( MuonDEBUG ) std::cout << "Processing Muons" << std::endl;
     for( const auto &muon : fmuons ){
 
@@ -258,8 +259,7 @@ void KUCMSMuonObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 		//const auto & primevtx = vertices_->front();
 		//const bool isTight = muon::isTightMuon( muon, primevtx );
         //const bool isTight = muon.passed( reco::Muon::TkIsoTight );
-		const bool isTight = muon.passed( reco::Muon::PFIsoVeryVeryTight );
-        //const bool isTight = muon.passed( reco::Muon::CutBasedIdTight );
+		const bool isTight = muon.passed( reco::Muon::CutBasedIdTight );
 		//const bool isGlobal = muon.isGlobalMuon();
 
 		if( MuonDEBUG ) std::cout << " -- " << muPt << " - " << muEta << " - " << isLoose << " - " << isMedium << std::endl;	
@@ -315,6 +315,7 @@ void KUCMSMuonObjectMini::ProcessEvent( ItemManager<float>& geVar ){
             //std::cout << " -- Muon sc : " << itptr->vx() << " - " << itptr->vy() << " - " << itptr->vz() << std::endl;
             //v3fPoint itv( itloc.x(), itloc.y(), itloc.z() );
 			sctrks.push_back( ttrack );
+			trackMuonIndices.push_back( muIndx - 1 );
 			v3fPoint itv( muEta, muPhi, 0.f );
             scvertex.push_back( itv );
             scptres.push_back( muEnergy );
@@ -332,12 +333,15 @@ void KUCMSMuonObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 	if( MuonDEBUG ) std::cout << " -- Muon filling event geninfo : " << std::endl;
     int nGenMatched = 0;
 
-// -----  Issues with gen matching in mini with track info, to be fixed ----------------
     if( cfFlag("hasGenInfo") ){
 
         auto genInfo = genObjs->getGenMuonMatch( scvertex, scptres, sctrks );
+        std::vector<int> alignedGenInfo( muIndx, -1 );
+        for( std::size_t trackIdx = 0; trackIdx < genInfo.size(); ++trackIdx ){
+            alignedGenInfo[trackMuonIndices[trackIdx]] = genInfo[trackIdx];
+        }
 
-        for( auto genidx : genInfo ){
+        for( auto genidx : alignedGenInfo ){
             Branches.fillBranch("GenIdx",genidx);
 			bool hasGenMatch = ( genidx > -1 );
 			Branches.fillBranch("hasGenIdx", hasGenMatch );
