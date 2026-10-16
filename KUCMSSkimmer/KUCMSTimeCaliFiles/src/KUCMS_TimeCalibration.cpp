@@ -412,10 +412,25 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
 
 // 2025 - (390735) 391531 - 398903
 
-	////promptIovMap[391531] = 398903;
+	promptIovMap[398904] = 401629;
+
+// 2026
+// lumi 401630 403867 
+
+//Commissioning2026, Run2026A, Run2026B  400454 402229
+//Run2026B 402230 402513
+//Run2026C 402514 403422
+//Run2026D 403423 404067
+
+    promptIovMap[401630] = 402513;
+    promptIovMap[402514] = 403422;
+    promptIovMap[403423] = 403867;
+    promptIovMap[403868] = 404067;
+
+// 2026
 
 // END
-	promptIovMap[398904] = 999999;
+	promptIovMap[404068] = 999999;
 /*
  	// CC calibration periods in 2024
     promptIovMap[372309] = 372750;//"29/08/2023";//cc start
@@ -471,6 +486,7 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
     std::string lumi23Config = "brilcalc_lumi_2023.txt";
     std::string lumi24Config = "brilcalc_lumi_2024.txt";
     std::string lumi25Config = "brilcalc_lumi_2025.txt";
+    std::string lumi26Config = "brilcalc_lumi_2026.txt";
 
     ReadLumiFile( caliFileDir+lumiUL16Config, r2ulLumiTag );
     ReadLumiFile( caliFileDir+lumiUL17Config, r2ulLumiTag );
@@ -501,6 +517,7 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
     ReadLumiFile( caliFileDir+lumi23Config, r3LumiTag );
     ReadLumiFile( caliFileDir+lumi24Config, r3LumiTag );
     ReadLumiFile( caliFileDir+lumi25Config, r3LumiTag );
+    ReadLumiFile( caliFileDir+lumi26Config, r3LumiTag );
 
     setLumiTag(r3LumiTag);
     SetupIovMap( r3TagTT, minttlumi );
