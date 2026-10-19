@@ -247,9 +247,10 @@ int main ( int argc, char *argv[] ){
 
     theCali.setIsCC(true);
     theCali.setDoUnCC(true);
+    ////theCali.setIsCC(false);//default
+
 	// Data rows end with dolast; MC rows have one additional event-weight column.
 	theCali.setDoMC(false);
-    ////theCali.setIsCC(false);//default
 
 	////theCali.setDoEE( false ); depreciated - now do EB & EE at the same time
     ////theCali.setDoEE( true ); depreciated - now do EB & EE at the same time
