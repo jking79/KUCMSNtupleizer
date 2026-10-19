@@ -3324,6 +3324,37 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 		};
 
 		std::cout << "Mf2d Proccessing " << nEntries << " entries : " << std::endl;
+			Long64_t malformedResolutionEvents = 0;
+			Long64_t recoveredLocalEvents = 0;
+			Long64_t recoveredGlobalEvents = 0;
+			Long64_t skippedShortResolutionEvents = 0;
+			auto areNeighboringCrystals = []( const kucms_DetIDStruct& first, const kucms_DetIDStruct& second ){
+				if( first.ecal != second.ecal || first.ecal == ECAL::NONE ) return false;
+				int delta1 = std::abs(first.i1-second.i1);
+				int delta2 = 0;
+				if( first.ecal == ECAL::EB ){
+					delta1 = std::min(delta1,360-delta1);
+					const int firstEta = first.i2 > 0 ? first.i2-1 : first.i2;
+					const int secondEta = second.i2 > 0 ? second.i2-1 : second.i2;
+					delta2 = std::abs(firstEta-secondEta);
+				} else delta2 = std::abs(first.i2-second.i2);
+				return delta1 <= 1 && delta2 <= 1 && (delta1 != 0 || delta2 != 0);
+			};
+			enum class FirstPairType { Unknown, Local, NotLocal };
+			auto classifyFirstPair = [&]( const std::vector<unsigned int>& ids, const std::vector<float>& energies ){
+				if( ids.size() < 2 || energies.size() < 2 || ids[0] == 0 || ids[1] == 0 )
+					return FirstPairType::Unknown;
+				if( not std::isfinite(energies[0]) || not std::isfinite(energies[1]) )
+					return FirstPairType::Unknown;
+				const auto firstDet = fastDetInfo.find(ids[0]);
+				const auto secondDet = fastDetInfo.find(ids[1]);
+				if( firstDet == fastDetInfo.end() || secondDet == fastDetInfo.end() )
+					return FirstPairType::Unknown;
+				const bool energyOrdered = energies[0] > 0.5f && energies[1] > 0.5f &&
+				                           energies[0] > energies[1] && energies[1] > 0.8f*energies[0];
+				return energyOrdered && areNeighboringCrystals(*firstDet->second,*secondDet->second)
+				       ? FirstPairType::Local : FirstPairType::NotLocal;
+			};
 		int nextProgressPercent = 0;
 		Long64_t nextProgressEntry = 0;
 	        for( Long64_t centry = 0; centry < nEntries; centry++ ){
@@ -3352,13 +3383,23 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 				return false;
 			}//<<>>if( null input vector )
 			const auto nResolutionHits = resRhID->size();
-			if( nResolutionHits < 4 || resAmp->size() != nResolutionHits || resE->size() != nResolutionHits ||
-			    resRtTime->size() != nResolutionHits || resTOF->size() != nResolutionHits ||
-			    (useUnCCTime && resCCTime->size() != nResolutionHits) ){
-				std::cerr << "ERROR: misaligned resolution vectors in entry " << centry << std::endl;
-				delete fInTree;
-				return false;
-			}//<<>>if( malformed resolution vectors )
+				const bool resolutionVectorsAligned = resAmp->size() == nResolutionHits &&
+				                                      resE->size() == nResolutionHits &&
+				                                      resRtTime->size() == nResolutionHits &&
+				                                      resTOF->size() == nResolutionHits &&
+				                                      (not useUnCCTime || resCCTime->size() == nResolutionHits);
+				if( not resolutionVectorsAligned ){
+					malformedResolutionEvents++;
+					if( malformedResolutionEvents <= 5 ){
+						std::cerr << "WARNING: skipping entry " << centry << " with unequal resolution-vector sizes:"
+						          << " ID=" << nResolutionHits << " Amp=" << resAmp->size()
+						          << " E=" << resE->size() << " Rt=" << resRtTime->size()
+						          << " TOF=" << resTOF->size();
+						if( useUnCCTime ) std::cerr << " CC=" << resCCTime->size();
+						std::cerr << std::endl;
+					}//<<>>if( first malformed entries )
+					continue;
+				}//<<>>if( malformed resolution vectors )
 			if( needGainInfo && (rhisGS6->size() != rhID->size() || rhisGS1->size() != rhID->size()) ){
 				std::cerr << "ERROR: misaligned rechit gain vectors in entry " << centry << std::endl;
 				delete fInTree;
@@ -3366,7 +3407,45 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 			}//<<>>if( malformed gain vectors )
 	            const auto nRecHits = needGainInfo ? rhID->size() : 0;
 
-            if( ( ((*resRhID)[0]) == 0 ) && ( ((*resRhID)[3]) == 0 ) ) continue;
+				std::array<int,4> resolutionSource = {-1,-1,-1,-1};
+				if( nResolutionHits >= 4 ) resolutionSource = {0,1,2,3};
+				else {
+					// GammaResTool stores local0, local1, global0, global1 in that order, but a
+					// positive ID missing from miniRhId is omitted and shortens every vector.
+					const auto firstPairType = classifyFirstPair(*resRhID,*resE);
+					if( nResolutionHits >= 2 && firstPairType == FirstPairType::Local ){
+						resolutionSource[0] = 0;
+						resolutionSource[1] = 1;
+						recoveredLocalEvents++;
+					} else if( nResolutionHits == 3 && firstPairType == FirstPairType::NotLocal ){
+						// One local slot was omitted, so the last two surviving slots are global0/global1.
+						resolutionSource[2] = 1;
+						resolutionSource[3] = 2;
+						recoveredGlobalEvents++;
+					} else {
+						skippedShortResolutionEvents++;
+						continue;
+					}//<<>>if( recoverable shortened resolution record )
+				}//<<>>if( complete or recoverable resolution record )
+
+				std::array<unsigned int,4> eventResRhID = {0,0,0,0};
+				std::array<float,4> eventResAmp = {-999.f,-999.f,-999.f,-999.f};
+				std::array<float,4> eventResE = {-999.f,-999.f,-999.f,-999.f};
+				std::array<float,4> eventResRtTime = {-999.f,-999.f,-999.f,-999.f};
+				std::array<float,4> eventResCCTime = {-999.f,-999.f,-999.f,-999.f};
+				std::array<float,4> eventResTOF = {-999.f,-999.f,-999.f,-999.f};
+				for( std::size_t logical = 0; logical < resolutionSource.size(); logical++ ){
+					const int source = resolutionSource[logical];
+					if( source < 0 ) continue;
+					eventResRhID[logical] = (*resRhID)[source];
+					eventResAmp[logical] = (*resAmp)[source];
+					eventResE[logical] = (*resE)[source];
+					eventResRtTime[logical] = (*resRtTime)[source];
+					if( useUnCCTime ) eventResCCTime[logical] = (*resCCTime)[source];
+					eventResTOF[logical] = (*resTOF)[source];
+				}//<<>>for( logical resolution slots )
+
+		            if( eventResRhID[0] == 0 && eventResRhID[3] == 0 ) continue;
 
             if(debug) std::cout << " - Finshed Get Entry " << std::endl;
 
@@ -3397,7 +3476,7 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 									&invalidDetID,&invalidDetID,&invalidDetID,&invalidDetID
 								};
 								for( std::size_t idx = 0; idx < idinfo.size(); idx++ ){
-									const auto detID = (*resRhID)[idx];
+										const auto detID = eventResRhID[idx];
 									if( detID == 0 ) continue;
 									const auto detIt = fastDetInfo.find(detID);
 									if( detIt == fastDetInfo.end() ){
@@ -3420,13 +3499,13 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 								std::array<bool,4> gainMatchFound = {false,false,false,false};
 								std::size_t gainsNeeded = 0;
 								for( std::size_t idx = 0; idx < gainMatchFound.size(); idx++ )
-									if( (*resRhID)[idx] != 0 ) gainsNeeded++;
+										if( eventResRhID[idx] != 0 ) gainsNeeded++;
 								std::size_t gainsFound = 0;
 								for( std::size_t rhit = 0; rhit < nRecHits && gainsFound < gainsNeeded; rhit++ ){
 									const auto rechitID = (*rhID)[rhit];
 									for( std::size_t resrhit = 0; resrhit < gainMatchFound.size(); resrhit++ ){
-										if( gainMatchFound[resrhit] || (*resRhID)[resrhit] == 0 ||
-										    (*resRhID)[resrhit] != rechitID ) continue;
+											if( gainMatchFound[resrhit] || eventResRhID[resrhit] == 0 ||
+											    eventResRhID[resrhit] != rechitID ) continue;
 										gainMatchFound[resrhit] = true;
 										gainsFound++;
 										const bool isGS1 = (*rhisGS1)[rhit];
@@ -3437,8 +3516,8 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 									}//<<>>for( resolution rechits )
 								}//<<>>for( full rechits )
 									for( std::size_t idx = 0; idx < gainMatchFound.size(); idx++ ){
-										if( (*resRhID)[idx] != 0 && not gainMatchFound[idx] ){
-											std::cerr << "ERROR: resolution rechit " << (*resRhID)[idx]
+											if( eventResRhID[idx] != 0 && not gainMatchFound[idx] ){
+												std::cerr << "ERROR: resolution rechit " << eventResRhID[idx]
 											          << " has no matching gain record in entry " << centry << std::endl;
 											delete fInTree;
 											return false;
@@ -3446,43 +3525,43 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 									}//<<>>for( gain matches )
 	                                }//<<>>if( useGSwitch )
 
-								const double Time0 = useUnCCTime ? (*resCCTime)[0] : (*resRtTime)[0];
-                                const double Time1 = useUnCCTime ? (*resCCTime)[1] : (*resRtTime)[1];
-                                const double Time2 = useUnCCTime ? (*resCCTime)[2] : (*resRtTime)[2];
-                                const double Time3 = useUnCCTime ? (*resCCTime)[3] : (*resRtTime)[3];
+								const double Time0 = useUnCCTime ? eventResCCTime[0] : eventResRtTime[0];
+	                                const double Time1 = useUnCCTime ? eventResCCTime[1] : eventResRtTime[1];
+	                                const double Time2 = useUnCCTime ? eventResCCTime[2] : eventResRtTime[2];
+	                                const double Time3 = useUnCCTime ? eventResCCTime[3] : eventResRtTime[3];
 								const bool validLocTime = std::isfinite(Time0) && std::isfinite(Time1) &&
 								                          Time0 != -30.0 && Time1 != -30.0;
 								const bool validGloTime = std::isfinite(Time2) && std::isfinite(Time3) &&
 								                          Time2 != -30.0 && Time3 != -30.0;
-								const bool validLocInputs = std::isfinite((*resAmp)[0]) && std::isfinite((*resAmp)[1]) &&
-								                            std::isfinite((*resE)[0]) && std::isfinite((*resE)[1]) &&
-								                            std::isfinite((*resTOF)[0]) && std::isfinite((*resTOF)[1]);
-								const bool validGloInputs = std::isfinite((*resAmp)[2]) && std::isfinite((*resAmp)[3]) &&
-								                            std::isfinite((*resE)[2]) && std::isfinite((*resE)[3]) &&
-								                            std::isfinite((*resTOF)[2]) && std::isfinite((*resTOF)[3]);
-                                const bool goodLocRHs = (*resRhID)[0] != 0 && (*resRhID)[1] != 0;
-                                const bool goodGloRHs = (*resRhID)[2] != 0 && (*resRhID)[3] != 0;
+								const bool validLocInputs = std::isfinite(eventResAmp[0]) && std::isfinite(eventResAmp[1]) &&
+								                            std::isfinite(eventResE[0]) && std::isfinite(eventResE[1]) &&
+								                            std::isfinite(eventResTOF[0]) && std::isfinite(eventResTOF[1]);
+								const bool validGloInputs = std::isfinite(eventResAmp[2]) && std::isfinite(eventResAmp[3]) &&
+								                            std::isfinite(eventResE[2]) && std::isfinite(eventResE[3]) &&
+								                            std::isfinite(eventResTOF[2]) && std::isfinite(eventResTOF[3]);
+	                                const bool goodLocRHs = eventResRhID[0] != 0 && eventResRhID[1] != 0;
+	                                const bool goodGloRHs = eventResRhID[2] != 0 && eventResRhID[3] != 0;
                                 const bool goodLocTime = validLocTime && Time0 != 0 && Time1 != 0 && Time0 != Time1;
                                 const bool goodGloTime = validGloTime && Time2 != 0 && Time3 != 0 && Time2 != Time3;
 
-                                bool le_cut = ((*resE)[0]>=lB)&&((*resE)[0]<=uB)&&((*resE)[1]>=lB)&&((*resE)[1]<=uB);
-                                bool ge_cut = ((*resE)[2]>=lB)&&((*resE)[2]<=uB)&&((*resE)[3]>=lB)&&((*resE)[3]<=uB);
+	                                bool le_cut = (eventResE[0]>=lB)&&(eventResE[0]<=uB)&&(eventResE[1]>=lB)&&(eventResE[1]<=uB);
+	                                bool ge_cut = (eventResE[2]>=lB)&&(eventResE[2]<=uB)&&(eventResE[3]>=lB)&&(eventResE[3]<=uB);
                                 if( useGSwitch ){
 									if( doAllGain ){
-                                        le_cut = (*resE)[0] >= lB && (*resE)[1] >= lB;
-                                        ge_cut = (*resE)[2] >= lB && (*resE)[3] >= lB;
+	                                        le_cut = eventResE[0] >= lB && eventResE[1] >= lB;
+	                                        ge_cut = eventResE[2] >= lB && eventResE[3] >= lB;
 									} else {
-										le_cut = isSelectedGain[0] && isSelectedGain[1] && (*resE)[0] >= lB && (*resE)[1] >= lB;
-										ge_cut = isSelectedGain[2] && isSelectedGain[3] && (*resE)[2] >= lB && (*resE)[3] >= lB;
+										le_cut = isSelectedGain[0] && isSelectedGain[1] && eventResE[0] >= lB && eventResE[1] >= lB;
+										ge_cut = isSelectedGain[2] && isSelectedGain[3] && eventResE[2] >= lB && eventResE[3] >= lB;
 									}//<<>>if( all gains )
                                 }//<<>>if( gain selection enabled )
 	                                const bool levent_good = le_cut && goodLocRHs && goodLocTime && validLocInputs;
 	                                const bool gevent_good = ge_cut && goodGloRHs && goodGloTime && validGloInputs;
 
-	                                const float seedTimeIC00 = usecali && levent_good ? getCachedCalibration((*resRhID)[0],rhGainId[0],idinfoL0) : 0;
-	                                const float seedTimeIC10 = usecali && levent_good ? getCachedCalibration((*resRhID)[1],rhGainId[1],idinfoL1) : 0;
-	                                const float seedTimeIC01 = usecali && gevent_good ? getCachedCalibration((*resRhID)[2],rhGainId[2],idinfoG0) : 0;
-	                                const float seedTimeIC11 = usecali && gevent_good ? getCachedCalibration((*resRhID)[3],rhGainId[3],idinfoG1) : 0;
+		                                const float seedTimeIC00 = usecali && levent_good ? getCachedCalibration(eventResRhID[0],rhGainId[0],idinfoL0) : 0;
+		                                const float seedTimeIC10 = usecali && levent_good ? getCachedCalibration(eventResRhID[1],rhGainId[1],idinfoL1) : 0;
+		                                const float seedTimeIC01 = usecali && gevent_good ? getCachedCalibration(eventResRhID[2],rhGainId[2],idinfoG0) : 0;
+		                                const float seedTimeIC11 = usecali && gevent_good ? getCachedCalibration(eventResRhID[3],rhGainId[3],idinfoG1) : 0;
 								double lyf0 = Time0-seedTimeIC00;
 								double lyf1 = Time1-seedTimeIC10;
 								double gyf0 = Time2-seedTimeIC01;
@@ -3491,35 +3570,35 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 								if( smear ){
                                     //std::cout << "Times are smeared !!!!!" << std::endl;
 
-									float amp0 = ( (*resRhID)[0] > 0 ) ? (*resAmp)[0] : -999;
-                                    float amp1 = ( (*resRhID)[1] > 0 ) ? (*resAmp)[1] : -999;
-                                    float amp2 = ( (*resRhID)[2] > 0 ) ? (*resAmp)[2] : -999;
-                                    float amp3 = ( (*resRhID)[3] > 0 ) ? (*resAmp)[3] : -999;
+									float amp0 = eventResRhID[0] > 0 ? eventResAmp[0] : -999;
+	                                    float amp1 = eventResRhID[1] > 0 ? eventResAmp[1] : -999;
+	                                    float amp2 = eventResRhID[2] > 0 ? eventResAmp[2] : -999;
+	                                    float amp3 = eventResRhID[3] > 0 ? eventResAmp[3] : -999;
 
                                     //getCorrectedTime( time, amplitude, rechitID, Evt_run, dataSetKey, mctype, gainID )
-									if( validLocTime && validLocInputs && (*resRhID)[0] != 0 && (*resRhID)[1] != 0 ){
-										lyf0 = getCorrectedTime( lyf0, amp0, (*resRhID)[0], run, tag, 0, rhGainId[0], false );
-									lyf1 = getCorrectedTime( lyf1, amp1, (*resRhID)[1], run, tag, 0, rhGainId[1], false );
+									if( validLocTime && validLocInputs && eventResRhID[0] != 0 && eventResRhID[1] != 0 ){
+										lyf0 = getCorrectedTime( lyf0, amp0, eventResRhID[0], run, tag, 0, rhGainId[0], false );
+									lyf1 = getCorrectedTime( lyf1, amp1, eventResRhID[1], run, tag, 0, rhGainId[1], false );
 									}//<<>>if( valid local times )
-									if( validGloTime && validGloInputs && (*resRhID)[2] != 0 && (*resRhID)[3] != 0 ){
-									gyf0 = getCorrectedTime( gyf0, amp2, (*resRhID)[2], run, tag, 0, rhGainId[2], false );
-									gyf1 = getCorrectedTime( gyf1, amp3, (*resRhID)[3], run, tag, 0, rhGainId[3], false );
+									if( validGloTime && validGloInputs && eventResRhID[2] != 0 && eventResRhID[3] != 0 ){
+									gyf0 = getCorrectedTime( gyf0, amp2, eventResRhID[2], run, tag, 0, rhGainId[2], false );
+									gyf1 = getCorrectedTime( gyf1, amp3, eventResRhID[3], run, tag, 0, rhGainId[3], false );
 									}//<<>>if( valid global times )
 
 
                                 }//<<>>if( smear )
 								if( not levent_good && not gevent_good ) continue;
-								const double leffa0 = useAmp ? (*resAmp)[0] : (*resE)[0];
-                                const double leffa1 = useAmp ? (*resAmp)[1] : (*resE)[1];
-                                const double geffa0 = useAmp ? (*resAmp)[2] : (*resE)[2];
-                                const double geffa1 = useAmp ? (*resAmp)[3] : (*resE)[3];
-                                const double leffe0 = (*resE)[0];
-                                const double leffe1 = (*resE)[1];
+								const double leffa0 = useAmp ? eventResAmp[0] : eventResE[0];
+	                                const double leffa1 = useAmp ? eventResAmp[1] : eventResE[1];
+	                                const double geffa0 = useAmp ? eventResAmp[2] : eventResE[2];
+	                                const double geffa1 = useAmp ? eventResAmp[3] : eventResE[3];
+	                                const double leffe0 = eventResE[0];
+	                                const double leffe1 = eventResE[1];
                                 const double lxfill = (leffa0*leffa1)/sqrt(leffa0*leffa0+leffa1*leffa1);
                                 const double lxfille = (leffe0*leffe1)/sqrt(leffe0*leffe0+leffe1*leffe1);
                                 const double gxfill = (geffa0*geffa1)/sqrt(geffa0*geffa0+geffa1*geffa1);
-                                const double lyfill = lyf0-lyf1+(*resTOF)[0]-(*resTOF)[1];
-                                const double gyfill = gyf0-gyf1+(*resTOF)[2]-(*resTOF)[3];
+	                                const double lyfill = lyf0-lyf1+eventResTOF[0]-eventResTOF[1];
+	                                const double gyfill = gyf0-gyf1+eventResTOF[2]-eventResTOF[3];
                                 const bool leta_cut_eb = idinfoL0.ecal == ECAL::EB && idinfoL1.ecal == ECAL::EB;
                                 const bool geta_cut_eb = idinfoG0.ecal == ECAL::EB && idinfoG1.ecal == ECAL::EB;
                                 const bool leta_cut_ee = idinfoL0.ecal != ECAL::EB && idinfoL1.ecal != ECAL::EB;
@@ -3530,13 +3609,13 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 								
 								if( debug && ( levent_good || gevent_good ) ){ for( int didx = 0; didx < 4; didx++ ){
                                 //if( ( levent_good || gevent_good ) ){ for( int didx = 0; didx < 4; didx++ ){
-                					std::cout << "Run " << run << " id " << (*resRhID)[didx]; 
-                                    std::cout << " Amp " << (*resAmp)[didx] << " E " << (*resE)[didx];
-                					std::cout << " Rt " << (*resRtTime)[didx]  << " TOF " << (*resTOF)[didx] << std::endl;
+                                    std::cout << "Run " << run << " id " << eventResRhID[didx];
+                                    std::cout << " Amp " << eventResAmp[didx] << " E " << eventResE[didx];
+                                    std::cout << " Rt " << eventResRtTime[didx]  << " TOF " << eventResTOF[didx] << std::endl;
                                     std::cout << "GSL: " << isSelectedGain[0] << " " << isSelectedGain[1] << " ";
-                                    std::cout << (*resE)[0] << " " << (*resE)[1] << " " << le_cut << std::endl;
+                                    std::cout << eventResE[0] << " " << eventResE[1] << " " << le_cut << std::endl;
                                     std::cout << "GSZ: " << isSelectedGain[2] << " " << isSelectedGain[3] << " ";
-                                    std::cout << (*resE)[2] << " " << (*resE)[3] << " " << ge_cut << std::endl;
+                                    std::cout << eventResE[2] << " " << eventResE[3] << " " << ge_cut << std::endl;
             					}}//<<>>for( int didx = 0; didx < 4; didx++ ){
 
 								if( levent_good && debug ){ 
@@ -3573,6 +3652,10 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 
         if(debug) std::cout << " -------- Next Input file " << std::endl;
         std::cout << "[INFO] Finished batch for " << scanDir << " entries=" << nEntries << std::endl;
+			std::cout << "[INFO] Resolution-record recovery: local=" << recoveredLocalEvents
+			          << " global=" << recoveredGlobalEvents
+			          << " skipped-short=" << skippedShortResolutionEvents
+			          << " skipped-unequal=" << malformedResolutionEvents << std::endl;
         delete fInTree;
         fInTree = nullptr;
 
