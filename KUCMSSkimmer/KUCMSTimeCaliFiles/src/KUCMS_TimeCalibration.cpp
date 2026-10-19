@@ -114,6 +114,7 @@ KUCMS_TimeCalibration::KUCMS_TimeCalibration( bool stayOpen, bool makeNew, bool 
 	doAllGain = true;
 	isCC = false;
 	doUnCC = false;
+	doMC = false;
 
     std::cout << " - setup DetID & IOV Maps " << std::endl;
     SetupDetIDsEB();
@@ -2968,8 +2969,6 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
     bool small = false;
     //bool small = true;
 
-    //bool doMC = false;
-    bool doMC = true;
 	float fillwgt = 1;
 
     const std::string treename("tree/llpgtree");

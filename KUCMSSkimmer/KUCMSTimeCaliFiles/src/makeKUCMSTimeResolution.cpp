@@ -240,15 +240,15 @@ int main ( int argc, char *argv[] ){
     theCali.useGainSwitch( true, true ); // all gain categories
 
     //theCali.useGainSwitch( true, false );
-    //theCali.setUseGainID( 1 ); // gain 1 only
-    //theCali.setUseGainID( 2 ); // gain 1 only
-    //theCali.setUseGainID( 3 ); // gain 2 only
-    //theCali.setUseGainID( 4 ); // gain 3 only
-    
-    //theCali.useGainSwitch( true, false ); // both GS1 and GS6 flags set
+    //theCali.setUseGainID( 1 ); // gain 1 only -- default
+	//theCali.setUseGainID( 2 ); // GS6 only
+	//theCali.setUseGainID( 3 ); // GS1 only
+	//theCali.setUseGainID( 4 ); // both GS1 and GS6 flags set
 
     theCali.setIsCC(true);
     theCali.setDoUnCC(true);
+	// Data rows end with dolast; MC rows have one additional event-weight column.
+	theCali.setDoMC(false);
     ////theCali.setIsCC(false);//default
 
 	////theCali.setDoEE( false ); depreciated - now do EB & EE at the same time
@@ -315,10 +315,10 @@ int main ( int argc, char *argv[] ){
 	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_25_prompt_lg_xa_pm24b1200_v0817" );
 	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18MC_QCD_xa_pm24b1200_v0818" );
     //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18MC_QCD_lg_xa_pm24b1200_v0818" );
-	if( not 
+	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18MC_SQCD_xa_pm24b1200_v0822" )
+	if(
 
-	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18MC_SQCD_xa_pm24b1200_v0822" ) 
-    theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_126_prompt_hg_xa_pm24b1200_v0819" ) 
+		not theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_26_prompt_hg_xa_pm24b1200_v0819" )
 
 	) return EXIT_FAILURE;
 

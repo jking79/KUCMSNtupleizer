@@ -127,6 +127,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 	bool doAllGain;
 	bool isCC;
     bool doUnCC;
+	bool doMC;
 
     std::string eosCaliPath;
 	bool useEosRootCali;
@@ -276,6 +277,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
     void setUseGainID( int id ){ useGain = id; }
     void setIsCC( bool iscc ){ isCC = iscc; }
 	void setDoUnCC( bool douncc ){ doUnCC = douncc; }
+	void setDoMC( bool domc ){ doMC = domc; } // true: resolution input rows include an event-weight column
 	void setCondorJob( bool docondor ){ isCondorJob = docondor; }
 
 	std::string getPrefix( const std::string& s ){
