@@ -91,8 +91,9 @@ int main ( int argc, char *argv[] ){
     ////std::string inputfilename( "ecal_config/kucmsTimeCaliR17EOYTFile.txt");
 
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCGjetsTFile.txt");
-    std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCQCDTFile.txt");
+    //std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCQCDTFile.txt");
 
+    std::string inputfilename( "ecal_config/kucmsTimeCaliR26PrmptTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR25PrmptTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR24ReRecoTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR23ReRecoTFile.txt");
@@ -110,11 +111,14 @@ int main ( int argc, char *argv[] ){
     //std::string indir("KUCMSNtuple/gammares_ul17v2/");
     //std::string indir("KUCMSNtuple/gammares_ul18v2gt36/");
 
+
     //std::string indir("KUCMSNtuple/gammares_R22_22sept23/");
     //std::string indir("KUCMSNtuple/gammares_R23_22sept23/");
     //std::string indir("KUCMSNtuple/gammares_R24_m6n15/");
     //std::string indir("KUCMSNtuple/gammares_prmt25/");
-    std::string indir("KUCMSNtuple/");
+    std::string indir("KUCMSNtuple/gammares_prmt26/");
+
+    //std::string indir("KUCMSNtuple/");
 
     ///std::string indir("KUCMSNtuple/gammares_prmt25/");
 
@@ -232,18 +236,19 @@ int main ( int argc, char *argv[] ){
     //   Do not use useGainSwitch(false,...) for calibrated mixed-gain plots because
     //   the full-rechit gain flags will not be consulted.
     // Choose one mode:
+
     theCali.useGainSwitch( true, true ); // all gain categories
-    //theCali.setUseGainID( 1 );
-    //theCali.useGainSwitch( true, false ); // gain 1 only
-    //theCali.setUseGainID( 2 );
-    //theCali.useGainSwitch( true, false ); // gain 2 only
-    //theCali.setUseGainID( 3 );
-    //theCali.useGainSwitch( true, false ); // gain 3 only
-    //theCali.setUseGainID( 4 );
+
+    //theCali.useGainSwitch( true, false );
+    //theCali.setUseGainID( 1 ); // gain 1 only
+    //theCali.setUseGainID( 2 ); // gain 1 only
+    //theCali.setUseGainID( 3 ); // gain 2 only
+    //theCali.setUseGainID( 4 ); // gain 3 only
+    
     //theCali.useGainSwitch( true, false ); // both GS1 and GS6 flags set
 
-    //theCali.setIsCC(true);
-    //theCali.setDoUnCC(true);
+    theCali.setIsCC(true);
+    theCali.setDoUnCC(true);
     ////theCali.setIsCC(false);//default
 
 	////theCali.setDoEE( false ); depreciated - now do EB & EE at the same time
@@ -310,8 +315,12 @@ int main ( int argc, char *argv[] ){
 	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_25_prompt_lg_xa_pm24b1200_v0817" );
 	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18MC_QCD_xa_pm24b1200_v0818" );
     //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18MC_QCD_lg_xa_pm24b1200_v0818" );
-	if( not theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18MC_SQCD_xa_pm24b1200_v0822" ) )
-		return EXIT_FAILURE;
+	if( not 
+
+	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18MC_SQCD_xa_pm24b1200_v0822" ) 
+    theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_126_prompt_hg_xa_pm24b1200_v0819" ) 
+
+	) return EXIT_FAILURE;
 
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
