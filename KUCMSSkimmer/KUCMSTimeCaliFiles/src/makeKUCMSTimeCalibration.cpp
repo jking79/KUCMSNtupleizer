@@ -62,7 +62,8 @@ int main ( int argc, char *argv[] ){
 	//std::string inputfilename( "ecal_config/kucmsTimeCaliR22ReRecoTFile.txt"); 
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR23ReRecoTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR24ReRecoTFile.txt");
-    std::string inputfilename( "ecal_config/kucmsTimeCaliR25PrmptTFile.txt");
+    //std::string inputfilename( "ecal_config/kucmsTimeCaliR25PrmptTFile.txt");
+    std::string inputfilename( "ecal_config/kucmsTimeCaliR26PrmptTFile.txt");
 
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCQCDTFile.txt");
 
@@ -79,7 +80,8 @@ int main ( int argc, char *argv[] ){
 	//std::string indir("KUCMSNtuple/gammares_R22_22sept23/");
     //std::string indir("KUCMSNtuple/gammares_R23_22sept23/");
     //std::string indir("KUCMSNtuple/gammares_R24_m6n15/");
-    std::string indir("KUCMSNtuple/gammares_prmt25/");
+    //std::string indir("KUCMSNtuple/gammares_prmt25/");
+    std::string indir("KUCMSNtuple/gammares_prmt26/");
 
     //std::string indir("KUCMSNtuple/gammares_QCD18/");
 

@@ -75,6 +75,7 @@ KUCMS_TimeCalibration::KUCMS_TimeCalibration( bool stayOpen, bool makeNew, bool 
     caliHistFileNames["r3_p25"] = "cali_p25_HistsTFile.root";
     caliHistFileNames["r3_p25unc"] = "cali_p25_UnCor_HistsTFile.root";
     caliHistFileNames["r3_p26"] = "cali_p26_HistsTFile.root";
+	caliHistFileNames["r3_p26unc"] = "cali_p26_UnCor_HistsTFile.root";
 
 	useEosRootCali =  doLocalCali ? false : true;
 	caliMapsValid = true;
@@ -412,10 +413,25 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
 
 // 2025 - (390735) 391531 - 398903
 
-	////promptIovMap[391531] = 398903;
+	promptIovMap[398904] = 401629;
+
+// 2026
+// lumi 401630 403867 
+
+//Commissioning2026, Run2026A, Run2026B  400454 402229
+//Run2026B 402230 402513
+//Run2026C 402514 403422
+//Run2026D 403423 404067
+
+    promptIovMap[401630] = 402513;
+    promptIovMap[402514] = 403422;
+    promptIovMap[403423] = 403867;
+    promptIovMap[403868] = 404067;
+
+// 2026
 
 // END
-	promptIovMap[398904] = 999999;
+	promptIovMap[404068] = 999999;
 /*
  	// CC calibration periods in 2024
     promptIovMap[372309] = 372750;//"29/08/2023";//cc start
@@ -471,6 +487,7 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
     std::string lumi23Config = "brilcalc_lumi_2023.txt";
     std::string lumi24Config = "brilcalc_lumi_2024.txt";
     std::string lumi25Config = "brilcalc_lumi_2025.txt";
+    std::string lumi26Config = "brilcalc_lumi_2026.txt";
 
     ReadLumiFile( caliFileDir+lumiUL16Config, r2ulLumiTag );
     ReadLumiFile( caliFileDir+lumiUL17Config, r2ulLumiTag );
@@ -501,6 +518,7 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
     ReadLumiFile( caliFileDir+lumi23Config, r3LumiTag );
     ReadLumiFile( caliFileDir+lumi24Config, r3LumiTag );
     ReadLumiFile( caliFileDir+lumi25Config, r3LumiTag );
+    ReadLumiFile( caliFileDir+lumi26Config, r3LumiTag );
 
     setLumiTag(r3LumiTag);
     SetupIovMap( r3TagTT, minttlumi );
@@ -544,8 +562,8 @@ void KUCMS_TimeCalibration::SetupIovMap( std::string tag, float minLumi ){
 		int yendrun = 0;
 		// ::check if current run has past the start of a hard IOV boundary while in a range that started before that boundary
 		// the Hard IOV boundary must be the start run of an IOV ( the run listed here must always trigger an IOV jump ) 
-		std::vector<int> tthardruns{ 284045, 306461, 325173, 357501, 359001, 359560, 359567, 359574, 359690, 359775, 359870, 359871, 359880, 359895, 359902, 360129, 360131, 360260, 360331, 362761, 373862, 387742, 398904 };
-		std::vector<int> xhardruns{ 253984, 284045, 306461, 327239, 362761, 373862, 387742, 398904 };
+		std::vector<int> tthardruns{ 284045, 306461, 325173, 357501, 359001, 359560, 359567, 359574, 359690, 359775, 359870, 359871, 359880, 359895, 359902, 360129, 360131, 360260, 360331, 362761, 373862, 387742, 398904, 401630, 402514, 403868 };
+		std::vector<int> xhardruns{ 253984, 284045, 306461, 327239, 362761, 373862, 387742, 398904, 401630, 402514, 403868 };
 		if( minLumi < 3.f ) { for( auto hardrun : tthardruns ){ if( currentrun >= hardrun && start < hardrun ){ yearend = true; yendrun = hardrun; } } }
 		else { for( auto hardrun : xhardruns ){ if( currentrun >= hardrun && start < hardrun ){ yearend = true; yendrun = hardrun; } } }
 		//if( yearend ) std::cout << " --- END OF YEAR : " << currentrun << " start " << start << std::endl; 
@@ -4519,7 +4537,7 @@ void KUCMS_TimeCalibration::makeTTDriftMaps( std::string tag, int srun, int erun
 
 		std::cout << " -- Filling TH1F and TGraphErrors " << std::endl;
         std::map<int,float> normrun;
-		float maxtime = 0;
+		//float maxtime = 0;
         for( auto& calirunsct : calirunmap ){
 
 			first = calirunsct.first;
@@ -4539,7 +4557,7 @@ void KUCMS_TimeCalibration::makeTTDriftMaps( std::string tag, int srun, int erun
                     float error = calirunsct.second.errMap[detid];
                     if( bin == 1 ) normrun[index] = mean;
 					if( mean == 0 ) continue;
-					if( std::abs(mean) > maxtime ) maxtime == std::abs(mean);
+					//if( std::abs(mean) > maxtime ) maxtime == std::abs(mean);
                     //std::cout << " -- Filling : " << ieta << " " << iphi << " " << index << " " << first << " ";
 					//std::cout << bin << " " << mean << " " << error << " " << normrun[index] << std::endl;
 					histmap[index]->SetBinContent( bin, mean );
