@@ -15,6 +15,11 @@
 #include "TChain.h" 
 #include "TGraphErrors.h" 
 #include "TMultiGraph.h" 
+#include "TFitResult.h"
+#include "TFitResultPtr.h"
+
+#include <algorithm>
+#include <cmath>
  
 #ifndef KUCMS_ProfileTimeFit 
 #define KUCMS_ProfileTimeFit
@@ -23,8 +28,8 @@ class kucms_ProfileTimeFit {
 
     public: 
      
-    kucms_ProfileTimeFit(){ profileHist = NULL; form = NULL; fit = NULL; }; 
-    kucms_ProfileTimeFit( TH1F* hist ) : profileHist(hist) { form = NULL; fit = NULL; }; 
+    kucms_ProfileTimeFit(){ profileHist = NULL; form = NULL; fit = NULL; fitHigh = NULL; fitLow = NULL; };
+    kucms_ProfileTimeFit( TH1F* hist ) : profileHist(hist) { form = NULL; fit = NULL; fitHigh = NULL; fitLow = NULL; };
     //~ProfileTimeFit(){ if( profileHist ) delete profileHist; if( form ) delete form; if( fit ) delete fit; };   
  
     // internal data members 
@@ -39,33 +44,32 @@ class kucms_ProfileTimeFit {
     //bool isEmpty(){ std::cout << " -- ?  is empty " << profileHist << std::endl; return ( profileHist ) ? profileHist->GetEntries() == 0 : true; }; 
     //void DoFit(); 
     kucms_TimeFitResult GetFitResult(){ return results; }; 
-    void deleteHists(){ if( profileHist ) delete profileHist; if( form ) delete form; if( fit ) delete fit; }; 
+    void deleteHists(){
+        if( fitLow ) delete fitLow;
+        if( fitHigh ) delete fitHigh;
+        if( fit ) delete fit;
+        if( form ) delete form;
+        if( profileHist ) delete profileHist;
+        profileHist = NULL;
+        form = NULL;
+        fit = NULL;
+        fitHigh = NULL;
+        fitLow = NULL;
+    };
  
     //inline void kucms_ProfileTimeFit::DoFit(){ 
-	void DoFit(){   
+	bool DoFit(){
  
         std::cout << " -- ProfileTimeFit DoFit " << std::endl; 
         //if( isEmpty() ){ std::cout << " --- No such profile hist !!!!!!! " << std::endl; return; } 
         //std::cout << " -- yes profile exists " << std::endl; 
     
-        float Sqrt2PI   = 2.506628274631001f; 
-    
         // set tmp init vals 
-        auto hsum = profileHist->Integral(); 
-        if( hsum == 0 ){ 
+		if( not profileHist ) return false;
+		auto hsum = profileHist->Integral();
+		if( hsum <= 0 ){
             std::cout << " -- !!!!!! Intergral is Zero !!!!!!!! " << std::endl; 
-            results.mu = 0; 
-            results.emu = 0; 
-            results.chi2ndf = 0; 
-            results.chi2prob = 0; 
-            results.sigma = 10; 
-            results.sigmaHigh = 0; 
-            results.sigmaLow = 0; 
-            results.esigma = 10; 
-            results.occ = 0; 
-            results.rms = 0; 
-            results.std = 0; 
-            return; 
+			return false;
         }//<<>>if( hsum == 0 ) 
     
         float mu = profileHist->GetMean(); 
@@ -75,10 +79,17 @@ class kucms_ProfileTimeFit {
         //float norm = hsum/(sigma*Sqrt2PI); 
         float norm = profileHist->GetBinContent(profileHist->GetMaximumBin()); 
         std::cout << " -- Params: sum " << hsum << " mu " << mu << " s " << sigma << " rms " << rms << " norm " << norm << std::endl; 
+		results.occ = hsum;
+		results.rms = rms;
+		results.std = sigma;
+		if( not std::isfinite(mu) || not std::isfinite(sigma) || sigma <= 0 ||
+		    not std::isfinite(norm) || norm <= 0 ){
+			std::cout << " -- Invalid profile moments; skipping Gaussian fits." << std::endl;
+			return false;
+		}//<<>>if( profile cannot define a Gaussian fit )
     
         std::cout << " -- setting paramters " << std::endl; 
         // range vars   ? names ? 
-        float sigrange = 2.0; 
         float lowerBound = mu - 2*sigma; 
         float upperBound = mu + 2*sigma; 
         float lowerHBound = mu - 4*sigma; 
@@ -146,27 +157,71 @@ class kucms_ProfileTimeFit {
         std::cout  << " Sigma: " << sigma << "( " << sigma/10 << " to " << sigma*10 << " )" << std::endl; 
     
         std::cout << " -- fiting " << std::endl; 
-        profileHist->Fit(fit->GetName(),"RBQO"); 
-        profileHist->Fit(fitHigh->GetName(),"RBQO"); 
-        profileHist->Fit(fitLow->GetName(),"RBQO"); 
+        // N keeps the temporary functions out of the histogram ownership list;
+        // deleteHists() owns and deletes all three fit objects explicitly.
+		TFitResultPtr centralResult = profileHist->Fit(fit,"RBQONS");
+		TFitResultPtr highResult = profileHist->Fit(fitHigh,"RBQONS");
+		TFitResultPtr lowResult = profileHist->Fit(fitLow,"RBQONS");
     
         std::cout << " -- setting results " << std::endl; 
         results.mu = fit->GetParameter(1); 
         results.emu = fit->GetParError (1); 
-        results.chi2ndf = fit->GetChisquare(); 
+		results.chi2 = fit->GetChisquare();
+		results.ndf = fit->GetNDF();
+		results.chi2ndf = results.ndf > 0 ? results.chi2/results.ndf : 0;
         results.chi2prob = fit->GetProb(); 
         results.sigma = fit->GetParameter(2); 
         results.sigmaHigh = fitHigh->GetParameter(2); 
         results.sigmaLow = fitLow->GetParameter(2); 
         results.esigma = fit->GetParError (2); 
-        results.occ = hsum; 
-        results.rms = rms; 
-        results.std = sigma; 
+		results.fitStatus = static_cast<int>(centralResult);
+		results.fitStatusHigh = static_cast<int>(highResult);
+		results.fitStatusLow = static_cast<int>(lowResult);
+		results.covStatus = centralResult.Get() ? centralResult->CovMatrixStatus() : -1;
+		results.covStatusHigh = highResult.Get() ? highResult->CovMatrixStatus() : -1;
+		results.covStatusLow = lowResult.Get() ? lowResult->CovMatrixStatus() : -1;
+
+		auto parameterAtLimit = []( TF1* function, int parameter ){
+			double lower = 0;
+			double upper = 0;
+			function->GetParLimits(parameter,lower,upper);
+			if( not std::isfinite(lower) || not std::isfinite(upper) || upper <= lower ) return false;
+			const double value = function->GetParameter(parameter);
+			const double tolerance = 1e-6*std::max(1.0,std::abs(upper-lower));
+			return value <= lower+tolerance || value >= upper-tolerance;
+		};
+		results.sigmaAtLimit = parameterAtLimit(fit,2);
+		results.sigmaHighAtLimit = parameterAtLimit(fitHigh,2);
+		results.sigmaLowAtLimit = parameterAtLimit(fitLow,2);
+
+		results.valid = results.fitStatus == 0 && results.covStatus >= 2 && results.ndf > 0 &&
+			std::isfinite(results.mu) && std::isfinite(results.emu) &&
+			std::isfinite(results.sigma) && std::isfinite(results.esigma) &&
+			results.sigma > 0 && results.esigma > 0 && not results.sigmaAtLimit;
+		results.validHigh = results.fitStatusHigh == 0 && results.covStatusHigh >= 2 && fitHigh->GetNDF() > 0 &&
+			std::isfinite(results.sigmaHigh) && std::isfinite(fitHigh->GetParError(2)) &&
+			results.sigmaHigh > 0 && fitHigh->GetParError(2) > 0 && not results.sigmaHighAtLimit;
+		results.validLow = results.fitStatusLow == 0 && results.covStatusLow >= 2 && fitLow->GetNDF() > 0 &&
+			std::isfinite(results.sigmaLow) && std::isfinite(fitLow->GetParError(2)) &&
+			results.sigmaLow > 0 && fitLow->GetParError(2) > 0 && not results.sigmaLowAtLimit;
+
+		if( results.valid ){
+			if( results.validLow ){
+				results.modelError = std::abs(results.sigmaLow-results.sigma);
+				results.modelVariations++;
+			}//<<>>if( narrow fit is valid )
+			if( results.validHigh ){
+				results.modelError = std::max(results.modelError,std::abs(results.sigmaHigh-results.sigma));
+				results.modelVariations++;
+			}//<<>>if( wide fit is valid )
+		}//<<>>if( central fit is valid )
+		results.modelValid = results.modelVariations > 0 && std::isfinite(results.modelError);
     
         std::cout << " - Fit Sigma: " << results.sigma << " +/- " << results.esigma; 
         std::cout << " ( low " << results.sigmaLow << " high " << results.sigmaHigh << " ) " << std::endl; 
+		return results.valid;
     
-    }//<<>>void ProfileTimeFit::DoFit() 
+	}//<<>>bool ProfileTimeFit::DoFit()
 
 };//<<>>class ProfileTimeFit 
 

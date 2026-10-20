@@ -91,17 +91,34 @@ struct kucms_caliHistStruct {
 // fit result struct 
 struct kucms_TimeFitResult { 
 
-    float mu; 
-    float emu; 
-    float chi2ndf; 
-    float chi2prob; 
-    float sigma; 
-    float sigmaHigh; 
-    float sigmaLow; 
-    float esigma; 
-    float occ; 
-    float rms; 
-    float std; 
+    float mu = 0;
+    float emu = 0;
+    float chi2 = 0;
+    float chi2ndf = 0;
+    float chi2prob = 0;
+    float sigma = 0;
+    float sigmaHigh = 0;
+    float sigmaLow = 0;
+    float esigma = 0;
+    float modelError = 0;
+    float occ = 0;
+    float rms = 0;
+    float std = 0;
+    int ndf = 0;
+    int fitStatus = -1;
+    int fitStatusHigh = -1;
+    int fitStatusLow = -1;
+    int covStatus = -1;
+    int covStatusHigh = -1;
+    int covStatusLow = -1;
+    int modelVariations = 0;
+    bool sigmaAtLimit = false;
+    bool sigmaHighAtLimit = false;
+    bool sigmaLowAtLimit = false;
+    bool valid = false;
+    bool validHigh = false;
+    bool validLow = false;
+    bool modelValid = false;
 
 };//<<>>struct TimeFitResult 
 
@@ -109,12 +126,24 @@ struct kucms_TimeFitResult {
 
 struct kucms_SigmaFitResult { 
 
-    float noise;//noise 
-    float enoise; 
-    float stant;//constant 
-    float estant; 
-    float stoch;//stochastic 
-    float estoch; 
+    float noise = 0;//noise
+    float enoise = 0;
+    float stant = 0;//constant
+    float estant = 0;
+    float stoch = 0;//stochastic
+    float estoch = 0;
+    float chi2 = 0;
+    float chi2ndf = 0;
+    float chi2prob = 0;
+    int ndf = 0;
+    int fitStatus = -1;
+    int covStatus = -1;
+    int nFitPoints = 0;
+    float fractionalScatter = 0;
+    float efractionalScatter = 0;
+    float objective = 0;
+    bool parameterAtLimit = false;
+    bool valid = false;
 
 };//<<>>struct SigmaFitResult 
 

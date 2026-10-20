@@ -120,6 +120,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 	bool updated;
 	bool lowEnergy;
 	bool useEffEnergy;
+	bool doGPRHists;
     bool externalCali;
     bool useGSwitch;
 	bool doEE;
@@ -256,10 +257,10 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 	bool plot2dResolutionEGR( std::string inputFileName, bool scale = true, bool usecali = true, bool smear = false, std::string ext = "" );
     void plot2dResbyIovForEGR( std::string inputFileName, bool scale = true, bool usecali = true, bool smear = false, std::string ext = "" );
     kucms_SigmaFitResult runTimeFitter( TH2F* hist2D );
-	void doResTimeFits( bool doLocal = false );
-    void doResTimeFit( std::string histName );
-	void load2DResHist( std::string histName );
-	void doResTimeFitExt( std::string histName, std::string fileName );
+	bool doResTimeFits( bool doLocal = false );
+	bool doResTimeFit( std::string histName );
+	bool load2DResHist( std::string histName );
+	bool doResTimeFitExt( std::string histName, std::string fileName );
 
 	TH1F* gprProfileHist( TH1F* hist );
 
@@ -270,6 +271,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
     void makeTTDriftMaps( std::string tag, int srun, int erun );
 
 	void setUseEffEnergy( bool setting ){ useEffEnergy = setting; };
+	void setDoGPRHists( bool setting ){ doGPRHists = setting; };
 	void setLowEnergy( bool setting ){ lowEnergy = setting; }; 
 	void useExtCali( bool ext ){ externalCali = ext; };
     void useGainSwitch( bool gs, bool all ){ useGSwitch = gs; doAllGain = all; };

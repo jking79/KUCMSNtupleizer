@@ -144,10 +144,11 @@ int main ( int argc, char *argv[] ){
     if( argc > 4 ) doSmear = parseBoolArg( argv[4] );
     if( argc > 5 ) nameExt = argv[5];
 
-    //KUCMS_TimeCalibration theCali;
-    KUCMS_TimeCalibration theCali( true );// true allows for run local condition
+	// Resolution processing only reads the local calibration maps. Load them in
+	// READ mode, build the in-memory maps, and close the ROOT files immediately.
+	KUCMS_TimeCalibration theCali(false,false,true);
 	if( not theCali.HasValidCaliMaps() ) return EXIT_FAILURE;
-    theCali.setUseLocalCali();
+	theCali.setUseLocalCali();
     theCali.SetEosDir(eosdir);
     theCali.SetInDir(indir);
 
@@ -317,11 +318,12 @@ int main ( int argc, char *argv[] ){
 	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18MC_QCD_xa_pm24b1200_v0818" );
     //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18MC_QCD_lg_xa_pm24b1200_v0818" );
 	//theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18MC_SQCD_xa_pm24b1200_v0822" )
-	if(
 
-		not theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_26_prompt_hg_xa_pm24b1200_v0819" )
+	//if(
 
-	) return EXIT_FAILURE;
+	//	not theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_26_prompt_hg_xa_pm24b1200_v0819" )
+
+	//) return EXIT_FAILURE;
 
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -533,10 +535,17 @@ int main ( int argc, char *argv[] ){
     //std::string histName3 = "ResMap_0_999999_DRO_Data_Hist_eg_18MC_QCD_xa_pm24b1200_v0818_EB";
     //std::string histName4 = "ResMap_0_999999_DRO_Data_Hist_eg_18MC_QCD_xa_pm24b1200_v0818_EE";
 
-    std::string histName1 = "ResMap_0_999999_SRO_Data_Hist_eg_18MC_SQCD_xa_pm24b1200_v0821_EB";
-    std::string histName2 = "ResMap_0_999999_SRO_Data_Hist_eg_18MC_SQCD_xa_pm24b1200_v0821_EE";
-    std::string histName3 = "ResMap_0_999999_DRO_Data_Hist_eg_18MC_SQCD_xa_pm24b1200_v0821_EB";
-    std::string histName4 = "ResMap_0_999999_DRO_Data_Hist_eg_18MC_SQCD_xa_pm24b1200_v0821_EE";
+    //std::string histName1 = "ResMap_0_999999_SRO_Data_Hist_eg_18MC_SQCD_xa_pm24b1200_v0821_EB";
+    //std::string histName2 = "ResMap_0_999999_SRO_Data_Hist_eg_18MC_SQCD_xa_pm24b1200_v0821_EE";
+    //std::string histName3 = "ResMap_0_999999_DRO_Data_Hist_eg_18MC_SQCD_xa_pm24b1200_v0821_EB";
+    //std::string histName4 = "ResMap_0_999999_DRO_Data_Hist_eg_18MC_SQCD_xa_pm24b1200_v0821_EE";
+
+    std::string histName1 = "ResMap_401630_403867_SRO_Data_Hist_UnCorr_eg_26_prompt_hg_xa_pm24b1200_v0819_EB";
+    std::string histName2 = "ResMap_401630_403867_SRO_Data_Hist_UnCorr_eg_26_prompt_hg_xa_pm24b1200_v0819_EE";
+    std::string histName3 = "ResMap_401630_403867_DRO_Data_Hist_UnCorr_eg_26_prompt_hg_xa_pm24b1200_v0819_EB";
+    std::string histName4 = "ResMap_401630_403867_DRO_Data_Hist_UnCorr_eg_26_prompt_hg_xa_pm24b1200_v0819_EE";
+
+
 
 //    std::string histName1 = "";
 //    std::string histName2 = "";
@@ -548,16 +557,12 @@ int main ( int argc, char *argv[] ){
     //theCali.load2DResHist( histName );
 	//theCali.doResTimeFit( histName );
 
-/*
-    theCali.load2DResHist( histName1 );
-    theCali.doResTimeFit( histName1 );
-    theCali.load2DResHist( histName2 );
-    theCali.doResTimeFit( histName2 );
-    theCali.load2DResHist( histName3 );
-    theCali.doResTimeFit( histName3 );
-    theCali.load2DResHist( histName4 );
-    theCali.doResTimeFit( histName4 );	
-*/
+	// Deprecated GPR profile histograms are disabled by default. Enable only when needed:
+	//theCali.setDoGPRHists(true);
+	if( not theCali.load2DResHist(histName1) || not theCali.doResTimeFit(histName1) ) return EXIT_FAILURE;
+	if( not theCali.load2DResHist(histName2) || not theCali.doResTimeFit(histName2) ) return EXIT_FAILURE;
+	if( not theCali.load2DResHist(histName3) || not theCali.doResTimeFit(histName3) ) return EXIT_FAILURE;
+	if( not theCali.load2DResHist(histName4) || not theCali.doResTimeFit(histName4) ) return EXIT_FAILURE;
 
 	////////////////////  use external file for fit ///////////////////////////////////////////////////////////////////////////
 

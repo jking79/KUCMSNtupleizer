@@ -1,8 +1,15 @@
 #include "../include/KUCMS_TimeCalibration.hh"
 
 #include <array>
+#include <functional>
+#include <limits>
+#include <memory>
 #include <unordered_map>
 #include <unordered_set>
+
+#include "Math/Factory.h"
+#include "Math/Functor.h"
+#include "Math/Minimizer.h"
 
 namespace {
 
@@ -99,6 +106,7 @@ KUCMS_TimeCalibration::KUCMS_TimeCalibration( bool stayOpen, bool makeNew, bool 
 
 	lowEnergy = true;
 	useEffEnergy = false;
+	doGPRHists = false;
 	xBinStr = "VARIABLE 25 50 75 100 125 150 175 200 225 250 300 400 600 1000 1800"; 
     yBinStr = "CONSTANT 600 -3 3";
 
@@ -3696,25 +3704,52 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 
 kucms_SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D ){
 
+	kucms_SigmaFitResult sigmafit;
+	if( not hist2D ){
+		std::cerr << "ERROR: null 2D histogram passed to runTimeFitter." << std::endl;
+		return sigmafit;
+	}//<<>>if( null input histogram )
+
   	std::string f2DHistName = hist2D->GetName();
 	std::cout << "Running time fitter : " << f2DHistName << std::endl;
     bool doSterm = true;
 	//bool doSterm = false;
-	
-  	std::vector<float> fXBins;
-	std::cout << " -- " << xBinStr << std::endl;
- 	setBins( xBinStr, fXBins );
-  	int fNBinsX = fXBins.size();
-	const auto xbins = &fXBins[0];
+
+	// Use the input histogram's axis directly so the fitter cannot drift from the
+	// binning used when the 2D resolution map was produced.
+	const int nXbins = hist2D->GetNbinsX();
+	if( nXbins <= 0 ){
+		std::cerr << "ERROR: input resolution histogram has no X bins: " << f2DHistName << std::endl;
+		return sigmafit;
+	}//<<>>if( invalid X axis )
+	std::vector<double> fXBins(nXbins+1);
+	for( int ibinX = 1; ibinX <= nXbins; ibinX++ ){
+		fXBins[ibinX-1] = hist2D->GetXaxis()->GetBinLowEdge(ibinX);
+		if( not std::isfinite(fXBins[ibinX-1]) ||
+		    (ibinX > 1 && fXBins[ibinX-1] <= fXBins[ibinX-2]) ){
+			std::cerr << "ERROR: invalid X-axis binning in " << f2DHistName << std::endl;
+			return sigmafit;
+		}//<<>>if( invalid X-bin edge )
+	}//<<>>for( X bins )
+	fXBins[nXbins] = hist2D->GetXaxis()->GetBinUpEdge(nXbins);
+	if( not std::isfinite(fXBins[nXbins]) || fXBins[nXbins] <= fXBins[nXbins-1] ){
+		std::cerr << "ERROR: invalid final X-axis edge in " << f2DHistName << std::endl;
+		return sigmafit;
+	}//<<>>if( invalid final edge )
+	const auto xbins = fXBins.data();
+	std::cout << " -- using " << nXbins << " X bins stored in the input histogram" << std::endl;
 
 	std::string fittypename = ( doSterm ) ? "_NSC" : "_NC";
 	//std::string outfilename = caliFileDir + f2DHistName + fittypename  + "_resfit.root";
     std::string outfilename = f2DHistName + fittypename  + "_resfit.root";
     TFile* resTFile = TFile::Open( outfilename.c_str(), "RECREATE" );
-	if( resTFile == NULL ) std::cout << " -- Failed to open : " << f2DHistName << std::endl;
+	if( not resTFile || resTFile->IsZombie() ){
+		std::cerr << "ERROR: failed to create time-fit output file: " << outfilename << std::endl;
+		if( resTFile ){ resTFile->Close(); delete resTFile; }
+		return sigmafit;
+	}//<<>>if( output file failed )
     resTFile->cd();
 
-	int nXbins = fNBinsX - 1;
     std::map<std::string,TH1F*> ResultsMap;
     std::string fTitle = "#Delta(Photon Seed Time) [ns] vs. A_{eff}/#sigma_{n} (EBEB)";
     std::string fXTitle = "A_{eff}/#sigma_{n} (EBEB)";
@@ -3722,8 +3757,12 @@ kucms_SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D ){
     std::string fSigmaVarText = "A_{eff}/#sigma_{n}";
     std::string chi2ndfName = f2DHistName+"_chi2ndf";
     std::string chi2ndfTitle = fTitle+" "+"#chi^{2}/NDF."+";"+fXTitle+";"+"#chi^{2}/NDF.";
-    ResultsMap["chi2ndf"]  = new TH1F(chi2ndfName.c_str(),chi2ndfName.c_str(),nXbins,xbins);
+	ResultsMap["chi2ndf"]  = new TH1F(chi2ndfName.c_str(),chi2ndfTitle.c_str(),nXbins,xbins);
     ResultsMap["chi2ndf"]->Sumw2();
+	std::string chi2Name = f2DHistName+"_chi2";
+	ResultsMap["chi2"] = new TH1F(chi2Name.c_str(),chi2Name.c_str(),nXbins,xbins);
+	std::string ndfName = f2DHistName+"_ndf";
+	ResultsMap["ndf"] = new TH1F(ndfName.c_str(),ndfName.c_str(),nXbins,xbins);
     std::string chi2probName = f2DHistName+"_chi2prob";
     std::string chi2probTitle = fTitle+" "+"#chi^{2} Prob."+";"+fXTitle+";"+"#chi^{2} Prob.";
     ResultsMap["chi2prob"] = new TH1F(chi2probName.c_str(),chi2probTitle.c_str(),nXbins,xbins);
@@ -3738,6 +3777,37 @@ kucms_SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D ){
     std::string sigTitle = fTitle+" "+sigtext+";"+fXTitle+";"+sigtext;
     ResultsMap["sigma"] = new TH1F(sigName.c_str(),sigTitle.c_str(),nXbins,xbins);
     ResultsMap["sigma"]->Sumw2();
+	std::string sigmaRange1Name = f2DHistName+"_sigmaFitRange1";
+	ResultsMap["sigmaFitRange1"] = new TH1F(sigmaRange1Name.c_str(),sigmaRange1Name.c_str(),nXbins,xbins);
+	std::string sigmaRange4Name = f2DHistName+"_sigmaFitRange4";
+	ResultsMap["sigmaFitRange4"] = new TH1F(sigmaRange4Name.c_str(),sigmaRange4Name.c_str(),nXbins,xbins);
+	std::string sigmaModelErrName = f2DHistName+"_sigmaModelErr";
+	ResultsMap["sigmaModelErr"] = new TH1F(sigmaModelErrName.c_str(),sigmaModelErrName.c_str(),nXbins,xbins);
+	std::string sigmaModelVariationsName = f2DHistName+"_sigmaModelVariations";
+	ResultsMap["sigmaModelVariations"] = new TH1F(sigmaModelVariationsName.c_str(),sigmaModelVariationsName.c_str(),nXbins,xbins);
+	std::string sigmaNSCFitInputName = f2DHistName+"_sigmaNSCFitInput";
+	ResultsMap["sigmaNSCFitInput"] = new TH1F(sigmaNSCFitInputName.c_str(),sigTitle.c_str(),nXbins,xbins);
+	ResultsMap["sigmaNSCFitInput"]->Sumw2();
+	std::string fitStatusName = f2DHistName+"_gaussFitStatus";
+	ResultsMap["gaussFitStatus"] = new TH1F(fitStatusName.c_str(),fitStatusName.c_str(),nXbins,xbins);
+	std::string covStatusName = f2DHistName+"_gaussCovStatus";
+	ResultsMap["gaussCovStatus"] = new TH1F(covStatusName.c_str(),covStatusName.c_str(),nXbins,xbins);
+	std::string fitValidName = f2DHistName+"_gaussFitValid";
+	ResultsMap["gaussFitValid"] = new TH1F(fitValidName.c_str(),fitValidName.c_str(),nXbins,xbins);
+	std::string fitStatusRange1Name = f2DHistName+"_gaussFitStatusRange1";
+	ResultsMap["gaussFitStatusRange1"] = new TH1F(fitStatusRange1Name.c_str(),fitStatusRange1Name.c_str(),nXbins,xbins);
+	std::string covStatusRange1Name = f2DHistName+"_gaussCovStatusRange1";
+	ResultsMap["gaussCovStatusRange1"] = new TH1F(covStatusRange1Name.c_str(),covStatusRange1Name.c_str(),nXbins,xbins);
+	std::string fitValidRange1Name = f2DHistName+"_gaussFitValidRange1";
+	ResultsMap["gaussFitValidRange1"] = new TH1F(fitValidRange1Name.c_str(),fitValidRange1Name.c_str(),nXbins,xbins);
+	std::string fitStatusRange4Name = f2DHistName+"_gaussFitStatusRange4";
+	ResultsMap["gaussFitStatusRange4"] = new TH1F(fitStatusRange4Name.c_str(),fitStatusRange4Name.c_str(),nXbins,xbins);
+	std::string covStatusRange4Name = f2DHistName+"_gaussCovStatusRange4";
+	ResultsMap["gaussCovStatusRange4"] = new TH1F(covStatusRange4Name.c_str(),covStatusRange4Name.c_str(),nXbins,xbins);
+	std::string fitValidRange4Name = f2DHistName+"_gaussFitValidRange4";
+	ResultsMap["gaussFitValidRange4"] = new TH1F(fitValidRange4Name.c_str(),fitValidRange4Name.c_str(),nXbins,xbins);
+	std::string sigmaAtLimitName = f2DHistName+"_gaussSigmaAtLimit";
+	ResultsMap["gaussSigmaAtLimit"] = new TH1F(sigmaAtLimitName.c_str(),sigmaAtLimitName.c_str(),nXbins,xbins);
     std::string occtext = "#occ("+fTimeText+")";
     std::string occName = f2DHistName+"_occ";
     std::string occTitle = fTitle+" "+occtext+";"+fXTitle+";"+occtext;
@@ -3755,7 +3825,7 @@ kucms_SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D ){
   	//-------------TimeFitter::Project2Dto1DHists(FitInfo);
   	std::cout << "Projecting to 1D from 2D plot: " << f2DHistName << std::endl;
   	// get inputs/outputs
-  	for (int ibinX = 1; ibinX < fNBinsX; ibinX++){
+	for (int ibinX = 1; ibinX <= nXbins; ibinX++){
     	std::string fullHistName = f2DHistName + "_ibin_" + std::to_string(ibinX);
 		std::cout << " - projecting bin : " << ibinX << std::endl;
 		TH1F* profilehist = (TH1F*)hist2D->ProjectionY(fullHistName.c_str(),ibinX,ibinX);
@@ -3779,7 +3849,7 @@ kucms_SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D ){
   	//auto intgral = profileHists[1].profileHist->Integral();
 	//auto name = profileHists[2].profileHist->GetName();
 	//std::cout << " -- Profile Map size : " << name << std::endl;
-  	for (int ibinX = 1; ibinX < fNBinsX; ibinX++){
+	for (int ibinX = 1; ibinX <= nXbins; ibinX++){
 		profileHists[ibinX].DoFit();	
 	}//<<>>for (int ibinX = 1; ibinX < fNBinsX; ibinX++)
   	//for( auto& profile : profileHists ){ profile.second.DoFit(); }
@@ -3789,7 +3859,7 @@ kucms_SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D ){
   	//---------------TimeFitter::ExtractFitResults(FitInfo);
   	std::cout << "Extracting results for: " << f2DHistName << std::endl;
   	// set bin content!
-  	for (auto ibinX = 1; ibinX < fNBinsX; ibinX++){
+	for (auto ibinX = 1; ibinX <= nXbins; ibinX++){
 
 		auto& profile = profileHists[ibinX];
     	//if( profile.isEmpty() ) continue;
@@ -3802,16 +3872,37 @@ kucms_SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D ){
 
     	std::cout << " Bin " << ibinX  <<  " : " << fXBins[ibinX-1] << "-" << fXBins[ibinX];
     	std::cout << " : no guass: " << results.sigma << " err: " << serr << std::endl;
+		ResultsMap["gaussFitStatus"]->SetBinContent(ibinX,results.fitStatus);
+		ResultsMap["gaussCovStatus"]->SetBinContent(ibinX,results.covStatus);
+		ResultsMap["gaussFitValid"]->SetBinContent(ibinX,results.valid ? 1 : 0);
+		ResultsMap["gaussFitStatusRange1"]->SetBinContent(ibinX,results.fitStatusLow);
+		ResultsMap["gaussCovStatusRange1"]->SetBinContent(ibinX,results.covStatusLow);
+		ResultsMap["gaussFitValidRange1"]->SetBinContent(ibinX,results.validLow ? 1 : 0);
+		ResultsMap["gaussFitStatusRange4"]->SetBinContent(ibinX,results.fitStatusHigh);
+		ResultsMap["gaussCovStatusRange4"]->SetBinContent(ibinX,results.covStatusHigh);
+		ResultsMap["gaussFitValidRange4"]->SetBinContent(ibinX,results.validHigh ? 1 : 0);
+		ResultsMap["gaussSigmaAtLimit"]->SetBinContent(ibinX,results.sigmaAtLimit ? 1 : 0);
+		ResultsMap["sigmaModelVariations"]->SetBinContent(ibinX,results.modelVariations);
 	
 		if( results.sigma <= 0 ) continue; 
 
+		ResultsMap["chi2"]->SetBinContent( ibinX, results.chi2 );
+		ResultsMap["ndf"]->SetBinContent( ibinX, results.ndf );
     	ResultsMap["chi2ndf"]->SetBinContent( ibinX, results.chi2ndf );
     	ResultsMap["chi2prob"]->SetBinContent( ibinX, results.chi2prob );
     	ResultsMap["mu"]->SetBinContent( ibinX, results.mu );
     	ResultsMap["mu"]->SetBinError( ibinX, results.emu );
+		if( results.validLow ) ResultsMap["sigmaFitRange1"]->SetBinContent(ibinX,results.sigmaLow);
+		if( results.validHigh ) ResultsMap["sigmaFitRange4"]->SetBinContent(ibinX,results.sigmaHigh);
+		if( results.modelValid ) ResultsMap["sigmaModelErr"]->SetBinContent(ibinX,results.modelError);
 		if( results.esigma < results.sigma/2 ){
     		ResultsMap["sigma"]->SetBinContent( ibinX, results.sigma );
             ResultsMap["sigma"]->SetBinError( ibinX, serr );
+			if( results.valid && results.modelValid ){
+				ResultsMap["sigmaNSCFitInput"]->SetBinContent(ibinX,results.sigma);
+				ResultsMap["sigmaNSCFitInput"]->SetBinError(
+					ibinX,std::hypot(static_cast<double>(serr),static_cast<double>(results.modelError)));
+			}//<<>>if( valid model-aware NSC point )
 		}//<<>>if( results.esigma < 0.01 )
     	ResultsMap["occ"]->SetBinContent( ibinX, results.occ );
     	ResultsMap["occ"]->SetBinError( ibinX, std::sqrt(results.occ) );
@@ -3820,11 +3911,15 @@ kucms_SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D ){
  
   	}//<<>>for (auto ibinX = 1; ibinX <= fNBinsX; ibinX++)
 
-    for( auto& profile : profileHists ){ 
+	for( auto& profile : profileHists ){
 		profile.second.profileHist->Write( profile.second.profileHist->GetName(), TObject::kOverwrite ); 
-		TH1F* gprHist = gprProfileHist( profile.second.profileHist );
-		gprHist->Write( gprHist->GetName(), TObject::kOverwrite );
-		delete gprHist;
+		if( doGPRHists ){
+			TH1F* gprHist = gprProfileHist( profile.second.profileHist );
+			if( gprHist ){
+				gprHist->Write( gprHist->GetName(), TObject::kOverwrite );
+				delete gprHist;
+			}//<<>>if( GPR histogram created )
+		}//<<>>if( deprecated GPR output enabled )
 		profile.second.deleteHists();
 	}//<<>>for( auto& profile : profileHists )
 
@@ -3838,7 +3933,7 @@ kucms_SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D ){
 	float cVal = 1; 
 	float cUpper = 5;
   	// get input hist
-  	auto& hist = ResultsMap["sigma"];
+	auto& hist = ResultsMap["sigmaNSCFitInput"];
   	//auto x_low = hist->GetXaxis()->GetBinLowEdge( hist->GetXaxis()->GetFirst() );
   	//auto x_up  = hist->GetXaxis()->GetBinUpEdge( hist->GetXaxis()->GetLast() );
 	float x_low = 75;
@@ -3848,6 +3943,26 @@ kucms_SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D ){
     if( useEffEnergy ){ x_low = 5; x_up = 240; }
     if( lowEnergy && useEffEnergy ){ x_low = 2; }
     if( doAllGain && useEffEnergy ){ x_up = 2000; }
+	for( int ibinX = 1; ibinX <= hist->GetNbinsX(); ibinX++ ){
+		const double xvalue = hist->GetBinCenter(ibinX);
+		const double content = hist->GetBinContent(ibinX);
+		const double error = hist->GetBinError(ibinX);
+		if( xvalue >= x_low && xvalue <= x_up && std::isfinite(content) && content > 0 &&
+		    std::isfinite(error) && error > 0 ) sigmafit.nFitPoints++;
+	}//<<>>for( candidate NSC bins )
+	const int nParameters = doSterm ? 3 : 2;
+	if( sigmafit.nFitPoints <= nParameters ){
+		std::cerr << "ERROR: insufficient valid points for NSC fit in " << f2DHistName
+		          << ": " << sigmafit.nFitPoints << std::endl;
+		for( auto& rmap : ResultsMap ){
+			rmap.second->Write(rmap.second->GetName(),TObject::kOverwrite);
+			delete rmap.second;
+		}
+		hist2D->Write(hist2D->GetName(),TObject::kOverwrite);
+		resTFile->Close();
+		delete resTFile;
+		return sigmafit;
+	}//<<>>if( insufficient NSC points )
 
   	std::string histname = hist->GetName();
   	std::string formname = histname+"_form";
@@ -3868,25 +3983,493 @@ kucms_SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D ){
   	if( doSterm ) fit->SetParameter( 2, 1.0 ); 
   	if( doSterm ) fit->SetParLimits( 2, 0.0, 10.0 );
   	fit->SetLineColor(hist->GetLineColor());
-  	hist->Fit(fit->GetName(),"RBQO");
+	TFitResultPtr nscFitResult = hist->Fit(fit,"RBQONS");
 
-	kucms_SigmaFitResult sigmafit;
     sigmafit.noise = fit->GetParameter(0);
     sigmafit.enoise = fit->GetParError (0);
     sigmafit.stant = fit->GetParameter(1);
     sigmafit.estant = fit->GetParError (1);
     sigmafit.stoch = doSterm ? fit->GetParameter(2) : -99;
     sigmafit.estoch = doSterm ? fit->GetParError (2) : -99;
-	std::cout << "Sigma fit resutls: " << std::endl;
-    std::cout << " noise " << sigmafit.noise << " +/- " << sigmafit.enoise;
-    std::cout << " stoch " << sigmafit.stoch << " +/- " << sigmafit.estoch;
-    std::cout << " stant " << sigmafit.stant << " +/- " << sigmafit.estant << std::endl;
+	sigmafit.chi2 = fit->GetChisquare();
+	sigmafit.ndf = fit->GetNDF();
+	sigmafit.chi2ndf = sigmafit.ndf > 0 ? sigmafit.chi2/sigmafit.ndf : 0;
+	sigmafit.chi2prob = fit->GetProb();
+	sigmafit.fitStatus = static_cast<int>(nscFitResult);
+	sigmafit.covStatus = nscFitResult.Get() ? nscFitResult->CovMatrixStatus() : -1;
+	for( int parameter = 0; parameter < nParameters; parameter++ ){
+		double lower = 0;
+		double upper = 0;
+		fit->GetParLimits(parameter,lower,upper);
+		if( upper <= lower ) continue;
+		const double value = fit->GetParameter(parameter);
+		const double tolerance = 1e-6*std::max(1.0,std::abs(upper-lower));
+		if( value <= lower+tolerance || value >= upper-tolerance ) sigmafit.parameterAtLimit = true;
+	}//<<>>for( NSC parameters )
+	const bool stochasticValid = not doSterm ||
+		(std::isfinite(sigmafit.stoch) && std::isfinite(sigmafit.estoch) && sigmafit.estoch >= 0);
+	sigmafit.valid = sigmafit.fitStatus == 0 && sigmafit.covStatus >= 2 && sigmafit.ndf > 0 &&
+		std::isfinite(sigmafit.noise) && std::isfinite(sigmafit.enoise) && sigmafit.enoise >= 0 &&
+		std::isfinite(sigmafit.stant) && std::isfinite(sigmafit.estant) && sigmafit.estant >= 0 &&
+		stochasticValid &&
+		std::isfinite(sigmafit.chi2) && std::isfinite(sigmafit.chi2prob);
 
+	// Fit the same model-aware sigma points without the stochastic term so the
+	// NC and NSC assumptions can be compared directly. The NSC result remains
+	// the primary return value used by the calibration class.
+	kucms_SigmaFitResult ncfit;
+	ncfit.nFitPoints = sigmafit.nFitPoints;
+	std::string ncFormName = histname+"_form_NC";
+	std::string ncFitName = histname+"_fit_NC";
+	auto ncForm = new TFormula(ncFormName.c_str(),"sqrt((([0]*[0])/(x*x))+(2*[1]*[1]))");
+	auto ncFit = new TF1(ncFitName.c_str(),ncForm->GetName(),x_low,x_up);
+	ncFit->SetParName(0,"N");
+	ncFit->SetParameter(0,nVal);
+	ncFit->SetParLimits(0,nLower,nUpper);
+	ncFit->SetParName(1,"C");
+	ncFit->SetParameter(1,cVal);
+	ncFit->SetParLimits(1,cLower,cUpper);
+	ncFit->SetLineColor(hist->GetLineColor()+1);
+	TFitResultPtr ncFitResult = hist->Fit(ncFit,"RBQONS");
+	ncfit.noise = ncFit->GetParameter(0);
+	ncfit.enoise = ncFit->GetParError(0);
+	ncfit.stant = ncFit->GetParameter(1);
+	ncfit.estant = ncFit->GetParError(1);
+	ncfit.stoch = -99;
+	ncfit.estoch = -99;
+	ncfit.chi2 = ncFit->GetChisquare();
+	ncfit.ndf = ncFit->GetNDF();
+	ncfit.chi2ndf = ncfit.ndf > 0 ? ncfit.chi2/ncfit.ndf : 0;
+	ncfit.chi2prob = ncFit->GetProb();
+	ncfit.fitStatus = static_cast<int>(ncFitResult);
+	ncfit.covStatus = ncFitResult.Get() ? ncFitResult->CovMatrixStatus() : -1;
+	for( int parameter = 0; parameter < 2; parameter++ ){
+		double lower = 0;
+		double upper = 0;
+		ncFit->GetParLimits(parameter,lower,upper);
+		if( upper <= lower ) continue;
+		const double value = ncFit->GetParameter(parameter);
+		const double tolerance = 1e-6*std::max(1.0,std::abs(upper-lower));
+		if( value <= lower+tolerance || value >= upper-tolerance ) ncfit.parameterAtLimit = true;
+	}//<<>>for( NC parameters )
+	ncfit.valid = ncfit.fitStatus == 0 && ncfit.covStatus >= 2 && ncfit.ndf > 0 &&
+		std::isfinite(ncfit.noise) && std::isfinite(ncfit.enoise) && ncfit.enoise >= 0 &&
+		std::isfinite(ncfit.stant) && std::isfinite(ncfit.estant) && ncfit.estant >= 0 &&
+		std::isfinite(ncfit.chi2) && std::isfinite(ncfit.chi2prob);
+
+	// Repeat both resolution-model fits using only the original statistical
+	// uncertainties stored in the unchanged core sigma histogram. These are
+	// diagnostics: the model-aware NSC result above remains the primary result.
+	auto& statHist = ResultsMap["sigma"];
+	kucms_SigmaFitResult statNscFit;
+	for( int ibinX = 1; ibinX <= statHist->GetNbinsX(); ibinX++ ){
+		const double xvalue = statHist->GetBinCenter(ibinX);
+		const double content = statHist->GetBinContent(ibinX);
+		const double error = statHist->GetBinError(ibinX);
+		if( xvalue >= x_low && xvalue <= x_up && std::isfinite(content) && content > 0 &&
+		    std::isfinite(error) && error > 0 ) statNscFit.nFitPoints++;
+	}//<<>>for( statistical-only candidate bins )
+	std::string statNscFormName = f2DHistName+"_sigma_form_StatOnly_NSC";
+	std::string statNscFitName = f2DHistName+"_sigma_fit_StatOnly_NSC";
+	auto statNscForm = new TFormula(statNscFormName.c_str(),fitformstr.c_str());
+	auto statNscFunction = new TF1(statNscFitName.c_str(),statNscForm->GetName(),x_low,x_up);
+	statNscFunction->SetParName(0,"N");
+	statNscFunction->SetParameter(0,nVal);
+	statNscFunction->SetParLimits(0,nLower,nUpper);
+	statNscFunction->SetParName(1,"C");
+	statNscFunction->SetParameter(1,cVal);
+	statNscFunction->SetParLimits(1,cLower,cUpper);
+	if( doSterm ){
+		statNscFunction->SetParName(2,"S");
+		statNscFunction->SetParameter(2,1.0);
+		statNscFunction->SetParLimits(2,0.0,10.0);
+	}//<<>>if( stochastic term enabled )
+	statNscFunction->SetLineColor(statHist->GetLineColor()+2);
+	TFitResultPtr statNscFitResult = statHist->Fit(statNscFunction,"RBQONS");
+	statNscFit.noise = statNscFunction->GetParameter(0);
+	statNscFit.enoise = statNscFunction->GetParError(0);
+	statNscFit.stant = statNscFunction->GetParameter(1);
+	statNscFit.estant = statNscFunction->GetParError(1);
+	statNscFit.stoch = doSterm ? statNscFunction->GetParameter(2) : -99;
+	statNscFit.estoch = doSterm ? statNscFunction->GetParError(2) : -99;
+	statNscFit.chi2 = statNscFunction->GetChisquare();
+	statNscFit.ndf = statNscFunction->GetNDF();
+	statNscFit.chi2ndf = statNscFit.ndf > 0 ? statNscFit.chi2/statNscFit.ndf : 0;
+	statNscFit.chi2prob = statNscFunction->GetProb();
+	statNscFit.fitStatus = static_cast<int>(statNscFitResult);
+	statNscFit.covStatus = statNscFitResult.Get() ? statNscFitResult->CovMatrixStatus() : -1;
+	for( int parameter = 0; parameter < nParameters; parameter++ ){
+		double lower = 0;
+		double upper = 0;
+		statNscFunction->GetParLimits(parameter,lower,upper);
+		if( upper <= lower ) continue;
+		const double value = statNscFunction->GetParameter(parameter);
+		const double tolerance = 1e-6*std::max(1.0,std::abs(upper-lower));
+		if( value <= lower+tolerance || value >= upper-tolerance ) statNscFit.parameterAtLimit = true;
+	}//<<>>for( statistical-only NSC parameters )
+	const bool statStochasticValid = not doSterm ||
+		(std::isfinite(statNscFit.stoch) && std::isfinite(statNscFit.estoch) && statNscFit.estoch >= 0);
+	statNscFit.valid = statNscFit.fitStatus == 0 && statNscFit.covStatus >= 2 && statNscFit.ndf > 0 &&
+		std::isfinite(statNscFit.noise) && std::isfinite(statNscFit.enoise) && statNscFit.enoise >= 0 &&
+		std::isfinite(statNscFit.stant) && std::isfinite(statNscFit.estant) && statNscFit.estant >= 0 &&
+		statStochasticValid && std::isfinite(statNscFit.chi2) && std::isfinite(statNscFit.chi2prob);
+
+	kucms_SigmaFitResult statNcFit;
+	statNcFit.nFitPoints = statNscFit.nFitPoints;
+	std::string statNcFormName = f2DHistName+"_sigma_form_StatOnly_NC";
+	std::string statNcFitName = f2DHistName+"_sigma_fit_StatOnly_NC";
+	auto statNcForm = new TFormula(statNcFormName.c_str(),"sqrt((([0]*[0])/(x*x))+(2*[1]*[1]))");
+	auto statNcFunction = new TF1(statNcFitName.c_str(),statNcForm->GetName(),x_low,x_up);
+	statNcFunction->SetParName(0,"N");
+	statNcFunction->SetParameter(0,nVal);
+	statNcFunction->SetParLimits(0,nLower,nUpper);
+	statNcFunction->SetParName(1,"C");
+	statNcFunction->SetParameter(1,cVal);
+	statNcFunction->SetParLimits(1,cLower,cUpper);
+	statNcFunction->SetLineColor(statHist->GetLineColor()+3);
+	TFitResultPtr statNcFitResult = statHist->Fit(statNcFunction,"RBQONS");
+	statNcFit.noise = statNcFunction->GetParameter(0);
+	statNcFit.enoise = statNcFunction->GetParError(0);
+	statNcFit.stant = statNcFunction->GetParameter(1);
+	statNcFit.estant = statNcFunction->GetParError(1);
+	statNcFit.stoch = -99;
+	statNcFit.estoch = -99;
+	statNcFit.chi2 = statNcFunction->GetChisquare();
+	statNcFit.ndf = statNcFunction->GetNDF();
+	statNcFit.chi2ndf = statNcFit.ndf > 0 ? statNcFit.chi2/statNcFit.ndf : 0;
+	statNcFit.chi2prob = statNcFunction->GetProb();
+	statNcFit.fitStatus = static_cast<int>(statNcFitResult);
+	statNcFit.covStatus = statNcFitResult.Get() ? statNcFitResult->CovMatrixStatus() : -1;
+	for( int parameter = 0; parameter < 2; parameter++ ){
+		double lower = 0;
+		double upper = 0;
+		statNcFunction->GetParLimits(parameter,lower,upper);
+		if( upper <= lower ) continue;
+		const double value = statNcFunction->GetParameter(parameter);
+		const double tolerance = 1e-6*std::max(1.0,std::abs(upper-lower));
+		if( value <= lower+tolerance || value >= upper-tolerance ) statNcFit.parameterAtLimit = true;
+	}//<<>>for( statistical-only NC parameters )
+	statNcFit.valid = statNcFit.fitStatus == 0 && statNcFit.covStatus >= 2 && statNcFit.ndf > 0 &&
+		std::isfinite(statNcFit.noise) && std::isfinite(statNcFit.enoise) && statNcFit.enoise >= 0 &&
+		std::isfinite(statNcFit.stant) && std::isfinite(statNcFit.estant) && statNcFit.estant >= 0 &&
+		std::isfinite(statNcFit.chi2) && std::isfinite(statNcFit.chi2prob);
+
+	// Determine the additional fractional scatter required by the sigma points
+	// instead of assuming the fixed 3% used by the final plotting code.  This is
+	// a separate diagnostic fit; it does not alter ResultsMap["sigma"], nor does
+	// it replace the model-aware NSC result returned by runTimeFitter().
+	//
+	// For each accepted sigma point y_i at energy x_i, the resolution model is
+	//
+	//   m_i^2 = N^2/x_i^2 + 2 C^2 + S^2/x_i,
+	//
+	// and the variance used by this likelihood is
+	//
+	//   V_i = e_stat,i^2 + (f y_i)^2 .
+	//
+	// e_stat is the original Gaussian-fit error and f is a fitted fractional
+	// scatter.  The objective is the Gaussian -2 log likelihood (up to a common
+	// additive constant), sum_i[(y_i-m_i)^2/V_i + log(V_i)].  The log(V_i)
+	// term is essential: without it, increasing f would always reduce the
+	// residual term and the fit would choose an artificially large uncertainty.
+	//
+	// The NSC fit has free parameters (N,C,S,f); the NC fit fixes S=0 and has
+	// (N,C,f).  The fitted f is reported in percent and companion histograms
+	// carry e_eff = hypot(e_stat, f*y).  Since f is estimated from the same
+	// points, its chi2 probability is a diagnostic rather than an independent
+	// goodness-of-fit test.
+	std::vector<std::array<double,3>> scatterPoints;
+	for( int ibinX = 1; ibinX <= statHist->GetNbinsX(); ibinX++ ){
+		const double xvalue = statHist->GetBinCenter(ibinX);
+		const double content = statHist->GetBinContent(ibinX);
+		const double error = statHist->GetBinError(ibinX);
+		if( xvalue >= x_low && xvalue <= x_up && std::isfinite(content) && content > 0 &&
+		    std::isfinite(error) && error > 0 ) scatterPoints.push_back({xvalue,content,error});
+	}//<<>>for( fractional-scatter candidate bins )
+
+	auto runFractionalScatterFit = [&]( bool includeStochastic, const std::string& functionName ){
+		kucms_SigmaFitResult result;
+		result.nFitPoints = static_cast<int>(scatterPoints.size());
+		const unsigned int dimensions = includeStochastic ? 4 : 3;
+		const unsigned int scatterIndex = dimensions-1;
+		std::unique_ptr<TF1> resolutionFunction(new TF1(
+			functionName.c_str(),
+			includeStochastic ? "sqrt((([0]*[0])/(x*x))+(2*[1]*[1])+([2]*[2]/x))"
+			                  : "sqrt((([0]*[0])/(x*x))+(2*[1]*[1]))",
+			x_low,x_up));
+		if( result.nFitPoints <= static_cast<int>(dimensions) ){
+			return std::make_pair(result,std::move(resolutionFunction));
+		}//<<>>if( insufficient fractional-scatter points )
+
+		std::function<double(const double*)> objective = [&]( const double* parameters ){
+			const double noise = parameters[0];
+			const double constant = parameters[1];
+			const double stochastic = includeStochastic ? parameters[2] : 0.0;
+			const double fractionalScatter = parameters[scatterIndex];
+			double value = 0;
+			for( const auto& point : scatterPoints ){
+				const double xvalue = point[0];
+				const double measuredSigma = point[1];
+				const double statisticalError = point[2];
+				const double modelSquared = (noise*noise)/(xvalue*xvalue) + 2*constant*constant +
+					(stochastic*stochastic)/xvalue;
+				const double variance = statisticalError*statisticalError +
+					fractionalScatter*fractionalScatter*measuredSigma*measuredSigma;
+				if( not std::isfinite(modelSquared) || modelSquared <= 0 ||
+				    not std::isfinite(variance) || variance <= 0 ){
+					return std::numeric_limits<double>::max()/1024.0;
+				}//<<>>if( invalid likelihood point )
+				const double residual = measuredSigma-std::sqrt(modelSquared);
+				value += residual*residual/variance + std::log(variance);
+			}//<<>>for( sigma points )
+			return value;
+		};
+
+		std::unique_ptr<ROOT::Math::Minimizer> minimizer(
+			ROOT::Math::Factory::CreateMinimizer("Minuit2","Migrad"));
+		if( not minimizer ) return std::make_pair(result,std::move(resolutionFunction));
+		ROOT::Math::Functor objectiveFunctor(objective,dimensions);
+		minimizer->SetFunction(objectiveFunctor);
+		minimizer->SetErrorDef(1.0);
+		minimizer->SetMaxFunctionCalls(100000);
+		minimizer->SetMaxIterations(10000);
+		minimizer->SetTolerance(1e-4);
+		minimizer->SetPrintLevel(0);
+		minimizer->SetLimitedVariable(0,"N",nVal,0.1,nLower,nUpper);
+		minimizer->SetLimitedVariable(1,"C",0.1,0.001,cLower,cUpper);
+		if( includeStochastic ) minimizer->SetLimitedVariable(2,"S",1.0,0.01,0.0,10.0);
+		minimizer->SetLimitedVariable(scatterIndex,"fractionalScatter",0.03,0.001,0.0,1.0);
+		const bool minimized = minimizer->Minimize();
+		if( minimized ) minimizer->Hesse();
+		const double* parameters = minimizer->X();
+		const double* errors = minimizer->Errors();
+		result.noise = parameters[0];
+		result.enoise = errors[0];
+		result.stant = parameters[1];
+		result.estant = errors[1];
+		result.stoch = includeStochastic ? parameters[2] : -99;
+		result.estoch = includeStochastic ? errors[2] : -99;
+		result.fractionalScatter = parameters[scatterIndex];
+		result.efractionalScatter = errors[scatterIndex];
+		result.objective = minimizer->MinValue();
+		result.fitStatus = minimizer->Status();
+		result.covStatus = minimizer->CovMatrixStatus();
+		result.ndf = result.nFitPoints-static_cast<int>(dimensions);
+		for( const auto& point : scatterPoints ){
+			const double stochastic = includeStochastic ? result.stoch : 0.0;
+			const double model = std::sqrt((result.noise*result.noise)/(point[0]*point[0]) +
+				2*result.stant*result.stant + (stochastic*stochastic)/point[0]);
+			const double variance = point[2]*point[2] + result.fractionalScatter*result.fractionalScatter*
+				point[1]*point[1];
+			const double residual = point[1]-model;
+			result.chi2 += residual*residual/variance;
+		}//<<>>for( fractional-scatter chi2 diagnostic )
+		result.chi2ndf = result.ndf > 0 ? result.chi2/result.ndf : 0;
+		result.chi2prob = result.ndf > 0 ? TMath::Prob(result.chi2,result.ndf) : 0;
+		const std::vector<std::array<double,2>> parameterLimits = includeStochastic ?
+			std::vector<std::array<double,2>>{{nLower,nUpper},{cLower,cUpper},{0.0,10.0},{0.0,1.0}} :
+			std::vector<std::array<double,2>>{{nLower,nUpper},{cLower,cUpper},{0.0,1.0}};
+		for( unsigned int parameter = 0; parameter < dimensions; parameter++ ){
+			const double tolerance = 1e-6*std::max(1.0,std::abs(
+				parameterLimits[parameter][1]-parameterLimits[parameter][0]));
+			if( parameters[parameter] <= parameterLimits[parameter][0]+tolerance ||
+			    parameters[parameter] >= parameterLimits[parameter][1]-tolerance ){
+				result.parameterAtLimit = true;
+			}//<<>>if( parameter at limit )
+		}//<<>>for( fractional-scatter parameters )
+		const bool stochasticValid = not includeStochastic ||
+			(std::isfinite(result.stoch) && std::isfinite(result.estoch) && result.estoch >= 0);
+		result.valid = minimized && result.fitStatus == 0 && result.covStatus >= 2 && result.ndf > 0 &&
+			std::isfinite(result.noise) && std::isfinite(result.enoise) && result.enoise >= 0 &&
+			std::isfinite(result.stant) && std::isfinite(result.estant) && result.estant >= 0 &&
+			stochasticValid && std::isfinite(result.fractionalScatter) &&
+			std::isfinite(result.efractionalScatter) && result.efractionalScatter >= 0 &&
+			std::isfinite(result.objective) && std::isfinite(result.chi2);
+
+		resolutionFunction->SetParName(0,"N");
+		resolutionFunction->SetParameter(0,result.noise);
+		resolutionFunction->SetParError(0,result.enoise);
+		resolutionFunction->SetParName(1,"C");
+		resolutionFunction->SetParameter(1,result.stant);
+		resolutionFunction->SetParError(1,result.estant);
+		if( includeStochastic ){
+			resolutionFunction->SetParName(2,"S");
+			resolutionFunction->SetParameter(2,result.stoch);
+			resolutionFunction->SetParError(2,result.estoch);
+		}//<<>>if( stochastic term enabled )
+		return std::make_pair(result,std::move(resolutionFunction));
+	};
+
+	auto scatterNscOutput = runFractionalScatterFit(
+		true,f2DHistName+"_sigma_fit_FractionalScatter_NSC");
+	auto scatterNcOutput = runFractionalScatterFit(
+		false,f2DHistName+"_sigma_fit_FractionalScatter_NC");
+	const kucms_SigmaFitResult& scatterNscFit = scatterNscOutput.first;
+	const kucms_SigmaFitResult& scatterNcFit = scatterNcOutput.first;
+	auto makeScatterInput = [&]( const std::string& name, double fractionalScatter ){
+		std::unique_ptr<TH1F> scatterInput(dynamic_cast<TH1F*>(statHist->Clone(name.c_str())));
+		if( not scatterInput ) return scatterInput;
+		scatterInput->SetDirectory(nullptr);
+		for( int ibinX = 1; ibinX <= scatterInput->GetNbinsX(); ibinX++ ){
+			const double content = scatterInput->GetBinContent(ibinX);
+			const double statisticalError = scatterInput->GetBinError(ibinX);
+			if( std::isfinite(content) && content > 0 && std::isfinite(statisticalError) &&
+			    statisticalError > 0 && std::isfinite(fractionalScatter) && fractionalScatter >= 0 ){
+				scatterInput->SetBinError(ibinX,std::hypot(
+					statisticalError,fractionalScatter*content));
+			}//<<>>if( valid fractional-scatter input bin )
+		}//<<>>for( sigma bins )
+		return scatterInput;
+	};
+	auto scatterNscInput = makeScatterInput(
+		f2DHistName+"_sigmaFractionalScatterNSCFitInput",scatterNscFit.fractionalScatter);
+	auto scatterNcInput = makeScatterInput(
+		f2DHistName+"_sigmaFractionalScatterNCFitInput",scatterNcFit.fractionalScatter);
+
+	std::cout << "Sigma fit results:" << std::endl;
+	std::cout << " Model-aware NSC: noise " << sigmafit.noise << " +/- " << sigmafit.enoise
+	          << " stoch " << sigmafit.stoch << " +/- " << sigmafit.estoch
+	          << " stant " << sigmafit.stant << " +/- " << sigmafit.estant << std::endl;
+	std::cout << "      chi2/ndf " << sigmafit.chi2 << "/" << sigmafit.ndf
+	          << " = " << sigmafit.chi2ndf << " prob " << sigmafit.chi2prob
+	          << " status " << sigmafit.fitStatus << " cov " << sigmafit.covStatus
+	          << " atLimit " << sigmafit.parameterAtLimit << " valid " << sigmafit.valid << std::endl;
+	std::cout << " Model-aware NC : noise " << ncfit.noise << " +/- " << ncfit.enoise
+	          << " stant " << ncfit.stant << " +/- " << ncfit.estant << std::endl;
+	std::cout << "      chi2/ndf " << ncfit.chi2 << "/" << ncfit.ndf
+	          << " = " << ncfit.chi2ndf << " prob " << ncfit.chi2prob
+	          << " status " << ncfit.fitStatus << " cov " << ncfit.covStatus
+	          << " atLimit " << ncfit.parameterAtLimit << " valid " << ncfit.valid << std::endl;
+	std::cout << " Stat-only NSC  : noise " << statNscFit.noise << " +/- " << statNscFit.enoise
+	          << " stoch " << statNscFit.stoch << " +/- " << statNscFit.estoch
+	          << " stant " << statNscFit.stant << " +/- " << statNscFit.estant << std::endl;
+	std::cout << "                  chi2/ndf " << statNscFit.chi2 << "/" << statNscFit.ndf
+	          << " = " << statNscFit.chi2ndf << " prob " << statNscFit.chi2prob
+	          << " status " << statNscFit.fitStatus << " cov " << statNscFit.covStatus
+	          << " atLimit " << statNscFit.parameterAtLimit << " valid " << statNscFit.valid << std::endl;
+	std::cout << " Stat-only NC   : noise " << statNcFit.noise << " +/- " << statNcFit.enoise
+	          << " stant " << statNcFit.stant << " +/- " << statNcFit.estant << std::endl;
+	std::cout << "                  chi2/ndf " << statNcFit.chi2 << "/" << statNcFit.ndf
+	          << " = " << statNcFit.chi2ndf << " prob " << statNcFit.chi2prob
+	          << " status " << statNcFit.fitStatus << " cov " << statNcFit.covStatus
+	          << " atLimit " << statNcFit.parameterAtLimit << " valid " << statNcFit.valid << std::endl;
+	std::cout << " Fitted-scatter NSC: noise " << scatterNscFit.noise << " +/- " << scatterNscFit.enoise
+	          << " stoch " << scatterNscFit.stoch << " +/- " << scatterNscFit.estoch
+	          << " stant " << scatterNscFit.stant << " +/- " << scatterNscFit.estant << std::endl;
+	std::cout << "                     fractional scatter " << scatterNscFit.fractionalScatter
+	          << " +/- " << scatterNscFit.efractionalScatter << " ("
+	          << 100*scatterNscFit.fractionalScatter << " +/- "
+	          << 100*scatterNscFit.efractionalScatter << "%)"
+	          << " -2logL (constant omitted) " << scatterNscFit.objective << std::endl;
+	std::cout << "                     chi2/ndf " << scatterNscFit.chi2 << "/" << scatterNscFit.ndf
+	          << " = " << scatterNscFit.chi2ndf << " prob " << scatterNscFit.chi2prob
+	          << " status " << scatterNscFit.fitStatus << " cov " << scatterNscFit.covStatus
+	          << " atLimit " << scatterNscFit.parameterAtLimit << " valid " << scatterNscFit.valid << std::endl;
+	std::cout << " Fitted-scatter NC : noise " << scatterNcFit.noise << " +/- " << scatterNcFit.enoise
+	          << " stant " << scatterNcFit.stant << " +/- " << scatterNcFit.estant << std::endl;
+	std::cout << "                     fractional scatter " << scatterNcFit.fractionalScatter
+	          << " +/- " << scatterNcFit.efractionalScatter << " ("
+	          << 100*scatterNcFit.fractionalScatter << " +/- "
+	          << 100*scatterNcFit.efractionalScatter << "%)"
+	          << " -2logL (constant omitted) " << scatterNcFit.objective << std::endl;
+	std::cout << "                     chi2/ndf " << scatterNcFit.chi2 << "/" << scatterNcFit.ndf
+	          << " = " << scatterNcFit.chi2ndf << " prob " << scatterNcFit.chi2prob
+	          << " status " << scatterNcFit.fitStatus << " cov " << scatterNcFit.covStatus
+	          << " atLimit " << scatterNcFit.parameterAtLimit << " valid " << scatterNcFit.valid << std::endl;
+
+	std::string fitQualityName = f2DHistName+"_NSCFitQuality";
+	TH1F fitQuality(fitQualityName.c_str(),fitQualityName.c_str(),9,0.5,9.5);
+	fitQuality.SetDirectory(nullptr);
+	const std::vector<std::string> qualityLabels = {
+		"fitStatus","covStatus","chi2","ndf","chi2ndf","prob","parameterAtLimit","nFitPoints","valid"
+	};
+	const std::vector<double> qualityValues = {
+		static_cast<double>(sigmafit.fitStatus),static_cast<double>(sigmafit.covStatus),
+		sigmafit.chi2,static_cast<double>(sigmafit.ndf),sigmafit.chi2ndf,sigmafit.chi2prob,
+		sigmafit.parameterAtLimit ? 1.0 : 0.0,static_cast<double>(sigmafit.nFitPoints),
+		sigmafit.valid ? 1.0 : 0.0
+	};
+	for( std::size_t index = 0; index < qualityLabels.size(); index++ ){
+		fitQuality.GetXaxis()->SetBinLabel(index+1,qualityLabels[index].c_str());
+		fitQuality.SetBinContent(index+1,qualityValues[index]);
+	}//<<>>for( NSC quality fields )
+	fitQuality.Write(fitQuality.GetName(),TObject::kOverwrite);
+	std::string ncFitQualityName = f2DHistName+"_NCFitQuality";
+	TH1F ncFitQuality(ncFitQualityName.c_str(),ncFitQualityName.c_str(),9,0.5,9.5);
+	ncFitQuality.SetDirectory(nullptr);
+	const std::vector<double> ncQualityValues = {
+		static_cast<double>(ncfit.fitStatus),static_cast<double>(ncfit.covStatus),
+		ncfit.chi2,static_cast<double>(ncfit.ndf),ncfit.chi2ndf,ncfit.chi2prob,
+		ncfit.parameterAtLimit ? 1.0 : 0.0,static_cast<double>(ncfit.nFitPoints),
+		ncfit.valid ? 1.0 : 0.0
+	};
+	for( std::size_t index = 0; index < qualityLabels.size(); index++ ){
+		ncFitQuality.GetXaxis()->SetBinLabel(index+1,qualityLabels[index].c_str());
+		ncFitQuality.SetBinContent(index+1,ncQualityValues[index]);
+	}//<<>>for( NC quality fields )
+	ncFitQuality.Write(ncFitQuality.GetName(),TObject::kOverwrite);
+	auto writeFitQuality = [&]( const std::string& name, const kucms_SigmaFitResult& result ){
+		TH1F quality(name.c_str(),name.c_str(),9,0.5,9.5);
+		quality.SetDirectory(nullptr);
+		const std::vector<double> values = {
+			static_cast<double>(result.fitStatus),static_cast<double>(result.covStatus),
+			result.chi2,static_cast<double>(result.ndf),result.chi2ndf,result.chi2prob,
+			result.parameterAtLimit ? 1.0 : 0.0,static_cast<double>(result.nFitPoints),
+			result.valid ? 1.0 : 0.0
+		};
+		for( std::size_t index = 0; index < qualityLabels.size(); index++ ){
+			quality.GetXaxis()->SetBinLabel(index+1,qualityLabels[index].c_str());
+			quality.SetBinContent(index+1,values[index]);
+		}//<<>>for( statistical-only quality fields )
+		quality.Write(quality.GetName(),TObject::kOverwrite);
+	};
+	writeFitQuality(f2DHistName+"_StatOnlyNSCFitQuality",statNscFit);
+	writeFitQuality(f2DHistName+"_StatOnlyNCFitQuality",statNcFit);
+	auto writeScatterFitQuality = [&]( const std::string& name, const kucms_SigmaFitResult& result ){
+		TH1F quality(name.c_str(),name.c_str(),12,0.5,12.5);
+		quality.SetDirectory(nullptr);
+		const std::vector<std::string> labels = {
+			"fitStatus","covStatus","chi2","ndf","chi2ndf","prob","parameterAtLimit",
+			"nFitPoints","valid","fractionalScatter","fractionalScatterError","neg2LogLikelihood"
+		};
+		const std::vector<double> values = {
+			static_cast<double>(result.fitStatus),static_cast<double>(result.covStatus),result.chi2,
+			static_cast<double>(result.ndf),result.chi2ndf,result.chi2prob,
+			result.parameterAtLimit ? 1.0 : 0.0,static_cast<double>(result.nFitPoints),
+			result.valid ? 1.0 : 0.0,result.fractionalScatter,result.efractionalScatter,result.objective
+		};
+		for( std::size_t index = 0; index < labels.size(); index++ ){
+			quality.GetXaxis()->SetBinLabel(index+1,labels[index].c_str());
+			quality.SetBinContent(index+1,values[index]);
+		}//<<>>for( fractional-scatter quality fields )
+		quality.Write(quality.GetName(),TObject::kOverwrite);
+	};
+	writeScatterFitQuality(f2DHistName+"_FractionalScatterNSCFitQuality",scatterNscFit);
+	writeScatterFitQuality(f2DHistName+"_FractionalScatterNCFitQuality",scatterNcFit);
+	fit->Write(fit->GetName(),TObject::kOverwrite);
+	ncFit->Write(ncFit->GetName(),TObject::kOverwrite);
+	statNscFunction->Write(statNscFunction->GetName(),TObject::kOverwrite);
+	statNcFunction->Write(statNcFunction->GetName(),TObject::kOverwrite);
+	if( scatterNscOutput.second ){
+		scatterNscOutput.second->Write(scatterNscOutput.second->GetName(),TObject::kOverwrite);
+	}
+	if( scatterNcOutput.second ){
+		scatterNcOutput.second->Write(scatterNcOutput.second->GetName(),TObject::kOverwrite);
+	}
+	if( scatterNscInput ) scatterNscInput->Write(scatterNscInput->GetName(),TObject::kOverwrite);
+	if( scatterNcInput ) scatterNcInput->Write(scatterNcInput->GetName(),TObject::kOverwrite);
 	for( auto& rmap : ResultsMap ){ rmap.second->Write( rmap.second->GetName(), TObject::kOverwrite ); delete rmap.second;}
 	hist2D->Write( hist2D->GetName(), TObject::kOverwrite );
 	delete form;
 	delete fit;
+	delete ncForm;
+	delete ncFit;
+	delete statNscForm;
+	delete statNscFunction;
+	delete statNcForm;
+	delete statNcFunction;
 	resTFile->Close();
+	delete resTFile;
 
 	return sigmafit;
 
@@ -3894,84 +4477,66 @@ kucms_SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D ){
 
 TH1F* KUCMS_TimeCalibration::gprProfileHist( TH1F* hist ){
 
+	if( not hist ){
+		std::cerr << "ERROR: null histogram passed to gprProfileHist." << std::endl;
+		return nullptr;
+	}//<<>>if( null input histogram )
 
-    std::cout << "Make GPR ProfileHist: " << hist->GetName() << std::endl;
+	std::cout << "Make GPR ProfileHist: " << hist->GetName() << std::endl;
+	const int nBins = hist->GetNbinsX();
+	const std::string newtitle = std::string(hist->GetName()) + "_gpr";
+	if( nBins <= 0 ) return nullptr;
 
-    int nBins = hist->GetNbinsX();
-	float sigma = setdec( hist->GetStdDev(), 2 );	
+	const double threshold = 100.0;
+	const int firstBin = hist->FindFirstBinAbove(threshold);
+	const int lastBin = hist->FindLastBinAbove(threshold);
+	const double sigma = std::abs(hist->GetStdDev());
+	if( firstBin < 1 || lastBin < firstBin || not std::isfinite(sigma) || sigma <= 0 ){
+		// Keep a valid diagnostic for empty or sparse slices rather than creating
+		// a histogram with reversed or zero-width limits.
+		auto fallback = dynamic_cast<TH1F*>(hist->Clone(newtitle.c_str()));
+		if( fallback ) fallback->SetDirectory(nullptr);
+		return fallback;
+	}//<<>>if( adaptive rebinning is not defined )
 
-	float minbin = 0.04;
-	float thres = 100;
-	float hill = 10000;
-	int firstBin = -1;
-	int lastBin = -1;
-	bool overHill = false;
-    for( int ibinX = 1; ibinX < nBins; ibinX++ ){
+	const int startBin = std::max(1,firstBin-1);
+	const int endBin = std::min(nBins,lastBin+1);
+	const double lowEdge = hist->GetXaxis()->GetBinLowEdge(startBin);
+	const double highEdge = hist->GetXaxis()->GetBinUpEdge(endBin);
+	const double extent = std::max(std::abs(lowEdge),std::abs(highEdge));
+	if( not std::isfinite(extent) || extent <= 0 ) return nullptr;
 
-		float content = hist->GetBinContent(ibinX);
-		if( content > thres && firstBin < 0 ) firstBin = ibinX;
-		if( content > hill ) overHill = true; 
-		if( overHill && content < thres && lastBin < 0 ) lastBin = ibinX;
-
-    }//<<>>for (auto ibinX = 1; ibinX <= nBins; ibinX++)
-
-	int startbin = ( firstBin > 2 ) ? firstBin-1 : 1;
-	float start = setdec( hist->GetBinCenter(startbin), 2 );
-    int endbin = ( lastBin < (nBins-2) ) ? lastBin+1 : nBins-1;
-	float end = setdec( hist->GetBinCenter(endbin), 2);
-	if( std::abs(start) > std::abs(end) ) end = -1*start;
-	else start = -1*end;
-
-    int range = int((end-start)/minbin);
-	float secorr =  ((float(range+1)*minbin) - (end-start))/2;
-	end += secorr;
-	start -= secorr;
-	float div = sigma/2;
-	int divrange = int(div/minbin);
-	div = float(divrange+1)*minbin;
-	int binrange = int((end-start)/(div));
-	float bcorr = ((float(binrange+1)*div) - (end-start))/2;
-	end += bcorr;
-    start -= bcorr; 
-	int nDiv = int((end-start)/(div));
-	if( nDiv%2 == 0 ){
-		nDiv++;
-		float fcorr = div/2;
-		end += fcorr;
-		start -= fcorr;
-	}//<<>>if( nDiv%2 == 0 )
-	std::string title = hist->GetName();
-	std::string newtitle = title + "_gpr";
-	TH1F* newhist = new TH1F( newtitle.c_str(), newtitle.c_str(), nDiv, start, end );
-	//newhist->Sumw2();
-	std::cout << " -- start : " << start << " end : " << end << " nDiv : " << nDiv << " bin size : " << (end-start)/nDiv << std::endl;
+	const double minBinWidth = 0.04;
+	const double binWidth = std::max(minBinWidth,std::ceil((sigma/2.0)/minBinWidth)*minBinWidth);
+	int nDiv = std::max(1,static_cast<int>(std::ceil((2.0*extent)/binWidth)));
+	if( nDiv%2 == 0 ) nDiv++;
+	const double symmetricExtent = nDiv*binWidth/2.0;
+	auto newhist = new TH1F(newtitle.c_str(),newtitle.c_str(),nDiv,-symmetricExtent,symmetricExtent);
+	newhist->SetDirectory(nullptr);
+	newhist->Sumw2();
+	std::vector<double> error2(nDiv+2,0.0);
+	std::cout << " -- start : " << -symmetricExtent << " end : " << symmetricExtent
+	          << " nDiv : " << nDiv << " bin size : " << binWidth << std::endl;
 	for( int ibinX = 1; ibinX <= nBins; ibinX++ ){
-	
-		float content = hist->GetBinContent(ibinX);
-		float bin = hist->GetBinCenter(ibinX);
-		newhist->Fill(bin,content);
-
-	}//<<>>for( int ibinX = 1; ibinX <= nBins; ibinX++ )
-
-	int nGPRBins = hist->GetNbinsX();
-    for( int ibinX = 1; ibinX < nGPRBins; ibinX++ ){
-
-        float content = hist->GetBinContent(ibinX);
-		float error = std::sqrt(content);
-		if( error < 1 ) error = 1;
-        newhist->SetBinError( ibinX, error );
-
-    }//<<>>for( int ibinX = 1; ibinX <= nBins; ibinX++ )
+		const double content = hist->GetBinContent(ibinX);
+		const int targetBin = newhist->FindBin(hist->GetBinCenter(ibinX));
+		newhist->AddBinContent(targetBin,content);
+		const double error = hist->GetBinError(ibinX);
+		error2[targetBin] += error*error;
+	}//<<>>for( input bins )
+	for( int ibinX = 1; ibinX <= nDiv; ibinX++ )
+		newhist->SetBinError(ibinX,std::max(1.0,std::sqrt(error2[ibinX])));
 
 	return newhist;
 
 }//<<>>TH1D* KUCMS_TimeCalibration::gprProfileHist( TH1D* hist )
 
-void KUCMS_TimeCalibration::doResTimeFits( bool doLocal ){
+bool KUCMS_TimeCalibration::doResTimeFits( bool doLocal ){
 
     std::cout << "Making Resolution Time Fits Auto : ";
 	if( doLocal ) std::cout << " Local " << std::endl;
 	else std::cout << " Global " << std::endl;
+	bool success = true;
 	for( auto& runmaptag : CaliRunMapSet ){
 		for( auto& runmap : runmaptag.second ){
 			bool doResFit = not runmap.second.hasResParams;
@@ -3980,60 +4545,116 @@ void KUCMS_TimeCalibration::doResTimeFits( bool doLocal ){
 				std::string histtype = doLocal ? lochist : globhist;
                 std::string fname = runmap.second.histMapName+histtype;
 				std::cout << " Opening : " << fname << std::endl;
-				kucms_SigmaFitResult results = runTimeFitter( CaliHists[fname].h2f );
+				auto histEntry = CaliHists.find(fname);
+				if( histEntry == CaliHists.end() || not histEntry->second.h2f ){
+					std::cerr << "ERROR: no loaded TH2F resolution histogram named " << fname << std::endl;
+					success = false;
+					continue;
+				}//<<>>if( input histogram is unavailable )
+				kucms_SigmaFitResult results = runTimeFitter(histEntry->second.h2f);
                 //std::string gbfname = runmap.second.histMapName+globhist;
 				//SigmaFitResult results = runTimeFitter( CaliHists[gbfname].h2f );
-				if( not doLocal ){
+				if( not doLocal && results.valid ){
 					runmap.second.hasResParams = true;
 					runmap.second.noise = results.noise;
 					runmap.second.stoch = results.stoch;
 					runmap.second.stant = results.stant;
-				}//<<>>if( not doLocal )
+				}//<<>>if( successful global fit )
+				if( not results.valid ) success = false;
 			
 			}//<<>>if( runmap.second.has2DResMap && not runmap.second.hasResParams )
 		}//<<>>for( auto& runmaptag :  CaliRunMapSet )
 	}//<<>>for( auto& runmaptag :  CaliRunMapSet )
 	if( cali2DResTFile != NULL ) cali2DResTFile->Close();
+	return success;
 
-}//<<>>void KUCMS_TimeCalibration::doResTimeFits()
+}//<<>>bool KUCMS_TimeCalibration::doResTimeFits()
 
-void KUCMS_TimeCalibration::doResTimeFitExt( std::string histName, std::string fileName ){
+bool KUCMS_TimeCalibration::doResTimeFitExt( std::string histName, std::string fileName ){
 
     std::cout << "Making Resolution Time Fits" << std::endl;
 	std::cout << " -- With : " << fileName << std::endl;
 	auto tFile = TFile::Open( fileName.c_str(), "READ" );
-	if (!tFile || tFile->IsZombie()){ std::cout << " -- Failed to Open : " << fileName << std::endl; return; }
+	if( not tFile || tFile->IsZombie() ){
+		std::cerr << "ERROR: failed to open: " << fileName << std::endl;
+		if( tFile ){ tFile->Close(); delete tFile; }
+		return false;
+	}//<<>>if( input file failed )
 	std::cout << " -- For : " << histName << std::endl;
-	TH2F* lhist = (TH2F*)tFile->Get(histName.c_str());
-    if( lhist == nullptr ){ std::cout << " -- Failed to Open : " << histName << std::endl; return; }
-	kucms_SigmaFitResult results = runTimeFitter( lhist );
+	auto lhist = dynamic_cast<TH2F*>(tFile->Get(histName.c_str()));
+	if( lhist == nullptr ){
+			std::cout << " -- Failed to Open : " << histName << std::endl;
+			tFile->Close();
+			delete tFile;
+				return false;
+		}//<<>>if( histogram missing or wrong type )
+	const kucms_SigmaFitResult results = runTimeFitter(lhist);
 	tFile->Close();
 	delete tFile;
+	return results.valid;
 
-}//<<>>void KUCMS_TimeCalibration::doResTimeFit( std::string histName )
+}//<<>>bool KUCMS_TimeCalibration::doResTimeFitExt( std::string histName, std::string fileName )
 
-void KUCMS_TimeCalibration::load2DResHist( std::string histName ){
+bool KUCMS_TimeCalibration::load2DResHist( std::string histName ){
 
     std::cout << " --- Load hist from caliTFile: " << histName << std::endl;
-	cali2DResTFile = TFile::Open( cali2DResPlotsTFileName.c_str(), "READ" );
-	TH2F* lhist = (TH2F*)cali2DResTFile->Get(histName.c_str());
-    //std::cout << " --- Found local " << lhist << std::endl;
-    if( lhist ) CaliHists[histName] = { lhist, histName, false, true }; // histfile histname isnew isreshist
-	else std::cout << " --- No such hist found " << lhist << std::endl;
+	auto inputFile = TFile::Open(cali2DResPlotsTFileName.c_str(),"READ");
+	if( not inputFile || inputFile->IsZombie() ){
+			std::cerr << "ERROR: failed to open 2D resolution input file: "
+			          << cali2DResPlotsTFileName << std::endl;
+			if( inputFile ){ inputFile->Close(); delete inputFile; }
+			return false;
+	}//<<>>if( input file failed )
+	auto sourceHist = dynamic_cast<TH2F*>(inputFile->Get(histName.c_str()));
+	if( not sourceHist ){
+			std::cerr << "ERROR: TH2F resolution histogram not found: " << histName << std::endl;
+			inputFile->Close();
+			delete inputFile;
+			return false;
+	}//<<>>if( histogram missing or wrong type )
+	auto loadedHist = dynamic_cast<TH2F*>(sourceHist->Clone(histName.c_str()));
+	if( loadedHist ) loadedHist->SetDirectory(nullptr);
+	inputFile->Close();
+	delete inputFile;
+	if( not loadedHist ){
+			std::cerr << "ERROR: failed to clone 2D resolution histogram: " << histName << std::endl;
+			return false;
+	}//<<>>if( histogram clone failed )
+	auto existingHist = CaliHists.find(histName);
+	if( existingHist != CaliHists.end() ){
+		if( not existingHist->second.isResHist ){
+			std::cerr << "ERROR: refusing to replace non-resolution histogram named " << histName << std::endl;
+			delete loadedHist;
+			return false;
+		}//<<>>if( name collides with a calibration histogram )
+		delete existingHist->second.h2f;
+		CaliHists.erase(existingHist);
+	}//<<>>if( replacing a previously loaded resolution histogram )
+	CaliHists[histName] = { loadedHist, histName, false, true };
+	return true;
 
-}//<<>>void KUCMS_TimeCalibration::load2DResHist( std::string histName )
+}//<<>>bool KUCMS_TimeCalibration::load2DResHist( std::string histName )
 
-void KUCMS_TimeCalibration::doResTimeFit( std::string histName ){
+bool KUCMS_TimeCalibration::doResTimeFit( std::string histName ){
 
     std::cout << "Making Resolution Time Fits  : " << histName << std::endl;
-	if( CaliHists.find(histName) != CaliHists.end() ){
-		if( CaliHists[histName].h2f != NULL ){
-    		kucms_SigmaFitResult results = runTimeFitter( CaliHists[histName].h2f );
-		} else std::cout << " -- No H2F present !! " << std::endl;
-	} else std::cout << " -- No Such hist entry !! " << std::endl;
-	if( cali2DResTFile != NULL ) cali2DResTFile->Close();
+	auto histEntry = CaliHists.find(histName);
+	if( histEntry == CaliHists.end() ){
+			std::cerr << "ERROR: no loaded resolution histogram named " << histName << std::endl;
+			return false;
+	}//<<>>if( histogram entry missing )
+	if( not histEntry->second.h2f ){
+			std::cerr << "ERROR: null TH2F for loaded resolution histogram " << histName << std::endl;
+			return false;
+	}//<<>>if( histogram pointer missing )
+	const kucms_SigmaFitResult results = runTimeFitter(histEntry->second.h2f);
+	if( not results.valid ){
+			std::cerr << "ERROR: resolution time fit failed for " << histName << std::endl;
+			return false;
+	}//<<>>if( fit failed )
+	return true;
 
-}//<<>>void KUCMS_TimeCalibration::doResTimeFit( std::string histName )
+}//<<>>bool KUCMS_TimeCalibration::doResTimeFit( std::string histName )
 
 void KUCMS_TimeCalibration::makeSmearTag( std::string sourceName, std::string destName, std::string smearTag ){
 
