@@ -56,7 +56,7 @@ int main ( int argc, char *argv[] ){
       auto nextValue = [&]() -> const char* {
         if( i + 1 >= argc ){
           throw std::invalid_argument("missing value for " + option);
-        }
+        }//<<>>if( i + 1 >= argc )
         return argv[++i];
       };
       auto parseInt = [&]( const char* value ){
@@ -96,12 +96,12 @@ int main ( int argc, char *argv[] ){
       else if( option == "--dxySigScale" ) dxySigScaleMode = nextValue();
       else if( option == "--svDxyDeltaM" ) dxySigScaleDeltaM = parseFloat(nextValue());
       else throw std::invalid_argument("unknown option: " + option);
-    }
+    }//<<>>for( int i = 1; i < argc; i++ )
   } catch( const std::exception& error ){
     std::cerr << "ERROR: " << error.what() << std::endl;
     std::cerr << "Run '" << argv[0] << " --help' for usage." << std::endl;
     return 1;
-  }
+  }//<<>>catch( const std::exception& error )
 
   if(hprint){
     cout << "Usage: " << argv[0] << " [options]" << endl;
@@ -127,50 +127,50 @@ int main ( int argc, char *argv[] ){
     cout << "   --dxySigScale [off|nominal|up|down]  FastSim SV dxySig scale correction (default = off)" << endl;
     cout << "   --svDxyDeltaM [GeV]                  mN2-mN1 for --dxySigScale, required unless off" << endl;
     return 0;
-  }
+  }//<<>>if(hprint)
 
   if( in_file.empty() ){
     std::cerr << "ERROR: no input file was specified. Use --input or -i." << std::endl;
     return 1;
-  }
+  }//<<>>if( in_file.empty() )
 
   cout << "outfile tag " << outfilename << endl;
   outfilename = outfilename+".root";
   //const std::string listdir = "ntuple_master_lists/";
   //const std::string infilename = "KUCMS_Ntuple_Master_DataPD_Files_List.txt"; hasGenInfo = false;
 
-  int skipCnt = 0; // used to skip files ( in tchian ) for fast processing - if( nFiles%skipCnt != 0 ) continue; --  disabled in code  --  
+  int skipCnt = 0; // used to skip files ( in tchian ) for fast processing - if( nFiles%skipCnt != 0 ) continue; --  disabled in code  --
   std::string eosdir = "root://cmseos.fnal.gov//store/group/lpcsusylep/jaking/";
-    KUCMSAodSkimmer llpgana;
-    llpgana.SetEventRange(evti, evtj);
-    llpgana.SetGenInfoFlag( hasGenInfo );
-    llpgana.SetNoSVorPhoFlag( noSVorPho );
-    llpgana.SetUseEvtGenWgtFlag( useEvtGenWgt );
-    llpgana.SetGenSigPerfectFlag( genSigPerfect );
-    llpgana.SetDoBHC( !noBHC ); //if noBHC == true -> do not run BHC
-    llpgana.SetDoSV( !noSV ); //if noSV == true -> do not run SVs
-    //from master list
-    llpgana.SetDataSetKey(key);
-    llpgana.SetCrossSection(xsec);
-    llpgana.SetGluinoMass(glumass);
-    llpgana.SetN2Mass(n2mass);
-    llpgana.SetMCType(mctype);
-    llpgana.SetTimeCalibrationTag(ttag);
-    llpgana.SetMCWeight(mcw);
-    llpgana.SetBranchMaskFile(branchMaskFile);
-    llpgana.SetDxySigScale(dxySigScaleMode, dxySigScaleDeltaM);
-    bool sigbase = false;
-    if(in_file.find("_v33_") != string::npos && in_file.find("SMS") != string::npos)
-      sigbase = true;
-    llpgana.setNewSigBase(sigbase);
-    llpgana.setHTLPathsBase(hltpaths);
-    //llpgana.setNewSigBase(true);
-    //this method takes in 1 list at a time
-    eosdir = eosdir+"KUCMSNtuple/";
-    if(in_file.find("://") == string::npos)
-      in_file = eosdir+in_file;
-    llpgana.kucmsAodSkimmer( in_file, outfilename);
-    return 0;
+  KUCMSAodSkimmer llpgana;
+  llpgana.SetEventRange(evti, evtj);
+  llpgana.SetGenInfoFlag( hasGenInfo );
+  llpgana.SetNoSVorPhoFlag( noSVorPho );
+  llpgana.SetUseEvtGenWgtFlag( useEvtGenWgt );
+  llpgana.SetGenSigPerfectFlag( genSigPerfect );
+  llpgana.SetDoBHC( !noBHC ); //if noBHC == true -> do not run BHC
+  llpgana.SetDoSV( !noSV ); //if noSV == true -> do not run SVs
+  //from master list
+  llpgana.SetDataSetKey(key);
+  llpgana.SetCrossSection(xsec);
+  llpgana.SetGluinoMass(glumass);
+  llpgana.SetN2Mass(n2mass);
+  llpgana.SetMCType(mctype);
+  llpgana.SetTimeCalibrationTag(ttag);
+  llpgana.SetMCWeight(mcw);
+  llpgana.SetBranchMaskFile(branchMaskFile);
+  llpgana.SetDxySigScale(dxySigScaleMode, dxySigScaleDeltaM);
+  bool sigbase = false;
+  if(in_file.find("_v33_") != string::npos && in_file.find("SMS") != string::npos)
+  sigbase = true;
+  llpgana.setNewSigBase(sigbase);
+  llpgana.setHTLPathsBase(hltpaths);
+  //llpgana.setNewSigBase(true);
+  //this method takes in 1 list at a time
+  eosdir = eosdir+"KUCMSNtuple/";
+  if(in_file.find("://") == string::npos)
+  in_file = eosdir+in_file;
+  llpgana.kucmsAodSkimmer( in_file, outfilename);
+  return 0;
 
 
 }//<<>>int main ( int argc, char *argv[] )

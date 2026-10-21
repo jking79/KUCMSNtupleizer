@@ -4,8 +4,8 @@
 //
 //
 // Original Author:  Andres Abreu
-// 
-// 
+//
+//
 //
 
 //--------------------   hh file -------------------------------------------------------------
@@ -74,16 +74,16 @@
 
 template class MatchTracksToSC<reco::TransientTrack>;
 
-using namespace edm; 
+using namespace edm;
 
 class KUCMSDisplacedElectron : public KUCMSObjectBase {
 
-public:
+  public:
 
   // use base class constructor
   KUCMSDisplacedElectron( const edm::ParameterSet& iConfig );
   virtual ~KUCMSDisplacedElectron() = default;
-  
+
   // object setup : 1) construct object 2) InitObject 3) CrossLoad 4) load into Object Manager
   // load tokens for eventt based collections
   void LoadECALTracksToken( edm::EDGetTokenT<reco::TrackCollection> token ){ ecalTracksToken_ = token; }
@@ -98,20 +98,20 @@ public:
   //void LoadIsolation(DisplacedElectronIsolation* isoTool) { isoTool_ = isoTool; }
   void LoadTTrackBuilder(edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> ttbuilder) {transientTrackBuilder_ = ttbuilder; }
 
-  // sets up branches, do preloop jobs 
-  void InitObject( TTree* fOutTree ); 
-  
+  // sets up branches, do preloop jobs
+  void InitObject( TTree* fOutTree );
+
   // object processing : 1) LoadEvent prior to event loop 2) ProcessEvent during event loop via objectManager
   // get collections, do initial processing
   void LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar );
   // do cross talk jobs with other objects, do event processing, and load branches
   void ProcessEvent( ItemManager<float>& geVar ) {}
   void PostProcessEvent( ItemManager<float>& geVar );
-  
+
   // if there are any final tasks be to done after the event loop via objectManager
   void EndJobs(){} // do any jobs that need to be done after main event loop
 
-private:
+  private:
 
   int nGeneralTracks_;
   int nGsfTracks_;
@@ -153,15 +153,15 @@ private:
 
   TrackDetectorAssociator trackAssociator_;
   TrackAssociatorParameters trackAssocParameters_;
-  
+
   MatchedTrackSCPairs<reco::TransientTrack> matchedTracksToSCs_;
 
   //double SaveGenInfo(const reco::GenParticleCollection &genCollection);
 
 };//<<>>class KUCMSDisplacedElectron : public KUCMSObjectBase
 
-KUCMSDisplacedElectron::KUCMSDisplacedElectron( const edm::ParameterSet& iConfig ) 
-  : caloGeometryToken_(esConsumes()) {
+KUCMSDisplacedElectron::KUCMSDisplacedElectron( const edm::ParameterSet& iConfig )
+: caloGeometryToken_(esConsumes()) {
 
   trackAssociator_.useDefaultPropagator();
   cfFlag.set( "hasGenInfo", iConfig.existsAs<bool>("hasGenInfo") ? iConfig.getParameter<bool>("hasGenInfo") : true );
@@ -172,7 +172,7 @@ void KUCMSDisplacedElectron::InitObject( TTree* fOutTree ){
 
   Branches.makeBranch("DisplacedElectron_nSCs","DisplacedElectron_nSCs", INT);
   Branches.makeBranch("DisplacedElectron_nOOTSCs","DisplacedElectron_nOOTSCs", INT);
-  Branches.makeBranch("DisplacedElectron_nGenSig","DisplacedElectron_nGenSig", INT); 
+  Branches.makeBranch("DisplacedElectron_nGenSig","DisplacedElectron_nGenSig", INT);
   Branches.makeBranch("DisplacedElectron_nTotal", "DisplacedElectron_nTotal", INT);
   Branches.makeBranch("DisplacedElectron_charge", "DisplacedElectron_charge", VINT);
   Branches.makeBranch("DisplacedElectron_p", "DisplacedElectron_p", VFLOAT);
@@ -223,7 +223,7 @@ void KUCMSDisplacedElectron::InitObject( TTree* fOutTree ){
   Branches.makeBranch("DisplacedElectron_sip3Dbs", "DisplacedElectron_sip3Dbs", VFLOAT);
   Branches.makeBranch("DisplacedElectron_sip2Dbs", "DisplacedElectron_sip2Dbs", VFLOAT);
   Branches.attachBranches(fOutTree);
-  
+
 }//<<>>void KUCMSDisplacedElectron::InitObject( TTree* fOutTree )
 
 void KUCMSDisplacedElectron::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar ){
@@ -242,28 +242,28 @@ void KUCMSDisplacedElectron::LoadEvent( const edm::Event& iEvent, const edm::Eve
   const edm::ESTransientHandle<MagneticField> magfield = iSetup.getTransientHandle(magneticFieldToken_);
   const CaloGeometry ecalGeometry = iSetup.getData(caloGeometryToken_);
 
-  // Clear track and SCs collections  
+  // Clear track and SCs collections
   transientTracks_.clear();
   mergedSuperClusters_.clear();
   matchedTracksToSCs_.clear();
 
   // Collect general tracks
-  nGeneralTracks_ = 0; 
+  nGeneralTracks_ = 0;
   for(const auto &track : *generalTracksHandle_) {
     transientTracks_.emplace_back(ttBuilder->build(track));
     nGeneralTracks_++;
-  }
+  }//<<>>for(const auto &track : *generalTracksHandle_)
 
   // Collect Gsf tracks
   nGsfTracks_ = 0;
   for(const auto &track : *gsfTracksHandle_) {
     transientTracks_.emplace_back(ttBuilder->build(track));
     nGsfTracks_++;
-  }
+  }//<<>>for(const auto &track : *gsfTracksHandle_)
 
   // Collect SuperClusters
   for(const auto &sc : *superClusterHandle_)
-    mergedSuperClusters_.emplace_back(sc);
+  mergedSuperClusters_.emplace_back(sc);
 
   // Merge SuperCluster collections
   mergedSuperClusters_.insert(mergedSuperClusters_.end(), ootSuperClusterHandle_->begin(), ootSuperClusterHandle_->end());
@@ -272,7 +272,7 @@ void KUCMSDisplacedElectron::LoadEvent( const edm::Event& iEvent, const edm::Eve
   if(transientTracks_.size() > 0 && mergedSuperClusters_.size() > 0) {
     MatchTracksToSC<reco::TransientTrack> assigner(iEvent, iSetup, magfield, ecalGeometry, trackAssocParameters_, transientTracks_, mergedSuperClusters_);
     matchedTracksToSCs_ = assigner.GetMatchedTrackSCPairs();
-  }
+  }//<<>>if(transientTracks_.size() > 0 && mergedSuperClusters_.size() > 0)
 
 }//<<>>void KUCMSDisplacedElectron::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
@@ -288,20 +288,20 @@ void KUCMSDisplacedElectron::PostProcessEvent( ItemManager<float>& geVar ){
   float genCost = -1;
   if(cfFlag("hasGenInfo")) {
 
-    //signalGenElectrons_ = genObjs_->GetSignalGenElectrons();
+  //signalGenElectrons_ = genObjs_->GetSignalGenElectrons();
 
-    int index(0);
-    for(auto const &gen : genObjs_->GetGenParticles()) {
-      if(abs(gen.pdgId()) == 11 && gen.status() == 1) {
-        const LepMomType type(genObjs_->ClassifyGenElectron(gen));
-        if(type == kZ || type == kSusy)
-	  Branches.fillBranch("DisplacedElectron_genSigIndex", int(index));
-      }
-      index++;
-    }
+  int index(0);
+  for(auto const &gen : genObjs_->GetGenParticles()) {
+  if(abs(gen.pdgId()) == 11 && gen.status() == 1) {
+  const LepMomType type(genObjs_->ClassifyGenElectron(gen));
+  if(type == kZ || type == kSusy)
+  Branches.fillBranch("DisplacedElectron_genSigIndex", int(index));
+}
+  index++;
+}
 
-    genCost = SaveGenInfo(genObjs_->GetGenParticles());
-  }
+  genCost = SaveGenInfo(genObjs_->GetGenParticles());
+}
 
   if( DEBUG ) std::cout << " - Entering Electron Builder loop" << std::endl;
 
@@ -321,8 +321,8 @@ void KUCMSDisplacedElectron::PostProcessEvent( ItemManager<float>& geVar ){
     const reco::SuperCluster superCluster(candidate.GetSuperCluster());
     const GlobalPoint trackAtECAL(candidate.GetTrackLocationAtECAL());
     const int trackIndex(candidate.GetTrackIndex());
-    const int scIndex(candidate.GetSCIndex()); 
-    
+    const int scIndex(candidate.GetSCIndex());
+
     Branches.fillBranch("DisplacedElectron_charge",         int(track.charge()) );
     Branches.fillBranch("DisplacedElectron_p",              float(track.p()) );
     Branches.fillBranch("DisplacedElectron_pt",             float(track.pt()) );
@@ -363,39 +363,39 @@ void KUCMSDisplacedElectron::PostProcessEvent( ItemManager<float>& geVar ){
     Branches.fillBranch("DisplacedElectron_sip2Dbs",        float(candidate.GetIsoInfo()["sip2Dbs"]) );
     /*
     if(cfFlag("hasGenInfo")) {
-      GenLeptonInfo genInfo(candidate.GetGenInfo());
-      Branches.fillBranch("DisplacedElectron_isSignal",     bool(genInfo.GetLepMomType() == kZ || genInfo.GetLepMomType() == kSusy) );
-      Branches.fillBranch("DisplacedElectron_isTau",        bool(genInfo.GetLepMomType() == kTau) );
-      Branches.fillBranch("DisplacedElectron_isLight",      bool(genInfo.GetLepMomType() == kLight) );
-      Branches.fillBranch("DisplacedElectron_isHeavy",      bool(genInfo.GetLepMomType() == kHeavy) );
-      Branches.fillBranch("DisplacedElectron_isConversion", bool(genInfo.GetLepMomType() == kConversion) );
-      Branches.fillBranch("DisplacedElectron_isUnmatched",  bool(genInfo.GetLepMomType() == kUnmatched) );
-      Branches.fillBranch("DisplacedElectron_pdgId",        int(genInfo.GetPdgID()) );
+    GenLeptonInfo genInfo(candidate.GetGenInfo());
+    Branches.fillBranch("DisplacedElectron_isSignal",     bool(genInfo.GetLepMomType() == kZ || genInfo.GetLepMomType() == kSusy) );
+    Branches.fillBranch("DisplacedElectron_isTau",        bool(genInfo.GetLepMomType() == kTau) );
+    Branches.fillBranch("DisplacedElectron_isLight",      bool(genInfo.GetLepMomType() == kLight) );
+    Branches.fillBranch("DisplacedElectron_isHeavy",      bool(genInfo.GetLepMomType() == kHeavy) );
+    Branches.fillBranch("DisplacedElectron_isConversion", bool(genInfo.GetLepMomType() == kConversion) );
+    Branches.fillBranch("DisplacedElectron_isUnmatched",  bool(genInfo.GetLepMomType() == kUnmatched) );
+    Branches.fillBranch("DisplacedElectron_pdgId",        int(genInfo.GetPdgID()) );
 
-    }
+  }
     */
     index++;
-  }
+  }//<<>>for(auto const &candidate : matchedTracksToSCs_)
 }//<<>>void KUCMSDisplacedElectron::PostProcessEvent()
 /*
 double KUCMSDisplacedElectron::SaveGenInfo(const reco::GenParticleCollection &genCollection) {
 
-  if(matchedTracksToSCs_.size() == 0)
-    return -1;
+if(matchedTracksToSCs_.size() == 0)
+return -1;
 
-  DeltaRGenMatchHungarian<reco::Electron> genToTrackAssigner(*electronHandle_, genCollection);
-  for(auto const &pair : genToTrackAssigner.GetPairedObjects()) {
-    const reco::GenParticle genElectron(pair.GetObjectB());
-    
-    LepMomType type = kUnmatched;
-    if(abs(genElectron.pdgId()) == 11)
-      type = genObjs_->ClassifyGenElectron(genElectron);
-    
-    GenLeptonInfo genType(pair.GetIndexB(), genElectron, type, pair.GetDeltaR());
-    matchedTracksToSCs_[pair.GetIndexA()].setGenMatchInfo(genType);
-  }
-  
-  return genToTrackAssigner.GetCost();
+DeltaRGenMatchHungarian<reco::Electron> genToTrackAssigner(*electronHandle_, genCollection);
+for(auto const &pair : genToTrackAssigner.GetPairedObjects()) {
+const reco::GenParticle genElectron(pair.GetObjectB());
+
+LepMomType type = kUnmatched;
+if(abs(genElectron.pdgId()) == 11)
+type = genObjs_->ClassifyGenElectron(genElectron);
+
+GenLeptonInfo genType(pair.GetIndexB(), genElectron, type, pair.GetDeltaR());
+matchedTracksToSCs_[pair.GetIndexA()].setGenMatchInfo(genType);
+}
+
+return genToTrackAssigner.GetCost();
 
 }
 */

@@ -22,20 +22,20 @@ using uInt = unsigned int;
 
 template <class T>
 class ScalarBranch : public Item<T> {
-public:
+  public:
   void attachBranch(TTree* outTree) {
     // Item<T>::iName/iDoc/iValue are expected to be accessible (public or protected)
     outTree->Branch(this->iName.c_str(), &this->iValue)->SetTitle(this->iDoc.c_str());
-  }
+  }//<<>>void attachBranch(TTree* outTree)
 };
 
 template <class T>
 class VectorBranch : public VectorItem<T> {
-public:
+  public:
   void attachBranch(TTree* outTree) {
     // VectorItem<T>::iName/iDoc/iVector are expected to be accessible to derived
     outTree->Branch(this->iName.c_str(), &this->iVector)->SetTitle(this->iDoc.c_str());
-  }
+  }//<<>>void attachBranch(TTree* outTree)
 };
 
 // NOTE: enum ordering is relied upon (>= UINT means scalar)
@@ -46,7 +46,7 @@ enum BType { VVFLOAT, VVUINT, VUINT, VINT, VFLOAT, VSTR, VBOOL, UINT, INT, FLOAT
 //------------------------------------------------------------------------------
 
 class KUCMSBranchBase {
-public:
+  public:
   virtual ~KUCMSBranchBase() = default;
 
   virtual void attachBranch(TTree* outTree) = 0;
@@ -68,30 +68,30 @@ public:
 
 template <class T>
 class KUCMSBranch : public KUCMSBranchBase {
-public:
+  public:
   KUCMSBranch(const std::string& name, BType type, const std::string& doc)
-      : vartype(type) {
+  : vartype(type) {
     if (isScalar()) bscalar.make(name, doc);
     else           bvector.make(name, doc);
-  }
+  }//<<>>: vartype(type)
 
   void attachBranch(TTree* outTree) override {
     if (isScalar()) bscalar.attachBranch(outTree);
     else           bvector.attachBranch(outTree);
-  }
+  }//<<>>void attachBranch(TTree* outTree) override
 
   void clear() override {
     if (isScalar()) bscalar.clear();
     else           bvector.clear();
-  }
+  }//<<>>void clear() override
 
   // type-safe fill for this T
   void fill(T val) { // (kept by-value to match your original signature)
     if (isScalar()) bscalar.fill(val);
     else           bvector.fill(val);
-  }
+  }//<<>>void fill(T val)
 
-private:
+  private:
   bool isScalar() const { return vartype >= UINT; }
 
   BType vartype;

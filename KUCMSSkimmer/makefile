@@ -22,7 +22,7 @@ CXXFLAGS ?= $(CXXFLAGS_DEFAULT)
 # Root and RestFrames
 
 RTCFLAGS = $(shell root-config --cflags)
-RTGLIBS = $(shell root-config --glibs)
+RTGLIBS = $(shell root-config --glibs) -lMinuit2
 RFCFLAGS = $(shell restframes-config --cxxflags)
 RFGLIBS = $(shell restframes-config --libs)
 

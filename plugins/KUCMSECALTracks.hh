@@ -4,8 +4,8 @@
 //
 //
 // Original Author:  Andres Abreu
-// 
-// 
+//
+//
 //
 
 //--------------------   hh file -------------------------------------------------------------
@@ -75,32 +75,32 @@
 #define ETDEBUG true
 //#define ETDEBUG false
 
-using namespace edm; 
+using namespace edm;
 
 class trackSCMatch {
 
-public:
+  public:
   trackSCMatch(const reco::Track &track, const reco::SuperCluster &sc, double deltaR) :
-    track_(track), sc_(sc), deltaR_(deltaR) {}
+  track_(track), sc_(sc), deltaR_(deltaR) {}
 
   reco::Track GetTrack() const {return track_;}
   reco::SuperCluster GetSC() const {return sc_;}
   double GetDeltaR() const {return deltaR_;}
-private:
+  private:
 
   reco::Track track_;
   reco::SuperCluster sc_;
-  double deltaR_;  
+  double deltaR_;
 };
 
 class KUCMSECALTracks : public KUCMSObjectBase {
 
-public:
+  public:
 
   // use base class constructor
   KUCMSECALTracks( const edm::ParameterSet& iConfig );
   ~KUCMSECALTracks() = default;
-  
+
   // object setup : 1) construct object 2) InitObject 3) CrossLoad 4) load into Object Manager
   // load tokens for eventt based collections
   void LoadECALTracksToken( edm::EDGetTokenT<reco::TrackCollection> token ){ ecalTracksToken_ = token; }
@@ -114,19 +114,19 @@ public:
   void LoadTTrackBuilder(edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> token) { transientTrackBuilderToken_ = token; }
 
   // sets up branches, do preloop jobs
-  void InitObject( TTree* fOutTree ); 
-  
+  void InitObject( TTree* fOutTree );
+
   // object processing : 1) LoadEvent prior to event loop 2) ProcessEvent during event loop via objectManager
   // get collections, do initial processing
   void LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar );
   // do cross talk jobs with other objects, do event processing, and load branches
   void ProcessEvent( ItemManager<float>& geVar ){}
   void PostProcessEvent( ItemManager<float>& geVar );
-  
+
   // if there are any final tasks be to done after the event loop via objectManager
   void EndJobs() {} // do any jobs that need to be done after main event loop
-    
-private:
+
+  private:
 
   typedef std::vector<std::vector<GlobalPoint> > TrackRecHitLocations;
 
@@ -135,10 +135,10 @@ private:
   PropagatedTracks<reco::Track> generalECALTracks_;
   PairedObjectCollection<reco::Track, reco::GenParticle> genMatches_;
 
-  //ECAL tracks 
+  //ECAL tracks
   edm::EDGetTokenT<reco::TrackCollection> ecalTracksToken_;
   edm::Handle<reco::TrackCollection> ecalTracksHandle_;
-  
+
   // General Tracks
   edm::EDGetTokenT<edm::View<reco::Track>> generalTracksToken_;
   edm::Handle<edm::View<reco::Track> > generalTracksHandle_;
@@ -146,7 +146,7 @@ private:
   // Merged SCs
   edm::EDGetTokenT<reco::SuperClusterCollection> mergedSCsToken_;
   edm::Handle<reco::SuperClusterCollection> mergedSCsHandle_;
-  
+
   KUCMSGenObject* genObjs_;
 
   edm::ESGetToken<CaloGeometry, CaloGeometryRecord> caloGeometryToken_;
@@ -174,8 +174,8 @@ private:
 };//<<>>class KUCMSECALTracks : public KUCMSObjectBase
 
 KUCMSECALTracks::KUCMSECALTracks( const edm::ParameterSet& iConfig )
-  : caloGeometryToken_(esConsumes()),
-    transientTrackBuilderToken_(esConsumes<TransientTrackBuilder, TransientTrackRecord>()) {
+: caloGeometryToken_(esConsumes()),
+transientTrackBuilderToken_(esConsumes<TransientTrackBuilder, TransientTrackRecord>()) {
 
   trackAssociator_.useDefaultPropagator();
   cfFlag.set( "hasGenInfo", iConfig.existsAs<bool>("hasGenInfo") ? iConfig.getParameter<bool>("hasGenInfo") : true );
@@ -184,7 +184,7 @@ KUCMSECALTracks::KUCMSECALTracks( const edm::ParameterSet& iConfig )
 void KUCMSECALTracks::InitObject( TTree* fOutTree ){
 
   Branches.makeBranch("ECALTrack_nGeneral", "ECALTrack_nGeneral", INT);
-  Branches.makeBranch("ECALTrack_nGsf", "ECALTrack_nGsf", INT); 
+  Branches.makeBranch("ECALTrack_nGsf", "ECALTrack_nGsf", INT);
   Branches.makeBranch("ECALTrack_nTracks", "ECALTrack_nTracks", INT);
   Branches.makeBranch("ECALTrack_charge", "ECALTrack_charge", VINT);
   Branches.makeBranch("ECALTrack_p", "ECALTrack_p", VFLOAT);
@@ -222,11 +222,11 @@ void KUCMSECALTracks::InitObject( TTree* fOutTree ){
   Branches.makeBranch("TrackSCMatch_scEnergyToTrackPRatio", "TrackSCMatch_scEnergyToTrackPRatio", VFLOAT);
   Branches.makeBranch("TrackSCMatch_deltaR", "TrackSCMatch_deltaR", VFLOAT);
   Branches.attachBranches(fOutTree);
-  
+
 }//<<>>void KUCMSECALTracks::InitObject( TTree* fOutTree )
 
 void KUCMSECALTracks::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar ){
-  
+
   if( ETDEBUG ) std::cout << "Collecting Tracks" << std::endl;
 
   ecalTracks_.clear();
@@ -245,13 +245,13 @@ void KUCMSECALTracks::LoadEvent( const edm::Event& iEvent, const edm::EventSetup
   ttBuilder_ = &iSetup.getData(transientTrackBuilderToken_);
 
   reco::TrackCollection generalTracks;
-  
+
   const edm::ESTransientHandle<MagneticField> magfield = iSetup.getTransientHandle(magneticFieldToken_);
   const CaloGeometry ecalGeometry = iSetup.getData(caloGeometryToken_);
-  
+
   // Collect general tracks
-  for(const auto &track : *generalTracksHandle_) 
-    generalTracks.emplace_back(track);
+  for(const auto &track : *generalTracksHandle_)
+  generalTracks.emplace_back(track);
 
   // Repropagate gsf and general tracks (ideally this would be done in the producer once but it is not straightforward)
   TrackPropagator<reco::Track> generalTrackPropagator(iEvent, iSetup, magfield, trackAssocParameters_, generalTracks);
@@ -274,42 +274,42 @@ void KUCMSECALTracks::LoadEvent( const edm::Event& iEvent, const edm::EventSetup
       const TrackDetMatchInfo detInfo(propTrack.GetDetInfo());
 
       for(const auto & detID : detInfo.crossedEcalIds) {
-	const GlobalPoint trackHitAtEcal(ecalGeometry.getGeometry(detID)->getPosition());
+        const GlobalPoint trackHitAtEcal(ecalGeometry.getGeometry(detID)->getPosition());
 
-	const double ecalEta(trackHitAtEcal.eta());
-	const double ecalPhi(trackHitAtEcal.phi());
-	const double deltaR(sqrt(reco::deltaR2(scEta, scPhi, ecalEta, ecalPhi)));
+        const double ecalEta(trackHitAtEcal.eta());
+        const double ecalPhi(trackHitAtEcal.phi());
+        const double deltaR(sqrt(reco::deltaR2(scEta, scPhi, ecalEta, ecalPhi)));
 
-	if(deltaR < minDeltaR) {
-	  minDeltaR = deltaR;
-	  matchedTrack = propTrack.GetTrack();
-	  matchedIndex = propTrack.GetIndex();
-	  foundMatch = true;
-	}
-      }
-    }
+        if(deltaR < minDeltaR) {
+          minDeltaR = deltaR;
+          matchedTrack = propTrack.GetTrack();
+          matchedIndex = propTrack.GetIndex();
+          foundMatch = true;
+        }//<<>>if(deltaR < minDeltaR)
+      }//<<>>for(const auto & detID : detInfo.crossedEcalIds)
+    }//<<>>for(const auto &propTrack : generalECALTracks_)
     trackSCMatches_.emplace_back(trackSCMatch(matchedTrack, sc, minDeltaR));
     if(foundMatch) trackIndexToSC_[matchedIndex] = sc;
-  }
-  
-  
+  }//<<>>for(const auto &sc : *mergedSCsHandle_)
+
+
 }//<<>>void KUCMSECALTracks::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
 void KUCMSECALTracks::PostProcessEvent( ItemManager<float>& geVar ){
-  
+
   if( ETDEBUG ) std::cout << "Processing Tracks" << std::endl;
-  
+
   Branches.clearBranches();
   if( ETDEBUG ) std::cout << " - Entering Track loop" << std::endl;
 
   Branches.fillBranch("ECALTrack_nTracks", int(ecalTracks_.size()) );
-  
+
   FillTrackBranches<reco::Track>(generalECALTracks_);
 
   for(const auto &match : trackSCMatches_) {
     Branches.fillBranch("TrackSCMatch_scEnergyToTrackPRatio", float(match.GetSC().correctedEnergy()/match.GetTrack().p()));
     Branches.fillBranch("TrackSCMatch_deltaR", float(match.GetDeltaR()));
-  }
+  }//<<>>for(const auto &match : trackSCMatches_)
 }//<<>>void KUCMSECALTracks::PostProcessEvent()
 
 template <typename T>
@@ -344,7 +344,7 @@ void KUCMSECALTracks::FillTrackBranches(PropagatedTracks<T> &propagatedTracks) {
     Branches.fillBranch("ECALTrack_qualityMask", int(track.qualityMask()) );
     Branches.fillBranch("ECALTrack_nValidHits", int(track.numberOfValidHits()) );
     Branches.fillBranch("ECALTrack_nLostHits", int(track.numberOfLostHits()) );
-    
+
     FillDetIdBranches<T>(detInfo.crossedEcalIds, trackDet, true);
     FillDetIdBranches<T>(detInfo.crossedHcalIds, trackDet, false);
 
@@ -356,12 +356,12 @@ void KUCMSECALTracks::FillTrackBranches(PropagatedTracks<T> &propagatedTracks) {
       const GlobalPoint scPos(sc.x(), sc.y(), sc.z());
       const reco::TransientTrack ttrack = ttBuilder_->build(track);
       pathLength = float(TimingHelper::PathLength(ttrack, vertexPos, scPos));
-    }
+    }//<<>>if(scIt != trackIndexToSC_.end())
     Branches.fillBranch("ECALTrack_pathLength", pathLength);
 
     dbgcnt++;
-  }
-}
+  }//<<>>for(const auto &trackDet : propagatedTracks)
+}//<<>>void KUCMSECALTracks::FillTrackBranches(PropagatedTracks<T> &propagatedTracks)
 
 template <typename T>
 void KUCMSECALTracks::FillDetIdBranches(const std::vector<DetId> &detIDs, const PropagatedTrack<T> &trackDet, const bool isECAL) {
@@ -370,8 +370,8 @@ void KUCMSECALTracks::FillDetIdBranches(const std::vector<DetId> &detIDs, const 
     Branches.fillBranch("ECALTrackDetID_trackIndex", unsigned(trackDet.GetIndex()) );
     Branches.fillBranch("ECALTrackDetID_isECAL", isECAL);
     Branches.fillBranch("ECALTrackDetID_isHCAL", !isECAL);
-  }
-}
+  }//<<>>for(const auto &detID : detIDs)
+}//<<>>void KUCMSECALTracks::FillDetIdBranches(const std::vector<DetId> &detIDs, const PropagatedTrack<T> &trackDet, const bool isECAL)
 
 #endif
 

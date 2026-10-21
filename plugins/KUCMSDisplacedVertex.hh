@@ -4,7 +4,7 @@
 //
 //
 // Original Author: Andres Abreu
-// 
+//
 // KUCMSDisplacedVertex Object
 //
 
@@ -54,12 +54,12 @@
 //  KUCMS Object includes
 #include "KUCMSObjectBase.hh"
 
-using namespace edm; 
+using namespace edm;
 
 class KUCMSDisplacedVertex : public KUCMSObjectBase {
 
-public:
-  
+  public:
+
   // use base class constructor
   KUCMSDisplacedVertex( const edm::ParameterSet& iConfig );
   virtual ~KUCMSDisplacedVertex() = default;
@@ -73,7 +73,7 @@ public:
   void LoadMergedSCs( edm::EDGetTokenT<reco::SuperClusterCollection> token ) {mergedSCsToken_ = token;}
   void LoadGenParticlesToken(edm::EDGetTokenT<reco::GenParticleCollection> token ){ genToken_ = token; }
 
-  void InitObject( TTree* fOutTree ); 
+  void InitObject( TTree* fOutTree );
   void LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup, ItemManager<float>& geVar );
   void ProcessEvent( ItemManager<float>& geVar );
   void PostProcessEvent( ItemManager<float>& geVar ) {}
@@ -87,15 +87,15 @@ public:
 
   template<class T>
   std::pair<double, double> BestMatch(const T &lepton) const;
-  
-private:
+
+  private:
 
   reco::Vertex primaryVertex_;
   TrackVertexSetCollection generalVertices_;
   GenVertices genElectronVertices_, genMuonVertices_, genVertices_;
   std::map<GenVertex, GenMatches> chargedMatches_;
   reco::TrackCollection signalTracks_, electronTracks_;
-  
+
   TrackDetectorAssociator trackAssociator_;
   TrackAssociatorParameters trackAssocParameters_;
 
@@ -108,11 +108,11 @@ private:
   edm::EDGetTokenT<reco::GenParticleCollection> genToken_;
   edm::EDGetTokenT<reco::VertexCollection> pvToken_;
   edm::EDGetTokenT<reco::SuperClusterCollection> mergedSCsToken_;
-  
+
   edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> transientTrackBuilder_;
   edm::ESGetToken<CaloGeometry, CaloGeometryRecord> caloGeometryToken_;
   edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> magneticFieldToken_;
-  
+
   edm::Handle<reco::TrackCollection> muonTracksHandle_;
   edm::Handle<reco::TrackCollection> muonEnhancedTracksHandle_;
   edm::Handle<reco::GenParticleCollection> genHandle_;
@@ -128,17 +128,17 @@ private:
   std::vector<reco::TrackRef> ConvertTracksToRefs(const reco::TrackCollection &tracks, const edm::Handle<reco::TrackCollection> &trackHandle) const;
   bool getSCMatch(const reco::Track &track, reco::SuperCluster &sc, double &deltaR) const;
   double matchRatio(const TrackVertexSet &vertex, const GenVertex &genVertex, const double threshold = 0.1) const;
-  
+
 };//<<>>class KUCMSDisplacedVertex : public KUCMSObjectBase
 
 KUCMSDisplacedVertex::KUCMSDisplacedVertex( const edm::ParameterSet& iConfig ) :
-  caloGeometryToken_(esConsumes()){   
+caloGeometryToken_(esConsumes()){
   // ---- end constructor initilizations  --------------------------
-  
+
   cfFlag.set( "hasGenInfo", iConfig.existsAs<bool>("hasGenInfo") ? iConfig.getParameter<bool>("hasGenInfo") : true );
 
   trackAssociator_.useDefaultPropagator();
-  
+
 }//<<>>KUCMSDisplacedVertex::KUCMSDisplacedVertex( const edm::ParameterSet& iConfig, const ItemManager<bool>& cfFlag )
 
 void KUCMSDisplacedVertex::InitObject( TTree* fOutTree ){
@@ -176,7 +176,7 @@ void KUCMSDisplacedVertex::InitObject( TTree* fOutTree ){
   Branches.makeBranch("Vertex_passLooseMuonID", "Vertex_passLooseMuonID", VBOOL);
   Branches.makeBranch("Vertex_passLooseElectronID", "Vertex_passLooseElectronID", VBOOL);
   Branches.makeBranch("Vertex_passLooseID", "Vertex_passLooseID", VBOOL);
-  
+
   // VertexTrack Branches
   Branches.makeBranch("VertexTrack_vertexIndex","VertexTrack_vertexIndex", VUINT);
   Branches.makeBranch("VertexTrack_trackIndex","VertexTrack_trackIndex", VUINT);
@@ -188,7 +188,7 @@ void KUCMSDisplacedVertex::InitObject( TTree* fOutTree ){
   Branches.makeBranch("VertexTrack_SCDR", "VertexTrack_SCDR", VFLOAT);
   Branches.makeBranch("VertexTrack_energySC", "VertexTrack_energySC", VFLOAT);
   Branches.makeBranch("VertexTrack_ratioPToEnergySC", "VertexTrack_ratioPToEnergySC", VFLOAT);
-  
+
   // Gen Vertices
   if(cfFlag("hasGenInfo")) {
     Branches.makeBranch("Vertex_genVertexIndex","Vertex_genVertexIndex", VINT);
@@ -201,7 +201,7 @@ void KUCMSDisplacedVertex::InitObject( TTree* fOutTree ){
     Branches.makeBranch("VertexTrack_isSignalTrack", "VertexTrack_isSignalTrack", VBOOL);
     Branches.makeBranch("VertexTrack_isSignalElectron", "VertexTrack_isSignalElectron", VBOOL);
     Branches.makeBranch("VertexTrack_isSignalMuon", "VertexTrack_isSignalMuon", VBOOL);
-    
+
     Branches.makeBranch("GenVertex_nTotal", "GenVertex_nTotal", UINT);
     Branches.makeBranch("GenVertex_nTracks", "GenVertex_nTracks", VUINT);
     Branches.makeBranch("GenVertex_nElectron", "GenVertex_nElectron", UINT, "amount of electron gen vertices");
@@ -224,8 +224,8 @@ void KUCMSDisplacedVertex::InitObject( TTree* fOutTree ){
     Branches.makeBranch("GenVertex_isHadronic","GenVertex_isHadronic", VBOOL);
     Branches.makeBranch("GenVertex_passSelection","GenVertex_passSelection", VBOOL);
     Branches.makeBranch("GenVertex_passSelectionAndCuts","GenVertex_passSelectionAndCuts", VBOOL);
-  }
-  
+  }//<<>>if(cfFlag( ))
+
   Branches.attachBranches(fOutTree);
 
 }//<<>>void KUCMSDisplacedVertex::InitObject( TTree* fOutTree )
@@ -246,15 +246,15 @@ void KUCMSDisplacedVertex::LoadEvent( const edm::Event& iEvent, const edm::Event
 
   signalTracks_.clear();
   genVertices_.clear();
-  
+
   const TransientTrackBuilder* ttBuilder = &iSetup.getData(transientTrackBuilder_);
   const edm::ESTransientHandle<MagneticField> magfield = iSetup.getTransientHandle(magneticFieldToken_);
   const CaloGeometry ecalGeometry = iSetup.getData(caloGeometryToken_);
 
   vector<reco::TransientTrack> ttracks;
   for(const auto &track : *muonEnhancedTracksHandle_)
-    ttracks.emplace_back(ttBuilder->build(track));
-  
+  ttracks.emplace_back(ttBuilder->build(track));
+
   ttBuilder_ = TTBuilderWrapper(ttBuilder);
 
   //std::cout << " LoadEvent DisplacedVertex Merger" << std::endl;
@@ -263,23 +263,23 @@ void KUCMSDisplacedVertex::LoadEvent( const edm::Event& iEvent, const edm::Event
   if(cfFlag("hasGenInfo")) {
     GenVertices allSignalSVs(*genHandle_);
     DeltaRGenMatchHungarian<reco::TransientTrack> assigner(ttracks, allSignalSVs.getAllGenParticles());
-    
+
     genVertices_ = GenVertices(assigner.GetPairedObjects().ConvertFromTTracks(), 0.02);
     allSignalSVs += genVertices_;
-    genVertices_ = allSignalSVs;    
+    genVertices_ = allSignalSVs;
     diLeptonMerger.setGenVertices(genVertices_);
     hadronicMerger.setGenVertices(genVertices_);
 
     for(const auto &genVertex : genVertices_) {
       DeltaRGenMatchHungarian<reco::Track> chargedParticleAssigner(*muonEnhancedTracksHandle_, genVertex.getStableChargedDaughters(*genHandle_));
       chargedMatches_[genVertex] = chargedParticleAssigner.GetPairedObjects();
-      
+
       if(!genVertex.hasTracks()) continue;
 
       for(const auto &pair : genVertex.genMatches())
-        signalTracks_.emplace_back(pair.GetObjectA());
-    }
-  }
+      signalTracks_.emplace_back(pair.GetObjectA());
+    }//<<>>for(const auto &genVertex : genVertices_)
+  }//<<>>if(cfFlag( ))
 
   //std::cout << " LoadEvent DisplacedVertex Canadates" << std::endl;
 
@@ -292,156 +292,156 @@ void KUCMSDisplacedVertex::LoadEvent( const edm::Event& iEvent, const edm::Event
 
   MatchTracksToSC<reco::Track> assigner(iEvent, iSetup, magfield, ecalGeometry, trackAssocParameters_, generalVertices_.tracks(), *mergedSCsHandle_);
   trackSCPairs_ = assigner.GetMatchedTrackSCPairs();
-  
+
   for(const auto &pair : trackSCPairs_) {
     if(pair.GetDeltaR() < 0.04)
-      electronTracks_.emplace_back(pair.GetTrack());
-  }
+    electronTracks_.emplace_back(pair.GetTrack());
+  }//<<>>for(const auto &pair : trackSCPairs_)
 
 }//<<>>void KUCMSDisplacedVertex::LoadEvent( const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
 void KUCMSDisplacedVertex::ProcessEvent( ItemManager<float>& geVar ){
 
-    Branches.clearBranches();
+  Branches.clearBranches();
 
-    map<string, TrackVertexSetCollection> vertexMap = {{"passSignificanceCut", TrackVertexSetHelper::applySignificanceCut(generalVertices_, primaryVertex_)},
-						       {"passTrackCuts", TrackVertexSetHelper::applyPostDisambiguationTrackCuts(generalVertices_, primaryVertex_)}};
+  map<string, TrackVertexSetCollection> vertexMap = {{"passSignificanceCut", TrackVertexSetHelper::applySignificanceCut(generalVertices_, primaryVertex_)},
+    {"passTrackCuts", TrackVertexSetHelper::applyPostDisambiguationTrackCuts(generalVertices_, primaryVertex_)}};
 
-	auto nGVertices = generalVertices_.size();
-    Branches.fillBranch("Vertex_nTotal", unsigned(nGVertices) );
-	int nDisSV(0);
-    int vtxIndex(0);
-    for(const auto &tvertex : generalVertices_) {
+  auto nGVertices = generalVertices_.size();
+  Branches.fillBranch("Vertex_nTotal", unsigned(nGVertices) );
+  int nDisSV(0);
+  int vtxIndex(0);
+  for(const auto &tvertex : generalVertices_) {
 
-      reco::Vertex vertex(tvertex);
-      LorentzVec vertex4Vec(VertexHelper::GetVertex4Vector(vertex));
-      LorentzVec vertexWeighted4Vec(VertexHelper::GetVertexWeighted4Vector(vertex));
-      const bool passLooseMuonID(vertex.tracksSize() == 2 && VertexHelper::CountInstances(vertex, *muonTracksHandle_) == 2);
-      const bool passLooseElectronID(vertex.tracksSize() == 2 && VertexHelper::CountInstances(vertex, electronTracks_) == 2);
-      const bool passLooseID(vertex.tracksSize() < 4? (passLooseMuonID || passLooseElectronID) : true);
+    reco::Vertex vertex(tvertex);
+    LorentzVec vertex4Vec(VertexHelper::GetVertex4Vector(vertex));
+    LorentzVec vertexWeighted4Vec(VertexHelper::GetVertexWeighted4Vector(vertex));
+    const bool passLooseMuonID(vertex.tracksSize() == 2 && VertexHelper::CountInstances(vertex, *muonTracksHandle_) == 2);
+    const bool passLooseElectronID(vertex.tracksSize() == 2 && VertexHelper::CountInstances(vertex, electronTracks_) == 2);
+    const bool passLooseID(vertex.tracksSize() < 4? (passLooseMuonID || passLooseElectronID) : true);
 
-	  bool lepsv = ( unsigned(vertex.tracksSize()) == 2 ) && ( passLooseMuonID || passLooseElectronID );
-	  bool hadsv = ( unsigned(vertex.tracksSize()) >= 5 ) && ( (float(vertex4Vec.M())/unsigned(vertex.tracksSize()) ) > 1 );
-	  if( lepsv || hadsv ) nDisSV++;
+    bool lepsv = ( unsigned(vertex.tracksSize()) == 2 ) && ( passLooseMuonID || passLooseElectronID );
+    bool hadsv = ( unsigned(vertex.tracksSize()) >= 5 ) && ( (float(vertex4Vec.M())/unsigned(vertex.tracksSize()) ) > 1 );
+    if( lepsv || hadsv ) nDisSV++;
 
-      Branches.fillBranch("Vertex_nTracks", unsigned(vertex.tracksSize()) );
-      Branches.fillBranch("Vertex_x", float(vertex.x()) );
-      Branches.fillBranch("Vertex_y", float(vertex.y()) );
-      Branches.fillBranch("Vertex_z", float(vertex.z()) );
-      Branches.fillBranch("Vertex_p", float(vertex4Vec.P()) );
-      Branches.fillBranch("Vertex_px", float(vertex4Vec.px()) );
-      Branches.fillBranch("Vertex_py", float(vertex4Vec.py()) );
-      Branches.fillBranch("Vertex_pz", float(vertex4Vec.pz()) );
-      Branches.fillBranch("Vertex_pt", float(vertex4Vec.pt()) );
-      Branches.fillBranch("Vertex_eta", float(vertex4Vec.eta()) );
-      Branches.fillBranch("Vertex_phi", float(vertex4Vec.phi()) );
-      Branches.fillBranch("Vertex_mass", float(vertex4Vec.M()) );
-      Branches.fillBranch("Vertex_cosTheta", float(tvertex.cosTheta(primaryVertex_)));
-      Branches.fillBranch("Vertex_decayAngle", float(VertexHelper::CalculateDecayAngle(vertex)));
-      Branches.fillBranch("Vertex_cxx", float(vertex.error().At(0,0)) );
-      Branches.fillBranch("Vertex_cyy", float(vertex.error().At(1,1)) );
-      Branches.fillBranch("Vertex_czz", float(vertex.error().At(2,2)) );
-      Branches.fillBranch("Vertex_cxy", float(vertex.error().At(0,1)) );
-      Branches.fillBranch("Vertex_cxz", float(vertex.error().At(0,2)) );
-      Branches.fillBranch("Vertex_cyz", float(vertex.error().At(1,2)) );
-      Branches.fillBranch("Vertex_chi2", float(vertex.chi2()) );
-      Branches.fillBranch("Vertex_normalizedChi2", float(vertex.normalizedChi2()) );
-      Branches.fillBranch("Vertex_ndof", float(vertex.ndof()) );
-      Branches.fillBranch("Vertex_dxy", float(VertexHelper::CalculateDxy(vertex, primaryVertex_)));
-      Branches.fillBranch("Vertex_dxyError", float(VertexHelper::CalculateDxyError(vertex, primaryVertex_)));
-      Branches.fillBranch("Vertex_sumCharge", int(VertexHelper::CalculateTotalCharge(vertex)) );
-      Branches.fillBranch("Vertex_isUnique", bool(generalVertices_.isVertexUnique(tvertex)));
-      Branches.fillBranch("Vertex_scMatchRatio", float(VertexHelper::CountInstances(vertex, electronTracks_)/float(tvertex.size())));
-      Branches.fillBranch("Vertex_passLooseMuonID", bool(passLooseMuonID));
-      Branches.fillBranch("Vertex_passLooseElectronID", bool(passLooseElectronID));
-      Branches.fillBranch("Vertex_passLooseID", bool(passLooseID));
-      
-      if(cfFlag("hasGenInfo")) {
-			double minDistance;
-			int nearestGenVertexIndex(FindNearestGenVertexIndex(vertex, minDistance));
-			Branches.fillBranch("Vertex_isBronze", bool(IsBronze(vertex)));
-			Branches.fillBranch("Vertex_isSilver", bool(IsSilver(vertex)));
-			Branches.fillBranch("Vertex_isGold", bool(IsGold(vertex)));
-			Branches.fillBranch("Vertex_genVertexIndex", int(FindGenVertexIndex(vertex)));
-			Branches.fillBranch("Vertex_nearestGenVertexIndex", int(nearestGenVertexIndex));
-			Branches.fillBranch("Vertex_min3D", float(minDistance));
-			Branches.fillBranch("Vertex_matchRatio", float(nearestGenVertexIndex>=0? matchRatio(tvertex, genVertices_[nearestGenVertexIndex]) : -1));
-      }//<<>>if(cfFlag("hasGenInfo"))
-  
-      for(const auto &trackRef : vertex.tracks()) {
-		const reco::Track track(*trackRef);
-		const reco::TrackRef ref(TrackHelper::GetTrackRef(*trackRef, muonEnhancedTracksHandle_));
-	
-		double deltaR(-1.);
-		reco::SuperCluster sc;
-		const bool isSCMatched(getSCMatch(track, sc, deltaR));
-		Branches.fillBranch("VertexTrack_vertexIndex", unsigned(vtxIndex) );
-		Branches.fillBranch("VertexTrack_trackIndex", unsigned(TrackHelper::FindTrackIndex(track, *muonEnhancedTracksHandle_)) );
-		Branches.fillBranch("VertexTrack_trackCosTheta", float(TrackHelper::CalculateCosTheta(primaryVertex_, vertex, track)));
-		Branches.fillBranch("VertexTrack_trackCosThetaAtCM", float(VertexHelper::CalculateCMCosTheta(vertex, track)));
-		Branches.fillBranch("VertexTrack_trackCompatibility", float(tvertex.compatibility(ref)));
-		Branches.fillBranch("VertexTrack_shiftDzAfterTrackRemoval", float(tvertex.shiftDzAfterTrackRemoval(ref)));
-		Branches.fillBranch("VertexTrack_shift3DAfterTrackRemoval", float(tvertex.shift3DAfterTrackRemoval(ref)));
-		Branches.fillBranch("VertexTrack_SCDR", float(deltaR));
-		Branches.fillBranch("VertexTrack_energySC", float(isSCMatched? sc.correctedEnergy() : -1.));
-		Branches.fillBranch("VertexTrack_ratioPToEnergySC", float(isSCMatched? track.p()/sc.correctedEnergy() : -1.));
-
-		if(cfFlag("hasGenInfo")) {
-	  		const bool isSignal(TrackHelper::FindTrackIndex(track, signalTracks_) >= 0);
-	  		Branches.fillBranch("VertexTrack_isSignalTrack", isSignal);
-	  		Branches.fillBranch("VertexTrack_isSignalElectron", isSignal? genVertices_.getGenVertexFromTrack(track).isGenElectron() : false);
-	  		Branches.fillBranch("VertexTrack_isSignalMuon", isSignal? genVertices_.getGenVertexFromTrack(track).isGenMuon() : false);
-		}//<<>>if(cfFlag("hasGenInfo")) 
-      }//<<>>for(const auto &trackRef : vertex.tracks()) 
-      vtxIndex++;
-    }//<<>>for(const auto &tvertex : generalVertices_)
-	geVar.set("nDisSVs",nDisSV);
+    Branches.fillBranch("Vertex_nTracks", unsigned(vertex.tracksSize()) );
+    Branches.fillBranch("Vertex_x", float(vertex.x()) );
+    Branches.fillBranch("Vertex_y", float(vertex.y()) );
+    Branches.fillBranch("Vertex_z", float(vertex.z()) );
+    Branches.fillBranch("Vertex_p", float(vertex4Vec.P()) );
+    Branches.fillBranch("Vertex_px", float(vertex4Vec.px()) );
+    Branches.fillBranch("Vertex_py", float(vertex4Vec.py()) );
+    Branches.fillBranch("Vertex_pz", float(vertex4Vec.pz()) );
+    Branches.fillBranch("Vertex_pt", float(vertex4Vec.pt()) );
+    Branches.fillBranch("Vertex_eta", float(vertex4Vec.eta()) );
+    Branches.fillBranch("Vertex_phi", float(vertex4Vec.phi()) );
+    Branches.fillBranch("Vertex_mass", float(vertex4Vec.M()) );
+    Branches.fillBranch("Vertex_cosTheta", float(tvertex.cosTheta(primaryVertex_)));
+    Branches.fillBranch("Vertex_decayAngle", float(VertexHelper::CalculateDecayAngle(vertex)));
+    Branches.fillBranch("Vertex_cxx", float(vertex.error().At(0,0)) );
+    Branches.fillBranch("Vertex_cyy", float(vertex.error().At(1,1)) );
+    Branches.fillBranch("Vertex_czz", float(vertex.error().At(2,2)) );
+    Branches.fillBranch("Vertex_cxy", float(vertex.error().At(0,1)) );
+    Branches.fillBranch("Vertex_cxz", float(vertex.error().At(0,2)) );
+    Branches.fillBranch("Vertex_cyz", float(vertex.error().At(1,2)) );
+    Branches.fillBranch("Vertex_chi2", float(vertex.chi2()) );
+    Branches.fillBranch("Vertex_normalizedChi2", float(vertex.normalizedChi2()) );
+    Branches.fillBranch("Vertex_ndof", float(vertex.ndof()) );
+    Branches.fillBranch("Vertex_dxy", float(VertexHelper::CalculateDxy(vertex, primaryVertex_)));
+    Branches.fillBranch("Vertex_dxyError", float(VertexHelper::CalculateDxyError(vertex, primaryVertex_)));
+    Branches.fillBranch("Vertex_sumCharge", int(VertexHelper::CalculateTotalCharge(vertex)) );
+    Branches.fillBranch("Vertex_isUnique", bool(generalVertices_.isVertexUnique(tvertex)));
+    Branches.fillBranch("Vertex_scMatchRatio", float(VertexHelper::CountInstances(vertex, electronTracks_)/float(tvertex.size())));
+    Branches.fillBranch("Vertex_passLooseMuonID", bool(passLooseMuonID));
+    Branches.fillBranch("Vertex_passLooseElectronID", bool(passLooseElectronID));
+    Branches.fillBranch("Vertex_passLooseID", bool(passLooseID));
 
     if(cfFlag("hasGenInfo")) {
-      // Gen Vertex
-      GenVertices allSignalSVs(*genHandle_);
-      allSignalSVs += genVertices_;
-
-      int nSigElectrons(0), nSigMuons(0), nSigHadrons(0);
-      Branches.fillBranch("GenVertex_nTotal", unsigned(allSignalSVs.size()));
-      for(const auto &genVertex : allSignalSVs) {
-	
-			TrackVertexSet tvertex(ConvertTracksToRefs(genVertex.tracks(), muonEnhancedTracksHandle_), ttBuilder_.getBuilder());
-			TrackVertexSetCollection vertexSetCollection;
-			if(tvertex.isValid()) {
-	  			vertexSetCollection.add(tvertex);
-	  			vertexSetCollection = vertexSetCollection.fullSelection(primaryVertex_);
-			}//<<>>if(tvertex.isValid())
-
-			Branches.fillBranch("GenVertex_nTracks", unsigned(genVertex.tracks().size()));
-			Branches.fillBranch("GenVertex_mass", float(genVertex.mass()));
-			Branches.fillBranch("GenVertex_x", float(genVertex.x()));
-			Branches.fillBranch("GenVertex_y", float(genVertex.y()));
-			Branches.fillBranch("GenVertex_z", float(genVertex.z()));
-			Branches.fillBranch("GenVertex_p", float(genVertex.p()));
-			Branches.fillBranch("GenVertex_px", float(genVertex.px()));
-			Branches.fillBranch("GenVertex_py", float(genVertex.py()));
-			Branches.fillBranch("GenVertex_pz", float(genVertex.pz()));
-			Branches.fillBranch("GenVertex_pt", float(genVertex.pt()));
-			Branches.fillBranch("GenVertex_eta", float(genVertex.eta()));
-			Branches.fillBranch("GenVertex_phi", float(genVertex.phi()));
-			Branches.fillBranch("GenVertex_dxy", float(genVertex.dxy()));
-			Branches.fillBranch("GenVertex_isElectron", bool(genVertex.isGenElectron()));
-			Branches.fillBranch("GenVertex_isMuon", bool(genVertex.isGenMuon()));
-			Branches.fillBranch("GenVertex_isHadronic", bool(genVertex.isGenHadronic()));
-			Branches.fillBranch("GenVertex_passSelection", bool(genVertex.hasTracks()));
-			Branches.fillBranch("GenVertex_passSelectionAndCuts", bool(genVertex.hasTracks() && !vertexSetCollection.empty()));
-	
-			if(genVertex.isGenElectron()) nSigElectrons++;
-			if(genVertex.isGenMuon()) nSigMuons++;
-			if(genVertex.isGenHadronic()) nSigHadrons++;
-
-      }//<<>>for(const auto &genVertex : allSignalSVs)
-      Branches.fillBranch("GenVertex_nElectron", unsigned(nSigElectrons));
-      Branches.fillBranch("GenVertex_nMuon", unsigned(nSigMuons));
-      Branches.fillBranch("GenVertex_nHadronic", unsigned(nSigHadrons));
-
+      double minDistance;
+      int nearestGenVertexIndex(FindNearestGenVertexIndex(vertex, minDistance));
+      Branches.fillBranch("Vertex_isBronze", bool(IsBronze(vertex)));
+      Branches.fillBranch("Vertex_isSilver", bool(IsSilver(vertex)));
+      Branches.fillBranch("Vertex_isGold", bool(IsGold(vertex)));
+      Branches.fillBranch("Vertex_genVertexIndex", int(FindGenVertexIndex(vertex)));
+      Branches.fillBranch("Vertex_nearestGenVertexIndex", int(nearestGenVertexIndex));
+      Branches.fillBranch("Vertex_min3D", float(minDistance));
+      Branches.fillBranch("Vertex_matchRatio", float(nearestGenVertexIndex>=0? matchRatio(tvertex, genVertices_[nearestGenVertexIndex]) : -1));
     }//<<>>if(cfFlag("hasGenInfo"))
+
+    for(const auto &trackRef : vertex.tracks()) {
+      const reco::Track track(*trackRef);
+      const reco::TrackRef ref(TrackHelper::GetTrackRef(*trackRef, muonEnhancedTracksHandle_));
+
+      double deltaR(-1.);
+      reco::SuperCluster sc;
+      const bool isSCMatched(getSCMatch(track, sc, deltaR));
+      Branches.fillBranch("VertexTrack_vertexIndex", unsigned(vtxIndex) );
+      Branches.fillBranch("VertexTrack_trackIndex", unsigned(TrackHelper::FindTrackIndex(track, *muonEnhancedTracksHandle_)) );
+      Branches.fillBranch("VertexTrack_trackCosTheta", float(TrackHelper::CalculateCosTheta(primaryVertex_, vertex, track)));
+      Branches.fillBranch("VertexTrack_trackCosThetaAtCM", float(VertexHelper::CalculateCMCosTheta(vertex, track)));
+      Branches.fillBranch("VertexTrack_trackCompatibility", float(tvertex.compatibility(ref)));
+      Branches.fillBranch("VertexTrack_shiftDzAfterTrackRemoval", float(tvertex.shiftDzAfterTrackRemoval(ref)));
+      Branches.fillBranch("VertexTrack_shift3DAfterTrackRemoval", float(tvertex.shift3DAfterTrackRemoval(ref)));
+      Branches.fillBranch("VertexTrack_SCDR", float(deltaR));
+      Branches.fillBranch("VertexTrack_energySC", float(isSCMatched? sc.correctedEnergy() : -1.));
+      Branches.fillBranch("VertexTrack_ratioPToEnergySC", float(isSCMatched? track.p()/sc.correctedEnergy() : -1.));
+
+      if(cfFlag("hasGenInfo")) {
+        const bool isSignal(TrackHelper::FindTrackIndex(track, signalTracks_) >= 0);
+        Branches.fillBranch("VertexTrack_isSignalTrack", isSignal);
+        Branches.fillBranch("VertexTrack_isSignalElectron", isSignal? genVertices_.getGenVertexFromTrack(track).isGenElectron() : false);
+        Branches.fillBranch("VertexTrack_isSignalMuon", isSignal? genVertices_.getGenVertexFromTrack(track).isGenMuon() : false);
+      }//<<>>if(cfFlag("hasGenInfo"))
+    }//<<>>for(const auto &trackRef : vertex.tracks())
+    vtxIndex++;
+  }//<<>>for(const auto &tvertex : generalVertices_)
+  geVar.set("nDisSVs",nDisSV);
+
+  if(cfFlag("hasGenInfo")) {
+    // Gen Vertex
+    GenVertices allSignalSVs(*genHandle_);
+    allSignalSVs += genVertices_;
+
+    int nSigElectrons(0), nSigMuons(0), nSigHadrons(0);
+    Branches.fillBranch("GenVertex_nTotal", unsigned(allSignalSVs.size()));
+    for(const auto &genVertex : allSignalSVs) {
+
+      TrackVertexSet tvertex(ConvertTracksToRefs(genVertex.tracks(), muonEnhancedTracksHandle_), ttBuilder_.getBuilder());
+      TrackVertexSetCollection vertexSetCollection;
+      if(tvertex.isValid()) {
+        vertexSetCollection.add(tvertex);
+        vertexSetCollection = vertexSetCollection.fullSelection(primaryVertex_);
+      }//<<>>if(tvertex.isValid())
+
+      Branches.fillBranch("GenVertex_nTracks", unsigned(genVertex.tracks().size()));
+      Branches.fillBranch("GenVertex_mass", float(genVertex.mass()));
+      Branches.fillBranch("GenVertex_x", float(genVertex.x()));
+      Branches.fillBranch("GenVertex_y", float(genVertex.y()));
+      Branches.fillBranch("GenVertex_z", float(genVertex.z()));
+      Branches.fillBranch("GenVertex_p", float(genVertex.p()));
+      Branches.fillBranch("GenVertex_px", float(genVertex.px()));
+      Branches.fillBranch("GenVertex_py", float(genVertex.py()));
+      Branches.fillBranch("GenVertex_pz", float(genVertex.pz()));
+      Branches.fillBranch("GenVertex_pt", float(genVertex.pt()));
+      Branches.fillBranch("GenVertex_eta", float(genVertex.eta()));
+      Branches.fillBranch("GenVertex_phi", float(genVertex.phi()));
+      Branches.fillBranch("GenVertex_dxy", float(genVertex.dxy()));
+      Branches.fillBranch("GenVertex_isElectron", bool(genVertex.isGenElectron()));
+      Branches.fillBranch("GenVertex_isMuon", bool(genVertex.isGenMuon()));
+      Branches.fillBranch("GenVertex_isHadronic", bool(genVertex.isGenHadronic()));
+      Branches.fillBranch("GenVertex_passSelection", bool(genVertex.hasTracks()));
+      Branches.fillBranch("GenVertex_passSelectionAndCuts", bool(genVertex.hasTracks() && !vertexSetCollection.empty()));
+
+      if(genVertex.isGenElectron()) nSigElectrons++;
+      if(genVertex.isGenMuon()) nSigMuons++;
+      if(genVertex.isGenHadronic()) nSigHadrons++;
+
+    }//<<>>for(const auto &genVertex : allSignalSVs)
+    Branches.fillBranch("GenVertex_nElectron", unsigned(nSigElectrons));
+    Branches.fillBranch("GenVertex_nMuon", unsigned(nSigMuons));
+    Branches.fillBranch("GenVertex_nHadronic", unsigned(nSigHadrons));
+
+  }//<<>>if(cfFlag("hasGenInfo"))
 
 }//<<>>void KUCMSDisplacedVertex::ProcessEvent()
 
@@ -449,18 +449,18 @@ void KUCMSDisplacedVertex::ProcessEvent( ItemManager<float>& geVar ){
 std::vector<reco::TrackRef> KUCMSDisplacedVertex::ConvertTracksToRefs(const edm::Handle<reco::TrackCollection> &trackHandle) const {
   std::vector<reco::TrackRef> trackRefs;
   for(const auto &track : *trackHandle)
-    trackRefs.emplace_back(TrackHelper::GetTrackRef(track, trackHandle));
+  trackRefs.emplace_back(TrackHelper::GetTrackRef(track, trackHandle));
 
   return trackRefs;
-}
+}//<<>>} std::vector<reco::TrackRef> KUCMSDisplacedVertex::ConvertTracksToRefs(const edm::Handle<reco::TrackCollection> &trackHandle)
 
 std::vector<reco::TrackRef> KUCMSDisplacedVertex::ConvertTracksToRefs(const reco::TrackCollection &tracks, const edm::Handle<reco::TrackCollection> &trackHandle) const {
   std::vector<reco::TrackRef> trackRefs;
   for(const auto &track : tracks)
-    trackRefs.emplace_back(TrackHelper::GetTrackRef(track, trackHandle));
+  trackRefs.emplace_back(TrackHelper::GetTrackRef(track, trackHandle));
 
   return trackRefs;
-}
+}//<<>>} std::vector<reco::TrackRef> KUCMSDisplacedVertex::ConvertTracksToRefs(const reco::TrackCollection &tracks, const edm::Handle<reco::TrackCollection> &trackHandle)
 
 bool KUCMSDisplacedVertex::IsGold(const reco::Vertex &vertex) const {
 
@@ -468,10 +468,10 @@ bool KUCMSDisplacedVertex::IsGold(const reco::Vertex &vertex) const {
   for(const auto &genVertex : genVertices_) {
     if(isGold) break;
     isGold = genVertex.isGold(vertex);
-  }
+  }//<<>>for(const auto &genVertex : genVertices_)
 
   return isGold;
-}
+}//<<>>bool KUCMSDisplacedVertex::IsGold(const reco::Vertex &vertex)
 
 bool KUCMSDisplacedVertex::IsSilver(const reco::Vertex &vertex) const {
 
@@ -479,10 +479,10 @@ bool KUCMSDisplacedVertex::IsSilver(const reco::Vertex &vertex) const {
   for(const auto &genVertex : genVertices_) {
     if(isSilver) break;
     isSilver = genVertex.isSilver(vertex);
-  }
+  }//<<>>for(const auto &genVertex : genVertices_)
 
   return isSilver;
-}
+}//<<>>bool KUCMSDisplacedVertex::IsSilver(const reco::Vertex &vertex)
 
 bool KUCMSDisplacedVertex::IsBronze(const reco::Vertex &vertex) const {
 
@@ -490,42 +490,42 @@ bool KUCMSDisplacedVertex::IsBronze(const reco::Vertex &vertex) const {
   for(const auto &genVertex : genVertices_) {
     if(isBronze) break;
     isBronze = genVertex.isBronze(vertex);
-  }
+  }//<<>>for(const auto &genVertex : genVertices_)
 
   return isBronze;
-}
+}//<<>>bool KUCMSDisplacedVertex::IsBronze(const reco::Vertex &vertex)
 
 int KUCMSDisplacedVertex::FindGenVertexIndex(const reco::Vertex &vertex) const {
 
   int index(0);
   for(const auto &genVertex : genVertices_) {
     if(genVertex.hasTracks() && (genVertex.isBronze(vertex) || genVertex.isSilver(vertex) || genVertex.isGold(vertex)))
-      return index;
+    return index;
     index++;
-  }
+  }//<<>>for(const auto &genVertex : genVertices_)
 
   return -1;
-}
+}//<<>>int KUCMSDisplacedVertex::FindGenVertexIndex(const reco::Vertex &vertex)
 
 int KUCMSDisplacedVertex::FindNearestGenVertexIndex(const reco::Vertex &vertex, double &distance) const {
   int index(0), minIndex(-1);
   distance = std::numeric_limits<double>::max();
   for(const auto &genVertex : genVertices_) {
     if(!genVertex.isGenHadronic()) continue;
-    
+
     const double tempMin(genVertex.distance3D(vertex));
     if(tempMin < distance) {
       distance = tempMin;
       minIndex = index;
-    }
+    }//<<>>if(tempMin < distance)
     index++;
-  }
+  }//<<>>for(const auto &genVertex : genVertices_)
 
   if(minIndex < 0)
-    distance = -1.;
-  
+  distance = -1.;
+
   return minIndex;
-}
+}//<<>>int KUCMSDisplacedVertex::FindNearestGenVertexIndex(const reco::Vertex &vertex, double &distance)
 
 bool KUCMSDisplacedVertex::getSCMatch(const reco::Track &track, reco::SuperCluster &sc, double &deltaR) const {
 
@@ -537,11 +537,11 @@ bool KUCMSDisplacedVertex::getSCMatch(const reco::Track &track, reco::SuperClust
       sc = pair.GetSuperCluster();
       deltaR = pair.GetDeltaR();
       break;
-    }
-  }
+    }//<<>>if(TrackHelper::SameTrack(track, pair.GetTrack()))
+  }//<<>>for(const auto &pair : trackSCPairs_)
 
   return isMatched;
-}
+}//<<>>bool KUCMSDisplacedVertex::getSCMatch(const reco::Track &track, reco::SuperCluster &sc, double &deltaR)
 
 double KUCMSDisplacedVertex::matchRatio(const TrackVertexSet &vertex, const GenVertex &genVertex, const double threshold) const {
 
@@ -559,12 +559,12 @@ double KUCMSDisplacedVertex::matchRatio(const TrackVertexSet &vertex, const GenV
     const double deltaR(pair.GetDeltaR());
 
     if(vertex.contains(ref) && ((deltaR < 0.01 && fabs(relPtDiff) < (-10*deltaR + 0.15)) ||
-                                (deltaR > 0.01 && deltaR < threshold && fabs(relPtDiff) < (-deltaR/2 + 0.055)))) {
+    (deltaR > 0.01 && deltaR < threshold && fabs(relPtDiff) < (-deltaR/2 + 0.055)))) {
       count++;
-    }
-  }
+    }//<<>>(deltaR > 0.01 && deltaR < threshold && fabs(relPtDiff) < (-deltaR/2 + 0.055))))
+  }//<<>>for(const auto &pair : chargedMatches_.at(genVertex))
   return double(count)/vertex.size();
-}
+}//<<>>double KUCMSDisplacedVertex::matchRatio(const TrackVertexSet &vertex, const GenVertex &genVertex, const double threshold)
 
 template<class T>
 bool KUCMSDisplacedVertex::FoundLeptonMatch(const T &lepton) const {
@@ -572,45 +572,45 @@ bool KUCMSDisplacedVertex::FoundLeptonMatch(const T &lepton) const {
   bool foundMatch(false);
   for(const auto &sv : generalVertices_) {
     if(sv.size() > 2)
-      continue;
+    continue;
 
     for(const auto &track : sv.tracks()) {
       const double deltaR = sqrt(DeltaR2(lepton, *track));
       if(deltaR < 0.02) {
         foundMatch = true;
         break;
-      }
-    }
+      }//<<>>if(deltaR < 0.02)
+    }//<<>>for(const auto &track : sv.tracks())
     if(foundMatch)
-      break;
-  }
+    break;
+  }//<<>>for(const auto &sv : generalVertices_)
   return foundMatch;
-}
+}//<<>>bool KUCMSDisplacedVertex::FoundLeptonMatch(const T &lepton)
 
 template<class T>
 bool KUCMSDisplacedVertex::IsPromptLepton(const T &lepton) const {
-    double deltaRCut = 0.02;
-    double relPtDiffCut = 0.01;
-    
-    if constexpr (std::is_same_v<T, reco::Electron>) {
-        deltaRCut = 0.01;
-        relPtDiffCut = 0.05;
-    } else if constexpr (std::is_same_v<T, reco::Muon>) {
-        deltaRCut = 0.001;   
-        relPtDiffCut = 0.005;
-    }
-    
-    for(const auto &track : *muonEnhancedTracksHandle_) {
-        const double deltaR = sqrt(DeltaR2(lepton, track));
-        const double trackPt(track.pt()), leptonPt(lepton.pt());
-        const double relPtDiffMin = 0.5*(trackPt-leptonPt)/(trackPt+leptonPt);
-        if(deltaR < deltaRCut && fabs(relPtDiffMin) < relPtDiffCut) {
-            return false;
-        }
-    }
-    
-    return true;
-}
+  double deltaRCut = 0.02;
+  double relPtDiffCut = 0.01;
+
+  if constexpr (std::is_same_v<T, reco::Electron>) {
+    deltaRCut = 0.01;
+    relPtDiffCut = 0.05;
+  } else if constexpr (std::is_same_v<T, reco::Muon>) {
+    deltaRCut = 0.001;
+    relPtDiffCut = 0.005;
+  }//<<>>} else if constexpr (std::is_same_v<T, reco::Muon>)
+
+  for(const auto &track : *muonEnhancedTracksHandle_) {
+    const double deltaR = sqrt(DeltaR2(lepton, track));
+    const double trackPt(track.pt()), leptonPt(lepton.pt());
+    const double relPtDiffMin = 0.5*(trackPt-leptonPt)/(trackPt+leptonPt);
+    if(deltaR < deltaRCut && fabs(relPtDiffMin) < relPtDiffCut) {
+      return false;
+    }//<<>>if(deltaR < deltaRCut && fabs(relPtDiffMin) < relPtDiffCut)
+  }//<<>>for(const auto &track : *muonEnhancedTracksHandle_)
+
+  return true;
+}//<<>>bool KUCMSDisplacedVertex::IsPromptLepton(const T &lepton)
 
 template<class T>
 std::pair<double, double> KUCMSDisplacedVertex::BestMatch(const T &lepton) const {
@@ -621,12 +621,12 @@ std::pair<double, double> KUCMSDisplacedVertex::BestMatch(const T &lepton) const
     if(deltaR < bestDeltaRMatch) {
       const double trackPt(track.pt()), leptonPt(lepton.pt());
       relPtDiffMin = 0.5*(trackPt-leptonPt)/(trackPt+leptonPt);
-      
+
       bestDeltaRMatch = deltaR;
-    }
-  }
+    }//<<>>if(deltaR < bestDeltaRMatch)
+  }//<<>>for(const auto &track : *muonEnhancedTracksHandle_)
 
   return std::make_pair(bestDeltaRMatch, relPtDiffMin);
-}
+}//<<>>std::pair<double, double> KUCMSDisplacedVertex::BestMatch(const T &lepton)
 
 #endif

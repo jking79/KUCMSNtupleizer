@@ -14,200 +14,187 @@
 //#define DEBUGECAL true
 #define DEBUGECAL false
 
-//------------------------------------------------------------------------------------------------------------
-//------------------------------------------------------------------------------------------------------------
-//  do any processing and calulations for objects and save values to output varibles 
-//------------------------------------------------------------------------------------------------------------
-//------------------------------------------------------------------------------------------------------------
-
-// void KUCMSAodSkimmer::processTemplate(){
-// 	
-// 		Clear out branch vector varibles &/or initilize other out branch vars
-//	------------------------------------------------
-// 		Do any calculations / cuts
-//  ------------------------------------------------
-//		Fill out branch varibles
-//
-//}//<<>>void KUCMSAodSkimmer::processTemplate()
+// ECAL rechit processing and output-branch registration.  Rechit-derived maps
+// are prepared before photon processing because later modules consume them.
 
 void KUCMSAodSkimmer::processRechits(){
 
-	// initilize
-    //selECALRecHit.clearBranches(); // <<<<<<<   must do ( but there are no rechit branches right now )
-	bool checkRHs = false;
-    //bool checkRHs = true;
+  // initilize
+  //selECALRecHit.clearBranches(); // <<<<<<<   must do ( but there are no rechit branches right now )
+  bool checkRHs = false;
+  //bool checkRHs = true;
 
-	// calc
-    if( DEBUGECAL ) std::cout << "Finding rechits" << std::endl;
-	//------------ rechits -------------------------
+  // calc
+  if( DEBUGECAL ) std::cout << "Finding rechits" << std::endl;
+  //------------ rechits -------------------------
 
-	rhIDtoIterMap.clear();
-	erh_corTime.clear();
-	erh_timeRes.clear();
-    auto nRecHits = ECALRecHit_ID->size();
-    if( DEBUGECAL ) std::cout << " -- Looping over " << nRecHits << " rechits" << std::endl;
-	timeCali->setMCResTag(mctrtag);
-    for( int it = 0; it < nRecHits; it++ ){
+  rhIDtoIterMap.clear();
+  erh_corTime.clear();
+  erh_timeRes.clear();
+  auto nRecHits = ECALRecHit_ID->size();
+  if( DEBUGECAL ) std::cout << " -- Looping over " << nRecHits << " rechits" << std::endl;
+  timeCali->setMCResTag(mctrtag);
+  for( int it = 0; it < nRecHits; it++ ){
 
-		auto rhid = (*ECALRecHit_ID)[it];
-		rhIDtoIterMap[rhid] = it;
-		auto idinfo = timeCali->getDetIdInfo(rhid);
-		bool isEB = ( idinfo.ecal == 0 );
-    	if( DEBUGECAL ) std::cout << " -- TimeCali DetIDInfo : " << idinfo.i2 << " " << idinfo.i1 << " " << idinfo.ecal << std::endl;
-		float rht = (*ECALRecHit_time)[it];
-        const bool gs6 = (*ECALRecHit_hasGS6)[it];
-        const bool gs1 = (*ECALRecHit_hasGS1)[it];
-		const int gainid = ( not gs6 and not gs1 ) ? 1 : ( gs6 and not gs1 ) ? 2 : ( not gs6 and gs1 ) ? 3 : 4;
-		/////if( gainid != 1 ) continue; /// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		if( tctag == "r3_p25unc" or tctag == "r3_p26unc" ){ 
-			rht = (*ECALRecHit_UnCorrTime)[it]; 
-			//std::cout << " - Used UnCC for " << tctag << std::endl;
-		}//<<>>if( tctag == "r3_p25unc" or tctag == "r3_p26unc" )
-		float rhe = (*ECALRecHit_energy)[it];
-		float rha = (*ECALRecHit_ampres)[it]; //( this is the ADC amplitude in units of the pedistal rms for this rechit )
-		float corrht = timeCali->getCorrectedTime( rht, rha, rhid, Evt_run, tctag, mctype, gainid );
-        //this is the full variance ( = (N/A)^2 + (S^2)/A + 2C^2 )
-		float rhtres = timeCali->getTimeResoltuion( rha, rhid, Evt_run, tctag, mctype, gainid );
-		//if( rhid < 840000000 ){
-		//	std::cout << " TC check : inputs : rhid " << rhid << " run " << Evt_run << " tag "  << tctag << " type " << mctype << std::endl;
-		//	std::cout << " TC check : time : " << rht << " -> " << corrht << " res : " << rha << " -> " << rhtres << std::endl;
-		//}//<<>>if( rhid < 840000000 )
-		erh_corTime.push_back( corrht );
-        erh_timeRes.push_back( rhtres );
+    auto rhid = (*ECALRecHit_ID)[it];
+    rhIDtoIterMap[rhid] = it;
+    auto idinfo = timeCali->getDetIdInfo(rhid);
+    bool isEB = ( idinfo.ecal == 0 );
+    if( DEBUGECAL ) std::cout << " -- TimeCali DetIDInfo : " << idinfo.i2 << " " << idinfo.i1 << " " << idinfo.ecal << std::endl;
+    float rht = (*ECALRecHit_time)[it];
+    const bool gs6 = (*ECALRecHit_hasGS6)[it];
+    const bool gs1 = (*ECALRecHit_hasGS1)[it];
+    const int gainid = ( not gs6 and not gs1 ) ? 1 : ( gs6 and not gs1 ) ? 2 : ( not gs6 and gs1 ) ? 3 : 4;
+    /////if( gainid != 1 ) continue; /// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    if( tctag == "r3_p25unc" or tctag == "r3_p26unc" ){
+      rht = (*ECALRecHit_UnCorrTime)[it];
+      //std::cout << " - Used UnCC for " << tctag << std::endl;
+    }//<<>>if( tctag == "r3_p25unc" or tctag == "r3_p26unc" )
+    float rhe = (*ECALRecHit_energy)[it];
+    float rha = (*ECALRecHit_ampres)[it]; //( this is the ADC amplitude in units of the pedistal rms for this rechit )
+    float corrht = timeCali->getCorrectedTime( rht, rha, rhid, Evt_run, tctag, mctype, gainid );
+    //this is the full variance ( = (N/A)^2 + (S^2)/A + 2C^2 )
+    float rhtres = timeCali->getTimeResoltuion( rha, rhid, Evt_run, tctag, mctype, gainid );
+    //if( rhid < 840000000 ){
+    //	std::cout << " TC check : inputs : rhid " << rhid << " run " << Evt_run << " tag "  << tctag << " type " << mctype << std::endl;
+    //	std::cout << " TC check : time : " << rht << " -> " << corrht << " res : " << rha << " -> " << rhtres << std::endl;
+    //}//<<>>if( rhid < 840000000 )
+    erh_corTime.push_back( corrht );
+    erh_timeRes.push_back( rhtres );
 
-        if( true ){
-		//if( Evt_run > 35900 and Evt_run < 360600 ){
+    if( true ){
+      //if( Evt_run > 35900 and Evt_run < 360600 ){
 
-		if( rhe > 5 ){
+      if( rhe > 5 ){
         hist1d[0]->Fill( rhe, 1 );
         hist1d[1]->Fill( rhtres, 1 );
         hist1d[2]->Fill( corrht, 1 );
         hist1d[5]->Fill( rht, 1 );
-		if( gainid == 2 ){ 
-			const float hgncht = timeCali->getCorrectedTime( rht, rha, rhid, Evt_run, tctag, mctype, 1 );
-			if( isEB ) hist2d[10]->Fill(rhe,corrht);
-			else hist2d[13]->Fill(rhe,corrht);
-        	hist1d[70]->Fill( rhe, 1 );
-        	hist1d[71]->Fill( rhtres, 1 );
-        	hist1d[72]->Fill( corrht, 1 );
-        	hist1d[75]->Fill( hgncht, 1 );
-		}//<<>>if( gainid == 2 )
-        if( gainid == 3 ){ 
-			const float hgncht = timeCali->getCorrectedTime( rht, rha, rhid, Evt_run, tctag, mctype, 1 );
-			if( isEB ) hist2d[11]->Fill(rhe,corrht);
-            else hist2d[14]->Fill(rhe,corrht);
-            hist1d[80]->Fill( rhe, 1 );
-            hist1d[81]->Fill( rhtres, 1 );
-            hist1d[82]->Fill( corrht, 1 );
-            hist1d[85]->Fill( hgncht, 1 );
+        if( gainid == 2 ){
+          const float hgncht = timeCali->getCorrectedTime( rht, rha, rhid, Evt_run, tctag, mctype, 1 );
+          if( isEB ) hist2d[10]->Fill(rhe,corrht);
+          else hist2d[13]->Fill(rhe,corrht);
+          hist1d[70]->Fill( rhe, 1 );
+          hist1d[71]->Fill( rhtres, 1 );
+          hist1d[72]->Fill( corrht, 1 );
+          hist1d[75]->Fill( hgncht, 1 );
+        }//<<>>if( gainid == 2 )
+        if( gainid == 3 ){
+          const float hgncht = timeCali->getCorrectedTime( rht, rha, rhid, Evt_run, tctag, mctype, 1 );
+          if( isEB ) hist2d[11]->Fill(rhe,corrht);
+          else hist2d[14]->Fill(rhe,corrht);
+          hist1d[80]->Fill( rhe, 1 );
+          hist1d[81]->Fill( rhtres, 1 );
+          hist1d[82]->Fill( corrht, 1 );
+          hist1d[85]->Fill( hgncht, 1 );
         }//<<>>if( gainid == 3 )
         if( gainid == 1 ){
-			if( isEB ) hist2d[12]->Fill(rhe,corrht);
-            else hist2d[15]->Fill(rhe,corrht);
-			hist1d[40]->Fill( rhe, 1 );
-            hist1d[41]->Fill( rhtres, 1 );
-            hist1d[42]->Fill( corrht, 1 );
-            hist1d[45]->Fill( rht, 1 );
-		//}//<<>>if( (*rhSubdet)[it] == 0 )
-        if( rhid < 840000000 ){
+          if( isEB ) hist2d[12]->Fill(rhe,corrht);
+          else hist2d[15]->Fill(rhe,corrht);
+          hist1d[40]->Fill( rhe, 1 );
+          hist1d[41]->Fill( rhtres, 1 );
+          hist1d[42]->Fill( corrht, 1 );
+          hist1d[45]->Fill( rht, 1 );
+          //}//<<>>if( (*rhSubdet)[it] == 0 )
+          if( rhid < 840000000 ){
             hist1d[50]->Fill( rhe, 1 );
             hist1d[51]->Fill( rhtres, 1 );
             hist1d[52]->Fill( corrht, 1 );
             hist1d[55]->Fill( rht, 1 );
-        }//<<>>if( (*rhSubdet)[it] == 0 )
-        if( rhid > 840000000 ){
+          }//<<>>if( (*rhSubdet)[it] == 0 )
+          if( rhid > 840000000 ){
             hist1d[60]->Fill( rhe, 1 );
             hist1d[61]->Fill( rhtres, 1 );
             hist1d[62]->Fill( corrht, 1 );
             hist1d[65]->Fill( rht, 1 );
-        }//<<>>if( (*rhSubdet)[it] == 0 )
-		}//<<>>if( gainid == 1 )
-		}//<<>>if( rhe > 1.f )
+          }//<<>>if( (*rhSubdet)[it] == 0 )
+        }//<<>>if( gainid == 1 )
+      }//<<>>if( rhe > 1.f )
 
-		}//<<>>if( Evt_run > 359000 and Evt_run < 359688 )
+    }//<<>>if( Evt_run > 359000 and Evt_run < 359688 )
 
-		/*  ECAL Rechit information --  not saved currenty
- 
-		float rhe = (*ECALRecHit_energy)[it];
-		float rhx = (*ECALRecHit_rhx)[it];
-        float rhy = (*ECALRecHit_rhy)[it];
-        float rhz = (*ECALRecHit_rhz)[it];
-		float rht = (*ECALRecHit_time)[it];
-		float rheta = (*ECALRecHit_eta)[it];
-        float rhphi = (*ECALRecHit_phi)[it];
-		uInt rhid = (*ECALRecHit_ID)[it];
+    /*  ECAL Rechit information --  not saved currenty
 
-		*/ // ECAL Rechit information --  not saved currenty
+    float rhe = (*ECALRecHit_energy)[it];
+    float rhx = (*ECALRecHit_rhx)[it];
+    float rhy = (*ECALRecHit_rhy)[it];
+    float rhz = (*ECALRecHit_rhz)[it];
+    float rht = (*ECALRecHit_time)[it];
+    float rheta = (*ECALRecHit_eta)[it];
+    float rhphi = (*ECALRecHit_phi)[it];
+    uInt rhid = (*ECALRecHit_ID)[it];
 
-	}//<<>>for( int it = 0; it < nRecHits; it++ )
-	if( DEBUGECAL ) std::cout << "Finished w/ rechit loop" << std::endl;
-	//  ---  End of RecHit Loop ----------------------------------------------------------------------------------------
+    */ // ECAL Rechit information --  not saved currenty
 
-    int nMissingRechits = 0;
-	int nRechitsPerSC = 0;
-	auto nSCs = SuperCluster_nSuperCluster;
-	for( int it = 0; it < nSCs; it++ ){
+  }//<<>>for( int it = 0; it < nRecHits; it++ )
+  if( DEBUGECAL ) std::cout << "Finished w/ rechit loop" << std::endl;
+  //  ---  End of RecHit Loop ----------------------------------------------------------------------------------------
 
-		int nMissingRhInSC = 0;
-		bool oot = (*SuperCluster_isOot)[it];
-		bool exc = (*SuperCluster_excluded)[it];
-		bool orig = (*SuperCluster_original)[it];
-		float sce = (*SuperCluster_energyRaw)[it];
-		float sceta = (*SuperCluster_eta)[it];
-		hist1d[6]->Fill( (*SuperCluster_energyRaw)[it], 1 );
-    	//hist1d[3] = new TH1D("sctype","SC !Orig, Orig, OOT, Excl",4,0,4);
-    	//hist1d[4] = new TH1D("scorigtype","Orig+OOT, Orig+!OOT, Orig+Exc, !Orig+OOT, !Orig+Exc, !Orig+!OOT",6,0,6);
-		if( orig ) hist1d[3]->Fill(1); else hist1d[3]->Fill(0);
-        if( oot ) hist1d[3]->Fill(2);
-        if( exc ) hist1d[3]->Fill(3);
-		if( orig && oot ) hist1d[4]->Fill(0);
-        if( orig && not oot ) hist1d[4]->Fill(1);
-        if( orig && exc ) hist1d[4]->Fill(2);
-        if( not orig && oot ) hist1d[4]->Fill(3);
-        if( not orig && not oot ) hist1d[4]->Fill(5);
-        if( not orig && exc ) hist1d[4]->Fill(4);
-		int xfill = orig ? 1 : 0;
-		int yfill = oot ? 1 : exc ? 2 : 0;
-		hist2d[1]->Fill(xfill,yfill);
+  int nMissingRechits = 0;
+  int nRechitsPerSC = 0;
+  auto nSCs = SuperCluster_nSuperCluster;
+  for( int it = 0; it < nSCs; it++ ){
 
-        std::vector<unsigned int> scrhids = (*SuperCluster_rhIds)[it];
-        int nSCRhids = scrhids.size();
-		if( checkRHs ){
-		  bool found = false;
-		  nRechitsPerSC += nSCRhids;
-		  std::cout << " -- Checking : " << it << " of " << nSCs << " SCs with " << nSCRhids << " rechits. " << std::endl;
-		  for( int sciter = 0; sciter < nSCRhids; sciter++  ){ 
-			auto scrhid = scrhids[sciter];
-			for( int iter = 0; iter < nRecHits; iter++ ){
-				auto rhid = (*ECALRecHit_ID)[iter];
-				//std::cout << " -- Checking : " << rhid << " == " << scrhid << std::endl;
-				if( scrhid == rhid ){ found = true; break; } 
-			}//<<>>for( int iter = 0; iter < nRecHits; it++ )
-			if( not found ){ nMissingRechits++; nMissingRhInSC++; }// std::cout << " ---- !!!!!!  Rechit in SC and not in Rechits !!!!!!! " << std::endl;
-		  }//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
-		}//<<>>if( checkRHs )		
+    int nMissingRhInSC = 0;
+    bool oot = (*SuperCluster_isOot)[it];
+    bool exc = (*SuperCluster_excluded)[it];
+    bool orig = (*SuperCluster_original)[it];
+    float sce = (*SuperCluster_energyRaw)[it];
+    float sceta = (*SuperCluster_eta)[it];
+    hist1d[6]->Fill( (*SuperCluster_energyRaw)[it], 1 );
+    //hist1d[3] = new TH1D("sctype","SC !Orig, Orig, OOT, Excl",4,0,4);
+    //hist1d[4] = new TH1D("scorigtype","Orig+OOT, Orig+!OOT, Orig+Exc, !Orig+OOT, !Orig+Exc, !Orig+!OOT",6,0,6);
+    if( orig ) hist1d[3]->Fill(1); else hist1d[3]->Fill(0);
+    if( oot ) hist1d[3]->Fill(2);
+    if( exc ) hist1d[3]->Fill(3);
+    if( orig && oot ) hist1d[4]->Fill(0);
+    if( orig && not oot ) hist1d[4]->Fill(1);
+    if( orig && exc ) hist1d[4]->Fill(2);
+    if( not orig && oot ) hist1d[4]->Fill(3);
+    if( not orig && not oot ) hist1d[4]->Fill(5);
+    if( not orig && exc ) hist1d[4]->Fill(4);
+    int xfill = orig ? 1 : 0;
+    int yfill = oot ? 1 : exc ? 2 : 0;
+    hist2d[1]->Fill(xfill,yfill);
 
-		if( nMissingRhInSC > 0 ){
-			std::cout << " -- !! Missing " << nMissingRhInSC << " of " << nSCRhids;
-		    std::cout << " rechits in SC " << it << " w/ OOT" << oot << " && ORG " << orig << " rawE " << sce  << std::endl;
-		}//<<>>if( nMissingRhInSC > 0 )
-		hist1d[8]->Fill(nSCRhids);
-        hist1d[9]->Fill(sceta);
+    std::vector<unsigned int> scrhids = (*SuperCluster_rhIds)[it];
+    int nSCRhids = scrhids.size();
+    if( checkRHs ){
+      bool found = false;
+      nRechitsPerSC += nSCRhids;
+      std::cout << " -- Checking : " << it << " of " << nSCs << " SCs with " << nSCRhids << " rechits. " << std::endl;
+      for( int sciter = 0; sciter < nSCRhids; sciter++  ){
+        auto scrhid = scrhids[sciter];
+        for( int iter = 0; iter < nRecHits; iter++ ){
+          auto rhid = (*ECALRecHit_ID)[iter];
+          //std::cout << " -- Checking : " << rhid << " == " << scrhid << std::endl;
+          if( scrhid == rhid ){ found = true; break; }
+        }//<<>>for( int iter = 0; iter < nRecHits; it++ )
+        if( not found ){ nMissingRechits++; nMissingRhInSC++; }// std::cout << " ---- !!!!!!  Rechit in SC and not in Rechits !!!!!!! " << std::endl;
+      }//<<>>for( auto scrhid : (*SuperCluster_rhIds)[it] )
+    }//<<>>if( checkRHs )
 
-	}//<<>>for( int it = 0; it < nSCs; it++ )
-	if( checkRHs ){ 
-		float rhpsc = ( nSCs > 0 ) ? nRechitsPerSC/nSCs : 0 ;
-		std::cout << " Ave# rechits/SC : " << rhpsc << std::endl; 
-	}//<<>>if( checkRHs )
-	if( nMissingRechits > 0 ) std::cout << " !! ------ !! Missing " << nMissingRechits << " rechits in " << nSCs << " SCs " << std::endl;
+    if( nMissingRhInSC > 0 ){
+      std::cout << " -- !! Missing " << nMissingRhInSC << " of " << nSCRhids;
+      std::cout << " rechits in SC " << it << " w/ OOT" << oot << " && ORG " << orig << " rawE " << sce  << std::endl;
+    }//<<>>if( nMissingRhInSC > 0 )
+    hist1d[8]->Fill(nSCRhids);
+    hist1d[9]->Fill(sceta);
 
-	// fill
-	if( doSVs ){	
-    	auto nETs = Track_pt->size();
-    	for( int it = 0; it < nETs; it++ ){ hist1d[7]->Fill( (*Track_pt)[it], 1 ); }
-	}//<<>>if( doSVs )
+  }//<<>>for( int it = 0; it < nSCs; it++ )
+  if( checkRHs ){
+    float rhpsc = ( nSCs > 0 ) ? nRechitsPerSC/nSCs : 0 ;
+    std::cout << " Ave# rechits/SC : " << rhpsc << std::endl;
+  }//<<>>if( checkRHs )
+  if( nMissingRechits > 0 ) std::cout << " !! ------ !! Missing " << nMissingRechits << " rechits in " << nSCs << " SCs " << std::endl;
 
-    if( DEBUGECAL ) std::cout << "Finished w/ SC - Track loops" << std::endl;
+  // fill
+  if( doSVs ){
+    auto nETs = Track_pt->size();
+    for( int it = 0; it < nETs; it++ ){ hist1d[7]->Fill( (*Track_pt)[it], 1 ); }
+  }//<<>>if( doSVs )
+
+  if( DEBUGECAL ) std::cout << "Finished w/ SC - Track loops" << std::endl;
 
 }//<<>>void KUCMSAodSkimmer::processRechits()
 
@@ -217,7 +204,7 @@ void KUCMSAodSkimmer::processRechits(){
 
 void KUCMSAodSkimmer::setEcalBranches( TTree* fOutTree ){
 
-	std::cout << " - Making Branches for ECAL." << std::endl;
-	// nada as of yet
+  std::cout << " - Making Branches for ECAL." << std::endl;
+  // nada as of yet
 
-}//<<>>void KUCMSAodSkimmer::setBranches( TTree& fOutTree )
+}//<<>>void KUCMSAodSkimmer::setEcalBranches( TTree* fOutTree )

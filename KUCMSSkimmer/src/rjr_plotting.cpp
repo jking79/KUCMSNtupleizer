@@ -73,7 +73,7 @@ MinMassesSqInvJigsaw  InvSplit("InvSplit", "INV -> I_{a} + I_{b}", 2);
 
 CombinatoricGroup     COMB_L("COMB_L","Lepton Jigsaws");
 MinMassesSqCombJigsaw CombSplitSq_L("CombSplitSq_L",
-                                    "Minimize M_{Sa}^{2} + M_{Sb}^{2}", 2, 2);
+"Minimize M_{Sa}^{2} + M_{Sb}^{2}", 2, 2);
 
 // ------------------------------------------------------------
 // Functions
@@ -128,7 +128,7 @@ void InitRJRtree() {
 
   // Initialize analysis
   LAB.InitializeAnalysis();
-}
+}//<<>>void InitRJRtree()
 
 void DrawRJRtree(bool treeplot_INV = true) {
   TreePlot tree_plot("TreePlot","TreePlot");
@@ -144,7 +144,7 @@ void DrawRJRtree(bool treeplot_INV = true) {
 
   tree_plot.WriteOutput("trees.root");
   std::cout << "Writing trees to trees.root" << std::endl;
-}
+}//<<>>void DrawRJRtree(bool treeplot_INV = true)
 
 // ------------------------------------------------------------
 // MAIN
@@ -165,5 +165,5 @@ int main(int argc, char** argv) {
   // End program immediately after making tree plots
   gApplication->Terminate(0);
   return 0; // (won't be reached, but keeps compilers happy)
-}
+}//<<>>int main(int argc, char** argv)
 

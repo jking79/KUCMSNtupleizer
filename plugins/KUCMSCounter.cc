@@ -4,11 +4,11 @@
 // Class:      EventCounter
 //
 /**\class EventCounter EventCounter.cc
- *
- *  A simple EDAnalyzer that counts how many events are processed by CMSSW.
- *  This count includes all events seen by the process, regardless of filtering
- *  or output selection.
- */
+*
+*  A simple EDAnalyzer that counts how many events are processed by CMSSW.
+*  This count includes all events seen by the process, regardless of filtering
+*  or output selection.
+*/
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
@@ -32,8 +32,6 @@
 #include <map>
 #include <string>
 #include <cmath>
-//#include "KUCMSBranchManager.hh"
-
 #include <atomic>
 #include <iostream>
 
@@ -41,51 +39,36 @@ typedef unsigned int uInt;
 
 class KUCMSCounter : public edm::one::EDAnalyzer<> {
 
-public:
+  public:
 
   explicit KUCMSCounter(const edm::ParameterSet&) {}
   ~KUCMSCounter() override {}
 
-  void beginJob(){ 
+  void beginJob(){
 
-	edm::Service<TFileService> fs;
-	ecTree = fs->make<TTree>("eventCountTree","KUCMSNtuple");	
-	//ecBranches.makeBranch("nTotEvts","nTotEvts",UINT);
-	//ecBranches.attachBranches(ecTree);
-	
-	eventCountBranch = ecTree->Branch( "nTotEvts", &eventCount_ );
-	eventCount_ = 0;
+    edm::Service<TFileService> fs;
+    ecTree = fs->make<TTree>("eventCountTree","KUCMSNtuple");
+    eventCountBranch = ecTree->Branch( "nTotEvts", &eventCount_ );
+    eventCount_ = 0;
 
-  }
+  }//<<>>void beginJob()
 
   void analyze(const edm::Event&, const edm::EventSetup&) override { ++eventCount_; }
 
   void endJob() override {
 
-    //edm::LogVerbatim("EventCounter") << "Total events processed: " << eventCount_;
-    //std::cout << "\n============================\n"
-    //          << "Total events processed: " << eventCount_ << "\n"
-    //          << "============================\n";
+    eventCountBranch->Fill();
+    ecTree->Fill();
 
-    //ecBranches.clearBranches();
-	//ecBranches.fillBranch("nTotEvts",eventCount_);
-	eventCountBranch->Fill();
-	ecTree->Fill();
+  }//<<>>void endJob()
 
-  }
+  private:
 
-private:
-
-  //static std::atomic<unsigned long long> eventCount_;
   uInt eventCount_;
   TTree *ecTree;
   TBranch *eventCountBranch;
-  //KUCMSBranchManager ecBranches;
 
 };
-
-//// Definition of static member
-////std::atomic<unsigned long long> KUCMSEventCounter::eventCount_{0};
 
 DEFINE_FWK_MODULE(KUCMSCounter);
 

@@ -7,10 +7,12 @@
 //
 /**\class DisplacedElectronProducer DisplacedElectronProducer.cc KUCMSNtupleizer/KUCMSNtupleizer/plugins/DisplacedElectronProducer.cc
 
- Description: [one line class summary]
+Description: Match ECAL/general tracks to in-time and out-of-time superclusters
+and produce displaced-track, displaced-supercluster, and reco-electron outputs.
 
- Implementation:
-     [Notes on implementation]
+Implementation: Track-to-supercluster matching is performed with the shared
+matching utilities; matched tracks are then converted into reco::Electron
+objects with the corresponding supercluster references.
 */
 //
 // Original Author:  Andres Abreu
@@ -65,19 +67,19 @@
 
 class DisplacedElectronProducer : public edm::stream::EDProducer<> {
 
-public:
+  public:
   explicit DisplacedElectronProducer(const edm::ParameterSet&);
   virtual ~DisplacedElectronProducer() = default;
 
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
-private:
-  
+  private:
+
   void produce(edm::Event&, const edm::EventSetup&) override;
 
   reco::ElectronCollection MakeElectrons(const MatchedTrackSCPairs<reco::Track> &candidates) const;
 
-  // ----------member data ---------------------------  
+  // ----------member data ---------------------------
   edm::EDGetTokenT<reco::TrackCollection> ecalTrackToken_;
   edm::EDGetTokenT<reco::TrackCollection> generalTrackToken_;
   edm::EDGetTokenT<reco::GsfTrackCollection> gsfElectronTrackToken_;
@@ -100,14 +102,14 @@ private:
 };
 
 DisplacedElectronProducer::DisplacedElectronProducer(const edm::ParameterSet& iConfig) :
-  ecalTrackToken_(consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("ecalTracksSrc")) ),
-  generalTrackToken_(consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("generalTracksSrc")) ),
-  gsfElectronTrackToken_(consumes<reco::GsfTrackCollection>(iConfig.getParameter<edm::InputTag>("gsfElectronTracksSrc")) ),
-  superClusterToken_(consumes<reco::SuperClusterCollection>(iConfig.getParameter<edm::InputTag>("superClusters")) ),
-  ootSuperClusterToken_(consumes<reco::SuperClusterCollection>(iConfig.getParameter<edm::InputTag>("ootSuperClusters")) ),
+ecalTrackToken_(consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("ecalTracksSrc")) ),
+generalTrackToken_(consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("generalTracksSrc")) ),
+gsfElectronTrackToken_(consumes<reco::GsfTrackCollection>(iConfig.getParameter<edm::InputTag>("gsfElectronTracksSrc")) ),
+superClusterToken_(consumes<reco::SuperClusterCollection>(iConfig.getParameter<edm::InputTag>("superClusters")) ),
+ootSuperClusterToken_(consumes<reco::SuperClusterCollection>(iConfig.getParameter<edm::InputTag>("ootSuperClusters")) ),
 //genParticleToken_(consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("genParticles")) ),
-  caloGeometryToken_(esConsumes()),
-  magneticFieldToken_(esConsumes<MagneticField, IdealMagneticFieldRecord>()) 
+caloGeometryToken_(esConsumes()),
+magneticFieldToken_(esConsumes<MagneticField, IdealMagneticFieldRecord>())
 {
 
   // TrackAssociator parameters
@@ -143,24 +145,24 @@ void DisplacedElectronProducer::produce(edm::Event& iEvent, const edm::EventSetu
   std::unique_ptr<reco::TrackCollection> displacedTracks = std::make_unique<reco::TrackCollection>();
   std::unique_ptr<reco::SuperClusterCollection> displacedElectronSCs = std::make_unique<reco::SuperClusterCollection>();
   std::unique_ptr<reco::ElectronCollection> displacedElectrons = std::make_unique<reco::ElectronCollection>();
-  //std::unique_ptr<reco::ElectronCollection> signalDisplacedElectrons = std::make_unique<reco::ElectronCollection>();  
+  //std::unique_ptr<reco::ElectronCollection> signalDisplacedElectrons = std::make_unique<reco::ElectronCollection>();
 
   // Remove overlap between superClusters and out-of-time superClusters
   reco::SuperClusterCollection superClusters(*superClusterHandle_);
   superClusters.insert(superClusters.end(), ootSuperClusterHandle_->begin(), ootSuperClusterHandle_->end());
- 
- // Match ECAL tracks to super clusters
+
+  // Match ECAL tracks to super clusters
   MatchedTrackSCPairs<reco::Track> matchedTracksToSCs;
   if(ecalTracksHandle_->size() > 0) {
     MatchTracksToSC<reco::Track> assigner(iEvent, iSetup, magfield, ecalGeometry, trackAssocParameters_, *ecalTracksHandle_, superClusters);
     matchedTracksToSCs = assigner.GetMatchedTrackSCPairs();
-  }
+  }//<<>>if(ecalTracksHandle_->size() > 0)
 
   // Fill the output containers with their appropriate objects
   for(const auto &pair : matchedTracksToSCs) {
     displacedTracks->emplace_back(pair.GetTrack());
     displacedElectronSCs->emplace_back(pair.GetSuperCluster());
-  }
+  }//<<>>for(const auto &pair : matchedTracksToSCs)
 
   // Construct reco::Electron collection from matched pairs
   reco::ElectronCollection electrons(MakeElectrons(matchedTracksToSCs));
@@ -170,12 +172,12 @@ void DisplacedElectronProducer::produce(edm::Event& iEvent, const edm::EventSetu
   //reco::ElectronCollection signalElectrons = GetSignalElectrons(electrons, *genParticleHandle_);
   //signalDisplacedElectrons->insert(signalDisplacedElectrons->end(), signalElectrons.begin(), signalElectrons.end());
 
-  iEvent.put(std::move(displacedTracks), "displacedCandidateTracks"); 
+  iEvent.put(std::move(displacedTracks), "displacedCandidateTracks");
   iEvent.put(std::move(displacedElectronSCs), "displacedCandidateSCs");
-  iEvent.put(std::move(displacedElectrons), "displacedElectrons");  
+  iEvent.put(std::move(displacedElectrons), "displacedElectrons");
   //iEvent.put(std::move(signalDisplacedElectrons), "signalDisplacedElectrons");
 
-}// Producer end
+}//<<>>void DisplacedElectronProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void DisplacedElectronProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
@@ -189,7 +191,7 @@ void DisplacedElectronProducer::fillDescriptions(edm::ConfigurationDescriptions&
   desc.add<edm::ESInputTag>("tkAssocParamBlock", edm::ESInputTag("", "TransientTrackBuilder"));
   */
   descriptions.addDefault(desc);
-}
+}//<<>>void DisplacedElectronProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
 
 reco::ElectronCollection DisplacedElectronProducer::MakeElectrons(const MatchedTrackSCPairs<reco::Track> &candidates) const {
 
@@ -204,15 +206,15 @@ reco::ElectronCollection DisplacedElectronProducer::MakeElectrons(const MatchedT
     reco::Electron matchedElectron(track.charge(), electron4Vec, math::XYZPoint(track.vx(), track.vy(), track.vz()));
 
     reco::SuperClusterRef scRef = (pair.GetSCIndex() < nSCs) ? reco::SuperClusterRef(superClusterHandle_, pair.GetSCIndex()) :
-                                                               reco::SuperClusterRef(ootSuperClusterHandle_, pair.GetSCIndex() - nSCs);    
+    reco::SuperClusterRef(ootSuperClusterHandle_, pair.GetSCIndex() - nSCs);
     matchedElectron.setSuperCluster(scRef);
     matchedElectron.setTrack(reco::TrackRef(ecalTracksHandle_, pair.GetTrackIndex()));
 
     electrons.push_back(matchedElectron);
-  }
+  }//<<>>for(const auto &pair : candidates)
 
   return electrons;
-}
+}//<<>>reco::ElectronCollection DisplacedElectronProducer::MakeElectrons(const MatchedTrackSCPairs<reco::Track> &candidates)
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(DisplacedElectronProducer);

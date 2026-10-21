@@ -14,21 +14,7 @@
 //#define DEBUG true
 #define DEBUG false
 
-//------------------------------------------------------------------------------------------------------------
-//------------------------------------------------------------------------------------------------------------
-//  do any processing and calulations for objects and save values to output varibles 
-//------------------------------------------------------------------------------------------------------------
-//------------------------------------------------------------------------------------------------------------
-
-// void KUCMSAodSkimmer::processTemplate(){
-// 	
-// 		Clear out branch vector varibles &/or initilize other out branch vars
-//	------------------------------------------------
-// 		Do any calculations / cuts
-//  ------------------------------------------------
-//		Fill out branch varibles
-//
-//}//<<>>void KUCMSAodSkimmer::processTemplate()
+// Track-derived branch filling for the SV-enabled workflow.
 
 void KUCMSAodSkimmer::processTracks(){
 
@@ -48,5 +34,5 @@ void KUCMSAodSkimmer::setTrackBranches( TTree* fOutTree ){
 
   selTracks.attachBranches( fOutTree );
 
-}//<<>>void KUCMSAodSkimmer::setBranches( TTree& fOutTree )
+}//<<>>void KUCMSAodSkimmer::setTrackBranches( TTree* fOutTree )
 

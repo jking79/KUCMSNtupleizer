@@ -1,7 +1,7 @@
 // -*- C++ -*-
 //
 //
-// Author:  Jack W King III 
+// Author:  Jack W King III
 // Created:  Wed, 18 Sept 2024 19:19:35 GMT
 //
 //
@@ -33,64 +33,68 @@
 #ifndef KUCMS_EcalDetIDFunctions
 #define KUCMS_EcalDetIDFunctions
 
+// Detector-ID helpers convert between ECAL crystal coordinates, raw detector
+// IDs, and trigger-tower IDs.  SetupDetIDs* loads the lookup tables used by
+// the calibration and map-building code.
+
 struct kucms_DetIDStruct {
 
-	enum ECAL {EB, EM, EP, NONE};
+  enum ECAL {EB, EM, EP, NONE};
 
-    kucms_DetIDStruct()
-        : i1(0), i2(0), TT(0), ecal(NONE), phi(0.f), eta(0.f), sect(0), mod(0) {}
-    kucms_DetIDStruct( const int ni1, const int ni2, const int nTT, const int & necal, const float nphi, const float neta, const int nSC, const int nMd ) 
-		: i1(ni1), i2(ni2), TT(nTT), ecal(necal), phi(nphi), eta(neta), sect(nSC), mod(nMd) {}
+  kucms_DetIDStruct()
+  : i1(0), i2(0), TT(0), ecal(NONE), phi(0.f), eta(0.f), sect(0), mod(0) {}
+  kucms_DetIDStruct( const int ni1, const int ni2, const int nTT, const int & necal, const float nphi, const float neta, const int nSC, const int nMd )
+  : i1(ni1), i2(ni2), TT(nTT), ecal(necal), phi(nphi), eta(neta), sect(nSC), mod(nMd) {}
 
-    int i1; // EB: iphi, EE: ix
-    int i2; // EB: ieta, EE: iy
-    int TT; // trigger tower
-    int ecal; // EB, EM, EP
-	float phi; // xtal phi
-	float eta; // xtal eta
-    int sect; // trigger tower
-	int mod; // module?
+  int i1; // EB: iphi, EE: ix
+  int i2; // EB: ieta, EE: iy
+  int TT; // trigger tower
+  int ecal; // EB, EM, EP
+  float phi; // xtal phi
+  float eta; // xtal eta
+  int sect; // trigger tower
+  int mod; // module?
 
 };//<<>>struct DetIDStruct
 
 /*
 inline void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap ){
 
-	const std::string inDir("/uscms/home/jaking/nobackup/el8/ecaltiming/CMSSW_14_0_11/src/GammaResTool/GammaResTool/macros/ecal_config/");
-    const std::string detIDConfigEB("fullinfo_v2_detids_EB.txt");
-    std::ifstream infile( inDir+detIDConfigEB, std::ios::in);
-    unsigned int cmsswId, dbID;
-    int hashedId, iphi, ieta, absieta, FED, SM, TT25, iTT, strip5, Xtal, phiSM, etaSM;
-	float phi, eta;
-    std::string pos;
+const std::string inDir("/uscms/home/jaking/nobackup/el8/ecaltiming/CMSSW_14_0_11/src/GammaResTool/GammaResTool/macros/ecal_config/");
+const std::string detIDConfigEB("fullinfo_v2_detids_EB.txt");
+std::ifstream infile( inDir+detIDConfigEB, std::ios::in);
+unsigned int cmsswId, dbID;
+int hashedId, iphi, ieta, absieta, FED, SM, TT25, iTT, strip5, Xtal, phiSM, etaSM;
+float phi, eta;
+std::string pos;
 
-    while( infile >> cmsswId >> dbID >> hashedId >> iphi >> ieta >> absieta >> pos 
-				>> FED >> SM >> TT25 >> iTT >> strip5 >> Xtal >> phiSM >> etaSM >> phi >> eta ){ 
+while( infile >> cmsswId >> dbID >> hashedId >> iphi >> ieta >> absieta >> pos
+>> FED >> SM >> TT25 >> iTT >> strip5 >> Xtal >> phiSM >> etaSM >> phi >> eta ){
 
-		DetIDMap[cmsswId] = {iphi,ieta,TT25,0,phi,eta}; 
+DetIDMap[cmsswId] = {iphi,ieta,TT25,0,phi,eta};
 
-	}//<<>>while (infile >>
+}//<<>>while (infile >>
 
 }//<<>>void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap )
 
 inline void SetupDetIDsEE( std::map<UInt_t,DetIDStruct> &DetIDMap ){
 
-    const std::string inDir("/uscms/home/jaking/nobackup/el8/ecaltiming/CMSSW_14_0_11/src/GammaResTool/GammaResTool/macros/ecal_config/");
-    const std::string detIDConfigEE("fullinfo_v2_detids_EE.txt");
-    std::ifstream infile( inDir+detIDConfigEE, std::ios::in);
-    unsigned int cmsswId, dbID;
-    int hashedId, side, ix, iy, SC, iSC, Fed, TTCCU, strip, Xtal, quadrant;
-	float phi, eta;
-    std::string EE;
+const std::string inDir("/uscms/home/jaking/nobackup/el8/ecaltiming/CMSSW_14_0_11/src/GammaResTool/GammaResTool/macros/ecal_config/");
+const std::string detIDConfigEE("fullinfo_v2_detids_EE.txt");
+std::ifstream infile( inDir+detIDConfigEE, std::ios::in);
+unsigned int cmsswId, dbID;
+int hashedId, side, ix, iy, SC, iSC, Fed, TTCCU, strip, Xtal, quadrant;
+float phi, eta;
+std::string EE;
 
-    while (infile >> cmsswId >> dbID >> hashedId >> side >> ix >> iy >> SC 
-				>> iSC >> Fed >> EE >> TTCCU >> strip >> Xtal >> quadrant >> phi >> eta){
+while (infile >> cmsswId >> dbID >> hashedId >> side >> ix >> iy >> SC
+>> iSC >> Fed >> EE >> TTCCU >> strip >> Xtal >> quadrant >> phi >> eta){
 
-        int ec = 1;
-        if( side > 0 ) ec = 2;
-        DetIDMap[cmsswId] = {ix,iy,TTCCU,ec,phi,eta};
+int ec = 1;
+if( side > 0 ) ec = 2;
+DetIDMap[cmsswId] = {ix,iy,TTCCU,ec,phi,eta};
 
-    }//<<>>while (infile >>
+}//<<>>while (infile >>
 
 }//<<>>void SetupDetIDsEE( std::map<UInt_t,DetIDStruct> &DetIDMap )
 */

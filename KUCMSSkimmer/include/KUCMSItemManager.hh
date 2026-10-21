@@ -16,7 +16,7 @@
 #include <string>
 //#include <cmath>
 //#include <iostream>
-#include <limits> 
+#include <limits>
 #include <type_traits>
 #include <utility> // for std::declval (used in detection idiom)
 
@@ -31,29 +31,29 @@
 
 typedef unsigned int uInt;
 
-template <class T> 
+template <class T>
 class Item {
 
-    public:
+  public:
 
-    Item();
-    Item( std::string name, std::string doc = "" );
-    Item( std::string name, T value, std::string doc = "" );
-    //~Item();
+  Item();
+  Item( std::string name, std::string doc = "" );
+  Item( std::string name, T value, std::string doc = "" );
+  //~Item();
 
-    void make( std::string name, std::string doc = "" );
-    void fill( T val );
-    void clear();
-    T getvalue();
-    std::string getdoc();
+  void make( std::string name, std::string doc = "" );
+  void fill( T val );
+  void clear();
+  T getvalue();
+  std::string getdoc();
 
-    //protected:
+  //protected:
 
-    std::string iName;
-    std::string iDoc;
-    T iValue;
+  std::string iName;
+  std::string iDoc;
+  T iValue;
 
-};//<<>>class Item 
+};//<<>>class Item
 
 template <class T>
 Item<T>::Item() : iName(""), iDoc(""), iValue(T()) {}
@@ -61,31 +61,31 @@ Item<T>::Item() : iName(""), iDoc(""), iValue(T()) {}
 template <class T>
 Item<T>::Item( std::string name, std::string doc ):
 
-    iName(name),
-    iDoc(doc)
+iName(name),
+iDoc(doc)
 
 {}//<<>>Item::Item( std::string name, std::string doc )
 
 template <class T>
 Item<T>::Item( std::string name, T value, std::string doc ):
-    
-    iName(name),
-    iDoc(doc),
-    iValue(value)
+
+iName(name),
+iDoc(doc),
+iValue(value)
 
 {}//<<>>Item::Item( std::string name, std::string doc, T value  )
 
 template <class T>
 std::string Item<T>::getdoc(){
 
-    return iDoc;
+  return iDoc;
 
 }//<<>>std::string Item::getDoc
 
 template <class T>
 T Item<T>::getvalue(){
 
-    return iValue;
+  return iValue;
 
 }//<<>>Item::getVal<T>()
 
@@ -98,83 +98,83 @@ struct has_clear<U, std::void_t<decltype(std::declval<U&>().clear())>> : std::tr
 
 template <class T>
 inline void Item<T>::clear(){
-    if constexpr (std::is_same_v<T, std::string>) {
-        iValue = "";
-    } else if constexpr (std::is_same_v<T, bool>) {
-        iValue = false;
-    } else if constexpr (std::is_same_v<T, uInt>) {
-        iValue = 0;
-    } else if constexpr (has_clear<T>::value) {
-        iValue.clear();
-    } else if constexpr (std::is_arithmetic_v<T> && std::numeric_limits<T>::is_specialized) {
-        if constexpr (std::is_unsigned_v<T>) {
-            iValue = 0;
-        } else {
-            iValue = -std::numeric_limits<T>::max();
-        }
+  if constexpr (std::is_same_v<T, std::string>) {
+    iValue = "";
+  } else if constexpr (std::is_same_v<T, bool>) {
+    iValue = false;
+  } else if constexpr (std::is_same_v<T, uInt>) {
+    iValue = 0;
+  } else if constexpr (has_clear<T>::value) {
+    iValue.clear();
+  } else if constexpr (std::is_arithmetic_v<T> && std::numeric_limits<T>::is_specialized) {
+    if constexpr (std::is_unsigned_v<T>) {
+      iValue = 0;
     } else {
-        iValue = T{}; // safest generic fallback
-    }
+      iValue = -std::numeric_limits<T>::max();
+    }//<<>>else
+  } else {
+    iValue = T{}; // safest generic fallback
+  }//<<>>else
 }//<<>> inline void Item<T>::clear()
 
 /*
 template <class T>
 inline void Item<T>::clear() {
-    if constexpr (std::is_same_v<T, std::string>) {
-        iValue = "";
-    } else if constexpr (std::is_same_v<T, bool>) {
-        iValue = false;
-    } else if constexpr (std::is_same_v<T, uInt>) {
-        iValue = 0;
-    } else if constexpr (std::is_same_v<T, std::vector<unsigned int>> ||
-                         std::is_same_v<T, std::vector<float>>) {
-        iValue.clear();
-    } else {
-        iValue = -1.0 * std::numeric_limits<T>::max();
-    }
-}//<<>>inline void Item<T>::clear() 
+if constexpr (std::is_same_v<T, std::string>) {
+iValue = "";
+} else if constexpr (std::is_same_v<T, bool>) {
+iValue = false;
+} else if constexpr (std::is_same_v<T, uInt>) {
+iValue = 0;
+} else if constexpr (std::is_same_v<T, std::vector<unsigned int>> ||
+std::is_same_v<T, std::vector<float>>) {
+iValue.clear();
+} else {
+iValue = -1.0 * std::numeric_limits<T>::max();
+}
+}//<<>>inline void Item<T>::clear()
 */
 
 /*
 template <class T>
 void Item<T>::clear(){
 
-    iValue = -1.0*std::numeric_limits<T>::max();
+iValue = -1.0*std::numeric_limits<T>::max();
 
 }//<<>>void Item::clear()
 
 template <>
 void Item<std::string>::clear(){
 
-    iValue = "";
+iValue = "";
 
 }//<<>>void Item::clear()
 
 template <>
 void Item<bool>::clear(){
 
-    iValue = false;
+iValue = false;
 
 }//<<>>void Item::clear()
 
 template <>
 void Item<uInt>::clear(){
 
-    iValue = 0;
+iValue = 0;
 
 }//<<>>void Item::clear()
 
 template <>
 void Item<std::vector<unsigned int>>::clear(){
 
-    iValue.clear();
+iValue.clear();
 
 }//<<>>void Item<std::vector<unsigned int>>::clear()
 
 template <>
 void Item<std::vector<float>>::clear(){
 
-    iValue.clear();
+iValue.clear();
 
 }//<<>>void Item<std::vector<unsigned int>>::clear()
 */
@@ -182,15 +182,15 @@ void Item<std::vector<float>>::clear(){
 template <class T>
 void Item<T>::make( std::string name, std::string doc ){
 
-    iName = name;
-    iDoc = doc;
+  iName = name;
+  iDoc = doc;
 
 }//<<>>void Item::make(  std::string name, std::string doc  )
 
 template <class T>
 void Item<T>::fill( T val ){
 
-    iValue = val;
+  iValue = val;
 
 }//<<>>void Item::fill( T val )
 
@@ -198,24 +198,24 @@ void Item<T>::fill( T val ){
 template < class T>
 class VectorItem {
 
-    public:
+  public:
 
-    VectorItem();
-    VectorItem( std::string name, std::string doc );
-    VectorItem( std::string name, T value, std::string doc );
-    //~VectorItem();
+  VectorItem();
+  VectorItem( std::string name, std::string doc );
+  VectorItem( std::string name, T value, std::string doc );
+  //~VectorItem();
 
-    void make( std::string name, std::string doc = "" );
-    void fill( T val );
-    void clear();
-    std::vector<T> getvalue();
-    std::string getdoc();
+  void make( std::string name, std::string doc = "" );
+  void fill( T val );
+  void clear();
+  std::vector<T> getvalue();
+  std::string getdoc();
 
-    protected:
+  protected:
 
-    std::string iName;
-    std::string iDoc;
-    std::vector<T> iVector;
+  std::string iName;
+  std::string iDoc;
+  std::vector<T> iVector;
 
 };//<<>>class VectorItem
 
@@ -225,52 +225,52 @@ VectorItem<T>::VectorItem() : iName(""), iDoc("") {}
 template < class T >
 VectorItem<T>::VectorItem( std::string name, std::string doc ):
 
-    iName(name),
-    iDoc(doc)
+iName(name),
+iDoc(doc)
 
 {}//<<>>VectorItem::VectorItem( std::string name, std::string doc )
 
 template < class T >
 VectorItem<T>::VectorItem( std::string name, T value, std::string doc ):
- 
-    iName(name),
-    iDoc(doc)
+
+iName(name),
+iDoc(doc)
 
 { this->fill(value); }//<<>>VectorItem::VectorItem( std::string name, std::string doc, T value  )
 
 template < class T>
 std::string VectorItem<T>::getdoc(){
 
-    return iDoc;
+  return iDoc;
 
 }//<<>>std::string VectorItem::getDoc
 
 template < class T >
 std::vector<T> VectorItem<T>::getvalue(){
 
-    return iVector;
+  return iVector;
 
 }//<<>>VectorItem::getVal<T>()
 
 template < class T >
 void VectorItem<T>::clear(){
 
-    iVector.clear();
+  iVector.clear();
 
 }//<<>>void VectorItem::clear()
 
 template <class T>
 void VectorItem<T>::make( std::string name, std::string doc ){
 
-    iName = name;
-    iDoc = doc;
+  iName = name;
+  iDoc = doc;
 
 }//<<>>void VectorItem::make(  std::string name, std::string doc )
 
 template < class T >
 void VectorItem<T>::fill( T val ){
 
-    iVector.push_back( val );
+  iVector.push_back( val );
 
 }//<<>>void VectorItem::clear()
 
@@ -281,34 +281,34 @@ void VectorItem<T>::fill( T val ){
 template < class T , template< class > class C = Item >
 class ItemManager {
 
-    public:
-    
-    void set( std::string key, std::string name, std::string doc );
-    void set( std::string name );
-    void set( std::string name, T val );
+  public:
 
-    void fill( std::string key, T val );
-    T get( std::string key );
+  void set( std::string key, std::string name, std::string doc );
+  void set( std::string name );
+  void set( std::string name, T val );
 
-    void clear();
-    void clear( std::string key );
-    void reset();
+  void fill( std::string key, T val );
+  T get( std::string key );
 
-    T operator()( std::string key );
+  void clear();
+  void clear( std::string key );
+  void reset();
 
-    bool valid( std::string key );
+  T operator()( std::string key );
 
-    private:
+  bool valid( std::string key );
 
-    std::map< std::string, C<T> > items;
+  private:
 
-};//<<>>class ItemManager 
+  std::map< std::string, C<T> > items;
+
+};//<<>>class ItemManager
 
 template < class T , template< class > class C >
 void ItemManager<T,C>::set( std::string key, std::string name, std::string doc ){
 
-    C<T> newitem( name, doc );
-    items[key] = newitem;
+  C<T> newitem( name, doc );
+  items[key] = newitem;
 
 }//>><<void ItemManager::set( std::string key, std::string name, std::string doc )
 
@@ -318,60 +318,60 @@ void ItemManager<T,C>::set( std::string name ){ set( name, name, "" ); }
 template < class T , template< class > class C >
 void ItemManager<T,C>::set( std::string name, T val ){
 
-    C<T> newitem( name, val, "" );
-    items[name] = newitem;
+  C<T> newitem( name, val, "" );
+  items[name] = newitem;
 
 }//>><<void ItemManager::set( std::string key, std::string name, std::string doc, T val )
 
 template < class T , template< class > class C >
 void ItemManager<T,C>::fill( std::string key, T val ){
 
-    if( valid( key ) ) items[key].fill( val );
-    
+  if( valid( key ) ) items[key].fill( val );
+
 }//<<>>void ItemManager<T>::fill( std::string key, T val )
 
 template < class T , template< class > class C >
 T ItemManager<T,C>::get( std::string key ){
 
-    return valid( key ) ? items[key].getvalue() : T();
+  return valid( key ) ? items[key].getvalue() : T();
 
 }//<<>>T ItemManager::get( std::string key )
 
 template < class T , template< class > class C >
 void ItemManager<T,C>::clear(){
 
-    for( auto & item : items ){ item.second.clear(); }
+  for( auto & item : items ){ item.second.clear(); }
 
 }//<<>>T ItemManager::clear()
 
 template < class T , template< class > class C >
 void ItemManager<T,C>::reset(){
 
-    items.clear();
+  items.clear();
 
 }//<<>>T ItemManager::reset()
 
 template < class T , template< class > class C >
 void ItemManager<T,C>::clear( std::string key ){
-    
-    if( valid( key ) ) items[key].clear();
+
+  if( valid( key ) ) items[key].clear();
 
 }//<<>>T ItemManager::clear( std::string key )
 
 template < class T , template< class > class C >
 T ItemManager<T,C>::operator()( std::string key ){
 
-    return valid( key ) ? items[key].getvalue() : T();
+  return valid( key ) ? items[key].getvalue() : T();
 
 }//<<>>T ItemManager<T,C>::operator()( std::string key )
 
 template < class T , template< class > class C >
-bool ItemManager<T,C>::valid( std::string key ){ 
+bool ItemManager<T,C>::valid( std::string key ){
 
-    if( items.find(key) == items.end() ){
-        std::cout << " -- IM Error: No Such Key : " << key << " !!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl; 
-        return false; 
-    } else return true;
+  if( items.find(key) == items.end() ){
+    std::cout << " -- IM Error: No Such Key : " << key << " !!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+    return false;
+  } else return true;
 
 }//<<>>bool ItemManager<T>::::valid( std::string key )
 

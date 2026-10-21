@@ -13,90 +13,90 @@
 
 int main ( int argc, char *argv[] ){
 
-    const std::string listdir = "ntuple_master_lists/";
-    ////const string eosdir = "root://cmseos.fnal.gov//store/user/jaking/";
-    ////const std::string eosdir = "root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/";
-    ////const std::string eosdir = "/store/user/anovo/";
-    ////const std::string eosdir = "root://cmseos.fnal.gov//store/user/lpcsusylep/anazario/";
-    ////const std::string eosdir = "root://cmseos.fnal.gov//store/user/janguian/";
-    ////const std::string eosdir = "/store/user/lpcsusylep/jaking/KUCMSNtuple/";
-	////const std::string eosdir = "/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/";				
+  const std::string listdir = "ntuple_master_lists/";
+  ////const string eosdir = "root://cmseos.fnal.gov//store/user/jaking/";
+  ////const std::string eosdir = "root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/";
+  ////const std::string eosdir = "/store/user/anovo/";
+  ////const std::string eosdir = "root://cmseos.fnal.gov//store/user/lpcsusylep/anazario/";
+  ////const std::string eosdir = "root://cmseos.fnal.gov//store/user/janguian/";
+  ////const std::string eosdir = "/store/user/lpcsusylep/jaking/KUCMSNtuple/";
+  ////const std::string eosdir = "/uscms/home/jaking/nobackup/el8/llpana/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/";
 
-	////const std::string eosdir = "";
-    const std::string eosdir = "/store/user/lpcsusylep/jaking/KUCMSNtuple/";
-	//const std::string eosdir = "/uscms/home/jaking/nobackup/el9/CMSSW_15_1_1/src/KUCMSNtupleizer/KUCMSNtupleizer/";
+  ////const std::string eosdir = "";
+  const std::string eosdir = "/store/user/lpcsusylep/jaking/KUCMSNtuple/";
+  //const std::string eosdir = "/uscms/home/jaking/nobackup/el9/CMSSW_15_1_1/src/KUCMSNtupleizer/KUCMSNtupleizer/";
 
-	// set below //  bool noSVorPho = true; // only base selection - will not load phos in rjr
-	// set below //  bool noSVorPho = false; // ( flase = must have a sig pho or a sv ) + base selection - loads photons in rjr ( defaults false )
-    // set below //  bool genSigPerfect = true; // ( defaults false )
-    bool useEvtGenWgt = true; // false for SMS MC only
-    bool hasGenInfo = true; // typically false for data only 
+  // set below //  bool noSVorPho = true; // only base selection - will not load phos in rjr
+  // set below //  bool noSVorPho = false; // ( flase = must have a sig pho or a sv ) + base selection - loads photons in rjr ( defaults false )
+  // set below //  bool genSigPerfect = true; // ( defaults false )
+  bool useEvtGenWgt = true; // false for SMS MC only
+  bool hasGenInfo = true; // typically false for data only
 
-    //no//const std::string infilename = "KUCMS_Ntuple_Master_BG_Files_List.txt";
-    //no//const std::string infilename = "KUCMS_Ntuple_Master_DEG_Files_List.txt"; hasGenInfo = false;
-    //no//const std::string infilename = "KUCMS_Ntuple_Master_GoGoG_Files_List.txt";
-	//no//const std::string infilename = "KUCMS_Ntuple_Master_SMS_Sig_Files_List_untracked.txt"; useEvtGenWgt = false;
-    //no//const std::string infilename = "KUCMS_Ntuple_Master_GoGoZ_Files_List.txt";
-    //no//const std::string infilename = "KUCMS_Ntuple_Master_SqSqG_Files_List.txt";
+  //no//const std::string infilename = "KUCMS_Ntuple_Master_BG_Files_List.txt";
+  //no//const std::string infilename = "KUCMS_Ntuple_Master_DEG_Files_List.txt"; hasGenInfo = false;
+  //no//const std::string infilename = "KUCMS_Ntuple_Master_GoGoG_Files_List.txt";
+  //no//const std::string infilename = "KUCMS_Ntuple_Master_SMS_Sig_Files_List_untracked.txt"; useEvtGenWgt = false;
+  //no//const std::string infilename = "KUCMS_Ntuple_Master_GoGoZ_Files_List.txt";
+  //no//const std::string infilename = "KUCMS_Ntuple_Master_SqSqG_Files_List.txt";
 
-	//const std::string infilename = "KUCMS_Ntuple_Master_NtupleTest_Files_List.txt"; hasGenInfo = false;
+  //const std::string infilename = "KUCMS_Ntuple_Master_NtupleTest_Files_List.txt"; hasGenInfo = false;
 
-    const std::string infilename = "../backups/KUCMS_Ntuple_Master_v34_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
-    ////const std::string infilename = "../backups/KUCMS_Ntuple_Test_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
-    ////const std::string infilename = "../backups/KUCMS_Ntuple_Master_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
-    //const std::string infilename = "../backups/KUCMS_Ntuple_Master_BG_SVIPM100_Files_List.txt";
-    //const std::string infilename = "../backups/KUCMS_Ntuple_Master_DataPD_Files_List.txt"; hasGenInfo = false;
+  const std::string infilename = "../backups/KUCMS_Ntuple_Master_v34_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
+  ////const std::string infilename = "../backups/KUCMS_Ntuple_Test_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
+  ////const std::string infilename = "../backups/KUCMS_Ntuple_Master_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
+  //const std::string infilename = "../backups/KUCMS_Ntuple_Master_BG_SVIPM100_Files_List.txt";
+  //const std::string infilename = "../backups/KUCMS_Ntuple_Master_DataPD_Files_List.txt"; hasGenInfo = false;
 
-    //const std::string outfilename = "_LLPGskim_v21_rjrvars.root"; // skim v21 use new process_name tags 
-    //const std::string outfilename = "_LLPGskim_v22_rjrvars.root"; // skim v22 keeps 0 pho events 
-    //const std::string outfilename = "_LLPGskim_v23_rjrvars.root"; // fixed 2 sig pho events 
-    //const std::string outfilename = "_rjrskim_v26.root"; // jet veto on first 2 Sig Phos only
-    //const std::string outfilename = "_rjrskim_v27.root"; // SV matching & SVs & lepton veto
-    //const std::string outfilename = "_rjrskim_v28.root"; // MET cleaning flags 
-    //const std::string outfilename = "_rjrskim_v29.root"; // Track collection consoldation, Mu - Ele collections, RJR subjets 1a, 2a, ect..
-	//const std::string outfilename = "_rjrskim_v31.root"; // alternate RJR setup with invis in comb split rule
-    //const std::string outfilename = "_rjrskim_v32.root"; // SV vars + BaysC && TimeCali added
-    //const std::string outfilename = "_rjrskim_v36.root"; // expanded hts & hs rjr vars selection
-    //const std::string outfilename = "_rjrskim_v37.root"; // added SV info, nIsoTracks, and rjr JXX 4vector information
-    //const std::string outfilename = "_rjrskim_v38.root"; // added additional SV information and photon time significance
-    //const std::string outfilename = "_rjrskim_v39.root"; // included BHC processing and branchs, added triggerpath varibles
-    //const std::string outfilename = "_rjrskim_v40.root"; // added HEM veto, restructured skimmer for condor processing
-    //const std::string outfilename = "_rjrskim_v41.root"; // modifided RJR oot photon v met handeling : 0 is now sig photon oot met correction only
-    //const std::string outfilename = "_rjrskim_v43.root"; // added EE photons to RJR, set looser id reqs for jets to include photons
-    //const std::string outfilename = "_rjrskim_v44.root"; // added photon object id and tsig counting
-    //const std::string outfilename = "_rjrskim_v44.root"; // added jet merging to non copressed, new photon IDs
-	//const std::string outfilename = "_rjrskim_v52.root";	 
+  //const std::string outfilename = "_LLPGskim_v21_rjrvars.root"; // skim v21 use new process_name tags
+  //const std::string outfilename = "_LLPGskim_v22_rjrvars.root"; // skim v22 keeps 0 pho events
+  //const std::string outfilename = "_LLPGskim_v23_rjrvars.root"; // fixed 2 sig pho events
+  //const std::string outfilename = "_rjrskim_v26.root"; // jet veto on first 2 Sig Phos only
+  //const std::string outfilename = "_rjrskim_v27.root"; // SV matching & SVs & lepton veto
+  //const std::string outfilename = "_rjrskim_v28.root"; // MET cleaning flags
+  //const std::string outfilename = "_rjrskim_v29.root"; // Track collection consoldation, Mu - Ele collections, RJR subjets 1a, 2a, ect..
+  //const std::string outfilename = "_rjrskim_v31.root"; // alternate RJR setup with invis in comb split rule
+  //const std::string outfilename = "_rjrskim_v32.root"; // SV vars + BaysC && TimeCali added
+  //const std::string outfilename = "_rjrskim_v36.root"; // expanded hts & hs rjr vars selection
+  //const std::string outfilename = "_rjrskim_v37.root"; // added SV info, nIsoTracks, and rjr JXX 4vector information
+  //const std::string outfilename = "_rjrskim_v38.root"; // added additional SV information and photon time significance
+  //const std::string outfilename = "_rjrskim_v39.root"; // included BHC processing and branchs, added triggerpath varibles
+  //const std::string outfilename = "_rjrskim_v40.root"; // added HEM veto, restructured skimmer for condor processing
+  //const std::string outfilename = "_rjrskim_v41.root"; // modifided RJR oot photon v met handeling : 0 is now sig photon oot met correction only
+  //const std::string outfilename = "_rjrskim_v43.root"; // added EE photons to RJR, set looser id reqs for jets to include photons
+  //const std::string outfilename = "_rjrskim_v44.root"; // added photon object id and tsig counting
+  //const std::string outfilename = "_rjrskim_v44.root"; // added jet merging to non copressed, new photon IDs
+  //const std::string outfilename = "_rjrskim_v52.root";
 
-	//const std::string outfilename = "_rjrskim_fasttime_v9.root"; //
-    //const std::string outfilename = "_rjrskim_fast_act_v9.root"; //
-	//const std::string outfilename = "_rjrskim_full_part.root"; //
-    //const std::string outfilename = "_rjrskim_pvtime_phoSCv3.root"; //
-    //const std::string outfilename = "_rjrskim_qcdmc_Test.root"; //
-    //const std::string outfilename = "_rjrskim_calirestest_Test.root"; //
-    //const std::string outfilename = "_rjrskim_rd_v52.root"; //
-    //const std::string outfilename = "_rjrskim_geofast_v38_xpwz_v8_Test.root"; //
-    //const std::string outfilename = "_rjrskim_basefast_v38_Test.root"; //
-    //const std::string outfilename = "_rjrskim_geofull_v38_xpwz_v8_Test.root"; //
-    const std::string outfilename = "_rjrskim_basefull_v38_exclusion_Test.root"; //
+  //const std::string outfilename = "_rjrskim_fasttime_v9.root"; //
+  //const std::string outfilename = "_rjrskim_fast_act_v9.root"; //
+  //const std::string outfilename = "_rjrskim_full_part.root"; //
+  //const std::string outfilename = "_rjrskim_pvtime_phoSCv3.root"; //
+  //const std::string outfilename = "_rjrskim_qcdmc_Test.root"; //
+  //const std::string outfilename = "_rjrskim_calirestest_Test.root"; //
+  //const std::string outfilename = "_rjrskim_rd_v52.root"; //
+  //const std::string outfilename = "_rjrskim_geofast_v38_xpwz_v8_Test.root"; //
+  //const std::string outfilename = "_rjrskim_basefast_v38_Test.root"; //
+  //const std::string outfilename = "_rjrskim_geofull_v38_xpwz_v8_Test.root"; //
+  const std::string outfilename = "_rjrskim_basefull_v38_exclusion_Test.root"; //
 
-	// !!!!!!!!!!!!!!!!!!!  alternate RJR setup with invis in comb split rule
-    //KUCMSAodSkimmer llpgana( true ); // uses local calibration 
-    KUCMSAodSkimmer llpgana; // uses eos calibration 
-	//llpgana.SetLocalSkip( 3 );
+  // !!!!!!!!!!!!!!!!!!!  alternate RJR setup with invis in comb split rule
+  //KUCMSAodSkimmer llpgana( true ); // uses local calibration
+  KUCMSAodSkimmer llpgana; // uses eos calibration
+  //llpgana.SetLocalSkip( 3 );
 
-	//llpgana.SetSystematic("wPhoTimeSig_up");
-    //llpgana.SetSystematic("wPhoTimeSig_down");
+  //llpgana.SetSystematic("wPhoTimeSig_up");
+  //llpgana.SetSystematic("wPhoTimeSig_down");
 
-    ////llpgana.SetNoSVorPhoFlag(noSVorPho);
-    ////llpgana.SetGenSigPerfectFlag(genSigPerfect);
-    //llpgana.SetDoSV(false);
-	//llpgana.setNewSigBase(false);
-	llpgana.setMCTargetResTag("r2_ul18");
-    llpgana.SetDoBHC(false);
-	llpgana.SetGenInfoFlag(hasGenInfo); 
-	llpgana.SetUseEvtGenWgtFlag(useEvtGenWgt);
-    llpgana.kucmsAodSkimmer_local( listdir, eosdir, infilename, outfilename );
- 
-    return 0;
+  ////llpgana.SetNoSVorPhoFlag(noSVorPho);
+  ////llpgana.SetGenSigPerfectFlag(genSigPerfect);
+  //llpgana.SetDoSV(false);
+  //llpgana.setNewSigBase(false);
+  llpgana.setMCTargetResTag("r2_ul18");
+  llpgana.SetDoBHC(false);
+  llpgana.SetGenInfoFlag(hasGenInfo);
+  llpgana.SetUseEvtGenWgtFlag(useEvtGenWgt);
+  llpgana.kucmsAodSkimmer_local( listdir, eosdir, infilename, outfilename );
+
+  return 0;
 
 }//<<>>int main ( int argc, char *argv[] )

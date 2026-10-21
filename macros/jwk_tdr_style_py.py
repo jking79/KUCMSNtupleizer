@@ -1,4 +1,6 @@
-from ROOT import *
+# PyROOT 6.40 deliberately disallows ``from ROOT import *``. This module is
+# shared by the overlay scripts, so keep its small ROOT dependency explicit.
+from ROOT import TStyle, gPad, gROOT, kBird, kTRUE, kWhite
 
 can_x_width = 800
 can_y_width = 600

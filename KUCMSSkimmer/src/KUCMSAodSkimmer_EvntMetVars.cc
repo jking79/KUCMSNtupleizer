@@ -16,32 +16,19 @@
 //#define DEBUG true
 #define DEBUG false
 
-//------------------------------------------------------------------------------------------------------------
-//------------------------------------------------------------------------------------------------------------
-//  do any processing and calulations for objects and save values to output varibles 
-//------------------------------------------------------------------------------------------------------------
-//------------------------------------------------------------------------------------------------------------
-
-// void KUCMSAodSkimmer::processTemplate(){
-// 	
-// 		Clear out branch vector varibles &/or initilize other out branch vars
-//	------------------------------------------------
-// 		Do any calculations / cuts
-//  ------------------------------------------------
-//		Fill out branch varibles
-//
-//}//<<>>void KUCMSAodSkimmer::processTemplate()
+// Event-level and MET quantities.  These values are filled after the object
+// modules so event-level flags can include information from the full event.
 
 void KUCMSAodSkimmer::processEvntVars(){
-  
+
   if( DEBUG ) std::cout << "Finding PV Vars" << std::endl;
   selEvtVars.clearBranches(); // <<<<<<<   must do
-  
+
   // calc
   selEvtVars.fillBranch( "PVx", PV_x );
   selEvtVars.fillBranch( "PVy", PV_y );
-  selEvtVars.fillBranch( "PVz", PV_z ); 
-  
+  selEvtVars.fillBranch( "PVz", PV_z );
+
   //fill
   bool useSMSWgts = false;
   if( ( dataSetKey.find("gogo") != std::string::npos ) || ( dataSetKey.find("sqsq") != std::string::npos ) ){ useSMSWgts = true; }
@@ -50,11 +37,11 @@ void KUCMSAodSkimmer::processEvntVars(){
   if( DEBUG ) std::cout << "Finding Event wts Vars" << std::endl;
   selEvtVars.fillBranch( "dsKey", dataSetKey );
   float evtGenWgt = 1;
-  if( hasGenInfoFlag ) evtGenWgt = Evt_genWgt; 
+  if( hasGenInfoFlag ) evtGenWgt = Evt_genWgt;
   if( useSMSWgts ) evtGenWgt = 1;
   selEvtVars.fillBranch( "evtGenWgt", evtGenWgt );
   selEvtVars.fillBranch( "evtXSection", xsctn );
- 
+
   float fillWgt = 1;
   //if( !isLocal ) std::cout << " -- ECT : isLocal " << isLocal << " useSMSWgts : " << useSMSWgts << " use: " << useEvtGenWgtFlag << std::endl;
   // mctype != 1 (not data): both FullSim (0) and FastSim (2) MC get normalized the
@@ -68,21 +55,21 @@ void KUCMSAodSkimmer::processEvntVars(){
     // would silently default-construct {0.0, 0.0} for a missing key, producing an
     // inf/nan evtFillWgt instead of failing the job where the actual problem is.
     float configSumEvtWgt = isLocal ? configWgts["sumEvtWgt"]
-                          : useSMSWgts ? lookupConfigData( dataSetKey ).first
-                                       : lookupConfigData( dataSetKey ).second;
+    : useSMSWgts ? lookupConfigData( dataSetKey ).first
+    : lookupConfigData( dataSetKey ).second;
     if( !std::isfinite(configSumEvtWgt) || configSumEvtWgt == 0.f ){
       std::cerr << "ERROR: invalid sum of event weights for dataset '" << dataSetKey
-                << "': " << configSumEvtWgt << std::endl;
+      << "': " << configSumEvtWgt << std::endl;
       std::exit(EXIT_FAILURE);
-    }
+    }//<<>>if( !std::isfinite(configSumEvtWgt) || configSumEvtWgt == 0.f )
     fillWgt = ( ( xsctn * 1000 ) * evtGenWgt  ) / configSumEvtWgt;
     if( !std::isfinite(fillWgt) ){
       std::cerr << "ERROR: non-finite event fill weight for dataset '" << dataSetKey
-                << "' (xsec=" << xsctn << ", evtGenWgt=" << evtGenWgt
-                << ", sumEvtWgt=" << configSumEvtWgt << ")." << std::endl;
+      << "' (xsec=" << xsctn << ", evtGenWgt=" << evtGenWgt
+      << ", sumEvtWgt=" << configSumEvtWgt << ")." << std::endl;
       std::exit(EXIT_FAILURE);
-    }
-  }
+    }//<<>>if( !std::isfinite(fillWgt) )
+  }//<<>>if( mctype != 1 )
   //if( !isLocal ) std::cout << " -- ECT : fillWgt " << fillWgt << " " << xsctn << " " << evtGenWgt << " " << configSumEvtWgt << std::endl;
 
   selEvtVars.fillBranch( "evtFillWgt", fillWgt );
@@ -101,7 +88,7 @@ void KUCMSAodSkimmer::processEvntVars(){
   bool hfNoisyHitsFilter = Flag_hfNoisyHitsFilter;
 
 
-  bool metFlags = BadChargedCandidateFilter && BadPFMuonFilter && EcalDeadCellTriggerPrimitiveFilter; 
+  bool metFlags = BadChargedCandidateFilter && BadPFMuonFilter && EcalDeadCellTriggerPrimitiveFilter;
   metFlags = metFlags && HBHENoiseFilter && HBHENoiseIsoFilter && ecalBadCalibFilter && eeBadScFilter && goodVertices;
 
   selEvtVars.fillBranch( "Flag_BadChargedCandidateFilter", BadChargedCandidateFilter );//not suggested
@@ -115,7 +102,7 @@ void KUCMSAodSkimmer::processEvntVars(){
   selEvtVars.fillBranch( "Flag_globalSuperTightHalo2016Filter", globalSuperTightHalo2016Filter );//suggested
   selEvtVars.fillBranch( "Flag_goodVertices", goodVertices );//suggested
   selEvtVars.fillBranch( "Flag_hfNoisyHitsFilter", hfNoisyHitsFilter );//optional
-  selEvtVars.fillBranch( "Flag_MetFilters", metFlags );//optional 
+  selEvtVars.fillBranch( "Flag_MetFilters", metFlags );//optional
 
   bool PFMET120_PFMHT120_IDTight = false;
   bool PFMETNoMu120_PFMHTNoMu120_IDTight = false;
@@ -124,15 +111,15 @@ void KUCMSAodSkimmer::processEvntVars(){
 
   if( doHTLPathsBase ){
 
-  	//Ele35_WPTight_Gsf = HLT_Ele35_WPTight_Gsf_v;
-  	//Mu55 = HLT_Mu55_v;
-  	//IsoMu27 = HLT_IsoMu27_v;
-  	//IsoMu20 = HLT_IsoMu20_v;
-	
-	PFMET120_PFMHT120_IDTight = HLT_PFMET120_PFMHT120_IDTight_v;
-	PFMETNoMu120_PFMHTNoMu120_IDTight = HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_v;
-	PFMET120_PFMHT120_IDTight_PFHT60 = HLT_PFMET120_PFMHT120_IDTight_PFHT60_v;
-	PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60 = HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60_v;
+    //Ele35_WPTight_Gsf = HLT_Ele35_WPTight_Gsf_v;
+    //Mu55 = HLT_Mu55_v;
+    //IsoMu27 = HLT_IsoMu27_v;
+    //IsoMu20 = HLT_IsoMu20_v;
+
+    PFMET120_PFMHT120_IDTight = HLT_PFMET120_PFMHT120_IDTight_v;
+    PFMETNoMu120_PFMHTNoMu120_IDTight = HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_v;
+    PFMET120_PFMHT120_IDTight_PFHT60 = HLT_PFMET120_PFMHT120_IDTight_PFHT60_v;
+    PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60 = HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60_v;
 
   }//<<>>if( not doGenInfo )
 
@@ -140,7 +127,7 @@ void KUCMSAodSkimmer::processEvntVars(){
   selEvtVars.fillBranch( "Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight", PFMETNoMu120_PFMHTNoMu120_IDTight );
   selEvtVars.fillBranch( "Trigger_PFMET120_PFMHT120_IDTight_PFHT60", PFMET120_PFMHT120_IDTight_PFHT60 );
   selEvtVars.fillBranch( "Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60", PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60 );
-  
+
   //selEvtVars.fillBranch( "Trigger_Ele35_WPTight_Gsf", Ele35_WPTight_Gsf);
   //selEvtVars.fillBranch( "Trigger_Mu55", Mu55 );
   //selEvtVars.fillBranch( "Trigger_IsoMu27", IsoMu27 );
@@ -183,13 +170,13 @@ void KUCMSAodSkimmer::processMet(){
   if( Photon_pt == nullptr || Photon_eta == nullptr || Photon_phi == nullptr || Photon_isOot == nullptr ){
     std::cerr << "ERROR: missing photon input needed to rebuild corrected MET." << std::endl;
     std::exit(EXIT_FAILURE);
-  }
+  }//<<>>if( Photon_pt == nullptr || Photon_eta == nullptr || Photon_phi == nullptr || Photon_isOot == nullptr )
 
   const std::size_t nPhotons = Photon_pt->size();
   if( Photon_eta->size() != nPhotons || Photon_phi->size() != nPhotons || Photon_isOot->size() != nPhotons ){
     std::cerr << "ERROR: inconsistent photon input sizes while rebuilding corrected MET." << std::endl;
     std::exit(EXIT_FAILURE);
-  }
+  }//<<>>if( Photon_eta->size() != nPhotons || Photon_phi->size() != nPhotons || Photon_isOot->size() != nPhotons )
 
   correctedPhotonExcluded.assign( nPhotons, false );
   for( std::size_t gedIdx = 0; gedIdx < nPhotons; gedIdx++ ){
@@ -197,12 +184,12 @@ void KUCMSAodSkimmer::processMet(){
     for( std::size_t ootIdx = 0; ootIdx < nPhotons; ootIdx++ ){
       if( not (*Photon_isOot)[ootIdx] ) continue;
       if( dR1( (*Photon_eta)[gedIdx], (*Photon_phi)[gedIdx],
-               (*Photon_eta)[ootIdx], (*Photon_phi)[ootIdx] ) < 0.3 ){
+      (*Photon_eta)[ootIdx], (*Photon_phi)[ootIdx] ) < 0.3 ){
         correctedPhotonExcluded[gedIdx] = true;
         break;
-      }
-    }
-  }
+      }//<<>>if( dR1( (*Photon_eta)[gedIdx], (*Photon_phi)[gedIdx], (*Photon_eta)[ootIdx], (*Photon_phi)[ootIdx] ) < 0.3 )
+    }//<<>>for( std::size_t ootIdx = 0; ootIdx < nPhotons; ootIdx++ )
+  }//<<>>for( std::size_t gedIdx = 0; gedIdx < nPhotons; gedIdx++ )
 
   double correctedMetPx = Met_px;
   double correctedMetPy = Met_py;
@@ -218,15 +205,15 @@ void KUCMSAodSkimmer::processMet(){
       correctedMetPx += pt * std::cos(phi);
       correctedMetPy += pt * std::sin(phi);
       correctedMetSumEt -= pt;
-    }
-  }
+    }//<<>>else if( correctedPhotonExcluded[phoIdx] )
+  }//<<>>for( std::size_t phoIdx = 0; phoIdx < nPhotons; phoIdx++ )
   const double correctedMet = std::hypot( correctedMetPx, correctedMetPy );
 
   if( DEBUG ){
     std::cout << "Rebuilt corrected MET: pt=" << correctedMet
-              << " px=" << correctedMetPx << " py=" << correctedMetPy
-              << " sumEt=" << correctedMetSumEt << std::endl;
-  }
+    << " px=" << correctedMetPx << " py=" << correctedMetPy
+    << " sumEt=" << correctedMetSumEt << std::endl;
+  }//<<>>if( DEBUG )
 
   geVars.set("metPx", correctedMetPx );
   geVars.set("metPy", correctedMetPy );
@@ -261,7 +248,7 @@ void KUCMSAodSkimmer::setEvtVarMetBranches( TTree* fOutTree ){
   selEvtVars.makeBranch( "PVx", FLOAT );
   selEvtVars.makeBranch( "PVy", FLOAT );
   selEvtVars.makeBranch( "PVz", FLOAT );
-  
+
   selEvtVars.makeBranch( "Flag_BadChargedCandidateFilter", BOOL );
   selEvtVars.makeBranch( "Flag_BadPFMuonDzFilter", BOOL );
   selEvtVars.makeBranch( "Flag_BadPFMuonFilter", BOOL );
@@ -273,7 +260,7 @@ void KUCMSAodSkimmer::setEvtVarMetBranches( TTree* fOutTree ){
   selEvtVars.makeBranch( "Flag_globalSuperTightHalo2016Filter", BOOL );
   selEvtVars.makeBranch( "Flag_goodVertices", BOOL );
   selEvtVars.makeBranch( "Flag_hfNoisyHitsFilter", BOOL );
-  selEvtVars.makeBranch( "Flag_MetFilters", BOOL );//optional  
+  selEvtVars.makeBranch( "Flag_MetFilters", BOOL );//optional
 
   selEvtVars.makeBranch( "Flag_hemRun", BOOL );
   selEvtVars.makeBranch( "Flag_hemVeto", BOOL );
@@ -309,4 +296,4 @@ void KUCMSAodSkimmer::setEvtVarMetBranches( TTree* fOutTree ){
 
   selMet.attachBranches( fOutTree );
 
-}//<<>>void KUCMSAodSkimmer::setBranches( TTree& fOutTree )
+}//<<>>void KUCMSAodSkimmer::setEvtVarMetBranches( TTree* fOutTree )

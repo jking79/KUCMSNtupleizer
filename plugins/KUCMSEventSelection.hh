@@ -19,24 +19,24 @@
 
 class KUCMSEventSelection {
 
-    public:
+  public:
 
-    KUCMSEventSelection(){ eventSelectionTag = "none"; };
-    ~KUCMSEventSelection(){};
+  KUCMSEventSelection(){ eventSelectionTag = "none"; };
+  ~KUCMSEventSelection(){};
 
-	private:
+  private:
 
-	std::string eventSelectionTag;
-	std::map< std::string, bool > selectionMap;  
-	bool metFilter;
-	bool phoFilter;
+  std::string eventSelectionTag;
+  std::map< std::string, bool > selectionMap;
+  bool metFilter;
+  bool phoFilter;
 
-	public:
+  public:
 
-	void setEventSelectionTag( std::string estag ){ eventSelectionTag = estag; };	
-	const bool selectEvent( ItemManager<float>& geVar );
-	const bool trackMetFilter(){ return metFilter; };
-    const bool trackPhoFilter(){ return phoFilter; };
+  void setEventSelectionTag( std::string estag ){ eventSelectionTag = estag; };
+  const bool selectEvent( ItemManager<float>& geVar );
+  const bool trackMetFilter(){ return metFilter; };
+  const bool trackPhoFilter(){ return phoFilter; };
 
 
 };//<<>>class KUCMSEventSelection : KUCMSRootHelperBaseClass
@@ -50,54 +50,54 @@ class KUCMSEventSelection {
 const bool KUCMSEventSelection::selectEvent( ItemManager<float>& geVar ){
 
 
-    bool hasMinMet150 = geVar("evtMET") > 150;
-    bool hasMinMet125 = geVar("evtMET") > 125;
-    bool hasMinMet100 = geVar("evtMET") > 100;	
-    bool hasMinMet75 = geVar("evtMET") > 75;
-    bool hasMetgt50lt75 = (geVar("evtMET") > 50 && geVar("evtMET") < 75);
-	bool hasAL1SelElectron = geVar("nSelEle") > 0;
-	bool hasAL1IsoPhoton = geVar("nIsoPhos") > 0;
-	bool hasAL1DisSV = geVar("nDisSVs") > 0;
-	bool hasAL1NpSC = geVar("nNpSC") > 0;
-	bool hasHardPho = geVar("leadPhoPt") > 30;
+  bool hasMinMet150 = geVar("evtMET") > 150;
+  bool hasMinMet125 = geVar("evtMET") > 125;
+  bool hasMinMet100 = geVar("evtMET") > 100;
+  bool hasMinMet75 = geVar("evtMET") > 75;
+  bool hasMetgt50lt75 = (geVar("evtMET") > 50 && geVar("evtMET") < 75);
+  bool hasAL1SelElectron = geVar("nSelEle") > 0;
+  bool hasAL1IsoPhoton = geVar("nIsoPhos") > 0;
+  bool hasAL1DisSV = geVar("nDisSVs") > 0;
+  bool hasAL1NpSC = geVar("nNpSC") > 0;
+  bool hasHardPho = geVar("leadPhoPt") > 30;
 
 
-	bool hasAl1IsoPhoPlusMinMet100 = hasAL1IsoPhoton && hasMinMet100;
-    bool hasDSVAl1IsoPhoPlusMinMet100 = ( hasAL1DisSV || hasAL1IsoPhoton ) && hasMinMet100;
-    bool hasDSVAl1IsoPhoPlusMinMet125 = ( hasAL1DisSV || hasAL1IsoPhoton ) && hasMinMet125;
-	bool hasInvMet100ALP = hasAL1IsoPhoton && not hasMinMet100;
-	bool hasInvMetHardPho = hasHardPho && not hasMinMet100;
-	bool hasSVorHardPhoPlusMet150 = ( hasHardPho or hasAL1DisSV ) and hasMinMet150;
-    bool hasSVorHardPhoPlusMet100 = ( hasHardPho or hasAL1DisSV ) and hasMinMet100;
+  bool hasAl1IsoPhoPlusMinMet100 = hasAL1IsoPhoton && hasMinMet100;
+  bool hasDSVAl1IsoPhoPlusMinMet100 = ( hasAL1DisSV || hasAL1IsoPhoton ) && hasMinMet100;
+  bool hasDSVAl1IsoPhoPlusMinMet125 = ( hasAL1DisSV || hasAL1IsoPhoton ) && hasMinMet125;
+  bool hasInvMet100ALP = hasAL1IsoPhoton && not hasMinMet100;
+  bool hasInvMetHardPho = hasHardPho && not hasMinMet100;
+  bool hasSVorHardPhoPlusMet150 = ( hasHardPho or hasAL1DisSV ) and hasMinMet150;
+  bool hasSVorHardPhoPlusMet100 = ( hasHardPho or hasAL1DisSV ) and hasMinMet100;
 
-	selectionMap["none"] = true;
-	selectionMap["MET150"] = hasMinMet150;
-    selectionMap["MET75"] = hasMinMet75;
-    selectionMap["50MET75"] = hasMetgt50lt75;
-    selectionMap["MET100"] = hasMinMet100;
-    selectionMap["AL1IsoPho"] = hasAL1IsoPhoton;
-    selectionMap["IsoPhoMet100"] = hasAl1IsoPhoPlusMinMet100;
-    selectionMap["AL1SelEle"] = hasAL1SelElectron;
-    selectionMap["SVIPMet100"] = hasDSVAl1IsoPhoPlusMinMet100;
-    selectionMap["SVIPMet125"] = hasDSVAl1IsoPhoPlusMinMet125;
-    selectionMap["AL1DisSV"] = hasAL1DisSV;
-    selectionMap["AL1NpSC"] = hasAL1NpSC;
-    selectionMap["InvMet100IP"] = hasInvMet100ALP;
-    selectionMap["InvMET100"] = not hasMinMet100;
-    selectionMap["Pho30"] = hasHardPho;
-    selectionMap["InvMetPho30"] = hasInvMetHardPho;
-    selectionMap["SVHPMet150"] = hasSVorHardPhoPlusMet150;
-    selectionMap["SVHPMet100"] = hasSVorHardPhoPlusMet100;
+  selectionMap["none"] = true;
+  selectionMap["MET150"] = hasMinMet150;
+  selectionMap["MET75"] = hasMinMet75;
+  selectionMap["50MET75"] = hasMetgt50lt75;
+  selectionMap["MET100"] = hasMinMet100;
+  selectionMap["AL1IsoPho"] = hasAL1IsoPhoton;
+  selectionMap["IsoPhoMet100"] = hasAl1IsoPhoPlusMinMet100;
+  selectionMap["AL1SelEle"] = hasAL1SelElectron;
+  selectionMap["SVIPMet100"] = hasDSVAl1IsoPhoPlusMinMet100;
+  selectionMap["SVIPMet125"] = hasDSVAl1IsoPhoPlusMinMet125;
+  selectionMap["AL1DisSV"] = hasAL1DisSV;
+  selectionMap["AL1NpSC"] = hasAL1NpSC;
+  selectionMap["InvMet100IP"] = hasInvMet100ALP;
+  selectionMap["InvMET100"] = not hasMinMet100;
+  selectionMap["Pho30"] = hasHardPho;
+  selectionMap["InvMetPho30"] = hasInvMetHardPho;
+  selectionMap["SVHPMet150"] = hasSVorHardPhoPlusMet150;
+  selectionMap["SVHPMet100"] = hasSVorHardPhoPlusMet100;
 
-    //std::cout << "SVHPMet150 " << hasSVorHardPhoPlusMet150 << " hasHardPho " << hasHardPho << " hasMinMet150 " << hasMinMet100; 
-    //std::cout << " hasAL1DisSV " << hasAL1DisSV << std::endl;
+  //std::cout << "SVHPMet150 " << hasSVorHardPhoPlusMet150 << " hasHardPho " << hasHardPho << " hasMinMet150 " << hasMinMet100;
+  //std::cout << " hasAL1DisSV " << hasAL1DisSV << std::endl;
 
-	metFilter = hasMinMet100;
-	phoFilter = hasAL1DisSV;
+  metFilter = hasMinMet100;
+  phoFilter = hasAL1DisSV;
 
-	//std::cout << "Event select for ntuple with " << eventSelectionTag << " w/ result " << selectionMap[eventSelectionTag] << std::endl;
-	if( selectionMap.find(eventSelectionTag) != selectionMap.end() ){ return selectionMap[eventSelectionTag]; }
-	else return false;	
+  //std::cout << "Event select for ntuple with " << eventSelectionTag << " w/ result " << selectionMap[eventSelectionTag] << std::endl;
+  if( selectionMap.find(eventSelectionTag) != selectionMap.end() ){ return selectionMap[eventSelectionTag]; }
+  else return false;
 
 }//<<>>const bool KUCMSEventSelection::selectEvent( ItemManager<float>& geVar )
 
