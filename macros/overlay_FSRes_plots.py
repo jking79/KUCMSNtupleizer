@@ -1,0 +1,1368 @@
+#  jack w king 3
+
+# Fitted-scatter overlay plotter. This is intentionally separate from
+# overlay_res_plots.py: it reads the sigmaFractionalScatter{NC,NSC}FitInput
+# histogram and saved sigma_fit_FractionalScatter_{NC,NSC} TF1 from each ROOT
+# file. It never refits the plotted points.
+
+#from numpy import array
+# PyROOT 6.40 rejects wildcard imports. Keep the plotting dependencies
+# explicit so this script also works with the newer ROOT Python bindings.
+from ROOT import (
+    TCanvas, TFile, TF1, TGraphErrors, TLatex, TLegend, TMultiGraph,
+    gPad, gROOT, gStyle,
+    kBlue, kCyan, kGreen, kOrange, kViolet, kYellow,
+)
+from math import *
+#from helper import *  
+from os import system as call
+import time
+
+from jwk_tdr_style_py import *
+#import cmsstyle as CMS
+
+def dostack( hist_list, outname, date, layout, ptitle, y, x, l, t, fit_mode='NC' ):
+
+    fit_mode = fit_mode.upper()
+    if fit_mode not in ('NC', 'NSC'):
+        raise ValueError("fit_mode must be 'NC' or 'NSC'")
+    fit_hist_suffix = '_sigmaFractionalScatter' + fit_mode + 'FitInput'
+    fit_function_suffix = '_sigma_fit_FractionalScatter_' + fit_mode
+
+    first = True
+    dofit = True
+    #dofit = False
+    #sxtal = True
+    sxtal = False
+    dostoch = (fit_mode == 'NSC')
+    paramn = []
+    parnerror = []
+    paramc = []
+    parcerror = []
+    params = []
+    parserror = []
+    paramf = []
+    parfer = []
+    thebinmid = []
+    thebinerror = []
+    f1 = []
+    h1 = []
+    n = 0
+
+
+    setTDRStyle()
+    gROOT.SetBatch(True)
+    gStyle.SetPadTickY(1)
+    gStyle.SetPadTickX(1)
+    gStyle.SetPadTopMargin(0.09)
+    gStyle.SetLabelOffset(0.005, "XYZ")
+    #c1 = TCanvas( 'c1', 'canvas' , 200, 10, 700, 500 )
+    c1 = TCanvas( 'c1', 'canvas' , 300, 50, 1200, 900 )
+    c1.cd()
+    #if layout['logx'] : c1.SetLogx()
+    if layout['logx'] : gStyle.SetOptLogx(1)
+    if layout['logy'] : gStyle.SetOptLogy(1)
+    if layout['logy'] : c1.SetLogy()
+    c1.SetGridx(1)
+    c1.SetGridy(1)
+    c1.Update()
+    c1.Draw()
+
+    legend = TLegend(l[0],l[1],l[2],l[3]);
+#    legend.SetHeader(layout['legtitle'], '')
+    legend.SetName('legend')
+    gStyle.SetLegendFont(42)
+    gStyle.SetLegendTextSize(0.03)
+    gStyle.SetLabelSize(0.03, "XYZ")
+    gStyle.SetTitleSize(0.04, "XYZ")
+    gStyle.SetTitleXOffset(1.3)
+    gStyle.SetTitleYOffset(1.8)
+    legend.SetBorderSize(0)
+    #legend.SetLineColor(kBlack)
+
+    lat = TLatex() 
+    lat.SetNDC()
+
+    hMax = y[0]
+    hMin = y[1]
+
+    # The fitted-scatter functions are read from the ROOT files below; this
+    # legacy TF1 construction is intentionally disabled in this copy.
+    if False and dofit :
+        ns=str(n)
+        #hfit = TF1('hfits','sqrt((([0]*[0])/(x*x))+(2*[1]*[1]))',75,2250,2)
+        #hfit = TF1('hfits','sqrt((([0]*[0])/(x*x))+(2*[1]*[1]))',75,500,2)
+        #hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] ) )',100,2250,2)
+        #hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] ) )',25,300,2)
+        if not dostoch : hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] ) )',17.5,3200,2)
+        #hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] ) )',5,800,2)
+        #hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] )+( ([2]*[2])/(x) ) )',25,250,3)
+        #hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] )+( ([2]*[2])/(x) ) )',75,375,3)
+        #hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] )+( ([2]*[2])/(x) ) )',100,750,0,3)
+        #hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] )+( ([2]*[2])/(x) ) )',5,800,3)
+        #if dostoch : hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] )+( ([2]*[2])/(x) ) )',5,3200,3) 
+        #if dostoch : hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] )+( ([2]*[2])/(x) ) )',15,1600,3)
+        #if dostoch : hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] )+( ([2]*[2])/(x) ) )',17.5,3200,3)
+        #if dostoch : hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] )+( ([2]*[2])/(x) ) )',10,1600,3)
+        if dostoch : hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] )+( ([2]*[2])/(x) ) )',10,900,3)
+        #if dostoch : hfit = TF1('hfits','sqrt( ( ([0]*[0])/(x*x) )+( 2*[1]*[1] )+( ([2]*[2])/(x) ) )',10.0,400,3)
+        #hfit = TF1('hfits','sqrt((([0]*[0])/(x*x))+(2*[1]*[1]))',6,100,2)
+        hfit.SetParName(0,'N')
+        hfit.SetParameter(0,40.0)
+        #hfit.SetParLimits(0,0,50)
+        hfit.SetParLimits(0,0.0,100.0)
+        #hfit.SetParameter(0,5)
+        #hfit.SetParLimits(0,0,10)
+        hfit.SetParName(1,'C')
+        hfit.SetParameter(1,0.1)
+        hfit.SetParLimits(1,0.0,1.0)
+        #hfit.SetParLimits(1,0.01,10.0)
+        #hfit.SetParLimits(1,0.02,1.0)
+        #hfit.SetParameter(1,0.05)
+        #hfit.SetParLimits(1,0.001,1.0)
+        if dostoch : hfit.SetParName(2,'S')
+        if dostoch : hfit.SetParameter(2,5.0)
+        if dostoch : hfit.SetParLimits(2,0.0,25.0)
+
+    savedfits = []
+    fit_quality = []
+    mg = TMultiGraph();
+
+    #thebinmid.append([  88.01, 111.9, 136.4, 161.4, 196.6, 247.8, 298.5, 348.9, 419.7, 528.9, 656.9, 801.5,   990, 1487.5,  1975])
+    #thebinerror.append([ 7.09, 7.156, 7.154, 7.172, 14.28, 14.39, 14.43,  14.4, 28.53, 35.37, 40.58, 43.16, 38.06,      0,     0])
+    #thebinmid.append([  90.43, 112.6, 137.1, 161.8, 196.8, 247.1, 297.6, 347.9, 417.6, 528.2,   663, 825.1,  1022,   1320,  1975])
+    #thebinerror.append([6.521, 7.156, 7.192, 7.192, 14.22, 14.29, 14.33, 14.34,  28.4, 35.39, 42.34, 53.72, 63.78,  51.57,     0])
+    #thebinmid.append([  94.04,   115, 137.7, 162.2, 198.1, 247.7, 297.7, 347.9,   418, 528.4, 664.2, 833.9,  1064,   1387,  1779])
+    #thebinerror.append([5.056, 6.691, 7.158, 7.201, 14.32, 14.31, 14.33, 14.36, 28.43, 35.41, 42.68, 56.53,  84.3,  81.16, 65.90])
+
+    for histname, tree, infile, lego  in hist_list :
+    
+        f1.append(TFile.Open(infile))
+        if histname.endswith('_sigma'):
+            fit_base = histname[:-len('_sigma')]
+        else:
+            fit_base = histname
+        fit_hist_name = fit_base + fit_hist_suffix
+        fit_function_name = fit_base + fit_function_suffix
+        if tree == '' : hist = fit_hist_name
+        else : hist = tree+'/'+fit_hist_name
+        print( "Opening: ", hist )        
+ 
+        orighist = f1[n].Get(hist)
+        if not orighist:
+            raise RuntimeError('Missing fitted-scatter histogram: ' + hist)
+        savedfit = f1[n].Get(fit_function_name)
+        if not savedfit:
+            raise RuntimeError('Missing fitted-scatter function: ' + fit_function_name)
+        savedfit = savedfit.Clone(fit_function_name + '_plot')
+        savedfit.SetLineColor([kBlue+2,kCyan+3,kGreen+2,kYellow+3,kViolet+7,kOrange+7][n])
+        savedfit.SetLineWidth(2)
+        savedfits.append(savedfit)
+        quality_name = fit_base + '_FractionalScatter' + fit_mode + 'FitQuality'
+        quality = f1[n].Get(quality_name)
+        if not quality:
+            raise RuntimeError('Missing fitted-scatter quality histogram: ' + quality_name)
+        fit_quality.append(quality)
+        #nbins = 15 #orighist.GetNbinsX()
+        #low = 0.0 #orighist.GetMinimumBin()
+        #high = 100.0 #orighist.GetMaximumBin()
+        #bscale = (high-low)/(10*nbins)
+        #print('Find Bins',nbins,low,high,bscale) 
+        htitle = 'hist' + str(n)
+        #mybins = array([0,2,4,6,8,10,12,14,16,20,24,30,38,52,68,100],dtype='float64')
+        #mybins = [0,2,4,6,8,10,12,14,16,20,24,30,38,52,68,100]
+        #binwidths = [1,1,1,1, 1, 1, 1, 1, 2, 2, 3, 4, 7, 8, 16]
+        #numExcludeBins = 0
+        ##mybins = array([75,  100, 125, 150, 175, 225, 275, 325, 375, 475, 600, 750,  950, 1275, 1700, 2250],dtype='float64')
+        #mybins = [4, 6, 7, 8, 9, 12, 20]
+        #binwidths = [1,0.5,0.5,0.5,1.5,4]
+        #mybins = [ 0, 75,  100, 125, 150, 175, 225, 275, 325, 375, 475, 600, 750,  950, 1275, 1700, 2250]
+        #binwidths = [ 37.5, 12.5,12.5,12.5,12.5,25.0,25.0,25.0,25.0,50.0,62.5,75.0,100.0,162.5,212.5,275.0]
+        #mybins = [75,  100, 125, 150, 175, 225, 275, 325, 375, 475, 600, 950, 2250]
+        #binwidths = [ 12.5,12.5,12.5,12.5,25.0,25.0,25.0,25.0,50.0,62.5,175.0,650.0]
+        #mybins = [100, 125, 150, 175, 225, 275, 325, 375, 475, 600, 950, 2250]
+        #mybins = [75, 150, 175, 225, 275, 325, 375, 475, 600, 950, 2250]
+        #mybins = [ 0, 75, 125, 175, 225, 275, 325, 375, 425, 500, 700, 2250, 9000]
+        #binwidths = [ 37.5,25.0,25.0,25.0,25.0,25.0,25.0,25.0,37.5,100.0,775.0,3375.0]
+        #mybins = [ 0, 75, 125, 175, 225, 275, 325, 375, 425, 500, 700, 2250, 9000]
+        #binwidths = [ 37.5,25.0,25.0,25.0,25.0,25.0,25.0,25.0,37.5,100.0,775.0,3375.0]
+        #mybins = [ 0, 7.5, 12.5, 17.5, 22.5, 27.5, 32.5, 37.5, 42.5, 50.0, 70.0, 225.0, 900.0]
+        #binwidths = [ 3.75,2.50,2.50,2.50,2.50,2.50,2.50,2.50,3.75,10.00,77.50,337.50]
+        #mybins = [0, 75,  100, 125, 150, 175, 225, 275, 325, 375, 475, 600, 950, 2250]
+        #binwidths = [   12.5,12.5,12.5,12.5,25.0,25.0,25.0,25.0,50.0,62.5,75.0,100.0,162.5,212.5,275.0]
+        #binwidths = [ 12.5,12.5,12.5,12.5,25.0,25.0,25.0,25.0,50.0,62.5,175.0,650.0]
+        #binwidths = [ 37.5,12.5,25.0,25.0,25.0,25.0,50.0,62.5,175.0,650.0]
+        #binwidths = [ 37.5,12.5,12.5,12.5,12.5,25.0,25.0,25.0,25.0,50.0,62.5,175.0,650.0]
+        #mybins = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10]
+        #mybins = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]
+        #binwidths = [0.5,0.5,0.5,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25]
+        #numExcludeBins = 0
+
+        #binwidths = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]        
+
+        #lenmybins = len(mybins) - numExcludeBins
+        lenmybins = int(orighist.GetNbinsX())
+        #lenmybins = 16
+        #myhist = TH1D(htitle,"",150,low,high)
+        #h1.append(TGraphErrors(lenmybins))
+        h1.append(TGraphErrors(22))
+        #h1.append(TH2D(htitle,"",(10*nbins),low,high,240,0,2.4))
+        #h1.append(TH1F(htitle,"",len(mybins)-1,mybins))
+
+        mgbn = 1
+        for bn in range( 1,lenmybins):
+            #binval = float(orighist.GetBinContent(bn))*binwidths[bn-1]*2
+            binval = float(orighist.GetBinContent(bn))
+            binerr = float(orighist.GetBinError(bn))
+            binmid = float(orighist.GetBinCenter(bn))
+            binwidth = float(orighist.GetBinWidth(bn))
+            binstart = float(orighist.GetBinLowEdge(bn))
+            #binmid = thebinmid[n][bn-1]  #float(orighist.GetBinCenter(bn))
+            if binval > 0.0 and binerr < binval and binmid > 5 :     
+            #goodpoint = binerr < (binval/5.0) and binerr != 0
+            #if binmid > 15 :
+                mgbn = mgbn + 1
+                if( sxtal ):  
+                    print( '--- adjusting bin value' )
+                    binval = binval/sqrt(2)
+                h1[n].SetPoint(mgbn,binmid,binval)
+                #ebin = int(binmid/bscale)+1
+                widtherr = (binwidth/2)/sqrt(3)
+                #widtherr = 0.0004
+                #widtherr = (0.25)/sqrt(3)
+                #widtherr = thebinerror[n][bn-1] #binwidths[bn-1]/sqrt(3)
+                # The fitted-scatter input histogram already contains
+                # sqrt(e_stat^2 + (f*sigma)^2).
+                fiterror = binerr
+                h1[n].SetPointError(mgbn,widtherr,fiterror)
+                print('Fill bin',bn,'at',binmid,'with',binval,'err width',widtherr,' err bin',binerr,'for:',binstart,'to',binstart+binwidth,'width',binwidth) 
+                #print('Fill bin',bn,'at',binmid,'with',binval,'for',ebin,'with',binerr)  
+        #h1[n].SetPoint(lenmybins,10000,0.001)
+#       h1.append(f1[n].Get(hist))
+
+#       print( f1 )
+#       print( h1 )
+
+        h1[n].UseCurrentStyle()
+        h1[n].SetMarkerStyle(n+20)
+        #h1[n].SetMarkerStyle(6)
+        #h1[n].SetTitle(layout['title'])
+        #h1[n].GetXaxis().CenterTitle(True)
+        #h1[n].GetXaxis().SetTitle(layout['xtitle'])
+        #h1[n].GetYaxis().CenterTitle(True)
+        #h1[n].GetYaxis().SetTitle(layout['ytitle'])
+        #k = [kMagenta+2,kBlue+1,kAzure+4,kBlack,kYellow+1,kViolet+7,kOrange+7,kRed+2,kGreen+3, kGray]
+        #k = [kMagenta+2,kGreen+2,kYellow+1,kBlue+2,kRed+2,kAzure+4,kBlack,kViolet+7,kOrange+7,kGreen+3,kRed+4,kBlue+4,kGreen+2,kAzure+4,kMagenta+2,kGreen+2]
+        #k = [kMagenta+2,kGreen+2,kBlue+2,kRed+2,kAzure+4,kViolet+7,kOrange+7,kGreen+3,kRed+4,kBlue+4,kGreen+2,kAzure+4,kMagenta+2,kGreen+2,kBlack]
+        #k = [kBlue+4,kBlue+1,kGreen+4,kYellow+3,kAzure+4,kViolet+7,kOrange+7,kGreen+3]
+        #k = [kViolet-1,kViolet-6,kSpring-1,kSpring-6]
+        #k = [kSpring-7,kSpring+3,kAzure+3,kAzure-7]
+        #k = [kAzure+2,kAzure-7,kSpring-7,kSpring+3]
+        #k = [kAzure+2,kSpring-7]
+        #k = [kBlack]
+        #k = [kGray+2,kGray+3,kGray+4,kBlack]
+        #k = [kGreen+2,kBlue+2,kMagenta+2,kRed+2]
+        #k = [kViolet-1,kViolet-6,kBlue+2,kAzure+3]
+        #k = [kGreen+2,kBlue+2,kSpring-1,kAzure+3]
+        #k = [kGreen-1,kSpring+3,kBlue+1,kAzure+4]
+        #k = [kYellow+3,kGreen+2,kCyan+3,kBlue+2]
+        k = [kBlue+2,kCyan+3,kGreen+2,kYellow+3,kViolet+7,kOrange+7]
+        h1[n].SetLineColor(k[n])
+        #h1[n].SetLineWidth(1)
+        #h1[n].SetLineStyle(9-n)
+        h1[n].SetMarkerColor(k[n])
+        #msz = 0.2
+        #msz = 0.8 # my standard
+        msz = 1.5 # prsentaion plots
+        #msz = 1.0
+        if( n == 1 ) : h1[n].SetMarkerSize(msz+0.3)
+        elif( n == 2 ) : h1[n].SetMarkerSize(msz+0.5)
+        else : h1[n].SetMarkerSize(msz)
+        h1[n].SetMarkerSize(msz)
+        #h1[n].SetMinimum(y[1])
+        #h1[n].SetMaximum(y[0])
+#       h1[n].GetXaxis().SetRangeUser(200.0,1100.0)
+        #h1[n].GetXaxis().SetRangeUser(x[0],x[1])
+        #if layout['logx'] : h1[n].GetXaxis().SetMoreLogLabels()
+        #if layout['logy'] : h1[n].GetYaxis().SetMoreLogLabels()
+        #c1.cd()
+        #c1.Update()
+        if dofit : 
+                 paramn.append(str(abs(savedfit.GetParameter(0))))
+                 paramc.append(str(abs(savedfit.GetParameter(1))))
+                 if dostoch:
+                     svalue = savedfit.GetParameter(2)
+                     serror = savedfit.GetParError(2)
+                     # Keep the saved curve unchanged, but display a
+                     # statistically insignificant stochastic term as 0 +/- 0.
+                     if abs(svalue) <= serror:
+                         svalue, serror = 0.00, 0.00
+                     params.append(str(abs(svalue)))
+                     pse = serror
+                 pne = savedfit.GetParError(0)
+                 pce = savedfit.GetParError(1)
+                 print('Fit info',paramn[n],pne,paramc[n],pce)
+                 #print('Fit info',paramn[n],pne,paramc[n],pce,params[n],pse)
+                 if pne < 0.01 : pne = 0.01
+                 if pce < 0.0001 : pce = 0.0001
+                 parnerror.append(str(pne))
+                 parcerror.append(str(pce))
+                 if dostoch : parserror.append(str(pse))
+                 fbin = fit_quality[n].GetXaxis().FindBin('fractionalScatter')
+                 febin = fit_quality[n].GetXaxis().FindBin('fractionalScatterError')
+                 paramf.append(str(100.0*fit_quality[n].GetBinContent(fbin)))
+                 parfer.append(str(100.0*fit_quality[n].GetBinContent(febin)))
+                 #print( 'C: ' + param + ' +/- ' + parerror )
+                 #lat_param = '#color['+str(k[n])+']{N : ' + paramn[0:4] + ' #pm ' + parnerror[0:4] + ' [ns]  C : ' + paramc[0:6] + ' #pm ' + parcerror[0:6] + ' [ns]}'
+                 #lat.SetTextSize(0.03);
+                 #lat.DrawLatex(t[3],t[4]-n*.035,lat_param);    
+                 #c1.Modified()
+                 #c1.Update()       
+ 
+        legend.AddEntry(h1[n],lego,'epl');
+        #c1.Update()
+        #c1.Draw()
+        n += 1
+
+        #End of loop
+    
+    for h in range(0,n):
+        mg.Add(h1[h])
+
+    mg.Draw('AP')
+    for savedfit in savedfits:
+        savedfit.Draw('same')
+
+    #mg.UseCurrentStyle()
+    #mg.SetMarkerStyle(n+25)
+    #mg.SetMarkerStyle(6)
+    mg.SetTitle(layout['title'])
+#+';X axis '+layout['xtitle']+';Y Axis '+layout['ytitle']+';')
+    mg.GetXaxis().CenterTitle(True)
+    mg.GetXaxis().SetTitle(layout['xtitle'])
+    mg.GetYaxis().CenterTitle(True)
+    mg.GetYaxis().SetTitle(layout['ytitle'])
+    mg.SetMinimum(y[1])
+    mg.SetMaximum(y[0])
+#   mg.GetXaxis().SetRangeUser(200.0,1100.0)
+    #mg.GetXaxis().SetRangeUser(x[0],x[1])
+    mg.GetXaxis().SetLimits(x[0], x[1])
+    if layout['logx'] : mg.GetXaxis().SetMoreLogLabels()
+    if layout['logy'] : mg.GetYaxis().SetMoreLogLabels()
+
+    #mg.Draw('AP')
+    if lego != 'none' : legend.Draw('same')  #   legend inclusion switch
+
+    gPad.Modified()
+    #c1.SetGridx(1)
+    #c1.SetGridy(1)
+    #c1.cd()
+    #c1.Update()
+    #mg.Draw('AP')
+
+    lat_cms = '#bf{CMS} #it{Preliminary}' + ptitle[0]
+    #lat_cms = '#bf{CMS} #it{Work in Progress}' + ptitle[0]
+    #lat_title = 'Run2018D 3206730-320824' #   7 fb^{-1} (#sqrt{s} = 13 TeV)'
+    #lat_title = 'Run2018D 1Tier miniAOD'
+    #lat_title = ptitle[1]+' (13 TeV)'
+    #lat_title = ptitle[1]+' (13.6 TeV)'
+    lat_title = ptitle[1]
+    ##lat_title = ptitle[1]+' (13.8 TeV)'
+    if not dostoch : lat_form = '#sigma^{2}_{i} = (#frac{N}{A_{eff}/#sigma_{n}})^{2} + 2C^{2}'
+    if dostoch : lat_form = '#sigma^{2}_{i} = (#frac{N}{A_{eff}/#sigma_{n}})^{2} + #frac{S^{2}}{A_{eff}/#sigma_{n}} + 2C^{2}'
+    #lat_form = '#sigma^{2}_{i} = (N/Eeff)^{2} + 2C^{2}'
+    #lat.SetTextSize(0.045);
+    #lat.SetTextFont(132);
+    #lat.DrawLatex(0.48+max(0.,0.32-lat.GetXsize()),0.947,lat_string);
+    lat.SetTextSize(0.045);
+    lat.SetTextFont(42);
+    lat.DrawLatex(0.16,0.93,lat_cms);
+    #lat.DrawLatex(0.12,0.9325,lat_cms);
+    #lat.DrawLatex(0.15,0.9425,lat_cms);
+    #lat.DrawLatex(0.25,0.9325,lat_cms);
+    #lat.SetTextSize(0.04);
+    #lat.SetTextFont(42);
+    #lat.DrawLatex(0.58,0.9325,lat_title);
+    lat.DrawLatex((0.828-t[2]),0.93,lat_title);
+    #lat.SetTextSize(0.045);
+    lat.SetTextSize(0.03);
+    lat.DrawLatex(t[0],t[1],ptitle[2]);
+    if dofit : 
+        lat.SetTextSize(0.025);
+        lat.DrawLatex(t[3],t[4]+.08,lat_form);
+        #lat.SetTextAlign(12)
+        #lat.DrawLatex(.74,0.0325,layout['xtitle']);
+        for l in range(0,n):
+            #lat_param ='#color['+str(k[l])+']{N : '+paramn[l][0:4]+' #pm '+parnerror[l][0:4]+' [ns]  C : '+paramc[l][0:6]+' #pm '+parcerror[l][0:6]+' }'
+            lat_param =	'#color['+str(k[l])+']{'
+            lat_param = lat_param + 'N : '+paramn[l][0:5]+' #pm '+parnerror[l][0:4]+' [ns]   '
+            if dostoch : lat_param = lat_param + 'S : '+params[l][0:3]+' #pm '+parserror[l][0:3]+' [ns]   '
+            lat_param = lat_param + 'C : '+paramc[l][0:6]+' #pm '+parcerror[l][0:6]+' [ns]}'
+            #lat_param = lat_param[:-1] + '   f : '+paramf[l][0:5]+' #pm '+parfer[l][0:5]+' %}'
+            lat.SetTextSize(0.03);
+            lat.DrawLatex(t[3],t[4]-l*.035,lat_param);
+
+    
+    if layout['logx'] : c1.SetLogx()
+    ####c1.BuildLegend()
+    c1.Modified()
+    c1.Update()
+
+    #c1.Print( outname + '_' + date + '.pdf' )
+    c1.Print( outname + '_' + date + '.png' )
+    #c1.SaveAs( outname + '_' + date + '.root' )
+    #c1.SaveAs( outname + '_' + date + '.C' )
+    #c1.Show()
+    c1.Close()
+
+#from overlay_hist_defs_v2 import *
+#from overlay_hist_defs_v3 import *
+
+#dispho_2t_eg2018B_preplot_sp
+
+date = time.strftime('%d%m%Y') +  time.strftime('%H%M%S')
+
+#legtitle = 'Run2016 SP'
+#legtitle = 'Run2016 DEG'
+#legtitle = 'Run2016G Raw 94 '
+#legtitle = 'Run2017 SP'
+#legtitle = 'Run2017B Raw 94X'
+#legtitle = 'Run2017 DEG'
+#legtitle = 'Run2018 EG' 
+#legtitle = 'Run2018B EG'
+#legtitle = 'Run2018C EG'
+#legtitle = 'Run2018D EG'
+#legtitle = 'Run2018A Raw '
+#legtitle = 'Run2018A Mini '
+#legtitle = 'Full dR '
+#legtitle = 'dR < 2.5 '
+#legtitle = 'dR > 2.5 '
+legtitle = ''
+#legtitle = 'KuStc'
+#legtitle = 'KuNotStc'
+
+##rtitle = 'Run2' # (13TeV)'
+##rtitle = 'Run3' # (13.6TeV)'
+
+gi_legtitle = 'Global Inclusive'
+li_legtitle = 'Local Inclusive'
+ls_legtitle = 'Local Same'
+Ic_legtitle = ''
+loc2_legtitle = ' LS'
+#xtitle = ''
+xtitle = 'A_{eff}/#sigma_{n}'
+#xtitle = '#Delta_{Run}'
+#xtitle = 'E_{eff} [GeV]'
+#xtitle = 'RecHit E [GeV]'
+#xtitle = 'pCaloHit E_{eff} [GeV]'
+#xtitle = 'pCaloHit energy [GeV]'
+#xtitle = 'GeV'
+#xtitle = '[ns]'
+#xtitle = 'Max(R_{oot})'
+#xtitle = 'Max(R_{oot}^{after})'
+#xtitle = 'Max(R_{oot}^{before})'
+ytitle = '#sigma(t_{1}-t_{2}) [ns]'
+#ytitle = 'Ave Xtal Time [ns]'
+#ytitle = '#sigma(t_{gen}-t_{reco}) [ns]'
+#ytitle = '#sigma(Adjusted pCalo time) [ns]'
+#ytitle = '#mu(t_{1}-t_{2}) [ns]'
+#ytitle = '#occupancy(t_{1}-t_{2}) '
+#ytitle = ''
+#htitle = 'A_{eff}/#sigma_{n} vs #sigma_{#delta_{t}}'
+htitle = ''
+islogx = True
+#islogx = False
+islogy = True
+#islogy = False
+
+gll_layout = { 'xtitle' : xtitle, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'legtitle' : legtitle }
+loc_layout = { 'xtitle' : xtitle, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'legtitle' : legtitle + li_legtitle }
+#s2legtitle = '#splitline{'+legtitle+loc2_legtitle+'}{Cali w/ TOF}'
+#s2legtitle = '#splitline{'+legtitle+loc2_legtitle+'}{Cali w/out TOF}'
+#s2legtitle = '#splitline{'+legtitle+loc2_legtitle+'}{Cali TOF Comp}'
+s2_li_legtitle = '#splitline{'+legtitle+'}{'+li_legtitle+'}'
+li_legtitle = legtitle+' '+li_legtitle
+s2_gi_legtitle = '#splitline{'+legtitle+'}{'+gi_legtitle+'}'
+gi_legtitle = legtitle+' '+gi_legtitle
+Ic_legtitle = legtitle+' '+Ic_legtitle
+
+loc2_layout = { 'xtitle' : xtitle, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'legtitle' : li_legtitle }
+glo2_layout = { 'xtitle' : xtitle, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'legtitle' : gi_legtitle }
+Ic_layout = { 'xtitle' : xtitle, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'legtitle' : Ic_legtitle }
+glo_layout = { 'xtitle' : xtitle, 'ytitle' : ytitle, 'title' : htitle, 'logx' : islogx, 'logy' : islogy, 'legtitle' : legtitle + gi_legtitle }
+#---------------------------------------------------------------
+
+# run3 2024 C full no json
+
+##egres_r3_24_EG01_v12 = '../../res_files/egmres_24C_Full_nojson_resplots/egres_Run2024C_nojson_eg01_Full_140_v10_resplots.root'
+##egres_r3_24_EG01_v12 = '../../res_files/egmres_24C_Full_goldjson_cali_resplots/egres_Run2024C_goldjson_eg01_Full_cali_140_v10_resplots.root'
+##egres_r3_24_EG01_v12 = '../../res_files/egmres_24C_Full_goldjson_resplots/egres_Run2024C_goldjson_eg01_Full_140_v10_resplots.root'
+##egres_r3_24_EG01_v12 = '../../res_files/egmres_24C_iov1_goldjson_resplots/egres_Run2024C_goldjson_eg01_379367_379543_140_v10_resplots.root'
+##egres_r3_24_EG01_v12 = '../../res_files/egmres_24C_iov2_goldjson_resplots/egres_Run2024C_goldjson_eg01_379434_380065_140_v10_resplots.root'
+##egres_r3_24_EG01_v12 = '../../res_files/egmres_24C_iov3_goldjson_resplots/egres_Run2024C_goldjson_eg01_380066_380238_140_v10_resplots.root'
+#
+##egres_r3_24_EG01_v12 = '../../res_files/egmres_24D_Full_nojson_resplots/egres_Run2024D_nojson_eg01_Full_140_v10_resplots.root'
+egres_r3_24_EG01_v12 = '../../res_files/egmres_24D_Full_nojson_cali_resplots/egres_Run2024D_nojson_eg01_Full_cali_140_v10_resplots.root'
+#
+##egres_r3_24_EG01_v12 = '../../res_files/egmres_24CD_Full_mixed_resplots/egres_Run2024CD_mixed_eg01_Full_140_v10_resplots.root'
+##egres_r3_24_EG01_v12 = '../../res_files/egmres_24CD_Full_mixed_cali_resplots/egres_Run2024CD_mixed_eg01_Full_cali_140_v10_resplots.root'
+egres_r3_24_EG01_v12 = '../../res_files/egmres_24E_test_resplots/egres_Run2024E_test_140_v10_resplots.root'
+##egres_r3_23d_part_EG1_v12 = '../../res_files/egmres_23D_partial_nojson_resplots/egres_Run2023D_SF_140_v10_resplots.root'
+egres_r3_23d_part_EG1_v12 = '../../res_files/egmres_23D_partial_nojson_cali_resplots/egres_Run2023D_SF_140_v10_resplots.root'
+#
+egres_24f_sro_prompt = 'run3/SRO_Data_Hist_2024F_prompt_cali_resfit.root'
+egres_24f_sro_ecal = 'run3/SRO_Data_Hist_2024F_ECAL_cali_resfit.root'
+egres_24f_zee_prompt = 'run3/ZEE_Data_Hist_2024F_prompt_cali_resfit.root'
+egres_24f_zee_ecal = 'run3/ZEE_Data_Hist_2024F_ECAL_cali_resfit.root'
+
+egres_24f_sro_ecal = 'run3/ResMap_0_999999__SRO_Data_Hist_deg24fval_xa_pm9b1800_v417_resfit.root'
+egres_24f_sro_prmt = 'run3/ResMap_0_999999__SRO_Data_Hist_deg24fprmt_xa_pm9b1800_v417_resfit.root'
+egres_24f_zee_ecal = 'run3/ResMap_0_999999__ZEE_Data_Hist_deg24fval_xa_pm9b1800_v417_resfit.root'
+egres_24f_zee_prmt = 'run3/ResMap_0_999999__ZEE_Data_Hist_deg24fprmt_xa_pm9b1800_v417_resfit.root'
+
+egres_24f_nc_sro_ecal = 'run3/ResMap_0_999999__SRO_Data_Hist_NoCali_deg24fval_xa_pm9b1800_v417_resfit.root'
+egres_24f_nc_sro_prmt = 'run3/ResMap_0_999999__SRO_Data_Hist_NoCali_deg24fprmt_xa_pm9b1800_v417_resfit.root'
+egres_24f_nc_zee_ecal = 'run3/ResMap_0_999999__ZEE_Data_Hist_NoCali_deg24fval_xa_pm9b1800_v417_resfit.root'
+egres_24f_nc_zee_prmt = 'run3/ResMap_0_999999__ZEE_Data_Hist_NoCali_deg24fprmt_xa_pm9b1800_v417_resfit.root'
+
+sel = 'xgs'
+
+egres_24f_v2_sro_ecal = 'run3/ResMap_0_999999__SRO_Data_Hist_NoCali_deg24fcc_' + sel + '_pm3b240_v508_resfit.root'
+egres_24f_v2_sro_prmt = 'run3/ResMap_0_999999__SRO_Data_Hist_NoCali_deg24fprmt_' + sel + '_pm3b240_v508_resfit.root'
+
+sroe = 'ResMap_0_999999__SRO_Data_Hist_NoCali_deg24fcc_' + sel + '_pm3b240_v508_sigma'
+srop = 'ResMap_0_999999__SRO_Data_Hist_NoCali_deg24fprmt_' + sel + '_pm3b240_v508_sigma'
+zeee = 'ResMap_0_999999__ZEE_Data_Hist_NoCali_deg24fval_xa_pm9b1800_v417_sigma'
+zeep = 'ResMap_0_999999__ZEE_Data_Hist_NoCali_deg24fprmt_xa_pm9b1800_v417_sigma'
+
+hist = '_sigma'
+mdir = 'run3/'
+froot = '_resfit.root'
+
+
+sro25b = 'ResMap_0_999999__SRO_Data_Hist_NoCali_deg25b_xa_pm6b480_v519'
+zee25b = 'ResMap_0_999999__ZEE_Data_Hist_NoCali_deg25b_xa_pm6b480_v519'
+sro25bc = 'ResMap_0_999999__SRO_Data_Hist_NoCali_deg25bc_xa_pm6b480_v616'
+
+sru24fEEf = 'run3/ResMap_0_999999__SRO_Data_Hist_NoCali_eg24f_ee_xa_pm6b480_v808_resfit.root'
+sru24fEE = 'ResMap_0_999999__SRO_Data_Hist_NoCali_eg24f_ee_xa_pm6b480_v808_sigma'
+sru24fccEEf = 'run3/ResMap_0_999999__SRO_Data_Hist_NoCali_eg24fcc_ee_xa_pm6b480_v808_resfit.root'
+sru24fccEE = 'ResMap_0_999999__SRO_Data_Hist_NoCali_eg24fcc_ee_xa_pm6b480_v808_sigma'
+
+sru25cv2f = 'run3/ResMap_0_999999__SRO_Data_Hist_NoCali_eg25cv2_xa_pm6b480_v808_resfit.root'
+sru25cv2 = 'ResMap_0_999999__SRO_Data_Hist_NoCali_eg25cv2_xa_pm6b480_v808_sigma'
+zee25cv2f = 'run3/ResMap_0_999999__ZEE_Data_Hist_NoCali_eg25cv2_xa_pm6b480_v808_resfit.root'
+zee25cv2 = 'ResMap_0_999999__ZEE_Data_Hist_NoCali_eg25cv2_xa_pm6b480_v808_sigma'
+
+sru24fccf = 'run3/ResMap_0_999999__SRO_Data_Hist_NoCali_eg24fcc_xa_pm6b480_v808_resfit.root'
+sru24fcc = 'ResMap_0_999999__SRO_Data_Hist_NoCali_eg24fcc_xa_pm6b480_v808_sigma'
+zee24fccf = 'run3/ResMap_0_999999__ZEE_Data_Hist_NoCali_eg24fcc_xa_pm6b480_v808_resfit.root'
+zee24fcc = 'ResMap_0_999999__ZEE_Data_Hist_NoCali_eg24fcc_xa_pm6b480_v808_sigma'
+
+sru25df = 'run3/ResMap_0_999999__SRO_Data_Hist_NoCali_eg25d_xa_pm6b480_v810_resfit.root'
+sru25d = 'ResMap_0_999999__SRO_Data_Hist_NoCali_eg24d_xa_pm6b480_v810_sigma'
+zee25df = 'run3/ResMap_0_999999__ZEE_Data_Hist_NoCali_eg25d_xa_pm6b480_v810_resfit.root'
+zee25d = 'ResMap_0_999999__ZEE_Data_Hist_NoCali_eg24d_xa_pm6b480_v810_sigma'
+
+dro17eenc = 'ResMap_296399_306460__DRO_Data_Hist_NoCali_deg_17_UL_EE_xa_pm24b1200_v113_NSC_resfit.root'
+dro17ebnc = 'ResMap_296399_306460__DRO_Data_Hist_NoCali_deg_17_UL_xa_pm24b1200_v113_NSC_resfit.root'
+dro17eec = 'ResMap_296399_306460__DRO_Data_Hist_deg_17_UL_EE_xa_pm24b1200_v1117_NSC_resfit.root'
+dro17ebc = 'ResMap_296399_306460__DRO_Data_Hist_deg_17_UL_xa_pm24b1200_v113_NSC_resfit.root'
+
+dro18eenc = 'ResMap_315257_325172__DRO_Data_Hist_NoCali_deg_18_UL_EE_xa_pm24b1200_v114_NSC_resfit.root'
+dro18ebnc = 'ResMap_315257_325172__DRO_Data_Hist_NoCali_eg_18_UL_xa_pm24b1200_v1117_NSC_resfit.root'
+dro18eec = 'ResMap_315257_325172__DRO_Data_Hist_deg_18_UL_EE_xa_pm24b1200_v1117_NSC_resfit.root'
+dro18ebc = 'ResMap_315257_325172__DRO_Data_Hist_deg_18_UL_xa_pm24b1200_v114_NSC_resfit.root'
+
+dro16ebhg = 'ResMap_275600_283900__DRO_Data_Hist_eg_16UL_HG_EB_xa_pm24b1200_v0105'
+dro16eehg = 'ResMap_275600_283900__DRO_Data_Hist_eg_16UL_HG_EE_xa_pm24b1200_v0105'
+dro16eblg = 'ResMap_275600_283900__DRO_Data_Hist_eg_16UL_LG_EB_xa_pm24b1200_v0105'
+dro16eelg = 'ResMap_275600_283900__DRO_Data_Hist_eg_16UL_LG_EE_xa_pm24b1200_v0105'
+
+dro18eblg = 'ResMap_296399_306460__DRO_Data_Hist_eg_17UL_LG_EB_xa_pm24b1200_v0106'
+dro18eelg = 'ResMap_296399_306460__DRO_Data_Hist_eg_17UL_LG_EE_xa_pm24b1200_v0106'
+dro17eblg = 'ResMap_315257_325172__DRO_Data_Hist_eg_18UL_LG_EB_xa_pm24b1200_v0106'
+dro17eelg = 'ResMap_315257_325172__DRO_Data_Hist_eg_18UL_LG_EE_xa_pm24b1200_v0106'
+
+sro18eblg = 'ResMap_275600_283900__SRO_Data_Hist_eg_16UL_LG_EB_xa_pm24b1200_v0105'
+sro18eelg = 'ResMap_275600_283900__SRO_Data_Hist_eg_16UL_LG_EE_xa_pm24b1200_v0105'
+sro17eblg = 'ResMap_296399_306460__SRO_Data_Hist_eg_17UL_LG_EB_xa_pm24b1200_v0106'
+sro17eelg = 'ResMap_296399_306460__SRO_Data_Hist_eg_17UL_LG_EE_xa_pm24b1200_v0106'
+sro16eblg = 'ResMap_315257_325172__SRO_Data_Hist_eg_18UL_LG_EB_xa_pm24b1200_v0106'
+sro16eelg = 'ResMap_315257_325172__SRO_Data_Hist_eg_18UL_LG_EE_xa_pm24b1200_v0106'
+
+#////////////////////////////////////////////////////////////////////////////////////////
+
+rfend = '_NSC_resfit.root'
+shend = '_sigma'
+indir = 'res_files/'
+
+dro16lgeb = 'ResMap_272760_284044_DRO_Data_Hist_eg_16UL_miniAODv2_lg_xa_pm24b1200_v0801_EB' 
+dro16lgee = 'ResMap_272760_284044_DRO_Data_Hist_eg_16UL_miniAODv2_lg_xa_pm24b1200_v0801_EE' 
+sro16lgeb = 'ResMap_272760_284044_SRO_Data_Hist_eg_16UL_miniAODv2_lg_xa_pm24b1200_v0801_EB' 
+sro16lgee = 'ResMap_272760_284044_SRO_Data_Hist_eg_16UL_miniAODv2_lg_xa_pm24b1200_v0801_EE' 
+ 
+dro16eb = 'ResMap_272760_284044_DRO_Data_Hist_eg_16UL_miniAODv2_xa_pm24b1200_v0731_EB' 
+dro16ee = 'ResMap_272760_284044_DRO_Data_Hist_eg_16UL_miniAODv2_xa_pm24b1200_v0731_EE' 
+sro16eb = 'ResMap_272760_284044_SRO_Data_Hist_eg_16UL_miniAODv2_xa_pm24b1200_v0731_EB' 
+sro16ee = 'ResMap_272760_284044_SRO_Data_Hist_eg_16UL_miniAODv2_xa_pm24b1200_v0731_EE' 
+ 
+dro17lgeb = 'ResMap_296398_306460_DRO_Data_Hist_eg_17UL_miniAODv2_lg_xa_pm24b1200_v0801_EB' 
+dro17lgee = 'ResMap_296398_306460_DRO_Data_Hist_eg_17UL_miniAODv2_lg_xa_pm24b1200_v0801_EE' 
+sro17lgeb = 'ResMap_296398_306460_SRO_Data_Hist_eg_17UL_miniAODv2_lg_xa_pm24b1200_v0801_EB' 
+sro17lgee = 'ResMap_296398_306460_SRO_Data_Hist_eg_17UL_miniAODv2_lg_xa_pm24b1200_v0801_EE' 
+ 
+dro17eb = 'ResMap_296398_306460_DRO_Data_Hist_eg_17UL_miniAODv2_xa_pm24b1200_v0801_EB' 
+dro17ee = 'ResMap_296398_306460_DRO_Data_Hist_eg_17UL_miniAODv2_xa_pm24b1200_v0801_EE' 
+sro17eb = 'ResMap_296398_306460_SRO_Data_Hist_eg_17UL_miniAODv2_xa_pm24b1200_v0801_EB' 
+sro17ee = 'ResMap_296398_306460_SRO_Data_Hist_eg_17UL_miniAODv2_xa_pm24b1200_v0801_EE' 
+
+dro18ABClgeb = 'ResMap_306461_327238_DRO_Data_Hist_eg_18UL_ABC_miniAODv2_lg_xa_pm24b1200_v0804_EB'
+dro18ABClgee = 'ResMap_306461_327238_DRO_Data_Hist_eg_18UL_ABC_miniAODv2_lg_xa_pm24b1200_v0804_EE'
+sro18ABClgeb = 'ResMap_306461_327238_SRO_Data_Hist_eg_18UL_ABC_miniAODv2_lg_xa_pm24b1200_v0804_EB'
+sro18ABClgee = 'ResMap_306461_327238_SRO_Data_Hist_eg_18UL_ABC_miniAODv2_lg_xa_pm24b1200_v0804_EE'
+
+dro18ABCeb = 'ResMap_306461_327238_DRO_Data_Hist_eg_18UL_ABC_miniAODv2_xa_pm24b1200_v0804_EB'
+dro18ABCee = 'ResMap_306461_327238_DRO_Data_Hist_eg_18UL_ABC_miniAODv2_xa_pm24b1200_v0804_EE'
+sro18ABCeb = 'ResMap_306461_327238_SRO_Data_Hist_eg_18UL_ABC_miniAODv2_xa_pm24b1200_v0804_EB'
+sro18ABCee = 'ResMap_306461_327238_SRO_Data_Hist_eg_18UL_ABC_miniAODv2_xa_pm24b1200_v0804_EE'
+
+dro18Deb = 'ResMap_306461_327238_DRO_Data_Hist_eg_18UL_D_miniAODv2_xa_pm24b1200_v0802_EB' 
+dro18Dee = 'ResMap_306461_327238_DRO_Data_Hist_eg_18UL_D_miniAODv2_xa_pm24b1200_v0802_EE' 
+sro18Deb = 'ResMap_306461_327238_SRO_Data_Hist_eg_18UL_D_miniAODv2_xa_pm24b1200_v0802_EB' 
+sro18Dee = 'ResMap_306461_327238_SRO_Data_Hist_eg_18UL_D_miniAODv2_xa_pm24b1200_v0802_EE' 
+
+dro18Dlgeb = 'ResMap_306461_327238_DRO_Data_Hist_eg_18UL_D_miniAODv2_lg_xa_pm24b1200_v0802_EB' 
+dro18Dlgee = 'ResMap_306461_327238_DRO_Data_Hist_eg_18UL_D_miniAODv2_lg_xa_pm24b1200_v0802_EE' 
+sro18Dlgeb = 'ResMap_306461_327238_SRO_Data_Hist_eg_18UL_D_miniAODv2_lg_xa_pm24b1200_v0802_EB' 
+sro18Dlgee = 'ResMap_306461_327238_SRO_Data_Hist_eg_18UL_D_miniAODv2_lg_xa_pm24b1200_v0802_EE' 
+
+dro18MClgeb = 'ResMap_0_999999_DRO_Data_Hist_eg_18MC_QCD_lg_xa_pm24b1200_v0818_EB'
+dro18MClgee = 'ResMap_0_999999_DRO_Data_Hist_eg_18MC_QCD_lg_xa_pm24b1200_v0818_EE'
+dro18MCeb = 'ResMap_0_999999_DRO_Data_Hist_eg_18MC_QCD_xa_pm24b1200_v0818_EB'
+dro18MCee = 'ResMap_0_999999_DRO_Data_Hist_eg_18MC_QCD_xa_pm24b1200_v0818_EE'
+
+sro18MClgeb = 'ResMap_0_999999_SRO_Data_Hist_eg_18MC_QCD_lg_xa_pm24b1200_v0818_EB'
+sro18MClgee = 'ResMap_0_999999_SRO_Data_Hist_eg_18MC_QCD_lg_xa_pm24b1200_v0818_EE'
+sro18DMCeb = 'ResMap_0_999999_SRO_Data_Hist_eg_18MC_QCD_xa_pm24b1200_v0818_EB'
+sro18DMCee = 'ResMap_0_999999_SRO_Data_Hist_eg_18MC_QCD_xa_pm24b1200_v0818_EE'
+
+dro22eb = 'ResMap_352319_362760_DRO_Data_Hist_eg_22_22sept23_xa_pm24b1200_v0805_EB' 
+dro22ee = 'ResMap_352319_362760_DRO_Data_Hist_eg_22_22sept23_xa_pm24b1200_v0805_EE' 
+sro22eb = 'ResMap_352319_362760_SRO_Data_Hist_eg_22_22sept23_xa_pm24b1200_v0805_EB' 
+sro22ee = 'ResMap_352319_362760_SRO_Data_Hist_eg_22_22sept23_xa_pm24b1200_v0805_EE' 
+
+dro22lgeb = 'ResMap_352319_362760_DRO_Data_Hist_eg_22_22sept23_lg_xa_pm24b1200_v0805_EB'
+dro22lgee = 'ResMap_352319_362760_DRO_Data_Hist_eg_22_22sept23_lg_xa_pm24b1200_v0805_EE'
+sro22lgeb = 'ResMap_352319_362760_SRO_Data_Hist_eg_22_22sept23_lg_xa_pm24b1200_v0805_EB'
+sro22lgee = 'ResMap_352319_362760_SRO_Data_Hist_eg_22_22sept23_lg_xa_pm24b1200_v0805_EE'
+
+sro23eb = 'ResMap_366365_372415_SRO_Data_Hist_eg_23_22sept23_xa_pm24b1200_v0805_EB'
+sro23ee = 'ResMap_366365_372415_SRO_Data_Hist_eg_23_22sept23_xa_pm24b1200_v0805_EE'
+dro23eb = 'ResMap_366365_372415_DRO_Data_Hist_eg_23_22sept23_xa_pm24b1200_v0805_EB'
+dro23ee = 'ResMap_366365_372415_DRO_Data_Hist_eg_23_22sept23_xa_pm24b1200_v0805_EE'
+
+sro23lgeb = 'ResMap_366365_372415_SRO_Data_Hist_eg_23_22sept23_lg_xa_pm24b1200_v0805_EB'
+sro23lgee = 'ResMap_366365_372415_SRO_Data_Hist_eg_23_22sept23_lg_xa_pm24b1200_v0805_EE'
+dro23lgeb = 'ResMap_366365_372415_DRO_Data_Hist_eg_23_22sept23_lg_xa_pm24b1200_v0805_EB'
+dro23lgee = 'ResMap_366365_372415_DRO_Data_Hist_eg_23_22sept23_lg_xa_pm24b1200_v0805_EE'
+
+sro24eb = 'ResMap_379412_387121_SRO_Data_Hist_eg_24_miniAODv6_xa_pm24b1200_v0808_EB'
+sro24ee = 'ResMap_379412_387121_SRO_Data_Hist_eg_24_miniAODv6_xa_pm24b1200_v0808_EE'
+dro24eb = 'ResMap_379412_387121_DRO_Data_Hist_eg_24_miniAODv6_xa_pm24b1200_v0808_EB'
+dro24ee = 'ResMap_379412_387121_DRO_Data_Hist_eg_24_miniAODv6_xa_pm24b1200_v0808_EE'
+
+sro24lgeb = 'ResMap_379412_387121_SRO_Data_Hist_eg_24_miniAODv6_lg_xa_pm24b1200_v0808_EB'
+sro24lgee = 'ResMap_379412_387121_SRO_Data_Hist_eg_24_miniAODv6_lg_xa_pm24b1200_v0808_EE'
+dro24lgeb = 'ResMap_379412_387121_DRO_Data_Hist_eg_24_miniAODv6_lg_xa_pm24b1200_v0808_EB'
+dro24lgee = 'ResMap_379412_387121_DRO_Data_Hist_eg_24_miniAODv6_lg_xa_pm24b1200_v0808_EE'
+
+dro25lgeb = 'ResMap_387742_398903_DRO_Data_Hist_UnCorr_eg_25_prompt_lg_xa_pm24b1200_v0817_EB'
+dro25lgee = 'ResMap_387742_398903_DRO_Data_Hist_UnCorr_eg_25_prompt_lg_xa_pm24b1200_v0817_EE'
+sro25lgeb = 'ResMap_387742_398903_SRO_Data_Hist_UnCorr_eg_25_prompt_lg_xa_pm24b1200_v0817_EB'
+sro25lgee = 'ResMap_387742_398903_SRO_Data_Hist_UnCorr_eg_25_prompt_lg_xa_pm24b1200_v0817_EE'
+
+dro25eb = 'ResMap_387742_398903_DRO_Data_Hist_UnCorr_eg_25_prompt_xa_pm24b1200_v0817_EB'
+dro25ee = 'ResMap_387742_398903_DRO_Data_Hist_UnCorr_eg_25_prompt_xa_pm24b1200_v0817_EE'
+sro25eb = 'ResMap_387742_398903_SRO_Data_Hist_UnCorr_eg_25_prompt_xa_pm24b1200_v0817_EB'
+sro25ee = 'ResMap_387742_398903_SRO_Data_Hist_UnCorr_eg_25_prompt_xa_pm24b1200_v0817_EE'
+
+
+hl_r2_16_v2_ebee = [ 
+    [sro16eb+shend,"",indir+sro16eb+rfend,"SRO EB"], 
+    [sro16ee+shend,"",indir+sro16ee+rfend,"SRO EE"], 
+    [dro16eb+shend,"",indir+dro16eb+rfend,"DRO EB"], 
+    [dro16ee+shend,"",indir+dro16ee+rfend,"DRO EE"], 
+    #[sro16lgeb+shend,"",indir+sro16lgeb+rfend,"SRO LG EB"],  
+    #[sro16lgee+shend,"",indir+sro16lgee+rfend,"SRO LG EE"],  
+    #[dro16lgeb+shend,"",indir+dro16lgeb+rfend,"DRO LG EB"],  
+    #[dro16lgee+shend,"",indir+dro16lgee+rfend,"DRO LG EE"],  
+]
+
+hl_r2_17_v2_ebee = [  
+    [sro17eb+shend,"",indir+sro17eb+rfend,"SRO EB"],  
+    [sro17ee+shend,"",indir+sro17ee+rfend,"SRO EE"],  
+    [dro17eb+shend,"",indir+dro17eb+rfend,"DRO EB"],  
+    [dro17ee+shend,"",indir+dro17ee+rfend,"DRO EE"],  
+    #[sro17lgeb+shend,"",indir+sro17lgeb+rfend,"SRO LG EB"],   
+    #[sro17lgee+shend,"",indir+sro17lgee+rfend,"SRO LG EE"],   
+    #[dro17lgeb+shend,"",indir+dro17lgeb+rfend,"DRO LG EB"],   
+    #[dro17lgee+shend,"",indir+dro17lgee+rfend,"DRO LG EE"],   
+]
+
+hl_r2_18D_v2_ebee = [
+    #[sro18Deb+shend,"",indir+sro18Deb+rfend,"SRO EB"],
+    #[sro18Dee+shend,"",indir+sro18Dee+rfend,"SRO EE"],
+    [dro18Deb+shend,"",indir+dro18Deb+rfend,"DRO EB D"],  
+    [dro18Dee+shend,"",indir+dro18Dee+rfend,"DRO EE D"],  
+    #[sro18Dlgeb+shend,"",indir+sro18Dlgeb+rfend,"SRO LG EB"],
+    #[sro18Dlgee+shend,"",indir+sro18Dlgee+rfend,"SRO LG EE"],
+    #[dro18Dlgeb+shend,"",indir+dro18Dlgeb+rfend,"DRO LG EB D"],   
+    #[dro18Dlgee+shend,"",indir+dro18Dlgee+rfend,"DRO LG EE D"],   
+    #[sro18ABCeb+shend,"",indir+sro18ABCeb+rfend,"SRO EB"],
+    #[sro18ABCee+shend,"",indir+sro18ABCee+rfend,"SRO EE"],
+    [dro18ABCeb+shend,"",indir+dro18ABCeb+rfend,"DRO EB"],
+    [dro18ABCee+shend,"",indir+dro18ABCee+rfend,"DRO EE"],
+    #[sro18ABClgeb+shend,"",indir+sro18ABClgeb+rfend,"SRO LG EB"],
+    #[sro18ABClgee+shend,"",indir+sro18ABClgee+rfend,"SRO LG EE"],
+    #[dro18ABClgeb+shend,"",indir+dro18ABClgeb+rfend,"DRO LG EB"],   
+    #[dro18ABClgee+shend,"",indir+dro18ABClgee+rfend,"DRO LG EE"],
+
+]
+
+hl_r2_18_mc_ebee = [ 
+    #[sro18MCeb+shend,"",indir+sro18MCeb+rfend,"SRO EB"], 
+    #[sro18MCee+shend,"",indir+sro18MCee+rfend,"SRO EE"], 
+    [dro18MCeb+shend,"",indir+dro18MCeb+rfend,"DRO EB"],   
+    [dro18MCee+shend,"",indir+dro18MCee+rfend,"DRO EE"],   
+    #[sro18MClgeb+shend,"",indir+sro18MClgeb+rfend,"SRO LG EB"], 
+    #[sro18MClgee+shend,"",indir+sro18MClgee+rfend,"SRO LG EE"], 
+    [dro18MClgeb+shend,"",indir+dro18MClgeb+rfend,"DRO LG EB"],    
+    [dro18MClgee+shend,"",indir+dro18MClgee+rfend,"DRO LG EE"],    
+]
+
+hl_r3_22_v2_ebee = [
+    #[sro22eb+shend,"",indir+sro22eb+rfend,"SRO EB"],
+    #[sro22ee+shend,"",indir+sro22ee+rfend,"SRO EE"],
+    [dro22eb+shend,"",indir+dro22eb+rfend,"DRO EB"],  
+    [dro22ee+shend,"",indir+dro22ee+rfend,"DRO EE"],  
+    #[sro22lgeb+shend,"",indir+sro22lgeb+rfend,"SRO LG EB"],
+    #[sro22lgee+shend,"",indir+sro22lgee+rfend,"SRO LG EE"],
+    [dro22lgeb+shend,"",indir+dro22lgeb+rfend,"DRO LG EB"],   
+    [dro22lgee+shend,"",indir+dro22lgee+rfend,"DRO LG EE"],   
+]
+
+hl_r3_23_v2_ebee = [
+    [sro23eb+shend,"",indir+sro23eb+rfend,"SRO EB"],
+    [sro23ee+shend,"",indir+sro23ee+rfend,"SRO EE"],
+    [dro23eb+shend,"",indir+dro23eb+rfend,"DRO EB"],
+    [dro23ee+shend,"",indir+dro23ee+rfend,"DRO EE"],
+    #[sro23lgeb+shend,"",indir+sro23lgeb+rfend,"SRO LG EB"],
+    #[sro23lgee+shend,"",indir+sro23lgee+rfend,"SRO LG EE"],
+    #[dro23lgeb+shend,"",indir+dro23lgeb+rfend,"DRO LG EB"],
+    #[dro23lgee+shend,"",indir+dro23lgee+rfend,"DRO LG EE"],
+]
+
+hl_r3_24_v2_ebee = [
+    #[sro24eb+shend,"",indir+sro24eb+rfend,"SRO EB"],
+    #[sro24ee+shend,"",indir+sro24ee+rfend,"SRO EE"],
+    [dro24eb+shend,"",indir+dro24eb+rfend,"DRO EB"],
+    [dro24ee+shend,"",indir+dro24ee+rfend,"DRO EE"],
+    #[sro24lgeb+shend,"",indir+sro24lgeb+rfend,"SRO LG EB"],
+    #[sro24lgee+shend,"",indir+sro24lgee+rfend,"SRO LG EE"],
+    [dro24lgeb+shend,"",indir+dro24lgeb+rfend,"DRO LG EB"],
+    [dro24lgee+shend,"",indir+dro24lgee+rfend,"DRO LG EE"],
+]
+
+hl_r3_25_v2_ebee = [
+    #[sro25eb+shend,"",indir+sro25eb+rfend,"SRO EB"],
+    #[sro25ee+shend,"",indir+sro25ee+rfend,"SRO EE"],
+    [dro25eb+shend,"",indir+dro25eb+rfend,"DRO EB"],
+    [dro25ee+shend,"",indir+dro25ee+rfend,"DRO EE"],
+    #[sro25lgeb+shend,"",indir+sro25lgeb+rfend,"SRO LG EB"],
+    #[sro25lgee+shend,"",indir+sro25lgee+rfend,"SRO LG EE"],
+    [dro25lgeb+shend,"",indir+dro25lgeb+rfend,"DRO LG EB"],
+    [dro25lgee+shend,"",indir+dro25lgee+rfend,"DRO LG EE"],
+]
+
+##### ---------------------------------------------------------------------------------------
+
+dro18mceb = 'ResMap_0_999999_DRO_Data_Hist_NoCali_eg_18MC_xa_pm24b1200_v0116_EB'
+dro18mcee = 'ResMap_0_999999_DRO_Data_Hist_NoCali_eg_18MC_xa_pm24b1200_v0116_EE'
+sro18mceb = 'ResMap_0_999999_SRO_Data_Hist_NoCali_eg_18MC_xa_pm24b1200_v0116_EB'
+sro18mcee = 'ResMap_0_999999_SRO_Data_Hist_NoCali_eg_18MC_xa_pm24b1200_v0116_EE'
+
+dro18ebnc = 'ResMap_315257_325172_DRO_Data_Hist_NoCali_eg_18UL_xa_pm24b1200_v0121_EB'
+dro18eenc = 'ResMap_315257_325172_DRO_Data_Hist_NoCali_eg_18UL_xa_pm24b1200_v0121_EE'
+sro18ebnc = 'ResMap_315257_325172_SRO_Data_Hist_NoCali_eg_18UL_xa_pm24b1200_v0121_EB'
+sro18eenc = 'ResMap_315257_325172_SRO_Data_Hist_NoCali_eg_18UL_xa_pm24b1200_v0121_EE'
+
+dro18eb = 'ResMap_315257_325172_DRO_Data_Hist_eg_18UL_xa_pm24b1200_v0121_EB'
+dro18ee = 'ResMap_315257_325172_DRO_Data_Hist_eg_18UL_xa_pm24b1200_v0121_EE' 
+sro18eb = 'ResMap_315257_325172_SRO_Data_Hist_eg_18UL_xa_pm24b1200_v0121_EB'
+sro18ee = 'ResMap_315257_325172_SRO_Data_Hist_eg_18UL_xa_pm24b1200_v0121_EE' 
+
+dro18mc16ebs = 'ResMap_0_999999_DRO_Data_Hist_NoCali_Smeared_eg_18MC_smUL16_xa_pm24b1200_v0201_EB'
+dro18mc16ees = 'ResMap_0_999999_DRO_Data_Hist_NoCali_Smeared_eg_18MC_smUL16_xa_pm24b1200_v0201_EE'
+dro18mc17ebs = 'ResMap_0_999999_DRO_Data_Hist_NoCali_Smeared_eg_18MC_smUL17_xa_pm24b1200_v0201_EB'
+dro18mc17ees = 'ResMap_0_999999_DRO_Data_Hist_NoCali_Smeared_eg_18MC_smUL17_xa_pm24b1200_v0201_EE'
+dro18mcebs = 'ResMap_0_999999_DRO_Data_Hist_NoCali_Smeared_eg_18MC_xa_pm24b1200_v0129_EB'
+#dro18mcebs = 'ResMap_0_999999_DRO_Data_Hist_NoCali_Smeared_eg_18MC_xa_pm24b1200_v0128_EB'
+dro18mcees = 'ResMap_0_999999_DRO_Data_Hist_NoCali_Smeared_eg_18MC_xa_pm24b1200_v0128_EE'
+
+dro18mccalieb = 'ResMap_0_999999_DRO_Data_Hist_eg_18MC_xa_pm24b1200_v0204_EB'
+dro18mccaliee = 'ResMap_0_999999_DRO_Data_Hist_eg_18MC_xa_pm24b1200_v0204_EE'
+
+dro18qcdmceb = 'ResMap_0_999999_DRO_Data_Hist_eg_18ULQCDMC_HG_xa_pm24b1200_v0527_EB'
+dro18qcdmcee = 'ResMap_0_999999_DRO_Data_Hist_eg_18ULQCDMC_HG_xa_pm24b1200_v0527_EE'
+#dro18qcdmceb = 'ResMap_0_999999_DRO_Data_Hist_eg_18ULQCDMC_LG_xa_pm24b1200_v0527_EB'
+#dro18qcdmcee = 'ResMap_0_999999_DRO_Data_Hist_eg_18ULQCDMC_LG_xa_pm24b1200_v0527_EE'
+
+hl_r2_18qcdmc_ebee = [
+    [dro18qcdmceb+shend,"",indir+dro18qcdmceb+rfend,"DRO EB"],
+    [dro18qcdmcee+shend,"",indir+dro18qcdmcee+rfend,"DRO EE"],
+]
+
+hl_r2_18mc_ebeenc = [
+    #[dro16eb+shend,"",dro16eb+rfend,"UL16 Data"],#target in data for smear (17)
+    #[dro16ee+shend,"",dro16ee+rfend,"UL16 Data"],#target in data for smear (17)
+    #[dro17eb+shend,"",dro17eb+rfend,"UL17 Data"],#target in data for smear (17)
+    #[dro17ee+shend,"",dro17ee+rfend,"UL17 Data"],#target in data for smear (17)
+    #[sro18mceb+shend,"",sro18mceb+rfend,"18MC SRO EB"],
+    #[sro18mcee+shend,"",sro18mcee+rfend,"18MC SRO EE"],
+    #[dro18eb+shend,"",dro18eb+rfend,"UL Data"],#target in data for smear
+    #[dro18ee+shend,"",dro18ee+rfend,"UL Data"],#target in data for smear
+    [dro18mceb+shend,"",dro18mceb+rfend,"18MC DRO EB"],#MC
+    [dro18mcee+shend,"",dro18mcee+rfend,"18MC DRO EE"],#MC
+    #[dro18mc17ebs+shend,"",dro18mc17ebs+rfend,"UL MC Smeared"],
+    #[dro18mc17ees+shend,"",dro18mc17ees+rfend,"UL MC Smeared"],
+    #[dro18mc16ebs+shend,"",dro18mc16ebs+rfend,"UL MC Smeared"],
+    #[dro18mc16ees+shend,"",dro18mc16ees+rfend,"UL MC Smeared"],
+    #[dro18mcees+shend,"",dro18mcees+rfend,"UL MC Smeared"],
+    #[dro18mccalieb+shend,"",dro18mccalieb+rfend,"18MC Cali DRO EB"],
+    #[dro18mccaliee+shend,"",dro18mccaliee+rfend,"18MC Cali DRO EE"],
+]
+
+hl_r2_18_ebeenc = [
+    [sro18ebnc+shend,"",indir+sro18ebnc+rfend,"SRO EB"],
+    [sro18eenc+shend,"",indir+sro18eenc+rfend,"SRO EE"],
+    [dro18ebnc+shend,"",indir+dro18ebnc+rfend,"DRO EB"],
+    [dro18eenc+shend,"",indir+dro18eenc+rfend,"DRO EE"],
+]
+
+hl_r2_18_ebee = [
+
+    #[sro18eblg+shend,"",sro18eblg+rfend,"18 UL EB"],
+    #[sro18eelg+shend,"",sro18eelg+rfend,"18 UL EE"],
+    [sro18eb+shend,"",indir+sro18eb+rfend,"SRO EB"],
+    [sro18ee+shend,"",indir+sro18ee+rfend,"SRO EE"],
+    [dro18eb+shend,"",indir+dro18eb+rfend,"DRO EB"],
+    [dro18ee+shend,"",indir+dro18ee+rfend,"DRO EE"],
+]
+
+hl_r2_18_ebeedro = [
+    [dro18eb+shend,"",dro18eb+rfend,"EB Chronus"],
+    [dro18ee+shend,"",dro18ee+rfend,"EE Chronus"],
+    [dro18ebnc+shend,"",dro18ebnc+rfend,"EB"],
+    [dro18eenc+shend,"",dro18eenc+rfend,"EE"],
+]
+
+dro26ebuc = 'ResMap_401630_403867_DRO_Data_Hist_UnCorr_eg_26_prompt_hg_xa_pm24b1200_v0819_EB'
+dro26eeuc = 'ResMap_401630_403867_DRO_Data_Hist_UnCorr_eg_26_prompt_hg_xa_pm24b1200_v0819_EE'
+sro26ebuc = 'ResMap_401630_403867_SRO_Data_Hist_UnCorr_eg_26_prompt_hg_xa_pm24b1200_v0819_EB'
+sro26eeuc = 'ResMap_401630_403867_SRO_Data_Hist_UnCorr_eg_26_prompt_hg_xa_pm24b1200_v0819_EE'
+
+hl_r3_26_ebeeuc = [ # un corrected
+
+    [sro26ebuc+shend,"",indir+sro26ebuc+rfend,"SRO EB"],
+    [sro26eeuc+shend,"",indir+sro26eeuc+rfend,"SRO EE"],
+    [dro26ebuc+shend,"",indir+dro26ebuc+rfend,"DRO EB"],
+    [dro26eeuc+shend,"",indir+dro26eeuc+rfend,"DRO EE"],
+]
+
+
+dro25phneb = 'ResMap_387742_398903_DRO_Data_Hist_NoCali_hg_nocali_cc_eg_25p_xa_pm24b1200_v0501_EB'
+dro25phnebh = 'ResMap_387742_398903_DRO_Data_Hist_NoCali_eg_25p_xa_pm24b1200_v0501_EB'
+dro25phnee = 'ResMap_387742_398903_DRO_Data_Hist_NoCali_hg_nocali_cc_eg_25p_xa_pm24b1200_v0501_EE'
+dro25phneeh = 'ResMap_387742_398903_DRO_Data_Hist_NoCali_eg_25p_xa_pm24b1200_v0501_EE'
+dro25plneb = 'ResMap_387742_398903_DRO_Data_Hist_NoCali_lg_nocali_cc_eg_25p_xa_pm24b1200_v0501_EB'
+dro25plnee = 'ResMap_387742_398903_DRO_Data_Hist_NoCali_lg_nocali_cc_eg_25p_xa_pm24b1200_v0501_EE'
+
+dro25phueb = 'ResMap_387742_398903_DRO_Data_Hist_UnCorr_hg_unc_eg_25p_xa_pm24b1200_v0501_EB'
+dro25phuee = 'ResMap_387742_398903_DRO_Data_Hist_UnCorr_hg_unc_eg_25p_xa_pm24b1200_v0501_EE'
+dro25plueb = 'ResMap_387742_398903_DRO_Data_Hist_UnCorr_lg_unc_eg_25p_xa_pm24b1200_v0501_EB'
+dro25pluee = 'ResMap_387742_398903_DRO_Data_Hist_UnCorr_lg_unc_eg_25p_xa_pm24b1200_v0501_EE'
+
+dro25pheb = 'ResMap_387742_398903_DRO_Data_Hist_hg_cc_eg_25p_xa_pm24b1200_v0501_EB'
+dro25phebh = 'ResMap_387742_398903_DRO_Data_Hist_eg_25p_xa_pm24b1200_v0501_EB'
+dro25phee = 'ResMap_387742_398903_DRO_Data_Hist_hg_cc_eg_25p_xa_pm24b1200_v0501_EE'
+dro25pheeh = 'ResMap_387742_398903_DRO_Data_Hist_eg_25p_xa_pm24b1200_v0501_EE'
+dro25pleb = 'ResMap_387742_398903_DRO_Data_Hist_lg_cc_eg_25p_xa_pm24b1200_v0501_EB'
+dro25plee = 'ResMap_387742_398903_DRO_Data_Hist_lg_cc_eg_25p_xa_pm24b1200_v0501_EE'
+
+sro25phneb = 'ResMap_387742_398903_SRO_Data_Hist_NoCali_hg_nocali_cc_eg_25p_xa_pm24b1200_v0501_EB'
+sro25phnebh = 'ResMap_387742_398903_SRO_Data_Hist_NoCali_eg_25p_xa_pm24b1200_v0501_EB'
+sro25phnee = 'ResMap_387742_398903_SRO_Data_Hist_NoCali_hg_nocali_cc_eg_25p_xa_pm24b1200_v0501_EE'
+sro25phneeh = 'ResMap_387742_398903_SRO_Data_Hist_NoCali_eg_25p_xa_pm24b1200_v0501_EE'
+sro25plneb = 'ResMap_387742_398903_SRO_Data_Hist_NoCali_lg_nocali_cc_eg_25p_xa_pm24b1200_v0501_EB'
+sro25plnee = 'ResMap_387742_398903_SRO_Data_Hist_NoCali_lg_nocali_cc_eg_25p_xa_pm24b1200_v0501_EE'
+
+sro25phueb = 'ResMap_387742_398903_SRO_Data_Hist_UnCorr_hg_unc_eg_25p_xa_pm24b1200_v0501_EB'
+sro25phuee = 'ResMap_387742_398903_SRO_Data_Hist_UnCorr_hg_unc_eg_25p_xa_pm24b1200_v0501_EE'
+sro25plueb = 'ResMap_387742_398903_SRO_Data_Hist_UnCorr_lg_unc_eg_25p_xa_pm24b1200_v0501_EB'
+sro25pluee = 'ResMap_387742_398903_SRO_Data_Hist_UnCorr_lg_unc_eg_25p_xa_pm24b1200_v0501_EE'
+
+sro25pheb = 'ResMap_387742_398903_SRO_Data_Hist_hg_cc_eg_25p_xa_pm24b1200_v0501_EB'
+sro25phebh = 'ResMap_387742_398903_SRO_Data_Hist_eg_25p_xa_pm24b1200_v0501_EB'
+sro25phee = 'ResMap_387742_398903_SRO_Data_Hist_hg_cc_eg_25p_xa_pm24b1200_v0501_EE'
+sro25pheeh = 'ResMap_387742_398903_SRO_Data_Hist_eg_25p_xa_pm24b1200_v0501_EE'
+sro25pleb = 'ResMap_387742_398903_SRO_Data_Hist_lg_cc_eg_25p_xa_pm24b1200_v0501_EB'
+sro25plee = 'ResMap_387742_398903_SRO_Data_Hist_lg_cc_eg_25p_xa_pm24b1200_v0501_EE'
+
+sro25eb = ''
+sro25ee = ''
+dro25eb = ''
+dro25ee = ''
+
+dro25ebuc = 'ResMap_387742_398903_DRO_Data_Hist_UnCorr_eg_25p_xa_pm24b1200_v0422_EB'
+dro25eeuc = 'ResMap_387742_398903_DRO_Data_Hist_UnCorr_eg_25p_xa_pm24b1200_v0422_EE'
+sro25ebuc = 'ResMap_387742_398903_SRO_Data_Hist_UnCorr_eg_25p_xa_pm24b1200_v0422_EB'
+sro25eeuc = 'ResMap_387742_398903_SRO_Data_Hist_UnCorr_eg_25p_xa_pm24b1200_v0422_EE'
+
+dro25ebnc = 'ResMap_387742_398903_DRO_Data_Hist_NoCali_eg_25p_xa_pm24b1200_v0422_EB'
+dro25eenc = 'ResMap_387742_398903_DRO_Data_Hist_NoCali_eg_25p_xa_pm24b1200_v0422_EE'
+sro25ebnc = 'ResMap_387742_398903_SRO_Data_Hist_NoCali_eg_25p_xa_pm24b1200_v0422_EB'
+sro25eenc = 'ResMap_387742_398903_SRO_Data_Hist_NoCali_eg_25p_xa_pm24b1200_v0422_EE'
+
+hl_r3_25p_h_ebee_dro = [
+
+
+    [dro25phueb+shend,"",indir+dro25phueb+rfend,"EB UnCor"],
+    [dro25phuee+shend,"",indir+dro25phuee+rfend,"EE UnCor"],
+    [dro25phebh+shend,"",indir+dro25pheb+rfend,"EB"],#chronus
+    [dro25pheeh+shend,"",indir+dro25phee+rfend,"EE"],#chronus
+
+    #[dro25phebh+shend,"",indir+dro25pheb+rfend,"EB Chronus"],
+    #[dro25pheeh+shend,"",indir+dro25phee+rfend,"EE Chronus"],
+    #[dro25phnebh+shend,"",indir+dro25phneb+rfend,"EB"],
+    #[dro25phneeh+shend,"",indir+dro25phnee+rfend,"EE"],
+]
+
+hl_r3_25p_l_ebee_dro = [
+
+    [dro25plueb+shend,"",indir+dro25plueb+rfend,"EB UnCor"],
+    [dro25pluee+shend,"",indir+dro25pluee+rfend,"EE UnCor"],
+    [dro25pleb+shend,"",indir+dro25pleb+rfend,"EB"],#chronsu
+    [dro25plee+shend,"",indir+dro25plee+rfend,"EE"],#chronus
+    #[dro25pleb+shend,"",indir+dro25pleb+rfend,"EB Chronus"],
+    #[dro25plee+shend,"",indir+dro25plee+rfend,"EE Chronus"],
+    #[dro25plneb+shend,"",indir+dro25plneb+rfend,"EB"],
+    #[dro25plnee+shend,"",indir+dro25plnee+rfend,"EE"],
+]
+
+hl_r3_25p_l_ebee_sro = [
+
+    [sro25plueb+shend,"",indir+sro25plueb+rfend,"EB UnCor"],
+    [sro25pluee+shend,"",indir+sro25pluee+rfend,"EE UnCor"],
+    [sro25pleb+shend,"",indir+sro25pleb+rfend,"EB"],#chronsu
+    [sro25plee+shend,"",indir+sro25plee+rfend,"EE"],#chronus
+    #[sro25pleb+shend,"",indir+sro25pleb+rfend,"EB Chronus"],
+    #[sro25plee+shend,"",indir+sro25plee+rfend,"EE Chronus"],
+    #[sro25plneb+shend,"",indir+sro25plneb+rfend,"EB"],
+    #[sro25plnee+shend,"",indir+sro25plnee+rfend,"EE"],
+]
+
+hl_r3_25_ebeeuc = [ # un corrected
+
+    [sro25phueb+shend,"",indir+sro25phueb+rfend,"SRO EB"],
+    [sro25phuee+shend,"",indir+sro25phuee+rfend,"SRO EE"],
+    [dro25phueb+shend,"",indir+dro25phueb+rfend,"DRO EB"],
+    [dro25phuee+shend,"",indir+dro25phuee+rfend,"DRO EE"],
+]
+
+hl_r3_25_l_ebeeuc = [ # un corrected
+
+    [sro25plueb+shend,"",indir+sro25plueb+rfend,"SRO EB"],
+    [sro25pluee+shend,"",indir+sro25pluee+rfend,"SRO EE"],
+    [dro25plueb+shend,"",indir+dro25plueb+rfend,"DRO EB"],
+    [dro25pluee+shend,"",indir+dro25pluee+rfend,"DRO EE"],
+]
+
+hl_r3_25_ebee = [ # chronus
+
+    [sro25phebh+shend,"",indir+sro25pheb+rfend,"SRO EB"],#chronus
+    [sro25pheeh+shend,"",indir+sro25phee+rfend,"SRO EE"],#chronus
+    [dro25phebh+shend,"",indir+dro25pheb+rfend,"DRO EB"],#chronus
+    [dro25pheeh+shend,"",indir+dro25phee+rfend,"DRO EE"],#chronus
+]
+
+hl_r3_25_l_ebee = [ # chronus
+
+    [sro25pleb+shend,"",indir+sro25pleb+rfend,"SRO EB"],#chronus
+    [sro25plee+shend,"",indir+sro25plee+rfend,"SRO EE"],#chronus
+    [dro25pleb+shend,"",indir+dro25pleb+rfend,"DRO EB"],#chronus
+    [dro25plee+shend,"",indir+dro25plee+rfend,"DRO EE"],#chronus
+]
+
+hl_r3_25_ebeenc = [ # online
+
+    [sro25phnebh+shend,"",indir+sro25phneb+rfend,"SRO EB"],
+    [sro25phneeh+shend,"",indir+sro25phnee+rfend,"SRO EE"],
+    [dro25phnebh+shend,"",indir+dro25phneb+rfend,"DRO EB"],
+    [dro25phneeh+shend,"",indir+dro25phnee+rfend,"DRO EE"],
+]
+
+hl_r3_25_l_ebeenc = [ # online   low gain
+
+    [sro25plneb+shend,"",indir+sro25plneb+rfend,"SRO EB"],
+    [sro25plnee+shend,"",indir+sro25plnee+rfend,"SRO EE"],
+    [dro25plneb+shend,"",indir+dro25plneb+rfend,"DRO EB"],
+    [dro25plnee+shend,"",indir+dro25plnee+rfend,"DRO EE"],
+]
+
+dro24ebnc = 'ResMap_378971_387721_DRO_Data_Hist_NoCali_eg_24p_xa_pm24b1200_v0119_EB'
+dro24eenc = 'ResMap_378971_387721_DRO_Data_Hist_NoCali_eg_24p_xa_pm24b1200_v0119_EE'
+sro24ebnc = 'ResMap_378971_387721_SRO_Data_Hist_NoCali_eg_24p_xa_pm24b1200_v0119_EB'
+sro24eenc = 'ResMap_378971_387721_SRO_Data_Hist_NoCali_eg_24p_xa_pm24b1200_v0119_EE'
+
+dro24eb = 'ResMap_378971_387721_DRO_Data_Hist_eg_24p_xa_pm24b1200_v0119_EB'
+dro24ee = 'ResMap_378971_387721_DRO_Data_Hist_eg_24p_xa_pm24b1200_v0119_EE'
+sro24eb = 'ResMap_378971_387721_SRO_Data_Hist_eg_24p_xa_pm24b1200_v0119_EB'
+sro24ee = 'ResMap_378971_387721_SRO_Data_Hist_eg_24p_xa_pm24b1200_v0119_EE'
+
+hl_r3_24_ebee = [
+    [sro24eb+shend,"",indir+sro24eb+rfend,"SRO EB"],
+    [sro24ee+shend,"",indir+sro24ee+rfend,"SRO EE"],
+    [dro24eb+shend,"",indir+dro24eb+rfend,"DRO EB"],
+    [dro24ee+shend,"",indir+dro24ee+rfend,"DRO EE"],
+]
+
+hl_r3_24_ebeenc = [
+    [sro24ebnc+shend,"",indir+sro24ebnc+rfend,"SRO EB"],
+    [sro24eenc+shend,"",indir+sro24eenc+rfend,"SRO EE"],
+    [dro24ebnc+shend,"",indir+dro24ebnc+rfend,"DRO EB"],
+    [dro24eenc+shend,"",indir+dro24eenc+rfend,"DRO EE"],
+]
+
+hl_r3_24_ebeedro = [
+    [dro24eb+shend,"",indir+dro24eb+rfend,"EB Chronus"],
+    [dro24ee+shend,"",indir+dro24ee+rfend,"EE Chronus"],
+    [dro24ebnc+shend,"",indir+dro24ebnc+rfend,"EB"],
+    [dro24eenc+shend,"",indir+dro24eenc+rfend,"EE"],
+]
+
+hl_r3_24_ebeesro = [
+    [sro24eb+shend,"",indir+sro24eb+rfend,"EB Chronus"],
+    [sro24ee+shend,"",indir+sro24ee+rfend,"EE Chronus"],
+    [sro24ebnc+shend,"",indir+sro24ebnc+rfend,"EB"],
+    [sro24eenc+shend,"",indir+sro24eenc+rfend,"EE"],
+]
+
+dro23ebnc = 'ResMap_366365_372415_DRO_Data_Hist_NoCali_eg_23p_xa_pm24b1200_v0115_EB'
+dro23eenc = 'ResMap_366365_372415_DRO_Data_Hist_NoCali_eg_23p_xa_pm24b1200_v0115_EE'
+sro23ebnc = 'ResMap_366365_372415_SRO_Data_Hist_NoCali_eg_23p_xa_pm24b1200_v0115_EB'
+sro23eenc = 'ResMap_366365_372415_SRO_Data_Hist_NoCali_eg_23p_xa_pm24b1200_v0115_EE'
+
+dro23eb = 'ResMap_366365_372415_DRO_Data_Hist_eg_23p_xa_pm24b1200_v0115_EB'
+dro23ee = 'ResMap_366365_372415_DRO_Data_Hist_eg_23p_xa_pm24b1200_v0115_EE'
+sro23eb = 'ResMap_366365_372415_SRO_Data_Hist_eg_23p_xa_pm24b1200_v0115_EB'
+sro23ee = 'ResMap_366365_372415_SRO_Data_Hist_eg_23p_xa_pm24b1200_v0115_EE'
+
+dro23rrhebnc = 'ResMap_366365_372415_DRO_Data_Hist_NoCali_eg_23_22sept23_xa_pm24b1200_v0618_EB'
+dro23rrheenc = 'ResMap_366365_372415_DRO_Data_Hist_NoCali_eg_23_22sept23_xa_pm24b1200_v0618_EE'
+sro23rrhebnc = 'ResMap_366365_372415_SRO_Data_Hist_NoCali_eg_23_22sept23_xa_pm24b1200_v0618_EB'
+sro23rrheenc = 'ResMap_366365_372415_SRO_Data_Hist_NoCali_eg_23_22sept23_xa_pm24b1200_v0618_EE'
+
+hl_r3_23_ebeenc = [
+    [sro23rrhebnc+shend,"",indir+sro23rrhebnc+rfend,"SRO EB"],
+    [sro23rrheenc+shend,"",indir+sro23rrheenc+rfend,"SRO EE"],
+    [dro23rrhebnc+shend,"",indir+dro23rrhebnc+rfend,"DRO EB"],
+    [dro23rrheenc+shend,"",indir+dro23rrheenc+rfend,"DRO EE"],
+]
+
+hl_r3_23_ebee = [
+#    [sro23rrheb+shend,"",indir+sro23rrheb+rfend,"SRO EB"],
+#    [sro23rrhee+shend,"",indir+sro23rrhee+rfend,"SRO EE"],
+#    [dro23rrheb+shend,"",indir+dro23rrheb+rfend,"DRO EB"],
+#    [dro23rrhee+shend,"",indir+dro23rrhee+rfend,"DRO EE"],
+]
+
+hl_r3_23_ebeedro = [
+#    [dro23rreb+shend,"",indir+dro23rreb+rfend,"EB Chronus"],
+#    [dro23rree+shend,"",indir+dro23rree+rfend,"EE Chronus"],
+#    [dro23rrebnc+shend,"",indir+dro23rrebnc+rfend,"EB"],
+#    [dro23rreenc+shend,"",indir+dro23rreenc+rfend,"EE"],
+]
+
+dro22ebnc = 'ResMap_355794_362760_DRO_Data_Hist_NoCali_eg_22p_xa_pm24b1200_v0120_EB'
+dro22eenc = 'ResMap_355794_362760_DRO_Data_Hist_NoCali_eg_22p_xa_pm24b1200_v0120_EE'
+sro22ebnc = 'ResMap_355794_362760_SRO_Data_Hist_NoCali_eg_22p_xa_pm24b1200_v0120_EB'
+sro22eenc = 'ResMap_355794_362760_SRO_Data_Hist_NoCali_eg_22p_xa_pm24b1200_v0120_EE'
+
+dro22eb = 'ResMap_355794_362760__DRO_Data_Hist_eg_22p_EB_xa_pm24b1200_v0112'
+dro22ee = 'ResMap_355794_362760__DRO_Data_Hist_eg_22p_EE_xa_pm24b1200_v0112'
+sro22eb = 'ResMap_355794_362760__SRO_Data_Hist_eg_22p_EB_xa_pm24b1200_v0112'
+sro22ee = 'ResMap_355794_362760__SRO_Data_Hist_eg_22p_EE_xa_pm24b1200_v0112'
+
+dro22rrhebnc = 'ResMap_352319_362760_DRO_Data_Hist_NoCali_eg_22_22sept23_xa_pm24b1200_v0620_EB'
+dro22rrheenc = 'ResMap_352319_362760_DRO_Data_Hist_NoCali_eg_22_22sept23_xa_pm24b1200_v0620_EE'
+sro22rrhebnc = 'ResMap_352319_362760_SRO_Data_Hist_NoCali_eg_22_22sept23_xa_pm24b1200_v0620_EB'
+sro22rrheenc = 'ResMap_352319_362760_SRO_Data_Hist_NoCali_eg_22_22sept23_xa_pm24b1200_v0620_EE'
+
+hl_r3_22_ebee = [
+    [sro22eb+shend,"",indir+sro22eb+rfend,"SRO EB"],
+    [sro22ee+shend,"",indir+sro22ee+rfend,"SRO EE"],
+    [dro22eb+shend,"",indir+dro22eb+rfend,"DRO EB"],
+    [dro22ee+shend,"",indir+dro22ee+rfend,"DRO EE"],
+]
+
+hl_r3_22_ebeenc = [
+    [sro22rrhebnc+shend,"",indir+sro22rrhebnc+rfend,"SRO EB"],
+    [sro22rrheenc+shend,"",indir+sro22rrheenc+rfend,"SRO EE"],
+    [dro22rrhebnc+shend,"",indir+dro22rrhebnc+rfend,"DRO EB"],
+    [dro22rrheenc+shend,"",indir+dro22rrheenc+rfend,"DRO EE"],
+]
+
+hl_r3_22_ebeedro = [
+    [dro22eb+shend,"",indir+dro22eb+rfend,"EB Chronus"],
+    [dro22ee+shend,"",indir+dro22ee+rfend,"EE Chronus"],
+    [dro22ebnc+shend,"",indir+dro22ebnc+rfend,"EB"],
+    [dro22eenc+shend,"",indir+dro22eenc+rfend,"EE"],
+]
+
+dro17ebnc = 'ResMap_296399_306460_DRO_Data_Hist_NoCali_eg_17UL_xa_pm24b1200_v0121_EB'
+dro17eenc = 'ResMap_296399_306460_DRO_Data_Hist_NoCali_eg_17UL_xa_pm24b1200_v0121_EE'
+sro17ebnc = 'ResMap_296399_306460_SRO_Data_Hist_NoCali_eg_17UL_xa_pm24b1200_v0121_EB'
+sro17eenc = 'ResMap_296399_306460_SRO_Data_Hist_NoCali_eg_17UL_xa_pm24b1200_v0121_EE'
+
+dro17eb = 'ResMap_296399_306460_DRO_Data_Hist_eg_17UL_xa_pm24b1200_v0121_EB'
+dro17ee = 'ResMap_296399_306460_DRO_Data_Hist_eg_17UL_xa_pm24b1200_v0121_EE'
+sro17eb = 'ResMap_296399_306460_SRO_Data_Hist_eg_17UL_xa_pm24b1200_v0121_EB'
+sro17ee = 'ResMap_296399_306460_SRO_Data_Hist_eg_17UL_xa_pm24b1200_v0121_EE'
+
+hl_r2_17_ebeenc = [
+    [sro17ebnc+shend,"",indir+sro17ebnc+rfend,"SRO EB"],
+    [sro17eenc+shend,"",indir+sro17eenc+rfend,"SRO EE"],
+    [dro17ebnc+shend,"",indir+dro17ebnc+rfend,"DRO EB"],
+    [dro17eenc+shend,"",indir+dro17eenc+rfend,"DRO EE"],
+]
+
+hl_r2_17_ebee = [
+    [sro17eb+shend,"",sro17eb+rfend,"SRO EB"],
+    [sro17ee+shend,"",sro17ee+rfend,"SRO EE"],
+    [dro17eb+shend,"",dro17eb+rfend,"DRO EB"],
+    [dro17ee+shend,"",dro17ee+rfend,"DRO EE"],
+]
+
+hl_r2_17_ebeedro = [
+    [dro17eb+shend,"",dro17eb+rfend,"EB Chronus"],
+    [dro17ee+shend,"",dro17ee+rfend,"EE Chronus"],
+    [dro17ebnc+shend,"",dro17ebnc+rfend,"EB"],
+    [dro17eenc+shend,"",dro17eenc+rfend,"EE"],
+]
+
+dro16ebnc = 'ResMap_275600_283900_DRO_Data_Hist_NoCali_eg_16UL_xa_pm24b1200_v0121_EB'
+dro16eenc = 'ResMap_275600_283900_DRO_Data_Hist_NoCali_eg_16UL_xa_pm24b1200_v0121_EE'
+sro16ebnc = 'ResMap_275600_283900_SRO_Data_Hist_NoCali_eg_16UL_xa_pm24b1200_v0121_EB'
+sro16eenc = 'ResMap_275600_283900_SRO_Data_Hist_NoCali_eg_16UL_xa_pm24b1200_v0121_EE'
+
+dro16eb = 'ResMap_275600_283900_DRO_Data_Hist_eg_16UL_xa_pm24b1200_v0121_EB'
+dro16ee = 'ResMap_275600_283900_DRO_Data_Hist_eg_16UL_xa_pm24b1200_v0121_EE'
+sro16eb = 'ResMap_275600_283900_SRO_Data_Hist_eg_16UL_xa_pm24b1200_v0121_EB'
+sro16ee = 'ResMap_275600_283900_SRO_Data_Hist_eg_16UL_xa_pm24b1200_v0121_EE'
+
+dro16eb_v2 = 'ResMap_275600_283900_DRO_Data_Hist_eg_16UL_xa_pm24b1200_v0127_EB'
+
+hl_r2_16_ebeenc = [
+    [sro16ebnc+shend,"",indir+sro16ebnc+rfend,"SRO EB"],
+    [sro16eenc+shend,"",indir+sro16eenc+rfend,"SRO EE"],
+    [dro16ebnc+shend,"",indir+dro16ebnc+rfend,"DRO EB"],
+    [dro16eenc+shend,"",indir+dro16eenc+rfend,"DRO EE"],
+]
+
+hl_r2_16_ebee = [
+    #[sro16ebhg+shend,"",sro16ebhg+rfend,"16 UL EB"],
+    #[sro16eehg+shend,"",sro16eehg+rfend,"16 UL EE"],
+    #[dro16eb_v2+shend,"",dro16eb_v2+rfend,"DRO EB V2"],
+    #[sro16eb+shend,"",sro16eb+rfend,"SRO EB"],
+    #[sro16ee+shend,"",sro16ee+rfend,"SRO EE"],
+    [dro16eb+shend,"",dro16eb+rfend,"DRO EB"],
+    [dro16ee+shend,"",dro16ee+rfend,"DRO EE"],
+]
+
+hl_r2_16_ebeedro = [
+    [dro16eb+shend,"",dro16eb+rfend,"EB Chronus"],
+    [dro16ee+shend,"",dro16ee+rfend,"EE Chronus"],
+    [dro16ebnc+shend,"",dro16ebnc+rfend,"EB"],
+    [dro16eenc+shend,"",dro16eenc+rfend,"EE"],
+]
+
+
+#------------------------------------------------------------------------
+
+hl_r2_1817_ee = [
+    ["ResMap_315257_325172__DRO_Data_Hist_deg_18_UL_EE_xa_pm24b1200_v1117_sigma","",dro18eec,"2018 UL Analysis"],
+    ["ResMap_315257_325172__DRO_Data_Hist_NoCali_deg_18_UL_EE_xa_pm24b1200_v114_sigma","",dro18eenc,"2018 UL"],
+    ["ResMap_296399_306460__DRO_Data_Hist_deg_17_UL_EE_xa_pm24b1200_v1117_sigma","",dro17eec,"2017 UL Analysis"],
+    ["ResMap_296399_306460__DRO_Data_Hist_NoCali_deg_17_UL_EE_xa_pm24b1200_v113_sigma","",dro17eenc,"2017 UL"],
+]
+
+hl_r2_1817 = [
+    ["ResMap_315257_325172__DRO_Data_Hist_deg_18_UL_xa_pm24b1200_v114_sigma","",dro18ebc,"2018 UL Analysis"],
+    ["ResMap_315257_325172__DRO_Data_Hist_NoCali_eg_18_UL_xa_pm24b1200_v1117_sigma","",dro18ebnc,"2018 UL"],
+    ["ResMap_296399_306460__DRO_Data_Hist_deg_17_UL_xa_pm24b1200_v113_sigma","",dro17ebc,"2017 UL Analysis"],
+    ["ResMap_296399_306460__DRO_Data_Hist_NoCali_deg_17_UL_xa_pm24b1200_v113_sigma","",dro17ebnc,"2017 UL"],
+]
+
+hl_r3_24d_part_rtvcc = [
+    ["SRO_Data_Hist_sigma","",egres_r3_24_EG01_v12,"SRU RT"],
+    ["ZEE_Data_Hist_sigma","",egres_r3_24_EG01_v12,"ZEE RT"],
+    ["SRO_CC_Data_Hist_sigma","",egres_r3_24_EG01_v12,"SRU CC"],
+    ["ZEE_CC_Data_Hist_sigma","",egres_r3_24_EG01_v12,"ZEE CC"],
+]
+
+hl_r3_24fcc = [
+    [sru24fcc,"",sru24fccf,"Same Read Out Unit"],
+    [zee24fcc,"",zee24fccf,"Z->e^{+}e^{-}"],
+]
+
+hl_r3_24f_rtvcc = [
+    ["SRO_Data_Hist_sigma","",egres_24f_sro_prompt,"SRO RT"],
+    #["ZEE_Data_Hist_sigma","",egres_24f_zee_prompt,"ZEE RT"],
+    ["SRO_Data_Hist_sigma","",egres_24f_sro_ecal,"SRO CC"],
+    #["ZEE_Data_Hist_sigma","",egres_24f_zee_ecal,"ZEE CC"],
+]
+
+hl_r3_25c2_prmt = [
+    [sru25cv2,"",sru25cv2f,"Same Read Out Unit"],
+    [zee25cv2,"",zee25cv2f,"Z->e^{+}e^{-}"],
+]
+
+hl_r3_25d_prmt = [
+    [sru25d,"",sru25df,"Same Read Out Unit"],
+    [zee25d,"",zee25df,"Z->e^{+}e^{-}"],
+]
+
+hl_r3_24f_nc_rtvcc = [
+    [srop,"",egres_24f_v2_sro_prmt,"Ratio Same Read Out Unit"],
+    #[zeep,"",egres_24f_nc_zee_prmt,"Ratio Z->e^{+}e^{-}"],
+    [sroe,"",egres_24f_v2_sro_ecal,"CC Same Read Out Unit"],
+    #[zeee,"",egres_24f_nc_zee_ecal,"CC Z->e^{+}e^{-}"],
+]
+
+hl_r3_24f_EE_rtvcc = [
+    [sru24fEE,"",sru24fEEf,"Ratio Same Read Out Unit"],
+    [sru24fccEE,"",sru24fccEEf,"CC Same Read Out Unit"],
+]
+
+hl_r3_24f_rtvcc = [
+    #[srop,"",egres_24f_sro_prmt,"Ratio Same Read Out Unit"],
+    #[zeep,"",egres_24f_zee_prmt,"Ratio Z->e^{+}e^{-}"],
+    #[sroe,"",egres_24f_sro_ecal,"CC Same Read Out Unit"],
+    #[zeee,"",egres_24f_zee_ecal,"CC Z->e^{+}e^{-}"],
+    [sru24fcc,"",sru24fccf,"Same Read Out Unit"],
+    [zee24fcc,"",zee24fccf,"Z->e^{+}e^{-}"],
+]
+
+hl_r3_25b = [
+    [sro25bc+hist,"",mdir+sro25bc+froot,"Same Read Out Unit"],
+    [zee25b+hist,"",mdir+zee25b+froot,"Z->e^{+}e^{-}"],
+]
+
+#
+##ptitle=[' 2024C 379415-380238','','#splitline{EBEB}{5 GeV Cali}'] #{GT 106X_dataRun2_v28}'
+##ptitle=[' 2024C 379367-379543','','#splitline{EBEB}{ }'] #{GT 106X_dataRun2_v28}'
+##ptitle=[' 2024C 379434-380065','','#splitline{EBEB}{ }'] #{GT 106X_dataRun2_v28}'
+##ptitle=[' 2024C 380066-380238','','#splitline{EBEB}{ }'] #{GT 106X_dataRun2_v28}'
+##ptitle=[' 2024D 380306-380947','','#splitline{EBEB}{ }'] #{GT 106X_dataRun2_v28}'
+##ptitle=[' 2024D 380306-380947','','#splitline{EBEB}{5 GeV Cali}'] #{GT 106X_dataRun2_v28}'
+##ptitle=[' 2024CD 379415-380947','','#splitline{EBEB}{ }'] #{GT 106X_dataRun2_v28}'
+##ptitle=[' 2024CD 379415-380947','','#splitline{EBEB}{5 GeV Cali}'] #{GT 106X_dataRun2_v28}'
+##ptitle=[' 2024E 381384','','#splitline{EBEB}{}'] #{GT 106X_dataRun2_v28}'
+#ptitle=[' 2024D 370293-370580','','#splitline{Ratio timing}{EBEB CCGT}'] #{GT 106X_dataRun2_v28}'
+#ptitle_cc=[' 2024D 370293-370580','','#splitline{CC timing}{EBEB CCGT}'] #{GT 106X_dataRun2_v28}'
+#ptitle=[' 370293-370580','','#splitline{EBEB}{Run 2024D}'] #{GT 106X_dataRun2_v28}'
+#ptitle=[' 382229-383797','','#splitline{EBEB}{}'] #{GT 106X_dataRun2_v28}'
+#ptitle=['','23.8 fb^{-1}, 2024 ','#splitline{}{ECAL Barrel}'] #{GT 106X_dataRun2_v28}' 
+#ptitle=['','12.0 fb^{-1}, 2025 ','#splitline{}{ECAL Barrel}'] #{GT 106X_dataRun2_v28}'
+#ptitle=[' 391548-392524','','#splitline{}{ECAL Barrel}'] #{GT 106X_dataRun2_v28}'
+#ptitle=['','23.8 fb^{-1}, 2024 ','#splitline{}{ECAL EndCaps Cross Correlation Time Reconstuction}'] #{GT 106X_dataRun2_v28}' 
+#ptitle=['','32.3 fb^{-1}, 2025 ','#splitline{}{ECAL Barrel}'] #{GT 106X_dataRun2_v28}'R25C
+#ptitle=['','? fb^{-1}, 2025D ','#splitline{}{ECAL Barrel}'] #{GT 106X_dataRun2_v28}'R25D
+#ptitle=['','','#splitline{Online Calibration}{ECAL EndCaps}'] #{GT 106X_dataRun2_v28}'
+#ptitle=['','Run 2','#splitline{Online Calibration}{ECAL Barrel}'] #{GT 106X_dataRun2_v28}'
+#ptitle=['','Run 2','#splitline{Online Calibration}{ECAL Endcaps}'] #{GT 106X_dataRun2_v28}'
+
+#ptitle=['','Run 2 (13 TeV)','#splitline{DRU Resolution}{2018 UL EB}'] #{}'
+#ptitle=['','Run 2 (13 TeV)','#splitline{DRU Resolution}{2018 UL EE}'] #{}'
+#ptitle=['','Run 2 (13 TeV)','#splitline{DRU Resolution}{2018 UL}'] #{}'
+#ptitle=['','Run 2 (13 TeV)','#splitline{Chronus Calibration}{2016 UL}'] #{}'
+#ptitle=['','Run 2 (13 TeV)','#splitline{Online Calibration}{2018 UL}'] #{}'
+#ptitle=['','Run 2 (13 TeV)','#splitline{Chronus Calibration}{2018 UL QCD}'] #{}'
+
+#ptitle=['','Run 2 (13 TeV)','#splitline{Chronus Calibration}{2016 UL v2}'] #{}' 
+#ptitle=['','Run 2 (13 TeV)','#splitline{Chronus Calibration}{2017 UL v2}'] #{}'
+#ptitle=['','Run 2 (13 TeV)','#splitline{Chronus Calibration}{2018D UL v2}'] #{}'
+#ptitle=['','Run 2 (13 TeV)','#splitline{Chronus Calibration}{2018ABC UL v2}'] #{}'
+#ptitle=['','Run 2 (13 TeV)','#splitline{Chronus Calibration}{2018 MC QCD}'] #{}'
+
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2026 Prompt}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{Online Calibration}{2025 Prompt}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2025 Prompt}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{Online Calibration}{2024 Prompt}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2024 Prompt}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{Online Calibration}{2023 22Sept2023}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2023 Prompt}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{Online Calibration}{2022 22Sept2023}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{Online Calibration}{2022 Prompt}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2022 Prompt}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2025 Prompt UnCorrected}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{DRU Resolution}{2024 Prompt}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{SRU Resolution}{2025 Prompt}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{SRU Resolution}{2025 Prompt Chronus}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{DRU Resolution}{2025 Prompt}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{DRU Resolution}{2025 Prompt Chronus}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{SRU Resolution}{2024 Prompt}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{SRU Resolution}{2025 Prompt}'] #{}'
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{SRU Resolution}{2025 Prompt Chronus}'] #{}'
+
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2022 22Sept2023}'] #{}' 
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2023 22Sept2023}'] #{}' 
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2024 miniAODv6}'] #{}' 
+#ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2025 Prompt Uncorr}'] #{}'
+ptitle=['','Run 3 (13.6 TeV)','#splitline{Chronus Calibration}{2026 Prompt Uncorr}'] #{}'
+
+#y = [ 0.4, 0.04 ]
+#y = [ 0.7, -0.05 ]
+#y = [ 2.5, -0.5 ]
+#y = [ 1.5, -0.5 ]
+#y = [ 4.0, 0.025 ]
+#y = [ 5.0, 0.05 ]
+#y = [ 2.0, 0.04 ]
+y = [ 3, 0.02 ]
+#y = [ 5, 0.01 ]
+x = [ 15, 1600.0 ]
+#x = [ 5, 3200.0 ]
+#x = [ 10.0, 800.0 ]
+#x = [ 5.0, 400.0 ]
+l = [ 0.7,0.65,0.925,0.9 ]
+#l = [ 0.6,0.65,0.85,0.9 ]
+#t = [0.175,0.44,0.15,0.175,0.28]
+#t = [0.175,0.38,0.05,0.175,0.22]
+#t = [0.175,0.38,0.15,0.175,0.22]#adjsuting lumi-sqrt(s) in title bar
+t = [0.325,0.85,0.1,0.175,0.285]#adjsuting lumi-sqrt(s) in title bar
+##outname = 'downloads/tr_hl_r3_24c_gold_v7'
+##outname = 'downloads/tr_hl_r3_24e_test_v7'
+#outname = 'downloads/tr_hl_r3_24d_part_ccgt_v7'
+#outname_cc = 'downloads/tr_hl_r3_24d_part_ccgt_v7_cc'
+#outname = 'downloads/tr_hl_r3_24d_part_trvcc_ccgt_v7'
+#outname = 'downloads/tr_hl_r3_25c2'
+#outname = 'downloads/tr_hl_r3_25bc_xa'
+#outname = 'hl_r2_18_mc_ebee'
+outname = 'hl_r3_26_ebeeuc'
+# Select the saved fitted-scatter result.  Change to 'NC' to use the saved
+# sigma_fit_FractionalScatter_NC functions and companion histograms.
+fit_mode = 'NSC'
+dostack(hl_r3_26_ebeeuc, outname, date, Ic_layout, ptitle,  y, x, l, t, fit_mode)
+#outname = 'tr_hl_r2_16v2'
+#dostack(hl_r2_16_ebee, outname, date, Ic_layout, ptitle,  y, x, l, t)
