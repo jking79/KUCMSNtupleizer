@@ -63,10 +63,7 @@ void KUCMSAodSkimmer::processElectrons(){
     if( DEBUG ) std::cout << " -- doing sc sstuff " << std::endl;
     auto esid = getLeadRhID( (*SuperCluster_rhIds)[scIdx] );
     //std::cout << " -- esid : " << esid << std::endl;
-    auto eletime = (*Electron_seedTOFTime)[itr];
-    if( std::abs(eletime) > 30 ) continue;
-
-    uInt nPhotons = Photon_excluded->size();
+    uInt nPhotons = correctedPhotonExcluded.size();
     float elePhoIsoDr(10.0);
     bool epSeedIdMatch = false;
     bool epsidsolo = true;

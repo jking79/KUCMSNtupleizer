@@ -21,6 +21,7 @@
 #include <cmath>
 #include <ctime>
 #include <filesystem>
+#include <set>
 
 #ifndef KUCMS_TimeCalibrationClass_hh
 #define KUCMS_TimeCalibrationClass_hh
@@ -84,6 +85,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 
     std::string curTTIov;
     std::string curXIov;
+	bool autoSelectGain1Iovs;
 	std::string curTag; // used to change rereco version or campaian calibrations are for
     std::string curLumiTag;
 
@@ -109,6 +111,9 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 
     std::map<std::string,kucms_resTagStruct> ResTagSet;
     std::map<std::string,std::string> caliHistFileNames;
+	std::set<std::string> reportedInvalidCalibrationTags;
+	std::set<std::string> reportedInvalidResolutionTags;
+	std::set<int> reportedInvalidMCTypes;
 
 	std::vector<int> ebx_ranges, ebtt_ranges, epmx_ranges, epmtt_ranges;
 
@@ -125,6 +130,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 
     std::string eosCaliPath;
 	bool useEosRootCali;
+	bool caliMapsValid;
 
     TRandom* getRandom;
 
@@ -142,9 +148,9 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
     void SetupIovMap( std::string tag, float lumiMin );
 
 	void ReadCaliRunFile();
-    void SaveCaliRunFile();
+	bool SaveCaliRunFile();
     void ReadTTRunFile();
-    void SaveTTRunFile();
+	bool SaveTTRunFile();
 	void ReadResFile();
     void SaveResFile();
 	void SetResParamters( std::string tag, float ebnoise, float ebstoch, float ebstant, float ebg1he1res, float ebg1he2res, 
@@ -152,9 +158,10 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 			float eeg1he1res, float eeg1he2res, float eeg1he3res, float eehg1res, float eehg2res, float eehg3res );
 	void ReadLumiFile( std::string lumifile, std::string tag );// only need to create caliRunMap entries - made with brilcalc
 
-    void LoadCaliHists( bool stayOpen = false, bool makeNew = false );// loads up all starting info
-    void SaveCaliHists();// save existing calimaphists to root TFile -- used if CaliHits left open
+	bool LoadCaliHists( bool stayOpen = false, bool makeNew = false );// loads up all starting info
+	bool SaveCaliHists();// save existing calimaphists to root TFile -- used if CaliHits left open
 	void LoadExtCali( std::string calihist, std::string mapname, std::string tag, int startr, int endr );
+	bool HasValidCaliMaps() const { return caliMapsValid; };
 
 	// use to create calibration files and add to DB
 	// work in progress - still thinking this area trhough
@@ -164,7 +171,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 	// 		when finshed update hists from maps then save hist to tfile
 	//			will delete old tfile and recreate tfile every pass
 	//
-	void makeCaliMaps(); // make maps from hists
+	bool makeCaliMaps(); // make maps from hists
 	void makeCaliHists(); // make hists from updated maps
 	// ? void makeSmearMaps();
 
@@ -174,17 +181,18 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
     // --------------------------------------------------------------------------
 
 	float getCorrectedTime( float time, float amplitude, unsigned int rechitID, 
-			unsigned int Evt_run, std::string dataSetKey, int mctype, int gainID = 1 ); 
+			unsigned int Evt_run, const std::string& dataSetKey, int mctype, int gainID = 1,
+			bool applyCalibration = true );
 	float getCorrectedTime( float time, float amplitude, unsigned int rechitID, 
-			unsigned int Evt_run, std::string dataSetKey, int mctype, bool gs6, bool gs1 )
+			unsigned int Evt_run, const std::string& dataSetKey, int mctype, bool gs6, bool gs1 )
 			{ int gid = ( gs6 || gs1 ) ? 2 : 1; return getCorrectedTime( time, amplitude, rechitID, Evt_run, dataSetKey, mctype, gid ); };
     float getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, 
-			std::string dataSetKey, int mctype, int gainID = 1 );
+			const std::string& dataSetKey, int mctype, int gainID = 1 );
     float getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, 
-			std::string dataSetKey, int mctype, bool gs6, bool gs1 )
+			const std::string& dataSetKey, int mctype, bool gs6, bool gs1 )
 			{ int gid = ( gs6 || gs1 ) ? 2 : 1; return getTimeResoltuion( amplitude, rechitID, Evt_run, dataSetKey, mctype, gid ); };
 
-	float getCalibration( uInt rhid, int run, std::string tag, int gainID = 1 ); // tag indicates which calibration set to use
+	float getCalibration( uInt rhid, int run, const std::string& tag, int gainID = 1 ); // tag indicates which calibration set to use
     float getCalibration( uInt rhid, int run, int gainID = 1 )
 			{ return getCalibration( rhid, run, curTag, gainID ); };
     float getCalibration( uInt rhid, int run, bool gs6, bool gs1 ) 
@@ -207,9 +215,9 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 	// accessor function for use in fillTimeCali - Setup and processing functions
 	// --------------------------------------------------------------------------
 
-	float getTTCali( uInt rhid, int run, std::string tag, int gainID = 1 );
+	float getTTCali( uInt rhid, int run, const std::string& tag, int gainID = 1 );
 
-	kucms_DetIDStruct& getDetIdInfo( uInt rhid );
+	const kucms_DetIDStruct& getDetIdInfo( uInt rhid );
 	std::map<int,std::map<int,std::map<int,uInt>>> getInvDetIDMap();
     std::map<UInt_t,kucms_DetIDStruct> getDetIDMap(); // map of information by detid for each crystal
 	uInt getDetIdInfo( int i1, int i2, int ecal );
@@ -219,11 +227,12 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 	uInt getGSRhId( uInt detID, int gianID );
 
 	void setTag( std::string tag ){ curTag = tag; }; // used to change rereco version or campaian calibrations are for
-    void setXIov( std::string tag ){ curXIov = tag; };
-    void setTTIov( std::string tag ){ curTTIov = tag; };
+	void setXIov( std::string tag ){ curXIov = tag; };
+	void setTTIov( std::string tag ){ curTTIov = tag; };
+	void setAutoSelectGain1Iovs( bool automatic ){ autoSelectGain1Iovs = automatic; };
     void setLumiTag( std::string tag ){ curLumiTag = tag; };
 
-    void setMCResTag( std::string tag ){ resTag = tag; }; // NOTE: resolution for PDs set in master file lists,this is resoltion of MC for smearing
+    void setMCResTag( const std::string& tag ){ resTag = tag; }; // NOTE: resolution for PDs set in master file lists,this is resoltion of MC for smearing
 
     void SetXBinStr( std::string xbins ){ xBinStr = xbins; };
     void SetYBinStr( std::string ybins ){ yBinStr = ybins; };
@@ -236,13 +245,14 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 
 	// function to create calibration and smear information 
 	// make TT maps from egamma res ntuple from lpc/jwk space
-	void makeCaliMapsEGR( std::string inputFileName, bool doTT, int GID = 1, bool small = false, bool doCali = true );
-	void makeTTCaliMapEGR( std::string inputFileName, int GID = 1, bool small = false, bool doCali = true ) 
-			{ makeCaliMapsEGR( inputFileName, true, GID, small, doCali ); }; 
-	void makeXCaliMapEGR( std::string inputFileName, int GID = 1, bool small = false, bool doCali = true )
-			{ makeCaliMapsEGR( inputFileName, false, GID, small, doCali ); };
+	bool makeCaliMapsEGR( std::string inputFileName, bool doTT, int GID = 1, bool small = false, bool doCali = true );
+	bool makeTTCaliMapEGR( std::string inputFileName, int GID = 1, bool small = false, bool doCali = true )
+			{ return makeCaliMapsEGR( inputFileName, true, GID, small, doCali ); };
+	bool makeXCaliMapEGR( std::string inputFileName, int GID = 1, bool small = false, bool doCali = true )
+			{ return makeCaliMapsEGR( inputFileName, false, GID, small, doCali ); };
+	bool makeGain1CaliMapsEGR( std::string inputFileName, bool small = false );
 
-	void plot2dResolutionEGR( std::string inputFileName, bool scale = true, bool usecali = true, bool smear = false, std::string ext = "" );
+	bool plot2dResolutionEGR( std::string inputFileName, bool scale = true, bool usecali = true, bool smear = false, std::string ext = "" );
     void plot2dResbyIovForEGR( std::string inputFileName, bool scale = true, bool usecali = true, bool smear = false, std::string ext = "" );
     kucms_SigmaFitResult runTimeFitter( TH2F* hist2D );
 	void doResTimeFits( bool doLocal = false );
@@ -254,7 +264,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 
     void makeSmearTag( std::string sourceName, std::string destName, std::string smearTag );
 
-	void plotMeanRunTimeEGR( std::string inputFileName, int srun, int erun, bool usecali = true );
+	bool plotMeanRunTimeEGR( std::string inputFileName, int srun, int erun );
     void makeTTDiffMaps( int srun, int erun );
     void makeTTDriftMaps( std::string tag, int srun, int erun );
 

@@ -431,7 +431,7 @@ void KUCMSElectronObjectMini::ProcessEvent( ItemManager<float>& geVar ){
         float rho = rho_.isValid() ? (float)(*rho_) : 0;
 		//std::cout << " -- EA : rho " << rho << " pho " << pho << " chad " << chad << " nhad " << nhad << " eA " << eA << std::endl;
 		float relIsoWithEA = (chad + std::max(0.0f, nhad + pho - rho*eA))/elePt;
-        bool ebee = ( eleEta <= 1.479 );
+        bool ebee = ( std::abs(eleEta) <= 1.479 );
 
 		//  !!!!!!!!!!!!!!!!!!!  conversions_ ? exist in mini ?
 		//  turned this off for the electron ID due to isues with producer changing -- revist if you need the electron ID

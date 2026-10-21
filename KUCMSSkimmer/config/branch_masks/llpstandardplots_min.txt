@@ -1,17 +1,18 @@
-# Minimal branch allowlist for LLPStandardPlots (main.py): SV and photon
-# data/MC stacks, 1D/2D/unrolled plots, in both analysis modes. Covers every
-# branch DataLoader reads, the baseline selection, and the helper branches the
-# BigGuy_NonCompressed / LittleGuy_Compressed FullRegions configs in
-# LLPCombineJustin/config_master cut on, so those regions can be written as
-# custom cuts.
+# Minimal branch allowlist for LLPStandardPlots (main.py). Exactly the branches
+# DataLoader reads (src/loader.py _get_branches_for_mode, src/config.py
+# ModeConfig, src/selections.py SelectionManager) plus the selection flags
+# passed as --flags / config cuts, plus the helper branches the baseline and
+# bins of LLPCombineJustin/config_master LittleGuy_Compressed_FullRegions and
+# BigGuy_NonCompressed_FullRegions cut on, so those selections can be
+# reproduced as custom cuts.
 #
 # Lines are fnmatch patterns (blank lines and #-comments ignored).
 
-# Event weight
+# Event weight and MET
 evtFillWgt
-
-# Baseline: MET, filters, HEM veto, MET trigger OR
 selCMet
+
+# Baseline: filters, HEM veto, MET trigger OR (SelectionManager)
 Flag_MetFilters
 Flag_hemVeto
 Trigger_PFMET120_PFMHT120_IDTight
@@ -19,18 +20,18 @@ Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight
 Trigger_PFMET120_PFMHT120_IDTight_PFHT60
 Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60
 
-# RJR, uncompressed mode (rjrPTS[0] < 150 is baseline)
+# RJR, uncompressed mode (ModeConfig.UNCOMPRESSED)
 rjr_Ms
 rjr_Rs
 rjrPTS
-# BigGuy prompt-photon regions (balRJRJets)
+# BigGuy balRJRJets bins
 rjrNJetsJa
 rjrNJetsJb
 
-# RJR, compressed mode
-rjrIsr_*
-rjrIsrPTS
-rjrIsrSdphiBV
+# RJR, compressed mode (ModeConfig.COMPRESSED)
+rjrIsr_PtIsr
+rjrIsr_RIsr
+rjrIsr_nSVisObjects
 
 # SV counts and data/MC variables
 SV_nHadronic
@@ -50,10 +51,8 @@ LeptonicSV_decayAngle
 LeptonicSV_cosTheta
 
 # Photon counts and data/MC variables (Gen* are MC only)
+nSelPhotons
 nBaseLinePhotons
-nblBHPhotons
-nblNonpromptPhotons
-nblPromptPhotons
 baseLinePhoton_WTimeSig
 baseLinePhoton_Pt
 baseLinePhoton_Eta
@@ -61,6 +60,9 @@ baseLinePhoton_isoANNScore
 baseLinePhoton_beamHaloCNNScore
 baseLinePhoton_GenTimeSig
 baseLinePhoton_GenLabTimeSig
+# LittleGuy/BigGuy noBHPhotons, noNonPromptPhotons, geq1NonPromptPhotons bins
+nblBHPhotons
+nblNonpromptPhotons
 
-# SV and photon selection flags (SR, CR, validation, inclusive)
+# SV and photon region flags selectable via --flags (51 bools in the skimmer)
 passN*

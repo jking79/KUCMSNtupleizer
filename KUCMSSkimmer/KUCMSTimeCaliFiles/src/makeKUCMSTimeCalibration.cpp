@@ -6,8 +6,9 @@
 //         Created:  Fri, 20 Dec 2024
 //
 //////////////////////////////////////////////////////////////////////
-
 #include "KUCMS_TimeCalibration.hh"
+
+#include <cstdlib>
 // ------------------------------------------- main function ------------------------------------------------------------
 int main ( int argc, char *argv[] ){
 
@@ -54,7 +55,7 @@ int main ( int argc, char *argv[] ){
 
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCGjetsTFile.txt");
  
-	std::string inputfilename( "ecal_config/kucmsTimeCaliR16ULv2TFile.txt"); 
+	//std::string inputfilename( "ecal_config/kucmsTimeCaliR16ULv2TFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR17ULv2TFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR18ULv2GT36TFile.txt");
 
@@ -62,6 +63,7 @@ int main ( int argc, char *argv[] ){
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR23ReRecoTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR24ReRecoTFile.txt");
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR25PrmptTFile.txt");
+    std::string inputfilename( "ecal_config/kucmsTimeCaliR26PrmptTFile.txt");
 
     //std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCQCDTFile.txt");
 
@@ -71,7 +73,7 @@ int main ( int argc, char *argv[] ){
 
     //std::string indir("KUCMSNtuple/");
     
-	std::string indir("KUCMSNtuple/gammares_ul16v2/");
+	//std::string indir("KUCMSNtuple/gammares_ul16v2/");
     //std::string indir("KUCMSNtuple/gammares_ul17v2/");
     //std::string indir("KUCMSNtuple/gammares_ul18v2gt36/");
 
@@ -79,6 +81,7 @@ int main ( int argc, char *argv[] ){
     //std::string indir("KUCMSNtuple/gammares_R23_22sept23/");
     //std::string indir("KUCMSNtuple/gammares_R24_m6n15/");
     //std::string indir("KUCMSNtuple/gammares_prmt25/");
+    std::string indir("KUCMSNtuple/gammares_prmt26/");
 
     //std::string indir("KUCMSNtuple/gammares_QCD18/");
 
@@ -91,54 +94,64 @@ int main ( int argc, char *argv[] ){
 	// KUCMS_TimeCalibration( bool stayOpen = false, bool makeNew = false  ); are defaults
 
 	////KUCMS_TimeCalibration theCali; // open tfile in read only then close after setup
-	KUCMS_TimeCalibration theCali( true );// true allows for run local condition
+	KUCMS_TimeCalibration theCali( true );// true allows for run local condition // Open local ecal_config ROOT files in UPDATE mode.
+	if( not theCali.HasValidCaliMaps() ) return EXIT_FAILURE;
 	theCali.SetEosDir(eosdir);
 	theCali.SetInDir(indir);
 	//
     //-----//////////  making tt cali  :
     theCali.SetupIovMaps();
-	// for PD R2UL
-    theCali.setTTIov( r2ulTag );
-    theCali.setXIov( xiovtag );
+
+    // The combined gain-1 path selects the TT/X IOV family from each input tag by default.
+    // For an R&D override, disable automatic selection before setting these manually:
+    // theCali.setAutoSelectGain1Iovs(false);
+    // theCali.setTTIov(r2ulTag);
+    // theCali.setXIov(xiovtag);
 	// for MC
     //theCali.setTTIov( mctag );
     //theCali.setXIov( mctag );
     // for PD R3
-	//theCali.setTTIov( r3TagTT );
-	//theCali.setXIov( r3TagX );
-    //theCali.setIsCC(true);
+	theCali.setTTIov( r3TagTT );
+	theCali.setXIov( r3TagX );
+    theCali.setIsCC(true);
 	////theCali.setIsCC(false); //-- defaults to false
-	//theCali.setDoUnCC(true);
+	theCali.setDoUnCC(true);
 
     //-----//////////  making trigtower cali :
-	//// makeCaliMapsEGR( std::string inputFileName, bool doTT, int GID,  bool small, bool doCali )
-    ////void makeCaliMapsEGR( std::string inputFileName, bool doTT, int GID = 1, bool small = false, bool doCali = true );
-    ////void makeTTCaliMapEGR( std::string inputFileName, int GID = 1, bool small = false, bool doCali = true )
-    ////        { makeCaliMapsEGR( inputFileName, true, GID, small, doCali ); };
-    ////void makeXCaliMapEGR( std::string inputFileName, int GID = 1, bool small = false, bool doCali = true )
-    ////        { makeCaliMapsEGR( inputFileName, false, GID, small, doCali ); };
-    ////theCali.makeTTCaliMapEGR( inputfilename, 1, true ); // true == run only subset of events ( only change doCali for testing, ever )
-	//theCali.makeTTCaliMapEGR( inputfilename );
-    //theCali.makeCaliHists();
-    //theCali.SaveCaliHists();
-    //theCali.SaveTTRunFile();
+	////// bool makeCaliMapsEGR( std::string inputFileName, bool doTT, int GID, bool small, bool doCali )
+	////// bool makeTTCaliMapEGR( std::string inputFileName, int GID = 1, bool small = false, bool doCali = true );
+	////// bool makeXCaliMapEGR( std::string inputFileName, int GID = 1, bool small = false, bool doCali = true );
+	//// Preferred gain-1 path: make TT and crystal maps in one event loop.
+	//// The final non-comment input row must set dolast=1 because the intermediate
+	//// TT-partitioned crystal moments exist only for this process invocation.
+	//if( not theCali.makeGain1CaliMapsEGR( inputfilename ) ) return EXIT_FAILURE;
+	//theCali.makeCaliHists();
+	//if( not theCali.SaveCaliHists() ) return EXIT_FAILURE;
+	//if( not theCali.SaveTTRunFile() ) return EXIT_FAILURE;
+	//if( not theCali.SaveCaliRunFile() ) return EXIT_FAILURE;
 
+	//// Legacy two-pass gain-1 path:
+    ////theCali.makeTTCaliMapEGR( inputfilename, 1, true ); // true == run only subset of events ( only change doCali for testing, ever )
+	//if( not theCali.makeTTCaliMapEGR( inputfilename ) ) return EXIT_FAILURE;
+	//theCali.makeCaliHists();
+	//if( not theCali.SaveCaliHists() ) return EXIT_FAILURE;
+	//if( not theCali.SaveTTRunFile() ) return EXIT_FAILURE;
     //-----//////////  making xtal cali :
     ////theCali.makeXCaliMapEGR( inputfilename, true ); // true == run only subset of events
 	////theCali.makeXCaliMapEGR( inputfilename, 1, true ); // true == run only subset of events
-    //theCali.makeXCaliMapEGR( inputfilename );
-    //theCali.makeCaliHists();
-	//theCali.SaveCaliHists();
-	//theCali.SaveCaliRunFile();
+	//if( not theCali.makeXCaliMapEGR( inputfilename ) ) return EXIT_FAILURE;
+	//theCali.makeCaliHists();
+	//if( not theCali.SaveCaliHists() ) return EXIT_FAILURE;
+	//if( not theCali.SaveCaliRunFile() ) return EXIT_FAILURE;
 
 	//----///////////  make gainid 2 calibrations
-    ////theCali.makeTTCaliMapEGR( inputfilename, 2, false, false ); // do gainID 2 no calibration step
-    ////theCali.makeTTCaliMapEGR( inputfilename, 2, true ); // do gainID 2; true == run only subset of events 
-    theCali.makeXCaliMapEGR( inputfilename, 2 ); // do gainID 2+
+    //////theCali.makeTTCaliMapEGR( inputfilename, 2, false, false ); // do gainID 2 no calibration step
+    //////theCali.makeTTCaliMapEGR( inputfilename, 2, true ); // do gainID 2; true == run only subset of events 
+	if( not theCali.makeXCaliMapEGR( inputfilename, 2 ) ) return EXIT_FAILURE; // do gainID 2+
 	theCali.makeCaliHists();
-    theCali.SaveCaliHists();
-    theCali.SaveTTRunFile();
-    theCali.SaveCaliRunFile();
+	if( not theCali.SaveCaliHists() ) return EXIT_FAILURE;
+	////if( not theCali.SaveTTRunFile() ) return EXIT_FAILURE;
+	if( not theCali.SaveCaliRunFile() ) return EXIT_FAILURE;
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -308,14 +321,12 @@ int main ( int argc, char *argv[] ){
 
 	//  ---------- the below is done in re stuff now ------------------------
 
-	// plotting of mean time by run with calibraton : filename, start run, end run, usecali
-	// usecali ( defaults to usecali true )
+	// Plot mean TT time by run. One pass always produces uncalibrated EB/EE histograms and
+	// also produces calibrated EB/EE histograms when complete calibration maps are available.
 	//KUCMS_TimeCalibration theCali;
     //theCali.SetEosDir(eosdir);
     //theCali.SetInDir(indir);
-    //theCali.plotMeanRunTimeEGR( inputfilename, 315257, 325172 ); // R2 2018 UL 315257_325172 // R2 2017 UL 296399_306460
-    //theCali.plotMeanRunTimeEGR( inputfilename, 315257, 325172, false );
-    ////theCali.plotMeanRunTimeEGR( inputfilename, 296399, 307554, true );	
+    //if( not theCali.plotMeanRunTimeEGR(inputfilename,315257,325172) ) return EXIT_FAILURE;
 	
 	/////////////////////////////////////////////////////////////////////
 
@@ -330,6 +341,6 @@ int main ( int argc, char *argv[] ){
 	
 	std::cout << " -- Thats All Folks !!!!!!!!! " << std::endl;
 
-    return 1;
+	return EXIT_SUCCESS;
 
 }//<<>>int main ( int argc, char *argv[] )

@@ -77,7 +77,7 @@ int main ( int argc, char *argv[] ){
     //const std::string outfilename = "_rjrskim_geofast_v38_xpwz_v8_Test.root"; //
     //const std::string outfilename = "_rjrskim_basefast_v38_Test.root"; //
     //const std::string outfilename = "_rjrskim_geofull_v38_xpwz_v8_Test.root"; //
-    const std::string outfilename = "_rjrskim_basefull_v38_Test.root"; //
+    const std::string outfilename = "_rjrskim_basefull_v38_exclusion_Test.root"; //
 
 	// !!!!!!!!!!!!!!!!!!!  alternate RJR setup with invis in comb split rule
     //KUCMSAodSkimmer llpgana( true ); // uses local calibration 

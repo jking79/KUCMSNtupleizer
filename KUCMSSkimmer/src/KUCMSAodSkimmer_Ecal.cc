@@ -46,6 +46,7 @@ void KUCMSAodSkimmer::processRechits(){
 	erh_timeRes.clear();
     auto nRecHits = ECALRecHit_ID->size();
     if( DEBUGECAL ) std::cout << " -- Looping over " << nRecHits << " rechits" << std::endl;
+	timeCali->setMCResTag(mctrtag);
     for( int it = 0; it < nRecHits; it++ ){
 
 		auto rhid = (*ECALRecHit_ID)[it];
@@ -64,9 +65,7 @@ void KUCMSAodSkimmer::processRechits(){
 		}//<<>>if( tctag == "r3_p25unc" or tctag == "r3_p26unc" )
 		float rhe = (*ECALRecHit_energy)[it];
 		float rha = (*ECALRecHit_ampres)[it]; //( this is the ADC amplitude in units of the pedistal rms for this rechit )
-		timeCali->setMCResTag(mctrtag);
 		float corrht = timeCali->getCorrectedTime( rht, rha, rhid, Evt_run, tctag, mctype, gainid );
-		float hgncht = timeCali->getCorrectedTime( rht, rha, rhid, Evt_run, tctag, mctype, 1 );
         //this is the full variance ( = (N/A)^2 + (S^2)/A + 2C^2 )
 		float rhtres = timeCali->getTimeResoltuion( rha, rhid, Evt_run, tctag, mctype, gainid );
 		//if( rhid < 840000000 ){
@@ -85,6 +84,7 @@ void KUCMSAodSkimmer::processRechits(){
         hist1d[2]->Fill( corrht, 1 );
         hist1d[5]->Fill( rht, 1 );
 		if( gainid == 2 ){ 
+			const float hgncht = timeCali->getCorrectedTime( rht, rha, rhid, Evt_run, tctag, mctype, 1 );
 			if( isEB ) hist2d[10]->Fill(rhe,corrht);
 			else hist2d[13]->Fill(rhe,corrht);
         	hist1d[70]->Fill( rhe, 1 );
@@ -93,6 +93,7 @@ void KUCMSAodSkimmer::processRechits(){
         	hist1d[75]->Fill( hgncht, 1 );
 		}//<<>>if( gainid == 2 )
         if( gainid == 3 ){ 
+			const float hgncht = timeCali->getCorrectedTime( rht, rha, rhid, Evt_run, tctag, mctype, 1 );
 			if( isEB ) hist2d[11]->Fill(rhe,corrht);
             else hist2d[14]->Fill(rhe,corrht);
             hist1d[80]->Fill( rhe, 1 );
@@ -220,4 +221,3 @@ void KUCMSAodSkimmer::setEcalBranches( TTree* fOutTree ){
 	// nada as of yet
 
 }//<<>>void KUCMSAodSkimmer::setBranches( TTree& fOutTree )
-
