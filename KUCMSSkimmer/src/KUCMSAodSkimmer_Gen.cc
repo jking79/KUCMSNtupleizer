@@ -18,21 +18,9 @@
 //#define DEBUG true
 #define DEBUG false
 
-//------------------------------------------------------------------------------------------------------------
-//------------------------------------------------------------------------------------------------------------
-//  do any processing and calulations for objects and save values to output varibles 
-//------------------------------------------------------------------------------------------------------------
-//------------------------------------------------------------------------------------------------------------
-
-// void KUCMSAodSkimmer::processTemplate(){
-// 	
-// 		Clear out branch vector varibles &/or initilize other out branch vars
-//	------------------------------------------------
-// 		Do any calculations / cuts
-//  ------------------------------------------------
-//		Fill out branch varibles
-//
-//}//<<>>void KUCMSAodSkimmer::processTemplate()
+// Generator-particle processing and branch registration.  Generator matching
+// is run first for events with generator information because FastSim timing
+// quantities can be consumed by later photon processing.
 
 void KUCMSAodSkimmer::processGenParticles(){
 
@@ -109,7 +97,7 @@ void KUCMSAodSkimmer::processGenParticles(){
     float mompz = hasMom ? (*Gen_pz)[momIndx] : -1;
     float genmomp = hypo( mompx, mompy, mompz );
     //float beta = ( mommass > 0 ) ? genmomp/mommass : -1;
-    //float gama = ( beta >= 0 ) ? 1/std::sqrt( 1 - beta*beta ) : -1; 
+    //float gama = ( beta >= 0 ) ? 1/std::sqrt( 1 - beta*beta ) : -1;
     float gbeta = ( mommass > 0 ) ? genmomp/mommass : -1;
     //float gbeta = ( gama >= 0 && beta >= 0 ) ? gama*beta : -1;
     float ctau = ( ( gbeta > 0 ) && ( displacment >= 0 ) ) ? displacment/gbeta : -1;
@@ -120,7 +108,7 @@ void KUCMSAodSkimmer::processGenParticles(){
     // Z, or LSP with an X2 mother identifies the terminal/decaying X2 copy.
     const bool isX2DecayChild = pdgId == 22 || pdgId == 23 || pdgId == 1000022;
     if( hasMom && mompdg == 1000023 && isX2DecayChild &&
-        !hasValidLifetimeForMother[momIndx] ){
+    !hasValidLifetimeForMother[momIndx] ){
       const float momenergy = (*Gen_energy)[momIndx];
       const float mometa = (*Gen_eta)[momIndx];
       const float momphi = (*Gen_phi)[momIndx];
@@ -130,16 +118,16 @@ void KUCMSAodSkimmer::processGenParticles(){
       const float momvz = (*Gen_vz)[momIndx];
       const float mombeta = momenergy > 0.f ? genmomp/momenergy : -1.f;
       const float momctau = ( genmomp > 0.f && mommass > 0.f ) ?
-        displacment*mommass/genmomp : -1.f;
+      displacment*mommass/genmomp : -1.f;
 
       const bool validLifetime = std::isfinite(displacment) && displacment > 0.f &&
-        std::isfinite(genmomp) && genmomp > 0.f &&
-        std::isfinite(mommass) && mommass > 0.f &&
-        std::isfinite(momenergy) && momenergy > 0.f &&
-        std::isfinite(mometa) && std::isfinite(momphi) && std::isfinite(mompt) &&
-        std::isfinite(momvx) && std::isfinite(momvy) && std::isfinite(momvz) &&
-        std::isfinite(mombeta) && mombeta > 0.f &&
-        std::isfinite(momctau) && momctau > 0.f;
+      std::isfinite(genmomp) && genmomp > 0.f &&
+      std::isfinite(mommass) && mommass > 0.f &&
+      std::isfinite(momenergy) && momenergy > 0.f &&
+      std::isfinite(mometa) && std::isfinite(momphi) && std::isfinite(mompt) &&
+      std::isfinite(momvx) && std::isfinite(momvy) && std::isfinite(momvz) &&
+      std::isfinite(mombeta) && mombeta > 0.f &&
+      std::isfinite(momctau) && momctau > 0.f;
 
       if( validLifetime ){
         validX2Lifetimes.push_back({
@@ -147,13 +135,13 @@ void KUCMSAodSkimmer::processGenParticles(){
           mompdg, mompt, momvx, momvy, momvz, mombeta, momctau
         });
         hasValidLifetimeForMother[momIndx] = true;
-      }
-    }
+      }//<<>>if( validLifetime )
+    }//<<>>if( hasMom && mompdg == 1000023 && isX2DecayChild && !hasValidLifetimeForMother[momIndx] )
     //if( mompdg != 0 ){
     if( false ){
       std::cout << " ctau for : " << pdgId << " mother: " << mompdg << " with mommass " << mommass;
       std::cout << " genp: " << genmomp << " gbeta: " << gbeta << " dis: " << displacment;
-      std::cout << " ctau: " << ctau << std::endl; 
+      std::cout << " ctau: " << ctau << std::endl;
     }//<<>>if( mompdg != 0 )
 
     if( ( pdgId > 1000000 ) && ( pdgId < 1000007 ) ){ nSQuark++; selGenPart.fillBranch( "genSQMass", mass ); }
@@ -179,7 +167,7 @@ void KUCMSAodSkimmer::processGenParticles(){
     bool momFromSqkR( hasGrandMom && ( Gen_pdgId->at(gMomIndx) > 2000000 ) && ( Gen_pdgId->at(gMomIndx) < 2000009 ) );
     bool momFromSqk( momFromSqkL || momFromSqkR );
     bool quark( pdgId < 9 );
-    bool photon( pdgId == 22 ); 
+    bool photon( pdgId == 22 );
     bool zee( pdgId == 23 );
     bool lept( ( pdgId > 10 ) && ( pdgId < 19 ) );
     bool N0( pdgId == 1000022 );
@@ -218,9 +206,9 @@ void KUCMSAodSkimmer::processGenParticles(){
   }//<<>>for( int it = 0; it < nGenParts; it++ )
 
   std::sort(validX2Lifetimes.begin(), validX2Lifetimes.end(),
-    []( const X2LifetimeInfo& lhs, const X2LifetimeInfo& rhs ){
-      return lhs.genIndex < rhs.genIndex;
-    });
+  []( const X2LifetimeInfo& lhs, const X2LifetimeInfo& rhs ){
+    return lhs.genIndex < rhs.genIndex;
+  });
   const int nValidXs = static_cast<int>(validX2Lifetimes.size());
 
   //bool hasLSP( nLSPfXfSg > 0 );
@@ -241,24 +229,24 @@ void KUCMSAodSkimmer::processGenParticles(){
 
   //if( nZfX > 1 && nLZX > 0 && nX234 == 0 ){
   //if( nX234 == 0 ){
-  //if( nQfSg || nQfSqk ){ 
+  //if( nQfSg || nQfSqk ){
   if( false ){
     std::cout << "GenEventType::";
     std::cout << " nPHOfX: " << nPHOfX << " nZfX: " << nZfX;
     std::cout << " nX234: " << nX234 << " nN0fsqk: " << nN0fsqk << " nN0fsg: " << nN0fsg;
-    std::cout << " nLZX: " << nLZX  << " nQfZ: " << nQfZ; 
+    std::cout << " nLZX: " << nLZX  << " nQfZ: " << nQfZ;
     std::cout << " nQfSg: " << nQfSg << " nQfSqk: " << nQfSqk;
     std::cout << std::endl;
   }//<<>>if(
 
   bool isSTqp( has2Nfsqk && has2QfSqk && has2PfN && noX234 );
   bool isSTqqp( has2Nfsg && has4QfSg && has2PfN && noX234 );
-  bool isSTqqzll( has2Nfsg && has4QfSg && has2ZfN && hasLLfz && noX234 ); 
+  bool isSTqqzll( has2Nfsg && has4QfSg && has2ZfN && hasLLfz && noX234 );
   bool isSTqqzl( has2Nfsg && has4QfSg && has2ZfN && hasLfz && noX234 );
-  bool isSTqqz( has2Nfsg && has4QfSg && has2ZfN && hasNoLfz && noX234 );	
+  bool isSTqqz( has2Nfsg && has4QfSg && has2ZfN && hasNoLfz && noX234 );
 
   //if( nZfX > 1 && nLZX > 0 && nX234 == 0 ){
-  //if( nX234 == 0 ){ 
+  //if( nX234 == 0 ){
   //if( isSTqp || isSTqqp || isSTqqzll || isSTqqzl || isSTqqz ){
   //  std::cout << "GenSTFlag:";
   //  std::cout << " isSTqqp: " << isSTqqp << " isSTqqzll: " << isSTqqzll << " isSTqqzl: " << isSTqqzl;
@@ -269,7 +257,7 @@ void KUCMSAodSkimmer::processGenParticles(){
   bool evtIsZZ = ( nZfX == 2 ) ? true : false;
   bool evtIsZG = ( nZfX == 1 ) ? true : false;
   bool evtIsGG = ( nZfX == 0 ) ? true : false;
-	
+
   selGenPart.fillBranch( "genSTFlagQQP", isSTqqp );
   selGenPart.fillBranch( "genSTFlagQQZLL", isSTqqzll );
   selGenPart.fillBranch( "genSTFlagQQZL", isSTqqzl );
@@ -293,7 +281,7 @@ void KUCMSAodSkimmer::processGenParticles(){
       selGenPart.fillBranch( label + "_beta", x2.beta );
       selGenPart.fillBranch( label + "_ctau", x2.ctau );
       geVects.set( label == "Xa" ? "xa5vec" : "xb5vec",
-        { x2.vx, x2.vy, x2.vz, x2.beta, x2.displacement, x2.eta, x2.phi } );
+      { x2.vx, x2.vy, x2.vz, x2.beta, x2.displacement, x2.eta, x2.phi } );
     };
 
     geVects.set( "xa5vec", std::vector<float>(7, -1.f) );
@@ -331,7 +319,7 @@ void KUCMSAodSkimmer::setGenBranches( TTree* fOutTree ){
   selGenPart.makeBranch( "genXMomCTau", VFLOAT );
   selGenPart.makeBranch( "genMomCTau", VFLOAT );
   selGenPart.makeBranch( "genCharge", VINT );   //!
-  selGenPart.makeBranch( "genMass", VFLOAT );   //!   
+  selGenPart.makeBranch( "genMass", VFLOAT );   //!
   selGenPart.makeBranch( "genStatus", VINT );   //!
   selGenPart.makeBranch( "genVx", VFLOAT );   //!
   selGenPart.makeBranch( "genVy", VFLOAT );   //!
@@ -345,11 +333,11 @@ void KUCMSAodSkimmer::setGenBranches( TTree* fOutTree ){
   selGenPart.makeBranch( "genSTFlagQQZL", BOOL );   //!
   selGenPart.makeBranch( "genSTFlagQQZ", BOOL );   //!
   selGenPart.makeBranch( "genSTFlagQP", BOOL );   //!
-  selGenPart.makeBranch( "genSQMass", VFLOAT );   //! 
-  selGenPart.makeBranch( "genSGMass", VFLOAT );   //! 
-  selGenPart.makeBranch( "genLLPMass", VFLOAT );   //! 
-  selGenPart.makeBranch( "genLSPMass", VFLOAT );   //! 
-  selGenPart.makeBranch( "genGrvtinoMass", VFLOAT );   //! 
+  selGenPart.makeBranch( "genSQMass", VFLOAT );   //!
+  selGenPart.makeBranch( "genSGMass", VFLOAT );   //!
+  selGenPart.makeBranch( "genLLPMass", VFLOAT );   //!
+  selGenPart.makeBranch( "genLSPMass", VFLOAT );   //!
+  selGenPart.makeBranch( "genGrvtinoMass", VFLOAT );   //!
 
   selGenPart.makeBranch( "Xa_energy", FLOAT );
   selGenPart.makeBranch( "Xa_phi", FLOAT ); // opps -> missed eta : actually did phi twice :(
@@ -382,8 +370,8 @@ void KUCMSAodSkimmer::setGenBranches( TTree* fOutTree ){
   selGenPart.makeBranch( "Evt_isZZ", BOOL );
   selGenPart.makeBranch( "Evt_nXs", INT );
   selGenPart.makeBranch( "Evt_nValidXs", INT,
-    "unique terminal X2 mothers with a positive finite reconstructed lifetime" );
+  "unique terminal X2 mothers with a positive finite reconstructed lifetime" );
 
   selGenPart.attachBranches( fOutTree );
 
-}//<<>>void KUCMSAodSkimmer::setBranches( TTree& fOutTree )
+}//<<>>void KUCMSAodSkimmer::setGenBranches( TTree* fOutTree )

@@ -5,10 +5,11 @@
 //
 /**\class ECALTracksProducer ECALTracksProducer.cc KUNTupleFW/KUCMSNtupleizer/plugins/ECALTracksProducer.cc
 
- Description: [one line class summary]
+Description: Combine in-time and out-of-time ECAL superclusters after removing
+overlaps, and publish the resulting collection for displaced-electron studies.
 
- Implementation:
-     [Notes on implementation]
+Implementation: The current producer consumes only the two supercluster
+collections.  Earlier track-propagation code is no longer part of this module.
 */
 //
 // Original Author:  Andres Abreu
@@ -85,57 +86,28 @@
 //
 
 class ECALTracksProducer : public edm::stream::EDProducer<> {
-public:
+  public:
   explicit ECALTracksProducer(const edm::ParameterSet&);
   ~ECALTracksProducer() override;
 
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
-private:
+  private:
   typedef edm::Handle<reco::TrackCollection> TracksHandle;
   typedef edm::Handle<reco::GsfTrackCollection> GsfTracksHandle;
   typedef edm::Handle<reco::SuperClusterCollection> SCsHandle;
 
   void produce(edm::Event&, const edm::EventSetup&) override;
 
-  // ----------member data ---------------------------
-  //edm::EDGetTokenT<reco::TrackCollection> generalTrackToken_;
-  //edm::EDGetTokenT<reco::GsfTrackCollection> gsfElectronTrackToken_;
-  //edm::EDGetTokenT<reco::GenParticleCollection> genParticlesToken_;
+  // Input supercluster collections used to build the displaced-electron view.
   edm::EDGetTokenT<reco::SuperClusterCollection> superClusterToken_;
   edm::EDGetTokenT<reco::SuperClusterCollection> ootSuperClusterToken_;
-
-  //edm::ESGetToken<CaloGeometry, CaloGeometryRecord> caloGeometryToken_;
-  //edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> magneticFieldToken_;
-
-  //TrackDetectorAssociator trackAssociator_;
-  //TrackAssociatorParameters trackAssocParameters_;
-
-  //reco::GenParticleCollection signalGenElectrons_;
 };
 
 ECALTracksProducer::ECALTracksProducer(const edm::ParameterSet& iConfig) :
-  //generalTrackToken_(consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("generalTracksSrc")) ),
-  //gsfElectronTrackToken_(consumes<reco::GsfTrackCollection>(iConfig.getParameter<edm::InputTag>("gsfElectronTracksSrc")) ),
-  superClusterToken_(consumes<reco::SuperClusterCollection>(iConfig.getParameter<edm::InputTag>("superClusters")) ),
-  ootSuperClusterToken_(consumes<reco::SuperClusterCollection>(iConfig.getParameter<edm::InputTag>("ootSuperClusters")) )
-  //caloGeometryToken_(esConsumes()),
-  //magneticFieldToken_(esConsumes<MagneticField, IdealMagneticFieldRecord>()) 
+superClusterToken_(consumes<reco::SuperClusterCollection>(iConfig.getParameter<edm::InputTag>("superClusters")) ),
+ootSuperClusterToken_(consumes<reco::SuperClusterCollection>(iConfig.getParameter<edm::InputTag>("ootSuperClusters")) )
 {
-/*
-  // TrackAssociator parameters
-  edm::ParameterSet parameters = iConfig.getParameter<edm::ParameterSet>("TrackAssociatorParameters");
-  edm::ConsumesCollector iC = consumesCollector();
-  trackAssocParameters_.loadParameters(parameters, iC);
-  trackAssociator_.useDefaultPropagator();
-*/
-/*
-  produces<reco::TrackCollection>("ecalGeneralTracks").setBranchAlias("ecalGeneralTracks");
-  produces<reco::GsfTrackCollection>("ecalGsfTracks").setBranchAlias("ecalGsfTracks");
-  produces<reco::TrackCollection>("ecalTracks").setBranchAlias("ecalTracks");
-*/
-  //produces<std::vector<GlobalPoint> >("generalTracksECALPosition").setBranchAlias("generalTracksECALPosition");
-  //produces<std::vector<GlobalPoint> >("gsfTracksECALPosition").setBranchAlias("gsfTracksECALPosition");
   produces<reco::SuperClusterCollection>("displacedElectronSCs").setBranchAlias("displacedElectronSCs");
 }
 
@@ -147,55 +119,12 @@ ECALTracksProducer::~ECALTracksProducer() {}
 // ------------ method called to produce the data  ------------
 void ECALTracksProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   using namespace std;
-/*
-  typedef ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double> > Point;
-  typedef ROOT::Math::DisplacementVector3D<ROOT::Math::Cartesian3D<double> > Vector;
-
-  auto magfield = iSetup.getTransientHandle(magneticFieldToken_);
-  CaloGeometry ecalGeometry = iSetup.getData(caloGeometryToken_);
-
-  edm::Handle<reco::TrackCollection> generalTracksHandle;
-  iEvent.getByToken(generalTrackToken_, generalTracksHandle);
-
-  edm::Handle<reco::GsfTrackCollection> gsfTracksHandle;
-  iEvent.getByToken(gsfElectronTrackToken_, gsfTracksHandle);
-*/
   edm::Handle<reco::SuperClusterCollection> superClusterHandle;
   iEvent.getByToken(superClusterToken_, superClusterHandle);
 
   edm::Handle<reco::SuperClusterCollection> ootSuperClusterHandle;
   iEvent.getByToken(ootSuperClusterToken_, ootSuperClusterHandle);
-/*
-  // Smart pointers to containers of output collections
-  std::unique_ptr<reco::TrackCollection> ecalGeneralTracks = std::make_unique<reco::TrackCollection>();
-  std::unique_ptr<reco::GsfTrackCollection> ecalGsfTracks = std::make_unique<reco::GsfTrackCollection>();
-  std::unique_ptr<reco::TrackCollection> ecalTracks = std::make_unique<reco::TrackCollection>();
-  //std::unique_ptr<std::vector<GlobalPoint> > generalTracksECALPosition = std::make_unique<std::vector<GlobalPoint> >();
-  //std::unique_ptr<std::vector<GlobalPoint> > gsfTracksECALPosition = std::make_unique<std::vector<GlobalPoint> >();
-*/
   std::unique_ptr<reco::SuperClusterCollection> displacedElectronSCs = std::make_unique<reco::SuperClusterCollection>();
-/*  
-  // Remove overlap between general tracks and gsf tracks. Gsf tracks are preferred.
-  reco::TrackCollection generalTracks(*generalTracksHandle);
-  reco::GsfTrackCollection gsfTracks(*gsfTracksHandle);
-
-  // Retain only General tracks that make it to the ECAL
-  generalTracks = RemoveOverlap<reco::Track, reco::GsfTrack>(generalTracks, gsfTracks, 0.1);
-  TrackPropagator<reco::Track> generalTracksPropagator(iEvent, iSetup, magfield, trackAssocParameters_, generalTracks);
-  generalTracks = generalTracksPropagator.GetTracks();
-  ecalGeneralTracks->insert(ecalGeneralTracks->end(), generalTracks.begin(), generalTracks.end());
-
-  // Retain only Gsf tracks that make it to the ECAL
-  TrackPropagator<reco::GsfTrack> gsfTracksPropagator(iEvent, iSetup, magfield, trackAssocParameters_, gsfTracks);
-  gsfTracks = gsfTracksPropagator.GetTracks();
-  ecalGsfTracks->insert(ecalGsfTracks->end(), gsfTracks.begin(), gsfTracks.end());
-
-  reco::TrackCollection ecalTracksTemp(generalTracks);
-  for(const auto &track : gsfTracks)
-    ecalTracksTemp.emplace_back(track);
-  for(const auto &track : ecalTracksTemp)
-    ecalTracks->emplace_back(track);
-*/
   // Remove overlap between superClusters and out-of-time superClusters
   reco::SuperClusterCollection superClusters(*superClusterHandle);
   reco::SuperClusterCollection ootSuperClusters(*ootSuperClusterHandle);
@@ -204,29 +133,15 @@ void ECALTracksProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSet
   displacedElectronSCs->insert(displacedElectronSCs->end(), superClusters.begin(), superClusters.end());
   displacedElectronSCs->insert(displacedElectronSCs->end(), ootSuperClusters.begin(), ootSuperClusters.end());
 
-/*  
-  iEvent.put(std::move(ecalGeneralTracks), "ecalGeneralTracks");
-  iEvent.put(std::move(ecalGsfTracks), "ecalGsfTracks");
-  iEvent.put(std::move(ecalTracks), "ecalTracks");
-*/
-  //iEvent.put(std::move(generalTracksDetMatchInfo), "generalTracksDetMatchInfo");
-  //iEvent.put(std::move(gsfTracksDetMatchInfo), "gsfTracksDetMatchInfo");
   iEvent.put(std::move(displacedElectronSCs), "displacedElectronSCs");
-}// Producer end
+}//<<>>void ECALTracksProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void ECALTracksProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
   desc.setUnknown();
-  /*
-  desc.add<edm::InputTag>("generalTracksSrc", edm::InputTag("generalTracks"));
-  desc.add<edm::InputTag>("gsfElectronTracksSrc", edm::InputTag("electronGsfTracks"));
-  desc.add<edm::InputTag>("superClusters", edm::InputTag("particleFlowEGamma"));
-  desc.add<edm::InputTag>("ootSuperClusters", edm::InputTag("particleFlowSuperClusterOOTECAL"));
-  //desc.add<edm::InputTag>("tkAssocParamBlock");
-  */
   descriptions.addDefault(desc);
-}
+}//<<>>void ECALTracksProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(ECALTracksProducer);

@@ -29,7 +29,7 @@ class TTree;
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 class KUCMSBranchManager {
-public:
+  public:
   KUCMSBranchManager() = default;
   ~KUCMSBranchManager() = default;
 
@@ -41,9 +41,9 @@ public:
   // ------------ Branch creation ------------
 
   inline void makeBranch(const std::string& key,
-                         const std::string& name,
-                         BType type,
-                         const std::string& doc = "") {
+  const std::string& name,
+  BType type,
+  const std::string& doc = "") {
     // Replace if exists
     theBranches.erase(key);
 
@@ -64,60 +64,60 @@ public:
       case BOOL:    theBranches[key] = std::make_unique<KUCMSBranch<bool>>(name, type, doc); break;
 
       default:
-        KUCMS_BM_LOG("KUCMSBranchManager::makeBranch error: unknown BType for branch '" << name << "'");
-        break;
-    }
-  }
+      KUCMS_BM_LOG("KUCMSBranchManager::makeBranch error: unknown BType for branch '" << name << "'");
+      break;
+    }//<<>>switch (type)
+  }//<<>>inline void makeBranch(const std::string& key, const std::string& name, BType type, const std::string& doc = "")
 
   inline void makeBranch(const std::string& name, BType type, const std::string& doc = "") {
     makeBranch(name, name, type, doc);
-  }
+  }//<<>>inline void makeBranch(const std::string& name, BType type, const std::string& doc = "")
 
   // ------------ ROOT tree interface ------------
 
   inline void attachBranches(TTree* outTree) {
     for (auto& kv : theBranches) {
       kv.second->attachBranch(outTree);
-    }
-  }
+    }//<<>>for (auto& kv : theBranches)
+  }//<<>>inline void attachBranches(TTree* outTree)
 
   inline void clearBranches() {
     for (auto& kv : theBranches) {
       kv.second->clear();
-    }
-  }
+    }//<<>>for (auto& kv : theBranches)
+  }//<<>>inline void clearBranches()
 
   // ------------ Fillers (no extra lookups / no accidental insertion) ------------
 
   inline void fillBranch(const std::string& key, const std::vector<float>& v) {
     if (auto* b = find_(key)) b->fill(v);
-  }
+  }//<<>>inline void fillBranch(const std::string& key, const std::vector<float>& v)
 
   inline void fillBranch(const std::string& key, const std::vector<uInt>& v) {
     if (auto* b = find_(key)) b->fill(v);
-  }
+  }//<<>>inline void fillBranch(const std::string& key, const std::vector<uInt>& v)
 
   inline void fillBranch(const std::string& key, uInt v) {
     if (auto* b = find_(key)) b->fill(v);
-  }
+  }//<<>>inline void fillBranch(const std::string& key, uInt v)
 
   inline void fillBranch(const std::string& key, int v) {
     if (auto* b = find_(key)) b->fill(v);
-  }
+  }//<<>>inline void fillBranch(const std::string& key, int v)
 
   inline void fillBranch(const std::string& key, float v) {
     if (auto* b = find_(key)) b->fill(v);
-  }
+  }//<<>>inline void fillBranch(const std::string& key, float v)
 
   inline void fillBranch(const std::string& key, const std::string& v) {
     if (auto* b = find_(key)) b->fill(v);
-  }
+  }//<<>>inline void fillBranch(const std::string& key, const std::string& v)
 
   inline void fillBranch(const std::string& key, bool v) {
     if (auto* b = find_(key)) b->fill(v);
-  }
+  }//<<>>inline void fillBranch(const std::string& key, bool v)
 
-private:
+  private:
   using BranchPtr = std::unique_ptr<KUCMSBranchBase>;
   std::map<std::string, BranchPtr> theBranches;
 
@@ -127,9 +127,9 @@ private:
       // silent by default (CMSSW-friendly)
       // KUCMS_BM_LOG("KUCMSBranchManager: missing key '" << key << "'");
       return nullptr;
-    }
+    }//<<>>if (it == theBranches.end())
     return it->second.get();
-  }
+  }//<<>>inline KUCMSBranchBase* find_(const std::string& key)
 };
 
 #endif

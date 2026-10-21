@@ -14,21 +14,8 @@
 //#define DEBUG true
 #define DEBUG false
 
-//------------------------------------------------------------------------------------------------------------
-//------------------------------------------------------------------------------------------------------------
-//  do any processing and calulations for objects and save values to output varibles 
-//------------------------------------------------------------------------------------------------------------
-//------------------------------------------------------------------------------------------------------------
-
-// void KUCMSAodSkimmer::processTemplate(){
-// 	
-// 		Clear out branch vector varibles &/or initilize other out branch vars
-//	------------------------------------------------
-// 		Do any calculations / cuts
-//  ------------------------------------------------
-//		Fill out branch varibles
-//
-//}//<<>>void KUCMSAodSkimmer::processTemplate()
+// Electron selection and output-branch registration.  The processing method
+// derives the selected-electron collections from the event-level branches.
 
 void KUCMSAodSkimmer::processElectrons(){
 
@@ -44,7 +31,7 @@ void KUCMSAodSkimmer::processElectrons(){
   float nEpDrMatch = 0;
   float nEpSeedIdMatch = 0;
   uInt nEpsidsolo = 0;
-  float elePhoIsoMinDr(10.0); 
+  float elePhoIsoMinDr(10.0);
   //if( DEBUG ) std::cout << " -- Looping electrons: " << std::endl;
   for( uInt itr = 0; itr < nElectrons; itr++ ){
 
@@ -76,7 +63,7 @@ void KUCMSAodSkimmer::processElectrons(){
       float elephodr = hypo( eta-eta2, dphi12 );
       //std::cout << " -- Eta : " << eta-eta2 << " Phi : " << dPhi(phi,phi2) << " dr : " << elephodr << std::endl;
       if( elephodr < elePhoIsoDr ) elePhoIsoDr = elephodr;
-      //std::cout << " -- scIdx : " << scIdx2 << std::endl; 
+      //std::cout << " -- scIdx : " << scIdx2 << std::endl;
       auto rhIds = (*SuperCluster_rhIds)[scIdx2];
       //std::cout << " -- scRh1 : " << rhIds[0] << std::endl;
       auto psid = getLeadRhID(rhIds);
@@ -84,7 +71,7 @@ void KUCMSAodSkimmer::processElectrons(){
       if( esid != 0 && psid != 0 && esid == psid ){
         if( epSeedIdMatch == true ) epsidsolo = false;
         epSeedIdMatch = true;
-      }
+      }//<<>>if( esid != 0 && psid != 0 && esid == psid )
     }//for( uInt pit2 = 0; pit2 < nPhotons; pit2++ )
     //std::cout << " ---- next electrons: " << std::endl;
     elePhoIsoMinDr = elePhoIsoDr;
@@ -102,13 +89,13 @@ void KUCMSAodSkimmer::processElectrons(){
     selElectrons.fillBranch( "eleIsLoose", (*Electron_isLoose)[itr] );
     if( (*Electron_isLoose)[itr] ) nLooseEle++;
 
-	bool hemEligible1 = (*Electron_pt)[itr] > 20;
+    bool hemEligible1 = (*Electron_pt)[itr] > 20;
     bool hemEligible2 = (*Electron_pt)[itr] > 30;
-	bool isInHemRegion = inHEMRegion( eta, phi );
+    bool isInHemRegion = inHEMRegion( eta, phi );
     hemBits.set( "el1hvl", hemBits("el1hvl") || (isInHemRegion && hemEligible1) );
     hemBits.set( "el2hvm", hemBits("el2hvm") || (isInHemRegion && hemEligible2) );
 
-    //if( hemEligible && inHEMRegion( eta, phi ) ) hasHemObj = true;	
+    //if( hemEligible && inHEMRegion( eta, phi ) ) hasHemObj = true;
 
   }//<<>>for( int itr = 0; itr < nElectrons; itr++ )
   if( DEBUG ) std::cout << " -- Finishd looping electrons " << std::endl;
@@ -131,7 +118,7 @@ void KUCMSAodSkimmer::processElectrons(){
   selElectrons.fillBranch( "nEleSVMatched", Electron_nSVMatched );
   selElectrons.fillBranch( "nSelIsoElectrons", nSelIsoElectrons );
 
-}//<<>>void KUCMSAodSkimmer::processElectrons
+}//<<>>void KUCMSAodSkimmer::processElectrons()
 
 //------------------------------------------------------------------------------------------------------------
 // set output branches, initialize histograms, and endjobs
@@ -153,4 +140,4 @@ void KUCMSAodSkimmer::setElectronBranches( TTree* fOutTree ){
 
   selElectrons.attachBranches( fOutTree );
 
-}//<<>>void KUCMSAodSkimmer::setBranches( TTree& fOutTree )
+}//<<>>void KUCMSAodSkimmer::setElectronBranches( TTree* fOutTree )
