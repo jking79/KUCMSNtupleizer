@@ -38,13 +38,13 @@
 
 class HyddraSVsProducer : public edm::stream::EDProducer<> {
 
-public:
+  public:
   explicit HyddraSVsProducer(const edm::ParameterSet&);
   ~HyddraSVsProducer() override = default;
 
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
-private:
+  private:
   void produce(edm::Event&, const edm::EventSetup&) override;
 
   // Input tokens
@@ -58,11 +58,11 @@ private:
 };
 
 HyddraSVsProducer::HyddraSVsProducer(const edm::ParameterSet& iConfig) :
-  tracksToken_(consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("tracks"))),
-  pvToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("pvCollection"))),
-  ttBuilderToken_(esConsumes(edm::ESInputTag("", "TransientTrackBuilder"))),
-  leptonic_(iConfig.getParameter<edm::ParameterSet>("leptonic")),
-  hadronic_(iConfig.getParameter<edm::ParameterSet>("hadronic"))
+tracksToken_(consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("tracks"))),
+pvToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("pvCollection"))),
+ttBuilderToken_(esConsumes(edm::ESInputTag("", "TransientTrackBuilder"))),
+leptonic_(iConfig.getParameter<edm::ParameterSet>("leptonic")),
+hadronic_(iConfig.getParameter<edm::ParameterSet>("hadronic"))
 {
   produces<reco::VertexCollection>("leptonicVertices");
   produces<reco::VertexCollection>("hadronicVertices");
@@ -83,13 +83,13 @@ void HyddraSVsProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
   trackRefs.reserve(tracksHandle->size());
   for (size_t i = 0; i < tracksHandle->size(); ++i) {
     trackRefs.emplace_back(tracksHandle, i);
-  }
+  }//<<>>for (size_t i = 0; i < tracksHandle->size(); ++i)
 
   if(trackRefs.size() > 500) {
     edm::LogWarning("HyddraSVsProducer") << "Large input track collection (" << trackRefs.size()
-      << " tracks). Vertex reconstruction may be very slow. "
-      << "Consider enabling track cuts (applyCuts=True).";
-  }
+    << " tracks). Vertex reconstruction may be very slow. "
+    << "Consider enabling track cuts (applyCuts=True).";
+  }//<<>>if(trackRefs.size() > 500)
 
   // Use leading PV
   const reco::Vertex& pv = pvHandle->at(0);
@@ -104,7 +104,7 @@ void HyddraSVsProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
 
   iEvent.put(std::move(leptonicVertices), "leptonicVertices");
   iEvent.put(std::move(hadronicVertices), "hadronicVertices");
-}
+}//<<>>void HyddraSVsProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 void HyddraSVsProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
@@ -156,6 +156,6 @@ void HyddraSVsProducer::fillDescriptions(edm::ConfigurationDescriptions& descrip
   desc.add<edm::ParameterSetDescription>("hadronic", hadronicDesc);
 
   descriptions.addDefault(desc);
-}
+}//<<>>void HyddraSVsProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
 
 DEFINE_FWK_MODULE(HyddraSVsProducer);

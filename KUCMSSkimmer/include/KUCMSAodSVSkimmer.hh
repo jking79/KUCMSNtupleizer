@@ -47,7 +47,7 @@
 using namespace RestFrames;
 
 #define n1dHists 512
-#define n2dHists 512 
+#define n2dHists 512
 #define n3dHists 16
 #define nEBEEMaps 36
 
@@ -62,7 +62,7 @@ struct globalEventVars {
 //class KUCMSAodSkimmer : public root_base_v16 {
 class KUCMSAodSkimmer : public llpgtree {
 
-public:
+  public:
 
   //KUCMSAodSkimmer();
   KUCMSAodSkimmer( bool doLocal = false );
@@ -103,7 +103,7 @@ public:
   void SetTimeCalibrationTag(string ttag){ tctag = ttag; }
   void SetMCWeight(float w){ mcwgt = w; }
 
-  void SetGenInfoFlag( bool f ){ hasGenInfoFlag = f; } 
+  void SetGenInfoFlag( bool f ){ hasGenInfoFlag = f; }
   void SetNoSVorPhoFlag( bool f ){ noSVorPhoFlag = f; }
   void SetUseEvtGenWgtFlag( bool f ){ useEvtGenWgtFlag = f; }
   void SetGenSigPerfectFlag( bool f ){ genSigPerfectFlag = f; }
@@ -151,13 +151,18 @@ public:
   void processMet();
   void processSV();
 
+  // Run the standard topology. type=0 uses photon-adjusted MET; type=1 uses
+  // nominal MET. newEvent controls branch clearing when multiple RJR variants
+  // are evaluated for one event.
   void processRJR( int type, bool newEvent );
+  // Run the ISR-aware topology with a dedicated visible ISR frame.
   void processRJRISR();
   void processBHCPhotons();
   void processBHCJets();
   void processTimeSig();
 
-  // RJR ISR merge jets to reduce computation load
+  // Reduce visible-object multiplicity before loading the combinatoric group;
+  // RestFrames then searches assignments over the reduced collection.
   std::vector< TLorentzVector > BinaryMerge( const std::vector< TLorentzVector > & rjr_jets, int Nmax );
   void BinaryMergeInPlace( std::vector<TLorentzVector>& jets, int Nmax );
 
@@ -173,7 +178,7 @@ public:
   // object quality functions
 
   int getPhoQuality( int it );
-  int getJetQuality( int it );	
+  int getJetQuality( int it );
 
   // good Lumisection check
   std::map<int, std::vector<std::map<int, int>>> lumiData;
@@ -186,7 +191,7 @@ public:
   // histogram and recdhit map varibles & functions
   TH1D *hist1d[n1dHists];
   TH2D *hist2d[n2dHists];
-  TH3D *hist3d[n3dHists]; 
+  TH3D *hist3d[n3dHists];
 
   int nMaps;
   bool fMap[nEBEEMaps];
@@ -210,13 +215,14 @@ public:
   std::vector<float> getLeadTofRhTime( std::vector<uInt> recHitIds, double vtxX, double vtxY, double vtxZ );
   std::vector<float> getRhGrpEigen_sph( std::vector<float> times, std::vector<uInt> rechitids );
 
-  // RestFrames frames and friends
+  // Standard RestFrames topology and analysis groups:
+  // LAB -> S -> {X2a, X2b}; X2a/b -> {X1a/b, Ja/b}; Ja/b -> {J1, J2}.
 
   LabRecoFrame* LAB;
   DecayRecoFrame* S;
-  DecayRecoFrame*	X2a; 
+  DecayRecoFrame*	X2a;
   DecayRecoFrame* X2b;
-  DecayRecoFrame* Ja; 
+  DecayRecoFrame* Ja;
   DecayRecoFrame* Jb;
   //VisibleRecoFrame* Ja;
   //VisibleRecoFrame* Jb;
@@ -224,7 +230,7 @@ public:
   VisibleRecoFrame* J1b;
   VisibleRecoFrame* J2a;
   VisibleRecoFrame* J2b;
-  InvisibleRecoFrame* X1a; 
+  InvisibleRecoFrame* X1a;
   InvisibleRecoFrame* X1b;
 
   InvisibleGroup* INV;
@@ -237,7 +243,9 @@ public:
   MinMassesCombJigsaw* CombSplit_Ja;
   MinMassesCombJigsaw* CombSplit_Jb;
 
-  // ISR RestFrames frames and friends
+  // ISR-aware RestFrames topology:
+  // LAB_c -> {CM_c, ISR_c}; CM_c -> S_c -> {X2a_c, X2b_c}.
+  // The X2 branches retain the same invisible and visible substructure.
 
   LabRecoFrame* LAB_c;
   DecayRecoFrame* CM_c;
@@ -260,7 +268,7 @@ public:
   MinMassesSqInvJigsaw* InvSplit_c;
 
   CombinatoricGroup* COMB_J_c;
-  MinMassesCombJigsaw* CombSplit_ISR_c; 	
+  MinMassesCombJigsaw* CombSplit_ISR_c;
   MinMassesSqCombJigsaw* CombSplit_J_c;
   MinMassesCombJigsaw* CombSplit_Ja_c;
   MinMassesCombJigsaw* CombSplit_Jb_c;
@@ -282,7 +290,7 @@ public:
 
   bool genSigPerfectFlag;
   bool noSVorPhoFlag;
-  bool useEvtGenWgtFlag; 
+  bool useEvtGenWgtFlag;
   bool hasGenInfoFlag;
   bool doBHC;
   bool doSVs;
@@ -320,7 +328,7 @@ public:
   enum tSigID { Early, Prompt, Late };
 
   globalEventVars gEvtVar;
-  ItemManager<std::vector<float>> geVects;	
+  ItemManager<std::vector<float>> geVects;
   ItemManager<uInt> geCnts;
   ItemManager<float> geVars;
 
@@ -337,8 +345,8 @@ public:
   //condor v local varibles
   bool isLocal;
   int localSkip;
-	
-  // hem veto 
+
+  // hem veto
   bool hasHemObj;
   //std::map< std::string, bool > hemBits;
   ItemManager<bool> hemBits;
@@ -356,7 +364,7 @@ public:
   std::vector<float> rhispho;
   std::vector<float> rhisele;
 
-  // BC informaiton passing 
+  // BC informaiton passing
   std::vector<float> erh_corTime;
   std::vector<float> erh_timeRes;
   std::vector<bool> isBaseLinePho;
@@ -379,28 +387,6 @@ public:
   KUCMSBranchManager BHCPhoInfo;
   KUCMSBranchManager BHCJetInfo;
   KUCMSBranchManager TSPhoInfo;
-
-  // Other SC information ? ( this is a hack ) depreciated - or make so ?   
-  /*
-    std::vector<float>   *OSuperCluster_diffEnergy;
-    std::vector<float>   *OSuperCluster_dR;
-    std::vector<unsigned int> *OSuperCluster_otherMatchSeedID;
-    Int_t           OSuperCluster_nOther;
-    Int_t           OSuperCluster_nOtherEx;
-    Int_t           OSuperCluster_nOtherIn;
-    std::vector<unsigned int> *OSuperCluster_otherSeedID;
-    std::vector<int>     *OSuperCluster_nXtalOverlap;
-
-
-    TBranch        *b_OSuperCluster_diffEnergy;   //!
-    TBranch        *b_OSuperCluster_dR;   //!
-    TBranch        *b_OSuperCluster_otherMatchSeedID;   //!
-    TBranch        *b_OSuperCluster_nOther;   //!
-    TBranch        *b_OSuperCluster_nOtherEx;   //!
-    TBranch        *b_OSuperCluster_nOtherIn;   //!
-    TBranch        *b_OSuperCluster_otherSeedID;   //!
-    TBranch        *b_OSuperCluster_nXtalOverlap;   //!
-  */
 
   typedef std::vector<uInt> rhIdGroup;
   const int getOverLapCnt(const rhIdGroup x, const rhIdGroup y){ int c=0; int sx=x.size(); int sy=y.size();

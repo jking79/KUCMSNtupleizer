@@ -24,73 +24,73 @@ using json = nlohmann::json;
 
 bool KUCMSAodSkimmer::inHEMRegion( float eta, float phi ){
 
-	return ( ( eta > -3.2 && eta < -1.2 ) && ( phi > -1.77 && phi < -0.67 ) );
+  return ( ( eta > -3.2 && eta < -1.2 ) && ( phi > -1.77 && phi < -0.67 ) );
 
 }//<<>>void KUCMSAodSkimmer::inHEMRegion( float eta, float phi )
 
 void KUCMSAodSkimmer::loadLumiJson( std::string infile, bool verbose ){
-    // Define your target data structure
-    // assume std::map<int, std::vector<std::map<int, int>>> lumiData;
+  // Define your target data structure
+  // assume std::map<int, std::vector<std::map<int, int>>> lumiData;
 
-    // Open JSON file
-    std::ifstream file(infile);
-    if( !file.is_open() ){
-        std::cerr << "Error: Could not open JSON file.\n";
-    	return;
-    }//<<>>if( !file.is_open() )
+  // Open JSON file
+  std::ifstream file(infile);
+  if( !file.is_open() ){
+    std::cerr << "Error: Could not open JSON file.\n";
+    return;
+  }//<<>>if( !file.is_open() )
 
-    // Parse JSON
-    json j;
-    file >> j;
+  // Parse JSON
+  json j;
+  file >> j;
 
-    // Convert JSON structure into C++ map
-    for( auto& [runStr, lumiRanges] : j.items() ){
+  // Convert JSON structure into C++ map
+  for( auto& [runStr, lumiRanges] : j.items() ){
 
-        int run = std::stoi(runStr);
-        std::vector<std::map<int, int>> rangeList;
-        for( auto& pair : lumiRanges ){
-            if( pair.is_array() && pair.size() == 2 ){
-                std::map<int, int> range;
-                range[pair[0].get<int>()] = pair[1].get<int>();
-                rangeList.push_back(range);
-            }//<<>>if( pair.is_array() && pair.size() == 2 )
-        }//<<>>for( auto& pair : lumiRanges )
-        lumiData[run] = rangeList;
+    int run = std::stoi(runStr);
+    std::vector<std::map<int, int>> rangeList;
+    for( auto& pair : lumiRanges ){
+      if( pair.is_array() && pair.size() == 2 ){
+        std::map<int, int> range;
+        range[pair[0].get<int>()] = pair[1].get<int>();
+        rangeList.push_back(range);
+      }//<<>>if( pair.is_array() && pair.size() == 2 )
+    }//<<>>for( auto& pair : lumiRanges )
+    lumiData[run] = rangeList;
 
-    }//<<>>for( auto& [runStr, lumiRanges] : j.items() )
+  }//<<>>for( auto& [runStr, lumiRanges] : j.items() )
 
-    //Test output
-    if( verbose ){
+  //Test output
+  if( verbose ){
     for (const auto& [run, ranges] : lumiData) {
-        std::cout << " -- Run " << run << ":" << std::endl;
-        for( const auto & range : ranges ){
-            for( const auto & [start, end] : range ){
-                std::cout << " --- Lumi " << start << " - " << end << std::endl;
-            }//<<>>for (const auto& [start, end] : range)
-        }//<<>>for (const auto& range : ranges)
+      std::cout << " -- Run " << run << ":" << std::endl;
+      for( const auto & range : ranges ){
+        for( const auto & [start, end] : range ){
+          std::cout << " --- Lumi " << start << " - " << end << std::endl;
+        }//<<>>for (const auto& [start, end] : range)
+      }//<<>>for (const auto& range : ranges)
     }//<<>>for (const auto& [run, ranges] : lumiData)
-	}//<<>>if( false ){
+  }//<<>>if( false ){
 
 }//<<>>void KUCMSAodSkimmer::loadLumiJson( std::string infile )
 
 bool KUCMSAodSkimmer::isValidLumisection( int run, int lumi ){
 
-    // Look for the run
-	//std::cout << " : Checking Run : " << run << " for this event " << std::endl;
-    auto runIt = lumiData.find(run);
-    if( runIt == lumiData.end() ){ 
-		//std::cout << " :: Run " << run << " : LumiSection : " << lumi << " is not valid " << std::endl;
-		return false;  // Run not found
-	}//<<>>if( runIt == lumiData.end() )
-    // Iterate over all lumi ranges for this run
-    for( const auto& range : runIt->second ){
-        for( const auto& [start, end] : range ){
-			//std::cout << " :: checking LumiSection : " << start << " - " << end << " for " << lumi << std::endl;
-            if( lumi >= start && lumi <= end ) return true;  // Lumi within a valid range
-        }//<<>>for( const auto& [start, end] : range )
-    }//<<>>for( const auto& range : runIt->second )
-	//std::cout << " :: Run " << run << " : LumiSection : " << lumi << " is not valid " << std::endl;
-    return false;  // Not within any range
+  // Look for the run
+  //std::cout << " : Checking Run : " << run << " for this event " << std::endl;
+  auto runIt = lumiData.find(run);
+  if( runIt == lumiData.end() ){
+    //std::cout << " :: Run " << run << " : LumiSection : " << lumi << " is not valid " << std::endl;
+    return false;  // Run not found
+  }//<<>>if( runIt == lumiData.end() )
+  // Iterate over all lumi ranges for this run
+  for( const auto& range : runIt->second ){
+    for( const auto& [start, end] : range ){
+      //std::cout << " :: checking LumiSection : " << start << " - " << end << " for " << lumi << std::endl;
+      if( lumi >= start && lumi <= end ) return true;  // Lumi within a valid range
+    }//<<>>for( const auto& [start, end] : range )
+  }//<<>>for( const auto& range : runIt->second )
+  //std::cout << " :: Run " << run << " : LumiSection : " << lumi << " is not valid " << std::endl;
+  return false;  // Not within any range
 
 }//<<>>bool KUCMSAodSkimmer::isValidLumisection( int run, int lumi )
 
@@ -131,7 +131,7 @@ float KUCMSAodSkimmer::clstrR9( std::vector<uInt> recHitIds ){
     const int rhIdx = getRhIdx(id);
     if( rhIdx < 0 || static_cast<std::size_t>(rhIdx) >= ECALRecHit_energy->size() ) continue;
     sumRhEn += (*ECALRecHit_energy)[rhIdx];
-  }
+  }//<<>>for( auto id : recHitIds )
   return sumRhEn > 0 ? leadRhEn/sumRhEn  : - 1.0;
 
 }//<<>>float KUCMSAodSkimmer::clstrR9( vector<uInt> recHitIds )
@@ -144,7 +144,7 @@ std::vector<float> KUCMSAodSkimmer::getRhGrpEnergies( std::vector<uInt> rechitid
     const int rhIdx = getRhIdx(id);
     if( rhIdx < 0 || static_cast<std::size_t>(rhIdx) >= ECALRecHit_energy->size() ) continue;
     result.push_back((*ECALRecHit_energy)[rhIdx]);
-  }
+  }//<<>>for( auto id : rechitids )
   if( result.empty() ) result.push_back(-9.0);
   return result;
 
@@ -154,19 +154,19 @@ std::vector<float> KUCMSAodSkimmer::getRhGrpTimes( std::vector<uInt> rechitids )
 
   std::vector<float> result;
   if( rechitids.size() < 1 || ECALRecHit_ID == nullptr || ECALRecHit_time == nullptr ||
-      ECALRecHit_0TOF == nullptr || ECALRecHit_pvTOF == nullptr || ECALRecHit_ID->size() < 1 ){
+  ECALRecHit_0TOF == nullptr || ECALRecHit_pvTOF == nullptr || ECALRecHit_ID->size() < 1 ){
     result.push_back(-99.0);
     return result;
-  }
+  }//<<>>if( rechitids.size() < 1 || ECALRecHit_ID == nullptr || ECALRecHit_time == nullptr || ECALRecHit_0TOF == nullptr || ECALRecHit_pvTOF == nullptr || ECALRecHit_ID->size() < 1 )
   for ( auto id : rechitids ){
     const int rhIdx = getRhIdx(id);
     if( rhIdx < 0 || static_cast<std::size_t>(rhIdx) >= ECALRecHit_time->size() ||
-        static_cast<std::size_t>(rhIdx) >= ECALRecHit_0TOF->size() ||
-        static_cast<std::size_t>(rhIdx) >= ECALRecHit_pvTOF->size() ) continue;
+    static_cast<std::size_t>(rhIdx) >= ECALRecHit_0TOF->size() ||
+    static_cast<std::size_t>(rhIdx) >= ECALRecHit_pvTOF->size() ) continue;
     auto rhtime = (*ECALRecHit_time)[rhIdx];
     auto rh0tof = (*ECALRecHit_0TOF)[rhIdx];
     auto rhpvtof = (*ECALRecHit_pvTOF)[rhIdx];
-    result.push_back(rhtime+rh0tof-rhpvtof); 
+    result.push_back(rhtime+rh0tof-rhpvtof);
   }//<<>>for ( auto id : recHitIds )
   if( result.empty() ) result.push_back(-99.0);
   return result;
@@ -191,7 +191,7 @@ std::vector<float> KUCMSAodSkimmer::getRhGrpEigenFromAngles( std::vector<uInt> r
     const int rhIdx = getRhIdx(id);
     if( rhIdx < 0 || static_cast<std::size_t>(rhIdx) >= ECALRecHit_energy->size() ) return emptyReturn;
     sumRhEn += (*ECALRecHit_energy)[rhIdx];
-  }
+  }//<<>>for( auto id : rechitids )
   if( verbose ) std::cout << " --- EigenAngles sumRhEn : " << sumRhEn << std::endl;
   if( sumRhEn <= 0 ){ if( verbose ) std::cout << " ----  rechit collection has no energy" << std::endl; return emptyReturn; }
   if( DEBUG ) std::cout << "1a, ";
@@ -238,7 +238,7 @@ std::vector<float> KUCMSAodSkimmer::getRhGrpEigenFromAngles( std::vector<uInt> r
   if( verbose ) std::cout << " --- EigenAngles VAlue : " << eigens[2] << std::endl;
 
   auto phiCorrFactor = 0.8;
-  std::cout << " mean eta: " << meta << " mean phi: " << mphi << std::endl; 
+  std::cout << " mean eta: " << meta << " mean phi: " << mphi << std::endl;
   auto sxx = var( detas, meta, redlogwtvec );
   auto syy = var( dphis, mphi, redlogwtvec, accum(redlogwtvec)/phiCorrFactor );
   auto sxy = cvar( detas, meta, dphis, mphi, redlogwtvec, accum(redlogwtvec)/std::sqrt(phiCorrFactor) );
@@ -267,19 +267,19 @@ std::vector<float> KUCMSAodSkimmer::getLeadTofRhTime( std::vector<uInt> recHitId
 
   std::vector<float> result;
   if( recHitIds.size() < 1 || ECALRecHit_ID == nullptr || ECALRecHit_rhx == nullptr ||
-      ECALRecHit_rhy == nullptr || ECALRecHit_rhz == nullptr || ECALRecHit_time == nullptr ||
-      ECALRecHit_ID->size() < 1 ){
+  ECALRecHit_rhy == nullptr || ECALRecHit_rhz == nullptr || ECALRecHit_time == nullptr ||
+  ECALRecHit_ID->size() < 1 ){
     result.push_back(-99);
     return result;
-  }
+  }//<<>>if( recHitIds.size() < 1 || ECALRecHit_ID == nullptr || ECALRecHit_rhx == nullptr || ECALRecHit_rhy == nullptr || ECALRecHit_rhz == nullptr || ECALRecHit_time == nullptr || ECALRecHit_ID->size() < 1 )
   auto lrhid = getLeadRhID(recHitIds);
   auto lrhidx = getRhIdx(lrhid);
   if( lrhidx < 0 || static_cast<std::size_t>(lrhidx) >= ECALRecHit_rhx->size() ||
-      static_cast<std::size_t>(lrhidx) >= ECALRecHit_rhy->size() ||
-      static_cast<std::size_t>(lrhidx) >= ECALRecHit_rhz->size() ){
+  static_cast<std::size_t>(lrhidx) >= ECALRecHit_rhy->size() ||
+  static_cast<std::size_t>(lrhidx) >= ECALRecHit_rhz->size() ){
     result.push_back(-99);
     return result;
-  }
+  }//<<>>if( lrhidx < 0 || static_cast<std::size_t>(lrhidx) >= ECALRecHit_rhx->size() || static_cast<std::size_t>(lrhidx) >= ECALRecHit_rhy->size() || static_cast<std::size_t>(lrhidx) >= ECALRecHit_rhz->size() )
   auto X = (*ECALRecHit_rhx)[lrhidx];
   auto Y = (*ECALRecHit_rhy)[lrhidx];
   auto Z = (*ECALRecHit_rhz)[lrhidx];
@@ -295,25 +295,25 @@ std::vector<float> KUCMSAodSkimmer::getLeadTofRhTime( std::vector<uInt> recHitId
 
 std::vector< TLorentzVector > KUCMSAodSkimmer::BinaryMerge( const std::vector< TLorentzVector > & rjr_jets, int Nmax ){
 
-    if( rjr_jets.size() <= Nmax ) return rjr_jets;
+  if( rjr_jets.size() <= Nmax ) return rjr_jets;
 
-    const int N = (int)rjr_jets.size();
-    double Rmin = 2.;
-    int imin = -1;
-    int jmin = -1;
-    for( int i = 0; i < N-1; i++ ){
-        for( int j = i+1; j < N; j++ ){
-            const double M2 = ( rjr_jets[i] + rjr_jets[j] ).M2();
-            const double sumM = rjr_jets[i].M() + rjr_jets[j].M();
-            const double R = ( M2 > 0. ) ? ( M2 - sumM*sumM ) / M2 : 0.;
-            if( R < Rmin ){ Rmin = R; imin = i; jmin = j; }//<<>>if(R < Rmin)
-        }//<<>>for(int j = i+1; j < N; j++)
-    }//<<>>for(int i = 0; i < N-1; i++)
+  const int N = (int)rjr_jets.size();
+  double Rmin = 2.;
+  int imin = -1;
+  int jmin = -1;
+  for( int i = 0; i < N-1; i++ ){
+    for( int j = i+1; j < N; j++ ){
+      const double M2 = ( rjr_jets[i] + rjr_jets[j] ).M2();
+      const double sumM = rjr_jets[i].M() + rjr_jets[j].M();
+      const double R = ( M2 > 0. ) ? ( M2 - sumM*sumM ) / M2 : 0.;
+      if( R < Rmin ){ Rmin = R; imin = i; jmin = j; }//<<>>if(R < Rmin)
+    }//<<>>for(int j = i+1; j < N; j++)
+  }//<<>>for(int i = 0; i < N-1; i++)
 
-    std::vector< TLorentzVector > merged_rjr_jets;
-    merged_rjr_jets.reserve(N - 1);
-    merged_rjr_jets.push_back( rjr_jets[imin] + rjr_jets[jmin] );
-    for(int i = 0; i < N; i++){ if( i != imin && i != jmin ) merged_rjr_jets.push_back( rjr_jets[i] ); }
+  std::vector< TLorentzVector > merged_rjr_jets;
+  merged_rjr_jets.reserve(N - 1);
+  merged_rjr_jets.push_back( rjr_jets[imin] + rjr_jets[jmin] );
+  for(int i = 0; i < N; i++){ if( i != imin && i != jmin ) merged_rjr_jets.push_back( rjr_jets[i] ); }
 
   return BinaryMerge( merged_rjr_jets, Nmax );
 
@@ -321,50 +321,50 @@ std::vector< TLorentzVector > KUCMSAodSkimmer::BinaryMerge( const std::vector< T
 
 void KUCMSAodSkimmer::BinaryMergeInPlace( std::vector<TLorentzVector>& jets, int Nmax ){
 
-    if( jets.size() <= Nmax ) return;
+  if( jets.size() <= Nmax ) return;
 
-    auto ptDesc = []( const TLorentzVector& a, const TLorentzVector& b ){ return a.Pt() > b.Pt(); };
+  auto ptDesc = []( const TLorentzVector& a, const TLorentzVector& b ){ return a.Pt() > b.Pt(); };
 
-    // Ensure initial ordering: lead jet first
+  // Ensure initial ordering: lead jet first
+  std::sort(jets.begin(), jets.end(), ptDesc);
+
+
+  while( (int)jets.size() > Nmax ){
+
+    const int N = (int)jets.size();
+    if( N < Nmax ) break;
+
+    //std::cout << " - Jet Merge for RJR ISR " << std::endl;
+    //for( uInt it = 0; it < N; it++ ){
+    //  TLorentzVector jet = jets[it];
+    //  std::cout << " - Jet " << it << " Pt: " << jet.Pt() << " Eta: " << jet.Eta();
+    //  std::cout << " Phi: " << jet.Phi() << " M: " << jet.M() << std::endl;
+    //}//<<>>for( int i = 0; i < nSelJets; i++ )
+
+    // Default: merge two smallest-pT jets (last two entries)
+    int imin = N - 2;
+    int jmin = N - 1;
+
+    double Rmin = 100000000.0;
+    // Search for best pair with R < 2
+    for( int i = 0; i < N - 1; ++i ){
+      for( int j = i + 1; j < N; ++j ){
+
+        const double M2 = (jets[i] + jets[j]).M2();
+        const double sumM = jets[i].M() + jets[j].M();
+        const double R = ( M2 > 0.0 ) ? ( M2 - sumM * sumM ) : 0.0;
+        if( R < Rmin ){ Rmin = R; imin = i; jmin = j; }
+
+      }//<<>>for( int j = i + 1; j < N; ++j )
+    }//<<>>for( int i = 0; i < N - 1; ++i )
+
+    // Merge jmin into imin
+    jets[imin] += jets[jmin];
+    // Remove the merged-away jet. Use erase to keep list clean.
+    jets.erase(jets.begin() + jmin);
+    // Restore pT ordering so lead jet is first for next iteration
     std::sort(jets.begin(), jets.end(), ptDesc);
 
-
-    while( (int)jets.size() > Nmax ){
-
-        const int N = (int)jets.size();
-        if( N < Nmax ) break;
-
-        //std::cout << " - Jet Merge for RJR ISR " << std::endl;
-        //for( uInt it = 0; it < N; it++ ){
-        //  TLorentzVector jet = jets[it];
-        //  std::cout << " - Jet " << it << " Pt: " << jet.Pt() << " Eta: " << jet.Eta();
-        //  std::cout << " Phi: " << jet.Phi() << " M: " << jet.M() << std::endl;
-        //}//<<>>for( int i = 0; i < nSelJets; i++ )
-
-        // Default: merge two smallest-pT jets (last two entries)
-        int imin = N - 2;
-        int jmin = N - 1;
-
-        double Rmin = 100000000.0;
-        // Search for best pair with R < 2
-        for( int i = 0; i < N - 1; ++i ){
-            for( int j = i + 1; j < N; ++j ){
-
-                const double M2 = (jets[i] + jets[j]).M2();
-                const double sumM = jets[i].M() + jets[j].M();
-                const double R = ( M2 > 0.0 ) ? ( M2 - sumM * sumM ) : 0.0;
-                if( R < Rmin ){ Rmin = R; imin = i; jmin = j; }
-
-            }//<<>>for( int j = i + 1; j < N; ++j )
-        }//<<>>for( int i = 0; i < N - 1; ++i )
-
-        // Merge jmin into imin
-        jets[imin] += jets[jmin];
-        // Remove the merged-away jet. Use erase to keep list clean.
-        jets.erase(jets.begin() + jmin);
-        // Restore pT ordering so lead jet is first for next iteration
-        std::sort(jets.begin(), jets.end(), ptDesc);
-
-    }//while( (int)jets.size() > Nmax )
+  }//while( (int)jets.size() > Nmax )
 
 }//<<>>BinaryMergeInPlace(std::vector<TLorentzVector>& jets, int Nmax)

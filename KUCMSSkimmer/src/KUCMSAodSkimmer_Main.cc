@@ -15,40 +15,30 @@
 #include <set>
 
 #include "KUCMSAodSVSkimmer.hh"
-/*
-  #include "KUCMSAodSkimmer_Helpers.hpp"
-  #include "KUCMSAodSkimmer_EvntMetVars.hpp"
-  #include "KUCMSAodSkimmer_Tracks.hpp"
-  #include "KUCMSAodSkimmer_Ecal.hpp"
-  #include "KUCMSAodSkimmer_Gen.hpp"
-  #include "KUCMSAodSkimmer_Photons.hpp"
-  #include "KUCMSAodSkimmer_RJR.hpp"
-  #include "KUCMSAodSkimmer_Electron.hpp"
-  #include "KUCMSAodSkimmer_Jets.hpp"
-  #include "KUCMSAodSkimmer_Muons.hpp"
-  #include "KUCMSAodSkimmer_SV.hpp"
-  #include "KUCMSAodSkimmer_BHC.hpp"
-  #include "KUCMSAodSkimmer_TimeSig.hpp"
-*/
 
 //-----------------------------------------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------------------------------------
-//// KUCMSAodSkimmer class ----------------------------------------------------------------------------------------------------
+// KUCMSAodSkimmer orchestration and event-loop implementation.
+// Object-specific processing is defined in the companion source files and
+// is called here in dependency order before event selection and tree filling.
 ////---------------------------------------------------------------------------------------------------------------------------
 
 //#define CLSTRMAPS true
 #define CLSTRMAPS false
 
+// Build the two RJR frame hierarchies and initialize the skimmer-wide state.
 KUCMSAodSkimmer::KUCMSAodSkimmer( bool doLocal ){
 
 
-  ////    Base RJR ------------------------------------------
+  // Standard RestFrames topology:
+  // LAB -> S -> (X2a, X2b), with each X2 decaying to one invisible X1 and
+  // one visible jet system Ja/Jb. Ja/Jb are split into J1/J2 frames below.
 
   LAB = new LabRecoFrame("LAB","LAB");
   S   = new DecayRecoFrame("S","#tilde{S}");
 
   X2a = new DecayRecoFrame("X2a","#tilde{#chi}_{2a}");
-  X2b = new DecayRecoFrame("X2b","#tilde{#chi}_{2b}");	
+  X2b = new DecayRecoFrame("X2b","#tilde{#chi}_{2b}");
 
   Ja = new DecayRecoFrame("Ja","jets_{a}");
   Jb = new DecayRecoFrame("Jb","jets_{b}");
@@ -59,7 +49,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer( bool doLocal ){
 
   X1a = new InvisibleRecoFrame("X1a","#tilde{#chi}_{1a}");
   X1b = new InvisibleRecoFrame("X1b","#tilde{#chi}_{1b}");
-	
+
   LAB->SetChildFrame(*S);
   S->AddChildFrame(*X2a);
   S->AddChildFrame(*X2b);
@@ -72,19 +62,22 @@ KUCMSAodSkimmer::KUCMSAodSkimmer( bool doLocal ){
   Jb->AddChildFrame(*J1b);
   Jb->AddChildFrame(*J2b);
 
+  // Initialize the frame tree before attaching analysis groups and jigsaws.
   if(!LAB->InitializeTree()){ std::cout << "Problem initializing tree" << std::endl; }
-	
+
+  // The invisible group contains the two X1 states. Its jigsaws determine the
+  // total invisible mass, longitudinal boost, and X1a/X1b partition.
   INV = new InvisibleGroup("INV","Invisible System");
   INV->AddFrame(*X1a);
   INV->AddFrame(*X1b);
-	
+
   InvM = new SetMassInvJigsaw("InvM", "Set inv. system mass");
   INV->AddJigsaw(*InvM);
-	
+
   InvEta = new SetRapidityInvJigsaw("InvEta", "Set inv. system rapidity");
   INV->AddJigsaw(*InvEta);
   InvEta->AddVisibleFrames(S->GetListVisibleFrames());
-	
+
   InvSplit = new MinMassesSqInvJigsaw("InvSplit", "INV -> #tilde{#chi_{1a}}+ #tilde{#chi_{1b}}", 2);
   INV->AddJigsaw(*InvSplit);
   InvSplit->AddVisibleFrame(*J1a, 0);
@@ -93,7 +86,9 @@ KUCMSAodSkimmer::KUCMSAodSkimmer( bool doLocal ){
   InvSplit->AddVisibleFrame(*J2b, 1);
   InvSplit->AddInvisibleFrame(*X1a, 0);
   InvSplit->AddInvisibleFrame(*X1b, 1);
-	
+
+  // The combinatoric group receives selected photons and jets as lab-frame
+  // four-vectors, then assigns them to the four visible J1/J2 child frames.
   COMB_J =  new CombinatoricGroup("COMB_J", "Combinatoric System of Jets");
   CombSplit_J = new MinMassesSqCombJigsaw("CombSplit_J", "Minimize M_{Va}^{2} + M_{Vb}^{2} ",2,2);
   CombSplit_Ja = new MinMassesCombJigsaw("CombSplit_Ja", "Minimize M_{J1a} + M_{J2a} ");
@@ -107,30 +102,31 @@ KUCMSAodSkimmer::KUCMSAodSkimmer( bool doLocal ){
   COMB_J->AddFrame(*J2b);
   COMB_J->SetNElementsForFrame(*J1b, 1);
   COMB_J->SetNElementsForFrame(*J2b, 0);
-	
+
   COMB_J->AddJigsaw(*CombSplit_J);
   CombSplit_J->AddCombFrames(Ja->GetListVisibleFrames(), 0);
   CombSplit_J->AddCombFrames(Jb->GetListVisibleFrames(), 1);
-  //CombSplit_J->AddObjectFrame(*X2a, 0);// included vis & invis frames in split
-  //CombSplit_J->AddObjectFrame(*X2b, 1);// check syntax from example
   CombSplit_J->AddObjectFrames(X2a->GetListVisibleFrames(), 0);
-  CombSplit_J->AddObjectFrames(X2b->GetListVisibleFrames(), 1);// check syntax from example
+  CombSplit_J->AddObjectFrames(X2b->GetListVisibleFrames(), 1);
 
-  //add bloc do b
+  // Add the separate jet-side combinatoric assignments.
   COMB_J->AddJigsaw(*CombSplit_Ja);
   CombSplit_Ja->AddCombFrame(*J1a, 0);
   CombSplit_Ja->AddCombFrame(*J2a, 1);
   CombSplit_Ja->AddObjectFrame(*J1a, 0);
-  CombSplit_Ja->AddObjectFrame(*J2a, 1);// check syntax from example
+  CombSplit_Ja->AddObjectFrame(*J2a, 1);
   COMB_J->AddJigsaw(*CombSplit_Jb);
   CombSplit_Jb->AddCombFrame(*J1b, 0);
   CombSplit_Jb->AddCombFrame(*J2b, 1);
   CombSplit_Jb->AddObjectFrame(*J1b, 0);
-  CombSplit_Jb->AddObjectFrame(*J2b, 1);// check syntax from example
+  CombSplit_Jb->AddObjectFrame(*J2b, 1);
 
+  // Initialize the complete reconstruction analysis after all groups and
+  // jigsaws have been attached.
   if(!LAB->InitializeAnalysis()) std::cout << "Problem initializing analysis tree" << std::endl;
 
-  // -----------  RJRISR -----------------------------------------
+  // ISR-aware topology: LAB_c -> CM_c + ISR_c, with the signal system S_c
+  // inside CM_c and the same X2a/b -> X1a/b + Ja/b decay structure.
 
   LAB_c = new LabRecoFrame("LAB_c","LAB");
   CM_c  = new DecayRecoFrame("CM_c","CM");
@@ -164,8 +160,12 @@ KUCMSAodSkimmer::KUCMSAodSkimmer( bool doLocal ){
   Jb_c->AddChildFrame(*J1b_c);
   Jb_c->AddChildFrame(*J2b_c);
 
-  if(!LAB->InitializeTree()){ std::cout << "Problem initializing tree" << std::endl; }
+  // Register the ISR topology before configuring its invisible and
+  // combinatoric groups.
+  if(!LAB_c->InitializeTree()){ std::cout << "Problem initializing tree" << std::endl; }
 
+  // The ISR topology uses the same invisible-state constraints, but adds an
+  // explicit visible ISR frame to the combinatoric assignment.
   INV_c = new InvisibleGroup("INV_c","Invisible System");
   INV_c->AddFrame(*X1a_c);
   INV_c->AddFrame(*X1b_c);
@@ -186,6 +186,8 @@ KUCMSAodSkimmer::KUCMSAodSkimmer( bool doLocal ){
   InvSplit_c->AddInvisibleFrame(*X1a_c, 0);
   InvSplit_c->AddInvisibleFrame(*X1b_c, 1);
 
+  // COMB_J_c assigns photons and jets either to ISR_c or to the two signal
+  // branches, while the later jigsaws partition the signal-side objects.
   COMB_J_c =  new CombinatoricGroup("COMB_J_c", "Combinatoric System of Jets");
   CombSplit_ISR_c = new MinMassesCombJigsaw("CombSplit_ISR_c", "Minimize M_{T}^{ISR} and M_{T}^{S}");
   CombSplit_J_c = new MinMassesSqCombJigsaw("CombSplit_J_c", "Minimize M_{Va}^{2} + M_{Vb}^{2} ",2,2);
@@ -194,10 +196,6 @@ KUCMSAodSkimmer::KUCMSAodSkimmer( bool doLocal ){
 
   COMB_J_c->AddFrame(*ISR_c);
   COMB_J_c->SetNElementsForFrame(*ISR_c, 1);
-  //COMB_J_c->AddFrame(*Ja_c);
-  //COMB_J_c->SetNElementsForFrame(*Ja_c, 1);
-  //COMB_J_c->AddFrame(*Jb_c);
-  //COMB_J_c->SetNElementsForFrame(*Jb_c, 0);
   COMB_J_c->AddFrame(*J1a_c);
   COMB_J_c->AddFrame(*J2a_c);
   COMB_J_c->SetNElementsForFrame(*J1a_c, 0);
@@ -220,29 +218,27 @@ KUCMSAodSkimmer::KUCMSAodSkimmer( bool doLocal ){
   COMB_J_c->AddJigsaw(*CombSplit_J_c);
   CombSplit_J_c->AddCombFrames(Ja_c->GetListVisibleFrames(), 0);
   CombSplit_J_c->AddCombFrames(Jb_c->GetListVisibleFrames(), 1);
-  //CombSplit_J_c->AddObjectFrame(*X2a, 0);// included vis & invis frames in split
-  //CombSplit_J_c->AddObjectFrame(*X2b, 1);// check syntax from example
   CombSplit_J_c->AddObjectFrames(X2a_c->GetListVisibleFrames(), 0);
-  CombSplit_J_c->AddObjectFrames(X2b_c->GetListVisibleFrames(), 1);// check syntax from example
+  CombSplit_J_c->AddObjectFrames(X2b_c->GetListVisibleFrames(), 1);
 
-  //add bloc do b
+  // Add the separate jet-side combinatoric assignments.
   COMB_J_c->AddJigsaw(*CombSplit_Ja_c);
   CombSplit_Ja_c->AddCombFrame(*J1a_c, 0);
   CombSplit_Ja_c->AddCombFrame(*J2a_c, 1);
   CombSplit_Ja_c->AddObjectFrame(*J1a_c, 0);
-  CombSplit_Ja_c->AddObjectFrame(*J2a_c, 1);// check syntax from example
+  CombSplit_Ja_c->AddObjectFrame(*J2a_c, 1);
   COMB_J_c->AddJigsaw(*CombSplit_Jb_c);
   CombSplit_Jb_c->AddCombFrame(*J1b_c, 0);
   CombSplit_Jb_c->AddCombFrame(*J2b_c, 1);
   CombSplit_Jb_c->AddObjectFrame(*J1b_c, 0);
-  CombSplit_Jb_c->AddObjectFrame(*J2b_c, 1);// check syntax from example
+  CombSplit_Jb_c->AddObjectFrame(*J2b_c, 1);
 
   if(!LAB_c->InitializeAnalysis()) std::cout << "Problem initializing analysis tree" << std::endl;
 
   //  ------------  Tree Ploter -----------------
 
   if( false ){
-	
+
     TreePlot tree_plot("TreePlot","TreePlot");
 
     for(int t = 0; t < 2; t++){
@@ -257,7 +253,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer( bool doLocal ){
 
       tree_plot.SetTree(*INV);
       tree_plot.Draw("ANA_inv", "Invisible Jigsaws");
- 
+
     }//<<>>for(int t = 0; t < 2; t++)
 
     tree_plot.WriteOutput("trees.root");
@@ -265,22 +261,22 @@ KUCMSAodSkimmer::KUCMSAodSkimmer( bool doLocal ){
   }//<<>>treeplot on off
 
   // -------------  default root branch intilization -------------
-  //   - used for backwards compatablity 
+  //   - used for backwards compatablity
 
-  doGenInfoBase = false; // turns on/off new gen info branch processing 
+  doGenInfoBase = false; // turns on/off new gen info branch processing
   doSVsBase = true; // turns on/off SV processing
   doNewSigBase = true; // for internal setting of flag - does not change in general;
   doHTLPathsBase = true; // turns on/off HTL trigger path processing
 
   // -----------  Time Calibration -----------------
 
-  // Cali Tags : Tags for calibrations to use 
-  //std::string r2EOY( "None" ); 
+  // Cali Tags : Tags for calibrations to use
+  //std::string r2EOY( "None" );
   std::string r2Fall17AOD( "RunIIFall17DRPremix" );
   std::string r2Fall17MINIAOD( "RunIIFall17MiniAODv2" );
   std::string r2UL( "r2_ul18" );
 
-  useLocalTimeCali = doLocal;	
+  useLocalTimeCali = doLocal;
   timeCali = new KUCMS_TimeCalibration( false, false, useLocalTimeCali );
   timeCali->setTag(r2UL);
   // --- resTag is the target resolution for smearing
@@ -307,7 +303,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer( bool doLocal ){
   loadLumiJson("config/json/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.json");
   loadLumiJson("config/json/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt");
   loadLumiJson("config/json/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt");
-  
+
   //  post 2025 data processing with CC ECAL time reco
 
   isLocal = false;
@@ -326,7 +322,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer( bool doLocal ){
   // None - do nothing
   // xxxxxxx_up or xxxxxxx_down for systimatics
   // everything before first "_" added to tree name
-  systematicName = "None"; 
+  systematicName = "None";
 
   // condor event segmenting varibles : used to run over subset of events for condor jobs
   _evti = -1;
@@ -364,13 +360,13 @@ KUCMSAodSkimmer::KUCMSAodSkimmer( bool doLocal ){
   noSVorPhoFlag = false;
   useEvtGenWgtFlag = true;
   hasGenInfoFlag = true;
-  nEvents = 0, 
+  nEvents = 0,
   nSelectedEvents = 0;
 
   sumEvtGenWgt = 0;
 
   // sets current default behavoir
-  setGenInfoBase(hasGenInfoFlag); 
+  setGenInfoBase(hasGenInfoFlag);
   setDoSVsBase(doSVs);
   setNewSigBase(true);
   setHTLPathsBase(false);
@@ -404,13 +400,13 @@ KUCMSAodSkimmer::~KUCMSAodSkimmer(){
   delete J1a;
   delete J2a;
   delete J1b;
-  delete J2b;      
+  delete J2b;
 
   delete INV;
   delete InvM;
   delete InvEta;
   delete InvSplit;
-      
+
   delete COMB_J;
   delete CombSplit_J;
   delete CombSplit_Ja;
@@ -442,9 +438,10 @@ KUCMSAodSkimmer::~KUCMSAodSkimmer(){
   delete CombSplit_Jb_c;
 
   delete timeCali;
-      
+
 }//<<>>KUCMSAodSkimmer::~KUCMSAodSkimmer()
 
+// Configure output trees, load configuration, and process the requested entry range.
 void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
 
 
@@ -452,11 +449,11 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
   if( debug) std::cout << "<<<<<<<< Processing Main Loop <<<<<<<<<<<<<< " << std::endl;
 
   // --- setup for main loop
-  std::string skimTreeName = "kuSkimTree"; 
+  std::string skimTreeName = "kuSkimTree";
   std::string conigTreeName = "kuSkimConfigTree";
   if( systematicName != "None" ){
-  	//std::string treeNameExt = splitString( systematicName, "_" );
-	skimTreeName = skimTreeName + "_" +  systematicName; //treeNameExt;
+    //std::string treeNameExt = splitString( systematicName, "_" );
+    skimTreeName = skimTreeName + "_" +  systematicName; //treeNameExt;
     conigTreeName = conigTreeName + "_" + systematicName; //treeNameExt;
   }//<<>>if( systematicName != "None" )
 
@@ -480,13 +477,13 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
   if( _evti < 0 || _evti == _evtj){ _evti = 0; _evtj = nEntries; }
   else {
     if( _evtj > nEntries ){ _evtj = nEntries; } //cap at max number of entries
-    if( _evti > nEntries ){ 
+    if( _evti > nEntries ){
       cout << "Starting event " << _evti << " above # of entries in tree " << nEntries << " returning." << endl;
       delete fInTree;
       delete fInConfigTree;
       delete fOutTree;
       delete fConfigTree;
-      return; 
+      return;
     }//<<>>if( _evti > nEntries )
   }//<<>> if( _evti < 0 ) else
   //if( not doSVs ){ _evtj = 2500000; _evti = 1500000; }
@@ -529,10 +526,10 @@ void KUCMSAodSkimmer::ProcessMainLoop( TChain* fInTree, TChain* fInConfigTree ){
     auto entry = fInTree->LoadTree(centry);
     if( entry < 0 ){
       std::cerr << "ERROR: failed to load event " << centry
-                << " from the input chain (LoadTree returned " << entry << ")." << std::endl;
+      << " from the input chain (LoadTree returned " << entry << ")." << std::endl;
       std::exit(EXIT_FAILURE);
-    }
-    if(DEBUG){ 
+    }//<<>>if( entry < 0 )
+    if(DEBUG){
       std::cout << " -- Getting Branches " << std::endl;
       TTree* currentTree = fChain->GetTree();
       TBranch* brUnCorrTime = currentTree->GetBranch("ECALRecHit_UnCorrTime");
@@ -623,8 +620,8 @@ int KUCMSAodSkimmer::ProcessFile(string infilename, TChain*& fInTree, TChain*& f
   if(gSystem->AccessPathName(infilename.c_str())){
     cout << "Error: File " << infilename << " not found" << endl;
     return -1;
-  }
-  
+  }//<<>>if(gSystem->AccessPathName(infilename.c_str()))
+
   if( DEBUG ) std:: cout << "InFile: " << infilename << std::endl;
   if( DEBUG ) std:: cout << "Key: " << dataSetKey << std::endl;
   if( DEBUG ) std:: cout << "XSec: " << xsctn << std::endl;
@@ -643,7 +640,7 @@ int KUCMSAodSkimmer::ProcessFile(string infilename, TChain*& fInTree, TChain*& f
   return 0;
 
 
-}
+}//<<>>int KUCMSAodSkimmer::ProcessFile(string infilename, TChain*& fInTree, TChain*& fInConfigTree)
 
 
 
@@ -656,8 +653,8 @@ int KUCMSAodSkimmer::ProcessFilelist(string eosdir, string infilename, TChain*& 
   if(gSystem->AccessPathName(infilename.c_str())){
     cout << "Error: File " << infilename << " not found" << endl;
     return -1;
-  }
-  
+  }//<<>>if(gSystem->AccessPathName(infilename.c_str()))
+
   if( DEBUG ) std:: cout << "InFile: " << infilename << std::endl;
   if( DEBUG ) std:: cout << "Key: " << dataSetKey << std::endl;
   if( DEBUG ) std:: cout << "XSec: " << xsctn << std::endl;
@@ -674,7 +671,7 @@ int KUCMSAodSkimmer::ProcessFilelist(string eosdir, string infilename, TChain*& 
   std::cout << " - With : " << infilename << " >> " << fInTree << std::endl;
   std::string str;
   if( not DEBUG ) std::cout << "--  adding files";
-  int nfiles = 0;	
+  int nfiles = 0;
   if( dataSetKey !=  "single" ){
     std::ifstream infile(infilename);
     while( std::getline( infile, str ) ){
@@ -685,7 +682,7 @@ int KUCMSAodSkimmer::ProcessFilelist(string eosdir, string infilename, TChain*& 
       string prefix = str.substr(str.find("/")+1);
       string match = "kucmsntuple_";
       string proc = prefix.substr(match.size());
-      proc = proc.substr(0,proc.find("_"));	
+      proc = proc.substr(0,proc.find("_"));
       string inpath = prefix.substr(0,prefix.find(sample_str,prefix.find(sample_str)+sample_str.size())-1);
       prefix = prefix.substr(0,prefix.rfind(proc));
       prefix.replace(prefix.rfind("_"),1,"/");
@@ -703,11 +700,11 @@ int KUCMSAodSkimmer::ProcessFilelist(string eosdir, string infilename, TChain*& 
     auto tfilename = eosdir + inpath + infilename;
     fInTree->Add(tfilename.c_str());
     fInConfigTree->Add(tfilename.c_str());
-    nfiles++;			
+    nfiles++;
   }//<<>>if( key !=  "test" )
   if( not DEBUG ) std::cout << std::endl;
   if( nfiles == 0 ){ std::cout << " !!!!! no input files !!!!! " << std::endl; return -1; }
-  return 0;    
+  return 0;
 }//<<>>int KUCMSAodSkimmer::ProcessFilelist(string eosdir, string infilename, TChain*& fInTree, TChain*& fInConfigTree)
 
 int KUCMSAodSkimmer::ProcessFilelistOfLists(string eosdir, vector<string> processed_strings, TChain*& fInTree, TChain*& fInConfigTree){
@@ -732,12 +729,12 @@ int KUCMSAodSkimmer::ProcessFilelistOfLists(string eosdir, vector<string> proces
   if( DEBUG ) std:: cout << "MCw: " << mcwgt << std::endl;
   if( DEBUG ) std:: cout << "MCt: " << mctype << std::endl;
   if( DEBUG ) std:: cout << "tcTag: " << tctag << std::endl;
-		
+
   if(gSystem->AccessPathName(infile_str.c_str())){
     cout << "Error: File " << infile_str << " not found" << endl;
     return -1;
-  }
-  
+  }//<<>>if(gSystem->AccessPathName(infile_str.c_str()))
+
   std::cout << "Processing Events for : " << infile_str << std::endl;
   fInTree = new TChain(disphotreename.c_str());
   fInConfigTree = new TChain(configtreename.c_str());
@@ -745,7 +742,7 @@ int KUCMSAodSkimmer::ProcessFilelistOfLists(string eosdir, vector<string> proces
   std::cout << " - With : " << infile_str << " >> " << fInTree << std::endl;
   std::string str;
   if( not DEBUG ) std::cout << "--  adding files";
-  int nfiles = 0;	
+  int nfiles = 0;
   if( dataSetKey !=  "single" ){
     std::ifstream infile(infile_str);
     while( std::getline( infile, str ) ){
@@ -762,11 +759,11 @@ int KUCMSAodSkimmer::ProcessFilelistOfLists(string eosdir, vector<string> proces
     auto tfilename = eosdir + inpath + infile_str;
     fInTree->Add(tfilename.c_str());
     fInConfigTree->Add(tfilename.c_str());
-    nfiles++;			
+    nfiles++;
   }//<<>>if( key !=  "test" )
   if( not DEBUG ) std::cout << std::endl;
   if( nfiles == 0 ){ std::cout << " !!!!! no input files !!!!! " << std::endl; return -1; }
-  return 0;    
+  return 0;
 }//<<>>int KUCMSAodSkimmer::ProcessFilelistOfLists(string eosdir, vector<string> processed_strings, TChain*& fInTree, TChain*& fInConfigTree)
 
 void KUCMSAodSkimmer::ProcessConfigTree( TChain* fInConfigTree ){
@@ -774,7 +771,7 @@ void KUCMSAodSkimmer::ProcessConfigTree( TChain* fInConfigTree ){
   if( !fInConfigTree ){
     std::cerr << "ERROR: null input config chain." << std::endl;
     std::exit(EXIT_FAILURE);
-  }
+  }//<<>>if( !fInConfigTree )
 
   int nTotEvts;
   int nFltrdEvts;
@@ -782,7 +779,7 @@ void KUCMSAodSkimmer::ProcessConfigTree( TChain* fInConfigTree ){
   float sumFltrdEvtWgt;
   int nMetFltrdEvts;
   int nPhoFltrdEvts;
-   
+
   TBranch *b_nTotEvts = nullptr;
   TBranch *b_nFltrdEvts = nullptr;
   TBranch *b_sumEvtWgt = nullptr;
@@ -795,25 +792,25 @@ void KUCMSAodSkimmer::ProcessConfigTree( TChain* fInConfigTree ){
   if( nConfigEntries <= 0 ){
     std::cerr << "ERROR: input config chain contains no entries." << std::endl;
     std::exit(EXIT_FAILURE);
-  }
+  }//<<>>if( nConfigEntries <= 0 )
   const auto firstConfigEntry = fInConfigTree->LoadTree(0);
   if( firstConfigEntry < 0 ){
     std::cerr << "ERROR: failed to load the first config entry (LoadTree returned "
-              << firstConfigEntry << ")." << std::endl;
+    << firstConfigEntry << ")." << std::endl;
     std::exit(EXIT_FAILURE);
-  }
+  }//<<>>if( firstConfigEntry < 0 )
 
   auto bindConfigBranch = [&]( const char* name, auto* value, TBranch** branch ){
     if( !fInConfigTree->GetBranch(name) ){
       std::cerr << "ERROR: required config branch '" << name << "' is missing." << std::endl;
       std::exit(EXIT_FAILURE);
-    }
+    }//<<>>if( !fInConfigTree->GetBranch(name) )
     const int status = fInConfigTree->SetBranchAddress(name, value, branch);
     if( status < 0 || !*branch ){
       std::cerr << "ERROR: could not bind required config branch '" << name
-                << "' (SetBranchAddress returned " << status << ")." << std::endl;
+      << "' (SetBranchAddress returned " << status << ")." << std::endl;
       std::exit(EXIT_FAILURE);
-    }
+    }//<<>>if( status < 0 || !*branch )
   };
 
   bindConfigBranch("nTotEvts", &nTotEvts, &b_nTotEvts);
@@ -833,13 +830,13 @@ void KUCMSAodSkimmer::ProcessConfigTree( TChain* fInConfigTree ){
       auto entry = fInConfigTree->LoadTree(centry);
       if( entry < 0 ){
         std::cerr << "ERROR: failed to load config entry " << centry
-                  << " (LoadTree returned " << entry << ")." << std::endl;
+        << " (LoadTree returned " << entry << ")." << std::endl;
         std::exit(EXIT_FAILURE);
-      }
+      }//<<>>if( entry < 0 )
 
       b_nTotEvts->GetEntry(entry);   //!
       b_nFltrdEvts->GetEntry(entry);   //!
-      b_sumEvtWgt->GetEntry(entry);   //!  
+      b_sumEvtWgt->GetEntry(entry);   //!
       b_sumFltrdEvtWgt->GetEntry(entry);   //!
       b_nMetFltrdEvts->GetEntry(entry);   //!
       b_nPhoFltrdEvts->GetEntry(entry);   //!
@@ -868,9 +865,9 @@ void KUCMSAodSkimmer::ProcessConfigTree( TChain* fInConfigTree ){
     configWgts["sumFltrdEvtWgt"] = 0;
     configCnts["nMetFltrdEvts"] = 0;
     configCnts["nPhoFltrdEvts"] = 0;
-	
+
   }//<<>if( _evti == 0 )
-	
+
 
   std::cout << "configCnts ( ";
   for( auto item : configCnts ){
@@ -922,7 +919,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer( std::string infile, std::string outfilena
     delete fInTree;
     delete fInConfigTree;
     return;
-  }
+  }//<<>>if(ret < 0)
 
   SetOutFileName(outfilename);
   ProcessMainLoop(fInTree, fInConfigTree);
@@ -945,10 +942,10 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_Filelist( std::string eosdir, std::string 
     delete fInTree;
     delete fInConfigTree;
     return;
-  }
+  }//<<>>if(ret < 0)
 
   SetOutFileName(outfilename);
-  cout << "is in tree null " << (fInTree == nullptr) << endl; 
+  cout << "is in tree null " << (fInTree == nullptr) << endl;
   ProcessMainLoop(fInTree, fInConfigTree);
   std::cout << "Finished processing events for : " << infilelist << std::endl;
   std::cout << "KUCMSAodSkimmer : Thats all Folks!!" << std::endl;
@@ -957,8 +954,8 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_Filelist( std::string eosdir, std::string 
 
 
 void KUCMSAodSkimmer::kucmsAodSkimmer_listsOfLists( std::string eosdir, std::string infilelist, std::string outfilename){
-  //std::string inpath, infiles, key, 
-  std::string masterstr; 
+  //std::string inpath, infiles, key,
+  std::string masterstr;
   //int mct;
   //float crossSection, gmsblam, gmsbct, mcw;
   std::cout << "Processing Input Lists for : " << infilelist << std::endl;
@@ -967,9 +964,9 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_listsOfLists( std::string eosdir, std::str
   if( !masterInfile.is_open() ){
     std::cerr << "ERROR: could not open input file list: " << infilelist << std::endl;
     return;
-  }
-	
-  string listdir = infilelist.substr(0,infilelist.find("/")+1); 
+  }//<<>>if( !masterInfile.is_open() )
+
+  string listdir = infilelist.substr(0,infilelist.find("/")+1);
   while( std::getline( masterInfile, masterstr ) ){
 
     const auto first = masterstr.find_first_not_of(" \t\r\n");
@@ -988,9 +985,9 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_listsOfLists( std::string eosdir, std::str
       delete fInTree;
       delete fInConfigTree;
       continue;
-    }
+    }//<<>>if(ret < 0)
     SetOutFileName(outfilename);
-    ProcessMainLoop(fInTree, fInConfigTree);	
+    ProcessMainLoop(fInTree, fInConfigTree);
     std::cout << "Finished processing events for : " << instrs[1] << std::endl;
   }//<<>>while (std::getline(infile,str))
 
@@ -1016,7 +1013,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
   if( !masterInfile.is_open() ){
     std::cerr << "ERROR: could not open input file list: " << listdir+infilelist << std::endl;
     return;
-  }//<<>>if( !infilelist.is_open() ) 
+  }//<<>>if( !infilelist.is_open() )
   //while( masterInfile >> inFilePath >> inFileName >> key >> crossSection >> gmsblam >> gmsbct >> mcwgt >> mctype ){
   while( std::getline( masterInfile, masterstr ) ){
 
@@ -1035,7 +1032,7 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
     inFileName = instrs[1];
 
     auto key = instrs[2];
-	if( key == "sms" ) key = inFileName;
+    if( key == "sms" ) key = inFileName;
     auto crossSection = std::stof( instrs[3] );
     auto gmsbgm = std::stof( instrs[4] );
     auto gmsbxm = std::stof( instrs[5] );
@@ -1081,14 +1078,14 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
     int nAdded = 0;
     int nBadFiles = 0;
 
-	bool doLocalFile = false;
+    bool doLocalFile = false;
     std::string eosHost = "cmseos.fnal.gov";
     if( doLocalFile )  eosHost = "none";
     std::string scanDir = eosdir + inFilePath;
     std::cout << "Finding ROOT files under EOS directory: " << scanDir << std::endl;
     std::vector<std::string> files = findEOSRootFiles(eosHost, scanDir, inFileName);
     std::cout << "Found " << files.size() << " candidate ROOT files." << std::endl;
-	
+
     std::cout << "Adding files to TChain." << std::endl;
     //while (std::getline(infile,instr)){
     for (const auto& tfilename : files) {
@@ -1103,21 +1100,21 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
       std::unique_ptr<TFile> testFile(TFile::Open(tfilename.c_str(), "READ"));
 
       if( !testFile || testFile->IsZombie() || !testFile->IsOpen() ){
-		std::cerr << "\nERROR: bad ROOT file, skipping: " << tfilename << std::endl;
-		nBadFiles++;
-		std::cout << "Z";
-		continue;
+        std::cerr << "\nERROR: bad ROOT file, skipping: " << tfilename << std::endl;
+        nBadFiles++;
+        std::cout << "Z";
+        continue;
       }//<<>>if( !testFile || testFile->IsZombie() || !testFile->IsOpen() )
 
       TTree* testTree = nullptr;
       testFile->GetObject(disphoTreeName.c_str(), testTree);
 
       if( !testTree ){
-		std::cerr << "\nERROR: missing tree " << disphoTreeName << ", skipping: " << tfilename << std::endl;
-		testFile->Close();
-		nBadFiles++;
-		std::cout << "T";
-		continue;
+        std::cerr << "\nERROR: missing tree " << disphoTreeName << ", skipping: " << tfilename << std::endl;
+        testFile->Close();
+        nBadFiles++;
+        std::cout << "T";
+        continue;
       }//<<>>if( !testTree )
 
       testFile->Close();
@@ -1136,34 +1133,14 @@ void KUCMSAodSkimmer::kucmsAodSkimmer_local( std::string listdir, std::string eo
 
     // -------------  new input -----------------------
 
-    /*
-      if( dataSetKey !=  "Single" ){
-      std::ifstream infile(listDirPath+inFileName);
-      while( std::getline( infile, str ) ){
-      if(str.find("#") != string::npos) continue;
-      nfiles++;
-      if( skipCnt != 0 && ( nfiles%skipCnt != 0 ) ) continue;
-      auto tfilename = eosDirPath + inFilePath + str;
-      fInTree->Add(tfilename.c_str());
-      fInConfigTree->Add(tfilename.c_str());
-      if(DEBUG) std::cout << "--  adding file: " << tfilename << std::endl; else std::cout << ".";
-      }//<<>>while (std::getline(infile,str))
-      } else { // single infile and not a list of inFileName
-      auto tfilename = eosDirPath + inFilePath + inFileName;
-      fInTree->Add(tfilename.c_str());
-      fInConfigTree->Add(tfilename.c_str());
-      nfiles++;
-      }//<<>>if( key !=  "test" )
-    */
-
     if( not DEBUG ) std::cout << std::endl;
     if( nAdded == 0 ){
       std::cout << " !!!!! no usable input files were added ("
-                << nfiles << " candidates checked) !!!!! " << std::endl;
+      << nfiles << " candidates checked) !!!!! " << std::endl;
       delete fInTree;
       delete fInConfigTree;
       continue;
-    }
+    }//<<>>if( nAdded == 0 )
 
     // ------ Do Main Loop
     _evti = -1; _evtj = -1;
@@ -1195,7 +1172,7 @@ void KUCMSAodSkimmer::loadBranchMaskFile(){
     std::cout << " -- Branch mask requested but file could not be opened: " << branchMaskFile << std::endl;
     useBranchMask = false;
     return;
-  }
+  }//<<>>if( !infile.is_open() )
 
   std::string line;
   while( std::getline(infile, line) ){
@@ -1205,16 +1182,16 @@ void KUCMSAodSkimmer::loadBranchMaskFile(){
     if( first == std::string::npos ) continue;
     auto last = line.find_last_not_of(" \t\r\n");
     branchMaskPatterns.push_back(line.substr(first, last - first + 1));
-  }
+  }//<<>>while( std::getline(infile, line) )
 
   if( branchMaskPatterns.empty() ){
     std::cout << " -- Branch mask file has no active patterns: " << branchMaskFile << std::endl;
     useBranchMask = false;
     return;
-  }
+  }//<<>>if( branchMaskPatterns.empty() )
 
   std::cout << " -- Loaded branch mask " << branchMaskFile
-	    << " with " << branchMaskPatterns.size() << " active patterns." << std::endl;
+  << " with " << branchMaskPatterns.size() << " active patterns." << std::endl;
 
 }//<<>>void KUCMSAodSkimmer::loadBranchMaskFile()
 
@@ -1278,12 +1255,12 @@ void KUCMSAodSkimmer::printBranchMaskSummary(){
   std::set<std::string> unmatched;
   for( const auto& pattern : branchMaskPatterns ){
     if( matched.find(pattern) == matched.end() ) unmatched.insert(pattern);
-  }
+  }//<<>>for( const auto& pattern : branchMaskPatterns )
 
   if( !unmatched.empty() ){
     std::cout << " -- Branch mask unmatched patterns:" << std::endl;
     for( const auto& pattern : unmatched ) std::cout << "    " << pattern << std::endl;
-  }
+  }//<<>>if( !unmatched.empty() )
 
 }//<<>>void KUCMSAodSkimmer::printBranchMaskSummary()
 
@@ -1302,7 +1279,7 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
   setSVBranches( fOutTree );
   //setBCBranches( fOutTree );
 
-}//<<>>void KUCMSAodSkimmer::setOutputBranches(fOutTree)
+}//<<>>void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree )
 
 void KUCMSAodSkimmer::startJobs(){
 
@@ -1338,16 +1315,17 @@ void KUCMSAodSkimmer::startJobs(){
 
 };//<<>>void KUCMSAodSkimmer::startJobs()
 
+// Execute per-event processing in dependency order and run the final selections.
+// Reconstructed quantities are written only for events accepted by eventSelection().
 bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
 
-  // counts events and saves event varibles
-  // --------------------------------------
+  // Process one input entry and return whether the event should be written.
 
   bool debugl1 = false;
 
-   
+
   if( debugl1 && hasGenInfoFlag ) std::cout << "KUCMSAodSkimmer : processGenParticles" << std::endl;
-  if( hasGenInfoFlag ){ processGenParticles(); }// process first for fast sim photon timing 
+  if( hasGenInfoFlag ){ processGenParticles(); }// process first for fast sim photon timing
   if( debugl1 ) std::cout << "KUCMSAodSkimmer : processRechits" << std::endl;
   processRechits();// must be done before rechitID to Iter map used
   if( debugl1 ) std::cout << "KUCMSAodSkimmer : processMet" << std::endl;
@@ -1366,32 +1344,31 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
   if( doSVs ) processTracks();
   if( debugl1 ) std::cout << "KUCMSAodSkimmer : processEvntVars" << std::endl;
   processEvntVars();// process last to catch Hem issue
-  
+
   // select events to process and store
   //--------------------------------------
   if( debugl1 ) std::cout << "KUCMSAodSkimmer : eventSelection" << std::endl;
   auto saveToTree = eventSelection();
-  if( saveToTree ){ 
+  if( saveToTree ){
 
     //if( doBHC ){ //processBHCPhotons();
     if( debugl1 && doBHC ) std::cout << "KUCMSAodSkimmer : processBHCJets" << std::endl;
     if( doBHC ){ processBHCJets(); }
     if( debugl1 ) std::cout << "KUCMSAodSkimmer : processRJR 0" << std::endl;
-    processRJR(0,true); 
-    //if( debugl1 ) std::cout << "KUCMSAodSkimmer : processRJR 1" << std::endl;
-    //processRJR(1,false); 
+    processRJR(0,true);
+    // The second non-ISR RJR pass remains an optional analysis variant and is
+    // intentionally disabled for the current output workflow.
     if( debugl1 ) std::cout << "KUCMSAodSkimmer : processRJR ISR" << std::endl;
     processRJRISR();
 
   }//<<>>if( saveToTree )
   if( debugl1 ) std::cout << "KUCMSAodSkimmer : Return saveToTree" << std::endl;
   return saveToTree;
-  
+
 }//<<>>void KUCMSAodSkimmer::eventLoop( Long64_t entry )
 
-//------------------------------------------------------------------------------------------------------------
-// decide which events to save to tree
-//------------------------------------------------------------------------------------------------------------
+// Apply the baseline, photon, and signal-vertex selection used for tree output.
+// The no-SV/no-photon mode intentionally uses the reduced jet-only selection.
 
 bool KUCMSAodSkimmer::eventSelection(){
   // select which events to save and fill output branches
@@ -1426,16 +1403,16 @@ bool KUCMSAodSkimmer::eventSelection(){
   bool gt2phos = lSigPhoIndx > -1 and slSigPhoIndx > -1;
   bool leadPhoPt70 = leadPhoPt >= 70;
   bool leadPhoPt30 = leadPhoPt >= 30;
-  bool subLeadPhoPt40 = subLeadPhoPt >= 40; 
+  bool subLeadPhoPt40 = subLeadPhoPt >= 40;
 
   bool basesel = met100 && gt2jets && allgjets && gt2qjets;
-  //bool svsel = basesel && hasSV;	
+  //bool svsel = basesel && hasSV;
   bool phosel = basesel && ( ( gt1phos && leadPhoPt30 ) || hasSV );
   //auto evtSelected = leadPhoPt70 && subLeadPhoPt40 && gt2jets && gt2phos;
 
   bool evtSelected = dobase ? basesel : phosel;
   //if( hasHemObj ) evtSelected = false;
-  if( not doSVs ) evtSelected = gt2qjets && gt2jets; 
+  if( not doSVs ) evtSelected = gt2qjets && gt2jets;
 
   if( met150 ) cutflow["met150"]++;
   if( met150 && gt2jets ) cutflow["m_gt2jets"]++;
@@ -1446,11 +1423,11 @@ bool KUCMSAodSkimmer::eventSelection(){
   if( met150 && gt1phos && leadPhoPt30 ) cutflow["sel_j"]++;
   if( gt2jets && gt1phos && leadPhoPt30 ) cutflow["sel_m"]++;
 
-  if( DEBUG ){ 
-    if( evtSelected ) std::cout << " ---------------- Event Passed !!!!!!!" << std::endl; 
+  if( DEBUG ){
+    if( evtSelected ) std::cout << " ---------------- Event Passed !!!!!!!" << std::endl;
     else std::cout << " --------------------- Event Failed." << std::endl;}
   //if( evtSelected ) std::cout << " ---------------- Event Passed !!!!!!!" << std::endl;
-  if( evtSelected ){ nSelectedEvents++; return true; } 
+  if( evtSelected ){ nSelectedEvents++; return true; }
   else return false;
 
 }//<<>>void KUCMSAodSkimmer::eventSelection()
@@ -1459,14 +1436,15 @@ bool KUCMSAodSkimmer::eventSelection(){
 // set output branches, initialize histograms, and endjobs
 //------------------------------------------------------------------------------------------------------------
 
-void KUCMSAodSkimmer::endJobs(){ 
+// Finalize job-level histogram normalizations after the event loop.
+void KUCMSAodSkimmer::endJobs(){
 
   std::cout << "Running EndJobs." << std::endl;
   hist1d[11]->Divide(hist1d[10]);
   hist1d[12]->Divide(hist1d[10]);
   hist1d[13]->Divide(hist1d[10]);
   hist1d[14]->Divide(hist1d[10]);
-  normTH1D(hist1d[21]); 
+  normTH1D(hist1d[21]);
 
 }//void KUCMSAodSkimmer::endJobs()
 
@@ -1479,9 +1457,9 @@ const std::pair<float,float>& KUCMSAodSkimmer::lookupConfigData( const std::stri
   auto it = configData.find( dataSetKey );
   if( it == configData.end() ){
     std::cerr << "  -- FATAL: dataSetKey '" << dataSetKey << "' not found in "
-              << "config/EventCount.txt. Refusing to silently normalize with "
-              << "N_gen=0 (would produce inf/nan evtFillWgt) -- add this key "
-              << "to EventCount.txt before running." << std::endl;
+    << "config/EventCount.txt. Refusing to silently normalize with "
+    << "N_gen=0 (would produce inf/nan evtFillWgt) -- add this key "
+    << "to EventCount.txt before running." << std::endl;
     exit(1);
   }//<<>>if( it == configData.end() )
   return it->second;
@@ -1494,7 +1472,7 @@ void KUCMSAodSkimmer::fillConfigTree( TTree* fConfigTree ){
   nEventBranch->Fill();
   TBranch *nSelectedEventsBranch = fConfigTree->Branch( "nSelectedEvents", &nSelectedEvents );
   nSelectedEventsBranch->Fill();
-  TBranch *sKeyBranch = fConfigTree->Branch( "sKey", &dataSetKey ); 
+  TBranch *sKeyBranch = fConfigTree->Branch( "sKey", &dataSetKey );
   sKeyBranch->Fill();
   TBranch *sCrossSectionBranch = fConfigTree->Branch( "sCrossSection", &xsctn );
   sCrossSectionBranch->Fill();
@@ -1625,17 +1603,17 @@ void KUCMSAodSkimmer::initHists(){
   //------ 2D Hists --------------------------------------------------------------------------
 
   ////hist2d[1] = new TH2D("jetDrMuTime_pt", "jetDrMuTime_pt", jtdiv, -1*jtran, jtran, 500, 0, 500);
-  hist2d[1] = new TH2D("scorigcross", "SC Types;Mian-Orig;Std-OOT-Excluded", 2, 0, 2, 3, 0, 3); 
+  hist2d[1] = new TH2D("scorigcross", "SC Types;Mian-Orig;Std-OOT-Excluded", 2, 0, 2, 3, 0, 3);
   hist2d[2] = new TH2D("rjrPtS_v_rjrdPhiSI_t0", "rjrDPhiSI_v_rjrPtS Type 0;rjrDphiSI;rjrPtS", 32, 0, 3.2, 60, 0, 3000);
   hist2d[3] = new TH2D("rjrPtS_v_rjrdPhiSI_t1", "rjrDPhiSI_v_rjrPtS Type 1;rjrDphiSI;rjrPtS", 32, 0, 3.2, 60, 0, 3000);
 
- std::string fHTitle = "KUSkim";
- hist2d[10] = new TH2D("EnergyVRtTimeG6b",addstr(fHTitle,"Energy V RtTime EB;Energy [GeV] hasGS6;Time [ns]").c_str(),250,0,1000,600,-30,30);
- hist2d[11] = new TH2D("EnergyVRtTimeG1b",addstr(fHTitle,"Energy V RtTime EB;Energy [GeV] hasGS1;Time [ns]").c_str(),250,0,1000,600,-30,30);
- hist2d[12] = new TH2D("EnergyVRtTimeG0b",addstr(fHTitle,"Energy V RtTime EB;Energy [GeV] noGS;Time [ns]").c_str(),250,0,1000,600,-30,30);
- hist2d[13] = new TH2D("EnergyVRtTimeG6e",addstr(fHTitle,"Energy V RtTime EE;Energy [GeV] hasGS6;Time [ns]").c_str(),250,0,1000,600,-30,30);
- hist2d[14] = new TH2D("EnergyVRtTimeG1e",addstr(fHTitle,"Energy V RtTime EE;Energy [GeV] hasGS1;Time [ns]").c_str(),250,0,1000,600,-30,30);
- hist2d[15] = new TH2D("EnergyVRtTimeG0e",addstr(fHTitle,"Energy V RtTime EE;Energy [GeV] noGS;Time [ns]").c_str(),250,0,1000,600,-30,30);
+  std::string fHTitle = "KUSkim";
+  hist2d[10] = new TH2D("EnergyVRtTimeG6b",addstr(fHTitle,"Energy V RtTime EB;Energy [GeV] hasGS6;Time [ns]").c_str(),250,0,1000,600,-30,30);
+  hist2d[11] = new TH2D("EnergyVRtTimeG1b",addstr(fHTitle,"Energy V RtTime EB;Energy [GeV] hasGS1;Time [ns]").c_str(),250,0,1000,600,-30,30);
+  hist2d[12] = new TH2D("EnergyVRtTimeG0b",addstr(fHTitle,"Energy V RtTime EB;Energy [GeV] noGS;Time [ns]").c_str(),250,0,1000,600,-30,30);
+  hist2d[13] = new TH2D("EnergyVRtTimeG6e",addstr(fHTitle,"Energy V RtTime EE;Energy [GeV] hasGS6;Time [ns]").c_str(),250,0,1000,600,-30,30);
+  hist2d[14] = new TH2D("EnergyVRtTimeG1e",addstr(fHTitle,"Energy V RtTime EE;Energy [GeV] hasGS1;Time [ns]").c_str(),250,0,1000,600,-30,30);
+  hist2d[15] = new TH2D("EnergyVRtTimeG0e",addstr(fHTitle,"Energy V RtTime EE;Energy [GeV] noGS;Time [ns]").c_str(),250,0,1000,600,-30,30);
 
   //------------------------------------------------------------------------------------------
   //------ 3D Hists --------------------------------------------------------------------------
