@@ -324,11 +324,16 @@ int main ( int argc, char *argv[] ){
   //theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18MC_SQCD_xa_pm24b1200_v0822" )
 
   //if(
-
-  //	not theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_26_prompt_hg_xa_pm24b1200_v0819" )
-
+  //  not theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_26_prompt_hg_xa_pm24b1200_v0819" )
   //) return EXIT_FAILURE;
 
+  // Batch mode: produces gain-1-only and all-gains plots, with calibrated
+  // and uncalibrated sets when maps exist for the input tag (otherwise uncalibrated only).
+  if(
+
+    not theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_26_prompt_xa_pm24b1200_v0823", true ) // batchMode
+
+  ) return EXIT_FAILURE;
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -563,10 +568,10 @@ int main ( int argc, char *argv[] ){
 
   // Deprecated GPR profile histograms are disabled by default. Enable only when needed:
   //theCali.setDoGPRHists(true);
-  if( not theCali.load2DResHist(histName1) || not theCali.doResTimeFit(histName1) ) return EXIT_FAILURE;
-  if( not theCali.load2DResHist(histName2) || not theCali.doResTimeFit(histName2) ) return EXIT_FAILURE;
-  if( not theCali.load2DResHist(histName3) || not theCali.doResTimeFit(histName3) ) return EXIT_FAILURE;
-  if( not theCali.load2DResHist(histName4) || not theCali.doResTimeFit(histName4) ) return EXIT_FAILURE;
+  //if( not theCali.load2DResHist(histName1) || not theCali.doResTimeFit(histName1) ) return EXIT_FAILURE;
+  //if( not theCali.load2DResHist(histName2) || not theCali.doResTimeFit(histName2) ) return EXIT_FAILURE;
+  //if( not theCali.load2DResHist(histName3) || not theCali.doResTimeFit(histName3) ) return EXIT_FAILURE;
+  //if( not theCali.load2DResHist(histName4) || not theCali.doResTimeFit(histName4) ) return EXIT_FAILURE;
 
   ////////////////////  use external file for fit ///////////////////////////////////////////////////////////////////////////
 
