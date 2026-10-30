@@ -174,8 +174,9 @@ void KUCMSAodSkimmer::processPhotons(){
   if( DEBUG || verbose ) std::cout << " - Looping over for " << nPhotons << " photons" << std::endl;
 
 
-  auto xa5vec = geVects( "xa5vec");
-  auto xb5vec = geVects( "xb5vec");
+  // xa5vec/xb5vec are only filled by processGenParticles, which runs only with gen info
+  std::vector<float> xa5vec, xb5vec;
+  if( hasGenInfoFlag ){ xa5vec = geVects( "xa5vec"); xb5vec = geVects( "xb5vec"); }
 
   //-------------------------------------------------------------------------------------------
   ///////////  Loop over raw photons  /////////////////////////////////////////////////////////
