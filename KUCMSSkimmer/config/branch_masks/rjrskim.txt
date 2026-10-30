@@ -1,0 +1,50 @@
+# Default rjrskim branch mask (skim_submit.py alias: rjrskim).
+# Rule: keep every variable of objects used in the event selection (selected
+# jets, baseline photons, SVs, leptons), the gen record, and all event-level
+# quantities; drop collections of unselected objects and derived RJR
+# variables nothing reads.
+#
+# Syntax: '!pattern' drops, plain pattern keeps, last matching line wins.
+# The leading '*' keeps everything not dropped below, including branches that
+# were not in the inventory skim (BHC, TimeSig, ...).
+
+*
+
+# Jets: keep selJet* / selGenJet*; drop the looser all-jet collection
+!allJet*
+!allJetsWith*
+
+# Photons: keep baseLinePhoton_* and the tagged-lead branches; drop the
+# pre-baseline all-photon collections
+!photon_*
+!barrel_photon_*
+!endcap_photon_*
+
+# PV timing: keep only what skimRJRMultiHistMakerBatch7 reads
+!pv_*
+pv_wpenergy
+pv_wtime
+pv_wtimeres
+
+# RJR: drop everything, keep only what LLPStandardPlots / LLPCombine read
+!rjr*
+rjrCleaningVeto0
+rjrNJetsJa
+rjrNJetsJb
+rjrPTS
+rjr_Mr
+rjr_Ms
+rjr_R
+rjr_Rs
+rjr_Rv
+rjrIsrNISRPhos
+rjrIsrNPhotons
+rjrIsrPTS
+rjrIsrSdphiBV
+rjrIsr_Ms
+rjrIsr_MsPerp
+rjrIsr_PtIsr
+rjrIsr_RIsr
+rjrIsr_Rs
+rjrIsr_nIsrVisObjects
+rjrIsr_nSVisObjects

@@ -181,6 +181,7 @@ TIMECALI = {
 DATA_KEYWORDS  = {'MET', 'JetMET', 'JetMET0', 'JetMET1', 'JetHT', 'EGamma', 'EGamma0', 'EGamma1', 'EGamma2', 'DisJet'}
 SIGNAL_KEYWORDS = {'SMS', 'gogoG', 'gogoZ', 'gogoGZ', 'sqsqG', 'GlGl', 'T5Zg'}
 BRANCH_MASKS = {
+    'rjrskim': 'config/branch_masks/rjrskim.txt',
     'llpCombineSkim': 'config/branch_masks/llpcombine_analysis_exact.txt',
     'svSkim': 'config/branch_masks/sv_analysis_core.txt',
     'svFullFastValidation': 'config/branch_masks/sv_fullfast_validation.txt',
@@ -1221,9 +1222,17 @@ def tag_version(tag):
 
 
 def resolve_job_tag(args):
-    """Submission job tag: --tag (default: branch mask alias or rjrskim),
-    plus _v<N> when --version is given."""
-    tag = args.tag if args.tag is not None else (args.branch_mask_alias or 'rjrskim')
+    """Submission job tag: --tag (default: branch mask alias, else the mask
+    file name, or fullskim when no mask is applied), plus _v<N> when
+    --version is given."""
+    if args.tag is not None:
+        tag = args.tag
+    elif args.branch_mask_alias:
+        tag = args.branch_mask_alias
+    elif args.branch_mask:
+        tag = os.path.splitext(os.path.basename(args.branch_mask))[0]
+    else:
+        tag = 'fullskim'
     if args.version:
         tag += '_v' + skim_version_number(args.version)
     return tag
@@ -2642,9 +2651,10 @@ def main():
         help='Max .root files per subfolder (useful for testing)')
     parser.add_argument('--no-sv',   action='store_true', help='Pass --noSV to skimmer')
     parser.add_argument('--hlt-off', action='store_true', help='Pass --HLTPathsOff to skimmer')
-    parser.add_argument('--branch-mask', dest='branch_mask', default='',
+    parser.add_argument('--branch-mask', dest='branch_mask', default='rjrskim',
         help='Branch mask alias or file passed to skimmer, e.g. llpCombineSkim '
-             'or config/branch_masks/llpcombine_analysis_exact.txt')
+             'or config/branch_masks/llpcombine_analysis_exact.txt. '
+             'Default: rjrskim. Use "none" to write all branches (tag fullskim).')
     parser.add_argument('--psiche',  action='store_true', help='Enable PSICHE jets (default: off)')
     parser.add_argument('--dxy-scale', dest='dxy_scale', default='off',
         choices=['off', 'nominal', 'up', 'down'],
@@ -2670,6 +2680,8 @@ def main():
     if not args.eos_out_supplied:
         args.eos_out = EOS_OUT_DEFAULT
 
+    if args.branch_mask.lower() == 'none':
+        args.branch_mask = ''
     if args.branch_mask:
         try:
             original_branch_mask = args.branch_mask
