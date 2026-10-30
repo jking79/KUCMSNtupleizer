@@ -1347,7 +1347,7 @@ void KUCMSAodSkimmer::processPhotons(){
       }//<<>>if(npmedisotagcomp)
     }//<<>>if(notbhtag)
     /////// VALIDATION REGIONS //////
-    if(valbhtag && valnptightisotag){
+    if(bhtag && valnptightisotag){
       if(nValBHphotons == 0)
       val_bh_tagged_lead_timesig = phoWTimeSig;
       //update BH time sig to sublead BH photon if lead is prompt
@@ -1355,7 +1355,7 @@ void KUCMSAodSkimmer::processPhotons(){
       val_bh_tagged_lead_timesig = phoWTimeSig;
       else{ };
     }//<<>>if(valbhtag && valnptightisotag)
-    if(valnotbhtag){
+    if(notbhtag){
       if(valnptightisotag){
         if(nValNotBHTightIsophotons == 0){
           val_nptightisonotbh_tagged_lead_timesig = phoWTimeSig;
@@ -1366,7 +1366,7 @@ void KUCMSAodSkimmer::processPhotons(){
         }//<<>>else if((phoWTimeSig < earlyTimeCut || phoWTimeSig >= lateTimeCut) && (val_nptightisonotbh_tagged_lead_timesig >= earlyTimeCut && val_nptightisonotbh_tagged_lead_timesig < lateTimeCut))
         else{ };
       }//<<>>if(valnptightisotag)
-      if(valnpmedisotag){
+      else if(valnpmedisotag){
         if(nValNotBHMedIsophotons == 0)
         val_npmedisonotbh_tagged_lead_timesig = phoWTimeSig;
         //update BH time sig to sublead BH photon if lead is prompt
@@ -1374,7 +1374,8 @@ void KUCMSAodSkimmer::processPhotons(){
         val_npmedisonotbh_tagged_lead_timesig = phoWTimeSig;
         else{ };
       }//<<>>if(valnpmedisotag)
-    }//<<>>if(valnotbhtag)
+     else {}
+    }//<<>>if(notbhtag)
 
 
     if(bhtag && nptightisotag)
