@@ -28,23 +28,16 @@ pv_wtimeres
 
 # RJR: drop everything, keep only what LLPStandardPlots / LLPCombine read
 !rjr*
-rjrCleaningVeto0
 rjrNJetsJa
 rjrNJetsJb
 rjrPTS
-rjr_Mr
 rjr_Ms
-rjr_R
 rjr_Rs
-rjr_Rv
 rjrIsrNISRPhos
 rjrIsrNPhotons
 rjrIsrPTS
 rjrIsrSdphiBV
-rjrIsr_Ms
-rjrIsr_MsPerp
 rjrIsr_PtIsr
 rjrIsr_RIsr
-rjrIsr_Rs
 rjrIsr_nIsrVisObjects
 rjrIsr_nSVisObjects
