@@ -135,7 +135,7 @@ BG_DB_RUN3 = {
     'Zto2Nu-4Jets_HT-1500to2500': {'xsec': 0.09865,  'key': 'ZJets_1500t2500'},
     'Zto2Nu-4Jets_HT-2500':       {'xsec': 0.006699, 'key': 'ZJets_2500up'},
 }
-RUN3_YEARS = {'R22', 'R23', 'R24', 'R25'}
+RUN3_YEARS = {'R22', 'R23', 'R24', 'R25', 'R26'}
 
 # Signal xsec [pb] by (process_prefix, gluino_mass_string)
 # process_prefix: 'gogo' matches gogoG, gogoZ, gogoGZ (and T5Zg); 'sqsq' matches sqsqG
@@ -176,6 +176,8 @@ TIMECALI = {
     ('R24', 'mc'):   'r2_ul18_mc',   # TODO: confirm R3 MC timecali tag
     ('R25', 'data'): 'r3_p25unc',
     ('R25', 'mc'):   'r2_ul18_mc',   # TODO: confirm R3 2025 MC timecali tag
+    ('R26', 'data'): 'r3_p26unc',
+    ('R26', 'mc'):   'r2_ul18_mc',   # TODO: confirm R3 2026 MC timecali tag
 }
 
 DATA_KEYWORDS  = {'MET', 'JetMET', 'JetMET0', 'JetMET1', 'JetHT', 'EGamma', 'EGamma0', 'EGamma1', 'EGamma2', 'DisJet'}
@@ -233,8 +235,8 @@ def detect_sample_type(eos_path):
 
 
 def detect_year(eos_path):
-    """Return 'R16', 'R17', 'R18', 'R22', 'R23', or ''."""
-    for yr in ['R16', 'R17', 'R18', 'R22', 'R23', 'R24', 'R25']:
+    """Return 'R16', 'R17', 'R18', 'R22', ..., 'R26', or ''."""
+    for yr in ['R16', 'R17', 'R18', 'R22', 'R23', 'R24', 'R25', 'R26']:
         if yr in eos_path:
             return yr
     return ''
