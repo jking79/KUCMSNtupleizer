@@ -70,6 +70,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
   std::string caliTFileName;
   std::string caliR3TFileName;
   std::string cali2DResPlotsTFileName;
+  std::string resFitOutputDir;
   std::string caliResConfig;
 
   std::string xtalHistMapName;
@@ -245,6 +246,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
   void SetInDir( std::string indir ){ inDir = indir; };
 
   void Set2DResTFileName( std::string name ){ cali2DResPlotsTFileName = name; };
+  void SetResFitOutputDir( std::string name ){ resFitOutputDir = name.empty() ? "." : name; };
   void SetCaliTFileName( std::string name ){ caliTFileName = name; };
   void SetCaliFileDir( std::string name ){ caliFileDir = name; };
 

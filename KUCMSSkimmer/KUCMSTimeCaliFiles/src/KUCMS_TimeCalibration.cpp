@@ -73,6 +73,7 @@ KUCMS_TimeCalibration::KUCMS_TimeCalibration( bool stayOpen, bool makeNew, bool 
   //caliTFileName = caliFileDir + "caliHistsTFile.root";// name configurable ?
   //caliR3TFileName = caliFileDir + "caliR3HistsTFile.root";// name configurable ?
   cali2DResPlotsTFileName = caliFileDir + "res2dPlotsTFile.root";
+  resFitOutputDir = ".";
   //caliTFile = NULL;
   caliR3TFile = NULL;
   cali2DResTFile = NULL;
@@ -3793,7 +3794,9 @@ kucms_SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D ){
 
   std::string fittypename = ( doSterm ) ? "_NSC" : "_NC";
   //std::string outfilename = caliFileDir + f2DHistName + fittypename  + "_resfit.root";
-  std::string outfilename = f2DHistName + fittypename  + "_resfit.root";
+  std::filesystem::path outputPath = std::filesystem::path(resFitOutputDir) /
+    ( f2DHistName + fittypename + "_resfit.root" );
+  std::string outfilename = outputPath.string();
   TFile* resTFile = TFile::Open( outfilename.c_str(), "RECREATE" );
   if( not resTFile || resTFile->IsZombie() ){
     std::cerr << "ERROR: failed to create time-fit output file: " << outfilename << std::endl;
