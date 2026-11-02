@@ -174,8 +174,9 @@ void KUCMSAodSkimmer::processPhotons(){
   if( DEBUG || verbose ) std::cout << " - Looping over for " << nPhotons << " photons" << std::endl;
 
 
-  auto xa5vec = geVects( "xa5vec");
-  auto xb5vec = geVects( "xb5vec");
+  // xa5vec/xb5vec are only filled by processGenParticles, which runs only with gen info
+  std::vector<float> xa5vec, xb5vec;
+  if( hasGenInfoFlag ){ xa5vec = geVects( "xa5vec"); xb5vec = geVects( "xb5vec"); }
 
   //-------------------------------------------------------------------------------------------
   ///////////  Loop over raw photons  /////////////////////////////////////////////////////////
@@ -1347,7 +1348,7 @@ void KUCMSAodSkimmer::processPhotons(){
       }//<<>>if(npmedisotagcomp)
     }//<<>>if(notbhtag)
     /////// VALIDATION REGIONS //////
-    if(valbhtag && valnptightisotag){
+    if(bhtag && valnptightisotag){
       if(nValBHphotons == 0)
       val_bh_tagged_lead_timesig = phoWTimeSig;
       //update BH time sig to sublead BH photon if lead is prompt
@@ -1355,7 +1356,7 @@ void KUCMSAodSkimmer::processPhotons(){
       val_bh_tagged_lead_timesig = phoWTimeSig;
       else{ };
     }//<<>>if(valbhtag && valnptightisotag)
-    if(valnotbhtag){
+    if(notbhtag){
       if(valnptightisotag){
         if(nValNotBHTightIsophotons == 0){
           val_nptightisonotbh_tagged_lead_timesig = phoWTimeSig;
@@ -1366,7 +1367,7 @@ void KUCMSAodSkimmer::processPhotons(){
         }//<<>>else if((phoWTimeSig < earlyTimeCut || phoWTimeSig >= lateTimeCut) && (val_nptightisonotbh_tagged_lead_timesig >= earlyTimeCut && val_nptightisonotbh_tagged_lead_timesig < lateTimeCut))
         else{ };
       }//<<>>if(valnptightisotag)
-      if(valnpmedisotag){
+      else if(valnpmedisotag){
         if(nValNotBHMedIsophotons == 0)
         val_npmedisonotbh_tagged_lead_timesig = phoWTimeSig;
         //update BH time sig to sublead BH photon if lead is prompt
@@ -1374,7 +1375,8 @@ void KUCMSAodSkimmer::processPhotons(){
         val_npmedisonotbh_tagged_lead_timesig = phoWTimeSig;
         else{ };
       }//<<>>if(valnpmedisotag)
-    }//<<>>if(valnotbhtag)
+     else {}
+    }//<<>>if(notbhtag)
 
 
     if(bhtag && nptightisotag)
@@ -1544,11 +1546,15 @@ void KUCMSAodSkimmer::processPhotons(){
   //---------------------------------------------------------------------------
 
   //phi is [-pi, pi]
-  bool inBHPhiWindow_bh = (((bh_tagged_lead_phi < 0.1) && (bh_tagged_lead_phi > -0.1)) || (acos(-1) - 0.1 > bh_tagged_lead_phi) || (-acos(-1) + 0.1 > bh_tagged_lead_phi));
-  bool inBHPhiWindow_notbh = (((nptightisonotbh_tagged_lead_phi < 0.1) && (nptightisonotbh_tagged_lead_phi > -0.1)) || (acos(-1) - 0.1 > nptightisonotbh_tagged_lead_phi) || (-acos(-1) + 0.1 > nptightisonotbh_tagged_lead_phi));
-  bool inBHPhiWindowComp_bh = (((bh_taggedcomp_lead_phi < 0.1) && (bh_taggedcomp_lead_phi > -0.1)) || (acos(-1) - 0.1 > bh_taggedcomp_lead_phi) || (-acos(-1) + 0.1 > bh_taggedcomp_lead_phi));
-  bool inBHPhiWindowComp_notbh = (((nptightisonotbh_taggedcomp_lead_phi < 0.1) && (nptightisonotbh_taggedcomp_lead_phi > -0.1)) || (acos(-1) - 0.1 > nptightisonotbh_taggedcomp_lead_phi) || (-acos(-1) + 0.1 > nptightisonotbh_taggedcomp_lead_phi));
+  //bh phi in any window: [-0.1, 0.1], [-pi, -pi+0.1], [pi-0.1, pi]
+  bool inBHPhiWindow_bh = (((bh_tagged_lead_phi < 0.1) && (bh_tagged_lead_phi > -0.1)) || (acos(-1) - 0.1 < bh_tagged_lead_phi) || (bh_tagged_lead_phi < -acos(-1) + 0.1));
+  bool inBHPhiWindow_notbh = (((nptightisonotbh_tagged_lead_phi < 0.1) && (nptightisonotbh_tagged_lead_phi > -0.1)) || (acos(-1) - 0.1 < nptightisonotbh_tagged_lead_phi) || (nptightisonotbh_tagged_lead_phi < -acos(-1) + 0.1));
+  bool inBHPhiWindowComp_bh = (((bh_taggedcomp_lead_phi < 0.1) && (bh_taggedcomp_lead_phi > -0.1)) || (acos(-1) - 0.1 < bh_taggedcomp_lead_phi) || (bh_taggedcomp_lead_phi < -acos(-1) + 0.1));
+  bool inBHPhiWindowComp_notbh = (((nptightisonotbh_taggedcomp_lead_phi < 0.1) && (nptightisonotbh_taggedcomp_lead_phi > -0.1)) || (acos(-1) - 0.1 < nptightisonotbh_taggedcomp_lead_phi) || (nptightisonotbh_taggedcomp_lead_phi < -acos(-1) + 0.1));
 
+  selPhotons.fillBranch("checkPhi", bool((nptightisonotbh_tagged_lead_phi != -999) && !(inBHPhiWindow_notbh) ));
+  selPhotons.fillBranch("checkTimeSig", bool((nptightisonotbh_tagged_lead_timesig < earlyBHTimeCut && nptightisonotbh_tagged_lead_timesig >= spikeTimeVeto)));
+  
   selPhotons.fillBranch("passNPhoGe1NonPrompt", bool(nNonPromptphotons > 0));
   selPhotons.fillBranch("bh_tagged_lead_timesig", bh_tagged_lead_timesig);
   selPhotons.fillBranch("bh_tagged_lead_phi", bh_tagged_lead_phi);
@@ -1712,6 +1718,8 @@ void KUCMSAodSkimmer::processPhotons(){
 
 void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
 
+  selPhotons.makeBranch("checkPhi", BOOL);
+  selPhotons.makeBranch("checkTimeSig", BOOL);
   selPhotons.makeBranch( "nPhotons", UINT );
   selPhotons.makeBranch( "nBaseLinePhotons", UINT );
   selPhotons.makeBranch( "nblBHPhotons", UINT );
