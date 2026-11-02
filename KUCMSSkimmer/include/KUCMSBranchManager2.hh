@@ -68,7 +68,7 @@ class KUCMSBranchManager {
 
     auto it = theBranches.find( key );
     if( it != theBranches.end() ){ delete it->second; it->second = nullptr; theBranches.erase(it); }
-    if( branchMaskActive && !branchEnabled( name ) && !branchEnabled( key ) ){
+    if( branchMaskActive && !branchEnabled( name, key ) ){
       maskedBranches.insert( key );
       maskedBranches.insert( name );
       maskedOutputBranches.insert( name );
@@ -141,16 +141,27 @@ class KUCMSBranchManager {
     return fnmatch(pattern.c_str(), text.c_str(), 0) == 0;
   }//<<>>inline bool matchPattern( const std::string& text, const std::string& pattern ) const
 
-  inline bool branchEnabled( const std::string& name ) const {
+  // Patterns are gitignore-style: a plain pattern keeps matching branches, a
+  // pattern prefixed with '!' drops them, and the last matching pattern wins.
+  // With no keep patterns at all, unmatched branches are kept (drop-list mode);
+  // otherwise unmatched branches are dropped (keep-list mode).
+  inline bool branchEnabled( const std::string& name, const std::string& key ) const {
     if( !branchMaskActive ) return true;
+    bool hasKeepPattern = false;
     for( const auto& pattern : branchMaskPatterns ){
-      if( matchPattern( name, pattern ) ){
-        matchedPatterns.insert(pattern);
-        return true;
-      }//<<>>if( matchPattern( name, pattern ) )
+      if( pattern.empty() || pattern[0] != '!' ){ hasKeepPattern = true; break; }
     }//<<>>for( const auto& pattern : branchMaskPatterns )
-    return false;
-  }//<<>>inline bool branchEnabled( const std::string& name ) const
+    bool enabled = !hasKeepPattern;
+    for( const auto& pattern : branchMaskPatterns ){
+      bool drop = !pattern.empty() && pattern[0] == '!';
+      std::string glob = drop ? pattern.substr(1) : pattern;
+      if( matchPattern( name, glob ) || matchPattern( key, glob ) ){
+        matchedPatterns.insert(pattern);
+        enabled = !drop;
+      }//<<>>if( matchPattern( name, glob ) || matchPattern( key, glob ) )
+    }//<<>>for( const auto& pattern : branchMaskPatterns )
+    return enabled;
+  }//<<>>inline bool branchEnabled( const std::string& name, const std::string& key ) const
 
   inline bool valid( std::string key ){
     if( theBranches.find(key) == theBranches.end() ){
