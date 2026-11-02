@@ -331,7 +331,16 @@ int main ( int argc, char *argv[] ){
   // and uncalibrated sets when maps exist for the input tag (otherwise uncalibrated only).
   if(
 
-    not theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_26_prompt_xa_pm24b1200_v0823", true ) // batchMode
+    //not theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_16UL_miniv2_xa_pm24b1200_v0826", true ) // batchMode
+    //not theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_17UL_miniv2_xa_pm24b1200_v0826", true ) // batchMode
+    //not theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18UL_miniv2_xa_pm24b1200_v0826", true ) // batchMode
+    //not theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18UL_ABC_miniv2_xa_pm24b1200_v0826", true ) // batchMode
+    //not theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18UL_D_miniv2_xa_pm24b1200_v0826", true ) // batchMode
+    //not theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_22_22sept23_xa_pm24b1200_v0826", true ) // batchMode
+    //not theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_23_22sept23_xa_pm24b1200_v0826", true ) // batchMode
+    //not theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_24_miniAODv6_xa_pm24b1200_v0826", true ) // batchMode
+    //not theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_25_prompt_xa_pm24b1200_v0826", true ) // batchMode
+	not theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_26_prompt_xa_pm24b1200_v0826", true ) // batchMode
 
   ) return EXIT_FAILURE;
 
