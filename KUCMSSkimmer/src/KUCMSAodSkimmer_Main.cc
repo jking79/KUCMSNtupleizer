@@ -296,6 +296,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer( bool doLocal ){
 
   // setup lumi json map
 
+  loadLumiJson("config/json/Cert_Collisions2026_401624_403937_golden.json");
   loadLumiJson("config/json/Cert_Collisions2025_391658_398903_Golden.json");
   loadLumiJson("config/json/Cert_Collisions2024_378981_386951_Golden.json");
   loadLumiJson("config/json/Cert_Collisions2023_366442_370790_Golden.json");
