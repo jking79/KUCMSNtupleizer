@@ -82,7 +82,7 @@ int main ( int argc, char *argv[] ){
   // !!!!!!!!!!!!!!!!!!!  alternate RJR setup with invis in comb split rule
   //KUCMSAodSkimmer llpgana( true ); // uses local calibration
   KUCMSAodSkimmer llpgana; // uses eos calibration
-  llpgana.SetLocalSkip( 20 );
+  llpgana.SetLocalSkip( 200 );
 
   //llpgana.SetSystematic("wPhoTimeSig_up");
   //llpgana.SetSystematic("wPhoTimeSig_down");
