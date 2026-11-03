@@ -196,18 +196,29 @@ def _fit_body_points(points, initial):
     noise, constant, stochastic = initial
     noise = max(noise, 1e-3); constant = max(constant, 1e-4); stochastic = max(stochastic, 1e-4)
     function.SetParameters(noise, constant, stochastic)
-    function.SetParLimits(0, 0.0, max(100.0, 4.0 * noise))
-    function.SetParLimits(1, 0.0, max(2.0, 4.0 * constant))
-    function.SetParLimits(2, 0.0, max(10.0, 4.0 * stochastic))
+    upper_limits = (max(100.0, 4.0 * noise), max(2.0, 4.0 * constant), max(10.0, 4.0 * stochastic))
+    for index, upper in enumerate(upper_limits):
+        function.SetParLimits(index, 0.0, upper)
     try:
         fit_result = graph.Fit(function, "QSN")
         status = int(fit_result)
+        covariance_status = int(fit_result.Get().CovMatrixStatus())
     except Exception:
         return None
     parameters = tuple(float(function.GetParameter(index)) for index in range(3))
     if status != 0 or not all(math.isfinite(value) for value in parameters):
         return None
-    return parameters, _body_chi2(parameters, points), status
+    at_limit = False
+    for value, high_limit in zip(parameters, upper_limits):
+        tolerance = 1e-5 * max(1.0, abs(value), abs(high_limit))
+        if value <= tolerance or value >= high_limit - tolerance:
+            at_limit = True
+    return parameters, _body_chi2(parameters, points), status, covariance_status, at_limit
+
+
+def _tail_residuals(parameters, points):
+    return [(y - _resolution_value(parameters, x)) / max(error, 1e-9)
+            for x, y, error in points]
 
 
 def make_body_resolution_plot(row, bin_rows, path):
@@ -223,8 +234,9 @@ def make_body_resolution_plot(row, bin_rows, path):
         error = number(item, "sigma_fitted_scatter_nsc_error")
         if math.isfinite(x) and x > 0 and math.isfinite(y) and y > 0 and math.isfinite(error) and error > 0:
             points.append((x, y, error))
-    if len(points) < 5:
-        info["message"] = "fewer than five valid bins"
+    minimum_body_bins = 6
+    if len(points) < minimum_body_bins + 1:
+        info["message"] = f"fewer than {minimum_body_bins + 1} valid bins; cannot test exclusions"
         return False, info
     inclusive = (number(row, "fitted_scatter_nsc_noise"),
                  number(row, "fitted_scatter_nsc_constant"),
@@ -234,29 +246,41 @@ def make_body_resolution_plot(row, bin_rows, path):
         return False, info
 
     selected = None
-    # Keep the smallest tail exclusion that gives a material improvement in
-    # the same body bins: at least one chi2 unit and at least ten percent.
-    for excluded in range(1, min(3, len(points) - 4) + 1):
+    # Require a well-supported body refit, a material improvement, and a
+    # coherent, >=3-sigma tail departure before excluding any bins.
+    diagnostics = []
+    for excluded in range(1, min(3, len(points) - minimum_body_bins) + 1):
         body = points[:-excluded]
         inclusive_chi2 = _body_chi2(inclusive, body)
         candidate = _fit_body_points(body, inclusive)
         info["tested"] = excluded
         if candidate is None:
+            diagnostics.append(f"{excluded}: fit failed")
             continue
-        parameters, candidate_chi2, _ = candidate
+        parameters, candidate_chi2, _, covariance_status, at_limit = candidate
         improvement = inclusive_chi2 - candidate_chi2
-        if inclusive_chi2 > 0 and improvement >= max(1.0, 0.10 * inclusive_chi2):
-            selected = (excluded, body, parameters, inclusive_chi2, candidate_chi2)
+        tail_pulls = _tail_residuals(parameters, points[-excluded:])
+        inclusive_tail_pulls = _tail_residuals(inclusive, points[-excluded:])
+        inconsistent_with_inclusive = all(abs(pull) > 1.0 for pull in inclusive_tail_pulls)
+        coherent_tail = (bool(tail_pulls) and
+                         (all(pull > 0 for pull in tail_pulls) or all(pull < 0 for pull in tail_pulls)) and
+                         sum(pull * pull for pull in tail_pulls) >= 9.0)
+        improved_body = (inclusive_chi2 > 0 and improvement >= max(2.0, 0.10 * inclusive_chi2))
+        accepted = (improved_body and inconsistent_with_inclusive and coherent_tail and
+                    covariance_status >= 2 and not at_limit)
+        diagnostics.append(f"{excluded}: Δχ²={improvement:.2f}, inclusive pulls={','.join(f'{p:.2f}' for p in inclusive_tail_pulls)}, body pulls={','.join(f'{p:.2f}' for p in tail_pulls)}, cov={covariance_status}, atLimit={int(at_limit)}")
+        if accepted:
+            selected = (excluded, body, parameters, inclusive_chi2, candidate_chi2, diagnostics[-1])
             break
 
     if selected is None:
         excluded, body, parameters = 0, points, inclusive
         inclusive_chi2 = candidate_chi2 = _body_chi2(inclusive, body)
-        info["message"] = "no material body improvement; inclusive model retained"
+        info["message"] = "inclusive model retained; " + ("; ".join(diagnostics) if diagnostics else "no exclusions testable")
     else:
-        excluded, body, parameters, inclusive_chi2, candidate_chi2 = selected
+        excluded, body, parameters, inclusive_chi2, candidate_chi2, decision = selected
         info.update({"excluded": excluded, "accepted": True,
-                     "message": f"excluded final {excluded} bin(s); body chi2 {inclusive_chi2:.3g} -> {candidate_chi2:.3g}"})
+                     "message": f"excluded final {excluded} bin(s); body χ² {inclusive_chi2:.3g} -> {candidate_chi2:.3g}; {decision}"})
     info.update({"parameters": parameters, "body_chi2": candidate_chi2,
                  "inclusive_body_chi2": inclusive_chi2})
 
