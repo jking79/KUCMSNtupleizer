@@ -115,6 +115,9 @@ float KUCMSAodSkimmer::getTimeSig( int scIndex, float& num, float& denom, float 
       float gainwt = 0;
       if( isValid ) gainwt = 1;
 
+      // Keep the pair-resolution variance for inverse-variance weighting. Its
+      // common factor relative to a single-crystal variance rescales all weights
+      // equally and therefore does not change the weighted photon time.
       double invertres = ( ertres > 0 ) ? 1/ertres : -1;
       double erhar = ( invertres > 0 ) ? invertres*gainwt : 0;
       if(rhIdToBHCw.size() > 0){
@@ -138,6 +141,9 @@ float KUCMSAodSkimmer::getTimeSig( int scIndex, float& num, float& denom, float 
   float sqrtPhoWVar = std::sqrt(phoWVar);
   float wttimesig = phoWTime/sqrtPhoWVar;
   num = phoWTime;
+  // Convert the pair-based weighted uncertainty to the single-photon time
+  // deviation stored as WTRes; the two equal, independent contributions give
+  // sigma_pair = sqrt(2) * sigma_photon.
   denom = sqrtPhoWVar/std::sqrt(2);
   return wttimesig;
 

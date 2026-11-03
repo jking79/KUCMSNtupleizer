@@ -1778,6 +1778,10 @@ float KUCMS_TimeCalibration::getSmrdCalibTime( float rhtime, float rhamp, uInt r
 float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, const std::string& dataSetKey, int mctype, int gianID ){
 
   if( amplitude == 0 ) return 100.f;
+  // Resolution curves are parameterized in the pair-effective amplitude.
+  // Approximate that quantity from this single rechit; keep the input amplitude
+  // unchanged for the caller and use the derived value only in this lookup.
+  const float resolutionAmplitude = amplitude / std::sqrt(2.f);
   auto det = DetIDMap.find(rechitID);
   if( det == DetIDMap.end() ){
     std::cerr << "ERROR: unknown ECAL detID in getTimeResoltuion: " << rechitID << std::endl;
@@ -1800,28 +1804,28 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
     auto resolvedTag = ResTagSet.find(*resolvedTagName);
     if( resolvedTag != ResTagSet.end() ){
       const auto& parameters = resolvedTag->second;
-      if( amplitude > 400 ){
+      if( resolutionAmplitude > 400 ){
 
         float res = 0;
-        if( amplitude > 900 ){
+        if( resolutionAmplitude > 800 ){
           if( isEB ) res = ( gianID == 1 ) ? parameters.ebg1he3res : parameters.ebhg3res;
           else res = ( gianID == 1 ) ? parameters.eeg1he3res : parameters.eehg3res;
-        } else if( amplitude > 600 ){
+        } else if( resolutionAmplitude > 600 ){
           if( isEB ) res = ( gianID == 1 ) ? parameters.ebg1he2res : parameters.ebhg2res;
           else res = ( gianID == 1 ) ? parameters.eeg1he2res : parameters.eehg2res;
         } else {
           if( isEB ) res = ( gianID == 1 ) ? parameters.ebg1he1res : parameters.ebhg1res;
           else res = ( gianID == 1 ) ? parameters.eeg1he1res : parameters.eehg1res;
-        }//<<>>if( amplitude > 900 )
+        }//<<>>if( resolutionAmplitude > 800 )
         var = sq2( res );
 
       }//<<>>if( amplitude > 400 )
-      if( amplitude <= 400 or var == 0 ){
+      if( resolutionAmplitude <= 400 or var == 0 ){
 
         float noise = isEB ? parameters.ebnoise : parameters.eenoise;
         float stoch = isEB ? parameters.ebstoch : parameters.eestoch;
         float stant = isEB ? parameters.ebstant : parameters.eestant;
-        var = sq2(noise/amplitude) + sq2(stoch)/amplitude + 2*sq2(stant);
+        var = sq2(noise/resolutionAmplitude) + sq2(stoch)/resolutionAmplitude + 2*sq2(stant);
 
       }//<<>>if( amplitude > 400 )
     } else if( *resolvedTagName != "None" ) reportInvalidTag(*resolvedTagName);
@@ -1839,7 +1843,7 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
       float noise = isEB ? parameters.ebnoise : parameters.eenoise;
       float stoch = isEB ? parameters.ebstoch : parameters.eestoch;
       float stant = isEB ? parameters.ebstant : parameters.eestant;
-      var = sq2(noise/amplitude) + sq2(stoch)/amplitude + 2*sq2(stant);
+      var = sq2(noise/resolutionAmplitude) + sq2(stoch)/resolutionAmplitude + 2*sq2(stant);
       //std::cout << " --- getting MC res for : " << *themctag << " " << noise << " " << stoch;
       //std::cout << " " << stant << " " << var << std::endl;
     } else if( *themctag != "None" ) reportInvalidTag(*themctag);
@@ -1860,7 +1864,7 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
     float noise = isEB ? parameters.ebnoise : parameters.eenoise;
     float stoch = isEB ? parameters.ebstoch : parameters.eestoch;
     float stant = isEB ? parameters.ebstant : parameters.eestant;
-    var = sq2(noise/amplitude) + sq2(stoch)/amplitude + 2*sq2(stant);
+    var = sq2(noise/resolutionAmplitude) + sq2(stoch)/resolutionAmplitude + 2*sq2(stant);
     //var = isEB ? sq2(26.0/amplitude) + sq2(0.6)/amplitude + 2*sq2(0.094) : sq2(42.2/amplitude) + sq2(1.2)/amplitude + 2*sq2(0.298);
   }//<<>>if( var == -1 )
   return var;
