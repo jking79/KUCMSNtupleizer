@@ -1778,6 +1778,10 @@ float KUCMS_TimeCalibration::getSmrdCalibTime( float rhtime, float rhamp, uInt r
 float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, const std::string& dataSetKey, int mctype, int gianID ){
 
   if( amplitude == 0 ) return 100.f;
+  // Resolution curves are parameterized in the pair-effective amplitude.
+  // Approximate that quantity from this single rechit; keep the input amplitude
+  // unchanged for the caller and use the derived value only in this lookup.
+  const float resolutionAmplitude = amplitude / std::sqrt(2.f);
   auto det = DetIDMap.find(rechitID);
   if( det == DetIDMap.end() ){
     std::cerr << "ERROR: unknown ECAL detID in getTimeResoltuion: " << rechitID << std::endl;
@@ -1800,28 +1804,28 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
     auto resolvedTag = ResTagSet.find(*resolvedTagName);
     if( resolvedTag != ResTagSet.end() ){
       const auto& parameters = resolvedTag->second;
-      if( amplitude > 400 ){
+      if( resolutionAmplitude > 400 ){
 
         float res = 0;
-        if( amplitude > 900 ){
+        if( resolutionAmplitude > 800 ){
           if( isEB ) res = ( gianID == 1 ) ? parameters.ebg1he3res : parameters.ebhg3res;
           else res = ( gianID == 1 ) ? parameters.eeg1he3res : parameters.eehg3res;
-        } else if( amplitude > 600 ){
+        } else if( resolutionAmplitude > 600 ){
           if( isEB ) res = ( gianID == 1 ) ? parameters.ebg1he2res : parameters.ebhg2res;
           else res = ( gianID == 1 ) ? parameters.eeg1he2res : parameters.eehg2res;
         } else {
           if( isEB ) res = ( gianID == 1 ) ? parameters.ebg1he1res : parameters.ebhg1res;
           else res = ( gianID == 1 ) ? parameters.eeg1he1res : parameters.eehg1res;
-        }//<<>>if( amplitude > 900 )
+        }//<<>>if( resolutionAmplitude > 800 )
         var = sq2( res );
 
       }//<<>>if( amplitude > 400 )
-      if( amplitude <= 400 or var == 0 ){
+      if( resolutionAmplitude <= 400 or var == 0 ){
 
         float noise = isEB ? parameters.ebnoise : parameters.eenoise;
         float stoch = isEB ? parameters.ebstoch : parameters.eestoch;
         float stant = isEB ? parameters.ebstant : parameters.eestant;
-        var = sq2(noise/amplitude) + sq2(stoch)/amplitude + 2*sq2(stant);
+        var = sq2(noise/resolutionAmplitude) + sq2(stoch)/resolutionAmplitude + 2*sq2(stant);
 
       }//<<>>if( amplitude > 400 )
     } else if( *resolvedTagName != "None" ) reportInvalidTag(*resolvedTagName);
@@ -1839,7 +1843,7 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
       float noise = isEB ? parameters.ebnoise : parameters.eenoise;
       float stoch = isEB ? parameters.ebstoch : parameters.eestoch;
       float stant = isEB ? parameters.ebstant : parameters.eestant;
-      var = sq2(noise/amplitude) + sq2(stoch)/amplitude + 2*sq2(stant);
+      var = sq2(noise/resolutionAmplitude) + sq2(stoch)/resolutionAmplitude + 2*sq2(stant);
       //std::cout << " --- getting MC res for : " << *themctag << " " << noise << " " << stoch;
       //std::cout << " " << stant << " " << var << std::endl;
     } else if( *themctag != "None" ) reportInvalidTag(*themctag);
@@ -1860,7 +1864,7 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
     float noise = isEB ? parameters.ebnoise : parameters.eenoise;
     float stoch = isEB ? parameters.ebstoch : parameters.eestoch;
     float stant = isEB ? parameters.ebstant : parameters.eestant;
-    var = sq2(noise/amplitude) + sq2(stoch)/amplitude + 2*sq2(stant);
+    var = sq2(noise/resolutionAmplitude) + sq2(stoch)/resolutionAmplitude + 2*sq2(stant);
     //var = isEB ? sq2(26.0/amplitude) + sq2(0.6)/amplitude + 2*sq2(0.094) : sq2(42.2/amplitude) + sq2(1.2)/amplitude + 2*sq2(0.298);
   }//<<>>if( var == -1 )
   return var;
@@ -4876,6 +4880,14 @@ bool KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
       return false;
     }//<<>>if( invalid input range )
     if( input.endRun < srun || input.startRun > erun ) continue;
+    if( isCC && doUnCC ){
+      if( input.tag == "r3_p25" ) input.tag = "r3_p25unc";
+      else if( input.tag == "r3_p26" ) input.tag = "r3_p26unc";
+      else{
+        std::cerr << "ERROR: bad tag for uncorrected CC times: " << input.tag << std::endl;
+        return false;
+      }//<<>>if( unsupported uncorrected CC tag )
+    }//<<>>if( isCC && doUnCC )
     inputs.push_back(input);
   }//<<>>while( input rows )
   if( inputs.empty() ){
@@ -5048,6 +5060,8 @@ bool KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
     int cachedRun = -1;
     const kucms_CaliRunClass* crystalRange = nullptr;
     const kucms_CaliRunClass* ttRange = nullptr;
+    std::unordered_map<uInt,double> correctionCache;
+    correctionCache.reserve(8192);
     for( Long64_t centry = 0; centry < nEntries; centry++ ){
       if( centry >= nextProgressEntry ){
         const int completedPercent = static_cast<int>(100.0L*centry/nEntries);
@@ -5077,8 +5091,11 @@ bool KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
 
       if( cachedRun != static_cast<int>(run) ){
         cachedRun = run;
-        crystalRange = makeCalibrated ? findRange(CaliRunMapSet,input.tag,run) : nullptr;
-        ttRange = makeCalibrated ? findRange(TTCaliRunMapSet,input.tag,run) : nullptr;
+        const auto* nextCrystalRange = makeCalibrated ? findRange(CaliRunMapSet,input.tag,run) : nullptr;
+        const auto* nextTTRange = makeCalibrated ? findRange(TTCaliRunMapSet,input.tag,run) : nullptr;
+        if( crystalRange != nextCrystalRange || ttRange != nextTTRange ) correctionCache.clear();
+        crystalRange = nextCrystalRange;
+        ttRange = nextTTRange;
         if( makeCalibrated && (not crystalRange || not ttRange || crystalRange->meanMap.empty() ||
         ttRange->meanMap.empty()) ){
           std::cout << "WARNING: complete calibration maps are unavailable for tag " << input.tag
@@ -5117,16 +5134,20 @@ bool KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
 
         double calibratedTime = rawTime;
         if( makeCalibrated ){
-          double correction = 0.0;
-          auto crystalMean = crystalRange->meanMap.find(id);
-          if( crystalMean != crystalRange->meanMap.end() ) correction += crystalMean->second;
-          auto ttMean = ttRange->meanMap.find(det->second.ttId);
-          if( ttMean != ttRange->meanMap.end() ) correction += ttMean->second;
-          if( not std::isfinite(correction) ){
-            std::cerr << "ERROR: non-finite calibration for detID " << id << " run " << run << std::endl;
-            return false;
-          }//<<>>if( invalid correction )
-          calibratedTime -= correction;
+          auto cachedCorrection = correctionCache.find(id);
+          if( cachedCorrection == correctionCache.end() ){
+            double correction = 0.0;
+            auto crystalMean = crystalRange->meanMap.find(id);
+            if( crystalMean != crystalRange->meanMap.end() ) correction += crystalMean->second;
+            auto ttMean = ttRange->meanMap.find(det->second.ttId);
+            if( ttMean != ttRange->meanMap.end() ) correction += ttMean->second;
+            if( not std::isfinite(correction) ){
+              std::cerr << "ERROR: non-finite calibration for detID " << id << " run " << run << std::endl;
+              return false;
+            }//<<>>if( invalid correction )
+            cachedCorrection = correctionCache.emplace(id,correction).first;
+          }//<<>>if( correction not cached )
+          calibratedTime -= cachedCorrection->second;
         }//<<>>if( calibrated output enabled )
         auto& accumulator = det->second.isEB ? ebMoments : eeMoments;
         auto& moments = accumulator[makeTTKey(run,det->second.ttId)];
@@ -5155,7 +5176,8 @@ bool KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
   const double runHighEdge = static_cast<double>(erun) + 0.5;
   constexpr unsigned long long minimumTTCount = 100;
   auto writeMeanHistograms = [&]( bool calibrated ){
-    const std::string suffix = calibrated ? "_cali" : "_nocali";
+    std::string suffix = calibrated ? "_cali" : "_nocali";
+    if( isCC && doUnCC ) suffix += "_UnCorr";
     const std::string baseName = "meanRunTime_" + std::to_string(srun) + "_to_" +
     std::to_string(erun) + suffix;
     const std::string ebName = baseName + "_allTT_eb";

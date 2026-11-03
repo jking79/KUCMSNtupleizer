@@ -7,7 +7,7 @@
 #kucmsntuple_MET_R16_SVHPM100_MiniAODv2_v34/MET/ Run2016B MetR16B 1 0 0 0 1 r2_ul16
 #kucmsntuple_MET_R16_SVHPM100_MiniAODv2_v34/MET/ Run2016C MetR16C 1 0 0 0 1 r2_ul16
 #kucmsntuple_MET_R16_SVHPM100_MiniAODv2_v34/MET/ Run2016D MetR16D 1 0 0 0 1 r2_ul16
-kucmsntuple_MET_R16_SVHPM100_MiniAODv2_v34/MET/ Run2016E MetR16E 1 0 0 0 1 r2_ul16
+#kucmsntuple_MET_R16_SVHPM100_MiniAODv2_v34/MET/ Run2016E MetR16E 1 0 0 0 1 r2_ul16
 #kucmsntuple_MET_R16_SVHPM100_MiniAODv2_v34/MET/ Run2016F-HIPM MetR16Fh 1 0 0 0 1 r2_ul16
 #kucmsntuple_MET_R16_SVHPM100_MiniAODv2_v34/MET/ Run2016F MetR16F 1 0 0 0 1 r2_ul16
 #kucmsntuple_MET_R16_SVHPM100_MiniAODv2_v34/MET/ Run2016G MetR16G 1 0 0 0 1 r2_ul16
@@ -46,8 +46,8 @@ kucmsntuple_MET_R16_SVHPM100_MiniAODv2_v34/MET/ Run2016E MetR16E 1 0 0 0 1 r2_ul
 #kucmsntuple_JetMET_R24_SVHPM100_MiniAOD_v34/JetMET0/ Run2024I-MINIv6NANOv15-v2 JetMet0R24I1 1 0 0 0 1 r3_p24
 #kucmsntuple_JetMET_R24_SVHPM100_MiniAOD_v34/JetMET0/ Run2024I-MINIv6NANOv15_v2-v1 JetMet0R24I2 1 0 0 0 1 r3_p24
 
-kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET0 Run2025Cv1 JetMet0R25C 1 0 0 0 1 r3_p25unc
-kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET0 Run2025Cv2 JetMet0R25C2 1 0 0 0 1 r3_p25unc
+#kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET0 Run2025Cv1 JetMet0R25C 1 0 0 0 1 r3_p25unc
+#kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET0 Run2025Cv2 JetMet0R25C2 1 0 0 0 1 r3_p25unc
 #kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET0 Run2025D JetMet0R25D 1 0 0 0 1 r3_p25unc
 #kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET0 Run2025E JetMet0R25E 1 0 0 0 1 r3_p25unc
 #kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET0 Run2025Fv1 JetMet0R25F 1 0 0 0 1 r3_p25unc
@@ -86,6 +86,8 @@ kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET0 Run2025Cv2 JetMet0R25C2 1 0 
 #kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET0/ JetMET0_MINIAOD_Run2025F JetMet0R25F1 1 0 0 0 1 r3_p25unc
 #kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET0/ JetMET0_v2_MINIAOD_Run2025F JetMet0R25F2 1 0 0 0 1 r3_p25unc
 #kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET0/ JetMET0_MINIAOD_Run2025G JetMet0R25G 1 0 0 0 1 r3_p25unc
+
+kucmsntuple_JetMET_R26_SVHPM100_MiniAOD_v34/JetMET0/ JetMET0_MINIAOD_Run2026B JetMet0R26B 1 0 0 0 1 r3_p26unc
 
 ########################## testing ###########################
 

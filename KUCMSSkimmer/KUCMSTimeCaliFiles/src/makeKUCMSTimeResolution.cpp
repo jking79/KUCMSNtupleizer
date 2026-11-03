@@ -250,8 +250,8 @@ int main ( int argc, char *argv[] ){
   //theCali.setUseGainID( 3 ); // GS1 only
   //theCali.setUseGainID( 4 ); // both GS1 and GS6 flags set
 
-  theCali.setIsCC(true);
-  theCali.setDoUnCC(true);
+  //theCali.setIsCC(true);
+  //theCali.setDoUnCC(true);
   ////theCali.setIsCC(false);//default
 
   // Data rows end with dolast; MC rows have one additional event-weight column.
@@ -592,12 +592,13 @@ int main ( int argc, char *argv[] ){
 
   ///////////////   mean time by run   ////////////////////
 
-  //theCali.setIsCC(true);
-  //theCali.setDoUnCC(true);
+  theCali.setIsCC(true);
+  theCali.setDoUnCC(true);
 
+  // 2026  401630 403867
   // One pass always produces uncalibrated EB/EE TT-mean histograms and also produces
   // calibrated EB/EE histograms when complete calibration maps are available.
-  //if( not theCali.plotMeanRunTimeEGR(inputfilename,315257,325172) ) return EXIT_FAILURE;
+  if( not theCali.plotMeanRunTimeEGR(inputfilename,401630,403867) ) return EXIT_FAILURE;
   ////theCali.makeTTDiffMaps();// make trigger tower diffrence maps
 
   /////////////////////// TT drift maps //////////////////////////////

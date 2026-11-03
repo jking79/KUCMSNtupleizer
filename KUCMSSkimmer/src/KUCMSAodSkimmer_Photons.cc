@@ -864,6 +864,8 @@ void KUCMSAodSkimmer::processPhotons(){
     selPhotons.fillBranch( "baseLinePhoton_WTimeOld", phoWTimeOld );
     selPhotons.fillBranch( "baseLinePhoton_LTime", leadTime );
     selPhotons.fillBranch( "baseLinePhoton_STime", seedTime );
+    // phoWRes is the single-photon deviation: getTimeSig converts the
+    // pair-based weighted uncertainty by 1/sqrt(2) before this branch fill.
     selPhotons.fillBranch( "baseLinePhoton_WTRes", phoWRes );
     selPhotons.fillBranch( "baseLinePhoton_WTResOld", phoWResOld );
     selPhotons.fillBranch( "baseLinePhoton_LTRes", leadTres );

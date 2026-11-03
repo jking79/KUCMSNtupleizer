@@ -43,15 +43,24 @@ def selected_fit(row, bin_rows):
         "fitted_scatter_nsc_stochastic"))
     if len(points) < 5 or not all(math.isfinite(value) for value in inclusive):
         return inclusive, 0
-    for excluded in range(1, min(3, len(points) - 4) + 1):
+    minimum_body_bins = 6
+    for excluded in range(1, min(3, len(points) - minimum_body_bins) + 1):
         body = points[:-excluded]
         inclusive_chi2 = base._body_chi2(inclusive, body)
         candidate = base._fit_body_points(body, inclusive)
         if candidate is None:
             continue
-        parameters, candidate_chi2, _ = candidate
+        parameters, candidate_chi2, _, covariance_status, at_limit = candidate
         improvement = inclusive_chi2 - candidate_chi2
-        if inclusive_chi2 > 0 and improvement >= max(1.0, 0.10 * inclusive_chi2):
+        tail_pulls = base._tail_residuals(parameters, points[-excluded:])
+        inclusive_tail_pulls = base._tail_residuals(inclusive, points[-excluded:])
+        inconsistent_with_inclusive = all(abs(pull) > 1.0 for pull in inclusive_tail_pulls)
+        coherent_tail = (bool(tail_pulls) and
+                         (all(pull > 0 for pull in tail_pulls) or all(pull < 0 for pull in tail_pulls)) and
+                         sum(pull * pull for pull in tail_pulls) >= 9.0)
+        improved_body = (inclusive_chi2 > 0 and improvement >= max(2.0, 0.10 * inclusive_chi2))
+        if (improved_body and inconsistent_with_inclusive and coherent_tail and
+                covariance_status >= 2 and not at_limit):
             return parameters, excluded
     return inclusive, 0
 
@@ -122,7 +131,6 @@ def make_root_plot(curves, output_path, title, subtitle, run_text):
     multigraph = TMultiGraph()
     graphs = []; functions = []; legend = TLegend(0.66, 0.64, 0.93, 0.90)
     legend.SetBorderSize(0); legend.SetTextSize(0.028)
-    excluded_legend_added = False
     for index, curve in enumerate(curves):
         points = points_for(curve["record"], zee_cut=curve.get("zee", False))
         if not points:
@@ -147,9 +155,6 @@ def make_root_plot(curves, output_path, title, subtitle, run_text):
             excluded_graph.SetMarkerColor(kGray + 2); excluded_graph.SetLineColor(kGray + 2)
             excluded_graph.SetMarkerStyle(24); excluded_graph.SetMarkerSize(1.35)
             multigraph.Add(excluded_graph, "P"); graphs.append(excluded_graph)
-            if not excluded_legend_added:
-                legend.AddEntry(excluded_graph, "Tail bins excluded from fit", "ep")
-                excluded_legend_added = True
         params = curve["record"]["parameters"]
         if len(params) == 3 and all(math.isfinite(value) for value in params):
             function = TF1(f"presentation_fit_{index}",
@@ -163,14 +168,15 @@ def make_root_plot(curves, output_path, title, subtitle, run_text):
     multigraph.GetXaxis().SetTitle("A_{eff}/#sigma_{n}")
     multigraph.GetYaxis().SetTitle("#sigma(t_{1}-t_{2}) [ns]")
     multigraph.GetXaxis().SetLimits(15.0, 1600.0)
-    multigraph.SetMinimum(0.02); multigraph.SetMaximum(2.0)
+    multigraph.SetMinimum(0.01); multigraph.SetMaximum(10.0)
+    multigraph.GetYaxis().SetRangeUser(0.01, 10.0)
     for function in functions:
         function.Draw("same")
     legend.Draw()
     latex = TLatex(); latex.SetNDC(); latex.SetTextFont(42)
     latex.SetTextSize(0.045); latex.DrawLatex(0.16, 0.93, "#bf{CMS} #it{Preliminary}")
-    latex.SetTextSize(0.040); latex.DrawLatex(0.16, 0.895, run_text)
-    latex.SetTextSize(0.030); latex.DrawLatex(0.325, 0.85, subtitle)
+    latex.SetTextSize(0.040); latex.DrawLatex(0.70, 0.93, run_text)
+    latex.SetTextSize(0.030); latex.DrawLatex(0.16, 0.85, subtitle)
     latex.SetTextSize(0.023)
     latex.DrawLatex(0.175, 0.285, "#sigma_{i}^{2}=(N/(A_{eff}/#sigma_{n}))^{2}+S^{2}/(A_{eff}/#sigma_{n})+2C^{2}")
     latex.SetTextSize(0.022)
