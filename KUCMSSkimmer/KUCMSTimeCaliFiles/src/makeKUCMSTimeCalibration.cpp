@@ -105,6 +105,17 @@ int main ( int argc, char *argv[] ){
   //-----//////////  making tt cali  :
   theCali.SetupIovMaps();
 
+  // With automatic gain-1 IOV selection enabled, the combined gain-1 pass
+  // chooses the TT and crystal IOV families from each input tag. It does
+  // not use setTTIov() or setXIov() for that pass.
+  //
+  // The separate gain-2+ crystal pass uses setXIov(). The separate TT
+  // pass uses setTTIov(). These settings can therefore be made here even
+  // when the combined gain-1 pass uses automatic selection.
+  //
+  // To force both IOV families for the combined gain-1 pass, first call:
+  // theCali.setAutoSelectGain1Iovs(false);
+
   // The combined gain-1 path selects the TT/X IOV family from each input tag by default.
   // For an R&D override, disable automatic selection before setting these manually:
   // theCali.setAutoSelectGain1Iovs(false);
