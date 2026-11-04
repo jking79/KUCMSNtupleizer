@@ -66,9 +66,9 @@ int main ( int argc, char *argv[] ){
   //std::string inputfilename( "ecal_config/kucmsTimeCaliR23ReRecoTFile.txt");
   //std::string inputfilename( "ecal_config/kucmsTimeCaliR24ReRecoTFile.txt");
   //std::string inputfilename( "ecal_config/kucmsTimeCaliR25PrmptTFile.txt");
-  std::string inputfilename( "ecal_config/kucmsTimeCaliR26PrmptTFile.txt");
+  //std::string inputfilename( "ecal_config/kucmsTimeCaliR26PrmptTFile.txt");
 
-  //std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCQCDTFile.txt");
+  std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCQCDTFile.txt");
 
   //std::string eosdir("root://cmseos.fnal.gov//store/user/jaking/");// input parameter!
   //std::string eosdir("root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/");
@@ -84,9 +84,9 @@ int main ( int argc, char *argv[] ){
   //std::string indir("KUCMSNtuple/gammares_R23_22sept23/");
   //std::string indir("KUCMSNtuple/gammares_R24_m6n15/");
   //std::string indir("KUCMSNtuple/gammares_prmt25/");
-  std::string indir("KUCMSNtuple/gammares_prmt26/");
+  //std::string indir("KUCMSNtuple/gammares_prmt26/");
 
-  //std::string indir("KUCMSNtuple/gammares_QCD18/");
+  std::string indir("KUCMSNtuple/gammares_QCD18/");
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -110,15 +110,17 @@ int main ( int argc, char *argv[] ){
   // theCali.setAutoSelectGain1Iovs(false);
   // theCali.setTTIov(r2ulTag);
   // theCali.setXIov(xiovtag);
+  // MC-suffixed tags automatically use input weights. Override for ambiguous tags:
+  // theCali.setDoMC(true); // setDoMC(false) forces unit weights
   // for MC
-  //theCali.setTTIov( mctag );
-  //theCali.setXIov( mctag );
+  theCali.setTTIov( mctag );
+  theCali.setXIov( mctag );
   // for PD R3
-  theCali.setTTIov( r3TagTT );
-  theCali.setXIov( r3TagX );
-  theCali.setIsCC(true);
+  //theCali.setTTIov( r3TagTT );
+  //theCali.setXIov( r3TagX );
+  //theCali.setIsCC(true);
   ////theCali.setIsCC(false); //-- defaults to false
-  theCali.setDoUnCC(true);
+  //theCali.setDoUnCC(true);
 
   //-----//////////  making trigtower cali :
   ////// bool makeCaliMapsEGR( std::string inputFileName, bool doTT, int GID, bool small, bool doCali )
@@ -127,11 +129,11 @@ int main ( int argc, char *argv[] ){
   //// Preferred gain-1 path: make TT and crystal maps in one event loop.
   //// The final non-comment input row must set dolast=1 because the intermediate
   //// TT-partitioned crystal moments exist only for this process invocation.
-  //if( not theCali.makeGain1CaliMapsEGR( inputfilename ) ) return EXIT_FAILURE;
-  //theCali.makeCaliHists();
-  //if( not theCali.SaveCaliHists() ) return EXIT_FAILURE;
-  //if( not theCali.SaveTTRunFile() ) return EXIT_FAILURE;
-  //if( not theCali.SaveCaliRunFile() ) return EXIT_FAILURE;
+  if( not theCali.makeGain1CaliMapsEGR( inputfilename ) ) return EXIT_FAILURE;
+  theCali.makeCaliHists();
+  if( not theCali.SaveCaliHists() ) return EXIT_FAILURE;
+  if( not theCali.SaveTTRunFile() ) return EXIT_FAILURE;
+  if( not theCali.SaveCaliRunFile() ) return EXIT_FAILURE;
 
   //// Legacy two-pass gain-1 path:
   ////theCali.makeTTCaliMapEGR( inputfilename, 1, true ); // true == run only subset of events ( only change doCali for testing, ever )
@@ -150,11 +152,11 @@ int main ( int argc, char *argv[] ){
   //----///////////  make gainid 2 calibrations
   //////theCali.makeTTCaliMapEGR( inputfilename, 2, false, false ); // do gainID 2 no calibration step
   //////theCali.makeTTCaliMapEGR( inputfilename, 2, true ); // do gainID 2; true == run only subset of events
-  if( not theCali.makeXCaliMapEGR( inputfilename, 2 ) ) return EXIT_FAILURE; // do gainID 2+
-  theCali.makeCaliHists();
-  if( not theCali.SaveCaliHists() ) return EXIT_FAILURE;
+  //if( not theCali.makeXCaliMapEGR( inputfilename, 2 ) ) return EXIT_FAILURE; // do gainID 2+
+  //theCali.makeCaliHists();
+  //if( not theCali.SaveCaliHists() ) return EXIT_FAILURE;
   ////if( not theCali.SaveTTRunFile() ) return EXIT_FAILURE;
-  if( not theCali.SaveCaliRunFile() ) return EXIT_FAILURE;
+  //if( not theCali.SaveCaliRunFile() ) return EXIT_FAILURE;
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

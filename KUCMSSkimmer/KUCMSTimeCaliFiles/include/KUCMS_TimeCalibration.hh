@@ -133,6 +133,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
   bool isCC;
   bool doUnCC;
   bool doMC;
+  bool doMCExplicit;
 
   std::string eosCaliPath;
   bool useEosRootCali;
@@ -284,7 +285,13 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
   void setUseGainID( int id ){ useGain = id; }
   void setIsCC( bool iscc ){ isCC = iscc; }
   void setDoUnCC( bool douncc ){ doUnCC = douncc; }
-  void setDoMC( bool domc ){ doMC = domc; } // true: resolution input rows include an event-weight column
+  void setDoMC( bool domc ){ doMC = domc; doMCExplicit = true; }
+  // Recognize MC-suffixed tags automatically; explicit setDoMC takes precedence.
+  bool useMCInput( const std::string& tag ) const {
+    const bool mcTag = tag == "mc" || (tag.size() >= 2 && tag.compare(tag.size()-2,2,"mc") == 0) ||
+      (isCC && doUnCC && tag.size() >= 5 && tag.compare(tag.size()-5,5,"mcunc") == 0);
+    return doMCExplicit ? doMC : mcTag;
+  }
   void setCondorJob( bool docondor ){ isCondorJob = docondor; }
 
   std::string getPrefix( const std::string& s ){

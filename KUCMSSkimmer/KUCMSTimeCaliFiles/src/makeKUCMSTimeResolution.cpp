@@ -254,8 +254,10 @@ int main ( int argc, char *argv[] ){
   //theCali.setDoUnCC(true);
   ////theCali.setIsCC(false);//default
 
-  // Data rows end with dolast; MC rows have one additional event-weight column.
-  theCali.setDoMC(false);
+  // MC-suffixed tags automatically use the seventh column as the sample weight.
+  // For ambiguous tags, setDoMC(true) forces weighted input; false forces unit weights.
+  //theCali.setDoMC(true);
+  //theCali.setDoMC(false);
 
   ////theCali.setDoEE( false ); depreciated - now do EB & EE at the same time
   ////theCali.setDoEE( true ); depreciated - now do EB & EE at the same time

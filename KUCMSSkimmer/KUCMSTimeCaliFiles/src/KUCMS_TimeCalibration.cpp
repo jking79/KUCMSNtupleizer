@@ -132,6 +132,7 @@ KUCMS_TimeCalibration::KUCMS_TimeCalibration( bool stayOpen, bool makeNew, bool 
   isCC = false;
   doUnCC = false;
   doMC = false;
+  doMCExplicit = false;
 
   std::cout << " - setup DetID & IOV Maps " << std::endl;
   SetupDetIDsEB();
@@ -478,7 +479,7 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
   iovMaps["prompt"] = promptIovMap;
 
   std::map<int,int> mcIovMap;
-  mcIovMap[0] = 999999;
+  mcIovMap[1] = 999999;
   iovMaps["mc"] = mcIovMap;
 
   //float ttlumi = 0.36; // in /fb
@@ -2014,15 +2015,15 @@ bool KUCMS_TimeCalibration::makeGain1CaliMapsEGR( std::string inputFileName, boo
 
   auto findIov = []( const std::map<int,int>& iovs, int run ) -> std::pair<int,int> {
     auto iov = iovs.upper_bound(run);
-    if( iov == iovs.begin() ) return {0,0};
+    if( iov == iovs.begin() ) return {-1,-1};
     --iov;
-    if( run > iov->second ) return {0,0};
+    if( run > iov->second ) return {-1,-1};
     return *iov;
   };
   auto findOrCreateRange = [&]( auto& mapSet, const std::string& tag, const std::map<int,int>& iovs,
-  int run, const std::string& type ) -> kucms_CaliRunClass* {
+  int run, const std::string& type, bool weightedMC ) -> kucms_CaliRunClass* {
     auto bounds = findIov(iovs,run);
-    if( bounds.first == 0 ){
+    if( bounds.first < 0 ){
       std::cerr << "ERROR: no configured " << type << " IOV contains run " << run
       << " for tag " << tag << std::endl;
       return nullptr;
@@ -2030,6 +2031,13 @@ bool KUCMS_TimeCalibration::makeGain1CaliMapsEGR( std::string inputFileName, boo
     auto& runSet = mapSet[tag];
     auto range = runSet.find(bounds.first);
     if( range == runSet.end() ){
+      if( weightedMC ){
+        auto prior = runSet.upper_bound(run);
+        if( prior != runSet.begin() && (--prior)->second.endRun >= run ){
+          std::cerr << "ERROR: existing weighted MC " << type << " range overlaps the configured IOV for tag " << tag << std::endl;
+          return nullptr;
+        }
+      }
       std::string histName = tag + "_" + std::to_string(bounds.first) + "_" + type;
       range = runSet.try_emplace(bounds.first, histName, bounds.first, bounds.second, 0, 0).first;
     } else if( range->second.startRun != bounds.first || range->second.endRun != bounds.second ){
@@ -2058,12 +2066,17 @@ bool KUCMS_TimeCalibration::makeGain1CaliMapsEGR( std::string inputFileName, boo
     std::stringstream ss(infilestr);
     std::string subdir, matchstr, tag;
     int srun = 0, erun = 0, dolast = 0;
-    if( not ( ss >> subdir >> matchstr >> srun >> erun >> tag >> dolast ) || subdir.empty() ||
+    double fillwgt = 1.0;
+    const bool fieldsRead = bool( ss >> subdir >> matchstr >> srun >> erun >> tag >> dolast );
+    const bool weightedMC = useMCInput(tag);
+    const bool weightRead = not weightedMC || bool(ss >> fillwgt);
+    if( not fieldsRead || not weightRead || not std::isfinite(fillwgt) || fillwgt <= 0 || subdir.empty() ||
     matchstr.empty() || tag.empty() || srun > erun || ( dolast != 0 && dolast != 1 ) ){
       std::cerr << "ERROR: malformed calibration input row: " << infilestr << std::endl;
       return false;
     }//<<>>if( malformed row )
     doLastRun = dolast;
+    std::cout << "Input weighting: " << (weightedMC ? "MC" : "unit") << " weight=" << fillwgt << std::endl;
     if( isCC && doUnCC ) tag += "unc";
 
     std::string ttIovTag = curTTIov;
@@ -2221,12 +2234,19 @@ bool KUCMS_TimeCalibration::makeGain1CaliMapsEGR( std::string inputFileName, boo
       if( run < static_cast<UInt_t>(srun) || run > static_cast<UInt_t>(erun) ) continue;
 
       if( cachedRun != static_cast<int>(run) ){
-        ttRange = findOrCreateRange(TTCaliRunMapSet,tag,ttIovs,run,"TT");
-        crystalRange = findOrCreateRange(CaliRunMapSet,tag,crystalIovs,run,"X");
+        ttRange = findOrCreateRange(TTCaliRunMapSet,tag,ttIovs,run,"TT",weightedMC);
+        crystalRange = findOrCreateRange(CaliRunMapSet,tag,crystalIovs,run,"X",weightedMC);
         if( not ttRange || not crystalRange ){
           delete fInTree;
           return false;
         }//<<>>if( range setup failed )
+        // Squared weights are not stored; all weighted gain-1 inputs must be processed together.
+        if( weightedMC && ((!ttRange->sumCntMap.empty() && ttRange->sumCntMap.begin()->second.sumWeight2 < 0) ||
+        (!crystalRange->sumCntMap.empty() && crystalRange->sumCntMap.begin()->second.sumWeight2 < 0)) ){
+          std::cerr << "ERROR: cannot extend a saved weighted MC gain-1 range; process all inputs together." << std::endl;
+          delete fInTree;
+          return false;
+        }
         cachedRun = run;
       }//<<>>if( run changed )
       maxRunSeenByTag[tag] = std::max(maxRunSeenByTag[tag],static_cast<int>(run));
@@ -2291,15 +2311,16 @@ bool KUCMS_TimeCalibration::makeGain1CaliMapsEGR( std::string inputFileName, boo
         }//<<>>if( sentinel time )
 
         const uInt ttId = det->second.ttId;
-        if( fillTT && not ttRange->fillSumCnt(ttId,time) ){
+        if( fillTT && not ttRange->fillSumCnt(ttId,time,fillwgt,false,weightedMC) ){
           delete fInTree;
           return false;
         }//<<>>if( TT fill failed )
         if( rawCrystal ){
-          auto raw = rawCrystal->try_emplace(id,0.0,0.0,0.0).first;
-          raw->second.sum += time;
-          raw->second.sumsqr += static_cast<double>(time)*time;
-          raw->second.cnt += 1.0;
+          auto raw = rawCrystal->try_emplace(id,0.0,0.0,0.0,weightedMC ? 0.0 : -1.0).first;
+          raw->second.sum += fillwgt*time;
+          raw->second.sumsqr += fillwgt*static_cast<double>(time)*time;
+          raw->second.cnt += fillwgt;
+          if( weightedMC ) raw->second.sumWeight2 += fillwgt*fillwgt;
         }//<<>>if( crystal fill enabled )
       }//<<>>for( rechits )
     }//<<>>for( entries )
@@ -2337,7 +2358,7 @@ bool KUCMS_TimeCalibration::makeGain1CaliMapsEGR( std::string inputFileName, boo
       }//<<>>if( tag observed )
       if( tagEntry.second >= range.endRun ) range.lastRun = range.endRun;
       else if( rangeObserved ) range.lastRun = std::min(maximumRangeRun,range.endRun);
-      if( range.updated && not range.makeMeanMap(false) ) return false;
+      if( range.updated && not range.makeMeanMap(false,useMCInput(tagEntry.first)) ) return false;
       range.updated = false;
     }//<<>>for( TT ranges )
   }//<<>>for( TT tags )
@@ -2362,7 +2383,7 @@ bool KUCMS_TimeCalibration::makeGain1CaliMapsEGR( std::string inputFileName, boo
           const double correctedSum = raw.sum - raw.cnt*correction;
           const double correctedSumSqr = raw.sumsqr - 2.0*correction*raw.sum +
           raw.cnt*correction*correction;
-          if( not crystalRange.mergeSumCnt(rawEntry.first,correctedSum,correctedSumSqr,raw.cnt) )
+          if( not crystalRange.mergeSumCnt(rawEntry.first,correctedSum,correctedSumSqr,raw.cnt,raw.sumWeight2,useMCInput(tagEntry.first)) )
           return false;
         }//<<>>for( crystal accumulators )
       }//<<>>for( TT IOV partitions )
@@ -2385,7 +2406,7 @@ bool KUCMS_TimeCalibration::makeGain1CaliMapsEGR( std::string inputFileName, boo
       }//<<>>if( tag observed )
       if( tagEntry.second >= range.endRun ) range.lastRun = range.endRun;
       else if( rangeObserved ) range.lastRun = std::min(maximumRangeRun,range.endRun);
-      if( range.updated && not range.makeMeanMap(false) ) return false;
+      if( range.updated && not range.makeMeanMap(false,useMCInput(tagEntry.first)) ) return false;
       range.updated = false;
     }//<<>>for( crystal ranges )
   }//<<>>for( crystal tags )
@@ -2410,9 +2431,6 @@ bool KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 
   bool debug = false;
   //bool debug = true;
-
-  //bool doMC = true;
-  bool doMC = false;
 
   // make generic fill with specialized calling functions for input and TT v X
   // assume bool doTT to inicate TT of X Cali set
@@ -2461,7 +2479,6 @@ bool KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 
 
   std::cout << "open input files list : " << inputFileName << std::endl;
-  float fillwgt = 1;
   std::ifstream infilelist(inputFileName);
   if( !infilelist.is_open() ){
     std::cerr << "ERROR: could not open input file list: " << inputFileName << std::endl;
@@ -2476,11 +2493,12 @@ bool KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
     std::cout << std::endl;
     std::stringstream ss(infilestr);
     std::string subdir, matchstr, tag;
-    int srun = 0, erun = 0, dolast = 0, wgt = 1;
-
-    bool parsed = doMC ? bool( ss >> subdir >> matchstr >> srun >> erun >> tag >> dolast >> wgt )
-    : bool( ss >> subdir >> matchstr >> srun >> erun >> tag >> dolast );
-    if( not parsed || subdir.empty() || matchstr.empty() || tag.empty() || srun > erun || ( dolast != 0 && dolast != 1 ) ){
+    int srun = 0, erun = 0, dolast = 0;
+    double fillwgt = 1.0;
+    const bool parsed = bool( ss >> subdir >> matchstr >> srun >> erun >> tag >> dolast );
+    const bool weightedMC = useMCInput(tag);
+    const bool weightRead = not weightedMC || bool( ss >> fillwgt );
+    if( not parsed || not weightRead || not std::isfinite(fillwgt) || fillwgt <= 0 || subdir.empty() || matchstr.empty() || tag.empty() || srun > erun || ( dolast != 0 && dolast != 1 ) ){
       std::cerr << "ERROR: malformed calibration input row: " << infilestr << std::endl;
       return false;
     }//<<>>if( malformed row )
@@ -2488,7 +2506,7 @@ bool KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
     std::string wichtype = doTT ? "TT" : "X";
 
     doLastRun = dolast;
-    if( doMC ) fillwgt = wgt;
+    std::cout << "Input weighting: " << (weightedMC ? "MC" : "unit") << " weight=" << fillwgt << std::endl;
 
     if( isCC and doUnCC ) tag += "unc";
     std::cout << "open input file : " << subdir << " " << matchstr << std::endl;
@@ -2716,6 +2734,11 @@ bool KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
             //if( debug) std::cout  << " nrh " << nRecHits << std::endl;
             // if end == last : all runs in range completed, if run > last : run in range already filled
             if( GID > 1 ) range.doGID2 = true;
+            if( weightedMC && GID > 1 && range.hasGID2 ){
+              std::cerr << "ERROR: cannot extend a completed weighted MC gain-2+ range." << std::endl;
+              delete fInTree;
+              return false;
+            }
             if( run > range.lastRun || ( not range.hasGID2 && range.doGID2 ) ){
 
               for( int idx = 0; idx < nRecHits; idx++ ){
@@ -2785,7 +2808,7 @@ bool KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 
                 uInt fcrsid = doHgGs ? hgcrsid : crsid;
                 float fcrstime = doHgGs ? hgcrstime : bcrstime;
-                if( not range.fillSumCnt( fcrsid, fcrstime, fillwgt ) ){
+                if( not range.fillSumCnt( fcrsid, fcrstime, fillwgt, false, weightedMC ) ){
                   delete fInTree;
                   return false;
                 }//<<>>if( fill failed )
@@ -2893,7 +2916,7 @@ bool KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 
             uInt fcrsid = doHgGs ? hgcrsid : crsid;
             float fcrstime = doHgGs ? hgcrstime : bcrstime;
-            if( not calirunset[tag][tstart].fillSumCnt( fcrsid, fcrstime, fillwgt ) ){
+            if( not calirunset[tag][tstart].fillSumCnt( fcrsid, fcrstime, fillwgt, false, weightedMC ) ){
               delete fInTree;
               return false;
             }//<<>>if( fill failed )
@@ -2938,7 +2961,7 @@ bool KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
             if( finalRun > 100000 ) range.lastRun = ( finalRun < range.endRun ) ? finalRun : range.endRun;
             else range.lastRun = 999999;
           }//<<>>if( range.lastRun != range.endRun )
-          if( not range.makeMeanMap( false ) ) return false;
+          if( not range.makeMeanMap( false, useMCInput(calirun.first) ) ) return false;
           range.updated = false;
           if( GID > 1 && ( range.lastRun == range.endRun ) ){ range.hasGID2 = true; range.doGID2 = false; }
         }//<<>>if( range.updated )
@@ -2962,7 +2985,6 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
   bool small = false;
   //bool small = true;
 
-  float fillwgt = 1;
 
   const std::string treename("tree/llpgtree");
 
@@ -3057,7 +3079,8 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 
     std::stringstream ss(infilestr);
     std::string subdir, matchstr, tag;
-    int srun(0), erun(0), wgt(1), dolast(0);
+    int srun(0), erun(0), dolast(0);
+    double fillwgt = 1.0;
 
 
     //if( !(ss >> subdir >> matchstr >> srun >> erun >> tag) ){
@@ -3066,14 +3089,15 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
     //}//<<>>if( !(ss >> subdir >> matchstr >> srun >> erun >> tag) )
 
     //if( !( ss >> infilename >> srun >> erun >> tag )) std::cout << "[WARN] Parse error in : " << infilestr << std::endl; continue;
-    const bool parsed = doMC ? bool(ss >> subdir >> matchstr >> srun >> erun >> tag >> dolast >> wgt)
-    : bool(ss >> subdir >> matchstr >> srun >> erun >> tag >> dolast);
-    if( not parsed || subdir.empty() || matchstr.empty() || tag.empty() || srun > erun ||
+    const bool parsed = bool(ss >> subdir >> matchstr >> srun >> erun >> tag >> dolast);
+    const bool weightedMC = useMCInput(tag);
+    const bool weightRead = not weightedMC || bool(ss >> fillwgt);
+    if( not parsed || not weightRead || not std::isfinite(fillwgt) || fillwgt <= 0 || subdir.empty() || matchstr.empty() || tag.empty() || srun > erun ||
     (dolast != 0 && dolast != 1) ){
       std::cerr << "ERROR: malformed resolution input row: " << infilestr << std::endl;
       return false;
     }//<<>>if( malformed row )
-    if( doMC ) fillwgt = wgt;
+    std::cout << "Input weighting: " << (weightedMC ? "MC" : "unit") << " weight=" << fillwgt << std::endl;
 
     if( subdir == "None" ) subdir = "";
     if( matchstr == "None" ) matchstr = "";

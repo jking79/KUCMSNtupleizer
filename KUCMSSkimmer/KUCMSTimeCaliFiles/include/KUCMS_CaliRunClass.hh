@@ -30,11 +30,12 @@
 struct kucms_sumCnt {
 
   kucms_sumCnt(){}
-  kucms_sumCnt( double s, double s2, double c ) : sum(s), sumsqr(s2), cnt(c) {}
+  kucms_sumCnt( double s, double s2, double c, double w2 = -1 ) : sum(s), sumsqr(s2), cnt(c), sumWeight2(w2) {}
 
   double sum;
   double sumsqr;
   double cnt;
+  double sumWeight2; // Negative for reloaded moments; not persisted.
 
 };//<<>>struct sumCnt
 
@@ -84,14 +85,16 @@ class kucms_CaliRunClass : public KUCMS_RootHelperBaseClass {
     has2DResMap = false; hasResParams = false; noise = 0; stoch = 0; stant = 0; }
 
   //inline void kucms_CaliRunClass::makeMeanMap( bool filter ){
-  bool makeMeanMap( bool filter = false ){
+  bool makeMeanMap( bool filter = false, bool weightedMC = false ){
 
-    meanMap.clear();
-    errMap.clear();
+    if( not weightedMC ){ meanMap.clear(); errMap.clear(); }
     bool valid = true;
     unsigned int invalidBins = 0;
     //std::cout << " make mean maps: " << std::endl;
     for( auto& entry : sumCntMap ){
+      // MC gain-2 adds special bins to a reloaded gain-1 range. Preserve
+      // the saved result for bins whose squared weights were not retained.
+      if( weightedMC && entry.second.sumWeight2 < 0 ) continue;
 
       double cnt = double( entry.second.cnt );
       double mean = 0;
@@ -113,8 +116,13 @@ class kucms_CaliRunClass : public KUCMS_RootHelperBaseClass {
         if( variance < 0 && variance >= -varianceTolerance ) variance = 0;
         binValid = std::isfinite(mean) && mean > -29.0 && std::isfinite(variance) && variance >= 0;
         if( binValid ){
-          err = std::sqrt(variance/cnt);
-          binValid = std::isfinite(err);
+          if( weightedMC ){
+            // Effective count: (sum w)^2 / sum(w^2). This assumes independent rechits.
+            const double errorFactor = entry.second.sumWeight2/(cnt*cnt);
+            binValid = std::isfinite(errorFactor) && errorFactor > 0;
+            if( binValid ) err = std::sqrt(variance*errorFactor);
+          } else err = std::sqrt(variance/cnt);
+          binValid = binValid && std::isfinite(err);
         }//<<>>if( binValid )
       }//<<>>if( binValid )
       if( not binValid ){
@@ -150,7 +158,7 @@ class kucms_CaliRunClass : public KUCMS_RootHelperBaseClass {
   }//<<>>bool makeMeanMap( bool filter = false )
 
   //inline void kucms_CaliRunClass::fillSumCnt( uInt detid, float val, int cnt ){
-  bool fillSumCnt( uInt detid, double val, double cnt = 1, bool fillHist = false ){
+  bool fillSumCnt( uInt detid, double val, double cnt = 1, bool fillHist = false, bool weightedMC = false ){
 
     //std::cout << "Cecking " << detid << " with " << endRun << " " << lastRun <<  " " << hasGID2 << " " << doGID2  << std::endl;
     if( endRun == lastRun ){
@@ -163,14 +171,20 @@ class kucms_CaliRunClass : public KUCMS_RootHelperBaseClass {
       return false;
     }//<<>>if( invalid value or weight )
     //std::cout << "Filling " << detid << " with " << val << " " << cnt << std::endl;
+    auto existing = sumCntMap.find(detid);
+    if( weightedMC && existing != sumCntMap.end() && existing->second.sumWeight2 < 0 ){
+      std::cerr << "ERROR: cannot extend a saved weighted MC bin without squared weights: " << detid << std::endl;
+      return false;
+    }
     updated = true;
     double wval = val*cnt;
     double wvalsqr = val*val*cnt;
-    auto result = sumCntMap.try_emplace(detid, 0.0, 0.0, 0.0);
+    auto result = sumCntMap.try_emplace(detid, 0.0, 0.0, 0.0, weightedMC ? 0.0 : -1.0);
     auto& sums = result.first->second;
     sums.sum += wval;
     sums.sumsqr += wvalsqr;
     sums.cnt += cnt;
+    if( weightedMC ) sums.sumWeight2 += cnt*cnt;
 
     //std::cout << " -- hist Fill " << detid << " with " << val << std::endl; }
     if( fillHist && detIdHists.find(detid) != detIdHists.end() ){ detIdHists[detid]->Fill(val,cnt); }
@@ -185,17 +199,24 @@ class kucms_CaliRunClass : public KUCMS_RootHelperBaseClass {
 
   }//<<>>bool CaliRunClass::fillSumCnt( uInt detID, float sum, int cnt )
 
-  bool mergeSumCnt( uInt detid, double sum, double sumsqr, double cnt ){
+  bool mergeSumCnt( uInt detid, double sum, double sumsqr, double cnt, double sumWeight2 = 0, bool weightedMC = false ){
     if( not std::isfinite(sum) || not std::isfinite(sumsqr) || not std::isfinite(cnt) || cnt <= 0 ){
       std::cerr << "ERROR: refusing invalid aggregate for detID " << detid << std::endl;
       return false;
     }//<<>>if( invalid aggregate )
+    if( weightedMC && (not std::isfinite(sumWeight2) || sumWeight2 <= 0) ) return false;
+    auto existing = sumCntMap.find(detid);
+    if( weightedMC && existing != sumCntMap.end() && existing->second.sumWeight2 < 0 ){
+      std::cerr << "ERROR: cannot extend a saved weighted MC bin without squared weights: " << detid << std::endl;
+      return false;
+    }
     updated = true;
-    auto result = sumCntMap.try_emplace(detid, 0.0, 0.0, 0.0);
+    auto result = sumCntMap.try_emplace(detid, 0.0, 0.0, 0.0, weightedMC ? 0.0 : -1.0);
     auto& totals = result.first->second;
     totals.sum += sum;
     totals.sumsqr += sumsqr;
     totals.cnt += cnt;
+    if( weightedMC ) totals.sumWeight2 += sumWeight2;
     return true;
   }//<<>>bool mergeSumCnt( uInt detID, double sum, double sumsqr, double cnt )
 
