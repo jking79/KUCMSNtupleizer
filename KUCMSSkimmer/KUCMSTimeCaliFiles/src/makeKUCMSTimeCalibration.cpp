@@ -86,7 +86,7 @@ int main ( int argc, char *argv[] ){
   //std::string indir("KUCMSNtuple/gammares_prmt25/");
   //std::string indir("KUCMSNtuple/gammares_prmt26/");
 
-  std::string indir("KUCMSNtuple/gammares_QCD18/");
+  // use std::string indir("KUCMSNtuple/"); // std::string indir("KUCMSNtuple/gammares_QCD18/");
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

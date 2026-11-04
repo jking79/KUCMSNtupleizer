@@ -141,6 +141,10 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
 
   TRandom* getRandom;
 
+  // Evaluate the supplied resolution tag without redirecting MC to resTag.
+  float getTimeResolutionForTag( float amplitude, unsigned int rechitID, unsigned int Evt_run,
+  const std::string& tag, int mctype, int gainID );
+
   public:
 
   // -------------------------------------------------------------------------

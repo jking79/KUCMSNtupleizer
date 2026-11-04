@@ -1778,6 +1778,21 @@ float KUCMS_TimeCalibration::getSmrdCalibTime( float rhtime, float rhamp, uInt r
 // fallback resolution.
 float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, const std::string& dataSetKey, int mctype, int gianID ){
 
+  // Public MC lookup returns the configured target resolution, as before.
+  const std::string* resolvedTag = &dataSetKey;
+  if( mctype == 0 || mctype == 2 ){
+    static const std::string r2UL18DTag = "r2_ul18D";
+    if( resTag != "None" ) resolvedTag = &resTag;
+    if( resTag == "default" && (dataSetKey.compare(0,2,"r2") == 0 || dataSetKey.compare(0,2,"r3") == 0) )
+      resolvedTag = &r2UL18DTag;
+  }
+  return getTimeResolutionForTag(amplitude,rechitID,Evt_run,*resolvedTag,mctype,gianID);
+}
+
+// Evaluate an explicitly selected tag. Smearing uses this for its independent
+// target and source lookups; the MC model retains the continuous N/S/C formula.
+float KUCMS_TimeCalibration::getTimeResolutionForTag( float amplitude, unsigned int rechitID, unsigned int Evt_run, const std::string& dataSetKey, int mctype, int gianID ){
+
   if( amplitude == 0 ) return 100.f;
   // Resolution curves are parameterized in the pair-effective amplitude.
   // Approximate that quantity from this single rechit; keep the input amplitude
@@ -1832,22 +1847,16 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
     } else if( *resolvedTagName != "None" ) reportInvalidTag(*resolvedTagName);
   }//<<>>if( mctype == 0 )
   else if( mctype == 0 or mctype == 2 ){ // data or MC   --- resTag is the target resolution for smearing
-    static const std::string r2UL18DTag = "r2_ul18D";
-    const std::string* themctag = ( resTag == "None" ) ? &dataSetKey : &resTag;
-    if( resTag == "default"){
-      if( dataSetKey.substr(0,2) == "r2" ){ themctag = &r2UL18DTag; }//<<>>if( Run 2 key )
-      else if( dataSetKey.substr(0,2) == "r3" ){ themctag = &r2UL18DTag; }//<<>>if( Run 3 key )
-    }//<<>>if( resTag == "default")
-    auto resolvedTag = ResTagSet.find(*themctag);
+    auto resolvedTag = ResTagSet.find(dataSetKey);
     if( resolvedTag != ResTagSet.end() ){
       const auto& parameters = resolvedTag->second;
       float noise = isEB ? parameters.ebnoise : parameters.eenoise;
       float stoch = isEB ? parameters.ebstoch : parameters.eestoch;
       float stant = isEB ? parameters.ebstant : parameters.eestant;
       var = sq2(noise/resolutionAmplitude) + sq2(stoch)/resolutionAmplitude + 2*sq2(stant);
-      //std::cout << " --- getting MC res for : " << *themctag << " " << noise << " " << stoch;
+      //std::cout << " --- getting MC res for : " << dataSetKey << " " << noise << " " << stoch;
       //std::cout << " " << stant << " " << var << std::endl;
-    } else if( *themctag != "None" ) reportInvalidTag(*themctag);
+    } else if( dataSetKey != "None" ) reportInvalidTag(dataSetKey);
   }//<<>>if( mctype == 0 )
   else {
     var = -9;
@@ -1904,23 +1913,11 @@ bool applyCalibration ){
     if( resolvedDataSetKey == "None" ) return ctime; // dataSetKey is the calibration used && source resolution for smearing
     //std::cout << " Post Check amplitude : " << amplitude << std::endl;
 
-    if( resTag != "default" ){  // TARGET RESOLUTION
-
-      tarvar = getTimeResoltuion( amplitude, rechitID, Evt_run, resTag, mctype, gainID );
-
-    }//<<>>if( resTag != "default" )
-    else if( resTag == "default" || resolvedDataSetKey.substr(0,2) == "r2" ){ // use smear tag?  -- check first for set tag !
-
-      static const std::string tag = "r2_ul18D";
-      tarvar = getTimeResoltuion( amplitude, rechitID, Evt_run, tag, mctype, gainID );
-
-    }//<<>>if( Run 2 key or default target )
-    else if( resolvedDataSetKey.substr(0,2) == "r3" ){
-
-      static const std::string tag = "r2_ul18D";
-      tarvar = getTimeResoltuion( amplitude, rechitID, Evt_run, tag, mctype, gainID );
-
-    }//<<>>if( Run 3 key )
+    // The default target retains the existing 2018D behavior. Evaluate it
+    // explicitly so the source lookup below cannot be redirected to resTag.
+    static const std::string defaultTargetTag = "r2_ul18D";
+    const std::string& targetTag = resTag == "default" ? defaultTargetTag : resTag;
+    tarvar = getTimeResolutionForTag( amplitude, rechitID, Evt_run, targetTag, mctype, gainID );
 
     if( ResTagSet.find(resolvedDataSetKey) != ResTagSet.end() ){ // SOURCE RESOLTUION
 
@@ -1929,12 +1926,12 @@ bool applyCalibration ){
       const std::string* sourceTag = &resolvedDataSetKey;
       if( resolvedDataSetKey == "r2_ul18_qcdmc" or resolvedDataSetKey == "r2_ul18_sqmc" ) sourceTag = &runIIUL18RecoTag;
       if( resolvedDataSetKey == "r3_mc" ) sourceTag = &run3MCTag;
-      sorvar = getTimeResoltuion( amplitude, rechitID, Evt_run, *sourceTag, mctype, gainID );
+      sorvar = getTimeResolutionForTag( amplitude, rechitID, Evt_run, *sourceTag, mctype, gainID );
 
     } else { // 2018 MC Resoltion values
 
       static const std::string tag = "default";
-      sorvar = getTimeResoltuion( amplitude, rechitID, Evt_run, tag, mctype, gainID );
+      sorvar = getTimeResolutionForTag( amplitude, rechitID, Evt_run, tag, mctype, gainID );
 
     }//<<>>if( ResTagSet.find(tag) != ResTagSet.end() )
 
@@ -2356,10 +2353,16 @@ bool KUCMS_TimeCalibration::makeGain1CaliMapsEGR( std::string inputFileName, boo
           maximumRangeRun = observedRun->second;
         }//<<>>if( range observed )
       }//<<>>if( tag observed )
-      if( tagEntry.second >= range.endRun ) range.lastRun = range.endRun;
-      else if( rangeObserved ) range.lastRun = std::min(maximumRangeRun,range.endRun);
-      if( range.updated && not range.makeMeanMap(false,useMCInput(tagEntry.first)) ) return false;
-      range.updated = false;
+      if( range.updated ){
+        if( range.lastRun != range.endRun ){
+          // Match makeCaliMapsEGR: low MC run numbers close at the configured IOV end.
+          if( rangeObserved && maximumRangeRun > 100000 )
+            range.lastRun = std::min(maximumRangeRun,range.endRun);
+          else range.lastRun = range.endRun;
+        }//<<>>if( range is not already closed )
+        if( not range.makeMeanMap(false,useMCInput(tagEntry.first)) ) return false;
+        range.updated = false;
+      }//<<>>if( range updated )
     }//<<>>for( TT ranges )
   }//<<>>for( TT tags )
 
@@ -2404,10 +2407,15 @@ bool KUCMS_TimeCalibration::makeGain1CaliMapsEGR( std::string inputFileName, boo
           maximumRangeRun = observedRun->second;
         }//<<>>if( range observed )
       }//<<>>if( tag observed )
-      if( tagEntry.second >= range.endRun ) range.lastRun = range.endRun;
-      else if( rangeObserved ) range.lastRun = std::min(maximumRangeRun,range.endRun);
-      if( range.updated && not range.makeMeanMap(false,useMCInput(tagEntry.first)) ) return false;
-      range.updated = false;
+      if( range.updated ){
+        if( range.lastRun != range.endRun ){
+          if( rangeObserved && maximumRangeRun > 100000 )
+            range.lastRun = std::min(maximumRangeRun,range.endRun);
+          else range.lastRun = range.endRun;
+        }//<<>>if( range is not already closed )
+        if( not range.makeMeanMap(false,useMCInput(tagEntry.first)) ) return false;
+        range.updated = false;
+      }//<<>>if( range updated )
     }//<<>>for( crystal ranges )
   }//<<>>for( crystal tags )
 
