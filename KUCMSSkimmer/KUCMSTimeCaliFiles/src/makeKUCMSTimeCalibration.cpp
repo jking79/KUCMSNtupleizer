@@ -74,7 +74,7 @@ int main ( int argc, char *argv[] ){
   //std::string eosdir("root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/");
   std::string eosdir("/store/user/lpcsusylep/jaking/");
 
-  //std::string indir("KUCMSNtuple/");
+  std::string indir("KUCMSNtuple/");
 
   //std::string indir("KUCMSNtuple/gammares_ul16v2/");
   //std::string indir("KUCMSNtuple/gammares_ul17v2/");
