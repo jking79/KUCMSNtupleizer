@@ -399,6 +399,7 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizerMini",
                               triggerEvent = cms.InputTag(""),
                               ## METs
                               mets = cms.InputTag("slimmedMETs"),
+                              puppiMets = cms.InputTag("slimmedMETsPuppi"), # use "notAvailable" if absent
                               ## jets
                               #Charge Hadron Subtracted : charged particles from non-primary vertices (pileup) are removed before clustering.
                               #jets = cms.InputTag("updatedPatJetsUpdatedJEC"),

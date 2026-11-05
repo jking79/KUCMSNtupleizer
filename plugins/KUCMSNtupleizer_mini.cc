@@ -210,6 +210,13 @@ EcalPedestalsToken_(esConsumes())
   auto pfmetObj = new KUCMSPFMetObjectMini( iConfig );
   auto pfmetToken = consumes<std::vector<pat::MET>>(iConfig.getParameter<edm::InputTag>("mets"));
   pfmetObj->LoadPFMetTokens( pfmetToken );
+  if( iConfig.existsAs<edm::InputTag>("puppiMets") ){
+    const auto puppiMetTag = iConfig.getParameter<edm::InputTag>("puppiMets");
+    if( puppiMetTag.label() != "notAvailable" ){
+      auto puppiMetToken = consumes<std::vector<pat::MET>>(puppiMetTag);
+      pfmetObj->LoadPuppiMetTokens( puppiMetToken );
+    }
+  }
   pfmetObj->LoadPhotonObject( photonsObj );
   ObjMan.Load( "PFMet", pfmetObj );
 
