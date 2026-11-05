@@ -116,7 +116,6 @@ void KUCMSPFMetObjectMini::InitObject( TTree* fOutTree ){
 
   Branches.makeBranch("SumEt","Met_sumEt",FLOAT,"scalar sum of Et");
   Branches.makeBranch("Pt","Met_pt",FLOAT,"pt");
-  Branches.makeBranch("Eta","Met_eta",FLOAT);
   Branches.makeBranch("Phi","Met_phi",FLOAT);
   Branches.makeBranch("Px","Met_px",FLOAT);
   Branches.makeBranch("Py","Met_py",FLOAT);
@@ -196,7 +195,6 @@ void KUCMSPFMetObjectMini::PostProcessEvent( ItemManager<float>& geVar ){
 
   Branches.fillBranch("SumEt",SumEt);
   Branches.fillBranch("Pt",Pt);
-  Branches.fillBranch("Eta",float(t1pfMET.eta()));
   Branches.fillBranch("Phi",Phi);
   Branches.fillBranch("Px",Px);
   Branches.fillBranch("Py",Py);

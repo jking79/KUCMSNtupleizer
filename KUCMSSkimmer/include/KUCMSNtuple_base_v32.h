@@ -1697,7 +1697,9 @@ void Init(TTree *tree ){
    fChain->SetBranchAddress("Met_Cpx", &Met_Cpx, &b_Met_Cpx);
    fChain->SetBranchAddress("Met_Cpy", &Met_Cpy, &b_Met_Cpy);
    fChain->SetBranchAddress("Met_CsumEt", &Met_CsumEt, &b_Met_CsumEt);
-   fChain->SetBranchAddress("Met_eta", &Met_eta, &b_Met_eta);
+   Met_eta = 0.f;
+   b_Met_eta = nullptr;
+   if( fChain->GetBranch("Met_eta") ) fChain->SetBranchAddress("Met_eta", &Met_eta, &b_Met_eta);
    fChain->SetBranchAddress("Met_phi", &Met_phi, &b_Met_phi);
    fChain->SetBranchAddress("Met_pt", &Met_pt, &b_Met_pt);
    fChain->SetBranchAddress("Met_px", &Met_px, &b_Met_px);
@@ -2236,7 +2238,7 @@ void getBranches( Long64_t entry ){
    b_Met_Cpx->GetEntry(entry);
    b_Met_Cpy->GetEntry(entry);
    b_Met_CsumEt->GetEntry(entry);
-   b_Met_eta->GetEntry(entry);
+   if( b_Met_eta ) b_Met_eta->GetEntry(entry);
    b_Met_phi->GetEntry(entry);
    b_Met_pt->GetEntry(entry);
    b_Met_px->GetEntry(entry);
