@@ -28,7 +28,8 @@
 
 // Build the two RJR frame hierarchies and initialize the skimmer-wide state.
 KUCMSAodSkimmer::KUCMSAodSkimmer( bool doLocal ){
-
+  // Preserve current FastSim timing with raw-amplitude resolution lookups.
+  useFastSimRawAmplitudeTimeModel = true;
 
   // Standard RestFrames topology:
   // LAB -> S -> (X2a, X2b), with each X2 decaying to one invisible X1 and
@@ -278,6 +279,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer( bool doLocal ){
 
   useLocalTimeCali = doLocal;
   timeCali = new KUCMS_TimeCalibration( false, false, useLocalTimeCali );
+  timeCali->setUseAmplitudeOverSqrt2( !GetUseFastSimRawAmplitudeTimeModel() );
   timeCali->setTag(r2UL);
   // --- resTag is the target resolution for smearing
   mctrtag = "r2_ul18";

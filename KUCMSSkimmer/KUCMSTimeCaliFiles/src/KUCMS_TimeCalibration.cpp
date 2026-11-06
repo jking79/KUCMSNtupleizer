@@ -134,6 +134,7 @@ KUCMS_TimeCalibration::KUCMS_TimeCalibration( bool stayOpen, bool makeNew, bool 
   doMC = false;
   doMCExplicit = false;
   doMCSmearing = true;
+  useAmplitudeOverSqrt2 = false;
 
   std::cout << " - setup DetID & IOV Maps " << std::endl;
   SetupDetIDsEB();
@@ -1795,10 +1796,9 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
 float KUCMS_TimeCalibration::getTimeResolutionForTag( float amplitude, unsigned int rechitID, unsigned int Evt_run, const std::string& dataSetKey, int mctype, int gianID ){
 
   if( amplitude == 0 ) return 100.f;
-  // Resolution curves are parameterized in the pair-effective amplitude.
-  // Approximate that quantity from this single rechit; keep the input amplitude
-  // unchanged for the caller and use the derived value only in this lookup.
-  const float resolutionAmplitude = amplitude / std::sqrt(2.f);
+  // Keep the single-rechit amplitude by default. R&D can opt into the
+  // pair-effective amplitude used by the resolution curves.
+  const float resolutionAmplitude = useAmplitudeOverSqrt2 ? amplitude / std::sqrt(2.f) : amplitude;
   auto det = DetIDMap.find(rechitID);
   if( det == DetIDMap.end() ){
     std::cerr << "ERROR: unknown ECAL detID in getTimeResoltuion: " << rechitID << std::endl;

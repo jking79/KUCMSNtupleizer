@@ -495,15 +495,17 @@ void KUCMSAodSkimmer::processPhotons(){
         float cor_gtofPVtoSCSOL = cor_gtofPVtoSC/SOL;
         //labtime = ( distPho + momFlightDistance + distMomPv )/SOL;
         labtime = ( distPho + momFlightDistance )/SOL;
-        labtime = labtime - cor_gtofPVtoSCSOL; // + 0.18;
+        labtime = labtime - cor_gtofPVtoSCSOL;
+        const bool useFastSimRawAmplitudeModel = isfastsim && GetUseFastSimRawAmplitudeTimeModel();
+        if( useFastSimRawAmplitudeModel ) labtime += 0.18f;
         //gentime = timeCali->getSmearedTime( labtime, phoWRes );
         //float adjsqrtvar = sqrtvar; //( sqrtvar < 0.2125 ) ? 2*sqrtvar : sqrtvar;
         float adjsqrtvar = sqrtvar;
         const bool validTiming = validMotherFlight && adjsqrtvar > 0.f;
         const bool tIsValid = validTiming && std::isfinite(adjsqrtvar) && std::isfinite(labtime) && std::isfinite(cor_gtofPVtoSCSOL);
         if( tIsValid ){
-          gentime = timeCali->getSmearedTime( labtime, adjsqrtvar );
-          //gentime = timeCali->getSmearedTime( labtime, adjsqrtvar*(1.2) );
+          const float resolutionScale = useFastSimRawAmplitudeModel ? 1.2f : 1.f;
+          gentime = timeCali->getSmearedTime( labtime, adjsqrtvar*resolutionScale );
           labtimesig = labtime/adjsqrtvar;
           gentimesig = gentime/adjsqrtvar;
         }//<<>>if( validTiming )
@@ -562,9 +564,12 @@ void KUCMSAodSkimmer::processPhotons(){
         float or_z = PV_z + zdist;
         float ORtoSCtime = hypo(scx-or_x,scy-or_y,scz-or_z)/SOL;
         float PVtoORtime =  mdist/lbeta;
-        float tot_gtofPVtoSC = ORtoSCtime + PVtoORtime - prompttime + 0.18;
+        const bool useFastSimRawAmplitudeModel = isfastsim && GetUseFastSimRawAmplitudeTimeModel();
+        const float timeOffset = useFastSimRawAmplitudeModel || !isfastsim ? 0.18f : 0.f;
+        const float resolutionScale = useFastSimRawAmplitudeModel || !isfastsim ? 1.4f : 1.2f;
+        float tot_gtofPVtoSC = ORtoSCtime + PVtoORtime - prompttime + timeOffset;
         float sqrtvar = phoWRes*std::sqrt(2);
-        gentime = timeCali->getSmearedTime( tot_gtofPVtoSC, sqrtvar*(1.4) );
+        gentime = timeCali->getSmearedTime( tot_gtofPVtoSC, sqrtvar*resolutionScale );
         labtime = tot_gtofPVtoSC;
         labtimesig = labtime/sqrtvar;
         gentimesig = gentime/sqrtvar;

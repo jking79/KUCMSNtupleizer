@@ -100,6 +100,11 @@ class KUCMSAodSkimmer : public llpgtree {
   void SetGluinoMass(float glumass){ gmass = glumass; }
   void SetN2Mass(float n2mass){ xmass = n2mass; }
   void SetMCType(int type){ mctype = type; }
+  void SetUseFastSimRawAmplitudeTimeModel( bool setting ){
+    useFastSimRawAmplitudeTimeModel = setting;
+    if( timeCali ) timeCali->setUseAmplitudeOverSqrt2( !setting );
+  }
+  bool GetUseFastSimRawAmplitudeTimeModel() const { return useFastSimRawAmplitudeTimeModel; }
   void SetTimeCalibrationTag(string ttag){ tctag = ttag; }
   void SetMCWeight(float w){ mcwgt = w; }
 
@@ -303,6 +308,7 @@ class KUCMSAodSkimmer : public llpgtree {
   std::vector<std::string> branchMaskPatterns;
 
   bool useLocalTimeCali;
+  bool useFastSimRawAmplitudeTimeModel;
 
   // input tree, paths, and file names
 
