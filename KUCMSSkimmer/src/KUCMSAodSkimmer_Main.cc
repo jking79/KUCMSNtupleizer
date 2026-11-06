@@ -361,6 +361,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer( bool doLocal ){
   doBHC = true;
   genSigPerfectFlag = false;
   noSVorPhoFlag = false;
+  gJetEvents = false;
   useEvtGenWgtFlag = true;
   hasGenInfoFlag = true;
   nEvents = 0,
@@ -1357,12 +1358,18 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
     //if( doBHC ){ //processBHCPhotons();
     if( debugl1 && doBHC ) std::cout << "KUCMSAodSkimmer : processBHCJets" << std::endl;
     if( doBHC ){ processBHCJets(); }
-    if( debugl1 ) std::cout << "KUCMSAodSkimmer : processRJR 0" << std::endl;
-    processRJR(0,true);
-    // The second non-ISR RJR pass remains an optional analysis variant and is
-    // intentionally disabled for the current output workflow.
-    if( debugl1 ) std::cout << "KUCMSAodSkimmer : processRJR ISR" << std::endl;
-    processRJRISR();
+    if( gJetEvents ){
+      // Gamma+jet events may have only one selected jet; RJR output is unused here.
+      selRjrVars.clearBranches();
+      selRjrIsrVars.clearBranches();
+    } else {
+      if( debugl1 ) std::cout << "KUCMSAodSkimmer : processRJR 0" << std::endl;
+      processRJR(0,true);
+      // The second non-ISR RJR pass remains an optional analysis variant and is
+      // intentionally disabled for the current output workflow.
+      if( debugl1 ) std::cout << "KUCMSAodSkimmer : processRJR ISR" << std::endl;
+      processRJRISR();
+    }//<<>>if( gJetEvents )
 
   }//<<>>if( saveToTree )
   if( debugl1 ) std::cout << "KUCMSAodSkimmer : Return saveToTree" << std::endl;
@@ -1416,6 +1423,7 @@ bool KUCMSAodSkimmer::eventSelection(){
   bool evtSelected = dobase ? basesel : phosel;
   //if( hasHemObj ) evtSelected = false;
   if( not doSVs ) evtSelected = gt2qjets && gt2jets;
+  if( gJetEvents ) evtSelected = gammaJetIndex[0] > -1;
 
   if( met150 ) cutflow["met150"]++;
   if( met150 && gt2jets ) cutflow["m_gt2jets"]++;

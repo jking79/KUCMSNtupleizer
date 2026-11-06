@@ -84,6 +84,7 @@ int main ( int argc, char *argv[] ){
   //KUCMSAodSkimmer llpgana( true ); // uses local calibration
   KUCMSAodSkimmer llpgana; // uses eos calibration
   llpgana.SetLocalSkip( 100 );
+  llpgana.SetGJetEvents(); // save only events passing the gamma+jet selection
 
   //llpgana.SetSystematic("wPhoTimeSig_up");
   //llpgana.SetSystematic("wPhoTimeSig_down");

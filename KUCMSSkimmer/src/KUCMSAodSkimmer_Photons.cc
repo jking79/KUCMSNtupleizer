@@ -950,11 +950,6 @@ void KUCMSAodSkimmer::processPhotons(){
     //bool matchPhoExc = ( phoIsoIndx > -1 ) ? (*Photon_excluded)[it] : false;
     if( phoPhoIsoDr < 0.3 ) phoExcIndx.push_back( phoIsoIndx ); else phoExcIndx.push_back( -1 );
 
-    //---------------------------------------------------------------------------
-    //  fill photon region defintion information
-    //---------------------------------------------------------------------------
-    GetGJetsSel(it);
-
     //if( DEBUG ) std::cout << " -- setting pho index : " << it << " for pt : " << ordpt << std::endl;
     phoOrderIndx.push_back(it);
     //phoOrderId.push_back(phoObjId);
@@ -1172,6 +1167,12 @@ void KUCMSAodSkimmer::processPhotons(){
         else{ }
       }//<<>>else
     }//<<>>else
+
+    // Select an EB photon with the existing prompt-isolation, beam-halo,
+    // electron-veto, and cut-based quality requirements for gamma+jets.
+    const bool passesGJetsPhotonID = isEB && hasEleVeto && phoQuality > 0 &&
+                                    eq1tightisotag && notbhtag;
+    GetGJetsSel(it, passesGJetsPhotonID);
 
     //validation regions
     if(bh_score > 0.999){
@@ -2197,43 +2198,50 @@ bool KUCMSAodSkimmer::GetDiJetsCR(int phoidx){
 
 }//<<>>bool KUCMSAodSkimmer::GetDiJetsCR(int phoidx)
 
-bool KUCMSAodSkimmer::GetGJetsSel(int phoidx){
+bool KUCMSAodSkimmer::GetGJetsSel(int phoidx, bool passesPhotonID){
 
-  //event filters applied
-  //not in BH sideband (equivalent of BH filter from noise filters)
+  // Photon ID is computed from the existing tags in processPhotons().
+  if( !passesPhotonID ) return false;
+  const float pho_pt = (*Photon_pt)[phoidx];
+  const float pho_eta = (*Photon_eta)[phoidx];
+  const float pho_phi = (*Photon_phi)[phoidx];
+  if( !std::isfinite(pho_pt) || pho_pt < 40.f ) return false;
+  if( !std::isfinite(allphowtime[phoidx]) || std::abs(allphowtime[phoidx]) > 24.f ) return false;
 
-  int nJets = Jet_energy->size();
-  if(nJets < 1) return false;
-  float pho_pt = (*Photon_pt)[phoidx];
-  float pho_phi = (*Photon_phi)[phoidx];
-  //float pho_eta = (*Photon_eta)[phoidx];
-  float pho_energy = (*Photon_energy)[phoidx];
-  if( pho_energy < 40 ) return false;
-  if( std::abs(allphowtime[phoidx]) > 24.f ) return false;
-  float ht = 0;
-  bool notiso = false;
-  for(int j = 0; j < nJets; j++){
-    ht += (*Jet_pt)[j];
-    //float jphi = (*Jet_phi)[j];
-    //float jeta = (*Jet_eta)[j];
-    //float je = (*Jet_energy)[j];
-    //float pjDr = dR1( pho_eta, jeta, pho_phi, jphi );
-    //float pje = pho_energy/je;
-    //if( pjDr < 0.4 && pje > 0.1 && pje < 1.0 ) notiso == true;//MBS
-  }//<<>>for(int j = 0; j < nJets; j++)
-  //float jet_sys_phi = atan2(j_py, j_px);
-  if( notiso ) return false;
-  if(ht < 50) return false;
+  const int nJets = Jet_pt->size();
+  int leadingJet = -1;
+  float leadingPt = 0.f;
+  float secondPt = 0.f;
+  for( int j = 0; j < nJets; ++j ){
+    const float pt = (*Jet_pt)[j];
+    const float eta = (*Jet_eta)[j];
+    const float phi = (*Jet_phi)[j];
+    if( !std::isfinite(pt) || !std::isfinite(eta) || !std::isfinite(phi) || pt <= 0.f ) continue;
+    if( std::abs(eta) >= 2.4f ) continue;
+    // Central PF jet ID from the constituent and energy-fraction branches.
+    const bool goodJet = (*Jet_chHEF)[j] > 0.f && (*Jet_chHM)[j] > 0.f &&
+                         (*Jet_neHEF)[j] < 0.90f && (*Jet_neEmEF)[j] < 0.90f &&
+                         (*Jet_nConstituents)[j] > 1;
+    if( !goodJet || dR1(pho_eta, pho_phi, eta, phi) <= 0.5f ) continue;
+    if( pt > leadingPt ){
+      secondPt = leadingPt;
+      leadingPt = pt;
+      leadingJet = j;
+    } else if( pt > secondPt ) secondPt = pt;
+  }//<<>>for( int j = 0; j < nJets; ++j )
+
+  if( leadingJet < 0 || leadingPt < 30.f ) return false;
   if(Met_pt > 150) return false; //pass ntuple selection of SVIPM100, originally using MET < 100
-  float dphi_objjet = std::abs(dPhi(pho_phi,(*Jet_phi)[0]));
+  const float dphi_objjet = std::abs(dPhi(pho_phi,(*Jet_phi)[leadingJet]));
   if( dphi_objjet < PI - 0.3 ) return false;
-  float ptasym = std::min(pho_pt,(*Jet_pt)[0]) / std::max(pho_pt,(*Jet_pt)[0]);
+  const float ptasym = std::min(pho_pt,leadingPt) / std::max(pho_pt,leadingPt);
   if(ptasym < 0.6) return false;
+  if( secondPt / pho_pt >= 0.3f ) return false;
   // R&D convention: slot 1 intentionally records the jet multiplicity, not a jet index.
   if( gammaJetIndex[0] < 0 ){ gammaJetIndex[0] = phoidx; gammaJetIndex[1] = nJets; }
   return true;
 
-}//<<>>bool KUCMSAodSkimmer::GetGJetsSel(int phoidx)
+}//<<>>bool KUCMSAodSkimmer::GetGJetsSel(int phoidx, bool passesPhotonID)
 
 bool KUCMSAodSkimmer::GetDiJetsSel(){
 

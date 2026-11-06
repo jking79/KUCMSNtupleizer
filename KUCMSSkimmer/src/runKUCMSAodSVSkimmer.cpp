@@ -33,6 +33,7 @@ int main ( int argc, char *argv[] ){
   int evtj = 0;
   bool useEvtGenWgt = true;
   bool noSVorPho = false; // ( must have a sig pho or a sv ) + base selection - loads photons in rjr
+  bool gJetEvents = false;
   bool genSigPerfect = false;
   bool hasGenInfo = false;
   string outfilename = "rjrskim_v39"; // included BHC processing and branchs, added triggerpath varibles
@@ -82,6 +83,7 @@ int main ( int argc, char *argv[] ){
       else if( option == "--hasGenInfo" ) hasGenInfo = true;
       else if( option == "--genSigPerfect" ) genSigPerfect = true;
       else if( option == "--noSVorPho" ) noSVorPho = true;
+      else if( option == "--gJetEvents" ) gJetEvents = true;
       else if( option == "--noBHC" ) noBHC = true;
       else if( option == "--noSV" ) noSV = true;
       else if( option == "--dataSetKey" ) key = nextValue();
@@ -113,6 +115,7 @@ int main ( int argc, char *argv[] ){
     cout << "   --hasGenInfo                         sample has gen info (default = false)" << endl;
     cout << "   --genSigPerfect                      turn on gensigperfect (default = false)" << endl;
     cout << "   --noSVorPho                          selection doesn't have SV or photon (default = false)" << endl;
+    cout << "   --gJetEvents                         save only gamma+jet selected events (default = false)" << endl;
     cout << "   --noBHC                              will not run BHC objects (default = false - BHC on)" << endl;
     cout << "   --noSV                               will not run SV collection (default = false - SVs on)" << endl;
     cout << "   --HLTPathsOff                        sets whether to do certain HLT path branches (default = true - on)" << endl;
@@ -145,6 +148,7 @@ int main ( int argc, char *argv[] ){
   llpgana.SetEventRange(evti, evtj);
   llpgana.SetGenInfoFlag( hasGenInfo );
   llpgana.SetNoSVorPhoFlag( noSVorPho );
+  llpgana.SetGJetEvents( gJetEvents );
   llpgana.SetUseEvtGenWgtFlag( useEvtGenWgt );
   llpgana.SetGenSigPerfectFlag( genSigPerfect );
   llpgana.SetDoBHC( !noBHC ); //if noBHC == true -> do not run BHC

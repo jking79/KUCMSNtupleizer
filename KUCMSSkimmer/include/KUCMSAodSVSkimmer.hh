@@ -110,6 +110,7 @@ class KUCMSAodSkimmer : public llpgtree {
 
   void SetGenInfoFlag( bool f ){ hasGenInfoFlag = f; }
   void SetNoSVorPhoFlag( bool f ){ noSVorPhoFlag = f; }
+  void SetGJetEvents( bool f = true ){ gJetEvents = f; }
   void SetUseEvtGenWgtFlag( bool f ){ useEvtGenWgtFlag = f; }
   void SetGenSigPerfectFlag( bool f ){ genSigPerfectFlag = f; }
   void SetDoBHC( bool f ){ doBHC = f; }
@@ -295,6 +296,7 @@ class KUCMSAodSkimmer : public llpgtree {
 
   bool genSigPerfectFlag;
   bool noSVorPhoFlag;
+  bool gJetEvents;
   bool useEvtGenWgtFlag;
   bool hasGenInfoFlag;
   bool doBHC;
@@ -398,7 +400,7 @@ class KUCMSAodSkimmer : public llpgtree {
   const int getOverLapCnt(const rhIdGroup x, const rhIdGroup y){ int c=0; int sx=x.size(); int sy=y.size();
     for( int a=0;a<sx;a++){for( int b=0;b<sy;b++){if(x[a]==y[b]){c++;break;}}} return c;}
 
-  bool GetGJetsSel(int phoidx);
+  bool GetGJetsSel(int phoidx, bool passesPhotonID);
   bool GetDiJetsSel();
 
 
