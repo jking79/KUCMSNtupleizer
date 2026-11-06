@@ -133,6 +133,7 @@ KUCMS_TimeCalibration::KUCMS_TimeCalibration( bool stayOpen, bool makeNew, bool 
   doUnCC = false;
   doMC = false;
   doMCExplicit = false;
+  doMCSmearing = true;
 
   std::cout << " - setup DetID & IOV Maps " << std::endl;
   SetupDetIDsEB();
@@ -1897,15 +1898,20 @@ bool applyCalibration ){
 
   } else { // MC
 
-    double ctime = 0;
+    double ctime = time;
     double tarvar = 0;
     double sorvar = 0;
 
     static const std::string r2UL18SqmcTag = "r2_ul18_sqmc";
     const std::string& resolvedDataSetKey = ( dataSetKey == "r2_ul18_mc" ) ? r2UL18SqmcTag : dataSetKey;
-    if( applyCalibration )
-    ctime = time - getCalibration(rechitID,Evt_run,resolvedDataSetKey,gainID);
-    else{ ctime = time; }
+
+    // Smearing source resolutions are defined for uncalibrated MC times. Keep
+    // the raw time as the Gaussian center whenever MC smearing is enabled.
+    if( not doMCSmearing ){
+      if( applyCalibration ) ctime = time - getCalibration(rechitID,Evt_run,resolvedDataSetKey,gainID);
+      return ctime;
+    }//<<>>if( MC smearing disabled )
+
     //std::cout << " Pre Check amplitude : " << amplitude << std::endl;
     //if( amplitude < 1 ) return ctime;
     //if( time == 0 ) return ctime;

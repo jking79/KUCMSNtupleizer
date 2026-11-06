@@ -134,6 +134,7 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
   bool doUnCC;
   bool doMC;
   bool doMCExplicit;
+  bool doMCSmearing;
 
   std::string eosCaliPath;
   bool useEosRootCali;
@@ -290,6 +291,8 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
   void setIsCC( bool iscc ){ isCC = iscc; }
   void setDoUnCC( bool douncc ){ doUnCC = douncc; }
   void setDoMC( bool domc ){ doMC = domc; doMCExplicit = true; }
+  // MC getCorrectedTime smears by default; false returns the optionally calibrated MC time.
+  void setDoMCSmearing( bool setting ){ doMCSmearing = setting; }
   // Recognize MC-suffixed tags automatically; explicit setDoMC takes precedence.
   bool useMCInput( const std::string& tag ) const {
     const bool mcTag = tag == "mc" || (tag.size() >= 2 && tag.compare(tag.size()-2,2,"mc") == 0) ||
