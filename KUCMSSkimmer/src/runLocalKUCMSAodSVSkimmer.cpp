@@ -41,11 +41,11 @@ int main ( int argc, char *argv[] ){
 
   //const std::string infilename = "KUCMS_Ntuple_Master_NtupleTest_Files_List.txt"; hasGenInfo = false;
 
-  const std::string infilename = "../backups/KUCMS_Ntuple_Master_v34_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
+  //const std::string infilename = "../backups/KUCMS_Ntuple_Master_v34_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
   //***********************////const std::string infilename = "../backups/KUCMS_Ntuple_Test_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
   //*********************////const std::string infilename = "../backups/KUCMS_Ntuple_Master_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
   //const std::string infilename = "../backups/KUCMS_Ntuple_Master_BG_SVIPM100_Files_List.txt";
-  //const std::string infilename = "../backups/KUCMS_Ntuple_Master_DataPD_Files_List.txt"; hasGenInfo = false;
+  const std::string infilename = "../backups/KUCMS_Ntuple_Master_DataPD_Files_List.txt"; hasGenInfo = false;
 
   //const std::string outfilename = "_LLPGskim_v21_rjrvars.root"; // skim v21 use new process_name tags
   //const std::string outfilename = "_LLPGskim_v22_rjrvars.root"; // skim v22 keeps 0 pho events
@@ -83,7 +83,7 @@ int main ( int argc, char *argv[] ){
   // !!!!!!!!!!!!!!!!!!!  alternate RJR setup with invis in comb split rule
   //KUCMSAodSkimmer llpgana( true ); // uses local calibration
   KUCMSAodSkimmer llpgana; // uses eos calibration
-  llpgana.SetLocalSkip( 2 );
+  llpgana.SetLocalSkip( 100 );
 
   //llpgana.SetSystematic("wPhoTimeSig_up");
   //llpgana.SetSystematic("wPhoTimeSig_down");

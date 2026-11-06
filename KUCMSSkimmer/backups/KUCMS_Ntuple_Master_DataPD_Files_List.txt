@@ -91,6 +91,8 @@ kucmsntuple_MET_R18_SVHPM100_MiniAODv2_v34/MET/ Run2018A MetR18A 1 0 0 0 1 r2_ul
 
 ########################## testing ###########################
 
+kucmsntuple_EGAMMA_R18_InvMetPho30_MiniAODv2_v34/EGamma/ Run2018C EGammaRun2018C 1 0 0 0 1 r3_ul18
+
 #kucmsntuple_EGamma_R24_SVHPM100_MiniAOD_v34/EGamma0/ Run2024C EGammaRun2024C 1 0 0 0 1 r3_p24
 
 #kucmsntuple_EGamma_R22_InvMetPho30_v31/EGamma/ EGamma_R22 1 0 0 0 1 r3_p22
