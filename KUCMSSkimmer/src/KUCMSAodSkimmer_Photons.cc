@@ -495,14 +495,15 @@ void KUCMSAodSkimmer::processPhotons(){
         float cor_gtofPVtoSCSOL = cor_gtofPVtoSC/SOL;
         //labtime = ( distPho + momFlightDistance + distMomPv )/SOL;
         labtime = ( distPho + momFlightDistance )/SOL;
-        labtime = labtime - cor_gtofPVtoSCSOL + 0.18;
+        labtime = labtime - cor_gtofPVtoSCSOL; // + 0.18;
         //gentime = timeCali->getSmearedTime( labtime, phoWRes );
         //float adjsqrtvar = sqrtvar; //( sqrtvar < 0.2125 ) ? 2*sqrtvar : sqrtvar;
         float adjsqrtvar = sqrtvar;
         const bool validTiming = validMotherFlight && adjsqrtvar > 0.f;
         const bool tIsValid = validTiming && std::isfinite(adjsqrtvar) && std::isfinite(labtime) && std::isfinite(cor_gtofPVtoSCSOL);
         if( tIsValid ){
-          gentime = timeCali->getSmearedTime( labtime, adjsqrtvar*(1.2) );
+          gentime = timeCali->getSmearedTime( labtime, adjsqrtvar );
+          //gentime = timeCali->getSmearedTime( labtime, adjsqrtvar*(1.2) );
           labtimesig = labtime/adjsqrtvar;
           gentimesig = gentime/adjsqrtvar;
         }//<<>>if( validTiming )
