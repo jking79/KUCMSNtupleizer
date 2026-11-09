@@ -2203,40 +2203,32 @@ bool KUCMSAodSkimmer::GetGJetsSel(int phoidx, bool passesPhotonID){
   // Photon ID is computed from the existing tags in processPhotons().
   if( !passesPhotonID ) return false;
   const float pho_pt = (*Photon_pt)[phoidx];
-  const float pho_eta = (*Photon_eta)[phoidx];
   const float pho_phi = (*Photon_phi)[phoidx];
   if( !std::isfinite(pho_pt) || pho_pt < 40.f ) return false;
   if( !std::isfinite(allphowtime[phoidx]) || std::abs(allphowtime[phoidx]) > 24.f ) return false;
 
   const int nJets = Jet_pt->size();
-  int leadingJet = -1;
-  float leadingPt = 0.f;
-  float secondPt = 0.f;
+  if( nJets < 1 ) return false;
+  float jetHt = 0.f;
+  float jetPx = 0.f;
+  float jetPy = 0.f;
   for( int j = 0; j < nJets; ++j ){
     const float pt = (*Jet_pt)[j];
-    const float eta = (*Jet_eta)[j];
     const float phi = (*Jet_phi)[j];
-    if( !std::isfinite(pt) || !std::isfinite(eta) || !std::isfinite(phi) || pt <= 0.f ) continue;
-    if( std::abs(eta) >= 2.4f ) continue;
-    // Central PF jet ID from the constituent and energy-fraction branches.
-    const bool goodJet = (*Jet_chHEF)[j] > 0.f && (*Jet_chHM)[j] > 0.f &&
-                         (*Jet_neHEF)[j] < 0.90f && (*Jet_neEmEF)[j] < 0.90f &&
-                         (*Jet_nConstituents)[j] > 1;
-    if( !goodJet || dR1(pho_eta, pho_phi, eta, phi) <= 0.5f ) continue;
-    if( pt > leadingPt ){
-      secondPt = leadingPt;
-      leadingPt = pt;
-      leadingJet = j;
-    } else if( pt > secondPt ) secondPt = pt;
+    if( !std::isfinite(pt) || !std::isfinite(phi) ) return false;
+    jetHt += pt;
+    jetPx += pt * std::cos(phi);
+    jetPy += pt * std::sin(phi);
   }//<<>>for( int j = 0; j < nJets; ++j )
-
-  if( leadingJet < 0 || leadingPt < 30.f ) return false;
+  if( jetHt < 50.f ) return false;
   if(Met_pt > 150) return false; //pass ntuple selection of SVIPM100, originally using MET < 100
-  const float dphi_objjet = std::abs(dPhi(pho_phi,(*Jet_phi)[leadingJet]));
+  // Recoil direction and balance use the vector-summed jet system; jetHt is the scalar sum.
+  const float jetSysPhi = std::atan2(jetPy, jetPx);
+  const float jetSysPt = std::hypot(jetPx, jetPy);
+  const float dphi_objjet = std::abs(dPhi(pho_phi, jetSysPhi));
   if( dphi_objjet < PI - 0.3 ) return false;
-  const float ptasym = std::min(pho_pt,leadingPt) / std::max(pho_pt,leadingPt);
+  const float ptasym = std::min(pho_pt,jetSysPt) / std::max(pho_pt,jetSysPt);
   if(ptasym < 0.6) return false;
-  if( secondPt / pho_pt >= 0.3f ) return false;
   // R&D convention: slot 1 intentionally records the jet multiplicity, not a jet index.
   if( gammaJetIndex[0] < 0 ){ gammaJetIndex[0] = phoidx; gammaJetIndex[1] = nJets; }
   return true;
