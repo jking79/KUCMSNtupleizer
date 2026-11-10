@@ -50,10 +50,10 @@
 #kucmsntuple_SMS_GZ_SVHPM100_FullMini_v38/CRAB_UserFiles/ GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p1 sms .000413 1300 1000 1 0 r2_ul18_mc
 #kucmsntuple_SMS_GZ_SVHPM100_FullMini_v38/CRAB_UserFiles/ GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p5 sms .000413 1300 1000 1 0 r2_ul18_mc
 kucmsntuple_SMS_GZ_SVHPM100_FullMini_v38/CRAB_UserFiles/ GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p1 sms .000413 1600 1000 1 0 r2_ul18_mc
-#kucmsntuple_SMS_GZ_SVHPM100_FullMini_v38/CRAB_UserFiles/ GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5 sms .000413 1600 1000 1 0 r2_ul18_mc
+kucmsntuple_SMS_GZ_SVHPM100_FullMini_v38/CRAB_UserFiles/ GlGl_mGl-2300_mN2-1600_mN1-1000_GZ_N2ctau-0p5 sms .000413 1600 1000 1 0 r2_ul18_mc
 #kucmsntuple_SMS_GZ_SVHPM100_FullMini_v38/CRAB_UserFiles/ GlGl_mGl-2300_mN2-1600_mN1-500_GZ_N2ctau-0p1 sms .000413 1600 500 1 0 r2_ul18_mc
 #kucmsntuple_SMS_GZ_SVHPM100_FullMini_v38/CRAB_UserFiles/ GlGl_mGl-2300_mN2-1600_mN1-500_GZ_N2ctau-0p5 sms .000413 1600 500 1 0 r2_ul18_mc
-#kucmsntuple_SMS_GZ_SVHPM100_FullMini_v38/CRAB_UserFiles/ GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p1 sms .000413 2200 2100 1 0 r2_ul18_mc
+kucmsntuple_SMS_GZ_SVHPM100_FullMini_v38/CRAB_UserFiles/ GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p1 sms .000413 2200 2100 1 0 r2_ul18_mc
 kucmsntuple_SMS_GZ_SVHPM100_FullMini_v38/CRAB_UserFiles/ GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p5 sms .000413 2200 2100 1 0 r2_ul18_mc
 #kucmsntuple_SMS_GZ_SVHPM100_FullMini_v38/CRAB_UserFiles/ GlGl_mGl-2300_mN2-2200_mN1-2150_GZ_N2ctau-0p1 sms .000413 2200 2150 1 0 r2_ul18_mc
 #kucmsntuple_SMS_GZ_SVHPM100_FullMini_v38/CRAB_UserFiles/ GlGl_mGl-2300_mN2-2200_mN1-2150_GZ_N2ctau-0p5 sms .000413 2200 2150 1 0 r2_ul18_mc
