@@ -1168,10 +1168,10 @@ void KUCMSAodSkimmer::processPhotons(){
       }//<<>>else
     }//<<>>else
 
-    // Select an EB photon with the existing very-loose isolation, beam-halo,
-    // electron-veto, and cut-based quality requirements for gamma+jets.
+    // For GJets R&D, do not gate on the isolation MVA score; keep the score
+    // available for diagnostics while retaining the other photon requirements.
     const bool passesGJetsPhotonID = isEB && hasEleVeto && phoQuality > 0 &&
-                                    isoPho && notbhtag;
+                                    notbhtag;
     GetGJetsSel(it, passesGJetsPhotonID);
 
     //validation regions
