@@ -75,9 +75,9 @@ int main ( int argc, char *argv[] ){
   //const std::string outfilename = "_rjrskim_qcdmc_Test.root"; //
   //const std::string outfilename = "_rjrskim_calirestest_Test.root"; //
 
-  const std::string outfilename = "_rjrskim_restest_adjamp_v52.root"; //
+  //const std::string outfilename = "_rjrskim_restest_adjamp_v52.root"; //
   //const std::string outfilename = "_rjrskim_restest_gjctr_adjamp_v52.root"; //
-  //const std::string outfilename = "_rjrskim_restest_gjctr_v52.root"; //
+  const std::string outfilename = "_rjrskim_restest_gjctr_v52.root"; //
 
   //const std::string outfilename = "_rjrskim_geofast_v38_xpwz_v8_Test.root"; //
   //const std::string outfilename = "_rjrskim_basefast_v38_Test.root"; //
@@ -87,9 +87,9 @@ int main ( int argc, char *argv[] ){
   // !!!!!!!!!!!!!!!!!!!  alternate RJR setup with invis in comb split rule
   //KUCMSAodSkimmer llpgana( true ); // uses local calibration
   KUCMSAodSkimmer llpgana; // uses eos calibration
-  llpgana.SetLocalSkip( 100 );
-  //llpgana.SetGJetEvents(); // save only events passing the gamma+jet selection
-  llpgana.SetUseFastSimRawAmplitudeTimeModel(false);
+  llpgana.SetLocalSkip( 1000 );
+  llpgana.SetGJetEvents(); // save only events passing the gamma+jet selection
+  //llpgana.SetUseFastSimRawAmplitudeTimeModel(false);
 
   //llpgana.SetSystematic("wPhoTimeSig_up");
   //llpgana.SetSystematic("wPhoTimeSig_down");
