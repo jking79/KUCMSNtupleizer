@@ -75,6 +75,11 @@ void KUCMSAodSkimmer::processEvntVars(){
   selEvtVars.fillBranch( "evtFillWgt", fillWgt );
   //std::cout << " -- ECT : fillWgt " << fillWgt << " " << xsctn << " " << evtGenWgt << " " << configSumEvtWgt << std::endl;
 
+  // True means the ECAL timing resolution lookup used amplitude/sqrt(2);
+  // false means it used the raw rechit amplitude.
+  const bool resLookupAmpOverSqrt2 = timeCali && timeCali->getUseAmplitudeOverSqrt2();
+  selEvtVars.fillBranch( "evtResLookupAmpOverSqrt2", resLookupAmpOverSqrt2 );
+
   bool BadChargedCandidateFilter = Flag_BadChargedCandidateFilter;
   bool BadPFMuonDzFilter = Flag_BadPFMuonDzFilter;
   bool BadPFMuonFilter = Flag_BadPFMuonFilter;
@@ -244,6 +249,8 @@ void KUCMSAodSkimmer::setEvtVarMetBranches( TTree* fOutTree ){
   selEvtVars.makeBranch( "evtGenWgt", FLOAT );
   selEvtVars.makeBranch( "evtXSection", FLOAT );
   selEvtVars.makeBranch( "evtFillWgt", FLOAT );
+  selEvtVars.makeBranch( "evtResLookupAmpOverSqrt2", BOOL,
+                         "True if timing resolution lookup used rechit amplitude/sqrt(2); false means raw amplitude" );
 
   selEvtVars.makeBranch( "PVx", FLOAT );
   selEvtVars.makeBranch( "PVy", FLOAT );

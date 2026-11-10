@@ -1288,6 +1288,15 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
 void KUCMSAodSkimmer::startJobs(){
 
   std::cout << "Runing StartJobs." << std::endl;
+  if( timeCali ){
+    const bool useAmpOverSqrt2 = timeCali->getUseAmplitudeOverSqrt2();
+    std::cout << " -- ECAL timing resolution lookup amplitude convention: "
+              << ( useAmpOverSqrt2 ? "rechit amplitude / sqrt(2)" : "raw rechit amplitude" )
+              << std::endl;
+  } else {
+    std::cout << " -- ECAL timing resolution lookup amplitude convention: unavailable (time calibration not initialized)"
+              << std::endl;
+  }//<<>>if( timeCali )
 
   nEvents = 0;
   nSelectedEvents = 0;
