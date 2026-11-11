@@ -87,7 +87,7 @@ int main ( int argc, char *argv[] ){
   // !!!!!!!!!!!!!!!!!!!  alternate RJR setup with invis in comb split rule
   //KUCMSAodSkimmer llpgana( true ); // uses local calibration
   KUCMSAodSkimmer llpgana; // uses eos calibration
-  llpgana.SetLocalSkip( 200 );
+  llpgana.SetLocalSkip( 1000 );
   llpgana.SetGJetEvents(); // save only events passing the gamma+jet selection
   llpgana.SetUseFastSimRawAmplitudeTimeModel(false);
 
