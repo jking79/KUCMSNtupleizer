@@ -2196,11 +2196,11 @@ bool KUCMSAodSkimmer::GetGJetsSel(int phoidx, bool passesPhotonID){
   if( !passesPhotonID ) return false;
   const float pho_pt = (*Photon_pt)[phoidx];
   const float pho_phi = (*Photon_phi)[phoidx];
-  if( !std::isfinite(pho_pt) || pho_pt < 40.f ) return false;
+  if( !std::isfinite(pho_pt) || pho_pt < 50.f ) return false;
   if( !std::isfinite(allphowtime[phoidx]) || std::abs(allphowtime[phoidx]) > 24.f ) return false;
 
   const int nJets = Jet_pt->size();
-  if( nJets < 1 ) return false;
+  if( nJets < 2 ) return false;
   float jetHt = 0.f;
   float jetPx = 0.f;
   float jetPy = 0.f;
@@ -2212,15 +2212,15 @@ bool KUCMSAodSkimmer::GetGJetsSel(int phoidx, bool passesPhotonID){
     jetPx += pt * std::cos(phi);
     jetPy += pt * std::sin(phi);
   }//<<>>for( int j = 0; j < nJets; ++j )
-  if( jetHt < 50.f ) return false;
-  if(Met_pt > 150) return false; //pass ntuple selection of SVIPM100, originally using MET < 100
+  if( jetHt < 100.f ) return false;
+  if(Met_pt > 100) return false; // SVIPM100-compatible MET ceiling
   // Recoil direction and balance use the vector-summed jet system; jetHt is the scalar sum.
   const float jetSysPhi = std::atan2(jetPy, jetPx);
   const float jetSysPt = std::hypot(jetPx, jetPy);
   const float dphi_objjet = std::abs(dPhi(pho_phi, jetSysPhi));
-  if( dphi_objjet < PI - 0.3 ) return false;
+  if( dphi_objjet < PI - 0.2 ) return false;
   const float ptasym = std::min(pho_pt,jetSysPt) / std::max(pho_pt,jetSysPt);
-  if(ptasym < 0.6) return false;
+  if(ptasym < 0.7) return false;
   // R&D convention: slot 1 intentionally records the jet multiplicity, not a jet index.
   if( gammaJetIndex[0] < 0 ){ gammaJetIndex[0] = phoidx; gammaJetIndex[1] = nJets; }
   return true;
