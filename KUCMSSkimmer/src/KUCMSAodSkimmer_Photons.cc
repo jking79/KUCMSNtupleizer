@@ -466,7 +466,7 @@ void KUCMSAodSkimmer::processPhotons(){
         cor_gtofPVtoSC = hypo(scx-PV_x,scy-PV_y,scz-PV_z);
         //distMom = hypo( genVx - PV_x, genVy - PV_y, genVz - PV_z );
 
-        float sqrtvar = phoWRes*std::sqrt(2.f);
+        float sqrtvar = phoWRes;
         float cor_gtofPVtoSCSOL = cor_gtofPVtoSC/SOL;
         //labtime = ( distPho + momFlightDistance + distMomPv )/SOL;
         labtime = ( distPho + momFlightDistance )/SOL;
@@ -543,7 +543,7 @@ void KUCMSAodSkimmer::processPhotons(){
         const float timeOffset = useFastSimRawAmplitudeModel || !isfastsim ? 0.18f : 0.f;
         const float resolutionScale = useFastSimRawAmplitudeModel || !isfastsim ? 1.4f : 1.2f;
         float tot_gtofPVtoSC = ORtoSCtime + PVtoORtime - prompttime + timeOffset;
-        float sqrtvar = phoWRes*std::sqrt(2);
+        float sqrtvar = phoWRes;
         gentime = timeCali->getSmearedTime( tot_gtofPVtoSC, sqrtvar*resolutionScale );
         labtime = tot_gtofPVtoSC;
         labtimesig = labtime/sqrtvar;
@@ -857,8 +857,6 @@ void KUCMSAodSkimmer::processPhotons(){
     selPhotons.fillBranch( "baseLinePhoton_WTimeOld", phoWTimeOld );
     selPhotons.fillBranch( "baseLinePhoton_LTime", leadTime );
     selPhotons.fillBranch( "baseLinePhoton_STime", seedTime );
-    // phoWRes is the single-photon deviation: getTimeSig converts the
-    // pair-based weighted uncertainty by 1/sqrt(2) before this branch fill.
     selPhotons.fillBranch( "baseLinePhoton_WTRes", phoWRes );
     selPhotons.fillBranch( "baseLinePhoton_WTResOld", phoWResOld );
     selPhotons.fillBranch( "baseLinePhoton_LTRes", leadTres );
@@ -2196,7 +2194,7 @@ bool KUCMSAodSkimmer::GetGJetsSel(int phoidx, bool passesPhotonID){
   if( !passesPhotonID ) return false;
   const float pho_pt = (*Photon_pt)[phoidx];
   const float pho_phi = (*Photon_phi)[phoidx];
-  if( !std::isfinite(pho_pt) || pho_pt < 50.f ) return false;
+  if( !std::isfinite(pho_pt) || pho_pt < 40.f ) return false;
   if( !std::isfinite(allphowtime[phoidx]) || std::abs(allphowtime[phoidx]) > 24.f ) return false;
 
   const int nJets = Jet_pt->size();
