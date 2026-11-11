@@ -139,12 +139,14 @@ float KUCMSAodSkimmer::getTimeSig( int scIndex, float& num, float& denom, float 
   float phoWVar = 1/sumw;
   //float phoWHVar = sumrh/sumw;
   float sqrtPhoWVar = std::sqrt(phoWVar);
-  float wttimesig = phoWTime/sqrtPhoWVar;
   num = phoWTime;
   // Convert the pair-based weighted uncertainty to the single-photon time
   // deviation stored as WTRes; the two equal, independent contributions give
   // sigma_pair = sqrt(2) * sigma_photon.
   denom = sqrtPhoWVar/std::sqrt(2);
+  const bool useSingleCrystalDeviation = timeCali->getUseAmplitudeOverSqrt2();
+  const float wptDenominator = useSingleCrystalDeviation ? denom : sqrtPhoWVar;
+  float wttimesig = phoWTime/wptDenominator;
   return wttimesig;
 
 }//<<>>void KUCMSAodSkimmer::getTimeSig
@@ -221,7 +223,7 @@ float KUCMSAodSkimmer::getTimeSig( const std::vector<int>& scIndexs, float& num,
   float phoWTime = sumtw/sumw;
   //float phoWHVar = sumrh/sumw;
   float phoWVar = 1/sumw;
-  float sqrtPhoWVar = std::sqrt(phoWVar);
+  float sqrtPhoWVar = std::sqrt(phoWVar/2);
   float wttimesig = phoWTime/sqrtPhoWVar;
   num = phoWTime;
   denom = sqrtPhoWVar;

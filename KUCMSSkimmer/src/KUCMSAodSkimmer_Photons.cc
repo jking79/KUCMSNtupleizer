@@ -206,8 +206,6 @@ void KUCMSAodSkimmer::processPhotons(){
     if( DEBUG ) std::cout << " -- getting pho e, pt, eta, phi info" << std::endl;
     float energy = (*Photon_energy)[it];
     float pt = (*Photon_pt)[it];
-    bool underMinPtEB = pt < 30;
-    bool underMinPtEE = pt < 30;
     bool overMinPt = pt >= 30;
     float eta = (*Photon_eta)[it];
     bool overMaxEta = std::abs(eta) > 1.479;
@@ -234,7 +232,6 @@ void KUCMSAodSkimmer::processPhotons(){
     if( DEBUG ) std::cout << " -- pho pull SC info for " << scIndx << std::endl;
     if( std::count(dups.begin(), dups.end(), scIndx ) > 0 ) std::cout << " --- !!!!!!!  Duplicate SC ref in Photons !!!! " << std::endl;
     else dups.push_back( scIndx );
-    auto scSize = SuperCluster_seedIsEB->size();
     auto rhids = (*SuperCluster_rhIds)[scIndx];
     uInt nrh = rhids.size();
 
@@ -242,25 +239,18 @@ void KUCMSAodSkimmer::processPhotons(){
     float sumtw = 0;
     float sumtrw = 0;
     float sumw = 0;
-    float sumtw1 = 0;
-    float sumtrw1 = 0;
-    float sumw1 = 0;
     float leadE = 0;
     float leadTime = -99;
-    float leadAres = 0;
     float leadTvar = 2000000;
     float leadSX = -1;
     bool leadWried = false;
-    uInt leadRHID = 0;
     float seedE = 0;
     float seedTime = -99;
     float rawTime = -99;
-    float seedAres = 0;
     float seedTvar = 2000000;
     float seedSX = -1;
     bool seedWried = false;
     bool seedGS = false;
-    uInt seedRHID = 0;
     std::vector<float> erhamps;
     float sumerha = 0;
     //auto nRecHits = ECALRecHit_ID->size();
@@ -277,7 +267,6 @@ void KUCMSAodSkimmer::processPhotons(){
         float swcrss = (*ECALRecHit_swCross)[erhiter];
         bool isWeird = (*ECALRecHit_isWrd)[erhiter] || (*ECALRecHit_isDiWrd)[erhiter];
         float erhe = (*ECALRecHit_energy)[erhiter];
-        float erampres = (*ECALRecHit_ampres)[erhiter];
         float erhct = erh_corTime[erhiter];
         float rawerhct = (*ECALRecHit_time)[erhiter];
         float erx = (*ECALRecHit_rhx)[erhiter];
@@ -316,16 +305,12 @@ void KUCMSAodSkimmer::processPhotons(){
         sumtw += erhar*ertoftime;
         sumtrw += erhar*ertres;
         sumw += erhar;
-        float erhar1 = invertres*gainwt1;
-        sumtw1 += erhar1*ertoftime;
-        sumtrw1 += erhar1*ertres;
-        sumw1 += erhar;
         if( erhe*gainwt1 > leadE ){
-          leadE = erhe; leadTime = ertoftime; leadAres = erampres; leadRHID = pscrhid;
+          leadE = erhe; leadTime = ertoftime;
           leadTvar = ertres; leadSX = swcrss; leadWried = isWeird;
         }//<<>>if( erhe*gainwt > leadE )
         if( erhe > seedE ){
-          seedE = erhe; seedTime = ertoftime; seedAres = erampres; seedRHID = pscrhid; rawTime = rawerhct;
+          seedE = erhe; seedTime = ertoftime; rawTime = rawerhct;
           seedTvar = ertres; seedSX = swcrss; seedWried = isWeird; seedGS = hasGainSwitch;
         }//<<>>if( erhe > seedE )
 
@@ -342,22 +327,12 @@ void KUCMSAodSkimmer::processPhotons(){
     if( sumw == 0 ){ sumw = 1; sumtw = -100; sumtrw = -1000; }
     float phoWTimeOld = sumtw/sumw;
     float phoWHVarOld = sumtrw/sumw;
-    float phoWVarOld = 1/sumw;
-    float phoWTime1 = sumtw1/sumw1;
-    float phoWHVar1 = sumtrw1/sumw1;
-    float phoWVar1 = 1/sumw1;
     float phoWResOld = std::sqrt(phoWHVarOld);
-    float phoWRes1 = std::sqrt(phoWVar1);
     float leadTres = std::sqrt(leadTvar);
     float seedTres = std::sqrt(seedTvar);
-    //float ltimeres = timeCali->getTimeResoltuion( leadAres, leadRHID, Evt_run, tctag, mctype );
-    //if( ltimeres != leadTres ) std::cout << " !!!!!!!   lead res mis : " << ltimeres << " v " << leadTres << std::endl;
-    //float stimeres = timeCali->getTimeResoltuion( seedAres, seedRHID, Evt_run, tctag, mctype );
-    //if( stimeres != seedTres ) std::cout << " !!!!!!!   seed res mis : " << stimeres << " v " << seedTres << std::endl;
     float leadtimesig = leadTime/leadTres;// leadTres == variance
     float seedtimesig = seedTime/seedTres;
     float wttimesig = phoWTimeOld/phoWResOld;
-    float wttimesig1 = phoWTime1/phoWRes1;
 
     float phoWTime, phoWRes;
     float sysvar = 0.f;
@@ -702,6 +677,14 @@ void KUCMSAodSkimmer::processPhotons(){
 
     }//<<>>if( in_base_selection )
 
+
+    // For GJets R&D, do not gate on the isolation MVA score; keep the score
+    // available for diagnostics while retaining the other photon requirements.
+    const int phoQuality = getPhoQuality(it);
+    const bool passesGJetsPhotonID = isEB && hasEleVeto && phoQuality > 0 &&
+                                    bh_score <= notBHCutVal;
+    const bool passesGJetsSel = GetGJetsSel(it, passesGJetsPhotonID);
+
     //---------------------------------------------------
     ///////////  saving info on EB/EE photon information ///////////////////////////////////////////////////////
     //---------------------------------------------------
@@ -709,6 +692,10 @@ void KUCMSAodSkimmer::processPhotons(){
     if( isEESig ){
 
       selPhotons.fillBranch( "endcap_photon_baseline", in_base_selection );   //!
+      selPhotons.fillBranch( "endcap_photon_GJetsSel", passesGJetsSel );   //!
+      selPhotons.fillBranch( "endcap_photon_WTimeSig", phoWTimeSig );   //!
+      selPhotons.fillBranch( "endcap_photon_WTime", phoWTime );   //!
+      selPhotons.fillBranch( "endcap_photon_WTRes", phoWRes );   //!
       selPhotons.fillBranch( "endcap_photon_energy", (*Photon_energy)[it] );   //!
       selPhotons.fillBranch( "endcap_photon_eta", (*Photon_eta)[it] );   //!
       selPhotons.fillBranch( "endcap_photon_phi", (*Photon_phi)[it] );   //!
@@ -724,6 +711,10 @@ void KUCMSAodSkimmer::processPhotons(){
     if( isEBSig ){
 
       selPhotons.fillBranch( "barrel_photon_baseline", in_base_selection );   //!
+      selPhotons.fillBranch( "barrel_photon_GJetsSel", passesGJetsSel );   //!
+      selPhotons.fillBranch( "barrel_photon_WTimeSig", phoWTimeSig );   //!
+      selPhotons.fillBranch( "barrel_photon_WTime", phoWTime );   //!
+      selPhotons.fillBranch( "barrel_photon_WTRes", phoWRes );   //!
       selPhotons.fillBranch( "barrel_photon_energy", (*Photon_energy)[it] );   //!
       selPhotons.fillBranch( "barrel_photon_eta", (*Photon_eta)[it] );   //!
       selPhotons.fillBranch( "barrel_photon_phi", (*Photon_phi)[it] );   //!
@@ -740,6 +731,8 @@ void KUCMSAodSkimmer::processPhotons(){
     //---------------------------------------------------
 
     selPhotons.fillBranch( "photon_baseline", in_base_selection );   //!
+    selPhotons.fillBranch( "photon_GJetsSel", passesGJetsSel );
+    selPhotons.fillBranch( "photon_WTRes", phoWRes );
     selPhotons.fillBranch( "photon_WTimeSig", phoWTimeSig );
     selPhotons.fillBranch( "photon_WTime", phoWTime );
     selPhotons.fillBranch( "photon_LeadTime", leadTime );
@@ -758,7 +751,6 @@ void KUCMSAodSkimmer::processPhotons(){
     selPhotons.fillBranch( "photon_EtaPhiCov", EtaPhiCov );
     selPhotons.fillBranch( "photon_majorLength", majorLength );
     selPhotons.fillBranch( "photon_minorLength", minorLength );
-    //GetGJetsSel(it);
 
     ///////////  Very Loose Base Photon selection ////////////////////////////////////////////////////////////////////
     //---------------------------------------------------
@@ -827,12 +819,7 @@ void KUCMSAodSkimmer::processPhotons(){
     //  Calulate beta values photon mother without gen info - R&D project
     //---------------------------------------------------------------------------
 
-    float cms000 = hypo(scx,scy,scz);
-    float calcor = cms000/SOL;
     float tofPVtoRH = hypo(scx-PV_x,scy-PV_y,scz-PV_z);
-    float pvtof = tofPVtoRH/SOL;
-    float tofcor = calcor - pvtof;
-    float crtime = rtime - tofcor;
     float tmeasured = rtime*SOL;
     float MBetaEqual = -999.f;
     float MBetaPrompt = -999.f;
@@ -889,6 +876,7 @@ void KUCMSAodSkimmer::processPhotons(){
     selPhotons.fillBranch("baseLinePhoton_beamHaloCR",bhcr);
     selPhotons.fillBranch("baseLinePhoton_spikeCR",spikecr);
     selPhotons.fillBranch("baseLinePhoton_GJetsCR",gjetscr);
+    selPhotons.fillBranch("baseLinePhoton_GJetsSel",passesGJetsSel);
     selPhotons.fillBranch("baseLinePhoton_DiJetsCR",dijetscr);
     selPhotons.fillBranch("baseLinePhoton_minJetDr",minJetDr);
 
@@ -922,7 +910,6 @@ void KUCMSAodSkimmer::processPhotons(){
 
     //--------------------------------------------------------------
     if( DEBUG ) std::cout << " -- pho get calclated values" << std::endl;
-    int phoQuality = getPhoQuality(it);
     auto phoClstrR9 = clstrR9( rhids );
     //auto phoEigens2D = getRhGrpEigenFromAngles( rhids );
     //auto evaluegeo = phoEigens2D[2];
@@ -1167,12 +1154,6 @@ void KUCMSAodSkimmer::processPhotons(){
         else{ }
       }//<<>>else
     }//<<>>else
-
-    // For GJets R&D, do not gate on the isolation MVA score; keep the score
-    // available for diagnostics while retaining the other photon requirements.
-    const bool passesGJetsPhotonID = isEB && hasEleVeto && phoQuality > 0 &&
-                                    notbhtag;
-    GetGJetsSel(it, passesGJetsPhotonID);
 
     //validation regions
     if(bh_score > 0.999){
@@ -1857,6 +1838,7 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch("baseLinePhoton_beamHaloCR",VBOOL);
   selPhotons.makeBranch("baseLinePhoton_spikeCR",VBOOL);
   selPhotons.makeBranch("baseLinePhoton_GJetsCR",VBOOL);
+  selPhotons.makeBranch("baseLinePhoton_GJetsSel",VBOOL);
   selPhotons.makeBranch("baseLinePhoton_DiJetsCR",VBOOL);
   selPhotons.makeBranch("baseLinePhoton_minJetDr",VFLOAT);
 
@@ -1979,6 +1961,10 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch( "baseLinePhoton_GenSigMomVz", VFLOAT );   //!
 
   selPhotons.makeBranch( "endcap_photon_baseline", VBOOL );   //!
+  selPhotons.makeBranch( "endcap_photon_GJetsSel", VBOOL );   //!
+  selPhotons.makeBranch( "endcap_photon_WTimeSig", VFLOAT );   //!
+  selPhotons.makeBranch( "endcap_photon_WTime", VFLOAT );   //!
+  selPhotons.makeBranch( "endcap_photon_WTRes", VFLOAT );   //!
   selPhotons.makeBranch( "endcap_photon_energy", VFLOAT );   //!
   selPhotons.makeBranch( "endcap_photon_eta", VFLOAT );   //!
   selPhotons.makeBranch( "endcap_photon_phi", VFLOAT );   //!
@@ -1989,6 +1975,10 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch( "endcap_photon_isoANNScore", VFLOAT );   //!
 
   selPhotons.makeBranch( "barrel_photon_baseline", VBOOL );   //!
+  selPhotons.makeBranch( "barrel_photon_GJetsSel", VBOOL );   //!
+  selPhotons.makeBranch( "barrel_photon_WTimeSig", VFLOAT );   //!
+  selPhotons.makeBranch( "barrel_photon_WTime", VFLOAT );   //!
+  selPhotons.makeBranch( "barrel_photon_WTRes", VFLOAT );   //!
   selPhotons.makeBranch( "barrel_photon_energy", VFLOAT );   //!
   selPhotons.makeBranch( "barrel_photon_eta", VFLOAT );   //!
   selPhotons.makeBranch( "barrel_photon_phi", VFLOAT );   //!
@@ -1999,6 +1989,8 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch( "barrel_photon_isoANNScore", VFLOAT );   //!
 
   selPhotons.makeBranch( "photon_baseline", VBOOL );   //!
+  selPhotons.makeBranch( "photon_GJetsSel", VBOOL );
+  selPhotons.makeBranch( "photon_WTRes", VFLOAT );
   selPhotons.makeBranch( "photon_LeadTime", VFLOAT );
   selPhotons.makeBranch( "photon_LeadTimeSig", VFLOAT );
   selPhotons.makeBranch( "photon_WTime", VFLOAT );
