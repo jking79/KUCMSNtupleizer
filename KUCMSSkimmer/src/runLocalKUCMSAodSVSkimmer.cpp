@@ -41,11 +41,11 @@ int main ( int argc, char *argv[] ){
 
   //const std::string infilename = "KUCMS_Ntuple_Master_NtupleTest_Files_List.txt"; hasGenInfo = false;
 
-  //const std::string infilename = "../backups/KUCMS_Ntuple_Master_v34_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
+  const std::string infilename = "../backups/KUCMS_Ntuple_Master_v34_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
   //***********************////const std::string infilename = "../backups/KUCMS_Ntuple_Test_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
   //*********************////const std::string infilename = "../backups/KUCMS_Ntuple_Master_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
   //const std::string infilename = "../backups/KUCMS_Ntuple_Master_BG_SVIPM100_Files_List.txt";
-  const std::string infilename = "../backups/KUCMS_Ntuple_Master_DataPD_Files_List.txt"; hasGenInfo = false;
+  //const std::string infilename = "../backups/KUCMS_Ntuple_Master_DataPD_Files_List.txt"; hasGenInfo = false;
 
   //const std::string outfilename = "_LLPGskim_v21_rjrvars.root"; // skim v21 use new process_name tags
   //const std::string outfilename = "_LLPGskim_v22_rjrvars.root"; // skim v22 keeps 0 pho events
@@ -75,8 +75,8 @@ int main ( int argc, char *argv[] ){
   //const std::string outfilename = "_rjrskim_qcdmc_Test.root"; //
   //const std::string outfilename = "_rjrskim_calirestest_Test.root"; //
 
-  //const std::string outfilename = "_rjrskim_restest_adjamp_v52.root"; //
-  const std::string outfilename = "_rjrskim_restest_gjctr_adjamp_v52.root"; //
+  const std::string outfilename = "_rjrskim_restest_adjamp_v52.root"; //
+  //const std::string outfilename = "_rjrskim_restest_gjctr_adjamp_v52.root"; //
   //const std::string outfilename = "_rjrskim_restest_gjctr_v52.root"; //
 
   //const std::string outfilename = "_rjrskim_geofast_v38_xpwz_v8_Test.root"; //
@@ -87,8 +87,8 @@ int main ( int argc, char *argv[] ){
   // !!!!!!!!!!!!!!!!!!!  alternate RJR setup with invis in comb split rule
   //KUCMSAodSkimmer llpgana( true ); // uses local calibration
   KUCMSAodSkimmer llpgana; // uses eos calibration
-  llpgana.SetLocalSkip( 500 );
-  llpgana.SetGJetEvents(); // save only events passing the gamma+jet selection
+  //llpgana.SetLocalSkip( 200 );
+  //llpgana.SetGJetEvents(); // save only events passing the gamma+jet selection
   llpgana.SetUseFastSimRawAmplitudeTimeModel(false);
 
   //llpgana.SetSystematic("wPhoTimeSig_up");

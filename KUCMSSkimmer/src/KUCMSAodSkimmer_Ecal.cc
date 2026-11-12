@@ -55,7 +55,7 @@ void KUCMSAodSkimmer::processRechits(){
     float corrht = timeCali->getCorrectedTime( rht, rha, rhid, Evt_run, tctag, mctype, gainid );
     //this is the full variance ( = (N/A)^2 + (S^2)/A + 2C^2 )
     const bool useSingleCrystalDeviation = timeCali->getUseAmplitudeOverSqrt2();
-    const float varscale = useSingleCrystalDeviation ? 2.0 : 1.0;
+    const float varscale = useSingleCrystalDeviation ? 1.0 : 1.0;
     float rhtres = timeCali->getTimeResoltuion( rha, rhid, Evt_run, tctag, mctype, gainid )/varscale;
     //if( rhid < 840000000 ){
     //	std::cout << " TC check : inputs : rhid " << rhid << " run " << Evt_run << " tag "  << tctag << " type " << mctype << std::endl;

@@ -1366,7 +1366,6 @@ void KUCMSAodSkimmer::processPhotons(){
      else {}
     }//<<>>if(notbhtag)
 
-
     if(bhtag && nptightisotag)
     nBHphotons++;
     if(notbhtag && nptightisotag)
@@ -1471,7 +1470,6 @@ void KUCMSAodSkimmer::processPhotons(){
     if( DEBUG ) std::cout << " -- looping photons : getting phojet iso " << std::endl;
     //bool isJetPhoton = false;
     for( int jit = 0; jit < Jet_energy->size(); jit++ ){
-
       bool underMinJPt = (*Jet_pt)[jit] < 30.0;
       bool underMinJQual = getJetQuality(jit)  < 2;
       auto jeta = (*Jet_eta)[jit];
@@ -1937,7 +1935,6 @@ void KUCMSAodSkimmer::setPhotonBranches( TTree* fOutTree ){
   selPhotons.makeBranch("passNPhoEq2SelectionCompPromptTightIsoValSR", BOOL);
   //prompt SR eq2 photon compressed validation
   selPhotons.makeBranch("passNPhoEq2SelectionCompPromptMedIsoValCR", BOOL);
-
   selPhotons.makeBranch( "baseLinePhoton_GenPt", VFLOAT );
   selPhotons.makeBranch( "baseLinePhoton_PhoIsoDr", VFLOAT );
 
@@ -2218,7 +2215,7 @@ bool KUCMSAodSkimmer::GetGJetsSel(int phoidx, bool passesPhotonID){
   const float dphi_objjet = std::abs(dPhi(pho_phi, jetSysPhi));
   if( dphi_objjet < PI - 0.2 ) return false;
   const float ptasym = std::min(pho_pt,jetSysPt) / std::max(pho_pt,jetSysPt);
-  if(ptasym < 0.7) return false;
+  if(ptasym < 0.6) return false;
   // R&D convention: slot 1 intentionally records the jet multiplicity, not a jet index.
   if( gammaJetIndex[0] < 0 ){ gammaJetIndex[0] = phoidx; gammaJetIndex[1] = nJets; }
   return true;
