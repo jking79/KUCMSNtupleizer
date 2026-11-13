@@ -534,13 +534,13 @@ def main():
         if not body_plot_ok:
             body_resolution_plot_name = ""
         root_file = resolve_artifact(row.get("output_root_file", ""), summary_csv.parent, output_dir)
-        page_rows.append((row, safe, root_file, bin_csv,
+        page_rows.append((row, safe, root_file, bin_csv, bin_rows,
                           bin_plot_name if bin_plot_path.exists() else "",
                           resolution_plot_name if resolution_plot_path.exists() else "",
                           body_resolution_plot_name if body_resolution_plot_path.exists() else "",
                           body_fit_info))
         records[hist] = {"row": row, "bin_rows": bin_rows, "body_info": body_fit_info}
-    for row, page_name, root_file, bin_csv, bin_plot_name, resolution_plot_name, body_resolution_plot_name, body_fit_info in page_rows:
+    for row, page_name, root_file, bin_csv, bin_rows, bin_plot_name, resolution_plot_name, body_resolution_plot_name, body_fit_info in page_rows:
         hist = row.get("hist_name", "histogram")
         root_href = os.path.relpath(root_file, html_dir) if root_file.is_file() else root_file.name
         csv_href = os.path.relpath(bin_csv, html_dir) if bin_csv.is_file() else bin_csv.name
@@ -593,7 +593,7 @@ def main():
             output.write("</div>")
         else: output.write("<p>Plotting skipped: matplotlib is not installed.</p>")
         output.write("<h2>Histograms</h2><table><thead><tr><th>Histogram</th><th>Runs</th><th>Pair</th><th>Gain</th><th>Cali</th><th>Region</th><th>Status</th><th>FS N</th><th>FS C</th><th>FS S</th><th>FS scatter (%)</th><th>Tail test</th><th>Gain comparison</th><th>Page</th></tr></thead><tbody>")
-        for row, page_name, _, _, _, _, _, body_fit_info in page_rows:
+        for row, page_name, _, _, _, _, _, _, body_fit_info in page_rows:
             status = row.get("processing_status", ""); css = "ok" if status == "success" else "failed"
             tail_status = (f"excluded {body_fit_info.get('excluded', 0)}"
                            if body_fit_info.get("accepted") else "inclusive retained")

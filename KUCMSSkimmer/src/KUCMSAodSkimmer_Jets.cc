@@ -491,7 +491,7 @@ void KUCMSAodSkimmer::processJets(){
   selJets.fillBranch( "pv_nxtals", pvNxtals );
 
   GetDiJetsSel();
-  int inGJetCR = ( gammaJetIndex[0] > -1 ) ? 1 : 0;
+  const bool inGJetCR = gammaJetIndex[0] > -1;
   selJets.fillBranch( "pv_gjetcr", inGJetCR );
 
   float gammatime = ( gammaJetIndex[0] > -1 ) ? allphowtime[gammaJetIndex[0]] : -50;
@@ -609,7 +609,7 @@ void KUCMSAodSkimmer::setJetsBranches( TTree* fOutTree ){
   selJets.makeBranch( "pv_dDiJetPEnergy", VFLOAT );
   selJets.makeBranch( "pv_haspvtime", VINT );
   selJets.makeBranch( "pv_nxtals", VINT );
-  selJets.makeBranch( "pv_gjetcr", VINT );
+  selJets.makeBranch( "pv_gjetcr", BOOL );
 
   // add new jet branches above
   selJets.attachBranches( fOutTree );

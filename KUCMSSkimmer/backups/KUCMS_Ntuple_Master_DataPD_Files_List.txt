@@ -87,9 +87,12 @@
 #kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET0/ JetMET0_v2_MINIAOD_Run2025F JetMet0R25F2 1 0 0 0 1 r3_p25unc
 #kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET0/ JetMET0_MINIAOD_Run2025G JetMet0R25G 1 0 0 0 1 r3_p25unc
 
-kucmsntuple_JetMET_R26_SVHPM100_MiniAOD_v34/JetMET0/ JetMET0_MINIAOD_Run2026B JetMet0R26B 1 0 0 0 1 r3_p26unc
+#kucmsntuple_JetMET_R26_SVHPM100_MiniAOD_v34/JetMET0/ JetMET0_MINIAOD_Run2026B JetMet0R26B 1 0 0 0 1 r3_p26unc
 
 ########################## testing ###########################
+
+
+kucmsntuple_EGAMMA_R18_InvMetPho30_MiniAODv2_v34/EGamma/ Run2018C EGammaRun2018C 1 0 0 0 1 r2_ul18
 
 #kucmsntuple_EGamma_R24_SVHPM100_MiniAOD_v34/EGamma0/ Run2024C EGammaRun2024C 1 0 0 0 1 r3_p24
 
@@ -98,4 +101,4 @@ kucmsntuple_JetMET_R26_SVHPM100_MiniAOD_v34/JetMET0/ JetMET0_MINIAOD_Run2026B Je
 #kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET0/ JetMET0_MINIAOD_Run2025C JetMet0R25C1 1 0 0 0 1 r3_p25
 #kucmsntuple_JetMET_R25_SVHPM100_MiniAOD_v34/JetMET0/ JetMET0_v2_MINIAOD_Run2025C JetMet0R25C2 1 0 0 0 1 r3_p25
 #kucmsntuple_JetMET_R24_ReReco_SVHPM100_v34/JetMET0/ Run2024C JetMetR24C 1 0 0 0 1 r3_p24
-
+200

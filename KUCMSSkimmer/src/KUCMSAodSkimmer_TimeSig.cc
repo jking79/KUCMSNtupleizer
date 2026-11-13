@@ -97,7 +97,7 @@ float KUCMSAodSkimmer::getTimeSig( int scIndex, float& num, float& denom, float 
       double cor_cms000 = hypo(erx,ery,erz)/SOL;
       double cor_tofPVtoRH = hypo(erx-PV_x,ery-PV_y,erz-PV_z)/SOL;
       double ertoftime = erhct + cor_cms000 - cor_tofPVtoRH;
-      if( syst != 0.f ) ertoftime += syst*std::sqrt(ertres/2); // fractional sigma variation inserted here
+      if( syst != 0.f ) ertoftime += syst*std::sqrt(ertres); // fractional sigma variation inserted here
 
       bool isEE = fabs((*ECALRecHit_eta)[erhiter]) > 1.479;
       bool isValid = true;
@@ -138,13 +138,10 @@ float KUCMSAodSkimmer::getTimeSig( int scIndex, float& num, float& denom, float 
   float phoWTime = sumtw/sumw;
   float phoWVar = 1/sumw;
   //float phoWHVar = sumrh/sumw;
-  float sqrtPhoWVar = std::sqrt(phoWVar);
-  float wttimesig = phoWTime/sqrtPhoWVar;
+  const float sqrtPhoWVar = std::sqrt(phoWVar);
   num = phoWTime;
-  // Convert the pair-based weighted uncertainty to the single-photon time
-  // deviation stored as WTRes; the two equal, independent contributions give
-  // sigma_pair = sqrt(2) * sigma_photon.
-  denom = sqrtPhoWVar/std::sqrt(2);
+  denom = sqrtPhoWVar;
+  const float wttimesig = num/denom;
   return wttimesig;
 
 }//<<>>void KUCMSAodSkimmer::getTimeSig

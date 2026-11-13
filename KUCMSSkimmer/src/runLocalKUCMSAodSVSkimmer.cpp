@@ -42,8 +42,8 @@ int main ( int argc, char *argv[] ){
   //const std::string infilename = "KUCMS_Ntuple_Master_NtupleTest_Files_List.txt"; hasGenInfo = false;
 
   //const std::string infilename = "../backups/KUCMS_Ntuple_Master_v34_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
-  ////const std::string infilename = "../backups/KUCMS_Ntuple_Test_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
-  ////const std::string infilename = "../backups/KUCMS_Ntuple_Master_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
+  //***********************////const std::string infilename = "../backups/KUCMS_Ntuple_Test_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
+  //*********************////const std::string infilename = "../backups/KUCMS_Ntuple_Master_SMS_Sig_Files_List.txt"; useEvtGenWgt = false;
   //const std::string infilename = "../backups/KUCMS_Ntuple_Master_BG_SVIPM100_Files_List.txt";
   const std::string infilename = "../backups/KUCMS_Ntuple_Master_DataPD_Files_List.txt"; hasGenInfo = false;
 
@@ -66,6 +66,7 @@ int main ( int argc, char *argv[] ){
   //const std::string outfilename = "_rjrskim_v44.root"; // added photon object id and tsig counting
   //const std::string outfilename = "_rjrskim_v44.root"; // added jet merging to non copressed, new photon IDs
   //const std::string outfilename = "_rjrskim_v52.root";
+  //const std::string outfilename = "_rjrskim_v53.root";
 
   //const std::string outfilename = "_rjrskim_fasttime_v9.root"; //
   //const std::string outfilename = "_rjrskim_fast_act_v9.root"; //
@@ -73,7 +74,11 @@ int main ( int argc, char *argv[] ){
   //const std::string outfilename = "_rjrskim_pvtime_phoSCv3.root"; //
   //const std::string outfilename = "_rjrskim_qcdmc_Test.root"; //
   //const std::string outfilename = "_rjrskim_calirestest_Test.root"; //
-  const std::string outfilename = "_rjrskim_rd_v52.root"; //
+
+  //const std::string outfilename = "_rjrskim_restest_adjamp_v52.root"; //
+  const std::string outfilename = "_rjrskim_restest_gjctr_adjamp_v52.root"; //
+  //const std::string outfilename = "_rjrskim_restest_gjctr_v52.root"; //
+
   //const std::string outfilename = "_rjrskim_geofast_v38_xpwz_v8_Test.root"; //
   //const std::string outfilename = "_rjrskim_basefast_v38_Test.root"; //
   //const std::string outfilename = "_rjrskim_geofull_v38_xpwz_v8_Test.root"; //
@@ -82,7 +87,9 @@ int main ( int argc, char *argv[] ){
   // !!!!!!!!!!!!!!!!!!!  alternate RJR setup with invis in comb split rule
   //KUCMSAodSkimmer llpgana( true ); // uses local calibration
   KUCMSAodSkimmer llpgana; // uses eos calibration
-  llpgana.SetLocalSkip( 200 );
+  llpgana.SetLocalSkip( 100 );
+  llpgana.SetGJetEvents(); // save only events passing the gamma+jet selection
+  llpgana.SetUseFastSimRawAmplitudeTimeModel(false);
 
   //llpgana.SetSystematic("wPhoTimeSig_up");
   //llpgana.SetSystematic("wPhoTimeSig_down");

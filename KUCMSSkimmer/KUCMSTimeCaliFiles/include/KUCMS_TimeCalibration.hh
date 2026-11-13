@@ -133,12 +133,19 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
   bool isCC;
   bool doUnCC;
   bool doMC;
+  bool doMCExplicit;
+  bool doMCSmearing;
+  bool useAmplitudeOverSqrt2;
 
   std::string eosCaliPath;
   bool useEosRootCali;
   bool caliMapsValid;
 
   TRandom* getRandom;
+
+  // Evaluate the supplied resolution tag without redirecting MC to resTag.
+  float getTimeResolutionForTag( float amplitude, unsigned int rechitID, unsigned int Evt_run,
+  const std::string& tag, int mctype, int gainID );
 
   public:
 
@@ -284,7 +291,17 @@ class KUCMS_TimeCalibration : public KUCMS_RootHelperBaseClass {
   void setUseGainID( int id ){ useGain = id; }
   void setIsCC( bool iscc ){ isCC = iscc; }
   void setDoUnCC( bool douncc ){ doUnCC = douncc; }
-  void setDoMC( bool domc ){ doMC = domc; } // true: resolution input rows include an event-weight column
+  void setDoMC( bool domc ){ doMC = domc; doMCExplicit = true; }
+  // MC getCorrectedTime smears by default; false returns the optionally calibrated MC time.
+  void setDoMCSmearing( bool setting ){ doMCSmearing = setting; }
+  void setUseAmplitudeOverSqrt2( bool setting ){ useAmplitudeOverSqrt2 = setting; }
+  bool getUseAmplitudeOverSqrt2() const { return useAmplitudeOverSqrt2; }
+  // Recognize MC-suffixed tags automatically; explicit setDoMC takes precedence.
+  bool useMCInput( const std::string& tag ) const {
+    const bool mcTag = tag == "mc" || (tag.size() >= 2 && tag.compare(tag.size()-2,2,"mc") == 0) ||
+      (isCC && doUnCC && tag.size() >= 5 && tag.compare(tag.size()-5,5,"mcunc") == 0);
+    return doMCExplicit ? doMC : mcTag;
+  }
   void setCondorJob( bool docondor ){ isCondorJob = docondor; }
 
   std::string getPrefix( const std::string& s ){
