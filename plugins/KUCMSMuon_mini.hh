@@ -160,6 +160,10 @@ void KUCMSMuonObjectMini::InitObject( TTree* fOutTree ){
   Branches.makeBranch("Px","Muon_px",VFLOAT);
   Branches.makeBranch("Py","Muon_py",VFLOAT);
   Branches.makeBranch("Pz","Muon_pz",VFLOAT);
+  Branches.makeBranch("isPFMuon","Muon_isPFMuon",VBOOL,"muon reconstructed as a PF muon");
+  Branches.makeBranch("isGlobalMuon","Muon_isGlobalMuon",VBOOL,"muon reconstructed as a global muon");
+  Branches.makeBranch("isTrackerMuon","Muon_isTrackerMuon",VBOOL,"muon reconstructed as a tracker muon");
+  Branches.makeBranch("isStandAloneMuon","Muon_isStandAloneMuon",VBOOL,"muon reconstructed as a standalone muon");
   //Branches.makeBranch("Time","Muon_time",VFLOAT);
   //Branches.makeBranch("timeValid","Muon_timeValid",VBOOL);
   //Branches.makeBranch("TrackZ","Muon_trackz",VFLOAT);
@@ -272,6 +276,10 @@ void KUCMSMuonObjectMini::ProcessEvent( ItemManager<float>& geVar ){
     Branches.fillBranch("Px",muPx);
     Branches.fillBranch("Py",muPy);
     Branches.fillBranch("Pz",muPz);
+    Branches.fillBranch("isPFMuon",muon.isPFMuon());
+    Branches.fillBranch("isGlobalMuon",muon.isGlobalMuon());
+    Branches.fillBranch("isTrackerMuon",muon.isTrackerMuon());
+    Branches.fillBranch("isStandAloneMuon",muon.isStandAloneMuon());
     //Branches.fillBranch("Time",time);
     Branches.fillBranch("looseID",isLoose);
     Branches.fillBranch("mediumID",isMedium);

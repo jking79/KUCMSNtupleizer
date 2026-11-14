@@ -106,6 +106,7 @@ class KUCMSPhotonObjectMini : public KUCMSObjectBase {
   std::vector<bool> phoExcluded;
   std::vector<bool> phoIsOotPho;
   std::vector<int> phoIds;
+  std::vector<std::string> officialPhotonIdNames_;
 
   //edm::EDGetTokenT<example> exampleToken_;
   //edm::Handle<example> example_;
@@ -136,6 +137,23 @@ KUCMSPhotonObjectMini::KUCMSPhotonObjectMini( const edm::ParameterSet& iConfig )
   cfFlag.set( "onlyEB", iConfig.existsAs<bool>("onlyEB") ? iConfig.getParameter<bool>("onlyEB") : false );
   cfFlag.set( "hasGenInfo", iConfig.existsAs<bool>("hasGenInfo") ? iConfig.getParameter<bool>("hasGenInfo") : false );
 
+  const auto runEra = iConfig.existsAs<std::string>("RunEra") ? iConfig.getParameter<std::string>("RunEra") : "";
+  if( runEra.find("Run2") == 0 ){
+    officialPhotonIdNames_ = {"cutBasedPhotonID-Fall17-94X-V2-loose",
+                              "cutBasedPhotonID-Fall17-94X-V2-medium",
+                              "cutBasedPhotonID-Fall17-94X-V2-tight",
+                              "mvaPhoID-RunIIFall17-v2-wp90",
+                              "mvaPhoID-RunIIFall17-v2-wp80"};
+  } else if( runEra.find("Run3") == 0 ){
+    officialPhotonIdNames_ = {"cutBasedPhotonID-RunIIIWinter22-122X-V1-loose",
+                              "cutBasedPhotonID-RunIIIWinter22-122X-V1-medium",
+                              "cutBasedPhotonID-RunIIIWinter22-122X-V1-tight",
+                              "mvaPhoID-RunIIIWinter22-v1-wp90",
+                              "mvaPhoID-RunIIIWinter22-v1-wp80"};
+  } else {
+    officialPhotonIdNames_.resize(5);
+  }
+
 }//<<>>KUCMSPhoton::KUCMSPhoton( const edm::ParameterSet& iConfig, const ItemManager<bool>& cfFlag )
 
 void KUCMSPhotonObjectMini::LoadPhotonTokens( edm::EDGetTokenT<phoColView> gedPhotonsToken, edm::EDGetTokenT<phoColView> ootPhotonsToken ){
@@ -148,6 +166,11 @@ void KUCMSPhotonObjectMini::LoadPhotonTokens( edm::EDGetTokenT<phoColView> gedPh
 void KUCMSPhotonObjectMini::InitObject( TTree* fOutTree ){
 
   Branches.makeBranch("IsOotPho","Photon_isOot",VBOOL);
+  Branches.makeBranch("OfficialCutLoose","Photon_cutBasedLoose",VINT,"official photon ID: 1 pass, 0 fail, -1 unavailable");
+  Branches.makeBranch("OfficialCutMedium","Photon_cutBasedMedium",VINT,"official photon ID: 1 pass, 0 fail, -1 unavailable");
+  Branches.makeBranch("OfficialCutTight","Photon_cutBasedTight",VINT,"official photon ID: 1 pass, 0 fail, -1 unavailable");
+  Branches.makeBranch("OfficialMvaWP90","Photon_mvaID_WP90",VINT,"official photon ID: 1 pass, 0 fail, -1 unavailable");
+  Branches.makeBranch("OfficialMvaWP80","Photon_mvaID_WP80",VINT,"official photon ID: 1 pass, 0 fail, -1 unavailable");
   Branches.makeBranch("Excluded","Photon_excluded",VBOOL);
   //Branches.makeBranch("hasSC","Photon_hasSC",VBOOL);
 
@@ -462,6 +485,16 @@ void KUCMSPhotonObjectMini::ProcessEvent( ItemManager<float>& geVar ){
   //std::vector<uInt> gloAllSeedRHs;
   //float gloDiMass(-1), gloDiAngle(-1), gloDiDr(-1), gloDiPhi(-1), gloDiEta(-1);
   for( const auto &photon : fphotons ){
+
+    const auto officialId = [&photon, this]( unsigned int index ) {
+      const auto& name = officialPhotonIdNames_[index];
+      return !name.empty() && photon.isPhotonIDAvailable(name) ? int(photon.photonID(name)) : -1;
+    };
+    Branches.fillBranch("OfficialCutLoose",officialId(0));
+    Branches.fillBranch("OfficialCutMedium",officialId(1));
+    Branches.fillBranch("OfficialCutTight",officialId(2));
+    Branches.fillBranch("OfficialMvaWP90",officialId(3));
+    Branches.fillBranch("OfficialMvaWP80",officialId(4));
 
     Branches.fillBranch("IsOotPho",phoIsOotPho[phoIdx]);
     Branches.fillBranch("Excluded",phoExcluded[phoIdx]);

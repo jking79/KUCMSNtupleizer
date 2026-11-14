@@ -20,6 +20,7 @@
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/InputTag.h"
+#include "FWCore/Utilities/interface/Exception.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
@@ -59,6 +60,10 @@ class KUCMSPFMetObjectMini : public KUCMSObjectBase {
   // object setup : 1) construct object 2) InitObject 3) CrossLoad 4) load into Object Manager
   // load tokens for eventt based collections
   void LoadPFMetTokens( edm::EDGetTokenT<std::vector<pat::MET>> pfmetsToken ){ pfmetsToken_ = pfmetsToken; };
+  void LoadPuppiMetTokens( edm::EDGetTokenT<std::vector<pat::MET>> puppimetsToken ){
+    puppimetsToken_ = puppimetsToken;
+    hasPuppiMetInput_ = true;
+  };
   // sets up branches, do preloop jobs
   void InitObject( TTree* fOutTree );
   // new function needed for crosstalk - EXAMPLE CLASS USED HERE FOR REFRENCE ONLY -
@@ -89,6 +94,9 @@ class KUCMSPFMetObjectMini : public KUCMSObjectBase {
   //const edm::InputTag pfmetsTag;
   edm::EDGetTokenT<std::vector<pat::MET>> pfmetsToken_;
   edm::Handle<std::vector<pat::MET>> pfmets_;
+  edm::EDGetTokenT<std::vector<pat::MET>> puppimetsToken_;
+  edm::Handle<std::vector<pat::MET>> puppimets_;
+  bool hasPuppiMetInput_ = false;
 
   // Other object(s) need by this object - BASE CLASS USED HERE FOR REFRENCE ONLY -
   // exampleObject* otherObjectPtr;
@@ -108,10 +116,17 @@ void KUCMSPFMetObjectMini::InitObject( TTree* fOutTree ){
 
   Branches.makeBranch("SumEt","Met_sumEt",FLOAT,"scalar sum of Et");
   Branches.makeBranch("Pt","Met_pt",FLOAT,"pt");
-  Branches.makeBranch("Eta","Met_eta",FLOAT);
   Branches.makeBranch("Phi","Met_phi",FLOAT);
   Branches.makeBranch("Px","Met_px",FLOAT);
   Branches.makeBranch("Py","Met_py",FLOAT);
+  Branches.makeBranch("RawPt","Met_rawPt",FLOAT,"uncorrected PF MET pt");
+  Branches.makeBranch("RawPhi","Met_rawPhi",FLOAT,"uncorrected PF MET phi");
+  Branches.makeBranch("RawSumEt","Met_rawSumEt",FLOAT,"uncorrected PF MET sumEt");
+  Branches.makeBranch("RawAvailable","Met_rawAvailable",BOOL,"PF MET input contains an object");
+  Branches.makeBranch("PuppiRawPt","Met_puppiRawPt",FLOAT,"uncorrected PUPPI MET pt; -999 if unavailable");
+  Branches.makeBranch("PuppiRawPhi","Met_puppiRawPhi",FLOAT,"uncorrected PUPPI MET phi; -999 if unavailable");
+  Branches.makeBranch("PuppiRawSumEt","Met_puppiRawSumEt",FLOAT,"uncorrected PUPPI MET sumEt; -999 if unavailable");
+  Branches.makeBranch("PuppiRawAvailable","Met_puppiRawAvailable",BOOL,"PUPPI MET input contains an object");
 
   //Branches.makeBranch("signif","Met_significance",FLOAT,"MET significance");
   //Branches.makeBranch("covXX","Met_covXX",FLOAT,"xx element of met covariance matrix");
@@ -131,6 +146,12 @@ void KUCMSPFMetObjectMini::LoadEvent( const edm::Event& iEvent, const edm::Event
 
   // ECAL RECHITS
   iEvent.getByToken( pfmetsToken_, pfmets_ );
+  if( hasPuppiMetInput_ ){
+    iEvent.getByToken( puppimetsToken_, puppimets_ );
+    if( !puppimets_.isValid() ){
+      throw cms::Exception("ProductNotFound") << "Configured puppiMets product is unavailable; use notAvailable when it is intentionally absent.";
+    }
+  }
 
   if( PFMetDEBUG ) std::cout << "Collecting PFMets" << std::endl;
 
@@ -177,6 +198,17 @@ void KUCMSPFMetObjectMini::PostProcessEvent( ItemManager<float>& geVar ){
   Branches.fillBranch("Phi",Phi);
   Branches.fillBranch("Px",Px);
   Branches.fillBranch("Py",Py);
+  Branches.fillBranch("RawPt",float(t1pfMET.uncorPt()));
+  Branches.fillBranch("RawPhi",float(t1pfMET.uncorPhi()));
+  Branches.fillBranch("RawSumEt",float(t1pfMET.uncorSumEt()));
+  Branches.fillBranch("RawAvailable",true);
+
+  const bool puppiAvailable = hasPuppiMetInput_ && !puppimets_->empty();
+  constexpr float unavailable = -999.0f;
+  Branches.fillBranch("PuppiRawPt",puppiAvailable ? float(puppimets_->front().uncorPt()) : unavailable);
+  Branches.fillBranch("PuppiRawPhi",puppiAvailable ? float(puppimets_->front().uncorPhi()) : unavailable);
+  Branches.fillBranch("PuppiRawSumEt",puppiAvailable ? float(puppimets_->front().uncorSumEt()) : unavailable);
+  Branches.fillBranch("PuppiRawAvailable",puppiAvailable);
 
   //Branches.fillBranch("signif",signif);
   //Branches.fillBranch("covXX",covXX);

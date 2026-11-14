@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MC resolution presentation plots</title>
+  <style>
+    body { max-width: 1120px; margin: 2rem auto; padding: 0 1rem; font: 16px/1.5 sans-serif; }
+    figure { margin: 1.5rem 0 2.5rem; }
+    figure img { display: block; width: 100%; height: auto; }
+    figcaption { margin-top: 0.6rem; }
+  </style>
+</head>
+<body>
+  <h1>MC resolution presentation plots</h1>
+  <p><a href="presentation_0_999999_eg_18_qcdmc_xa_pm24b1200_v0826.html">Open the existing 2018 presentation page (9 plots)</a></p>
+
+  <h2>Joint AllGains NSC fits: Cali and NoCali</h2>
+  <p>Each plot shows the AllGains SRO and DRO resolution points in EB and EE, fitted separately with one shared NSC curve for that calibration state. The lower panel shows each point's pull from the curve. Black crosses mark points excluded by the 2.5 peer-pull filter. The two states use the same MC sample with and without the timing calibration; the fitted Cali curve is about 11% higher across the shared x range. This is a descriptive comparison: the fit errors shown do not include the covariance between the two processing states.</p>
+
+  <figure>
+    <img src="../joint_nsc_fit/0_999999_eg_18_qcdmc_xa_pm24b1200_v0826_Cali_AllGains_joint_NSC.png" alt="Cali AllGains joint NSC resolution fit for SRO and DRO in EB and EE">
+    <figcaption><strong>Cali:</strong> AllGains SRO/DRO EB/EE points and their shared NSC fit. The lower panel shows pulls; black crosses indicate peer-pull exclusions.</figcaption>
+  </figure>
+
+  <figure>
+    <img src="../joint_nsc_fit/0_999999_eg_18_qcdmc_xa_pm24b1200_v0826_NoCali_AllGains_joint_NSC.png" alt="NoCali AllGains joint NSC resolution fit for SRO and DRO in EB and EE">
+    <figcaption><strong>NoCali:</strong> The same AllGains categories fitted without the timing calibration, for comparison with the Cali result above.</figcaption>
+  </figure>
+</body>
+</html>

@@ -97,7 +97,7 @@ float KUCMSAodSkimmer::getTimeSig( int scIndex, float& num, float& denom, float 
       double cor_cms000 = hypo(erx,ery,erz)/SOL;
       double cor_tofPVtoRH = hypo(erx-PV_x,ery-PV_y,erz-PV_z)/SOL;
       double ertoftime = erhct + cor_cms000 - cor_tofPVtoRH;
-      if( syst != 0.f ) ertoftime += syst*std::sqrt(ertres/2); // fractional sigma variation inserted here
+      if( syst != 0.f ) ertoftime += syst*std::sqrt(ertres); // fractional sigma variation inserted here
 
       bool isEE = fabs((*ECALRecHit_eta)[erhiter]) > 1.479;
       bool isValid = true;
@@ -115,6 +115,9 @@ float KUCMSAodSkimmer::getTimeSig( int scIndex, float& num, float& denom, float 
       float gainwt = 0;
       if( isValid ) gainwt = 1;
 
+      // Keep the pair-resolution variance for inverse-variance weighting. Its
+      // common factor relative to a single-crystal variance rescales all weights
+      // equally and therefore does not change the weighted photon time.
       double invertres = ( ertres > 0 ) ? 1/ertres : -1;
       double erhar = ( invertres > 0 ) ? invertres*gainwt : 0;
       if(rhIdToBHCw.size() > 0){
@@ -135,10 +138,10 @@ float KUCMSAodSkimmer::getTimeSig( int scIndex, float& num, float& denom, float 
   float phoWTime = sumtw/sumw;
   float phoWVar = 1/sumw;
   //float phoWHVar = sumrh/sumw;
-  float sqrtPhoWVar = std::sqrt(phoWVar);
-  float wttimesig = phoWTime/sqrtPhoWVar;
+  const float sqrtPhoWVar = std::sqrt(phoWVar);
   num = phoWTime;
-  denom = sqrtPhoWVar/std::sqrt(2);
+  denom = sqrtPhoWVar;
+  const float wttimesig = num/denom;
   return wttimesig;
 
 }//<<>>void KUCMSAodSkimmer::getTimeSig

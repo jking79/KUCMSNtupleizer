@@ -1,11 +1,13 @@
 #include "../include/KUCMS_TimeCalibration.hh"
 
+#include <algorithm>
 #include <array>
 #include <functional>
 #include <limits>
 #include <memory>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 
 #include "Math/Factory.h"
 #include "Math/Functor.h"
@@ -71,6 +73,7 @@ KUCMS_TimeCalibration::KUCMS_TimeCalibration( bool stayOpen, bool makeNew, bool 
   //caliTFileName = caliFileDir + "caliHistsTFile.root";// name configurable ?
   //caliR3TFileName = caliFileDir + "caliR3HistsTFile.root";// name configurable ?
   cali2DResPlotsTFileName = caliFileDir + "res2dPlotsTFile.root";
+  resFitOutputDir = ".";
   //caliTFile = NULL;
   caliR3TFile = NULL;
   cali2DResTFile = NULL;
@@ -129,6 +132,9 @@ KUCMS_TimeCalibration::KUCMS_TimeCalibration( bool stayOpen, bool makeNew, bool 
   isCC = false;
   doUnCC = false;
   doMC = false;
+  doMCExplicit = false;
+  doMCSmearing = true;
+  useAmplitudeOverSqrt2 = false;
 
   std::cout << " - setup DetID & IOV Maps " << std::endl;
   SetupDetIDsEB();
@@ -475,7 +481,7 @@ void KUCMS_TimeCalibration::SetupIovMaps(){
   iovMaps["prompt"] = promptIovMap;
 
   std::map<int,int> mcIovMap;
-  mcIovMap[0] = 999999;
+  mcIovMap[1] = 999999;
   iovMaps["mc"] = mcIovMap;
 
   //float ttlumi = 0.36; // in /fb
@@ -1774,7 +1780,25 @@ float KUCMS_TimeCalibration::getSmrdCalibTime( float rhtime, float rhamp, uInt r
 // fallback resolution.
 float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int rechitID, unsigned int Evt_run, const std::string& dataSetKey, int mctype, int gianID ){
 
+  // Public MC lookup returns the configured target resolution, as before.
+  const std::string* resolvedTag = &dataSetKey;
+  if( mctype == 0 || mctype == 2 ){
+    static const std::string r2UL18DTag = "r2_ul18D";
+    if( resTag != "None" ) resolvedTag = &resTag;
+    if( resTag == "default" && (dataSetKey.compare(0,2,"r2") == 0 || dataSetKey.compare(0,2,"r3") == 0) )
+      resolvedTag = &r2UL18DTag;
+  }
+  return getTimeResolutionForTag(amplitude,rechitID,Evt_run,*resolvedTag,mctype,gianID);
+}
+
+// Evaluate an explicitly selected tag. Smearing uses this for its independent
+// target and source lookups; the MC model retains the continuous N/S/C formula.
+float KUCMS_TimeCalibration::getTimeResolutionForTag( float amplitude, unsigned int rechitID, unsigned int Evt_run, const std::string& dataSetKey, int mctype, int gianID ){
+
   if( amplitude == 0 ) return 100.f;
+  // Keep the single-rechit amplitude by default. R&D can opt into the
+  // pair-effective amplitude used by the resolution curves.
+  const float resolutionAmplitude = useAmplitudeOverSqrt2 ? amplitude / std::sqrt(2.f) : amplitude;
   auto det = DetIDMap.find(rechitID);
   if( det == DetIDMap.end() ){
     std::cerr << "ERROR: unknown ECAL detID in getTimeResoltuion: " << rechitID << std::endl;
@@ -1797,49 +1821,43 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
     auto resolvedTag = ResTagSet.find(*resolvedTagName);
     if( resolvedTag != ResTagSet.end() ){
       const auto& parameters = resolvedTag->second;
-      if( amplitude > 400 ){
+      if( resolutionAmplitude > 400 ){
 
         float res = 0;
-        if( amplitude > 900 ){
+        if( resolutionAmplitude > 800 ){
           if( isEB ) res = ( gianID == 1 ) ? parameters.ebg1he3res : parameters.ebhg3res;
           else res = ( gianID == 1 ) ? parameters.eeg1he3res : parameters.eehg3res;
-        } else if( amplitude > 600 ){
+        } else if( resolutionAmplitude > 600 ){
           if( isEB ) res = ( gianID == 1 ) ? parameters.ebg1he2res : parameters.ebhg2res;
           else res = ( gianID == 1 ) ? parameters.eeg1he2res : parameters.eehg2res;
         } else {
           if( isEB ) res = ( gianID == 1 ) ? parameters.ebg1he1res : parameters.ebhg1res;
           else res = ( gianID == 1 ) ? parameters.eeg1he1res : parameters.eehg1res;
-        }//<<>>if( amplitude > 900 )
+        }//<<>>if( resolutionAmplitude > 800 )
         var = sq2( res );
 
       }//<<>>if( amplitude > 400 )
-      if( amplitude <= 400 or var == 0 ){
+      if( resolutionAmplitude <= 400 or var == 0 ){
 
         float noise = isEB ? parameters.ebnoise : parameters.eenoise;
         float stoch = isEB ? parameters.ebstoch : parameters.eestoch;
         float stant = isEB ? parameters.ebstant : parameters.eestant;
-        var = sq2(noise/amplitude) + sq2(stoch)/amplitude + 2*sq2(stant);
+        var = sq2(noise/resolutionAmplitude) + sq2(stoch)/resolutionAmplitude + 2*sq2(stant);
 
       }//<<>>if( amplitude > 400 )
     } else if( *resolvedTagName != "None" ) reportInvalidTag(*resolvedTagName);
   }//<<>>if( mctype == 0 )
   else if( mctype == 0 or mctype == 2 ){ // data or MC   --- resTag is the target resolution for smearing
-    static const std::string r2UL18DTag = "r2_ul18D";
-    const std::string* themctag = ( resTag == "None" ) ? &dataSetKey : &resTag;
-    if( resTag == "default"){
-      if( dataSetKey.substr(0,2) == "r2" ){ themctag = &r2UL18DTag; }//<<>>if( Run 2 key )
-      else if( dataSetKey.substr(0,2) == "r3" ){ themctag = &r2UL18DTag; }//<<>>if( Run 3 key )
-    }//<<>>if( resTag == "default")
-    auto resolvedTag = ResTagSet.find(*themctag);
+    auto resolvedTag = ResTagSet.find(dataSetKey);
     if( resolvedTag != ResTagSet.end() ){
       const auto& parameters = resolvedTag->second;
       float noise = isEB ? parameters.ebnoise : parameters.eenoise;
       float stoch = isEB ? parameters.ebstoch : parameters.eestoch;
       float stant = isEB ? parameters.ebstant : parameters.eestant;
-      var = sq2(noise/amplitude) + sq2(stoch)/amplitude + 2*sq2(stant);
-      //std::cout << " --- getting MC res for : " << *themctag << " " << noise << " " << stoch;
+      var = sq2(noise/resolutionAmplitude) + sq2(stoch)/resolutionAmplitude + 2*sq2(stant);
+      //std::cout << " --- getting MC res for : " << dataSetKey << " " << noise << " " << stoch;
       //std::cout << " " << stant << " " << var << std::endl;
-    } else if( *themctag != "None" ) reportInvalidTag(*themctag);
+    } else if( dataSetKey != "None" ) reportInvalidTag(dataSetKey);
   }//<<>>if( mctype == 0 )
   else {
     var = -9;
@@ -1857,7 +1875,7 @@ float KUCMS_TimeCalibration::getTimeResoltuion( float amplitude, unsigned int re
     float noise = isEB ? parameters.ebnoise : parameters.eenoise;
     float stoch = isEB ? parameters.ebstoch : parameters.eestoch;
     float stant = isEB ? parameters.ebstant : parameters.eestant;
-    var = sq2(noise/amplitude) + sq2(stoch)/amplitude + 2*sq2(stant);
+    var = sq2(noise/resolutionAmplitude) + sq2(stoch)/resolutionAmplitude + 2*sq2(stant);
     //var = isEB ? sq2(26.0/amplitude) + sq2(0.6)/amplitude + 2*sq2(0.094) : sq2(42.2/amplitude) + sq2(1.2)/amplitude + 2*sq2(0.298);
   }//<<>>if( var == -1 )
   return var;
@@ -1880,15 +1898,20 @@ bool applyCalibration ){
 
   } else { // MC
 
-    double ctime = 0;
+    double ctime = time;
     double tarvar = 0;
     double sorvar = 0;
 
     static const std::string r2UL18SqmcTag = "r2_ul18_sqmc";
     const std::string& resolvedDataSetKey = ( dataSetKey == "r2_ul18_mc" ) ? r2UL18SqmcTag : dataSetKey;
-    if( applyCalibration )
-    ctime = time - getCalibration(rechitID,Evt_run,resolvedDataSetKey,gainID);
-    else{ ctime = time; }
+
+    // Smearing source resolutions are defined for uncalibrated MC times. Keep
+    // the raw time as the Gaussian center whenever MC smearing is enabled.
+    if( not doMCSmearing ){
+      if( applyCalibration ) ctime = time - getCalibration(rechitID,Evt_run,resolvedDataSetKey,gainID);
+      return ctime;
+    }//<<>>if( MC smearing disabled )
+
     //std::cout << " Pre Check amplitude : " << amplitude << std::endl;
     //if( amplitude < 1 ) return ctime;
     //if( time == 0 ) return ctime;
@@ -1896,23 +1919,11 @@ bool applyCalibration ){
     if( resolvedDataSetKey == "None" ) return ctime; // dataSetKey is the calibration used && source resolution for smearing
     //std::cout << " Post Check amplitude : " << amplitude << std::endl;
 
-    if( resTag != "default" ){  // TARGET RESOLUTION
-
-      tarvar = getTimeResoltuion( amplitude, rechitID, Evt_run, resTag, mctype, gainID );
-
-    }//<<>>if( resTag != "default" )
-    else if( resTag == "default" || resolvedDataSetKey.substr(0,2) == "r2" ){ // use smear tag?  -- check first for set tag !
-
-      static const std::string tag = "r2_ul18D";
-      tarvar = getTimeResoltuion( amplitude, rechitID, Evt_run, tag, mctype, gainID );
-
-    }//<<>>if( Run 2 key or default target )
-    else if( resolvedDataSetKey.substr(0,2) == "r3" ){
-
-      static const std::string tag = "r2_ul18D";
-      tarvar = getTimeResoltuion( amplitude, rechitID, Evt_run, tag, mctype, gainID );
-
-    }//<<>>if( Run 3 key )
+    // The default target retains the existing 2018D behavior. Evaluate it
+    // explicitly so the source lookup below cannot be redirected to resTag.
+    static const std::string defaultTargetTag = "r2_ul18D";
+    const std::string& targetTag = resTag == "default" ? defaultTargetTag : resTag;
+    tarvar = getTimeResolutionForTag( amplitude, rechitID, Evt_run, targetTag, mctype, gainID );
 
     if( ResTagSet.find(resolvedDataSetKey) != ResTagSet.end() ){ // SOURCE RESOLTUION
 
@@ -1921,12 +1932,12 @@ bool applyCalibration ){
       const std::string* sourceTag = &resolvedDataSetKey;
       if( resolvedDataSetKey == "r2_ul18_qcdmc" or resolvedDataSetKey == "r2_ul18_sqmc" ) sourceTag = &runIIUL18RecoTag;
       if( resolvedDataSetKey == "r3_mc" ) sourceTag = &run3MCTag;
-      sorvar = getTimeResoltuion( amplitude, rechitID, Evt_run, *sourceTag, mctype, gainID );
+      sorvar = getTimeResolutionForTag( amplitude, rechitID, Evt_run, *sourceTag, mctype, gainID );
 
     } else { // 2018 MC Resoltion values
 
       static const std::string tag = "default";
-      sorvar = getTimeResoltuion( amplitude, rechitID, Evt_run, tag, mctype, gainID );
+      sorvar = getTimeResolutionForTag( amplitude, rechitID, Evt_run, tag, mctype, gainID );
 
     }//<<>>if( ResTagSet.find(tag) != ResTagSet.end() )
 
@@ -2007,15 +2018,15 @@ bool KUCMS_TimeCalibration::makeGain1CaliMapsEGR( std::string inputFileName, boo
 
   auto findIov = []( const std::map<int,int>& iovs, int run ) -> std::pair<int,int> {
     auto iov = iovs.upper_bound(run);
-    if( iov == iovs.begin() ) return {0,0};
+    if( iov == iovs.begin() ) return {-1,-1};
     --iov;
-    if( run > iov->second ) return {0,0};
+    if( run > iov->second ) return {-1,-1};
     return *iov;
   };
   auto findOrCreateRange = [&]( auto& mapSet, const std::string& tag, const std::map<int,int>& iovs,
-  int run, const std::string& type ) -> kucms_CaliRunClass* {
+  int run, const std::string& type, bool weightedMC ) -> kucms_CaliRunClass* {
     auto bounds = findIov(iovs,run);
-    if( bounds.first == 0 ){
+    if( bounds.first < 0 ){
       std::cerr << "ERROR: no configured " << type << " IOV contains run " << run
       << " for tag " << tag << std::endl;
       return nullptr;
@@ -2023,6 +2034,13 @@ bool KUCMS_TimeCalibration::makeGain1CaliMapsEGR( std::string inputFileName, boo
     auto& runSet = mapSet[tag];
     auto range = runSet.find(bounds.first);
     if( range == runSet.end() ){
+      if( weightedMC ){
+        auto prior = runSet.upper_bound(run);
+        if( prior != runSet.begin() && (--prior)->second.endRun >= run ){
+          std::cerr << "ERROR: existing weighted MC " << type << " range overlaps the configured IOV for tag " << tag << std::endl;
+          return nullptr;
+        }
+      }
       std::string histName = tag + "_" + std::to_string(bounds.first) + "_" + type;
       range = runSet.try_emplace(bounds.first, histName, bounds.first, bounds.second, 0, 0).first;
     } else if( range->second.startRun != bounds.first || range->second.endRun != bounds.second ){
@@ -2051,12 +2069,17 @@ bool KUCMS_TimeCalibration::makeGain1CaliMapsEGR( std::string inputFileName, boo
     std::stringstream ss(infilestr);
     std::string subdir, matchstr, tag;
     int srun = 0, erun = 0, dolast = 0;
-    if( not ( ss >> subdir >> matchstr >> srun >> erun >> tag >> dolast ) || subdir.empty() ||
+    double fillwgt = 1.0;
+    const bool fieldsRead = bool( ss >> subdir >> matchstr >> srun >> erun >> tag >> dolast );
+    const bool weightedMC = useMCInput(tag);
+    const bool weightRead = not weightedMC || bool(ss >> fillwgt);
+    if( not fieldsRead || not weightRead || not std::isfinite(fillwgt) || fillwgt <= 0 || subdir.empty() ||
     matchstr.empty() || tag.empty() || srun > erun || ( dolast != 0 && dolast != 1 ) ){
       std::cerr << "ERROR: malformed calibration input row: " << infilestr << std::endl;
       return false;
     }//<<>>if( malformed row )
     doLastRun = dolast;
+    std::cout << "Input weighting: " << (weightedMC ? "MC" : "unit") << " weight=" << fillwgt << std::endl;
     if( isCC && doUnCC ) tag += "unc";
 
     std::string ttIovTag = curTTIov;
@@ -2214,12 +2237,19 @@ bool KUCMS_TimeCalibration::makeGain1CaliMapsEGR( std::string inputFileName, boo
       if( run < static_cast<UInt_t>(srun) || run > static_cast<UInt_t>(erun) ) continue;
 
       if( cachedRun != static_cast<int>(run) ){
-        ttRange = findOrCreateRange(TTCaliRunMapSet,tag,ttIovs,run,"TT");
-        crystalRange = findOrCreateRange(CaliRunMapSet,tag,crystalIovs,run,"X");
+        ttRange = findOrCreateRange(TTCaliRunMapSet,tag,ttIovs,run,"TT",weightedMC);
+        crystalRange = findOrCreateRange(CaliRunMapSet,tag,crystalIovs,run,"X",weightedMC);
         if( not ttRange || not crystalRange ){
           delete fInTree;
           return false;
         }//<<>>if( range setup failed )
+        // Squared weights are not stored; all weighted gain-1 inputs must be processed together.
+        if( weightedMC && ((!ttRange->sumCntMap.empty() && ttRange->sumCntMap.begin()->second.sumWeight2 < 0) ||
+        (!crystalRange->sumCntMap.empty() && crystalRange->sumCntMap.begin()->second.sumWeight2 < 0)) ){
+          std::cerr << "ERROR: cannot extend a saved weighted MC gain-1 range; process all inputs together." << std::endl;
+          delete fInTree;
+          return false;
+        }
         cachedRun = run;
       }//<<>>if( run changed )
       maxRunSeenByTag[tag] = std::max(maxRunSeenByTag[tag],static_cast<int>(run));
@@ -2284,15 +2314,16 @@ bool KUCMS_TimeCalibration::makeGain1CaliMapsEGR( std::string inputFileName, boo
         }//<<>>if( sentinel time )
 
         const uInt ttId = det->second.ttId;
-        if( fillTT && not ttRange->fillSumCnt(ttId,time) ){
+        if( fillTT && not ttRange->fillSumCnt(ttId,time,fillwgt,false,weightedMC) ){
           delete fInTree;
           return false;
         }//<<>>if( TT fill failed )
         if( rawCrystal ){
-          auto raw = rawCrystal->try_emplace(id,0.0,0.0,0.0).first;
-          raw->second.sum += time;
-          raw->second.sumsqr += static_cast<double>(time)*time;
-          raw->second.cnt += 1.0;
+          auto raw = rawCrystal->try_emplace(id,0.0,0.0,0.0,weightedMC ? 0.0 : -1.0).first;
+          raw->second.sum += fillwgt*time;
+          raw->second.sumsqr += fillwgt*static_cast<double>(time)*time;
+          raw->second.cnt += fillwgt;
+          if( weightedMC ) raw->second.sumWeight2 += fillwgt*fillwgt;
         }//<<>>if( crystal fill enabled )
       }//<<>>for( rechits )
     }//<<>>for( entries )
@@ -2328,10 +2359,16 @@ bool KUCMS_TimeCalibration::makeGain1CaliMapsEGR( std::string inputFileName, boo
           maximumRangeRun = observedRun->second;
         }//<<>>if( range observed )
       }//<<>>if( tag observed )
-      if( tagEntry.second >= range.endRun ) range.lastRun = range.endRun;
-      else if( rangeObserved ) range.lastRun = std::min(maximumRangeRun,range.endRun);
-      if( range.updated && not range.makeMeanMap(false) ) return false;
-      range.updated = false;
+      if( range.updated ){
+        if( range.lastRun != range.endRun ){
+          // Match makeCaliMapsEGR: low MC run numbers close at the configured IOV end.
+          if( rangeObserved && maximumRangeRun > 100000 )
+            range.lastRun = std::min(maximumRangeRun,range.endRun);
+          else range.lastRun = range.endRun;
+        }//<<>>if( range is not already closed )
+        if( not range.makeMeanMap(false,useMCInput(tagEntry.first)) ) return false;
+        range.updated = false;
+      }//<<>>if( range updated )
     }//<<>>for( TT ranges )
   }//<<>>for( TT tags )
 
@@ -2355,7 +2392,7 @@ bool KUCMS_TimeCalibration::makeGain1CaliMapsEGR( std::string inputFileName, boo
           const double correctedSum = raw.sum - raw.cnt*correction;
           const double correctedSumSqr = raw.sumsqr - 2.0*correction*raw.sum +
           raw.cnt*correction*correction;
-          if( not crystalRange.mergeSumCnt(rawEntry.first,correctedSum,correctedSumSqr,raw.cnt) )
+          if( not crystalRange.mergeSumCnt(rawEntry.first,correctedSum,correctedSumSqr,raw.cnt,raw.sumWeight2,useMCInput(tagEntry.first)) )
           return false;
         }//<<>>for( crystal accumulators )
       }//<<>>for( TT IOV partitions )
@@ -2376,10 +2413,15 @@ bool KUCMS_TimeCalibration::makeGain1CaliMapsEGR( std::string inputFileName, boo
           maximumRangeRun = observedRun->second;
         }//<<>>if( range observed )
       }//<<>>if( tag observed )
-      if( tagEntry.second >= range.endRun ) range.lastRun = range.endRun;
-      else if( rangeObserved ) range.lastRun = std::min(maximumRangeRun,range.endRun);
-      if( range.updated && not range.makeMeanMap(false) ) return false;
-      range.updated = false;
+      if( range.updated ){
+        if( range.lastRun != range.endRun ){
+          if( rangeObserved && maximumRangeRun > 100000 )
+            range.lastRun = std::min(maximumRangeRun,range.endRun);
+          else range.lastRun = range.endRun;
+        }//<<>>if( range is not already closed )
+        if( not range.makeMeanMap(false,useMCInput(tagEntry.first)) ) return false;
+        range.updated = false;
+      }//<<>>if( range updated )
     }//<<>>for( crystal ranges )
   }//<<>>for( crystal tags )
 
@@ -2403,9 +2445,6 @@ bool KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 
   bool debug = false;
   //bool debug = true;
-
-  //bool doMC = true;
-  bool doMC = false;
 
   // make generic fill with specialized calling functions for input and TT v X
   // assume bool doTT to inicate TT of X Cali set
@@ -2454,7 +2493,6 @@ bool KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 
 
   std::cout << "open input files list : " << inputFileName << std::endl;
-  float fillwgt = 1;
   std::ifstream infilelist(inputFileName);
   if( !infilelist.is_open() ){
     std::cerr << "ERROR: could not open input file list: " << inputFileName << std::endl;
@@ -2469,11 +2507,12 @@ bool KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
     std::cout << std::endl;
     std::stringstream ss(infilestr);
     std::string subdir, matchstr, tag;
-    int srun = 0, erun = 0, dolast = 0, wgt = 1;
-
-    bool parsed = doMC ? bool( ss >> subdir >> matchstr >> srun >> erun >> tag >> dolast >> wgt )
-    : bool( ss >> subdir >> matchstr >> srun >> erun >> tag >> dolast );
-    if( not parsed || subdir.empty() || matchstr.empty() || tag.empty() || srun > erun || ( dolast != 0 && dolast != 1 ) ){
+    int srun = 0, erun = 0, dolast = 0;
+    double fillwgt = 1.0;
+    const bool parsed = bool( ss >> subdir >> matchstr >> srun >> erun >> tag >> dolast );
+    const bool weightedMC = useMCInput(tag);
+    const bool weightRead = not weightedMC || bool( ss >> fillwgt );
+    if( not parsed || not weightRead || not std::isfinite(fillwgt) || fillwgt <= 0 || subdir.empty() || matchstr.empty() || tag.empty() || srun > erun || ( dolast != 0 && dolast != 1 ) ){
       std::cerr << "ERROR: malformed calibration input row: " << infilestr << std::endl;
       return false;
     }//<<>>if( malformed row )
@@ -2481,7 +2520,7 @@ bool KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
     std::string wichtype = doTT ? "TT" : "X";
 
     doLastRun = dolast;
-    if( doMC ) fillwgt = wgt;
+    std::cout << "Input weighting: " << (weightedMC ? "MC" : "unit") << " weight=" << fillwgt << std::endl;
 
     if( isCC and doUnCC ) tag += "unc";
     std::cout << "open input file : " << subdir << " " << matchstr << std::endl;
@@ -2709,6 +2748,11 @@ bool KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
             //if( debug) std::cout  << " nrh " << nRecHits << std::endl;
             // if end == last : all runs in range completed, if run > last : run in range already filled
             if( GID > 1 ) range.doGID2 = true;
+            if( weightedMC && GID > 1 && range.hasGID2 ){
+              std::cerr << "ERROR: cannot extend a completed weighted MC gain-2+ range." << std::endl;
+              delete fInTree;
+              return false;
+            }
             if( run > range.lastRun || ( not range.hasGID2 && range.doGID2 ) ){
 
               for( int idx = 0; idx < nRecHits; idx++ ){
@@ -2778,7 +2822,7 @@ bool KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 
                 uInt fcrsid = doHgGs ? hgcrsid : crsid;
                 float fcrstime = doHgGs ? hgcrstime : bcrstime;
-                if( not range.fillSumCnt( fcrsid, fcrstime, fillwgt ) ){
+                if( not range.fillSumCnt( fcrsid, fcrstime, fillwgt, false, weightedMC ) ){
                   delete fInTree;
                   return false;
                 }//<<>>if( fill failed )
@@ -2886,7 +2930,7 @@ bool KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 
             uInt fcrsid = doHgGs ? hgcrsid : crsid;
             float fcrstime = doHgGs ? hgcrstime : bcrstime;
-            if( not calirunset[tag][tstart].fillSumCnt( fcrsid, fcrstime, fillwgt ) ){
+            if( not calirunset[tag][tstart].fillSumCnt( fcrsid, fcrstime, fillwgt, false, weightedMC ) ){
               delete fInTree;
               return false;
             }//<<>>if( fill failed )
@@ -2931,7 +2975,7 @@ bool KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
             if( finalRun > 100000 ) range.lastRun = ( finalRun < range.endRun ) ? finalRun : range.endRun;
             else range.lastRun = 999999;
           }//<<>>if( range.lastRun != range.endRun )
-          if( not range.makeMeanMap( false ) ) return false;
+          if( not range.makeMeanMap( false, useMCInput(calirun.first) ) ) return false;
           range.updated = false;
           if( GID > 1 && ( range.lastRun == range.endRun ) ){ range.hasGID2 = true; range.doGID2 = false; }
         }//<<>>if( range.updated )
@@ -2943,10 +2987,11 @@ bool KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doT
 
 }//<<>>bool KUCMS_TimeCalibration::makeCaliMapsEGR( std::string inputFileName, bool doTT, int GID, bool small, bool doCali )
 
-bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool scale, bool usecali, bool smear, std::string ext ){
+bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool scale, bool usecali, bool smear, std::string ext, bool batchMode ){
 
   std::cout << "Creating 2D Resolution Hist from EgammaRes Ntuples " << std::endl;
-  if( not usecali ) std::cout << " -- NoCali " << std::endl;
+  if( batchMode ) std::cout << " -- Batch mode: gain-1-only and all-gains; calibration selected per input tag" << std::endl;
+  else if( not usecali ) std::cout << " -- NoCali " << std::endl;
   if( smear ) std::cout << " -- Smeared " << std::endl;
 
   bool debug = false;
@@ -2954,7 +2999,6 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
   bool small = false;
   //bool small = true;
 
-  float fillwgt = 1;
 
   const std::string treename("tree/llpgtree");
 
@@ -2967,7 +3011,8 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
   std::cout << " -- use low energy : " << lowEnergy << std::endl;
   std::cout << " -- xbins : " << xBinStr << std::endl;
   std::cout << " -- ybins : " << yBinStr << std::endl;
-  if( useGSwitch ) std::cout << " -- using GS with high gian included : " << doAllGain << " lower energy bound : " << lB << std::endl;
+  if( batchMode ) std::cout << " -- batch gain selection enabled; lower energy bound : " << lB << std::endl;
+  else if( useGSwitch ) std::cout << " -- using GS with high gian included : " << doAllGain << " lower energy bound : " << lB << std::endl;
   else std::cout << " -- upper energy bound : " << uB << " lower energy bound : " << lB << std::endl;
 
   // Declaration of leaf types
@@ -3048,7 +3093,8 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 
     std::stringstream ss(infilestr);
     std::string subdir, matchstr, tag;
-    int srun(0), erun(0), wgt(1), dolast(0);
+    int srun(0), erun(0), dolast(0);
+    double fillwgt = 1.0;
 
 
     //if( !(ss >> subdir >> matchstr >> srun >> erun >> tag) ){
@@ -3057,14 +3103,15 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
     //}//<<>>if( !(ss >> subdir >> matchstr >> srun >> erun >> tag) )
 
     //if( !( ss >> infilename >> srun >> erun >> tag )) std::cout << "[WARN] Parse error in : " << infilestr << std::endl; continue;
-    const bool parsed = doMC ? bool(ss >> subdir >> matchstr >> srun >> erun >> tag >> dolast >> wgt)
-    : bool(ss >> subdir >> matchstr >> srun >> erun >> tag >> dolast);
-    if( not parsed || subdir.empty() || matchstr.empty() || tag.empty() || srun > erun ||
+    const bool parsed = bool(ss >> subdir >> matchstr >> srun >> erun >> tag >> dolast);
+    const bool weightedMC = useMCInput(tag);
+    const bool weightRead = not weightedMC || bool(ss >> fillwgt);
+    if( not parsed || not weightRead || not std::isfinite(fillwgt) || fillwgt <= 0 || subdir.empty() || matchstr.empty() || tag.empty() || srun > erun ||
     (dolast != 0 && dolast != 1) ){
       std::cerr << "ERROR: malformed resolution input row: " << infilestr << std::endl;
       return false;
     }//<<>>if( malformed row )
-    if( doMC ) fillwgt = wgt;
+    std::cout << "Input weighting: " << (weightedMC ? "MC" : "unit") << " weight=" << fillwgt << std::endl;
 
     if( subdir == "None" ) subdir = "";
     if( matchstr == "None" ) matchstr = "";
@@ -3091,9 +3138,20 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
     std::cout << "For Run " << srun << " to Run " << erun << std::endl;
     std::cout << "Producing 2D Resolution Map " << std::endl;
 
+    // Batch mode emits an uncalibrated set for every tag and adds calibrated
+    // sets only when both crystal and trigger-tower maps are available.
+    const bool hasCrystalCali = CaliRunMapSet.find(tag) != CaliRunMapSet.end();
+    const bool hasTTCali = TTCaliRunMapSet.find(tag) != TTCaliRunMapSet.end();
+    if( batchMode && hasCrystalCali != hasTTCali ){
+      std::cerr << "ERROR: incomplete calibration maps for batch-mode tag " << tag << std::endl;
+      return false;
+    }//<<>>if( incomplete batch calibration maps )
+    const bool tagHasCalibration = hasCrystalCali && hasTTCali;
+    if( batchMode && not tagHasCalibration )
+    std::cout << " -- No complete calibration maps for tag " << tag << "; producing uncalibrated plots only" << std::endl;
+
     // insure we have Calimaps if we are doing Xtal calibration maps
-    if( usecali && (CaliRunMapSet.find(tag) == CaliRunMapSet.end() ||
-    TTCaliRunMapSet.find(tag) == TTCaliRunMapSet.end()) ){
+    if( not batchMode && usecali && not tagHasCalibration ){
       std::cerr << "ERROR: incomplete calibration maps for tag " << tag << std::endl;
       return false;
     }//<<>>if( calibration tag is incomplete )
@@ -3176,7 +3234,7 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
     }//<<>>if( nAdded == 0 )
 
     const bool useUnCCTime = isCC && doUnCC;
-    const bool needGainInfo = useGSwitch && (not doAllGain || usecali || smear);
+    const bool needGainInfo = batchMode || (useGSwitch && (not doAllGain || usecali || smear));
     fInTree->SetBranchStatus("*",0);
     bool branchesValid = true;
     auto requireBranch = [&]( const char* name, auto* address, TBranch** branch ){
@@ -3229,19 +3287,7 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
     if( debug ) nEntries = ( nEntries < 10000 ) ? nEntries : 10000;
     //if( debug )
 
-    std::string caliend = usecali ? "" : nocalistr;
-    if( doUnCC ) caliend += uncorstr;
-    if( smear ) caliend += smearstr;
-    caliend += ext;
     const std::string histMapName = "ResMap_" + std::to_string(srun) + "_" + std::to_string(erun);
-    const std::string lsfnameeb = histMapName + lochist + caliend + eb_hist;
-    const std::string ldfnameeb = histMapName + druhist + caliend + eb_hist;
-    const std::string gbfnameeb = histMapName + globhist + caliend + eb_hist;
-    const std::string efnameeb = histMapName + ehist + caliend + eb_hist;
-    const std::string lsfnameee = histMapName + lochist + caliend + ee_hist;
-    const std::string ldfnameee = histMapName + druhist + caliend + ee_hist;
-    const std::string gbfnameee = histMapName + globhist + caliend + ee_hist;
-    const std::string efnameee = histMapName + ehist + caliend + ee_hist;
     auto getOrCreateResolutionHist = [&]( const std::string& name, bool amplitudeVsEnergy ){
       auto existing = CaliHists.find(name);
       if( existing != CaliHists.end() ) return existing->second.h2f;
@@ -3254,15 +3300,60 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
       CaliHists[name] = { hist, name, true, true };
       return hist;
     };
-    TH2F* localSameEB = getOrCreateResolutionHist(lsfnameeb,false);
-    TH2F* localDifferentEB = getOrCreateResolutionHist(ldfnameeb,false);
-    TH2F* globalEB = getOrCreateResolutionHist(gbfnameeb,false);
-    TH2F* amplitudeEnergyEB = getOrCreateResolutionHist(efnameeb,true);
-    TH2F* localSameEE = getOrCreateResolutionHist(lsfnameee,false);
-    TH2F* localDifferentEE = getOrCreateResolutionHist(ldfnameee,false);
-    TH2F* globalEE = getOrCreateResolutionHist(gbfnameee,false);
-    TH2F* amplitudeEnergyEE = getOrCreateResolutionHist(efnameee,true);
-    const bool fillResolutionHists = CaliHists.find(lsfnameeb)->second.isNew;
+    struct ResolutionHistSet {
+      bool useCalibration;
+      bool gain1Only;
+      bool fill;
+      TH2F* localSameEB;
+      TH2F* localDifferentEB;
+      TH2F* globalEB;
+      TH2F* amplitudeEnergyEB;
+      TH2F* localSameEE;
+      TH2F* localDifferentEE;
+      TH2F* globalEE;
+      TH2F* amplitudeEnergyEE;
+    };
+    std::vector<ResolutionHistSet> resolutionHistSets;
+    std::vector<std::pair<bool,bool>> plotModes;
+    if( batchMode ){
+      plotModes.emplace_back(false,true);  // uncalibrated, gain 1 only
+      plotModes.emplace_back(false,false); // uncalibrated, all gains
+      if( tagHasCalibration ){
+        plotModes.emplace_back(true,true);  // calibrated, gain 1 only
+        plotModes.emplace_back(true,false); // calibrated, all gains
+      }//<<>>if( tag has calibration maps )
+    } else plotModes.emplace_back(usecali,false);
+    for( const auto& mode : plotModes ){
+      const bool modeUsesCalibration = mode.first;
+      const bool modeGain1Only = mode.second;
+      std::string caliend;
+      if( batchMode ) caliend += modeGain1Only ? "_Gain1Only" : "_AllGains";
+      if( not modeUsesCalibration ) caliend += nocalistr;
+      if( doUnCC ) caliend += uncorstr;
+      if( smear ) caliend += smearstr;
+      caliend += ext;
+      const std::string lsfnameeb = histMapName + lochist + caliend + eb_hist;
+      const std::string ldfnameeb = histMapName + druhist + caliend + eb_hist;
+      const std::string gbfnameeb = histMapName + globhist + caliend + eb_hist;
+      const std::string efnameeb = histMapName + ehist + caliend + eb_hist;
+      const std::string lsfnameee = histMapName + lochist + caliend + ee_hist;
+      const std::string ldfnameee = histMapName + druhist + caliend + ee_hist;
+      const std::string gbfnameee = histMapName + globhist + caliend + ee_hist;
+      const std::string efnameee = histMapName + ehist + caliend + ee_hist;
+      ResolutionHistSet hists = {
+        modeUsesCalibration, modeGain1Only, false,
+        getOrCreateResolutionHist(lsfnameeb,false),
+        getOrCreateResolutionHist(ldfnameeb,false),
+        getOrCreateResolutionHist(gbfnameeb,false),
+        getOrCreateResolutionHist(efnameeb,true),
+        getOrCreateResolutionHist(lsfnameee,false),
+        getOrCreateResolutionHist(ldfnameee,false),
+        getOrCreateResolutionHist(gbfnameee,false),
+        getOrCreateResolutionHist(efnameee,true)
+      };
+      hists.fill = CaliHists.find(lsfnameeb)->second.isNew;
+      resolutionHistSets.push_back(hists);
+    }//<<>>for( plot modes )
     auto findCalibrationRange = []( const auto& mapSet, const std::string& calibrationTag, int eventRun )
     -> const kucms_CaliRunClass* {
       auto tagSet = mapSet.find(calibrationTag);
@@ -3276,7 +3367,6 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
     const kucms_CaliRunClass* cachedCrystalRange = nullptr;
     const kucms_CaliRunClass* cachedTTRange = nullptr;
     auto getCachedCalibration = [&]( uInt rechitID, int gainID, const kucms_DetIDStruct& detInfo ){
-      if( not usecali ) return 0.f;
       if( cachedCalibrationRun != static_cast<int>(run) ){
         cachedCalibrationRun = run;
         cachedCrystalRange = findCalibrationRange(CaliRunMapSet,tag,run);
@@ -3452,7 +3542,9 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
         //if( debug) std::cout << " - check lastRun : " << run << " last " << range.lastRun << std::endl;
         // if end == last : all runs in range completed, if run > last : run in range already filled
         //if( range.lastRun >= range.endRun ){ // caliRunRange is ready for 2d res plot
-        if( fillResolutionHists ){
+        const bool fillAnyResolutionHists = std::any_of(resolutionHistSets.begin(),resolutionHistSets.end(),
+        []( const ResolutionHistSet& hists ){ return hists.fill; });
+        if( fillAnyResolutionHists ){
 
           // ----  fill res hist
 
@@ -3531,8 +3623,8 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
 
           bool le_cut = (eventResE[0]>=lB)&&(eventResE[0]<=uB)&&(eventResE[1]>=lB)&&(eventResE[1]<=uB);
           bool ge_cut = (eventResE[2]>=lB)&&(eventResE[2]<=uB)&&(eventResE[3]>=lB)&&(eventResE[3]<=uB);
-          if( useGSwitch ){
-            if( doAllGain ){
+          if( useGSwitch || batchMode ){
+            if( doAllGain || batchMode ){
               le_cut = eventResE[0] >= lB && eventResE[1] >= lB;
               ge_cut = eventResE[2] >= lB && eventResE[3] >= lB;
             } else {
@@ -3543,35 +3635,28 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
           const bool levent_good = le_cut && goodLocRHs && goodLocTime && validLocInputs;
           const bool gevent_good = ge_cut && goodGloRHs && goodGloTime && validGloInputs;
 
-          const float seedTimeIC00 = usecali && levent_good ? getCachedCalibration(eventResRhID[0],rhGainId[0],idinfoL0) : 0;
-          const float seedTimeIC10 = usecali && levent_good ? getCachedCalibration(eventResRhID[1],rhGainId[1],idinfoL1) : 0;
-          const float seedTimeIC01 = usecali && gevent_good ? getCachedCalibration(eventResRhID[2],rhGainId[2],idinfoG0) : 0;
-          const float seedTimeIC11 = usecali && gevent_good ? getCachedCalibration(eventResRhID[3],rhGainId[3],idinfoG1) : 0;
-          double lyf0 = Time0-seedTimeIC00;
-          double lyf1 = Time1-seedTimeIC10;
-          double gyf0 = Time2-seedTimeIC01;
-          double gyf1 = Time3-seedTimeIC11;
-
-          if( smear ){
-            //std::cout << "Times are smeared !!!!!" << std::endl;
-
-            float amp0 = eventResRhID[0] > 0 ? eventResAmp[0] : -999;
-            float amp1 = eventResRhID[1] > 0 ? eventResAmp[1] : -999;
-            float amp2 = eventResRhID[2] > 0 ? eventResAmp[2] : -999;
-            float amp3 = eventResRhID[3] > 0 ? eventResAmp[3] : -999;
-
-            //getCorrectedTime( time, amplitude, rechitID, Evt_run, dataSetKey, mctype, gainID )
+          const bool canApplyCalibration = batchMode ? tagHasCalibration : usecali;
+          const float seedTimeIC00 = canApplyCalibration && levent_good ? getCachedCalibration(eventResRhID[0],rhGainId[0],idinfoL0) : 0;
+          const float seedTimeIC10 = canApplyCalibration && levent_good ? getCachedCalibration(eventResRhID[1],rhGainId[1],idinfoL1) : 0;
+          const float seedTimeIC01 = canApplyCalibration && gevent_good ? getCachedCalibration(eventResRhID[2],rhGainId[2],idinfoG0) : 0;
+          const float seedTimeIC11 = canApplyCalibration && gevent_good ? getCachedCalibration(eventResRhID[3],rhGainId[3],idinfoG1) : 0;
+          std::array<double,4> legacyCorrectedTimes = {
+            Time0-seedTimeIC00,Time1-seedTimeIC10,Time2-seedTimeIC01,Time3-seedTimeIC11
+          };
+          if( smear && not batchMode ){
+            const float amp0 = eventResRhID[0] > 0 ? eventResAmp[0] : -999;
+            const float amp1 = eventResRhID[1] > 0 ? eventResAmp[1] : -999;
+            const float amp2 = eventResRhID[2] > 0 ? eventResAmp[2] : -999;
+            const float amp3 = eventResRhID[3] > 0 ? eventResAmp[3] : -999;
             if( validLocTime && validLocInputs && eventResRhID[0] != 0 && eventResRhID[1] != 0 ){
-              lyf0 = getCorrectedTime( lyf0, amp0, eventResRhID[0], run, tag, 0, rhGainId[0], false );
-              lyf1 = getCorrectedTime( lyf1, amp1, eventResRhID[1], run, tag, 0, rhGainId[1], false );
+              legacyCorrectedTimes[0] = getCorrectedTime(legacyCorrectedTimes[0],amp0,eventResRhID[0],run,tag,0,rhGainId[0],false);
+              legacyCorrectedTimes[1] = getCorrectedTime(legacyCorrectedTimes[1],amp1,eventResRhID[1],run,tag,0,rhGainId[1],false);
             }//<<>>if( valid local times )
             if( validGloTime && validGloInputs && eventResRhID[2] != 0 && eventResRhID[3] != 0 ){
-              gyf0 = getCorrectedTime( gyf0, amp2, eventResRhID[2], run, tag, 0, rhGainId[2], false );
-              gyf1 = getCorrectedTime( gyf1, amp3, eventResRhID[3], run, tag, 0, rhGainId[3], false );
+              legacyCorrectedTimes[2] = getCorrectedTime(legacyCorrectedTimes[2],amp2,eventResRhID[2],run,tag,0,rhGainId[2],false);
+              legacyCorrectedTimes[3] = getCorrectedTime(legacyCorrectedTimes[3],amp3,eventResRhID[3],run,tag,0,rhGainId[3],false);
             }//<<>>if( valid global times )
-
-
-          }//<<>>if( smear )
+          }//<<>>if( legacy smearing )
           if( not levent_good && not gevent_good ) continue;
           const double leffa0 = useAmp ? eventResAmp[0] : eventResE[0];
           const double leffa1 = useAmp ? eventResAmp[1] : eventResE[1];
@@ -3582,8 +3667,6 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
           const double lxfill = (leffa0*leffa1)/sqrt(leffa0*leffa0+leffa1*leffa1);
           const double lxfille = (leffe0*leffe1)/sqrt(leffe0*leffe0+leffe1*leffe1);
           const double gxfill = (geffa0*geffa1)/sqrt(geffa0*geffa0+geffa1*geffa1);
-          const double lyfill = lyf0-lyf1+eventResTOF[0]-eventResTOF[1];
-          const double gyfill = gyf0-gyf1+eventResTOF[2]-eventResTOF[3];
           const bool leta_cut_eb = idinfoL0.ecal == ECAL::EB && idinfoL1.ecal == ECAL::EB;
           const bool geta_cut_eb = idinfoG0.ecal == ECAL::EB && idinfoG1.ecal == ECAL::EB;
           const bool leta_cut_ee = idinfoL0.ecal != ECAL::EB && idinfoL1.ecal != ECAL::EB;
@@ -3609,22 +3692,57 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
           if( gevent_good && debug ){
             std::cout << " -- IC0g: " << seedTimeIC01 << " IC1g: " << seedTimeIC11 << std::endl;
           }//<<>>if( gevent_good && debug )
-          if( levent_good && isd_cut ){
-            if( leta_cut_eb ){
-              localSameEB->Fill(lxfill,lyfill,fillwgt);
-              amplitudeEnergyEB->Fill(lxfill,lxfille,fillwgt); }
-            if( leta_cut_ee ){
-              localSameEE->Fill(lxfill,lyfill,fillwgt);
-              amplitudeEnergyEE->Fill(lxfill,lxfille,fillwgt); }
-          }//<<>>if( levent_good && isd_cut )
-          if( gevent_good ){
-            if( geta_cut_eb ) globalEB->Fill(gxfill,gyfill,fillwgt);
-            if( geta_cut_ee ) globalEE->Fill(gxfill,gyfill,fillwgt);
-          }//<<>>if( gevent_good )
-          if( levent_good && not isd_cut ){
-            if( leta_cut_eb ) localDifferentEB->Fill(lxfill,lyfill,fillwgt);
-            if( leta_cut_ee ) localDifferentEE->Fill(lxfill,lyfill,fillwgt);
-          }//<<>>if( levent_good && not isd_cut )
+          const std::array<double,4> amplitudes = {eventResAmp[0],eventResAmp[1],eventResAmp[2],eventResAmp[3]};
+          const std::array<unsigned int,4> rechitIDs = {eventResRhID[0],eventResRhID[1],eventResRhID[2],eventResRhID[3]};
+          const std::array<int,4> gainIDs = {rhGainId[0],rhGainId[1],rhGainId[2],rhGainId[3]};
+          const std::array<double,4> seedCorrections = {seedTimeIC00,seedTimeIC10,seedTimeIC01,seedTimeIC11};
+          for( auto& hists : resolutionHistSets ){
+            if( not hists.fill ) continue;
+            const bool localGainSelected = not batchMode || not hists.gain1Only ||
+            (gainIDs[0] == 1 && gainIDs[1] == 1);
+            const bool globalGainSelected = not batchMode || not hists.gain1Only ||
+            (gainIDs[2] == 1 && gainIDs[3] == 1);
+            const bool fillLocal = levent_good && localGainSelected;
+            const bool fillGlobal = gevent_good && globalGainSelected;
+            if( not fillLocal && not fillGlobal ) continue;
+
+            std::array<double,4> correctedTimes = batchMode
+            ? std::array<double,4>{Time0,Time1,Time2,Time3} : legacyCorrectedTimes;
+            if( batchMode && hists.useCalibration )
+            for( std::size_t idx = 0; idx < correctedTimes.size(); idx++ )
+            correctedTimes[idx] -= seedCorrections[idx];
+
+            if( smear && batchMode ){
+              for( std::size_t idx = 0; idx < correctedTimes.size(); idx++ ){
+                const bool isLocal = idx < 2;
+                const bool validTime = isLocal ? validLocTime : validGloTime;
+                const bool validInputs = isLocal ? validLocInputs : validGloInputs;
+                if( validTime && validInputs && rechitIDs[idx] != 0 )
+                correctedTimes[idx] = getCorrectedTime(correctedTimes[idx],amplitudes[idx],rechitIDs[idx],run,tag,0,gainIDs[idx],false);
+              }//<<>>for( rechit times )
+            }//<<>>if( smear )
+
+            const double localY = correctedTimes[0]-correctedTimes[1]+eventResTOF[0]-eventResTOF[1];
+            const double globalY = correctedTimes[2]-correctedTimes[3]+eventResTOF[2]-eventResTOF[3];
+            if( fillLocal && isd_cut ){
+              if( leta_cut_eb ){
+                hists.localSameEB->Fill(lxfill,localY,fillwgt);
+                hists.amplitudeEnergyEB->Fill(lxfill,lxfille,fillwgt);
+              }
+              if( leta_cut_ee ){
+                hists.localSameEE->Fill(lxfill,localY,fillwgt);
+                hists.amplitudeEnergyEE->Fill(lxfill,lxfille,fillwgt);
+              }
+            }//<<>>if( fill local same-TT )
+            if( fillGlobal ){
+              if( geta_cut_eb ) hists.globalEB->Fill(gxfill,globalY,fillwgt);
+              if( geta_cut_ee ) hists.globalEE->Fill(gxfill,globalY,fillwgt);
+            }//<<>>if( fill global )
+            if( fillLocal && not isd_cut ){
+              if( leta_cut_eb ) hists.localDifferentEB->Fill(lxfill,localY,fillwgt);
+              if( leta_cut_ee ) hists.localDifferentEE->Fill(lxfill,localY,fillwgt);
+            }//<<>>if( fill local different-TT )
+          }//<<>>for( resolution histogram sets )
           if(debug) std::cout << " - Fill hists done" << std::endl;
 
         }//if( CaliHists[lsfname].isNew )
@@ -3677,7 +3795,7 @@ bool KUCMS_TimeCalibration::plot2dResolutionEGR( std::string inputFileName, bool
   std::cout << "Finished making 2D delta t v eff amp plots" << std::endl;
   return true;
 
-}//<<>> bool plot2dResolutionEGR( std::string inputFileName, bool scale, bool usecali, bool smear, std::string ext )
+}//<<>> bool plot2dResolutionEGR( std::string inputFileName, bool scale, bool usecali, bool smear, std::string ext, bool batchMode )
 
 kucms_SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D ){
 
@@ -3718,7 +3836,9 @@ kucms_SigmaFitResult KUCMS_TimeCalibration::runTimeFitter( TH2F* hist2D ){
 
   std::string fittypename = ( doSterm ) ? "_NSC" : "_NC";
   //std::string outfilename = caliFileDir + f2DHistName + fittypename  + "_resfit.root";
-  std::string outfilename = f2DHistName + fittypename  + "_resfit.root";
+  std::filesystem::path outputPath = std::filesystem::path(resFitOutputDir) /
+    ( f2DHistName + fittypename + "_resfit.root" );
+  std::string outfilename = outputPath.string();
   TFile* resTFile = TFile::Open( outfilename.c_str(), "RECREATE" );
   if( not resTFile || resTFile->IsZombie() ){
     std::cerr << "ERROR: failed to create time-fit output file: " << outfilename << std::endl;
@@ -4798,6 +4918,14 @@ bool KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
       return false;
     }//<<>>if( invalid input range )
     if( input.endRun < srun || input.startRun > erun ) continue;
+    if( isCC && doUnCC ){
+      if( input.tag == "r3_p25" ) input.tag = "r3_p25unc";
+      else if( input.tag == "r3_p26" ) input.tag = "r3_p26unc";
+      else{
+        std::cerr << "ERROR: bad tag for uncorrected CC times: " << input.tag << std::endl;
+        return false;
+      }//<<>>if( unsupported uncorrected CC tag )
+    }//<<>>if( isCC && doUnCC )
     inputs.push_back(input);
   }//<<>>while( input rows )
   if( inputs.empty() ){
@@ -4970,6 +5098,8 @@ bool KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
     int cachedRun = -1;
     const kucms_CaliRunClass* crystalRange = nullptr;
     const kucms_CaliRunClass* ttRange = nullptr;
+    std::unordered_map<uInt,double> correctionCache;
+    correctionCache.reserve(8192);
     for( Long64_t centry = 0; centry < nEntries; centry++ ){
       if( centry >= nextProgressEntry ){
         const int completedPercent = static_cast<int>(100.0L*centry/nEntries);
@@ -4999,8 +5129,11 @@ bool KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
 
       if( cachedRun != static_cast<int>(run) ){
         cachedRun = run;
-        crystalRange = makeCalibrated ? findRange(CaliRunMapSet,input.tag,run) : nullptr;
-        ttRange = makeCalibrated ? findRange(TTCaliRunMapSet,input.tag,run) : nullptr;
+        const auto* nextCrystalRange = makeCalibrated ? findRange(CaliRunMapSet,input.tag,run) : nullptr;
+        const auto* nextTTRange = makeCalibrated ? findRange(TTCaliRunMapSet,input.tag,run) : nullptr;
+        if( crystalRange != nextCrystalRange || ttRange != nextTTRange ) correctionCache.clear();
+        crystalRange = nextCrystalRange;
+        ttRange = nextTTRange;
         if( makeCalibrated && (not crystalRange || not ttRange || crystalRange->meanMap.empty() ||
         ttRange->meanMap.empty()) ){
           std::cout << "WARNING: complete calibration maps are unavailable for tag " << input.tag
@@ -5039,16 +5172,20 @@ bool KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
 
         double calibratedTime = rawTime;
         if( makeCalibrated ){
-          double correction = 0.0;
-          auto crystalMean = crystalRange->meanMap.find(id);
-          if( crystalMean != crystalRange->meanMap.end() ) correction += crystalMean->second;
-          auto ttMean = ttRange->meanMap.find(det->second.ttId);
-          if( ttMean != ttRange->meanMap.end() ) correction += ttMean->second;
-          if( not std::isfinite(correction) ){
-            std::cerr << "ERROR: non-finite calibration for detID " << id << " run " << run << std::endl;
-            return false;
-          }//<<>>if( invalid correction )
-          calibratedTime -= correction;
+          auto cachedCorrection = correctionCache.find(id);
+          if( cachedCorrection == correctionCache.end() ){
+            double correction = 0.0;
+            auto crystalMean = crystalRange->meanMap.find(id);
+            if( crystalMean != crystalRange->meanMap.end() ) correction += crystalMean->second;
+            auto ttMean = ttRange->meanMap.find(det->second.ttId);
+            if( ttMean != ttRange->meanMap.end() ) correction += ttMean->second;
+            if( not std::isfinite(correction) ){
+              std::cerr << "ERROR: non-finite calibration for detID " << id << " run " << run << std::endl;
+              return false;
+            }//<<>>if( invalid correction )
+            cachedCorrection = correctionCache.emplace(id,correction).first;
+          }//<<>>if( correction not cached )
+          calibratedTime -= cachedCorrection->second;
         }//<<>>if( calibrated output enabled )
         auto& accumulator = det->second.isEB ? ebMoments : eeMoments;
         auto& moments = accumulator[makeTTKey(run,det->second.ttId)];
@@ -5077,7 +5214,8 @@ bool KUCMS_TimeCalibration::plotMeanRunTimeEGR( std::string inputFileName, int s
   const double runHighEdge = static_cast<double>(erun) + 0.5;
   constexpr unsigned long long minimumTTCount = 100;
   auto writeMeanHistograms = [&]( bool calibrated ){
-    const std::string suffix = calibrated ? "_cali" : "_nocali";
+    std::string suffix = calibrated ? "_cali" : "_nocali";
+    if( isCC && doUnCC ) suffix += "_UnCorr";
     const std::string baseName = "meanRunTime_" + std::to_string(srun) + "_to_" +
     std::to_string(erun) + suffix;
     const std::string ebName = baseName + "_allTT_eb";

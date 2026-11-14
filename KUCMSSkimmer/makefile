@@ -62,7 +62,7 @@ SRCDIR = ./src
 RJR_SRC = $(SRCDIR)/rjr_plotting.cpp
 
 MAIN_CPP := $(SRCDIR)/runKUCMSAodSVSkimmer.cpp $(SRCDIR)/runLocalKUCMSAodSVSkimmer.cpp 
-MAIN_CPP += $(TCALI_SRCDIR)/makeKUCMSTimeCalibration.cpp $(TCALI_SRCDIR)/makeKUCMSTimeResolution.cpp
+MAIN_CPP += $(TCALI_SRCDIR)/makeKUCMSTimeCalibration.cpp $(TCALI_SRCDIR)/makeKUCMSTimeResolution.cpp $(TCALI_SRCDIR)/makeKUCMSTimeResolutionBatch.cpp
 SUPPORT_CPP := $(filter-out $(MAIN_CPP), $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/*.cc) ) 
 SUPPORT_CPP := $(filter-out $(MAIN_CPP), $(wildcard $(TCALI_SRCDIR)/*.cpp) $(wildcard $(TCALI_SRCDIR)/*.cc))
 SUPPORT_CPP += $(filter-out $(MAIN_CPP) $(RJR_SRC), $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/*.cc))
@@ -75,6 +75,7 @@ EXE_MAIN = runKUCMSAodSVSkimmer$(BUILD_SUFFIX).obj
 EXE_LOCAL = runLocalKUCMSAodSVSkimmer$(BUILD_SUFFIX).obj
 EXE_CALI = makeKUCMSTimeCalibration$(BUILD_SUFFIX).obj
 EXE_RES = makeKUCMSTimeResolution$(BUILD_SUFFIX).obj
+EXE_RES_BATCH = makeKUCMSTimeResolutionBatch$(BUILD_SUFFIX).obj
 EXE_RJR = rjr_plotting$(BUILD_SUFFIX).obj
 RJR_OBJ = $(MAINOBJDIR)/rjr_plotting.o
 
@@ -108,6 +109,7 @@ MAIN_OBJ := $(MAINOBJDIR)/runKUCMSAodSVSkimmer.o
 LOCAL_OBJ := $(MAINOBJDIR)/runLocalKUCMSAodSVSkimmer.o
 TCALI_OBJ := $(MAINOBJDIR)/makeKUCMSTimeCalibration.o
 TRES_OBJ  := $(MAINOBJDIR)/makeKUCMSTimeResolution.o
+TRES_BATCH_OBJ := $(MAINOBJDIR)/makeKUCMSTimeResolutionBatch.o
 
 # Executables
 
@@ -116,6 +118,7 @@ local: $(EXE_LOCAL)
 time: $(EXE_CALI) $(EXE_RES)
 cali: $(EXE_CALI) 
 res: $(EXE_RES)
+resbatch: $(EXE_RES_BATCH)
 rjr_plotting: $(EXE_RJR)
 
 debug:
@@ -143,6 +146,10 @@ $(EXE_CALI): $(TCALI_OBJ) $(OBJDIR)/KUCMS_TimeCalibration.o
 $(EXE_RES): $(TRES_OBJ) $(OBJDIR)/KUCMS_TimeCalibration.o
 	@echo -e "$(COLOR_GREEN)Linking $@$(COLOR_RESET)"
 	$(CC) $(CXXFLAGS) -o $@ $(TRES_OBJ) $(OBJDIR)/KUCMS_TimeCalibration.o $(RTCFLAGS) $(RTGLIBS) -pthread
+
+$(EXE_RES_BATCH): $(TRES_BATCH_OBJ) $(OBJDIR)/KUCMS_TimeCalibration.o
+	@echo -e "$(COLOR_GREEN)Linking $@$(COLOR_RESET)"
+	$(CC) $(CXXFLAGS) -o $@ $(TRES_BATCH_OBJ) $(OBJDIR)/KUCMS_TimeCalibration.o $(RTCFLAGS) $(RTGLIBS) -pthread
 
 
 # Condor tarball

@@ -28,7 +28,8 @@
 
 // Build the two RJR frame hierarchies and initialize the skimmer-wide state.
 KUCMSAodSkimmer::KUCMSAodSkimmer( bool doLocal ){
-
+  // Preserve current FastSim timing with raw-amplitude resolution lookups.
+  useFastSimRawAmplitudeTimeModel = true;
 
   // Standard RestFrames topology:
   // LAB -> S -> (X2a, X2b), with each X2 decaying to one invisible X1 and
@@ -278,6 +279,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer( bool doLocal ){
 
   useLocalTimeCali = doLocal;
   timeCali = new KUCMS_TimeCalibration( false, false, useLocalTimeCali );
+  timeCali->setUseAmplitudeOverSqrt2( !GetUseFastSimRawAmplitudeTimeModel() );
   timeCali->setTag(r2UL);
   // --- resTag is the target resolution for smearing
   mctrtag = "r2_ul18";
@@ -296,6 +298,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer( bool doLocal ){
 
   // setup lumi json map
 
+  loadLumiJson("config/json/Cert_Collisions2026_401624_403937_golden.json");
   loadLumiJson("config/json/Cert_Collisions2025_391658_398903_Golden.json");
   loadLumiJson("config/json/Cert_Collisions2024_378981_386951_Golden.json");
   loadLumiJson("config/json/Cert_Collisions2023_366442_370790_Golden.json");
@@ -358,6 +361,7 @@ KUCMSAodSkimmer::KUCMSAodSkimmer( bool doLocal ){
   doBHC = true;
   genSigPerfectFlag = false;
   noSVorPhoFlag = false;
+  gJetEvents = false;
   useEvtGenWgtFlag = true;
   hasGenInfoFlag = true;
   nEvents = 0,
@@ -1284,6 +1288,15 @@ void KUCMSAodSkimmer::setOutputBranches( TTree* fOutTree ){
 void KUCMSAodSkimmer::startJobs(){
 
   std::cout << "Runing StartJobs." << std::endl;
+  if( timeCali ){
+    const bool useAmpOverSqrt2 = timeCali->getUseAmplitudeOverSqrt2();
+    std::cout << " -- ECAL timing resolution lookup amplitude convention: "
+              << ( useAmpOverSqrt2 ? "rechit amplitude / sqrt(2)" : "raw rechit amplitude" )
+              << std::endl;
+  } else {
+    std::cout << " -- ECAL timing resolution lookup amplitude convention: unavailable (time calibration not initialized)"
+              << std::endl;
+  }//<<>>if( timeCali )
 
   nEvents = 0;
   nSelectedEvents = 0;
@@ -1354,12 +1367,18 @@ bool KUCMSAodSkimmer::eventLoop( Long64_t entry ){
     //if( doBHC ){ //processBHCPhotons();
     if( debugl1 && doBHC ) std::cout << "KUCMSAodSkimmer : processBHCJets" << std::endl;
     if( doBHC ){ processBHCJets(); }
-    if( debugl1 ) std::cout << "KUCMSAodSkimmer : processRJR 0" << std::endl;
-    processRJR(0,true);
-    // The second non-ISR RJR pass remains an optional analysis variant and is
-    // intentionally disabled for the current output workflow.
-    if( debugl1 ) std::cout << "KUCMSAodSkimmer : processRJR ISR" << std::endl;
-    processRJRISR();
+    if( gJetEvents ){
+      // Gamma+jet events may have only one selected jet; RJR output is unused here.
+      selRjrVars.clearBranches();
+      selRjrIsrVars.clearBranches();
+    } else {
+      if( debugl1 ) std::cout << "KUCMSAodSkimmer : processRJR 0" << std::endl;
+      processRJR(0,true);
+      // The second non-ISR RJR pass remains an optional analysis variant and is
+      // intentionally disabled for the current output workflow.
+      if( debugl1 ) std::cout << "KUCMSAodSkimmer : processRJR ISR" << std::endl;
+      processRJRISR();
+    }//<<>>if( gJetEvents )
 
   }//<<>>if( saveToTree )
   if( debugl1 ) std::cout << "KUCMSAodSkimmer : Return saveToTree" << std::endl;
@@ -1413,6 +1432,7 @@ bool KUCMSAodSkimmer::eventSelection(){
   bool evtSelected = dobase ? basesel : phosel;
   //if( hasHemObj ) evtSelected = false;
   if( not doSVs ) evtSelected = gt2qjets && gt2jets;
+  if( gJetEvents ) evtSelected = gammaJetIndex[0] > -1;
 
   if( met150 ) cutflow["met150"]++;
   if( met150 && gt2jets ) cutflow["m_gt2jets"]++;

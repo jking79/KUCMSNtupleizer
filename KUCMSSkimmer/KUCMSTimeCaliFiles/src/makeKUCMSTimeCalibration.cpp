@@ -66,15 +66,15 @@ int main ( int argc, char *argv[] ){
   //std::string inputfilename( "ecal_config/kucmsTimeCaliR23ReRecoTFile.txt");
   //std::string inputfilename( "ecal_config/kucmsTimeCaliR24ReRecoTFile.txt");
   //std::string inputfilename( "ecal_config/kucmsTimeCaliR25PrmptTFile.txt");
-  std::string inputfilename( "ecal_config/kucmsTimeCaliR26PrmptTFile.txt");
+  //std::string inputfilename( "ecal_config/kucmsTimeCaliR26PrmptTFile.txt");
 
-  //std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCQCDTFile.txt");
+  std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCQCDTFile.txt");
 
   //std::string eosdir("root://cmseos.fnal.gov//store/user/jaking/");// input parameter!
   //std::string eosdir("root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/");
   std::string eosdir("/store/user/lpcsusylep/jaking/");
 
-  //std::string indir("KUCMSNtuple/");
+  std::string indir("KUCMSNtuple/");
 
   //std::string indir("KUCMSNtuple/gammares_ul16v2/");
   //std::string indir("KUCMSNtuple/gammares_ul17v2/");
@@ -84,9 +84,9 @@ int main ( int argc, char *argv[] ){
   //std::string indir("KUCMSNtuple/gammares_R23_22sept23/");
   //std::string indir("KUCMSNtuple/gammares_R24_m6n15/");
   //std::string indir("KUCMSNtuple/gammares_prmt25/");
-  std::string indir("KUCMSNtuple/gammares_prmt26/");
+  //std::string indir("KUCMSNtuple/gammares_prmt26/");
 
-  //std::string indir("KUCMSNtuple/gammares_QCD18/");
+  // use std::string indir("KUCMSNtuple/"); // std::string indir("KUCMSNtuple/gammares_QCD18/");
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -105,20 +105,33 @@ int main ( int argc, char *argv[] ){
   //-----//////////  making tt cali  :
   theCali.SetupIovMaps();
 
+  // With automatic gain-1 IOV selection enabled, the combined gain-1 pass
+  // chooses the TT and crystal IOV families from each input tag. It does
+  // not use setTTIov() or setXIov() for that pass.
+  //
+  // The separate gain-2+ crystal pass uses setXIov(). The separate TT
+  // pass uses setTTIov(). These settings can therefore be made here even
+  // when the combined gain-1 pass uses automatic selection.
+  //
+  // To force both IOV families for the combined gain-1 pass, first call:
+  // theCali.setAutoSelectGain1Iovs(false);
+
   // The combined gain-1 path selects the TT/X IOV family from each input tag by default.
   // For an R&D override, disable automatic selection before setting these manually:
   // theCali.setAutoSelectGain1Iovs(false);
   // theCali.setTTIov(r2ulTag);
   // theCali.setXIov(xiovtag);
+  // MC-suffixed tags automatically use input weights. Override for ambiguous tags:
+  // theCali.setDoMC(true); // setDoMC(false) forces unit weights
   // for MC
-  //theCali.setTTIov( mctag );
-  //theCali.setXIov( mctag );
+  theCali.setTTIov( mctag );
+  theCali.setXIov( mctag );
   // for PD R3
-  theCali.setTTIov( r3TagTT );
-  theCali.setXIov( r3TagX );
-  theCali.setIsCC(true);
+  //theCali.setTTIov( r3TagTT );
+  //theCali.setXIov( r3TagX );
+  //theCali.setIsCC(true);
   ////theCali.setIsCC(false); //-- defaults to false
-  theCali.setDoUnCC(true);
+  //theCali.setDoUnCC(true);
 
   //-----//////////  making trigtower cali :
   ////// bool makeCaliMapsEGR( std::string inputFileName, bool doTT, int GID, bool small, bool doCali )
