@@ -95,10 +95,10 @@ int main ( int argc, char *argv[] ){
   ////std::string inputfilename( "ecal_config/kucmsTimeCaliR17EOYTFile.txt");
 
   //std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCGjetsTFile.txt");
-  std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCQCDTFile.txt");
+  //std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCQCDTFile.txt");
 
   //std::string inputfilename( "ecal_config/kucmsTimeCaliR26PrmptTFile.txt");
-  //std::string inputfilename( "ecal_config/kucmsTimeCaliR25PrmptTFile.txt");
+  std::string inputfilename( "ecal_config/kucmsTimeCaliR25PrmptTFile.txt");
   //std::string inputfilename( "ecal_config/kucmsTimeCaliR24ReRecoTFile.txt");
   //std::string inputfilename( "ecal_config/kucmsTimeCaliR23ReRecoTFile.txt");
   //std::string inputfilename( "ecal_config/kucmsTimeCaliR22ReRecoTFile.txt");
@@ -107,22 +107,23 @@ int main ( int argc, char *argv[] ){
   //std::string inputfilename( "ecal_config/kucmsTimeCaliR17ULv2TFile.txt");
   //std::string inputfilename( "ecal_config/kucmsTimeCaliR16ULv2TFile.txt");
 
-  //std::string eosdir("root://cmseos.fnal.gov//store/user/jaking/");// input parameter!
-  //std::string eosdir("root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/");
+  ////std::string eosdir("root://cmseos.fnal.gov//store/user/jaking/");// input parameter!
+  ////std::string eosdir("root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/");
   std::string eosdir("/store/user/lpcsusylep/jaking/");
+  //std::string eosdir("/store/user/jaking/");
 
   //std::string indir("KUCMSNtuple/gammares_ul16v2/");
   //std::string indir("KUCMSNtuple/gammares_ul17v2/");
-  //std::string indir("KUCMSNtuple/gammares_ul18v2gt36/");
+  //std::string indir("gammares_ul18v2gt36/");
 
 
   //std::string indir("KUCMSNtuple/gammares_R22_22sept23/");
   //std::string indir("KUCMSNtuple/gammares_R23_22sept23/");
   //std::string indir("KUCMSNtuple/gammares_R24_m6n15/");
-  //std::string indir("KUCMSNtuple/gammares_prmt25/");
+  std::string indir("KUCMSNtuple/gammares_prmt25/");
   //std::string indir("KUCMSNtuple/gammares_prmt26/");
 
-  std::string indir("KUCMSNtuple/");
+  //std::string indir("KUCMSNtuple/");
 
   ///std::string indir("KUCMSNtuple/gammares_prmt25/");
 
@@ -331,7 +332,7 @@ int main ( int argc, char *argv[] ){
 
   // Batch mode: produces gain-1-only and all-gains plots, with calibrated
   // and uncalibrated sets when maps exist for the input tag (otherwise uncalibrated only).
-  if(
+  //if(
 
     //not theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_16UL_miniv2_xa_pm24b1200_v0826", true ) // batchMode
     //not theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_17UL_miniv2_xa_pm24b1200_v0826", true ) // batchMode
@@ -343,9 +344,9 @@ int main ( int argc, char *argv[] ){
     //not theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_24_miniAODv6_xa_pm24b1200_v0826", true ) // batchMode
     //not theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_25_prompt_xa_pm24b1200_v0826", true ) // batchMode
 	//not theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_26_prompt_xa_pm24b1200_v0826", true ) // batchMode
-    not theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18_qcdmc_xa_pm24b1200_v0826", true ) // batchMode
+    //not theCali.plot2dResolutionEGR( inputfilename, true, true, false, "_eg_18_qcdmc_xa_pm24b1200_v0826", true ) // batchMode
 
-  ) return EXIT_FAILURE;
+  //) return EXIT_FAILURE;
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -595,14 +596,19 @@ int main ( int argc, char *argv[] ){
 
   ///////////////   mean time by run   ////////////////////
 
-  //theCali.setIsCC(true);
-  //theCali.setDoUnCC(true);
+  theCali.setIsCC(true);
+  theCali.setDoUnCC(true);
 
+  // 2018 315257,325172
+  // 2022 355374,362760
   // 2025 387742 398903 
   // 2026  401630 403867
   // One pass always produces uncalibrated EB/EE TT-mean histograms and also produces
   // calibrated EB/EE histograms when complete calibration maps are available.
   //if( not theCali.plotMeanRunTimeEGR(inputfilename,387742,398903) ) return EXIT_FAILURE;
+  //if( not theCali.plotMeanRunTimeEGR(inputfilename,315257,325172) ) return EXIT_FAILURE;
+  //if( not theCali.plotMeanRunTimeEGR(inputfilename,355374,362760) ) return EXIT_FAILURE;
+  if( not theCali.plotMeanRunTimeEGR(inputfilename,387742,398903) ) return EXIT_FAILURE;
   ////theCali.makeTTDiffMaps();// make trigger tower diffrence maps
 
   /////////////////////// TT drift maps //////////////////////////////
