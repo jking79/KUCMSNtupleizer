@@ -26,6 +26,7 @@ KUCMSSkimmer/condor/Output/
 KUCMSSkimmer/condor/testOutput/
 KUCMSSkimmer/condor/haddScripts/
 KUCMSSkimmer/condor/jwk_old_output/
+KUCMSSkimmer/condor/old_condor_logs
 KUCMSSkimmer/config/ntuple_master_lists/*.txt
 KUCMSSkimmer/ecal_config/*bak.root
 .nfs*

@@ -1199,8 +1199,22 @@ def make_ntuple_tag(collection_name):
             start = i
             break
     if start is None:
-        raise ValueError('Collection has no SV* ntuple token: ' + collection_name)
+        # Some data collections (for example EGAMMA_R18_InvMetPho30_...)
+        # do not carry an SV* token. Use the collection suffix after its era
+        # token as the ntuple tag so output names still retain the skim setup.
+        era_index = next(
+            (i for i, token in enumerate(tokens) if re.fullmatch(r'R\d{2}', token)),
+            None,
+        )
+        if era_index is None or era_index + 1 >= len(tokens):
+            raise ValueError(
+                'Collection has neither an SV* ntuple token nor a usable Rxx era token: '
+                + collection_name
+            )
+        start = era_index + 1
     kept = [token for token in tokens[start:] if token not in {'MiniAOD', 'MINIAOD'}]
+    if not kept:
+        raise ValueError('Could not derive a non-empty ntuple tag from collection: ' + collection_name)
     return '_'.join(kept)
 
 
