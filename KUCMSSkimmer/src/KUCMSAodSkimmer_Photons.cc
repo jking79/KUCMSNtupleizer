@@ -1391,11 +1391,11 @@ void KUCMSAodSkimmer::processPhotons(){
     if(eq2comptightisotag)
     nCompTightIsoEq2Photons++;
 
-    if(valbhtag && valnptightisotag)
+    if(bhtag && valnptightisotag)
     nValBHphotons++;
-    if(valnotbhtag && valnptightisotag)
+    if(notbhtag && valnptightisotag)
     nValNotBHTightIsophotons++;
-    if(valnpmedisotag && valnotbhtag)
+    if(valnpmedisotag && notbhtag)
     nValNotBHMedIsophotons++;
     if(valeq1tightisotag)
     nValTightIsoEq1Photons++;
