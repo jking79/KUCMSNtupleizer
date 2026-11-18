@@ -97,7 +97,12 @@ void KUCMSAodSkimmer::processEvntVars(){
   bool PFMET120_PFMHT120_IDTight_PFHT60 = false;
   bool PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60 = false;
 
+  bool Ele16_Ele12_Ele8_CaloIdL_TrackIdL = false;
+  bool Ele23_Ele12_CaloIdL_TrackIdL_IsoVL = false;
+  bool Ele30_WPTight_Gsf = false;
   bool Ele35_WPTight_Gsf = false;
+  bool Photon33 = false;
+  bool Photon50 = false;
   bool Mu55 = false;
   bool IsoMu27 = false;
   bool IsoMu20 = false;
@@ -106,6 +111,11 @@ void KUCMSAodSkimmer::processEvntVars(){
   	Mu55 = HLT_Mu55_v;
   	IsoMu27 = HLT_IsoMu27_v;
   	IsoMu20 = HLT_IsoMu20_v;
+	Ele16_Ele12_Ele8_CaloIdL_TrackIdL = HLT_Ele16_Ele12_Ele8_CaloIdL_TrackIdL_v;
+	Ele23_Ele12_CaloIdL_TrackIdL_IsoVL = HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v;
+	Ele30_WPTight_Gsf = HLT_Ele30_WPTight_Gsf_v;
+	Photon33 = HLT_Photon33_v;
+	Photon50 = HLT_Photon50_v;
 	
 	PFMET120_PFMHT120_IDTight = HLT_PFMET120_PFMHT120_IDTight_v;
 	PFMETNoMu120_PFMHTNoMu120_IDTight = HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_v;
@@ -120,6 +130,11 @@ void KUCMSAodSkimmer::processEvntVars(){
   selEvtVars.fillBranch( "Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60", PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60 );
   
   selEvtVars.fillBranch( "Trigger_Ele35_WPTight_Gsf", Ele35_WPTight_Gsf);
+  selEvtVars.fillBranch( "Trigger_Ele16_Ele12_Ele8_CaloIdL_TrackIdL", Ele16_Ele12_Ele8_CaloIdL_TrackIdL);
+  selEvtVars.fillBranch( "Trigger_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL",Ele23_Ele12_CaloIdL_TrackIdL_IsoVL );
+  selEvtVars.fillBranch( "Trigger_Ele30_WPTight_Gsf",Ele30_WPTight_Gsf );
+  selEvtVars.fillBranch( "Trigger_Photon33",Photon33 );
+  selEvtVars.fillBranch( "Trigger_Photon50",Photon50 );
   selEvtVars.fillBranch( "Trigger_Mu55", Mu55 );
   selEvtVars.fillBranch( "Trigger_IsoMu27", IsoMu27 );
   selEvtVars.fillBranch( "Trigger_IsoMu20", IsoMu20 );
@@ -221,12 +236,16 @@ void KUCMSAodSkimmer::setEvtVarMetBranches( TTree* fOutTree ){
   selEvtVars.makeBranch( "Trigger_PFMET120_PFMHT120_IDTight_PFHT60", BOOL );
   selEvtVars.makeBranch( "Trigger_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60", BOOL );
   selEvtVars.makeBranch( "Trigger_Ele35_WPTight_Gsf", BOOL );
-  selEvtVars.makeBranch( "Trigger_Photon20", BOOL );
   selEvtVars.makeBranch( "Trigger_Mu55", BOOL );
   selEvtVars.makeBranch( "Trigger_Mu12", BOOL );
   selEvtVars.makeBranch( "Trigger_IsoMu27", BOOL );
   selEvtVars.makeBranch( "Trigger_IsoMu20", BOOL );
   selEvtVars.makeBranch( "Trigger_Ele27_WPTight_Gsf", BOOL );
+  selEvtVars.makeBranch( "Trigger_Ele16_Ele12_Ele8_CaloIdL_TrackIdL", BOOL);
+  selEvtVars.makeBranch( "Trigger_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL",BOOL);
+  selEvtVars.makeBranch( "Trigger_Ele30_WPTight_Gsf", BOOL);
+  selEvtVars.makeBranch( "Trigger_Photon33", BOOL);
+  selEvtVars.makeBranch( "Trigger_Photon50", BOOL);
 
   selEvtVars.attachBranches( fOutTree );
 
