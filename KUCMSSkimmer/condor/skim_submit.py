@@ -138,14 +138,21 @@ BG_DB_RUN3 = {
 RUN3_YEARS = {'R22', 'R23', 'R24', 'R25', 'R26'}
 
 # Signal xsec [pb] by (process_prefix, gluino_mass_string)
-# process_prefix: 'gogo' matches gogoG, gogoZ, gogoGZ (and T5Zg); 'sqsq' matches sqsqG
+# process_prefix: 'gogo' matches gogoG, gogoZ, gogoGZ, T5Zg and splitSUSY (all gluino
+# pairs with decoupled squarks); 'sqsq' matches sqsqG
 # Run 3 (13.6 TeV). Signal samples without an explicit year in their name are Run 3.
+# Gluino values: LHC SUSY xsec WG, NNLOapprox+NNLL, PDF4LHC21 (relative unc. in comments),
+# https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SUSYCrossSections13x6TeVgluglu
 SIGNAL_XSEC = {
+    ('gogo', '1400'): 3.883e-02,  # 12.31%
     ('gogo', '1500'): 0.02209,
     ('gogo', '1800'): 4.524e-03,
     ('gogo', '2000'): 0.001684,
     ('gogo', '2300'): 0.0004130,
     ('gogo', '2500'): 0.0001687,
+    ('gogo', '2600'): 1.089e-04,  # 61.61%
+    ('gogo', '2800'): 4.623e-05,  # 84.70%
+    ('gogo', '3000'): 2.007e-05,  # 113.45%
     ('sqsq', '1700'): 0.001248,
     ('sqsq', '1850'): 0.0005679,
     ('sqsq', '2000'): 0.0002654,
@@ -153,10 +160,16 @@ SIGNAL_XSEC = {
 }
 
 # Run 2 (13 TeV) signal xsec [pb], used only for samples explicitly tagged
-# with a Run 2 year (e.g. '_2018').
+# with a Run 2 year (e.g. '_2018'). Gluino values from
+# https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SUSYCrossSections13TeVgluglu
 SIGNAL_XSEC_RUN2 = {
+    ('gogo', '1400'): 3.018e-02,  # 12.93%
     ('gogo', '1800'): 3.349e-03,
+    ('gogo', '2000'): 1.216e-03,  # 27.67%
     ('gogo', '2300'): 2.871e-04,
+    ('gogo', '2600'): 7.295e-05,  # 73.98%
+    ('gogo', '2800'): 3.028e-05,  # 101.14%
+    ('gogo', '3000'): 1.285e-05,  # 139.36%
 }
 RUN2_YEARS = {'R16', 'R17', 'R18'}
 
@@ -181,7 +194,7 @@ TIMECALI = {
 }
 
 DATA_KEYWORDS  = {'MET', 'JetMET', 'JetMET0', 'JetMET1', 'JetHT', 'EGamma', 'EGamma0', 'EGamma1', 'EGamma2', 'DisJet'}
-SIGNAL_KEYWORDS = {'SMS', 'gogoG', 'gogoZ', 'gogoGZ', 'sqsqG', 'GlGl', 'T5Zg'}
+SIGNAL_KEYWORDS = {'SMS', 'gogoG', 'gogoZ', 'gogoGZ', 'sqsqG', 'GlGl', 'T5Zg', 'splitSUSY'}
 BRANCH_MASKS = {
     'rjrskim': 'config/branch_masks/rjrskim.txt',
     'llpCombineSkim': 'config/branch_masks/llpcombine_analysis_exact.txt',
@@ -378,6 +391,53 @@ def lookup_signal_xsec(subfolder, year=''):
     table = SIGNAL_XSEC_RUN2 if year in RUN2_YEARS else SIGNAL_XSEC
     xsec = table.get((proc, mgl), None)
     return xsec, mgl, mn2 or '0', mn1 or '0'
+
+
+# Central splitSUSY samples (long-lived gluino -> q qbar N1, squarks decoupled). Sample
+# names as made by T5ZgPrivateMC ntuple.py: 'splitSUSY_M2000_100_ctau1p0_2018[_FullMini]';
+# Run 3 primary datasets: 'splitSUSY_Par-ctau-1p0-MG-2000-MN-100_TuneCP5_13p6TeV_pythia8'.
+_SPLITSUSY_RES = (
+    re.compile(r'splitSUSY_M(?P<mg>\d+)_(?P<mn>\d+)_ctau(?P<ct>[0-9]+(?:p[0-9]+)?)(?![0-9p])'),
+    re.compile(r'splitSUSY_Par-ctau-(?P<ct>[0-9]+(?:p[0-9]+)?)-MG-(?P<mg>\d+)-MN-(?P<mn>\d+)'),
+)
+
+
+def split_susy_mass_point(*names):
+    """(mGl, mN1, ctau) from the first name that is a splitSUSY sample, or None.
+    Names that parse must agree."""
+    points = set()
+    for name in names:
+        for regex in _SPLITSUSY_RES:
+            m = name and regex.search(name)
+            if m:
+                points.add((m.group('mg'), m.group('mn'), m.group('ct')))
+    if len(points) > 1:
+        raise ValueError('conflicting splitSUSY mass points %s in %r' % (sorted(points), names))
+    return points.pop() if points else None
+
+
+def split_susy_metadata(point, year, tier, names):
+    """xsec and EventCount key for a splitSUSY sample. Gluino-pair production with
+    decoupled squarks: the standard gluino table at the sample's energy."""
+    mgl, mn1, ctau = point
+    if not year:
+        # No silent Run 3 default: 13 vs 13.6 TeV differ by 25-55% at these masses.
+        raise ValueError('splitSUSY sample with no _20YY year token: %r' % (names,))
+    run2 = year in RUN2_YEARS
+    energy = '13TeV' if run2 else '13p6TeV'
+    for name in names:
+        if name and re.search(r'_13(?:p6)?TeV_', name) and '_' + energy + '_' not in name:
+            raise ValueError('splitSUSY year %s implies %s but %r says otherwise'
+                             % (year, energy, name))
+    table = SIGNAL_XSEC_RUN2 if run2 else SIGNAL_XSEC
+    xsec = table.get(('gogo', mgl))
+    if xsec is None:
+        raise ValueError('no gluino xsec for splitSUSY mGl-%s (year %s): add it to %s'
+                         % (mgl, year, 'SIGNAL_XSEC_RUN2' if run2 else 'SIGNAL_XSEC'))
+    if tier is None:
+        raise ValueError('no tier (FullMini/FastMini) in the collection for %r' % (names,))
+    key = 'splitSUSY_%s_mGl-%s_mN1-%s_ct%s_%s' % (tier, mgl, mn1, ctau, year)
+    return xsec, key
 
 
 def signal_process_key(name):
@@ -652,6 +712,17 @@ def resolve_dataset_metadata(subfolder, eos_path, sample_type, data_kw, collecti
     if sample_type == 'data':
         mctype = 1
         key    = make_data_key(subfolder, data_kw)
+    elif sample_type == 'signal' and split_susy_mass_point(subfolder, eos_path, primary_dataset):
+        names = (subfolder, eos_path, collection_name, primary_dataset)
+        point = split_susy_mass_point(subfolder, eos_path, primary_dataset)
+        gluinomass, n1mass, _ = point
+        year = signal_year(subfolder, eos_path, collection_name)
+        sig_xsec, key = split_susy_metadata(
+            point, year, signal_tier_from_collection(collection_name), names)
+        xsec = str(sig_xsec)
+        # No N2 in splitSUSY (gluino -> q qbar N1): n2mass stays '0'.
+        if '_FASTSIM_' in key:
+            mctype = 2
     elif sample_type == 'signal':
         metadata_name = canonical_signal_name(signal_metadata_name(subfolder, eos_path))
         year = signal_year(subfolder, eos_path, collection_name)
