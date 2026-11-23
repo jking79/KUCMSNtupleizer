@@ -27,6 +27,7 @@ used by ObjectManager during event processing.
 #include "KUCMSEcalRechit_mini.hh"
 #include "KUCMSPhoton_mini.hh"
 #include "KUCMSAK4Jet_mini.hh"
+#include "KUCMSAK4PuppiJet_mini.hh"
 #include "KUCMSPFMet_mini.hh"
 #include "KUCMSElectron_mini.hh"
 #include "KUCMSMuon_mini.hh"
@@ -218,6 +219,21 @@ EcalPedestalsToken_(esConsumes())
   ak4jetObj->LoadElectronObject( electronsObj );
   ObjMan.Load( "JetsAK4", ak4jetObj );
 
+  // Keep the PUPPI schema even when the input is intentionally unavailable.
+  auto ak4PuppiJetObj = new KUCMSAK4PuppiJetObjectMini( iConfig );
+  if( iConfig.existsAs<edm::InputTag>("puppiJets") ){
+    const auto puppiJetsTag = iConfig.getParameter<edm::InputTag>("puppiJets");
+    if( puppiJetsTag.label() != "notAvailable" ){
+      auto puppiJetsToken = consumes<std::vector<pat::Jet>>(puppiJetsTag);
+      ak4PuppiJetObj->LoadAK4JetTokens( puppiJetsToken );
+    }
+  }
+  ak4PuppiJetObj->LoadPfcandTokens( pfcandToken );
+  ak4PuppiJetObj->LoadRecHitObject( recHitsObj );
+  ak4PuppiJetObj->LoadPhotonObject( photonsObj );
+  ak4PuppiJetObj->LoadElectronObject( electronsObj );
+  ObjMan.Load( "JetsAK4Puppi", ak4PuppiJetObj );
+
   // PF MET: retain the photon association used by the output object.
   auto pfmetObj = new KUCMSPFMetObjectMini( iConfig );
   auto pfmetToken = consumes<std::vector<pat::MET>>(iConfig.getParameter<edm::InputTag>("mets"));
@@ -257,6 +273,7 @@ EcalPedestalsToken_(esConsumes())
     auto genJetObj = new KUCMSGenJetObjectMini( iConfig );
     genJetObj->LoadGenJetsTokens( genJetsToken );
     ak4jetObj->LoadGenJetObject( genJetObj );
+    ak4PuppiJetObj->LoadGenJetObject( genJetObj );
     ObjMan.Load( "GenJets", genJetObj );
     auto genPrunToken = consumes<std::vector<reco::GenParticle>>(iConfig.getParameter<edm::InputTag>("genPartPruned"));
     genObjs->LoadgpTokens( genPrunToken );
@@ -268,6 +285,7 @@ EcalPedestalsToken_(esConsumes())
     muonObj->LoadGenObject( genObjs );
     photonsObj->LoadGenObject( genObjs );
     ak4jetObj->LoadGenObject( genObjs );
+    ak4PuppiJetObj->LoadGenObject( genObjs );
 
     if( cfFlag("doSVModule") ){
       displacedVertexObj->LoadGenParticlesToken(genPartToken);
