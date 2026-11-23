@@ -13,6 +13,7 @@ options.register('eventFilter','SVHPMet100',VarParsing.multiplicity.singleton,Va
 options.register('doSV',True,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to run displaced SVs');
 options.register('doDisEle',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag ro run displaced electrons');
 options.register('doECALTrackOnly',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to run ECAL Tracks only');
+options.register('doFastSim',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to run fastsim MC');
 options.register('runera','Run2_2018',VarParsing.multiplicity.singleton,VarParsing.varType.string,'filter to use in event processing');
 options.register('runMETFilters',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to run Met Filters');
 
@@ -66,7 +67,11 @@ options.register('outputFileName',outfilename,VarParsing.multiplicity.singleton,
 ## parsing command line arguments
 options.parseArguments()
 
-## Define the CMSSW process
+## Define the CMSSW process.
+# RunEra controls collection-specific IDs as well as other analyzer settings.
+# Set it to the input dataset/campaign, not the CMSSW release or data run year
+# inferred from MC event numbers. For UL2016, specify the VFP period explicitly.
+# In multicrab jobs options.runera overrides the local value below.
 #runera = "Run2" 
 #runera = "Run3"  # current siganl model   !!!!!!!!  Run3 must be in CMSSW 14 or 15
 #runera = "Run3_2025"
@@ -74,12 +79,16 @@ options.parseArguments()
 runera = "Run3_2023"
 #runera = "Run3_2024"
 #runera = "Run2_2018" # BG models
+#runera = "Run2_2016_Pre" # UL2016 pre-VFP / HIPM
+#runera = "Run2_2016_Post" # UL2016 post-VFP
 #runera = "Run2_2017"
 if options.multicrab == True : runera = options.runera
 
 from Configuration.StandardSequences.Eras import eras
 era_map = {
     "Run2_2016": eras.Run2_2016,
+    "Run2_2016_Pre": eras.Run2_2016_HIPM,
+    "Run2_2016_Post": eras.Run2_2016,
     "Run2_2017": eras.Run2_2017,
     "Run2_2018": eras.Run2_2018,
     "Run2": eras.Run2_2018,
@@ -90,7 +99,15 @@ era_map = {
     "Run3_2026": eras.Run3,
     "Run3": eras.Run3
 }
-era = era_map[options.runera]
+# Jet-ID and PU-ID selection needs the 2016 VFP period, including for MC
+# (whose event run numbers do not identify the detector campaign).
+if runera == "Run2_2016":
+    raise ValueError("runera=Run2_2016 is ambiguous; choose Run2_2016_Pre (pre-VFP/HIPM) or Run2_2016_Post (post-VFP)")
+if runera in ("Run2", "Run3"):
+    raise ValueError("runera=%s is ambiguous; select an explicit Run2 or Run3 year and required sub-era" % runera)
+if runera not in era_map:
+    raise ValueError("Unsupported runera=%s; choose a documented RunEra tag" % runera)
+era = era_map[runera]
 process = cms.Process(options.processName, era )
 
 ## Load the standard set of configuration modules
@@ -308,6 +325,8 @@ if "Run3" in runera and genInfo is True :
     convSet = "PAT"
     flagSet = "PAT"
     #triggerSet = "PAT" # needed for fast sim only
+
+if options.multicrab and options.doFastSim : triggerSet = "PAT"
 
 if runMETFilters == True : flagSet = ""  # ?  "SIM" for MC
 

@@ -76,7 +76,7 @@ def docrab( dataset ):
         config.General.requestName = None
 
         config.JobType.pluginName  = 'Analysis'
-        config.JobType.psetName    = 'llpgana_miniaod.py'
+        config.JobType.psetName    = 'llpgana_miniaod_v15.py'
         config.JobType.pyCfgParams = None
 
         config.section_("Site")
@@ -240,7 +240,9 @@ def docrab( dataset ):
             #config.JobType.pyCfgParams   = [gt,mcrab,efilter,isrun2]
 #>>>>>>>>>>>>>>>>>>>     #2016UL #globalTag=106X_dataRun2_v37 
             #gt = 'globalTag=106X_dataRun2_v37' ## for MiniAODv2 
-            #isrun2 = 'runera=Run2_2016' 
+            # Choose the dataset's VFP period; the year-only tag is ambiguous.
+            #isrun2 = 'runera=Run2_2016_Pre'  # pre-VFP / HIPM
+            #isrun2 = 'runera=Run2_2016_Post' # post-VFP
             #config.JobType.pyCfgParams   = [gt,mcrab,efilter,isrun2] 
 
 #>>>>>>>>>>>>>>>>>>> RUN 3

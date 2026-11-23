@@ -10,6 +10,8 @@
 //--------------------------------------------------------------------------------------------
 
 // Includes for all object types
+#include <cmath>
+#include <memory>
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
@@ -35,6 +37,7 @@
 //#include "DataFormats/AK4Jet/interface/AK4Jet.h"
 
 #include "DataFormats/PatCandidates/interface/Jet.h"
+#include "PhysicsTools/SelectorUtils/interface/PFJetIDSelectionFunctor.h"
 
 // JECS
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
@@ -105,6 +108,9 @@ class KUCMSAK4JetObjectMini : public KUCMSObjectBase {
   //std::vector<examnple> fexamples;
   std::vector<pat::Jet> fjets;
   std::vector<int> jetIds;
+  std::string jetRunEra;
+  std::unique_ptr<PFJetIDSelectionFunctor> tightJetId;
+  std::unique_ptr<PFJetIDSelectionFunctor> tightLepVetoJetId;
 
   //edm::EDGetTokenT<example> exampleToken_;
   //edm::Handle<example> example_;
@@ -143,6 +149,16 @@ KUCMSAK4JetObjectMini::KUCMSAK4JetObjectMini( const edm::ParameterSet& iConfig )
   // ---- end constructor initilizations  --------------------------
 
   cfFlag.set( "hasGenInfo", iConfig.existsAs<bool>("hasGenInfo") ? iConfig.getParameter<bool>("hasGenInfo") : false );
+  jetRunEra = iConfig.existsAs<std::string>("RunEra") ? iConfig.getParameter<std::string>("RunEra") : "";
+  // UL CHS definitions are supported here. Unverified campaign/era choices
+  // stay unavailable rather than silently using the functor's default.
+  PFJetIDSelectionFunctor::Version_t version = PFJetIDSelectionFunctor::N_VERSIONS;
+  if( jetRunEra == "Run2_2016_Pre" || jetRunEra == "Run2_2016_Post" ) version = PFJetIDSelectionFunctor::RUN2UL16CHS;
+  else if( jetRunEra == "Run2_2017" || jetRunEra == "Run2_2018" ) version = PFJetIDSelectionFunctor::RUN2ULCHS;
+  if( version != PFJetIDSelectionFunctor::N_VERSIONS ){
+    tightJetId.reset(new PFJetIDSelectionFunctor(version, PFJetIDSelectionFunctor::TIGHT));
+    tightLepVetoJetId.reset(new PFJetIDSelectionFunctor(version, PFJetIDSelectionFunctor::TIGHTLEPVETO));
+  }
   cfFlag.set( "onlyEB", iConfig.existsAs<bool>("onlyEB") ? iConfig.getParameter<bool>("onlyEB") : false );
   cfPrm.set( "jetPTmin", iConfig.existsAs<double>("jetPTmin") ? iConfig.getParameter<double>("jetPTmin") : 10.0 );
   cfPrm.set( "jetEtaMax", iConfig.existsAs<double>("jetEtaMax") ? iConfig.getParameter<double>("jetEtaMax") : 3.5 );
@@ -158,6 +174,13 @@ void KUCMSAK4JetObjectMini::InitObject( TTree* fOutTree ){
   Branches.makeBranch("Eta","Jet_eta",VFLOAT);
   Branches.makeBranch("Phi","Jet_phi",VFLOAT);
   Branches.makeBranch("Area","Jet_area",VFLOAT,"jet catchment area, for JECs");
+  Branches.makeBranch("IdLoose","Jet_idLoose",VINT,"PF jet ID: 1 pass, 0 fail, -1 unavailable");
+  Branches.makeBranch("IdTight","Jet_idTight",VINT,"PF jet ID: 1 pass, 0 fail, -1 unavailable");
+  Branches.makeBranch("IdTightLepVeto","Jet_idTightLepVeto",VINT,"PF jet ID: 1 pass, 0 fail, -1 unavailable");
+  Branches.makeBranch("PuIdLoose","Jet_puIdLoose",VINT,"embedded Run 2 CHS PU ID: 1 pass, 0 fail, -1 unavailable");
+  Branches.makeBranch("PuIdMedium","Jet_puIdMedium",VINT,"embedded Run 2 CHS PU ID: 1 pass, 0 fail, -1 unavailable");
+  Branches.makeBranch("PuIdTight","Jet_puIdTight",VINT,"embedded Run 2 CHS PU ID: 1 pass, 0 fail, -1 unavailable");
+  Branches.makeBranch("PuIdDisc","Jet_puIdDisc",VFLOAT,"embedded Run 2 CHS PU ID discriminant, -999 if unavailable");
 
   Branches.makeBranch("nKids","Jet_nConstituents",VINT,"Number of particles in the jet");
   Branches.makeBranch("NHF","Jet_neHEF",VFLOAT,"neutral Hadron Energy Fraction");
@@ -271,6 +294,36 @@ void KUCMSAK4JetObjectMini::ProcessEvent( ItemManager<float>& geVar ){
     Branches.fillBranch("Eta",jetEta);
     Branches.fillBranch("Phi",jetPhi);
     Branches.fillBranch("Area",jetArea);
+
+    int idTight = -1, idTightLepVeto = -1;
+    if( jet.isPFJet() && tightJetId && tightLepVetoJetId ){
+      pat::strbitset tightBits = tightJetId->getBitTemplate();
+      pat::strbitset vetoBits = tightLepVetoJetId->getBitTemplate();
+      idTight = int((*tightJetId)(jet, tightBits));
+      idTightLepVeto = int((*tightLepVetoJetId)(jet, vetoBits));
+    }
+    Branches.fillBranch("IdLoose",-1); // No loose WP for the supported UL definitions.
+    Branches.fillBranch("IdTight",idTight);
+    Branches.fillBranch("IdTightLepVeto",idTightLepVeto);
+
+    int puLoose = -1, puMedium = -1, puTight = -1;
+    float puDisc = -999.f;
+    if( tightJetId && jet.hasUserInt("pileupJetId:fullId") ){
+      const int flags = jet.userInt("pileupJetId:fullId");
+      if( flags >= 0 ){
+        puTight = int((flags & (1 << 0)) != 0);
+        puMedium = int((flags & (1 << 1)) != 0);
+        puLoose = int((flags & (1 << 2)) != 0);
+      }
+    }
+    if( tightJetId && jet.hasUserFloat("pileupJetId:fullDiscriminant") ){
+      const float value = jet.userFloat("pileupJetId:fullDiscriminant");
+      if( std::isfinite(value) ) puDisc = value;
+    }
+    Branches.fillBranch("PuIdLoose",puLoose);
+    Branches.fillBranch("PuIdMedium",puMedium);
+    Branches.fillBranch("PuIdTight",puTight);
+    Branches.fillBranch("PuIdDisc",puDisc);
 
     Branches.fillBranch("NHF",jetNHF);
     Branches.fillBranch("NEMF",jetNEMF);
