@@ -120,7 +120,7 @@ class KUCMSGenObjectMini : public KUCMSObjectBase {
   std::vector<float> getGenPartMatch( const reco::SuperCluster* scptr, float pt );
   //std::map<std::string, float> getGenPartMatch( const reco::SuperCluster &scptr, float pt ) const;
   //std::map<std::string, bool> MotherID(const int genIndex) const;
-  std::vector<float> getGenJetInfo( float jetEta, float jetPhi, float jetPt );
+  std::vector<float> getGenJetInfo( float jetEta, float jetPhi, float jetEnergy, int genJetIdx );
   //GlobalPoint GenVertex() {return GlobalPoint(genxyz0_->x(), genxyz0_->y(), genxyz0_->z()); };
 
   // new exclusive gen matching  v3fPoint
@@ -1684,7 +1684,7 @@ string KUCMSGenObjectMini::bigKidChase( std::vector<reco::CandidatePtr> kids, fl
 
 }//<<>>string bigKidChase( std::vector<reco::CandidatePtr> kids, float vx )
 
-std::vector<float> KUCMSGenObjectMini::getGenJetInfo( float jetEta, float jetPhi, float jetEnergy ){
+std::vector<float> KUCMSGenObjectMini::getGenJetInfo( float jetEta, float jetPhi, float jetEnergy, int genJetIdx ){
 
   float genImpactAngle(-10.0);
   float genTime(-99.9);
@@ -1702,26 +1702,9 @@ std::vector<float> KUCMSGenObjectMini::getGenJetInfo( float jetEta, float jetPhi
 
   //std::cout << " --- Jet-GenJet matching " << std::endl;
 
-  float goodDr(0.3);
+  float goodDr(-1.0);
   float goodRe(-1.0);
-  int matchedIdx(-1);
-  int index(0);
-  for(const auto &genJet : fgenjets ){
-
-    auto gjeta = genJet.eta();
-    auto gjphi = genJet.phi();
-    auto gje = genJet.energy();
-    if( gje < 1.0 ){ index++; continue; }
-    auto jtgjdr = std::sqrt(reco::deltaR2(gjeta, gjphi, jetEta, jetPhi ));
-    auto jtgjre = jetEnergy/gje;
-    if( jtgjdr < goodDr ){
-      goodDr = jtgjdr;
-      goodRe = jtgjre;
-      matchedIdx = index;
-    }//<<>>if( jtgjdr <= goodDr )
-    index++;
-
-  }//<<>>for(const auto& genJet : fgenjets )
+  const int matchedIdx = genJetIdx >= 0 && static_cast<size_t>(genJetIdx) < fgenjets.size() ? genJetIdx : -1;
 
 
   //std::cout << " --- Jet-Genpart quark matching" << std::endl;
@@ -1763,7 +1746,11 @@ std::vector<float> KUCMSGenObjectMini::getGenJetInfo( float jetEta, float jetPhi
     //if( GenDEBUG ) std::cout << " - genJet GenTime : " << genTime << " Angle: " << genImpactAngle << std::endl;
     genPt = genJet.pt();
     genEnergy = genJet.energy();
-    genEMFrac = (genJet.chargedEmEnergy() + genJet.neutralEmEnergy())/genEnergy;
+    goodDr = std::sqrt(reco::deltaR2(genEta, genPhi, jetEta, jetPhi));
+    if( genEnergy != 0.f ){
+      goodRe = jetEnergy/genEnergy;
+      genEMFrac = (genJet.chargedEmEnergy() + genJet.neutralEmEnergy())/genEnergy;
+    }
     genDrMatch = goodDr; //std::sqrt(reco::deltaR2(jet.eta(), jet.phi(), genJet.eta(), genJet.phi()));
     genReMatch = goodRe;
     //if( GenDEBUG ) std::cout << " -- Energy : " << genEnergy << " Pt : " << genPt << " EMfrac : " << genEMFrac << std::endl;

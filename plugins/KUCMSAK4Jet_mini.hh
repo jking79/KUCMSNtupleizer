@@ -51,6 +51,7 @@
 // includes for other KUCMSObjects
 #include "KUCMSEcalRechit_mini.hh"
 #include "KUCMSGenObjects_mini.hh"
+#include "KUCMSGenJet_mini.hh"
 #include "KUCMSElectron_mini.hh"
 #include "KUCMSPhoton_mini.hh"
 
@@ -81,6 +82,7 @@ class KUCMSAK4JetObjectMini : public KUCMSObjectBase {
   // void LoadObject( exampleObject* otherObject ){ otherObjectPtr = otherObject; }; // define with specific KUCMS object(s) needed
   void LoadRecHitObject( KUCMSEcalRecHitObjectMini* rhObj_ ){ rhObj = rhObj_; }; // define with specific KUCMS object(s) needed
   void LoadGenObject( KUCMSGenObjectMini* genObjs_ ){ genObjs = genObjs_; };
+  void LoadGenJetObject( KUCMSGenJetObjectMini* genJetObj_ ){ genJetObj = genJetObj_; };
   void LoadElectronObject( KUCMSElectronObjectMini* electronObj_ ){ electronObj = electronObj_; };
   void LoadPhotonObject( KUCMSPhotonObjectMini* photonObj_ ){ photonObj = photonObj_; };
 
@@ -131,6 +133,7 @@ class KUCMSAK4JetObjectMini : public KUCMSObjectBase {
 
   KUCMSEcalRecHitObjectMini* rhObj;
   KUCMSGenObjectMini* genObjs;
+  KUCMSGenJetObjectMini* genJetObj;
   KUCMSElectronObjectMini* electronObj;
   KUCMSPhotonObjectMini* photonObj;
 
@@ -170,6 +173,7 @@ void KUCMSAK4JetObjectMini::InitObject( TTree* fOutTree ){
 
   if( cfFlag("hasGenInfo") ){
 
+    Branches.makeBranch("GenJetIdx","Jet_genJetIdx",VINT,"PAT GenJet index; -1 no match, -9 match not saved");
     Branches.makeBranch("GenImpactAngle","Jet_genImpactAngle",VFLOAT);
     Branches.makeBranch("GenTime","Jet_genTime",VFLOAT);
     Branches.makeBranch("GenPt","Jet_genPt",VFLOAT);
@@ -319,7 +323,9 @@ void KUCMSAK4JetObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 
     if( cfFlag("hasGenInfo") ){
 
-      auto genJetInfo = genObjs->getGenJetInfo( jetEta, jetPhi, jetE );
+      const int genJetIdx = genJetObj->savedIndex(jet);
+      auto genJetInfo = genObjs->getGenJetInfo( jetEta, jetPhi, jetE, genJetIdx );
+      Branches.fillBranch("GenJetIdx",genJetIdx);
       // load event level vectors for this jet with gen info
 
       Branches.fillBranch("GenImpactAngle",genJetInfo[0]);

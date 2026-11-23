@@ -31,6 +31,7 @@ used by ObjectManager during event processing.
 #include "KUCMSElectron_mini.hh"
 #include "KUCMSMuon_mini.hh"
 #include "KUCMSGenObjects_mini.hh"
+#include "KUCMSGenJet_mini.hh"
 #include "KUCMSDisplacedVertex_mini.hh"
 #include "KUCMSTrack_mini.hh"
 
@@ -242,6 +243,10 @@ EcalPedestalsToken_(esConsumes())
     auto genPartToken = consumes<std::vector<pat::PackedGenParticle>>(iConfig.getParameter<edm::InputTag>("genParticles"));
     auto genJetsToken = consumes<std::vector<reco::GenJet>>(iConfig.getParameter<edm::InputTag>("genjets"));
     genObjs->LoadGenJetsTokens( genJetsToken );
+    auto genJetObj = new KUCMSGenJetObjectMini( iConfig );
+    genJetObj->LoadGenJetsTokens( genJetsToken );
+    ak4jetObj->LoadGenJetObject( genJetObj );
+    ObjMan.Load( "GenJets", genJetObj );
     auto genPrunToken = consumes<std::vector<reco::GenParticle>>(iConfig.getParameter<edm::InputTag>("genPartPruned"));
     genObjs->LoadgpTokens( genPrunToken );
 
