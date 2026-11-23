@@ -68,6 +68,34 @@
 
 using namespace edm;
 
+// Run 3 AK4 PUPPI PF jet ID, CMS-DP-2024/028:
+// https://twiki.cern.ch/twiki/bin/view/CMSPublic/PhysicsResultsDP24028
+// Energy fractions are defined using the uncorrected jet energy (as in
+// pat::Jet's fraction accessors); multiplicities are the PF multiplicities.
+// |eta| <= 2.6: NHF < .99, NEF < .90, Nconst > 1, CHF > .01, Nch > 0.
+// 2.6 < |eta| <= 2.7: NHF < .90, NEF < .99.
+// 2.7 < |eta| <= 3.0: NHF < .99.
+// 3.0 < |eta| < 5.0: NEF < .40, Nneutral >= 2.
+// Tight lepton veto adds MUF < .80 and CEF < .80 for |eta| <= 2.7.
+// The eta=3.0 boundary follows the CMSSW selector's region convention.
+// Return -1 for unsupported eta or invalid PF inputs, not a failed decision.
+static void run3PuppiJetId( double eta, double nhf, double nef, double chf,
+                            double cef, double muf, int nch, int nneutral,
+                            int& tight, int& tightLepVeto ){
+  tight = tightLepVeto = -1;
+  const double absEta = std::abs(eta);
+  if( !std::isfinite(absEta) || absEta >= 5.0 || !std::isfinite(nhf) ||
+      !std::isfinite(nef) || !std::isfinite(chf) || !std::isfinite(cef) ||
+      !std::isfinite(muf) || nch < 0 || nneutral < 0 ) return;
+  bool passes = false;
+  if( absEta <= 2.6 ) passes = nhf < .99 && nef < .90 && nch + nneutral > 1 && chf > .01 && nch > 0;
+  else if( absEta <= 2.7 ) passes = nhf < .90 && nef < .99;
+  else if( absEta <= 3.0 ) passes = nhf < .99;
+  else passes = nef < .40 && nneutral >= 2;
+  tight = int(passes);
+  tightLepVeto = int(passes && (absEta > 2.7 || (muf < .80 && cef < .80)));
+}
+
 /** Collects AK4 jets and derives their object and generator associations. */
 class KUCMSAK4PuppiJetObjectMini : public KUCMSObjectBase {
 
@@ -112,7 +140,7 @@ class KUCMSAK4PuppiJetObjectMini : public KUCMSObjectBase {
   std::vector<int> jetIds;
   std::unique_ptr<PFJetIDSelectionFunctor> tightJetId;
   std::unique_ptr<PFJetIDSelectionFunctor> tightLepVetoJetId;
-  bool run3PuppiPuId_ = false;
+  bool run3JetId_ = false;
 
   //edm::EDGetTokenT<example> exampleToken_;
   //edm::Handle<example> example_;
@@ -160,8 +188,7 @@ KUCMSAK4PuppiJetObjectMini::KUCMSAK4PuppiJetObjectMini( const edm::ParameterSet&
   // 2022 inputs are assumed reprocessed data or MC, never early prompt data.
   // For 2024-2026, use the 2023 convention as an analysis assumption.
   else if( jetRunEra == "Run3_2022" || jetRunEra == "Run3_2023" || jetRunEra == "Run3_2024" || jetRunEra == "Run3_2025" || jetRunEra == "Run3_2026" ){
-    version = PFJetIDSelectionFunctor::RUN3PUPPIruns2022FGruns2023CD;
-    run3PuppiPuId_ = true;
+    run3JetId_ = true;
   }
   if( version != PFJetIDSelectionFunctor::N_VERSIONS ){
     tightJetId.reset(new PFJetIDSelectionFunctor(version, PFJetIDSelectionFunctor::TIGHT));
@@ -194,9 +221,9 @@ void KUCMSAK4PuppiJetObjectMini::InitObject( TTree* fOutTree ){
   Branches.makeBranch("IdLoose","PuppiJet_idLoose",VINT,"PUPPI PF jet ID: 1 pass, 0 fail, -1 unavailable");
   Branches.makeBranch("IdTight","PuppiJet_idTight",VINT,"era-dependent PUPPI PF jet ID: 1 pass, 0 fail, -1 unavailable");
   Branches.makeBranch("IdTightLepVeto","PuppiJet_idTightLepVeto",VINT,"era-dependent PUPPI PF jet ID: 1 pass, 0 fail, -1 unavailable");
-  Branches.makeBranch("PuIdLoose","PuppiJet_puIdLoose",VINT,"Run 3 placeholder Winter24 PUPPI V18 PU ID: 1 pass, 0 fail, -1 unavailable/outside 10<=pt<50, |eta|<5");
-  Branches.makeBranch("PuIdMedium","PuppiJet_puIdMedium",VINT,"Run 3 placeholder Winter24 PUPPI V18 PU ID: 1 pass, 0 fail, -1 unavailable/outside 10<=pt<50, |eta|<5");
-  Branches.makeBranch("PuIdTight","PuppiJet_puIdTight",VINT,"Run 3 placeholder Winter24 PUPPI V18 PU ID: 1 pass, 0 fail, -1 unavailable/outside 10<=pt<50, |eta|<5");
+  Branches.makeBranch("PuIdLoose","PuppiJet_puIdLoose",VINT,"PUPPI PU ID decision disabled: -1 unavailable");
+  Branches.makeBranch("PuIdMedium","PuppiJet_puIdMedium",VINT,"PUPPI PU ID decision disabled: -1 unavailable");
+  Branches.makeBranch("PuIdTight","PuppiJet_puIdTight",VINT,"PUPPI PU ID decision disabled: -1 unavailable");
   Branches.makeBranch("PuIdDisc","PuppiJet_puIdDisc",VFLOAT,"embedded PUPPI PU ID discriminant, training depends on input; -999 if unavailable");
   Branches.makeBranch("PuIdBitmap","PuppiJet_puIdBitmap",VINT,"embedded PUPPI PU ID raw bitmap, interpretation depends on input; -1 if unavailable");
 
@@ -372,7 +399,10 @@ void KUCMSAK4PuppiJetObjectMini::ProcessEvent( ItemManager<float>& geVar ){
     Branches.fillBranch("MuonSubtrDeltaPhi",muonSubtrDeltaPhi);
 
     int idTight = -1, idTightLepVeto = -1;
-    if( jet.isPFJet() && tightJetId && tightLepVetoJetId ){
+    if( jet.isPFJet() && run3JetId_ ){
+      run3PuppiJetId(jetEta, jetNHF, jetNEMF, jetCHF, jetCEMF, jetMUF,
+                     jet.chargedMultiplicity(), jet.neutralMultiplicity(), idTight, idTightLepVeto);
+    } else if( jet.isPFJet() && tightJetId && tightLepVetoJetId ){
       pat::strbitset tightBits = tightJetId->getBitTemplate();
       pat::strbitset vetoBits = tightLepVetoJetId->getBitTemplate();
       idTight = int((*tightJetId)(jet, tightBits));
@@ -389,25 +419,10 @@ void KUCMSAK4PuppiJetObjectMini::ProcessEvent( ItemManager<float>& geVar ){
       if( std::isfinite(value) ) puDisc = value;
     }
     if( jet.hasUserInt("pileupJetIdPuppi:fullId") ) puBitmap = jet.userInt("pileupJetIdPuppi:fullId");
-    int puLoose = -1, puMedium = -1, puTight = -1;
-    const float absEta = std::abs(jetEta);
-    // CMSSW_15_1_X PileupJetIDCutParams_cfi.py, Winter24 PUPPI V18.
-    // This is a placeholder applied to the embedded score; its training must
-    // be verified for each input campaign. No PU-ID cut is implied outside range.
-    if( run3PuppiPuId_ && std::isfinite(jetPt) && std::isfinite(absEta) &&
-        jetPt >= 10.f && jetPt < 50.f && absEta < 5.f && puDisc > -2.f ){
-      const int ptBin = jetPt < 20.f ? 0 : jetPt < 30.f ? 1 : jetPt < 40.f ? 2 : 3;
-      const int etaBin = absEta < 2.5f ? 0 : absEta < 2.75f ? 1 : absEta < 3.f ? 2 : 3;
-      static constexpr float loose[4][4] = {{-.723f,-.392f,-.277f,-.516f},{-.548f,-.347f,-.313f,-.489f},{-.413f,-.289f,-.322f,-.438f},{-.279f,-.219f,-.279f,-.384f}};
-      static constexpr float medium[4][4] = {{-.200f,-.068f,-.158f,-.384f},{-.109f,-.179f,-.293f,-.322f},{-.043f,-.124f,-.259f,-.286f},{-.034f,-.071f,-.198f,-.235f}};
-      static constexpr float tight[4][4] = {{.038f,.219f,-.220f,-.254f},{.033f,.060f,-.154f,-.154f},{.056f,.103f,-.159f,-.109f},{.043f,.127f,-.067f,-.059f}};
-      puLoose = int(puDisc > loose[ptBin][etaBin]);
-      puMedium = int(puDisc > medium[ptBin][etaBin]);
-      puTight = int(puDisc > tight[ptBin][etaBin]);
-    }
-    Branches.fillBranch("PuIdLoose",puLoose);
-    Branches.fillBranch("PuIdMedium",puMedium);
-    Branches.fillBranch("PuIdTight",puTight);
+    // Keep an inclusive schema while PUPPI PU-ID decisions are disabled.
+    Branches.fillBranch("PuIdLoose",-1);
+    Branches.fillBranch("PuIdMedium",-1);
+    Branches.fillBranch("PuIdTight",-1);
     Branches.fillBranch("PuIdDisc",puDisc);
     Branches.fillBranch("PuIdBitmap",puBitmap);
 

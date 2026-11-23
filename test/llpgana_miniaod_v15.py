@@ -435,9 +435,7 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizerMini",
                               jets = cms.InputTag("slimmedJets"),
                               # PUPPI tight IDs use RunEra: 2022 assumes reprocessed data
                               # or MC (no early prompt data); 2024-26 use 2023 conventions.
-                              # Run 3 PU-ID decisions apply Winter24 PUPPI V18 thresholds
-                              # to the embedded score as a placeholder (10 <= pt < 50,
-                              # |eta| < 5); the input training is not yet verified.
+                              # PUPPI PU-ID decisions are disabled and set to -1.
                               # The original embedded score and bitmap are also retained.
                               puppiJets = cms.InputTag("slimmedJetsPuppi"), # use "notAvailable" if absent
                               calojets = cms.InputTag("slimmedCaloJets"),
