@@ -10,6 +10,7 @@
 //--------------------------------------------------------------------------------------------
 
 // Includes for all object types
+#include <cmath>
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
@@ -56,6 +57,9 @@ class KUCMSEventInfoObjectMini : public KUCMSObjectBase {
   // object setup : 1) construct object 2) InitObject 3) CrossLoad 4) load into Object Manager
   // load tokens for eventt based collections
   void LoadVertexTokens( edm::EDGetTokenT<std::vector<reco::Vertex>> verticesToken_ ){ verticesToken = verticesToken_; };
+  void LoadRhoToken( const std::string& name, edm::EDGetTokenT<double> token, bool enabled ){
+    rhoInputs.push_back({name, token, enabled, -999.f});
+  }
   void LoadTriggerTokens( edm::EDGetTokenT<edm::TriggerResults> triggerRecoResultsToken_ , edm::EDGetTokenT<trigger::TriggerEvent> triggerEventToken_ ){ triggerRecoResultsToken = triggerRecoResultsToken_; triggerEventToken = triggerEventToken_; };
   void LoadTriggerTokens( edm::EDGetTokenT<edm::TriggerResults> triggerFlagResultsToken_ , edm::EDGetTokenT<edm::TriggerResults> triggerHLTResultsToken_ ){ triggerFlagResultsToken = triggerFlagResultsToken_; triggerHLTResultsToken = triggerHLTResultsToken_; };
   // sets up branches, do preloop jobs
@@ -82,6 +86,14 @@ class KUCMSEventInfoObjectMini : public KUCMSObjectBase {
   private:
 
   ItemManager<uInt> eventVar;
+
+  struct RhoInput {
+    std::string name;
+    edm::EDGetTokenT<double> token;
+    bool enabled;
+    float value;
+  };
+  std::vector<RhoInput> rhoInputs;
 
   edm::EDGetTokenT<edm::TriggerResults> triggerFlagResultsToken;
   edm::Handle<edm::TriggerResults> triggerFlagResults;
@@ -141,6 +153,9 @@ void KUCMSEventInfoObjectMini::InitObject( TTree* fOutTree ){
   Branches.makeBranch("vtxX","PV_x",FLOAT);
   Branches.makeBranch("vtxY","PV_y",FLOAT);
   Branches.makeBranch("vtxZ","PV_z",FLOAT);
+  for( const auto& rho : rhoInputs ){
+    Branches.makeBranch(rho.name, "Evt_" + rho.name, FLOAT, "event rho; -999 if unavailable");
+  }
 
   for( auto filterName : metFilterList ){
 
@@ -169,6 +184,13 @@ void KUCMSEventInfoObjectMini::LoadEvent( const edm::Event& iEvent, const edm::E
   iEvent.getByToken( verticesToken, vertices_ );
   iEvent.getByToken( triggerFlagResultsToken, triggerFlagResults );
   iEvent.getByToken( triggerHLTResultsToken, triggerHLTResults );
+  for( auto& rho : rhoInputs ){
+    rho.value = -999.f;
+    if( !rho.enabled ) continue;
+    edm::Handle<double> handle;
+    iEvent.getByToken(rho.token, handle);
+    if( handle.isValid() && std::isfinite(*handle) ) rho.value = static_cast<float>(*handle);
+  }
   //iEvent.getByToken( triggerEventToken, triggerEvent );
 
   const edm::TriggerNames& triggerFlagNames = iEvent.triggerNames( *triggerFlagResults );
@@ -274,6 +296,7 @@ void KUCMSEventInfoObjectMini::ProcessEvent( ItemManager<float>& geVar ){
   Branches.fillBranch("vtxX",geVar("vtxX"));
   Branches.fillBranch("vtxY",geVar("vtxY"));
   Branches.fillBranch("vtxZ",geVar("vtxZ"));
+  for( const auto& rho : rhoInputs ) Branches.fillBranch(rho.name, rho.value);
 
 
   /*

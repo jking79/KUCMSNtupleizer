@@ -406,6 +406,15 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizerMini",
                               ## rho
                               #rho = cms.InputTag("fixedGridRhoFastjetAll"), #fixedGridRhoAll
                               rho = cms.InputTag("fixedGridRhoAll"),
+                              # Event-level rho branches; use "notAvailable" for an absent product.
+                              fixedGridRhoAll = cms.InputTag("fixedGridRhoAll"),
+                              fixedGridRhoFastjetAll = cms.InputTag("fixedGridRhoFastjetAll"),
+                              fixedGridRhoFastjetAllCalo = cms.InputTag("fixedGridRhoFastjetAllCalo"),
+                              fixedGridRhoFastjetAllTmp = cms.InputTag("fixedGridRhoFastjetAllTmp"),
+                              fixedGridRhoFastjetCentral = cms.InputTag("fixedGridRhoFastjetCentral"),
+                              fixedGridRhoFastjetCentralCalo = cms.InputTag("fixedGridRhoFastjetCentralCalo"),
+                              fixedGridRhoFastjetCentralChargedPileUp = cms.InputTag("fixedGridRhoFastjetCentralChargedPileUp"),
+                              fixedGridRhoFastjetCentralNeutral = cms.InputTag("fixedGridRhoFastjetCentralNeutral"),
                               ## conversions
                               conversions = cms.InputTag("reducedEgamma","reducedConversions",convSet ),
                               ## beamSpot

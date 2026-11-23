@@ -10,6 +10,7 @@
 //--------------------------------------------------------------------------------------------
 
 // Includes for all object types
+#include <algorithm>
 #include <cmath>
 #include <memory>
 
@@ -37,6 +38,7 @@
 //#include "DataFormats/AK4Jet/interface/AK4Jet.h"
 
 #include "DataFormats/PatCandidates/interface/Jet.h"
+#include "FWCore/Utilities/interface/Exception.h"
 #include "PhysicsTools/SelectorUtils/interface/PFJetIDSelectionFunctor.h"
 
 // JECS
@@ -174,6 +176,14 @@ void KUCMSAK4JetObjectMini::InitObject( TTree* fOutTree ){
   Branches.makeBranch("Eta","Jet_eta",VFLOAT);
   Branches.makeBranch("Phi","Jet_phi",VFLOAT);
   Branches.makeBranch("Area","Jet_area",VFLOAT,"jet catchment area, for JECs");
+  Branches.makeBranch("LegacyCoverage","Jet_passLegacyCoverage",VBOOL,"jet passes the pre-expansion pt and eta selection");
+  Branches.makeBranch("RawFactor","Jet_rawFactor",VFLOAT,"1 - uncorrected JEC factor; -999 if unavailable");
+  Branches.makeBranch("MuonSubtrRawPt","Jet_muonSubtrRawPt",VFLOAT,"muon-subtracted raw jet pt; -999 if unavailable");
+  Branches.makeBranch("MuonSubtrRawEta","Jet_muonSubtrRawEta",VFLOAT,"muon-subtracted raw jet eta; -999 if unavailable");
+  Branches.makeBranch("MuonSubtrRawPhi","Jet_muonSubtrRawPhi",VFLOAT,"muon-subtracted raw jet phi; -999 if unavailable");
+  Branches.makeBranch("MuonSubtrFactor","Jet_muonSubtrFactor",VFLOAT,"1 - muon-subtracted raw pt / raw pt; -999 if unavailable");
+  Branches.makeBranch("MuonSubtrDeltaEta","Jet_muonSubtrDeltaEta",VFLOAT,"muon-subtracted raw eta minus jet eta; -999 if unavailable");
+  Branches.makeBranch("MuonSubtrDeltaPhi","Jet_muonSubtrDeltaPhi",VFLOAT,"muon-subtracted raw phi minus jet phi; -999 if unavailable");
   Branches.makeBranch("IdLoose","Jet_idLoose",VINT,"PF jet ID: 1 pass, 0 fail, -1 unavailable");
   Branches.makeBranch("IdTight","Jet_idTight",VINT,"PF jet ID: 1 pass, 0 fail, -1 unavailable");
   Branches.makeBranch("IdTightLepVeto","Jet_idTightLepVeto",VINT,"PF jet ID: 1 pass, 0 fail, -1 unavailable");
@@ -231,12 +241,7 @@ void KUCMSAK4JetObjectMini::LoadEvent( const edm::Event& iEvent, const edm::Even
   if( AK4JetDEBUG ) std::cout << "Collecting AK4Jets" << std::endl;
   fjets.clear();
   jetIds.clear();
-  for(const auto &jet : *jets_ ){ // Filters jet collection & sorts by pt
-
-    if( jet.pt() < cfPrm("jetPTmin") ) continue;
-    if( cfFlag("onlyEB") && std::abs(jet.eta()) > cfPrm("ebMaxEta") ) continue;
-    if( std::abs(jet.eta()) > cfPrm("jetEtaMax") ) continue;
-    // save the jets, and then store the ID
+  for(const auto &jet : *jets_ ){ // Preserve all input jets in their original order.
     fjets.emplace_back(jet);
     auto jetID = 0;
     jetIds.push_back(jetID);
@@ -279,6 +284,9 @@ void KUCMSAK4JetObjectMini::ProcessEvent( ItemManager<float>& geVar ){
     const float jetEta = jet.eta();
     const float jetPhi = jet.phi();
     const float jetArea = jet.jetArea();
+    const bool legacyCoverage = !(jet.pt() < cfPrm("jetPTmin")) &&
+        !(cfFlag("onlyEB") && std::abs(jet.eta()) > cfPrm("ebMaxEta")) &&
+        !(std::abs(jet.eta()) > cfPrm("jetEtaMax"));
 
     const float jetNHF = jet.neutralHadronEnergyFraction();
     const float jetNEMF = jet.neutralEmEnergyFraction();
@@ -294,6 +302,61 @@ void KUCMSAK4JetObjectMini::ProcessEvent( ItemManager<float>& geVar ){
     Branches.fillBranch("Eta",jetEta);
     Branches.fillBranch("Phi",jetPhi);
     Branches.fillBranch("Area",jetArea);
+    Branches.fillBranch("LegacyCoverage",legacyCoverage);
+
+    constexpr float unavailable = -999.f;
+    float rawFactor = unavailable;
+    float muonSubtrRawPt = unavailable, muonSubtrRawEta = unavailable, muonSubtrRawPhi = unavailable;
+    float muonSubtrFactor = unavailable, muonSubtrDeltaEta = unavailable, muonSubtrDeltaPhi = unavailable;
+    // Match PATJetCleanerForType1MET: start from the uncorrected jet and
+    // subtract the p4 of global or standalone muon constituents.
+    if( jet.jecSetsAvailable() ){
+      try {
+        const auto levels = jet.availableJECLevels();
+        if( std::find(levels.begin(), levels.end(), "Uncorrected") != levels.end() ){
+          const float rawScale = jet.jecFactor("Uncorrected");
+          if( std::isfinite(rawScale) && rawScale > 0.f ){
+            rawFactor = 1.f - rawScale;
+            auto rawP4 = jet.p4() * rawScale;
+            auto cleanedP4 = rawP4;
+            bool constituentsAvailable = true;
+            for( const auto& cand : jet.daughterPtrVector() ){
+              if( cand.isNull() || !cand.isAvailable() ){ constituentsAvailable = false; break; }
+              const auto* particle = cand.get();
+              const auto* pfCandidate = dynamic_cast<const reco::PFCandidate*>(particle);
+              const reco::Candidate* muon = particle;
+              if( pfCandidate ){
+                const auto& muonRef = pfCandidate->muonRef();
+                if( muonRef.isNonnull() && !muonRef.isAvailable() ){ constituentsAvailable = false; break; }
+                muon = muonRef.isNonnull() ? muonRef.get() : nullptr;
+              }
+              if( muon && (muon->isGlobalMuon() || muon->isStandAloneMuon()) ) cleanedP4 -= particle->p4();
+            }
+            const double rawPt = rawP4.pt();
+            const double cleanedPt = cleanedP4.pt();
+            if( constituentsAvailable && std::isfinite(rawPt) && rawPt > 0. &&
+                std::isfinite(cleanedPt) && cleanedPt > 0. &&
+                std::isfinite(cleanedP4.eta()) && std::isfinite(cleanedP4.phi()) ){
+              muonSubtrRawPt = cleanedPt;
+              muonSubtrRawEta = cleanedP4.eta();
+              muonSubtrRawPhi = cleanedP4.phi();
+              muonSubtrFactor = 1. - cleanedPt/rawPt;
+              muonSubtrDeltaEta = cleanedP4.eta() - jetEta;
+              muonSubtrDeltaPhi = cleanedP4.phi() - jetPhi;
+            }
+          }
+        }
+      } catch( const cms::Exception& ) {
+        // Retain the documented sentinels when correction information is invalid.
+      }
+    }
+    Branches.fillBranch("RawFactor",rawFactor);
+    Branches.fillBranch("MuonSubtrRawPt",muonSubtrRawPt);
+    Branches.fillBranch("MuonSubtrRawEta",muonSubtrRawEta);
+    Branches.fillBranch("MuonSubtrRawPhi",muonSubtrRawPhi);
+    Branches.fillBranch("MuonSubtrFactor",muonSubtrFactor);
+    Branches.fillBranch("MuonSubtrDeltaEta",muonSubtrDeltaEta);
+    Branches.fillBranch("MuonSubtrDeltaPhi",muonSubtrDeltaPhi);
 
     int idTight = -1, idTightLepVeto = -1;
     if( jet.isPFJet() && tightJetId && tightLepVetoJetId ){
@@ -342,7 +405,7 @@ void KUCMSAK4JetObjectMini::ProcessEvent( ItemManager<float>& geVar ){
     const auto jetDrRhGroup = rhObj->getRHGroup( jetEta, jetPhi, deltaRmin, minRhE );
     auto jetDrRhIdsGroup = rhObj->getRhGrpIDs( jetDrRhGroup );
     Branches.fillBranch("DrRhIds",jetDrRhIdsGroup);
-    rhObj->setRecHitUsed( jetDrRhIdsGroup );
+    if( legacyCoverage ) rhObj->setRecHitUsed( jetDrRhIdsGroup );
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // !!!!!!!!  create list of associated photons and electrons with jet via daughter particles of jet !!!!!!!!!!
@@ -354,6 +417,9 @@ void KUCMSAK4JetObjectMini::ProcessEvent( ItemManager<float>& geVar ){
     std::vector<uInt> jetParts;
     for( const auto &kid : jet.daughterPtrVector() ){
 
+      // Newly retained jets can have unavailable or non-packed daughters.
+      // Keep the previous path for jets in the original coverage.
+      if( !legacyCoverage && (kid.isNull() || kid.id() != pfcands_.id() || kid.key() >= pfcands_->size()) ) continue;
       auto kidcand = (pfcands_->ptrAt(kid.key())).get();
       auto kideta = kidcand->eta();
       auto kidphi = kidcand->phi();

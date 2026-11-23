@@ -85,6 +85,17 @@ EcalPedestalsToken_(esConsumes())
 
   //Event Info
   auto eventInfoObj = new KUCMSEventInfoObjectMini(  iConfig );
+  // Each MiniAOD rho product is optional and has an inclusive output branch.
+  // The configuration may explicitly use "notAvailable" for absent products.
+  for( const auto& name : std::vector<std::string>{
+      "fixedGridRhoAll", "fixedGridRhoFastjetAll", "fixedGridRhoFastjetAllCalo",
+      "fixedGridRhoFastjetAllTmp", "fixedGridRhoFastjetCentral", "fixedGridRhoFastjetCentralCalo",
+      "fixedGridRhoFastjetCentralChargedPileUp", "fixedGridRhoFastjetCentralNeutral"} ){
+    const auto tag = iConfig.existsAs<edm::InputTag>(name) ? iConfig.getParameter<edm::InputTag>(name) : edm::InputTag(name);
+    const bool enabled = tag.label() != "notAvailable";
+    const auto token = enabled ? mayConsume<double>(tag) : edm::EDGetTokenT<double>();
+    eventInfoObj->LoadRhoToken(name, token, enabled);
+  }
   auto vertexToken = consumes<std::vector<reco::Vertex>>(iConfig.getParameter<edm::InputTag>("vertices"));
   auto triggerFlagResultsToken = consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("triggerFlagResults"));
   auto triggerHltResultsToken = consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("triggerHLTResults"));
