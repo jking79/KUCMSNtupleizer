@@ -2536,7 +2536,10 @@ def transfer_jobs(args, name_filter=None):
         expected_indices = history_expected_indices(history)
 
         sample_tag  = path_info['sample_tag']
-        merged_name = merged_output_name(path_info)
+        merged_tag  = args.merged_tag or path_info['tag']
+        merged_name = final_merged_filename(path_info['sample_tag'],
+                                            path_info['ntuple_tag'],
+                                            merged_tag)
         dest_path   = dest_base.rstrip('/') + '/' + merged_name
         dest_url    = eos_xrootd_url(dest_path)
 
@@ -2636,6 +2639,9 @@ def main():
     parser.add_argument('--version', default=None,
         metavar='N', help='Skim version number; appends _v{N} to the job tag during submission '
                           'and sets the skims_v{N} destination during --transfer')
+    parser.add_argument('--merged-tag', default=None, metavar='TAG',
+        help='With --transfer: override only the skim-tag suffix in the merged output filename; '
+             'job selection and per-job output matching still use the original submit tag')
     parser.add_argument('--scratch', default='/uscmst1b_scratch/lpc1/3DayLifetime/$USER',
         metavar='DIR', help='With --transfer: local scratch directory for temporary hadded files')
     parser.add_argument('--force', action='store_true',
@@ -2886,3 +2892,4 @@ if __name__ == '__main__':
         main()
     except EosError as exc:
         sys.exit('ERROR: ' + str(exc))
+

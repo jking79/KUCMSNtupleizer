@@ -120,7 +120,7 @@ class KUCMSGenObjectMini : public KUCMSObjectBase {
   std::vector<float> getGenPartMatch( const reco::SuperCluster* scptr, float pt );
   //std::map<std::string, float> getGenPartMatch( const reco::SuperCluster &scptr, float pt ) const;
   //std::map<std::string, bool> MotherID(const int genIndex) const;
-  std::vector<float> getGenJetInfo( float jetEta, float jetPhi, float jetPt );
+  std::vector<float> getGenJetInfo( float jetEta, float jetPhi, float jetEnergy, int genJetIdx );
   //GlobalPoint GenVertex() {return GlobalPoint(genxyz0_->x(), genxyz0_->y(), genxyz0_->z()); };
 
   // new exclusive gen matching  v3fPoint
@@ -274,7 +274,7 @@ void KUCMSGenObjectMini::InitObject( TTree* fOutTree ){
   Branches.makeBranch("genVy","Gen_vy",VFLOAT);
   Branches.makeBranch("genVz","Gen_vz",VFLOAT);
   Branches.makeBranch("genPdgId","Gen_pdgId",VUINT);
-  Branches.makeBranch("genSusId","Gen_susId",VINT,"22=SignalPhoton");
+  Branches.makeBranch("genSusId","Gen_susId",VINT,"ancestry classification: 22=signal photon, 26=Higgs from neutralino, 36=Higgs copy or descendant");
   Branches.makeBranch("genStatus","Gen_status",VINT);
   Branches.makeBranch("genCharge","Gen_charge",VINT);
   Branches.makeBranch("genMass","Gen_mass",VFLOAT);
@@ -302,6 +302,9 @@ void KUCMSGenObjectMini::InitObject( TTree* fOutTree ){
   Branches.makeBranch("isGG","Evt_isGG", BOOL);
   Branches.makeBranch("isZZ", "Evt_isZZ", BOOL);
   Branches.makeBranch("isGZ","Evt_isGZ", BOOL);
+  Branches.makeBranch("isGH","Evt_isGH", BOOL,"distinct N2 parents produce a photon and a Higgs");
+  Branches.makeBranch("isZH","Evt_isZH", BOOL,"distinct N2 parents produce a Z and a Higgs");
+  Branches.makeBranch("isHH","Evt_isHH", BOOL,"two distinct N2 parents produce Higgs bosons");
   Branches.makeBranch("fsType","Evt_fsType", INT);
   Branches.makeBranch("nXs","Evt_nXs", INT, "raw count of retained X2 records" );
   Branches.makeBranch("nValidXs","Evt_nValidXs", INT,
@@ -449,6 +452,7 @@ void KUCMSGenObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventSe
       const bool isLepton = absPdgId > 10 && absPdgId < 19;
       const bool isPhoton = absPdgId == 22;
       const bool isWZ = absPdgId == 23 || absPdgId == 24;
+      const bool isHiggs = absPdgId == 25;
       const bool isSusy = absPdgId > 1000000 && absPdgId < 3000000;
       const bool isNeutralino1 = absPdgId == 1000022;
       const bool isNeutralino2 = absPdgId == 1000023;
@@ -456,13 +460,17 @@ void KUCMSGenObjectMini::LoadEvent( const edm::Event& iEvent, const edm::EventSe
 
       if( isQuark && isTree &&
       ( genPartSusId == 41 || genPartSusId == 42 || genPartSusId == 43 ||
-      genPartSusId == 33 || genPartSusId == 34 ) ){
+      genPartSusId == 33 || genPartSusId == 34 || genPartSusId == 36 ) ){
         tpgpKeep[sourceIndex] = true;
       }//<<>>const bool isChargino1 = absPdgId == 1000024; if( isQuark && isTree && ( genPartSusId == 41 || genPartSusId == 42 || genPartSusId == 43 || genPartSusId == 33 || genPartSusId == 34 ) )
       if( isWZ && isTree && ( genPartSusId == 23 || genPartSusId == 24 ) ){
         tpgpKeep[sourceIndex] = true;
         tpgpGetMom[sourceIndex] = true;
       }//<<>>if( isWZ && isTree && ( genPartSusId == 23 || genPartSusId == 24 ) )
+      if( isHiggs && isTree && genPartSusId == 26 ){
+        tpgpKeep[sourceIndex] = true;
+        tpgpGetMom[sourceIndex] = true;
+      }
       if( ( isSusy || isLepton || isPhoton ) && isTree ){
         tpgpKeep[sourceIndex] = true;
         tpgpGetMom[sourceIndex] = true;
@@ -558,6 +566,7 @@ void KUCMSGenObjectMini::ProcessEvent( ItemManager<float>& geVar ){
   bool isGZ = false;
   int nXG = 0;
   int nXZ = 0;
+  std::unordered_set<int> signalGParents, signalZParents, signalHParents;
   bool hasLWZX = false;
   bool hasLWZQ = false;
   int nLWZX = 0;
@@ -591,10 +600,15 @@ void KUCMSGenObjectMini::ProcessEvent( ItemManager<float>& geVar ){
 
     if( genSusId == 22 or genSusId == 25 ) nXG++;
     if( genSusId == 23 or genSusId == 24 ) nXZ++;
-
     const int partMomIdx = genMomIdx;
     const int masterMomIndex = genMomIdx;
     const bool validMom = partMomIdx >= 0 && partMomIdx < nFgenParts;
+    // Normalized mother links collapse same-PDG copies; count each N2 once.
+    if( validMom && std::abs(fpgenparts[partMomIdx].pdgId()) == 1000023 ){
+      if( genPdgId == 22 && ( genSusId == 22 || genSusId == 25 ) ) signalGParents.insert(partMomIdx);
+      if( genPdgId == 23 && genSusId == 23 ) signalZParents.insert(partMomIdx);
+      if( genPdgId == 25 && genSusId == 26 ) signalHParents.insert(partMomIdx);
+    }
     float momVx = validMom ? fpgenparts[partMomIdx].vx() : -999;
     float momVy = validMom ? fpgenparts[partMomIdx].vy() : -999;
     float momVz = validMom ? fpgenparts[partMomIdx].vz() : -999;
@@ -640,7 +654,7 @@ void KUCMSGenObjectMini::ProcessEvent( ItemManager<float>& geVar ){
       nXs++;
 
       // Same-PDG copy links are collapsed in fpgpMomIdx.  Therefore a
-      // retained photon, Z, or LSP whose normalized mother is this X2
+      // retained photon, Z, LSP, or Higgs whose normalized mother is this X2
       // identifies the terminal/decaying X2 copy.  Search all retained
       // children instead of relying on fpgpKidIdx's first-child choice.
       int decayKidIdx = -1;
@@ -657,52 +671,55 @@ void KUCMSGenObjectMini::ProcessEvent( ItemManager<float>& geVar ){
       std::isfinite(genEnergy) && genEnergy > 0.f;
 
       if( validKinematics ){
-        for( int childIdx = 0; childIdx < nFgenParts; childIdx++ ){
-          if( fpgpMomIdx[childIdx] != nGenParts ) continue;
+        // Preserve the existing child order; only use a Higgs as a fallback.
+        for( int childPass = 0; childPass < 2 && decayKidIdx < 0; ++childPass ){
+          for( int childIdx = 0; childIdx < nFgenParts; childIdx++ ){
+            if( fpgpMomIdx[childIdx] != nGenParts ) continue;
 
-          const int childPdgId = std::abs(fpgenparts[childIdx].pdgId());
-          const bool isDecayChild = childPdgId == 22 || childPdgId == 23 ||
-          childPdgId == 1000022;
-          if( !isDecayChild ) continue;
+            const int childPdgId = std::abs(fpgenparts[childIdx].pdgId());
+            const bool isDecayChild = childPass == 0 ?
+            (childPdgId == 22 || childPdgId == 23 || childPdgId == 1000022) : childPdgId == 25;
+            if( !isDecayChild ) continue;
 
-          float testGenVx = genVx;
-          float testGenVy = genVy;
-          float testGenVz = genVz;
-          float testKidVx = fpgenparts[childIdx].vx();
-          float testKidVy = fpgenparts[childIdx].vy();
-          float testKidVz = fpgenparts[childIdx].vz();
+            float testGenVx = genVx;
+            float testGenVy = genVy;
+            float testGenVz = genVz;
+            float testKidVx = fpgenparts[childIdx].vx();
+            float testKidVy = fpgenparts[childIdx].vy();
+            float testKidVz = fpgenparts[childIdx].vz();
 
-          if( testKidVx == 0.f ){
-            testKidVx = testGenVx;
-            testKidVy = testGenVy;
-            testKidVz = testGenVz;
-            testGenVx = geVar("vtxX");
-            testGenVy = geVar("vtxY");
-            testGenVz = geVar("vtxZ");
-          }//<<>>if( testKidVx == 0.f )
+            if( testKidVx == 0.f ){
+              testKidVx = testGenVx;
+              testKidVy = testGenVy;
+              testKidVz = testGenVz;
+              testGenVx = geVar("vtxX");
+              testGenVy = geVar("vtxY");
+              testGenVz = geVar("vtxZ");
+            }//<<>>if( testKidVx == 0.f )
 
-          const float testDis = hypo( testGenVx-testKidVx,
-          testGenVy-testKidVy, testGenVz-testKidVz );
-          const float testBeta = xp/genEnergy;
-          const float testGBeta = xp/genMass;
-          const float testCTau = testDis/testGBeta;
-          const bool validLifetime = std::isfinite(testGenVx) &&
-          std::isfinite(testGenVy) && std::isfinite(testGenVz) &&
-          std::isfinite(testKidVx) && std::isfinite(testKidVy) &&
-          std::isfinite(testKidVz) && std::isfinite(testDis) &&
-          testDis > 0.f && std::isfinite(testBeta) &&
-          std::isfinite(testCTau) && testCTau > 0.f;
-          if( !validLifetime ) continue;
+            const float testDis = hypo( testGenVx-testKidVx,
+            testGenVy-testKidVy, testGenVz-testKidVz );
+            const float testBeta = xp/genEnergy;
+            const float testGBeta = xp/genMass;
+            const float testCTau = testDis/testGBeta;
+            const bool validLifetime = std::isfinite(testGenVx) &&
+            std::isfinite(testGenVy) && std::isfinite(testGenVz) &&
+            std::isfinite(testKidVx) && std::isfinite(testKidVy) &&
+            std::isfinite(testKidVz) && std::isfinite(testDis) &&
+            testDis > 0.f && std::isfinite(testBeta) &&
+            std::isfinite(testCTau) && testCTau > 0.f;
+            if( !validLifetime ) continue;
 
-          decayKidIdx = childIdx;
-          decayDis = testDis;
-          decayBeta = testBeta;
-          decayCTau = testCTau;
-          decayGenVx = testGenVx;
-          decayGenVy = testGenVy;
-          decayGenVz = testGenVz;
-          break;
-        }//<<>>for( int childIdx = 0; childIdx < nFgenParts; childIdx++ )
+            decayKidIdx = childIdx;
+            decayDis = testDis;
+            decayBeta = testBeta;
+            decayCTau = testCTau;
+            decayGenVx = testGenVx;
+            decayGenVy = testGenVy;
+            decayGenVz = testGenVz;
+            break;
+          }//<<>>for( int childIdx = 0; childIdx < nFgenParts; childIdx++ )
+        }//<<>>for( int childPass = 0; childPass < 2 && decayKidIdx < 0; ++childPass )
       }//<<>>if( validKinematics )
 
       if( decayKidIdx >= 0 ){
@@ -817,6 +834,9 @@ void KUCMSGenObjectMini::ProcessEvent( ItemManager<float>& geVar ){
   Branches.fillBranch("isGG",isGG);
   Branches.fillBranch("isZZ", isZZ);
   Branches.fillBranch("isGZ",isGZ);
+  Branches.fillBranch("isGH",signalGParents.size() == 1 && signalHParents.size() == 1 && *signalGParents.begin() != *signalHParents.begin());
+  Branches.fillBranch("isZH",signalZParents.size() == 1 && signalHParents.size() == 1 && *signalZParents.begin() != *signalHParents.begin());
+  Branches.fillBranch("isHH",signalHParents.size() == 2);
   Branches.fillBranch("fsType",fsType);
   Branches.fillBranch("nXs",nXs);
   Branches.fillBranch("nValidXs",nValidXs);
@@ -1467,6 +1487,7 @@ std::unordered_set<const reco::Candidate*>& activePath, int depth ) const {
   auto kidPdgID = std::abs(kid->pdgId());
   //if( GenDEBUG ) std::cout << " --- llpgen chase canadate: " << kidPdgID << " depth: " << depth << std::endl;
   bool wzFlag = ( kidPdgID == 23 || kidPdgID == 24 ) ? true : false;
+  bool hFlag = ( kidPdgID == 25 );
   bool phFlag = ( kidPdgID == 22 ) ? true : false;
   //bool eleFlag = ( kidPdgID == 11 ) ? true : false;
   bool qFlag = ( kidPdgID < 7 ) ? true : false;
@@ -1488,6 +1509,7 @@ std::unordered_set<const reco::Candidate*>& activePath, int depth ) const {
 
   bool cphFlag = ( childPdgId == 22 ) ? true : false;
   bool cwzFlag = ( childPdgId == 23 || childPdgId == 24 ) ? true : false;
+  bool chFlag = ( childPdgId == 25 );
   bool cqFlag = ( childPdgId > 0 && childPdgId < 7 ) ? true : false;
   bool cgFlag = ( childPdgId == 21 ) ? true : false;
 
@@ -1497,6 +1519,7 @@ std::unordered_set<const reco::Candidate*>& activePath, int depth ) const {
   else if( cphFlag && ( ntiFlag || chiFlag ) ) return 25;
   else if( cwzFlag && ntiFlag ) return 23;
   else if( cwzFlag && chiFlag ) return 24;
+  else if( chFlag && ntiFlag ) return 26;
 
   else if( cqFlag && gliFlag ) return 41;
   else if( cqFlag && sqkFlag ) return 42;
@@ -1535,6 +1558,7 @@ std::unordered_set<const reco::Candidate*>& activePath, int depth ) const {
     else if( phFlag && ( nti || chi ) ) return 35;
     else if( wzFlag && nti ) return 33;
     else if( wzFlag && chi ) return 34;
+    else if( hFlag && nti ) return 36;
 
     else if( qFlag && gli ) return 51;
     else if( qFlag && sqk ) return 52;
@@ -1684,7 +1708,7 @@ string KUCMSGenObjectMini::bigKidChase( std::vector<reco::CandidatePtr> kids, fl
 
 }//<<>>string bigKidChase( std::vector<reco::CandidatePtr> kids, float vx )
 
-std::vector<float> KUCMSGenObjectMini::getGenJetInfo( float jetEta, float jetPhi, float jetEnergy ){
+std::vector<float> KUCMSGenObjectMini::getGenJetInfo( float jetEta, float jetPhi, float jetEnergy, int genJetIdx ){
 
   float genImpactAngle(-10.0);
   float genTime(-99.9);
@@ -1702,26 +1726,9 @@ std::vector<float> KUCMSGenObjectMini::getGenJetInfo( float jetEta, float jetPhi
 
   //std::cout << " --- Jet-GenJet matching " << std::endl;
 
-  float goodDr(0.3);
+  float goodDr(-1.0);
   float goodRe(-1.0);
-  int matchedIdx(-1);
-  int index(0);
-  for(const auto &genJet : fgenjets ){
-
-    auto gjeta = genJet.eta();
-    auto gjphi = genJet.phi();
-    auto gje = genJet.energy();
-    if( gje < 1.0 ){ index++; continue; }
-    auto jtgjdr = std::sqrt(reco::deltaR2(gjeta, gjphi, jetEta, jetPhi ));
-    auto jtgjre = jetEnergy/gje;
-    if( jtgjdr < goodDr ){
-      goodDr = jtgjdr;
-      goodRe = jtgjre;
-      matchedIdx = index;
-    }//<<>>if( jtgjdr <= goodDr )
-    index++;
-
-  }//<<>>for(const auto& genJet : fgenjets )
+  const int matchedIdx = genJetIdx >= 0 && static_cast<size_t>(genJetIdx) < fgenjets.size() ? genJetIdx : -1;
 
 
   //std::cout << " --- Jet-Genpart quark matching" << std::endl;
@@ -1763,7 +1770,11 @@ std::vector<float> KUCMSGenObjectMini::getGenJetInfo( float jetEta, float jetPhi
     //if( GenDEBUG ) std::cout << " - genJet GenTime : " << genTime << " Angle: " << genImpactAngle << std::endl;
     genPt = genJet.pt();
     genEnergy = genJet.energy();
-    genEMFrac = (genJet.chargedEmEnergy() + genJet.neutralEmEnergy())/genEnergy;
+    goodDr = std::sqrt(reco::deltaR2(genEta, genPhi, jetEta, jetPhi));
+    if( genEnergy != 0.f ){
+      goodRe = jetEnergy/genEnergy;
+      genEMFrac = (genJet.chargedEmEnergy() + genJet.neutralEmEnergy())/genEnergy;
+    }
     genDrMatch = goodDr; //std::sqrt(reco::deltaR2(jet.eta(), jet.phi(), genJet.eta(), genJet.phi()));
     genReMatch = goodRe;
     //if( GenDEBUG ) std::cout << " -- Energy : " << genEnergy << " Pt : " << genPt << " EMfrac : " << genEMFrac << std::endl;

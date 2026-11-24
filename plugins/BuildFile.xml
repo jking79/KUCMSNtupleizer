@@ -27,6 +27,7 @@
 <use name="MagneticField/Engine"/>
 <use name="MagneticField/Records"/>
 <use name="PhysicsTools/PatUtils"/>
+<use name="PhysicsTools/SelectorUtils"/>
 <use name="PhysicsTools/UtilAlgos"/>
 <use name="RecoEgamma/EgammaMCTools"/>
 <use name="RecoEgamma/EgammaTools"/>
