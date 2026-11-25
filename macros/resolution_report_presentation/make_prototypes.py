@@ -212,8 +212,8 @@ make_plot("prototype_run2_2018_EB_SRO_DRO", run2, "2018 UL\nEB", "Run 2 (13 TeV)
 run3 = [(f"SRO_{region}_{cali}", f"{region}" + (" Chronus" if cali == "Cali" else ""),
          find_record("SRO", region, cali, "AllGains", "25_prompt"))
         for region,cali in (("EB","Cali"),("EE","Cali"),("EB","NoCali"),("EE","NoCali"))]
-make_plot("prototype_run3_2025_SRO_EB_EE", run3, "2025 Prompt · AllGains\nSRO Resolution", "Run 3 (13.6 TeV)")
+make_plot("prototype_run3_2025_SRO_EB_EE", run3, "2025 Prompt · Uncorrected CC time\nAllGains · SRO Resolution", "Run 3 (13.6 TeV)")
 
 # ECAL DPG review comparison: EB SRO/DRO/ZEE, uncalibrated Gain1Only.
 dpg = [(p, p, find_record(p, "EB", "NoCali", "Gain1Only", "25_prompt")) for p in ("SRO","DRO","ZEE")]
-make_plot("prototype_ecal_dpg_2025_EB_SRO_DRO_ZEE", dpg, "2025 Prompt\nEB", "Run 3 (13.6 TeV)")
+make_plot("prototype_ecal_dpg_2025_EB_SRO_DRO_ZEE", dpg, "2025 Prompt · Uncorrected CC time\nEB", "Run 3 (13.6 TeV)")

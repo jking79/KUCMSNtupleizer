@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Build the full plot-family gallery from report-selected resolution fits."""
 import collections
+import argparse
 import html
 import re
 
@@ -14,6 +15,7 @@ FAMILIES = [
     ("family_04_chronus_gain1_vs_allgains", "Chronus · Gain1Only versus AllGains", "SRO and DRO Chronus-calibrated comparisons, split by EB and EE."),
     ("family_05_chronus_allgains_eb_ee", "Chronus · AllGains · EB versus EE", "SRO and DRO comparisons across EB and EE."),
     ("family_06_ecal_dpg_eb", "ECAL DPG · EB SRO/DRO/ZEE", "EB-only, uncalibrated, Gain1Only SRO, DRO, and ZEE comparison."),
+    ("family_07_ecal_dpg_chronus_eb", "ECAL DPG · EB SRO/DRO/ZEE · Chronus", "EB-only, Chronus-calibrated, Gain1Only SRO, DRO, and ZEE comparison."),
 ]
 
 
@@ -39,9 +41,20 @@ def era_description(tag):
     else:
         era = f"{year} Prompt"
         production = "Prompt"
-    first_line = era if production == "Prompt" else f"{era} · {production}"
+    if year in (2025, 2026):
+        time_basis = cc_time_label(tag)
+        first_line = f"{era} · {time_basis}"
+    else:
+        first_line = era if production == "Prompt" else f"{era} · {production}"
     slug = re.sub(r"[^A-Za-z0-9]+", "_", era).strip("_")
     return year, era, production, first_line, slug
+
+
+def cc_time_label(dataset_tag):
+    """Keep the CC-time input distinct from the calibration-state selection."""
+    if "uncorr" in dataset_tag.lower():
+        return "Uncorrected CC time"
+    return "Base CC time"
 
 
 def load_eras():
@@ -91,11 +104,16 @@ def family_plots(era_records):
          for pair in ("SRO", "DRO") for region in ("EB", "EE")], 3200)
     add("family_06_ecal_dpg_eb", "EB", "EB",
         [(pair, pair, pair, "Gain1Only", "NoCali", "EB") for pair in ("SRO", "DRO", "ZEE")], 800)
+    add("family_07_ecal_dpg_chronus_eb", "EB", "EB",
+        [(pair, pair + " Chronus", pair, "Gain1Only", "Cali", "EB") for pair in ("SRO", "DRO", "ZEE")], 800)
     return plots
 
 
-def html_caption(era_label, subtitle, curves):
+def html_caption(era_label, subtitle, curves, dataset_tag):
     parts = [f"{era_label} · {subtitle}" if subtitle != era_label else era_label]
+    match = re.search(r"(?:eg_)(25|26)", dataset_tag)
+    if match:
+        parts.append(f"Uses {cc_time_label(dataset_tag)}.")
     excluded = []
     for _, label, record in curves:
         count = int(record[0].get("excluded_tail_bins", 0))
@@ -112,7 +130,7 @@ def build_gallery(generated, eras):
         grouped[item["family"]][item["era_key"]].append(item)
     nav = ['<nav class="family-nav"><strong>Full set · jump to family:</strong>']
     sections = ['<!-- FULL_SET_GALLERY_START -->', '<h2>Full plot set · grouped by family</h2>',
-                '<p>Each family contains plots for all complete Run 2 and Run 3 era records in the fit report. Production labels appear inside the plot. Tail-excluded high-energy points retain their series colors and use crosses; captions identify the fits where this occurred.</p>']
+                '<p>Each family contains plots for all complete Run 2 and Run 3 era records in the fit report. Production labels appear inside the plot. Tail-excluded high-energy points retain their series colors and use crosses; captions identify the fits where this occurred. For 2025 and 2026, captions identify the CC-time input basis separately from the Chronus calibration state.</p>']
     for slug, title, description in FAMILIES:
         nav.append(f'<a href="#{slug}">{html.escape(title)}</a>')
         family_items = grouped.get(slug, {})
@@ -125,7 +143,7 @@ def build_gallery(generated, eras):
             for item in items:
                 rel = item["relative_path"]
                 name = html.escape(item["title"])
-                caption = html_caption(item["era_label"], item["subtitle"], item["curves"])
+                caption = html_caption(item["era_label"], item["subtitle"], item["curves"], era_key[2])
                 sections.append(f'<figure><a href="{rel}.pdf"><img loading="lazy" src="{rel}.png" alt="{name}"></a><figcaption><strong>{name}</strong><br>{caption}<br><a href="{rel}.pdf">PDF</a></figcaption></figure>')
             sections.append('</div></details>')
         sections.append('</section>')
@@ -149,30 +167,45 @@ def build_gallery(generated, eras):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--family", choices=[slug for slug, _, _ in FAMILIES],
+                        help="Render only this family while refreshing the complete gallery.")
+    parser.add_argument("--year", type=int, choices=range(2016, 2027), action="append",
+                        help="Render only this year (repeat for multiple years) while refreshing the complete gallery.")
+    args = parser.parse_args()
     eras = load_eras()
+    cc_bases_by_year = collections.defaultdict(set)
+    for era_key in eras:
+        year, _, _, _, _ = era_description(era_key[2])
+        if year in (2025, 2026):
+            cc_bases_by_year[year].add(cc_time_label(era_key[2]))
     generated = []
-    skipped = []
+    rendered = 0
     for era_key, era_records in sorted(eras.items(), key=lambda item: (item[0][0], item[0][2])):
         year, era_label, production, first_line, era_slug = era_description(era_key[2])
+        if year in (2025, 2026) and len(cc_bases_by_year[year]) > 1:
+            basis_slug = cc_time_label(era_key[2]).replace(" CC time", "").replace(" ", "_")
+            era_slug = f"{era_slug}_{basis_slug}"
         run_text = "Run 2 (13 TeV)" if era_key[0] < 350000 else "Run 3 (13.6 TeV)"
-        for family_slug, family_title, _ in FAMILIES:
-            for plot_slug, region, second_line, curves, xmax in family_plots(era_records):
-                if plot_slug != family_slug:
-                    continue
-                filename = f"{family_slug}/{era_slug}_{region}"
+        for plot_slug, region, second_line, curves, xmax in family_plots(era_records):
+            filename = f"{plot_slug}/{era_slug}_{region}"
+            year_selected = args.year is None or year in args.year
+            family_selected = args.family is None or plot_slug == args.family
+            if year_selected and family_selected:
                 subtitle = f"{first_line}\n{second_line}"
                 style.make_plot(filename, curves, subtitle, run_text, xmax_override=xmax)
-                generated.append({
-                    "family": family_slug,
-                    "era_key": era_key,
-                    "era_label": era_label,
-                    "subtitle": second_line,
-                    "title": f"{era_label} · {second_line}",
-                    "relative_path": f"plots/{filename}",
-                    "curves": curves,
-                })
+                rendered += 1
+            generated.append({
+                "family": plot_slug,
+                "era_key": era_key,
+                "era_label": era_label,
+                "subtitle": second_line,
+                "title": f"{first_line if year in (2025, 2026) else era_label} · {second_line}",
+                "relative_path": f"plots/{filename}",
+                "curves": curves,
+            })
     build_gallery(generated, eras)
-    print(f"Generated {len(generated)} full-set plots across {len(FAMILIES)} families and {len(eras)} era records.")
+    print(f"Rendered {rendered} plots; refreshed gallery with {len(generated)} plots across {len(FAMILIES)} families and {len(eras)} era records.")
 
 
 if __name__ == "__main__":
