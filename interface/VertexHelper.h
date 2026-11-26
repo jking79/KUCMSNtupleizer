@@ -38,6 +38,9 @@ class VertexHelper {
   static double CalculateCMCosTheta(const reco::Vertex &vertex, const reco::Track &track);
   static double CalculateDecayAngle(const reco::Vertex &vertex);
   static LorentzVec GetVertex4Vector(const reco::Vertex &vertex);
+  // True if every element is finite and the covariance is positive definite
+  // (Cholesky decomposition succeeds), i.e. the variance along every direction is > 0.
+  static bool IsPositiveDefinite(const GlobalError &error);
   static LorentzVec GetVertexWeighted4Vector(const reco::Vertex &vertex);
   static TLorentzVector GetTracks4Vector(const reco::TrackCollection &tracks);
   static reco::TrackCollection GetTracks(const reco::Vertex &vertex, const bool aboveThreshold = false);

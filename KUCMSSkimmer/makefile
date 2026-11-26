@@ -86,23 +86,33 @@ COLOR_GREEN = \033[1;32m
 COLOR_RED = \033[1;31m
 COLOR_RESET = \033[0m
 
+# Header dependency tracking: each compile also writes a .d file next to its
+# .o listing every header it includes, so editing a header rebuilds every
+# object that uses it (stale objects with an old class layout cause segfaults).
+# Kept separate from CXXFLAGS so a command-line CXXFLAGS override keeps it.
+
+DEPFLAGS = -MMD -MP
+
 # Pattern rule for compiling .cpp and .cc
 
 $(MAINOBJDIR)/%.o: $(SRCDIR)/%.cpp
 	@echo -e "$(COLOR_YELLOW)Compiling main file $<$(COLOR_RESET)"
-	$(CC) $(CXXFLAGS) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS) $(BCGLIBS) -I$(INCDIR) -I$(TCALI_INCDIR) $(IFLAGS) -c $< -o $@
+	$(CC) $(CXXFLAGS) $(DEPFLAGS) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS) $(BCGLIBS) -I$(INCDIR) -I$(TCALI_INCDIR) $(IFLAGS) -c $< -o $@
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cc
 	@echo -e "$(COLOR_YELLOW)Compiling $<$(COLOR_RESET)"
-	$(CC) $(CXXFLAGS) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS) $(BCGLIBS) -I$(INCDIR) -I$(TCALI_INCDIR) $(IFLAGS) -c $< -o $@
+	$(CC) $(CXXFLAGS) $(DEPFLAGS) $(RTCFLAGS) $(RTGLIBS) $(RFCFLAGS) $(RFGLIBS) $(BCFLAGS) $(BCGLIBS) -I$(INCDIR) -I$(TCALI_INCDIR) $(IFLAGS) -c $< -o $@
 
 $(OBJDIR)/%.o: $(TCALI_SRCDIR)/%.cpp
 	@echo -e "$(COLOR_YELLOW)Compiling $<$(COLOR_RESET)"
-	$(CC) $(CXXFLAGS) -I$(TCALI_INCDIR) -I$(INCDIR) $(RTCFLAGS) $(RTGLIBS) -c $< -o $@
+	$(CC) $(CXXFLAGS) $(DEPFLAGS) -I$(TCALI_INCDIR) -I$(INCDIR) $(RTCFLAGS) $(RTGLIBS) -c $< -o $@
 
 $(MAINOBJDIR)/%.o: $(TCALI_SRCDIR)/%.cpp
 	@echo -e "$(COLOR_YELLOW)Compiling $<$(COLOR_RESET)"
-	$(CC) $(CXXFLAGS) -I$(TCALI_INCDIR) -I$(INCDIR) $(RTCFLAGS) $(RTGLIBS) -c $< -o $@
+	$(CC) $(CXXFLAGS) $(DEPFLAGS) -I$(TCALI_INCDIR) -I$(INCDIR) $(RTCFLAGS) $(RTGLIBS) -c $< -o $@
+
+# Pull in the generated header dependencies (silently skipped on a fresh build)
+-include $(wildcard $(OBJDIR)/*.d $(MAINOBJDIR)/*.d)
 
 
 MAIN_OBJ := $(MAINOBJDIR)/runKUCMSAodSVSkimmer.o

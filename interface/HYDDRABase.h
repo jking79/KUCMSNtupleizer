@@ -301,13 +301,15 @@ class HYDDRABase : public TrackVertexSetCollection {
   }
 
   // A vertex is valid if the fit converged, normChi2 is physical (0 <= normChi2 < 5),
-  // and the position covariance diagonal is non-negative. Negative variances (Cxx < 0
-  // etc.) indicate a degenerate KVF fit and would produce NaN dxyError downstream.
+  // and the position covariance is positive definite. A degenerate KVF fit can return
+  // a covariance with a non-negative diagonal but a negative variance along some
+  // direction; projecting it (dxyError, merge distance significance, track
+  // compatibility) gives sqrt(<0) = NaN, so such vertices are rejected here, before
+  // any stage uses them.
   bool isValidVertex(const TrackVertexSet& set) const {
     if (!set.isValid()) return false;
     if (set.normChi2() < 0.0 || set.normChi2() >= 5.0) return false;
-    const GlobalError& err = set.tvertex().positionError();
-    if (err.cxx() < 0.0 || err.cyy() < 0.0 || err.czz() < 0.0) return false;
+    if (!VertexHelper::IsPositiveDefinite(set.tvertex().positionError())) return false;
     return true;
   }
 };

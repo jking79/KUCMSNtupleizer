@@ -2,6 +2,19 @@
 
 #include <cmath>
 
+#include <Math/CholeskyDecomp.h>
+
+bool VertexHelper::IsPositiveDefinite(const GlobalError &error) {
+
+  const AlgebraicSymMatrix33 &cov = error.matrix();
+  for(int i = 0; i < 3; ++i)
+    for(int j = 0; j <= i; ++j)
+      if(!std::isfinite(cov(i, j))) return false;
+
+  ROOT::Math::CholeskyDecomp<double, 3> decomp(cov);
+  return decomp.ok();
+}
+
 int VertexHelper::CountInstances(const reco::Vertex &vertex, const reco::TrackCollection &tracks) {
   
   int instances(0);
