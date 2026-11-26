@@ -15,4 +15,8 @@ miniAODTrackProducer = cms.EDProducer("MiniAODTrackProducer",
     minPt = cms.double(1.0),              # pT > 1 GeV
     minAbsSip2D = cms.double(4.0),        # |sip2D| >= 4 (select displaced tracks)
     maxNormalizedChi2 = cms.double(5.0),  # chi2/ndof < 5
+    # Repair non-positive-definite MiniAOD pseudo-track covariances in mergedMuonSip2D (HYDDRA input):
+    # keep variances, raise correlation-matrix eigenvalues below this floor to it.
+    repairCovariances = cms.bool(True),
+    minCorrelationEigenvalue = cms.double(3e-2),  # ~median of untouched pseudo-tracks
 )

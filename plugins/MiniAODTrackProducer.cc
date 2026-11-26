@@ -10,9 +10,16 @@
 // Original Author:  Andres Abreu
 //
 
+#include <algorithm>
 #include <memory>
 #include <vector>
 #include <cmath>
+
+#include <Math/CholeskyDecomp.h>
+#include "TMatrixD.h"
+#include "TMatrixDSym.h"
+#include "TMatrixDSymEigen.h"
+#include "TVectorD.h"
 
 // CMSSW framework
 #include "FWCore/Framework/interface/Frameworkfwd.h"
@@ -86,6 +93,13 @@ class MiniAODTrackProducer : public edm::stream::EDProducer<> {
   static bool passesSip2DSelection(const std::pair<bool, Measurement1D>& ip2dResult,
   double minAbsSip2D);
 
+  // MiniAOD pseudo-track covariances are stored with reduced precision and are frequently
+  // not positive definite (|rho| > 1 in (lambda, dsz) and (phi, dxy)). Returns the track with
+  // the nearest positive-definite covariance: variances are kept exactly and correlation-matrix
+  // eigenvalues below minCorrelationEigenvalue_ are raised to it. Tracks that are already
+  // positive definite are returned unchanged.
+  reco::Track repairCovariance(const reco::Track& track) const;
+
   // Input tokens
   edm::EDGetTokenT<pat::PackedCandidateCollection> pfCandidatesToken_;
   edm::EDGetTokenT<pat::PackedCandidateCollection> lostTracksToken_;
@@ -100,6 +114,10 @@ class MiniAODTrackProducer : public edm::stream::EDProducer<> {
   double minPt_;
   double minAbsSip2D_;
   double maxNormalizedChi2_;
+
+  // Covariance repair for the mergedMuonSip2D (HYDDRA input) collection
+  bool repairCovariances_;
+  double minCorrelationEigenvalue_;
 };
 
 MiniAODTrackProducer::MiniAODTrackProducer(const edm::ParameterSet& iConfig)
@@ -119,7 +137,9 @@ ttBuilderToken_(esConsumes(edm::ESInputTag("", "TransientTrackBuilder"))),
 applyCuts_(iConfig.getParameter<bool>("applyCuts")),
 minPt_(iConfig.getParameter<double>("minPt")),
 minAbsSip2D_(iConfig.getParameter<double>("minAbsSip2D")),
-maxNormalizedChi2_(iConfig.getParameter<double>("maxNormalizedChi2")) {
+maxNormalizedChi2_(iConfig.getParameter<double>("maxNormalizedChi2")),
+repairCovariances_(iConfig.getParameter<bool>("repairCovariances")),
+minCorrelationEigenvalue_(iConfig.getParameter<double>("minCorrelationEigenvalue")) {
 
   // Individual collections from packed candidates
   produces<reco::TrackCollection>("pfCandidateTracks");
@@ -238,6 +258,96 @@ reco::TrackCollection& outputTracks) const {
   }//<<>>for (const auto& track : inputTracks)
 }//<<>>} void MiniAODTrackProducer::addTracksDeduped( const reco::TrackCollection& inputTracks, const reco::TrackCollection& electronTracks, reco::TrackCollection& outputTracks)
 
+namespace {
+
+  // reco::Track has no covariance setter (the array is private), so rebuild the track with the
+  // new covariance and copy over its hit pattern and algorithm/quality information.
+  reco::Track rebuildWithCovariance(const reco::Track& track, const reco::TrackBase::CovarianceMatrix& cov) {
+    reco::Track out(track.chi2(), track.ndof(), track.referencePoint(), track.momentum(), track.charge(), cov,
+                    track.algo(), reco::TrackBase::undefQuality,
+                    track.t0(), track.beta(), track.covt0t0(), track.covBetaBeta());
+    out.setQualityMask(track.qualityMask());
+    out.setOriginalAlgorithm(track.originalAlgo());
+    out.setAlgoMask(track.algoMask());
+    out.setNLoops(track.nLoops());
+    out.setStopReason(track.stopReason());
+
+    // Copy hits category by category; the hit type passed to appendHitPattern selects the category.
+    const reco::HitPattern& hits = track.hitPattern();
+    for (int i = 0; i < hits.numberOfAllHits(reco::HitPattern::TRACK_HITS); ++i) {
+      const uint16_t pattern = hits.getHitPattern(reco::HitPattern::TRACK_HITS, i);
+      out.appendHitPattern(pattern, TrackingRecHit::Type(reco::HitPattern::getHitType(pattern)));
+    }
+    for (int i = 0; i < hits.numberOfAllHits(reco::HitPattern::MISSING_INNER_HITS); ++i)
+      out.appendHitPattern(hits.getHitPattern(reco::HitPattern::MISSING_INNER_HITS, i), TrackingRecHit::missing_inner);
+    for (int i = 0; i < hits.numberOfAllHits(reco::HitPattern::MISSING_OUTER_HITS); ++i)
+      out.appendHitPattern(hits.getHitPattern(reco::HitPattern::MISSING_OUTER_HITS, i), TrackingRecHit::missing_outer);
+    return out;
+  }
+
+  bool isPositiveDefinite(const reco::TrackBase::CovarianceMatrix& cov) {
+    for (int i = 0; i < reco::TrackBase::dimension; ++i)
+      for (int j = 0; j <= i; ++j)
+        if (!std::isfinite(cov(i, j))) return false;
+    ROOT::Math::CholeskyDecomp<double, reco::TrackBase::dimension> decomp(cov);
+    return decomp.ok();
+  }
+
+}  // namespace
+
+reco::Track MiniAODTrackProducer::repairCovariance(const reco::Track& track) const {
+  constexpr int n = reco::TrackBase::dimension;
+  const reco::TrackBase::CovarianceMatrix cov = track.covariance();
+  if (isPositiveDefinite(cov)) return track;
+
+  // Non-finite entries or non-positive variances cannot be repaired here; leave the track
+  // unchanged so the downstream vertex validity checks deal with it.
+  double sigma[n];
+  for (int i = 0; i < n; ++i) {
+    if (!std::isfinite(cov(i, i)) || cov(i, i) <= 0.) return track;
+    sigma[i] = std::sqrt(cov(i, i));
+  }
+  for (int i = 0; i < n; ++i)
+    for (int j = 0; j < i; ++j)
+      if (!std::isfinite(cov(i, j))) return track;
+
+  // Work on the scale-free correlation matrix (the parameters differ by orders of magnitude)
+  TMatrixDSym corr(n);
+  for (int i = 0; i < n; ++i)
+    for (int j = 0; j < n; ++j)
+      corr(i, j) = cov(i, j) / (sigma[i] * sigma[j]);
+
+  const TMatrixDSymEigen eigen(corr);
+  TVectorD lambda = eigen.GetEigenValues();
+  const TMatrixD& vectors = eigen.GetEigenVectors();
+  for (int k = 0; k < n; ++k) lambda(k) = std::max(lambda(k), minCorrelationEigenvalue_);
+
+  // R' = V diag(lambda) V^T, rescaled back to unit diagonal; original variances restored
+  TMatrixD fixedCorr(n, n);
+  for (int i = 0; i < n; ++i)
+    for (int j = 0; j < n; ++j) {
+      double sum = 0.;
+      for (int k = 0; k < n; ++k) sum += vectors(i, k) * lambda(k) * vectors(j, k);
+      fixedCorr(i, j) = sum;
+    }
+
+  reco::TrackBase::CovarianceMatrix repaired;
+  for (int i = 0; i < n; ++i)
+    for (int j = 0; j <= i; ++j)
+      repaired(i, j) = fixedCorr(i, j) / std::sqrt(fixedCorr(i, i) * fixedCorr(j, j)) * sigma[i] * sigma[j];
+
+  reco::Track out = rebuildWithCovariance(track, repaired);
+
+  // The covariance is stored in single precision; if rounding undoes a marginal repair,
+  // fall back to the uncorrelated (diagonal) covariance, which is always positive definite.
+  if (!isPositiveDefinite(out.covariance())) {
+    reco::TrackBase::CovarianceMatrix diagonal;
+    for (int i = 0; i < n; ++i) diagonal(i, i) = cov(i, i);
+    out = rebuildWithCovariance(track, diagonal);
+  }
+  return out;
+}
+
 bool MiniAODTrackProducer::passesSip2DSelection(
 const std::pair<bool, Measurement1D>& ip2dResult,
 double minAbsSip2D) {
@@ -320,10 +430,12 @@ reco::TrackCollection& outputTracks) const {
     raw.push_back(*mu.muonBestTrack());
   }//<<>>for (const auto& mu : muons)
 
-  // Apply sip2D cuts uniformly to every track in the merged collection
-  for (const auto& track : raw) {
-    if (track.pt() <= minPt_) continue;
-    if (track.normalizedChi2() >= maxNormalizedChi2_) continue;
+  // Apply sip2D cuts uniformly to every track in the merged collection.
+  // The covariance is repaired first, since the IP significance depends on it.
+  for (const auto& rawTrack : raw) {
+    if (rawTrack.pt() <= minPt_) continue;
+    if (rawTrack.normalizedChi2() >= maxNormalizedChi2_) continue;
+    const reco::Track track = repairCovariances_ ? repairCovariance(rawTrack) : rawTrack;
     reco::TransientTrack ttrack = ttBuilder.build(track);
     auto ip2dResult = IPTools::signedTransverseImpactParameter(
     ttrack, GlobalVector(track.px(), track.py(), track.pz()), pv);
@@ -482,6 +594,10 @@ void MiniAODTrackProducer::fillDescriptions(edm::ConfigurationDescriptions& desc
   desc.add<double>("minPt", 1.0);
   desc.add<double>("minAbsSip2D", 4.0);  // Keep |sip2D| >= this value (displaced tracks)
   desc.add<double>("maxNormalizedChi2", 5.0);
+  // Repair non-positive-definite pseudo-track covariances in mergedMuonSip2D (HYDDRA input)
+  desc.add<bool>("repairCovariances", true);
+  // ~median smallest correlation eigenvalue of untouched (positive-definite) pseudo-tracks
+  desc.add<double>("minCorrelationEigenvalue", 3e-2);
 
   descriptions.add("miniAODTrackProducer", desc);
 }//<<>>void MiniAODTrackProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
