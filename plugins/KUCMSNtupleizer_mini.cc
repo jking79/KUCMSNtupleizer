@@ -27,10 +27,12 @@ used by ObjectManager during event processing.
 #include "KUCMSEcalRechit_mini.hh"
 #include "KUCMSPhoton_mini.hh"
 #include "KUCMSAK4Jet_mini.hh"
+#include "KUCMSAK4PuppiJet_mini.hh"
 #include "KUCMSPFMet_mini.hh"
 #include "KUCMSElectron_mini.hh"
 #include "KUCMSMuon_mini.hh"
 #include "KUCMSGenObjects_mini.hh"
+#include "KUCMSGenJet_mini.hh"
 #include "KUCMSDisplacedVertex_mini.hh"
 #include "KUCMSTrack_mini.hh"
 
@@ -84,6 +86,17 @@ EcalPedestalsToken_(esConsumes())
 
   //Event Info
   auto eventInfoObj = new KUCMSEventInfoObjectMini(  iConfig );
+  // Each MiniAOD rho product is optional and has an inclusive output branch.
+  // The configuration may explicitly use "notAvailable" for absent products.
+  for( const auto& name : std::vector<std::string>{
+      "fixedGridRhoAll", "fixedGridRhoFastjetAll", "fixedGridRhoFastjetAllCalo",
+      "fixedGridRhoFastjetAllTmp", "fixedGridRhoFastjetCentral", "fixedGridRhoFastjetCentralCalo",
+      "fixedGridRhoFastjetCentralChargedPileUp", "fixedGridRhoFastjetCentralNeutral"} ){
+    const auto tag = iConfig.existsAs<edm::InputTag>(name) ? iConfig.getParameter<edm::InputTag>(name) : edm::InputTag(name);
+    const bool enabled = tag.label() != "notAvailable";
+    const auto token = enabled ? mayConsume<double>(tag) : edm::EDGetTokenT<double>();
+    eventInfoObj->LoadRhoToken(name, token, enabled);
+  }
   auto vertexToken = consumes<std::vector<reco::Vertex>>(iConfig.getParameter<edm::InputTag>("vertices"));
   auto triggerFlagResultsToken = consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("triggerFlagResults"));
   auto triggerHltResultsToken = consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("triggerHLTResults"));
@@ -206,6 +219,21 @@ EcalPedestalsToken_(esConsumes())
   ak4jetObj->LoadElectronObject( electronsObj );
   ObjMan.Load( "JetsAK4", ak4jetObj );
 
+  // Keep the PUPPI schema even when the input is intentionally unavailable.
+  auto ak4PuppiJetObj = new KUCMSAK4PuppiJetObjectMini( iConfig );
+  if( iConfig.existsAs<edm::InputTag>("puppiJets") ){
+    const auto puppiJetsTag = iConfig.getParameter<edm::InputTag>("puppiJets");
+    if( puppiJetsTag.label() != "notAvailable" ){
+      auto puppiJetsToken = consumes<std::vector<pat::Jet>>(puppiJetsTag);
+      ak4PuppiJetObj->LoadAK4JetTokens( puppiJetsToken );
+    }
+  }
+  ak4PuppiJetObj->LoadPfcandTokens( pfcandToken );
+  ak4PuppiJetObj->LoadRecHitObject( recHitsObj );
+  ak4PuppiJetObj->LoadPhotonObject( photonsObj );
+  ak4PuppiJetObj->LoadElectronObject( electronsObj );
+  ObjMan.Load( "JetsAK4Puppi", ak4PuppiJetObj );
+
   // PF MET: retain the photon association used by the output object.
   auto pfmetObj = new KUCMSPFMetObjectMini( iConfig );
   auto pfmetToken = consumes<std::vector<pat::MET>>(iConfig.getParameter<edm::InputTag>("mets"));
@@ -242,6 +270,11 @@ EcalPedestalsToken_(esConsumes())
     auto genPartToken = consumes<std::vector<pat::PackedGenParticle>>(iConfig.getParameter<edm::InputTag>("genParticles"));
     auto genJetsToken = consumes<std::vector<reco::GenJet>>(iConfig.getParameter<edm::InputTag>("genjets"));
     genObjs->LoadGenJetsTokens( genJetsToken );
+    auto genJetObj = new KUCMSGenJetObjectMini( iConfig );
+    genJetObj->LoadGenJetsTokens( genJetsToken );
+    ak4jetObj->LoadGenJetObject( genJetObj );
+    ak4PuppiJetObj->LoadGenJetObject( genJetObj );
+    ObjMan.Load( "GenJets", genJetObj );
     auto genPrunToken = consumes<std::vector<reco::GenParticle>>(iConfig.getParameter<edm::InputTag>("genPartPruned"));
     genObjs->LoadgpTokens( genPrunToken );
 
@@ -252,6 +285,7 @@ EcalPedestalsToken_(esConsumes())
     muonObj->LoadGenObject( genObjs );
     photonsObj->LoadGenObject( genObjs );
     ak4jetObj->LoadGenObject( genObjs );
+    ak4PuppiJetObj->LoadGenObject( genObjs );
 
     if( cfFlag("doSVModule") ){
       displacedVertexObj->LoadGenParticlesToken(genPartToken);

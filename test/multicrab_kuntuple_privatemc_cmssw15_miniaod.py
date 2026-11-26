@@ -77,7 +77,7 @@ def docrab( dataset ):
         config.General.requestName = None
 
         config.JobType.pluginName  = 'Analysis'
-        config.JobType.psetName    = 'llpgana_miniaod.py'
+        config.JobType.psetName    = 'llpgana_miniaod_v15.py'
         config.JobType.pyCfgParams = None
 
         config.Data.partialDataset = True
@@ -223,6 +223,9 @@ def docrab( dataset ):
 #>>>>>      #MC Justin
             #gt = 'globalTag=106X_upgrade2018_realistic_v11_L1v1'
             #runinfo = 'runera=Run2_2018'
+            # For UL2016 MC select the actual production campaign:
+            #runinfo = 'runera=Run2_2016_Pre'  # pre-VFP / HIPM
+            #runinfo = 'runera=Run2_2016_Post' # post-VFP
             gt = 'globalTag=124X_mcRun3_2022_realistic_v12'
             runinfo = 'runera=Run3_2022'
             ##gt = 'globalTag=124X_mcRun3_2022_realistic_postEE_v1'

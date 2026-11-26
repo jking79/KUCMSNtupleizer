@@ -13,6 +13,7 @@ options.register('eventFilter','SVHPMet100',VarParsing.multiplicity.singleton,Va
 options.register('doSV',True,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to run displaced SVs');
 options.register('doDisEle',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag ro run displaced electrons');
 options.register('doECALTrackOnly',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to run ECAL Tracks only');
+options.register('doFastSim',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to run fastsim MC');
 options.register('runera','Run2_2018',VarParsing.multiplicity.singleton,VarParsing.varType.string,'filter to use in event processing');
 options.register('runMETFilters',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,'flag to run Met Filters');
 
@@ -44,8 +45,8 @@ options.register('runMETFilters',False,VarParsing.multiplicity.singleton,VarPars
 #options.register('globalTag','140X_dataRun3_v17',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for R3 22');
 #options.register('globalTag','130X_mcRun3_2023_realistic_postBPix_v2',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gt for R3 23');
 ##------------------ data gt  
-#options.register('globalTag','106X_dataRun2_v37',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
-options.register('globalTag','150X_dataRun3_v2',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
+options.register('globalTag','106X_dataRun2_v37',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
+#options.register('globalTag','150X_dataRun3_v2',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 ##options.register('globalTag','106X_dataRun2_v28',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
 #options.register('globalTag','124X_dataRun3_v15',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used 2022');
 #options.register('globalTag','140X_dataRun3_v17',VarParsing.multiplicity.singleton,VarParsing.varType.string,'gloabl tag to be used');
@@ -66,20 +67,28 @@ options.register('outputFileName',outfilename,VarParsing.multiplicity.singleton,
 ## parsing command line arguments
 options.parseArguments()
 
-## Define the CMSSW process
+## Define the CMSSW process.
+# RunEra controls collection-specific IDs as well as other analyzer settings.
+# Set it to the input dataset/campaign, not the CMSSW release or data run year
+# inferred from MC event numbers. For UL2016, specify the VFP period explicitly.
+# In multicrab jobs options.runera overrides the local value below.
 #runera = "Run2" 
 #runera = "Run3"  # current siganl model   !!!!!!!!  Run3 must be in CMSSW 14 or 15
 #runera = "Run3_2025"
 #runera = "Run3_2022"
-runera = "Run3_2023"
+#runera = "Run3_2023"
 #runera = "Run3_2024"
-#runera = "Run2_2018" # BG models
+runera = "Run2_2018" # BG models
+#runera = "Run2_2016_Pre" # UL2016 pre-VFP / HIPM
+#runera = "Run2_2016_Post" # UL2016 post-VFP
 #runera = "Run2_2017"
 if options.multicrab == True : runera = options.runera
 
 from Configuration.StandardSequences.Eras import eras
 era_map = {
     "Run2_2016": eras.Run2_2016,
+    "Run2_2016_Pre": eras.Run2_2016_HIPM,
+    "Run2_2016_Post": eras.Run2_2016,
     "Run2_2017": eras.Run2_2017,
     "Run2_2018": eras.Run2_2018,
     "Run2": eras.Run2_2018,
@@ -90,7 +99,15 @@ era_map = {
     "Run3_2026": eras.Run3,
     "Run3": eras.Run3
 }
-era = era_map[options.runera]
+# Jet-ID and PU-ID selection needs the 2016 VFP period, including for MC
+# (whose event run numbers do not identify the detector campaign).
+if runera == "Run2_2016":
+    raise ValueError("runera=Run2_2016 is ambiguous; choose Run2_2016_Pre (pre-VFP/HIPM) or Run2_2016_Post (post-VFP)")
+if runera in ("Run2", "Run3"):
+    raise ValueError("runera=%s is ambiguous; select an explicit Run2 or Run3 year and required sub-era" % runera)
+if runera not in era_map:
+    raise ValueError("Unsupported runera=%s; choose a documented RunEra tag" % runera)
+era = era_map[runera]
 process = cms.Process(options.processName, era )
 
 ## Load the standard set of configuration modules
@@ -156,6 +173,7 @@ process.source = cms.Source("PoolSource",
 
         #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_2022_Fast_PUlib1/SMS-GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p1_MINI/260812_195205/0000/SMS-GlGl_mGl-2300_mN2-2200_mN1-2100_GZ_N2ctau-0p1_MiniAODv4_16.root'
 
+        ######    test SMS 2022 MC
         #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/gogoGZ_FullSim_Mini/SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p1_MINI/260317_213805/0000/SMS-GlGl_mGl-2300_mN2-1300_mN1-1000_GZ_N2ctau-0p1_MiniAODv4_12.root'
 
         #'root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/T5Zg_FullSim_Mini_2018/T5Zg_mGo-2300_mN2-1200_mN1-1000_N2ctau-300cm_2018/MINI/260925_035220/0000/T5Zg_mGo-2300_mN2-1200_mN1-1000_N2ctau-300cm_TuneCP5_13TeV_madgraph-pythia8_MINI_12.root',
@@ -169,11 +187,11 @@ process.source = cms.Source("PoolSource",
         #### AOD Run3   MUST BE IN CMSSW  14 or 15 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         # Data
         #'root://cmsxrootd.fnal.gov//store/data/Run2024C/JetMET0/MINIAOD/PromptReco-v1/000/379/415/00000/f41372ad-bc84-47c3-9c74-49f96cf26866.root',
-        'file:root_files/R23C_JetMet_mini_4a8e9a72-a9af-4448-acbd-bafa6cd684b4.root',
+        #'file:root_files/R23C_JetMet_mini_4a8e9a72-a9af-4448-acbd-bafa6cd684b4.root',
         #######'file:root_files/Met_UL18B_AOD_973EEF0C-44AB-E94A-8591-04DCD00D8B4B.root',
         ##'file:root_files/R22D_JetMet_mini_1f4a97f7-de76-4ee1-a380-0d9d7a5914d2.root',
-        # MiniAOD 2018UL MET
-        #'file:root_files/UL18_mini_MET_76190182-C845-2B40-A3F1-FA9FDAB9F7EC.root',
+        # MiniAOD 2018UL MET ##### globalTag=106X_dataRun2_v37
+        'file:root_files/UL18_mini_MET_76190182-C845-2B40-A3F1-FA9FDAB9F7EC.root',
         ######'file:root_files/WJets_72B9C618-FE23-1E41-872E-57314D7CB454.root',
         #'root://cmsxrootd.fnal.gov//store/data/Run2016G/MET/MINIAOD/UL2016_MiniAODv2-v2/120000/020ADD62-87D5-4B43-BAAD-C77C83D5FF8F.root',
         #'root://cmsxrootd.fnal.gov//store/data/Run2018B/JetHT/MINIAOD/15Feb2022_UL2018-v1/2820000/84DEEA91-CF7B-C24B-831D-7D993EB56D8D.root',
@@ -309,6 +327,8 @@ if "Run3" in runera and genInfo is True :
     flagSet = "PAT"
     #triggerSet = "PAT" # needed for fast sim only
 
+if options.multicrab and options.doFastSim : triggerSet = "PAT"
+
 if runMETFilters == True : flagSet = ""  # ?  "SIM" for MC
 
 #genMomChase = True
@@ -387,6 +407,15 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizerMini",
                               ## rho
                               #rho = cms.InputTag("fixedGridRhoFastjetAll"), #fixedGridRhoAll
                               rho = cms.InputTag("fixedGridRhoAll"),
+                              # Event-level rho branches; use "notAvailable" for an absent product.
+                              fixedGridRhoAll = cms.InputTag("fixedGridRhoAll"),
+                              fixedGridRhoFastjetAll = cms.InputTag("fixedGridRhoFastjetAll"),
+                              fixedGridRhoFastjetAllCalo = cms.InputTag("fixedGridRhoFastjetAllCalo"),
+                              fixedGridRhoFastjetAllTmp = cms.InputTag("fixedGridRhoFastjetAllTmp"),
+                              fixedGridRhoFastjetCentral = cms.InputTag("fixedGridRhoFastjetCentral"),
+                              fixedGridRhoFastjetCentralCalo = cms.InputTag("fixedGridRhoFastjetCentralCalo"),
+                              fixedGridRhoFastjetCentralChargedPileUp = cms.InputTag("fixedGridRhoFastjetCentralChargedPileUp"),
+                              fixedGridRhoFastjetCentralNeutral = cms.InputTag("fixedGridRhoFastjetCentralNeutral"),
                               ## conversions
                               conversions = cms.InputTag("reducedEgamma","reducedConversions",convSet ),
                               ## beamSpot
@@ -404,6 +433,11 @@ process.tree = cms.EDAnalyzer("KUCMSNtupilizerMini",
                               #Charge Hadron Subtracted : charged particles from non-primary vertices (pileup) are removed before clustering.
                               #jets = cms.InputTag("updatedPatJetsUpdatedJEC"),
                               jets = cms.InputTag("slimmedJets"),
+                              # PUPPI tight IDs use RunEra: 2022 assumes reprocessed data
+                              # or MC (no early prompt data); 2024-26 use 2023 conventions.
+                              # PUPPI PU-ID decisions are disabled and set to -1.
+                              # The original embedded score and bitmap are also retained.
+                              puppiJets = cms.InputTag("slimmedJetsPuppi"), # use "notAvailable" if absent
                               calojets = cms.InputTag("slimmedCaloJets"),
                               ## electrons
                               electrons = cms.InputTag("slimmedElectrons"),

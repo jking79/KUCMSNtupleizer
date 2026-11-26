@@ -65,16 +65,16 @@ int main ( int argc, char *argv[] ){
   //std::string inputfilename( "ecal_config/kucmsTimeCaliR22ReRecoTFile.txt");
   //std::string inputfilename( "ecal_config/kucmsTimeCaliR23ReRecoTFile.txt");
   //std::string inputfilename( "ecal_config/kucmsTimeCaliR24ReRecoTFile.txt");
-  //std::string inputfilename( "ecal_config/kucmsTimeCaliR25PrmptTFile.txt");
+  std::string inputfilename( "ecal_config/kucmsTimeCaliR25PrmptTFile.txt");
   //std::string inputfilename( "ecal_config/kucmsTimeCaliR26PrmptTFile.txt");
 
-  std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCQCDTFile.txt");
+  //std::string inputfilename( "ecal_config/kucmsTimeCaliR18MCQCDTFile.txt");
 
   //std::string eosdir("root://cmseos.fnal.gov//store/user/jaking/");// input parameter!
   //std::string eosdir("root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/");
   std::string eosdir("/store/user/lpcsusylep/jaking/");
 
-  std::string indir("KUCMSNtuple/");
+  //std::string indir("KUCMSNtuple/");
 
   //std::string indir("KUCMSNtuple/gammares_ul16v2/");
   //std::string indir("KUCMSNtuple/gammares_ul17v2/");
@@ -83,7 +83,7 @@ int main ( int argc, char *argv[] ){
   //std::string indir("KUCMSNtuple/gammares_R22_22sept23/");
   //std::string indir("KUCMSNtuple/gammares_R23_22sept23/");
   //std::string indir("KUCMSNtuple/gammares_R24_m6n15/");
-  //std::string indir("KUCMSNtuple/gammares_prmt25/");
+  std::string indir("KUCMSNtuple/gammares_prmt25/");
   //std::string indir("KUCMSNtuple/gammares_prmt26/");
 
   // use std::string indir("KUCMSNtuple/"); // std::string indir("KUCMSNtuple/gammares_QCD18/");
@@ -124,12 +124,12 @@ int main ( int argc, char *argv[] ){
   // MC-suffixed tags automatically use input weights. Override for ambiguous tags:
   // theCali.setDoMC(true); // setDoMC(false) forces unit weights
   // for MC
-  theCali.setTTIov( mctag );
-  theCali.setXIov( mctag );
+  //theCali.setTTIov( mctag );
+  //theCali.setXIov( mctag );
   // for PD R3
-  //theCali.setTTIov( r3TagTT );
-  //theCali.setXIov( r3TagX );
-  //theCali.setIsCC(true);
+  theCali.setTTIov( r3TagTT );
+  theCali.setXIov( r3TagX );
+  theCali.setIsCC(true);
   ////theCali.setIsCC(false); //-- defaults to false
   //theCali.setDoUnCC(true);
 
