@@ -1642,6 +1642,7 @@ void KUCMSAodSkimmer::processPhotons(){
   selPhotons.fillBranch("passNPhoEq1SelectionPromptTightIsoValSR", bool(nNonPromptphotons == 0 && nValBHphotons == 0 && nBaseLinePhotons == 1 && nValMedIsoEq1Photons == 0 && nValTightIsoEq1Photons == 1));
   selPhotons.fillBranch("passNPhoEq2SelectionPromptTightIsoValSR", bool(nNonPromptphotons == 0 && nValBHphotons == 0 && nBaseLinePhotons == 2 && nValMedIsoEq2Photons == 0 && nValTightIsoEq2Photons >= 1));
   selPhotons.fillBranch("passNPhoEq2SelectionCompPromptTightIsoValSR", bool(nNonPromptphotons == 0 && nValBHphotons == 0 && nBaseLinePhotons == 2 && nValCompMedIsoEq2Photons == 0 && nValCompTightIsoEq2Photons >= 1));
+
   //---------------------------------------------------------------------------
   //  saving photon information for rjr
   //---------------------------------------------------------------------------
@@ -1657,7 +1658,7 @@ void KUCMSAodSkimmer::processPhotons(){
 
     //if( phoOrderId[spidx] == objID::Base ) continue;
     uInt pIdx = phoOrderIndx[spidx];
-    uInt exIdx = phoExcIndx[spidx];
+    int exIdx = phoExcIndx[spidx];
     bool isOOT = (*Photon_isOot)[pIdx];
     float lPhoPt = (*Photon_pt)[pIdx];
     float lPhoPhi = (*Photon_phi)[pIdx];
